@@ -7,7 +7,7 @@
 import Foundation
 
 /// An interface for processing `URLSession` task interceptions.
-public protocol DatadogURLSessionInterceptor {
+public protocol DatadogURLSessionHandler {
     /// The interceptor's first party hosts
     var firstPartyHosts: FirstPartyHosts { get }
 
@@ -39,7 +39,7 @@ public protocol DatadogURLSessionInterceptor {
     func interceptionDidComplete(interception: URLSessionTaskInterception)
 }
 
-internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionInterceptor {
+internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionHandler {
     /// no-op
     var firstPartyHosts: FirstPartyHosts { .init() }
     /// no-op
@@ -53,12 +53,12 @@ internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionInterceptor {
 }
 
 extension DatadogCoreProtocol {
-    /// Core extension for registering `URLSession` interceptor.
+    /// Core extension for registering `URLSession` handlers.
     ///
-    /// - Parameter urlSessionInterceptor: The `URLSession` interceptor to register.
-    public func register(urlSessionInterceptor: DatadogURLSessionInterceptor) throws {
+    /// - Parameter urlSessionHandler: The `URLSession` handlers to register.
+    public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
         let feature = try get(feature: NetworkInstrumentationFeature.self) ?? .init()
-        feature.interceptors.append(urlSessionInterceptor)
+        feature.handlers.append(urlSessionHandler)
         try register(feature: feature)
     }
 }

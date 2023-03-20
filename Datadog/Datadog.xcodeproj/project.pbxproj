@@ -461,8 +461,8 @@
 		D2160CE629C0DFEE00FAA9A5 /* MethodSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CE329C0DFED00FAA9A5 /* MethodSwizzler.swift */; };
 		D2160CE929C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CE829C0E00200FAA9A5 /* MethodSwizzlerTests.swift */; };
 		D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CE829C0E00200FAA9A5 /* MethodSwizzlerTests.swift */; };
-		D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift */; };
-		D2160CEE29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift */; };
+		D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift */; };
+		D2160CEE29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift */; };
 		D2160CF029C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEF29C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift */; };
 		D2160CF129C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CEF29C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift */; };
 		D2160CF229C0ED3C00FAA9A5 /* ServerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3646F243B5C8300C4D4E6 /* ServerMock.swift */; };
@@ -1866,7 +1866,7 @@
 		D2160CD329C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = URLSessionDelegateAsSuperclassTests.swift; sourceTree = "<group>"; };
 		D2160CE329C0DFED00FAA9A5 /* MethodSwizzler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MethodSwizzler.swift; sourceTree = "<group>"; };
 		D2160CE829C0E00200FAA9A5 /* MethodSwizzlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MethodSwizzlerTests.swift; sourceTree = "<group>"; };
-		D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogURLSessionInterceptor.swift; sourceTree = "<group>"; };
+		D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogURLSessionHandler.swift; sourceTree = "<group>"; };
 		D2160CEF29C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleFeatureCoreMock.swift; sourceTree = "<group>"; };
 		D2160CF629C0EE2B00FAA9A5 /* UploadMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadMocks.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
@@ -4342,7 +4342,7 @@
 			isa = PBXGroup;
 			children = (
 				D2160C9829C0DE5700FAA9A5 /* NetworkInstrumentationFeature.swift */,
-				D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift */,
+				D2160CEC29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift */,
 				D2EBEDCC29B893D800B15732 /* TraceID.swift */,
 				D2160C9429C0DE5600FAA9A5 /* FirstPartyHosts.swift */,
 				D2160C9729C0DE5700FAA9A5 /* HostsSanitizer.swift */,
@@ -6111,7 +6111,7 @@
 				D23039DE298D5235001A1FA3 /* Writer.swift in Sources */,
 				D23039FA298D5236001A1FA3 /* Telemetry.swift in Sources */,
 				D23039FC298D5236001A1FA3 /* DataFormat.swift in Sources */,
-				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift in Sources */,
+				D2160CED29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
 				D2160CA429C0DE5700FAA9A5 /* InternalURLsFilter.swift in Sources */,
 				D2160C9E29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
@@ -6665,7 +6665,7 @@
 				D2DA2366298D57AA00C6C7E6 /* Writer.swift in Sources */,
 				D2DA2367298D57AA00C6C7E6 /* Telemetry.swift in Sources */,
 				D2DA2368298D57AA00C6C7E6 /* DataFormat.swift in Sources */,
-				D2160CEE29C0E0E600FAA9A5 /* DatadogURLSessionInterceptor.swift in Sources */,
+				D2160CEE29C0E0E600FAA9A5 /* DatadogURLSessionHandler.swift in Sources */,
 				D2160CA529C0DE5700FAA9A5 /* InternalURLsFilter.swift in Sources */,
 				D2160C9F29C0DE5700FAA9A5 /* TracingHeaderType.swift in Sources */,
 				D2DA2369298D57AA00C6C7E6 /* AnyEncodable.swift in Sources */,
