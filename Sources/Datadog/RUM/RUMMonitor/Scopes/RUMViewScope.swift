@@ -396,7 +396,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: true,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -453,7 +453,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: true,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -561,7 +561,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: true,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -613,7 +613,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: true,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

@@ -1608,11 +1608,9 @@ class RUMViewScopeTests: XCTestCase {
 
     // MARK: - Stopped Session
 
-    func testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped() {
+    func testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped() throws {
         let initialDeviceTime: Date = .mockDecember15th2019At10AMUTC()
         let initialServerTimeOffset: TimeInterval = 120 // 2 minutes
-        var currentDeviceTime = initialDeviceTime
-
 
         // Given
         let scope = RUMViewScope(
@@ -1627,6 +1625,23 @@ class RUMViewScopeTests: XCTestCase {
             startTime: initialDeviceTime,
             serverTimeOffset: initialServerTimeOffset
         )
+        parent.context.isSessionActive = false
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopSessionCommand.mockAny(),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        XCTAssertFalse(scope.isActiveView)
+        let events = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self))
+
+        XCTAssertEqual(events.count, 1)
+        XCTAssertEqual(events.first?.session.isActive, false)
     }
 
     // MARK: - Dates Correction

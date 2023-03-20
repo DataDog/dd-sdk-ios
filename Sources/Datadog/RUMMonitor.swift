@@ -635,12 +635,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         // update the core context with rum context
         core.set(feature: "rum", attributes: {
             self.queue.sync {
-                let context = self.applicationScope.sessionScope?.viewScopes.last?.context ??
-                                self.applicationScope.sessionScope?.context ??
-                                self.applicationScope.context
+                let context = self.applicationScope.activeSession?.viewScopes.last?.context ??
+                              self.applicationScope.activeSession?.context ??
+                              self.applicationScope.context
 
                 guard context.sessionID != .nullUUID else {
-                    // if Session was sampled or not yet started
                     return [:]
                 }
 
@@ -651,7 +650,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                         RUMContextAttributes.IDs.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
                         RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
                     ],
-                    RUMContextAttributes.serverTimeOffset: self.applicationScope.sessionScope?.viewScopes.last?.serverTimeOffset
+                    RUMContextAttributes.serverTimeOffset: self.applicationScope.activeSession?.viewScopes.last?.serverTimeOffset
                 ]
             }
         })

@@ -274,7 +274,7 @@ extension RUMActionEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
-                isActive: true,
+                isActive: nil,
                 type: .user
             ),
             source: .ios,
@@ -338,7 +338,7 @@ extension RUMErrorEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
-                isActive: true,
+                isActive: nil,
                 type: .user
             ),
             source: .ios,
