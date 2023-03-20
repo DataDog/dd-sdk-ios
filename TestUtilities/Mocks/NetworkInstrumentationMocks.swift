@@ -45,7 +45,7 @@ extension URLSession {
     }
 }
 
-public final class URLSessionInterceptorMock: DatadogURLSessionInterceptor {
+public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     public let firstPartyHosts: FirstPartyHosts
 
     public var modifiedRequest: URLRequest?

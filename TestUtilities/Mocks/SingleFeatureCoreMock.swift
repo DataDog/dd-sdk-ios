@@ -8,71 +8,99 @@ import Foundation
 import XCTest
 import DatadogInternal
 
-/// Single-Feature core mocks feature-scope for a single `Feature` type.
-public final class SingleFeatureCoreMock<Feature>: DatadogCoreProtocol, FeatureScope where Feature: DatadogFeature {
+/// Single-Feature core mock is a `PassthroughCoreMock` with the ability to register
+/// a single Feature instance.
+///
+/// The Single-Feature can be useful if you need to register and retrieve a Feature during tests.
+///
+/// Usage:
+///
+///         let feature = MyCustomFeature()
+///         let core = SingleFeatureCoreMock(feature: feature)
+///         core.scope(for: "my-custom-feature")?.eventWriteContext { context, writer in
+///             // will open a scope for the custom Feature only.
+///         }
+///
+/// The Single-Feature core allow registering and retrieving a single Feature type.
+///
+///     let feature = MyCustomFeature()
+///     try core.register(feature: feature)
+///     core.get(feature: MyCustomFeature.self) // returns feature instance
+///
+public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Feature: DatadogFeature {
     /// The single Feature.
     private var feature: Feature?
 
-    private let writer = FileWriterMock()
-
-    /// Current context that will be passed to feature-scopes.
-    @ReadWriteLock
-    public var context: DatadogContext {
-        didSet { send(message: .context(context)) }
-    }
-
-    public init(
+    /// Creates a Single-Feature core mock.
+    ///
+    /// - Parameters:
+    ///   - context: The testing context.
+    ///   - feature: The registered Feature.
+    ///   - expectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked.
+    ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `bypassConsent` parameter set to `true`.
+    ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `forceNewBatch` parameter set to `true`.
+    public required init(
         context: DatadogContext = .mockAny(),
-        feature: Feature? = nil
+        feature: Feature? = nil,
+        expectation: XCTestExpectation? = nil,
+        bypassConsentExpectation: XCTestExpectation? = nil,
+        forceNewBatchExpectation: XCTestExpectation? = nil,
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
-        self.context = context
         self.feature = feature
-        feature?.messageReceiver.receive(message: .context(context), from: self)
+
+        super.init(
+            context: context,
+            expectation: expectation,
+            bypassConsentExpectation: bypassConsentExpectation,
+            forceNewBatchExpectation: forceNewBatchExpectation,
+            messageReceiver: messageReceiver
+        )
     }
 
-    public func register<T>(feature: T) throws where T : DatadogInternal.DatadogFeature {
+    /// Creates a Single-Feature core mock.
+    ///
+    /// - Parameters:
+    ///   - context: The testing context.
+    ///   - expectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked.
+    ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `bypassConsent` parameter set to `true`.
+    ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
+    ///                  is invoked with `forceNewBatch` parameter set to `true`.
+    public required init(
+        context: DatadogContext = .mockAny(),
+        expectation: XCTestExpectation? = nil,
+        bypassConsentExpectation: XCTestExpectation? = nil,
+        forceNewBatchExpectation: XCTestExpectation? = nil,
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    ) {
+        self.feature = nil
+
+        super.init(
+            context: context,
+            expectation: expectation,
+            bypassConsentExpectation: bypassConsentExpectation,
+            forceNewBatchExpectation: forceNewBatchExpectation,
+            messageReceiver: messageReceiver
+        )
+    }
+
+    public override func register<T>(feature: T) throws where T: DatadogFeature {
         self.feature = feature as? Feature
     }
 
-    public func get<T>(feature type: T.Type) -> T? where T : DatadogInternal.DatadogFeature {
+    public override func get<T>(feature type: T.Type) -> T? where T: DatadogFeature {
         feature as? T
     }
 
-    public func scope(for feature: String) -> DatadogInternal.FeatureScope? {
+    public override func scope(for feature: String) -> FeatureScope? {
         guard feature == Feature.name else {
             return nil
         }
-        return self
-    }
-
-    public func set(feature: String, attributes: @escaping () -> DatadogInternal.FeatureBaggage) {
-        context.featuresAttributes[feature] = attributes()
-    }
-
-    public func send(message: DatadogInternal.FeatureMessage, sender: DatadogInternal.DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        guard let feature = feature, feature.messageReceiver.receive(message: message, from: sender) else {
-            return fallback()
-        }
-    }
-
-    /// Execute `block` with the current context and a `writer` to record events.
-    ///
-    /// - Parameter block: The block to execute.
-    public func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
-        XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
-    }
-
-    /// Recorded events from feature scopes.
-    ///
-    /// Invoking the `writer` from the `eventWriteContext` will add
-    /// events to this stack.
-    public var events: [Encodable] { writer.events }
-
-    /// Returns all events of the given type.
-    ///
-    /// - Parameter type: The event type to retrieve.
-    /// - Returns: A list of event of the give type.
-    public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
-        writer.events(ofType: type)
+        return super.scope(for: feature)
     }
 }

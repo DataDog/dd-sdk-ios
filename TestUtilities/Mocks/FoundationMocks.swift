@@ -577,12 +577,12 @@ extension URLSession {
 }
 
 extension URLSessionTask {
-    public static func mockAny() -> URLSessionTask {
-        return URLSessionTaskMock(request: .mockAny(), response: .mockAny())
+    public static func mockAny() -> URLSessionDataTask {
+        return URLSessionDataTaskMock(request: .mockAny(), response: .mockAny())
     }
 
-    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
-        return URLSessionTaskMock(request: request, response: response)
+    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionDataTask {
+        return URLSessionDataTaskMock(request: request, response: response)
     }
 }
 
@@ -678,7 +678,7 @@ extension URLSessionTaskTransactionMetrics {
     }
 }
 
-private class URLSessionTaskMock: URLSessionTask {
+private class URLSessionDataTaskMock: URLSessionDataTask {
     private let _originalRequest: URLRequest
     override var originalRequest: URLRequest? { _originalRequest }
 

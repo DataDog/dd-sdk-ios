@@ -10,13 +10,13 @@ import TestUtilities
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let interceptor = URLSessionInterceptorMock()
+    private let handler = URLSessionHandlerMock()
 
     override func setUpWithError() throws {
         super.setUp()
 
         core = SingleFeatureCoreMock()
-        try core.register(urlSessionInterceptor: interceptor)
+        try core.register(urlSessionHandler: handler)
     }
 
     override func tearDown() {
@@ -31,8 +31,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -60,9 +60,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -97,8 +97,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
         let server = ServerMock(delivery: .failure(error: expectedError))
 
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         let dateBeforeAnyRequests = Date()
 
@@ -123,10 +123,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let dateAfterAllRequests = Date()
 
-        XCTAssertEqual(interceptor.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
+        XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
-            let interception = try interceptor.interception(for: url).unwrapOrThrow()
+            let interception = try handler.interception(for: url).unwrapOrThrow()
             XCTAssertGreaterThan(interception.metrics!.fetch.start, dateBeforeAnyRequests)
             XCTAssertLessThan(interception.metrics!.fetch.end, dateAfterAllRequests)
             XCTAssertNil(interception.data, "Data should not be recorded for \(url)")
@@ -143,8 +143,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let randomData: Data = .mockRandom()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData))
 
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         let dateBeforeAnyRequests = Date()
 
@@ -169,10 +169,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let dateAfterAllRequests = Date()
 
-        XCTAssertEqual(interceptor.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
+        XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
-            let interception = try interceptor.interception(for: url).unwrapOrThrow()
+            let interception = try handler.interception(for: url).unwrapOrThrow()
             XCTAssertGreaterThan(interception.metrics!.fetch.start, dateBeforeAnyRequests)
             XCTAssertLessThan(interception.metrics!.fetch.end, dateAfterAllRequests)
             XCTAssertEqual(interception.data, randomData)
@@ -218,7 +218,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
         var core: DatadogCoreProtocol? = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
-        try core?.register(urlSessionInterceptor: interceptor)
+        try core?.register(urlSessionHandler: handler)
 
         // When
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -229,5 +229,33 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         core = nil
         // Then
         XCTAssertNil(delegate.feature)
+    }
+
+    // MARK: - Thread Safety
+
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+
+        let session = URLSession(configuration: .default, delegate: DatadogURLSessionDelegate(), delegateQueue: nil)
+        let requests = [
+            URLRequest(url: URL(string: "https://api.first-party.com/v1/endpoint")!),
+            URLRequest(url: URL(string: "https://api.third-party.com/v1/endpoint")!),
+            URLRequest(url: URL(string: "https://dd.internal.com/v1/endpoint")!)
+        ]
+        let tasks = (0..<10).map { _ in URLSessionTask.mockWith(request: .mockAny(), response: .mockAny()) }
+
+        // swiftlint:disable opening_brace trailing_closure
+        callConcurrently(
+            closures: [
+                { feature.handlers = [self.handler] },
+                { _ = feature.urlSession(session, intercept: requests.randomElement()!) },
+                { feature.urlSession(session, didCreateTask: tasks.randomElement()!) },
+                { feature.urlSession(session, dataTask: tasks.randomElement()!, didReceive: .mockRandom()) },
+                { feature.urlSession(session, task: tasks.randomElement()!, didFinishCollecting: .mockAny()) },
+                { feature.urlSession(session, task: tasks.randomElement()!, didCompleteWithError: nil) }
+            ],
+            iterations: 50
+        )
+        // swiftlint:enable opening_brace trailing_closure
     }
 }

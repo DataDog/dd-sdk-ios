@@ -21,13 +21,26 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "trace-propagation".
     static let name = "network-instrumentation"
 
+    /// Network Instrumentation serial queue for safe and serialized access to the
+    /// `URLSessionTask` interception.
+    internal let queue = DispatchQueue(
+        label: "com.datadoghq.network-instrumentation",
+        target: .global(qos: .utility)
+    )
+
     /// A no-op message bus receiver.
     internal let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 
-    /// The list of registered propagators.
-    internal var interceptors: [DatadogURLSessionInterceptor] = []
+    /// The list of registered handlers.
+    ///
+    /// Accessing this list will acquire a read-write lock for fast read operation when mutating
+    /// an `URLRequest`
+    @ReadWriteLock
+    internal var handlers: [DatadogURLSessionHandler] = []
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
+    ///
+    /// The interceptions **must** be accessed using the `queue`.
     internal var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
     init() throws {
@@ -48,7 +61,7 @@ extension NetworkInstrumentationFeature {
     /// - Returns: The modified request.
     func urlSession(_ session: URLSession, intercept request: URLRequest) -> URLRequest {
         let headerTypes = firstPartyHosts(for: session).tracingHeaderTypes(for: request.url)
-        return interceptors.reduce(request) {
+        return handlers.reduce(request) {
             $1.modify(request: $0, headerTypes: headerTypes)
         }
     }
@@ -63,21 +76,23 @@ extension NetworkInstrumentationFeature {
             return
         }
 
-        /// if any interceptor reject the request, then we stop here.
-        for interceptor in interceptors {
-            if interceptor.isInternal(request: request) {
-                return
+        queue.async {
+            /// if any interceptor reject the request, then we stop here.
+            for handler in self.handlers {
+                if handler.isInternal(request: request) {
+                    return
+                }
             }
+
+            let interception = URLSessionTaskInterception(
+                request: request,
+                isFirstParty: self.firstPartyHosts(for: session)
+                    .isFirstParty(url: request.url)
+            )
+
+            self.interceptions[task] = interception
+            self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
         }
-
-        let interception = URLSessionTaskInterception(
-            request: request,
-            isFirstParty: firstPartyHosts(for: session)
-                .isFirstParty(url: request.url)
-        )
-
-        interceptions[task] = interception
-        interceptors.forEach { $0.interceptionDidStart(interception: interception) }
     }
 
     /// Tells the interceptors that the session finished collecting metrics for the task.
@@ -87,16 +102,18 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        guard let interception = interceptions[task] else {
-            return
-        }
+        queue.async {
+            guard let interception = self.interceptions[task] else {
+                return
+            }
 
-        interception.register(
-            metrics: ResourceMetrics(taskMetrics: metrics)
-        )
+            interception.register(
+                metrics: ResourceMetrics(taskMetrics: metrics)
+            )
 
-        if interception.isDone {
-            finish(session, task: task, interception: interception)
+            if interception.isDone {
+                self.finish(session, task: task, interception: interception)
+            }
         }
     }
 
@@ -107,7 +124,9 @@ extension NetworkInstrumentationFeature {
     ///   - dataTask: The data task that provided data.
     ///   - data: A data object containing the transferred data.
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        interceptions[dataTask]?.register(nextData: data)
+        queue.async {
+            self.interceptions[dataTask]?.register(nextData: data)
+        }
     }
 
     /// Tells the interceptors that the session did complete.
@@ -117,27 +136,29 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let interception = interceptions[task] else {
-            return
-        }
+        queue.async {
+            guard let interception = self.interceptions[task] else {
+                return
+            }
 
-        interception.register(
-            response: task.response,
-            error: error
-        )
+            interception.register(
+                response: task.response,
+                error: error
+            )
 
-        if interception.isDone {
-            finish(session, task: task, interception: interception)
+            if interception.isDone {
+                self.finish(session, task: task, interception: interception)
+            }
         }
     }
 
     private func firstPartyHosts(for session: URLSession) -> FirstPartyHosts {
-        interceptors.reduce(.init()) { $0 + $1.firstPartyHosts } +
+        handlers.reduce(.init()) { $0 + $1.firstPartyHosts } +
             (session.delegate as? DatadogURLSessionDelegate)?.firstPartyHosts
     }
 
     private func finish(_ session: URLSession, task: URLSessionTask, interception: URLSessionTaskInterception) {
         interceptions[task] = nil
-        interceptors.forEach { $0.interceptionDidComplete(interception: interception) }
+        handlers.forEach { $0.interceptionDidComplete(interception: interception) }
     }
 }

@@ -13,7 +13,21 @@ import DatadogInternal
 /// The `DatadogCoreProtocol` implementation does not require any feature registration,
 /// it will always provide a `FeatureScope` with the current context and a `writer` that will
 /// store all events in the `events` property.
-public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
+///
+/// Usage:
+///
+///     let core = PassthroughCoreMock()
+///     core.scope(for: "any-feature-name")?.eventWriteContext { context, writer in
+///         // will always open a scope
+///     }
+///
+/// The Passthrough core does not allow registering or retrieving a Feature instance.
+///
+///     let feature = MyCustomFeature()
+///     try core.register(feature: feature)
+///     core.get(feature: MyCustomFeature.self) // returns nil
+///
+open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public static var referenceCount = 0
@@ -52,7 +66,7 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `forceNewBatch` parameter set to `true`.
 
-    public init(
+    public required init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,

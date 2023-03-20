@@ -10,13 +10,13 @@ import TestUtilities
 
 class URLSessionSwizzlerTests: XCTestCase {
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let interceptor = URLSessionInterceptorMock()
+    private let handler = URLSessionHandlerMock()
 
     override func setUpWithError() throws {
         super.setUp()
 
         core = SingleFeatureCoreMock()
-        try core.register(urlSessionInterceptor: interceptor)
+        try core.register(urlSessionHandler: handler)
     }
 
     override func tearDown() {
@@ -64,10 +64,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         let completionHandlerCalled = expectation(description: "Call completion handler")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.modifiedRequest = URLRequest(url: .mockRandom())
+        handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -83,15 +83,15 @@ class URLSessionSwizzlerTests: XCTestCase {
             for: [
                 notifyRequestMutation,
                 notifyInterceptionStart,
-                notifyInterceptionComplete,
-                completionHandlerCalled
+                completionHandlerCalled,
+                notifyInterceptionComplete
             ],
             timeout: 2,
             enforceOrder: true
         )
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
-        XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified")
+        XCTAssertEqual(requestSent, handler.modifiedRequest, "The request should be modified")
     }
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLAndCompletion_itNotifiesTaskCreationAndCompletionAndModifiesTheRequestOnlyPriorToIOS13() throws {
@@ -104,10 +104,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         let completionHandlerCalled = expectation(description: "Call completion handler")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.modifiedRequest = URLRequest(url: .mockRandom())
+        handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -123,8 +123,8 @@ class URLSessionSwizzlerTests: XCTestCase {
             for: [
                 notifyRequestMutation,
                 notifyInterceptionStart,
-                notifyInterceptionComplete,
-                completionHandlerCalled
+                completionHandlerCalled,
+                notifyInterceptionComplete
             ],
             timeout: 2,
             enforceOrder: true
@@ -132,9 +132,9 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         if #available(iOS 13.0, *) {
-            XCTAssertNotEqual(requestSent, interceptor.modifiedRequest, "The request should not be modified on iOS 13.0 and above.")
+            XCTAssertNotEqual(requestSent, handler.modifiedRequest, "The request should not be modified on iOS 13.0 and above.")
         } else {
-            XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified prior to iOS 13.0.")
+            XCTAssertEqual(requestSent, handler.modifiedRequest, "The request should be modified prior to iOS 13.0.")
         }
     }
 
@@ -144,10 +144,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.modifiedRequest = URLRequest(url: .mockRandom())
+        handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -169,7 +169,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
-        XCTAssertEqual(requestSent, interceptor.modifiedRequest, "The request should be modified.")
+        XCTAssertEqual(requestSent, handler.modifiedRequest, "The request should be modified.")
     }
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURL_itNotifiesCreationAndCompletionAndDoesNotModifyTheRequest() throws {
@@ -179,10 +179,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        interceptor.modifiedRequest = URLRequest(url: .mockRandom())
-        interceptor.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        interceptor.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        interceptor.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.modifiedRequest = URLRequest(url: .mockRandom())
+        handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -204,7 +204,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
-        XCTAssertNotEqual(requestSent, interceptor.modifiedRequest, "The request should not be modified.")
+        XCTAssertNotEqual(requestSent, handler.modifiedRequest, "The request should not be modified.")
     }
 
     func testGivenNonInterceptedSession_itDoesntCallInterceptor() throws {
@@ -213,8 +213,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         let doNotNotifyStart = expectation(description: "Do not notify task creation")
         doNotNotifyStart.isInverted = true
 
-        interceptor.onRequestMutation = { _, _ in doNotModifyRequest.fulfill() }
-        interceptor.onInterceptionStart = { _ in doNotNotifyStart.fulfill() }
+        handler.onRequestMutation = { _, _ in doNotModifyRequest.fulfill() }
+        handler.onInterceptionStart = { _ in doNotNotifyStart.fulfill() }
 
         // Given
         let session = URLSession(configuration: .default)
@@ -241,7 +241,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         let notifyTaskCompleted = expectation(description: "Notify 4 tasks completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
 
-        interceptor.onInterceptionComplete = { _ in notifyTaskCompleted.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedResponse: HTTPURLResponse = .mockResponseWith(statusCode: 200)
@@ -281,10 +281,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
-        XCTAssertEqual(interceptor.interceptions.count, 4, "Interceptor should record 4 tasks")
+        XCTAssertEqual(handler.interceptions.count, 4, "Interceptor should record 4 tasks")
 
         try [url1, url2, url3, url4].forEach { url in
-            let interception = try interceptor.interception(for: url).unwrapOrThrow()
+            let interception = try handler.interception(for: url).unwrapOrThrow()
             XCTAssertEqual(interception.data, expectedData)
             XCTAssertNotNil(interception.completion)
             XCTAssertNil(interception.completion?.error)
@@ -297,7 +297,7 @@ class URLSessionSwizzlerTests: XCTestCase {
         let notifyTaskCompleted = expectation(description: "Notify 4 tasks completion")
         notifyTaskCompleted.expectedFulfillmentCount = 4
 
-        interceptor.onInterceptionComplete = { _ in notifyTaskCompleted.fulfill() }
+        handler.onInterceptionComplete = { _ in notifyTaskCompleted.fulfill() }
 
         // Given
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
@@ -336,10 +336,10 @@ class URLSessionSwizzlerTests: XCTestCase {
         waitForExpectations(timeout: 2, handler: nil)
 
         _ = server.waitAndReturnRequests(count: 4)
-        XCTAssertEqual(interceptor.interceptions.count, 4, "Interceptor should record completion of 4 tasks")
+        XCTAssertEqual(handler.interceptions.count, 4, "Interceptor should record completion of 4 tasks")
 
         try [url1, url2, url3, url4].forEach { url in
-            let interception = try interceptor.interception(for: url).unwrapOrThrow()
+            let interception = try handler.interception(for: url).unwrapOrThrow()
             XCTAssertNil(interception.data, "Data should not be recorded for \(url)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
