@@ -21,6 +21,8 @@
 		D23BF5F727CCCC3300BB4CCD /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = D23BF5F027CCCC3300BB4CCD /* DatadogCrashReporting */; };
 		D23BF60427CCCCF800BB4CCD /* AppUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363FB24374D6100C4D4E6 /* AppUITests.swift */; };
 		D23BF61027CCCD5700BB4CCD /* AppTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C363F024374D6100C4D4E6 /* AppTests.swift */; };
+		D2966C2E29CA1F2D00FC6B3C /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2966C2D29CA1F2D00FC6B3C /* DatadogTrace */; };
+		D2966C3029CA1F3300FC6B3C /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2966C2F29CA1F3300FC6B3C /* DatadogTrace */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,6 +103,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2966C2E29CA1F2D00FC6B3C /* DatadogTrace in Frameworks */,
 				D2344E1F29ACDE61007F5BD2 /* DatadogLogs in Frameworks */,
 				9E73374026B0123500917C24 /* DatadogCrashReporting in Frameworks */,
 			);
@@ -124,6 +127,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2966C3029CA1F3300FC6B3C /* DatadogTrace in Frameworks */,
 				D2344E2129ACDE68007F5BD2 /* DatadogLogs in Frameworks */,
 				D23BF5F727CCCC3300BB4CCD /* DatadogCrashReporting in Frameworks */,
 			);
@@ -238,6 +242,7 @@
 			packageProductDependencies = (
 				9E73373F26B0123500917C24 /* DatadogCrashReporting */,
 				D2344E1E29ACDE61007F5BD2 /* DatadogLogs */,
+				D2966C2D29CA1F2D00FC6B3C /* DatadogTrace */,
 			);
 			productName = SPMProject;
 			productReference = 61C363D624374D5F00C4D4E6 /* App.app */;
@@ -297,6 +302,7 @@
 			packageProductDependencies = (
 				D23BF5F027CCCC3300BB4CCD /* DatadogCrashReporting */,
 				D2344E2029ACDE68007F5BD2 /* DatadogLogs */,
+				D2966C2F29CA1F3300FC6B3C /* DatadogTrace */,
 			);
 			productName = SPMProject;
 			productReference = D23BF5FE27CCCC3300BB4CCD /* App.app */;
@@ -1063,6 +1069,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D23BF5F127CCCC3300BB4CCD /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
 			productName = DatadogCrashReporting;
+		};
+		D2966C2D29CA1F2D00FC6B3C /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogTrace;
+		};
+		D2966C2F29CA1F3300FC6B3C /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9E73373E26B0123500917C24 /* XCRemoteSwiftPackageReference "dd-sdk-ios" */;
+			productName = DatadogTrace;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

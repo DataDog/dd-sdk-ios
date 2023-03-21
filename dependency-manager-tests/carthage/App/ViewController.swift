@@ -7,6 +7,7 @@
 import UIKit
 import Datadog
 import DatadogLogs
+import DatadogTrace
 import DatadogObjc
 import DatadogCrashReporting
 
@@ -30,7 +31,7 @@ internal class ViewController: UIViewController {
             .printLogsToConsole(true)
             .build()
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize()
 
         logger.info("It works")
 

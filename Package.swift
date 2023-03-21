@@ -42,6 +42,10 @@ let package = Package(
             targets: ["DatadogLogs"]
         ),
         .library(
+            name: "DatadogTrace",
+            targets: ["DatadogTrace"]
+        ),
+        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),
@@ -103,6 +107,22 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogLogs/Tests"
+        ),
+
+        .target(
+            name: "DatadogTrace",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "DatadogTrace/Sources"
+        ),
+        .testTarget(
+            name: "DatadogTraceTests",
+            dependencies: [
+                .target(name: "DatadogTrace"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogTrace/Tests"
         ),
 
         .target(
