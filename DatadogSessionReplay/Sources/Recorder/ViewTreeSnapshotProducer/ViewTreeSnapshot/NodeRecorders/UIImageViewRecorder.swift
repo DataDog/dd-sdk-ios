@@ -8,7 +8,13 @@ import UIKit
 
 internal class UIImageViewRecorder: NodeRecorder {
     /// An option for overriding default semantics from parent recorder.
-    var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+    var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { imageView, _ in
+        let className = "\(type(of: imageView))"
+        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
+        // Here we explicitly ignore the "shadow" effect applied to popover.
+        let isSystemShadow = className == "_UICutoutShadowView"
+        return isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
+    }
 
     private let imageDataProvider = ImageDataProvider()
 

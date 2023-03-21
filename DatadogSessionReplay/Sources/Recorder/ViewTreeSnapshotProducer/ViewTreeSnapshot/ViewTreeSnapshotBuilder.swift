@@ -67,19 +67,10 @@ extension ViewTreeSnapshotBuilder {
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
 internal func createDefaultNodeRecorders() -> [NodeRecorder] {
-    let imageViewRecorder = UIImageViewRecorder()
-    imageViewRecorder.semanticsOverride = { imageView, _ in
-        let className = "\(type(of: imageView))"
-        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
-        // Here we explicitly ignore the "shadow" effect applied to popover.
-        let isSystemShadow = className == "_UICutoutShadowView"
-        return isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
-    }
-
     return [
         UIViewRecorder(),
         UILabelRecorder(),
-        imageViewRecorder,
+        UIImageViewRecorder(),
         UITextFieldRecorder(),
         UITextViewRecorder(),
         UISwitchRecorder(),
