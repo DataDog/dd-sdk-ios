@@ -86,11 +86,6 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
         return modifiedRequest ?? request
     }
 
-    public func isInternal(request: URLRequest) -> Bool {
-        onRequestInterception?(request)
-        return shouldInterceptRequest?(request) ?? false
-    }
-
     public func interceptionDidStart(interception: URLSessionTaskInterception) {
         onInterceptionStart?(interception)
         interceptions[interception.identifier] = interception

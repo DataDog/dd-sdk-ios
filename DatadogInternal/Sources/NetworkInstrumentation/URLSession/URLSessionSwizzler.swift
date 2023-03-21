@@ -115,12 +115,12 @@ internal class URLSessionSwizzler {
                     var _task: URLSessionDataTask?
                     let request = feature.urlSession(session, intercept: request)
                     let task = previousImplementation(session, Self.selector, request) { data, response, error in
+                        completionHandler(data, response, error)
+
                         if let task = _task { // sanity check, should always succeed
                             data.map { feature.urlSession(session, dataTask: task, didReceive: $0) }
                             feature.urlSession(session, task: task, didCompleteWithError: error)
                         }
-
-                        completionHandler(data, response, error)
                     }
 
                     _task = task
@@ -173,12 +173,12 @@ internal class URLSessionSwizzler {
 
                     var _task: URLSessionDataTask?
                     let task = previousImplementation(session, Self.selector, url) { data, response, error in
+                        completionHandler(data, response, error)
+
                         if let task = _task { // sanity check, should always succeed
                             data.map { feature.urlSession(session, dataTask: task, didReceive: $0) }
                             feature.urlSession(session, task: task, didCompleteWithError: error)
                         }
-
-                        completionHandler(data, response, error)
                     }
 
                     _task = task

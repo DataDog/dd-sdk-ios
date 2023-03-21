@@ -123,12 +123,13 @@ class URLSessionSwizzlerTests: XCTestCase {
             for: [
                 notifyRequestMutation,
                 notifyInterceptionStart,
-                completionHandlerCalled,
                 notifyInterceptionComplete
             ],
             timeout: 2,
             enforceOrder: true
         )
+
+        wait(for: [completionHandlerCalled], timeout: 0)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         if #available(iOS 13.0, *) {

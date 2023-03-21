@@ -22,7 +22,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     static let name = "network-instrumentation"
 
     /// Network Instrumentation serial queue for safe and serialized access to the
-    /// `URLSessionTask` interception.
+    /// `URLSessionTask` interceptions.
     internal let queue = DispatchQueue(
         label: "com.datadoghq.network-instrumentation",
         target: .global(qos: .utility)
@@ -77,13 +77,6 @@ extension NetworkInstrumentationFeature {
         }
 
         queue.async {
-            /// if any interceptor reject the request, then we stop here.
-            for handler in self.handlers {
-                if handler.isInternal(request: request) {
-                    return
-                }
-            }
-
             let interception = URLSessionTaskInterception(
                 request: request,
                 isFirstParty: self.firstPartyHosts(for: session)

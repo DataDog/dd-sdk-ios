@@ -19,15 +19,6 @@ public protocol DatadogURLSessionHandler {
     /// - Returns: The modified request.
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest
 
-    /// Asks the interceptor if the request should be intercepted.
-    ///
-    /// This method should return `false` if the request is internal to Datadog,
-    /// e.g POST to intake.
-    ///
-    /// - Parameter request: The request to intercept.
-    /// - Returns: `true` to start intercepting the request.
-    func isInternal(request: URLRequest) -> Bool
-
     /// Tells the interceptor that the session did start.
     ///
     /// - Parameter interception: The URLSession interception.
@@ -44,8 +35,6 @@ internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionHandler {
     var firstPartyHosts: FirstPartyHosts { .init() }
     /// no-op
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest { request }
-    /// no-op
-    func isInternal(request: URLRequest) -> Bool { false }
     /// no-op
     func interceptionDidStart(interception: URLSessionTaskInterception) { }
     /// no-op
