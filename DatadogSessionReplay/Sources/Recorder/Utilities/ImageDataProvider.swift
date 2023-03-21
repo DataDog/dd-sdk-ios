@@ -39,17 +39,17 @@ internal final class ImageDataProvider: ImageDataProviding {
             guard var image = image else {
                 return ""
             }
-            if #available(iOS 13.0, *), let tintColor = tintColor {
-                image = image.withTintColor(tintColor)
-            }
-
             var identifier = image.srIdentifier
             if let tintColorIdentifier = tintColor?.srIdentifier {
                 identifier += tintColorIdentifier
             }
             if let base64EncodedImage = cache[identifier] {
                 return base64EncodedImage
-            } else if let base64EncodedImage = image.pngData()?.base64EncodedString(), base64EncodedImage.count <= maxBytesSize {
+            } else {
+                if #available(iOS 13.0, *), let tintColor = tintColor {
+                    image = image.withTintColor(tintColor)
+                }
+                let base64EncodedImage = image.scaledToMaxSize(maxBytesSize).base64EncodedString()
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
                 return base64EncodedImage
             } else {
@@ -73,6 +73,26 @@ fileprivate extension CGSize {
 extension UIImage {
     var srIdentifier: String {
         return "\(hash)"
+    }
+
+    func scaledToMaxSize(_ maxSizeInBytes: Int) -> Data {
+        guard let imageData = pngData() else {
+            return Data()
+        }
+        guard imageData.count >= maxSizeInBytes else {
+            return imageData
+        }
+        let percentage: CGFloat = sqrt(CGFloat(maxSizeInBytes) / CGFloat(imageData.count))
+        return scaledImage(by: percentage).pngData() ?? Data()
+    }
+
+    func scaledImage(by percentage: CGFloat) -> UIImage {
+        let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
+        let format = UIGraphicsImageRendererFormat()
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        return renderer.image { context in
+            draw(in: CGRect(origin: .zero, size: newSize))
+        }
     }
 }
 
