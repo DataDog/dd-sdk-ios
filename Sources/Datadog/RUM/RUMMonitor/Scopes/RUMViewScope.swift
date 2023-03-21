@@ -169,7 +169,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             needsViewUpdate = true
 
         // Session stop
-        case let _ as RUMStopSessionCommand:
+        case is RUMStopSessionCommand:
             isActiveView = false
             needsViewUpdate = true
 

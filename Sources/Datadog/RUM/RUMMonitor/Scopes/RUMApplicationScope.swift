@@ -113,7 +113,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func startSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        let session = RUMSessionScope(isInitialSession: false, parent: self, startTime: command.time, dependencies: dependencies, isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
+        let session = RUMSessionScope(
+            isInitialSession: false,
+            parent: self,
+            startTime: command.time,
+            dependencies: dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
 
         sessionScopes.append(session)

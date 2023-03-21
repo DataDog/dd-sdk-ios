@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		490D5EC929C9E17E004F969C /* RUMStopSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5EC829C9E17E004F969C /* RUMStopSessionScenarioTests.swift */; };
+		490D5ECF29CA0745004F969C /* RUMStopSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */; };
+		490D5ED029CA074A004F969C /* KioskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ECD29CA0738004F969C /* KioskViewController.swift */; };
+		490D5ED329CA08F7004F969C /* KioskSendEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */; };
+		490D5ED629CA1DD6004F969C /* KioskSendInterruptedEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */; };
 		49274906288048B500ECD49B /* InternalTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalTelemetryTests.swift */; };
 		49274907288048B800ECD49B /* InternalTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalTelemetryTests.swift */; };
 		4927490B288048FF00ECD49B /* RUMInternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274908288048F400ECD49B /* RUMInternalProxyTests.swift */; };
@@ -1350,6 +1355,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		490D5EC829C9E17E004F969C /* RUMStopSessionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMStopSessionScenarioTests.swift; sourceTree = "<group>"; };
+		490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMStopSessionScenario.storyboard; sourceTree = "<group>"; };
+		490D5ECD29CA0738004F969C /* KioskViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskViewController.swift; sourceTree = "<group>"; };
+		490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskSendEventsViewController.swift; sourceTree = "<group>"; };
+		490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskSendInterruptedEventsViewController.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalTelemetryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalTelemetryTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
@@ -2188,6 +2198,17 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		490D5ECA29C9E28F004F969C /* StopSessionScenario */ = {
+			isa = PBXGroup;
+			children = (
+				490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */,
+				490D5ECD29CA0738004F969C /* KioskViewController.swift */,
+				490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */,
+				490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */,
+			);
+			path = StopSessionScenario;
+			sourceTree = "<group>";
+		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
 			isa = PBXGroup;
 			children = (
@@ -2852,14 +2873,15 @@
 			isa = PBXGroup;
 			children = (
 				61D50C532580EF41006038A3 /* RUMScenarios.swift */,
-				9EC2835C26CFF56B00FACF1C /* MobileVitals */,
 				61337037250F84FD00236D58 /* ManualInstrumentation */,
-				61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */,
-				615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */,
+				9EC2835C26CFF56B00FACF1C /* MobileVitals */,
 				6137E647252DD85400720485 /* ModalViewsAutoInstrumentation */,
-				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
-				D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */,
+				61F9CA7725125918000A5E61 /* NavigationControllerAutoInstrumentation */,
 				612D8F6725AEE65F000E2E09 /* Scrubbing */,
+				490D5ECA29C9E28F004F969C /* StopSessionScenario */,
+				D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */,
+				615AAC34251E34EF00C89EE9 /* TabBarAutoInstrumentation */,
+				6193DCA2251B5669009B8011 /* TapActionAutoInstrumentation */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -3954,6 +3976,7 @@
 				612D8F8025AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift */,
 				9EC2835926CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift */,
 				D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */,
+				490D5EC829C9E17E004F969C /* RUMStopSessionScenarioTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -5133,6 +5156,7 @@
 				61337032250F82AE00236D58 /* LoggingManualInstrumentationScenario.storyboard in Resources */,
 				612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */,
 				D2F5BB36271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard in Resources */,
+				490D5ECF29CA0745004F969C /* RUMStopSessionScenario.storyboard in Resources */,
 				611EA13C2580F77400BC0E56 /* TrackingConsentScenario.storyboard in Resources */,
 				9EA95C1D2791C9BE00F6C1F3 /* WebViewTrackingScenario.storyboard in Resources */,
 				61337039250F852E00236D58 /* RUMManualInstrumentationScenario.storyboard in Resources */,
@@ -5938,6 +5962,7 @@
 				618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */,
 				61441C982461A649003D8BB8 /* DebugTracingViewController.swift in Sources */,
 				9EA95C1E2791C9BE00F6C1F3 /* WebViewScenarios.swift in Sources */,
+				490D5ED329CA08F7004F969C /* KioskSendEventsViewController.swift in Sources */,
 				61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */,
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
@@ -5946,12 +5971,14 @@
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
+				490D5ED029CA074A004F969C /* KioskViewController.swift in Sources */,
 				618236892710560900125326 /* DebugWebviewViewController.swift in Sources */,
 				614CADCE250FCA0200B93D2D /* TestScenarios.swift in Sources */,
 				6111542525C992F8007C84C9 /* CrashReportingScenarios.swift in Sources */,
 				61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */,
 				61441C972461A649003D8BB8 /* UIViewController+KeyboardControlling.swift in Sources */,
 				61098D2B27FEE3F00021237A /* MessagePortChannel.swift in Sources */,
+				490D5ED629CA1DD6004F969C /* KioskSendInterruptedEventsViewController.swift in Sources */,
 				61B9ED1C2461E12000C0DCFF /* SendLogsFixtureViewController.swift in Sources */,
 				6111543F25C996A5007C84C9 /* CrashReportingViewController.swift in Sources */,
 				61B9ED1D2461E12000C0DCFF /* SendTracesFixtureViewController.swift in Sources */,
@@ -6009,6 +6036,7 @@
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
 				61441C4B24618052003D8BB8 /* SpanMatcher.swift in Sources */,
 				6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */,
+				490D5EC929C9E17E004F969C /* RUMStopSessionScenarioTests.swift in Sources */,
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
 				61F3CD9A2510D8C500C816E5 /* Environment.swift in Sources */,
 				61F9CA9F2513978D000A5E61 /* RUMSessionMatcher.swift in Sources */,

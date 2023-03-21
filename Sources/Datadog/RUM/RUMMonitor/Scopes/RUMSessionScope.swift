@@ -150,6 +150,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var deactivating = false
         if isActive {
             if command is RUMStopSessionCommand {
+                isActive = false
                 deactivating = true
             } else if let startApplicationCommand = command as? RUMApplicationStartCommand {
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
@@ -185,17 +186,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Propagate command
         viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
 
-        if isActive && !hasActiveView {
+        if (isActive || deactivating) && !hasActiveView {
             // If this session is active and there is no active view, update `CrashContext` accordingly, so eventual crash
             // won't be associated to an inactive view and instead we will consider starting background view to track it.
             // We also want to send this as a session is being stopped.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
             dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true]))
-        }
-
-        if deactivating {
-            isActive = false
         }
 
         return isActive || !viewScopes.isEmpty

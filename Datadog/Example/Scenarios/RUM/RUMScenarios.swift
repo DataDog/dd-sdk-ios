@@ -251,6 +251,13 @@ final class RUMScrubbingScenario: TestScenario {
     }
 }
 
+
+/// Scenario which starts a navigation controller. Each view controller pushed to this navigation
+/// uses the RUM manual instrumentation API to send RUM events to the server.
+final class RUMStopSessionsScenario: TestScenario {
+    static let storyboardName = "RUMStopSessionScenario"
+}
+
 @available(iOS 13, *)
 /// Scenario which presents `SwiftUI`-based hierarchy and navigates through
 /// its views and view controllers.
