@@ -63,6 +63,14 @@ internal class SnapshotTestCase: XCTestCase {
         return createSideBySideImage(appImage, wireframesImage)
     }
 
+    func wait(seconds: TimeInterval) {
+        let expectation = self.expectation(description: "Wait \(seconds)")
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: seconds * 2)
+    }
+
     /// Puts two images side-by-side, adds titles and returns new, composite image.
     private func createSideBySideImage(_ image1: UIImage, _ image2: UIImage) -> UIImage {
         var leftRect = CGRect(origin: .zero, size: image1.size)
