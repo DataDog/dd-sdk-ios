@@ -17,6 +17,7 @@ internal struct UIStepperRecorder: NodeRecorder {
 
         let stepperFrame = CGRect(origin: attributes.frame.origin, size: stepper.intrinsicContentSize)
         let ids = context.ids.nodeIDs(5, for: stepper)
+        let isMasked = context.recorder.privacy == .maskAll
 
         let builder = UIStepperWireframesBuilder(
             wireframeRect: stepperFrame,
@@ -26,8 +27,8 @@ internal struct UIStepperRecorder: NodeRecorder {
             minusWireframeID: ids[2],
             plusHorizontalWireframeID: ids[3],
             plusVerticalWireframeID: ids[4],
-            isMinusEnabled: stepper.value > stepper.minimumValue,
-            isPlusEnabled: stepper.value < stepper.maximumValue
+            isMinusEnabled: isMasked || (stepper.value > stepper.minimumValue),
+            isPlusEnabled: isMasked || (stepper.value < stepper.maximumValue)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
