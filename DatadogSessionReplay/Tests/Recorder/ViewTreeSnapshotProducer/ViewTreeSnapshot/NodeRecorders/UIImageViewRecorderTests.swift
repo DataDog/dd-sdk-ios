@@ -65,7 +65,7 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertFalse(builder.shouldRecordImage)
     }
 
-    func testWhenTintColorIsProvider() throws {
+    func testWhenTintColorIsProvided() throws {
         // When
         let recorder = UIImageViewRecorder(tintColorProvider: { _ in return .red })
         imageView.image = UIImage()

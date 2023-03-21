@@ -81,9 +81,3 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
         }
     }
 }
-
-class MockImageDataProvider: ImageDataProvider {
-    override func contentBase64String(of image: UIImage?, tintColor: UIColor?) -> String {
-        return "mock_base64_string"
-    }
-}

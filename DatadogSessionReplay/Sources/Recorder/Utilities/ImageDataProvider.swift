@@ -21,14 +21,10 @@ internal protocol ImageDataProviding {
 internal class ImageDataProvider: ImageDataProviding {
     private var cache: Cache<String, String>
 
-    private let maxBytesSize: Int
-
     internal init(
-        cache: Cache<String, String> = .init(),
-        maxBytesSize: Int = 10_000
+        cache: Cache<String, String> = .init()
     ) {
         self.cache = cache
-        self.maxBytesSize = maxBytesSize
     }
 
     func contentBase64String(
