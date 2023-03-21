@@ -29,6 +29,7 @@ internal struct UISwitchRecorder: NodeRecorder {
             isEnabled: `switch`.isEnabled,
             isDarkMode: `switch`.usesDarkMode,
             isOn: `switch`.isOn,
+            isMasked: context.recorder.privacy == .maskAll,
             thumbTintColor: `switch`.thumbTintColor?.cgColor,
             onTintColor: `switch`.onTintColor?.cgColor,
             offTintColor: `switch`.tintColor?.cgColor
@@ -48,11 +49,41 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
     let isEnabled: Bool
     let isDarkMode: Bool
     let isOn: Bool
+    let isMasked: Bool
     let thumbTintColor: CGColor?
     let onTintColor: CGColor?
     let offTintColor: CGColor?
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        if isMasked {
+            return createMasked(with: builder)
+        } else {
+            return createNotMasked(with: builder)
+        }
+    }
+
+    private func createMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+        let track = builder.createShapeWireframe(
+            id: trackWireframeID,
+            frame: wireframeRect,
+            borderColor: nil,
+            borderWidth: nil,
+            backgroundColor: SystemColors.tertiarySystemFill,
+            cornerRadius: wireframeRect.height * 0.5,
+            opacity: isEnabled ? attributes.alpha : 0.5
+        )
+
+        // Create background wireframe if the underlying `UIView` has any appearance:
+        if attributes.hasAnyAppearance {
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: attributes.frame, attributes: attributes)
+
+            return [background, track]
+        } else {
+            return [track]
+        }
+    }
+
+    private func createNotMasked(with builder: WireframesBuilder) -> [SRWireframe] {
         let radius = wireframeRect.height * 0.5
 
         // Create track wireframe:
