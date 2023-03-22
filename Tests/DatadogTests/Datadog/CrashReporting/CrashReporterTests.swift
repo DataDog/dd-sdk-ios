@@ -46,13 +46,13 @@ class CrashReporterTests: XCTestCase {
         XCTAssertTrue(plugin.hasPurgedCrashReport == true, "It should ask to purge the crash report")
     }
 
-    func testWhenPendingCrashReportIsFound_itIsSentBothToRumAndLogs() throws {
-        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to both features")
+    func testWhenPendingCrashReportIsFound_itIsSentToRumFeature() throws {
+        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to RUM feature")
         let crashContext: CrashContext = .mockRandom()
         let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
-        let crashMessageReceiver = CrashMessageReceiverMock()
+        let rumCrashReceiver = RUMCrashReceiverMock()
 
-        let core = PassthroughCoreMock(messageReceiver: crashMessageReceiver)
+        let core = PassthroughCoreMock(messageReceiver: rumCrashReceiver)
 
         let plugin = CrashReportingPluginMock()
 
@@ -74,17 +74,38 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let sentRumBaggage = crashMessageReceiver.rumBaggage
-        let sentLogBaggage = crashMessageReceiver.logsBaggage
+        XCTAssert(!rumCrashReceiver.receivedBaggage.isEmpty, "RUM baggage must not be empty")
+    }
 
-        XCTAssert(!sentRumBaggage.isEmpty, "RUM baggage must not be empty")
-        XCTAssert(!sentLogBaggage.isEmpty, "Log baggage must not be empty")
+    func testWhenPendingCrashReportIsFound_itIsSentToLogsFeature() throws {
+        let expectation = self.expectation(description: "`CrashReportSender` sends the crash report to Logs feature")
+        let crashContext: CrashContext = .mockRandom()
+        let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
+        let logsCrashReceiver = LogsCrashReceiverMock()
 
-        DDAssertDictionariesEqual(
-            sentRumBaggage.attributes,
-            sentLogBaggage.attributes,
-            "RUM and logs baggage should be equal"
+        let core = PassthroughCoreMock(messageReceiver: logsCrashReceiver)
+
+        let plugin = CrashReportingPluginMock()
+
+        // Given
+        plugin.pendingCrashReport = crashReport
+        plugin.injectedContextData = crashContext.data
+
+        // When
+        let crashReporter = CrashReporter(
+            crashReportingPlugin: plugin,
+            crashContextProvider: CrashContextProviderMock(),
+            sender: MessageBusSender(core: core),
+            messageReceiver: NOPFeatureMessageReceiver()
         )
+
+        //Then
+        plugin.didReadPendingCrashReport = { expectation.fulfill() }
+        crashReporter.sendCrashReportIfFound()
+
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssert(!logsCrashReceiver.receivedBaggage.isEmpty, "Logs baggage must not be empty")
     }
 
     func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
@@ -274,7 +295,7 @@ class CrashReporterTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsError() {
+    func testGivenNoRegisteredCrashReportReceiver_whenPendingCrashReportIsFound_itPrintsWarning() {
         let expectation = self.expectation(description: "`plugin` checks the crash report")
 
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -304,13 +325,9 @@ class CrashReporterTests: XCTestCase {
         let logs = dd.logger.warnLogs
 
         XCTAssert(logs.contains(where: { $0.message == """
-            Logging Feature is not enabled. Will not send crash as Log Error.
-            Make sure `.enableLogging(true)`when initializing Datadog SDK.
-            """ }))
-
-        XCTAssert(logs.contains(where: { $0.message == """
-            RUM Feature is not enabled. Will not send crash as RUM Error.
-            Make sure `.enableRUM(true)`when initializing Datadog SDK.
+            In order to use Crash Reporting, RUM or Logging feature must be enabled.
+            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
+            when initializing Datadog SDK.
             """ }))
     }
 }

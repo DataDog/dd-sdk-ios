@@ -21,14 +21,8 @@ internal struct MessageBusSender: CrashReportSender {
         /// The key for a crash message.
         ///
         /// Use this key when the crash should be reported
-        /// as a RUM event.
+        /// as a RUM and a Logs event.
         static let crash = "crash"
-
-        /// The key for a crash log message.
-        ///
-        /// Use this key when the crash should be reported
-        /// as a log event.
-        static let crashLog = "crash-log"
     }
 
     /// The core for sending crash report and context.
@@ -47,14 +41,7 @@ internal struct MessageBusSender: CrashReportSender {
             return
         }
 
-        sendRUM(
-            baggage: [
-                "report": report,
-                "context": context
-            ]
-        )
-
-        sendLog(
+        sendCrash(
             baggage: [
                 "report": report,
                 "context": context
@@ -62,31 +49,18 @@ internal struct MessageBusSender: CrashReportSender {
         )
     }
 
-    private func sendRUM(baggage: FeatureBaggage) {
+    private func sendCrash(baggage: FeatureBaggage) {
         core?.send(
             message: .custom(key: MessageKeys.crash, baggage: baggage),
             else: {
                 DD.logger.warn(
             """
-            RUM Feature is not enabled. Will not send crash as RUM Error.
-            Make sure `.enableRUM(true)`when initializing Datadog SDK.
+            In order to use Crash Reporting, RUM or Logging feature must be enabled.
+            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
+            when initializing Datadog SDK.
             """
             )
             }
         )
-    }
-
-    private func sendLog(baggage: FeatureBaggage) {
-        core?.send(
-            message: .custom(key: MessageKeys.crashLog, baggage: baggage),
-            else: {
-                DD.logger.warn(
-            """
-            Logging Feature is not enabled. Will not send crash as Log Error.
-            Make sure `.enableLogging(true)`when initializing Datadog SDK.
-            """
-            )
-            }
-            )
     }
 }
