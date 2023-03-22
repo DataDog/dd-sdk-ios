@@ -145,7 +145,9 @@ class URLSessionBaseScenario: NSObject {
     }
 
     func configureFeatures() {
-        let serverMockConfiguration = Environment.serverMockConfiguration()
+        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
+            return
+        }
 
         let firstPartyHosts: Set<String>
         switch instrumentationMethod {
@@ -159,7 +161,7 @@ class URLSessionBaseScenario: NSObject {
         DatadogTracer.initialize(
             configuration: .init(
                 sendNetworkInfo: true,
-                customIntakeURL: serverMockConfiguration?.tracesEndpoint,
+                customIntakeURL: tracesEndpoint,
                 spanEventMapper: {
                     var span = $0
                     if span.tags[OTTags.httpUrl] != nil {
