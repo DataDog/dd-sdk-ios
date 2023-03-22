@@ -54,17 +54,10 @@ class MessageBusTests: XCTestCase {
             dateProvider: SystemDateProvider()
         )
 
-        let rum: RUMFeature = try core.create(
-            configuration: .init(
-                name: "rum",
-                requestBuilder: FeatureRequestBuilderMock(),
-                messageReceiver: receiver
-            ),
-            featureSpecificConfiguration: .mockAny()
-        )
+        let mock = DatadogRemoteFeatureMock(messageReceiver: receiver)
 
         try core.register(feature: logging)
-        core.register(feature: rum)
+        try core.register(feature: mock)
 
         // When
         core.send(message: .custom(key: "test", baggage: ["key": "value"]))

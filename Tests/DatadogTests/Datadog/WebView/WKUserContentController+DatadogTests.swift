@@ -162,17 +162,13 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        let logging: DatadogLogsFeature = .mockWith(
-            messageReceiver: WebViewLogReceiver()
-        )
+        let logging: DatadogLogsFeature = .mockWith(messageReceiver: WebViewLogReceiver())
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockWith(
-            messageReceiver: WebViewEventReceiver.mockAny()
-        )
-        core.register(feature: rum)
+        let rum: DatadogRUMFeature = .init(in: core, configuration: .mockAny())
+        try core.register(feature: rum)
 
-        Global.rum = RUMMonitor.initialize(in: core)
+        Global.rum = RUMMonitor.shared(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         let controller = DDUserContentController()

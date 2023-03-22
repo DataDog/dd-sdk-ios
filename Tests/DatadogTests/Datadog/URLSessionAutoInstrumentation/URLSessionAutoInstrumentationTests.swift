@@ -42,17 +42,16 @@ class URLSessionAutoInstrumentationTests: XCTestCase {
 
     func testGivenURLSessionAutoInstrumentationEnabled_whenRUMMonitorIsRegistered_itSubscribesAsResourcesHandler() throws {
         // Given
-        let rum: RUMFeature = .mockAny()
         let instrumentation = URLSessionAutoInstrumentation(
             configuration: .mockAny(),
             dateProvider: SystemDateProvider()
         )
 
-        core.register(feature: rum)
         core.register(feature: instrumentation)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         // When
-        Global.rum = RUMMonitor.initialize(in: core)
+        Global.rum = RUMMonitor.shared(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // Then

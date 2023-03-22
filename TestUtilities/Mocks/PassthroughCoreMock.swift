@@ -41,7 +41,7 @@ open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     let writer = FileWriterMock()
 
     /// The message receiver.
-    private let messageReceiver: FeatureMessageReceiver
+    public var messageReceiver: FeatureMessageReceiver
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed.

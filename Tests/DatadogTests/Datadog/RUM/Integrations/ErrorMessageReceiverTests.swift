@@ -11,18 +11,28 @@ import DatadogInternal
 @testable import Datadog
 
 class ErrorMessageReceiverTests: XCTestCase {
-    let messageReceiver = ErrorMessageReceiver()
+    var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+
+        core = PassthroughCoreMock()
+        core.messageReceiver = ErrorMessageReceiver(
+            monitor: .init(
+                core: core,
+                dependencies: .mockAny(),
+                dateProvider: SystemDateProvider()
+            )
+        )
+    }
+
+    override func tearDown() {
+        core = nil
+        super.tearDown()
+    }
 
     func testReceiveIncompleteError() throws {
         let expectation = expectation(description: "Don't send error fallback")
-
-        // Given
-        let core = PassthroughCoreMock(
-            messageReceiver: messageReceiver
-        )
-
-        Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
-        defer { Global.rum = DDNoopRUMMonitor() }
 
         // When
         core.send(
@@ -39,14 +49,7 @@ class ErrorMessageReceiverTests: XCTestCase {
     }
 
     func testReceivePartialError() throws {
-        // Given
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Error"),
-            messageReceiver: messageReceiver
-        )
-
-        Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
-        defer { Global.rum = DDNoopRUMMonitor() }
+        core.expectation = expectation(description: "Send Error")
 
         // When
         core.send(
@@ -67,14 +70,7 @@ class ErrorMessageReceiverTests: XCTestCase {
     }
 
     func testReceiveCompleteError() throws {
-        // Given
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Error"),
-            messageReceiver: messageReceiver
-        )
-
-        Global.rum = RUMMonitor.init(core: core, dependencies: .mockAny(), dateProvider: SystemDateProvider())
-        defer { Global.rum = DDNoopRUMMonitor() }
+        core.expectation = expectation(description: "Send Error")
 
         // When
         let mockAttribute: String = .mockRandom()

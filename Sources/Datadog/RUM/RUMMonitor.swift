@@ -146,7 +146,7 @@ internal enum RUMInternalErrorSource: String, Decodable {
 ///     Global.rum.startView(...)
 ///
 public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
-    internal let core: DatadogCoreProtocol
+    internal weak var core: DatadogCoreProtocol?
     /// The root scope of RUM monitoring.
     internal let applicationScope: RUMApplicationScope
     /// Time provider.
@@ -164,39 +164,39 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     // MARK: - Initialization
 
     /// Initializes the Datadog RUM Monitor.
-    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
+    // swiftlint:disable:next function_default_parameter_at_end
+    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore, configuration: RUMConfiguration) throws {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(
                     description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                 )
             }
-            if Global.rum is RUMMonitor {
+
+            let feature = DatadogRUMFeature(in: core, configuration: configuration)
+            core.v1.feature(URLSessionAutoInstrumentation.self)?.publish(to: feature.monitor)
+            try core.register(feature: feature)
+        } catch {
+            consolePrint("\(error)")
+            throw error
+        }
+    }
+
+    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
+        do {
+            if core is NOPDatadogCore {
                 throw ProgrammerError(
-                    description: """
-                    The `RUMMonitor` instance was already created. Use existing `Global.rum` instead of initializing the `RUMMonitor` another time.
-                    """
+                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
                 )
             }
-            guard let rumFeature = core.v1.feature(RUMFeature.self) else {
+
+            guard let feature = core.get(feature: DatadogRUMFeature.self) else {
                 throw ProgrammerError(
-                    description: "`RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
+                    description: "`RUMMonitor.initialize()` must be called prior to `RUMMonitor.shared()`."
                 )
             }
 
-            let monitor = RUMMonitor(
-                core: core,
-                dependencies: RUMScopeDependencies(
-                    core: core,
-                    rumFeature: rumFeature
-                ),
-                dateProvider: rumFeature.configuration.dateProvider
-            )
-
-            core.v1.feature(RUMInstrumentation.self)?.publish(to: monitor)
-            core.v1.feature(URLSessionAutoInstrumentation.self)?.publish(to: monitor)
-
-            return monitor
+            return feature.monitor
         } catch {
             consolePrint("\(error)")
             return DDNoopRUMMonitor()
@@ -621,7 +621,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         // process command in event context
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
+        core?.scope(for: DatadogRUMFeature.name)?.eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
 
@@ -634,7 +634,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
 
         // update the core context with rum context
-        core.set(feature: "rum", attributes: {
+        core?.set(feature: "rum", attributes: {
             self.queue.sync {
                 let context = self.applicationScope.activeSession?.viewScopes.last?.context ??
                                 self.applicationScope.activeSession?.context ??

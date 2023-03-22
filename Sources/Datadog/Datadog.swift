@@ -205,12 +205,18 @@ public class Datadog {
         )
 
         // First, initialize features:
-        var rum: RUMFeature?
-
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-        var rumInstrumentation: RUMInstrumentation?
 
         var telemetry: RUMTelemetry?
+
+        if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
+            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
+                configuration: urlSessionAutoInstrumentationConfiguration,
+                dateProvider: configuration.common.dateProvider
+            )
+
+            core.register(feature: urlSessionAutoInstrumentation)
+        }
 
         if let rumConfiguration = configuration.rum {
             telemetry = RUMTelemetry(
@@ -225,21 +231,7 @@ public class Datadog {
                 telemetry?.configurationExtraSampler = configurationSampler
             }
 
-            rum = try core.create(
-                configuration: createRUMConfiguration(configuration: rumConfiguration),
-                featureSpecificConfiguration: rumConfiguration
-            )
-
-            core.register(feature: rum)
-
-            if let instrumentationConfiguration = rumConfiguration.instrumentation {
-                rumInstrumentation = RUMInstrumentation(
-                    configuration: instrumentationConfiguration,
-                    dateProvider: rumConfiguration.dateProvider
-                )
-
-                core.register(feature: rumInstrumentation)
-            }
+            try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
         }
 
         if let loggingConfiguration = configuration.logging {
@@ -253,16 +245,6 @@ public class Datadog {
             )
         }
 
-        if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
-            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: configuration.common.dateProvider
-            )
-
-            core.register(feature: urlSessionAutoInstrumentation)
-        }
-
-        core.v1.feature(RUMInstrumentation.self)?.enable()
         core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
 
         defaultDatadogCore = core

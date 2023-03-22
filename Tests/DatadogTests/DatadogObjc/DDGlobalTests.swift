@@ -46,10 +46,7 @@ class DDGlobalTests: XCTestCase {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
 
-    func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() {
-        let rum: RUMFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: rum)
-
+    func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() throws {
         let previousGlobal = (
             objc: DatadogObjc.DDGlobal.rum,
             swift: Global.rum
@@ -58,6 +55,8 @@ class DDGlobalTests: XCTestCase {
             DatadogObjc.DDGlobal.rum = previousGlobal.objc
             Global.rum = previousGlobal.swift
         }
+
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         // When
         DatadogObjc.DDGlobal.rum = DatadogObjc.DDRUMMonitor()

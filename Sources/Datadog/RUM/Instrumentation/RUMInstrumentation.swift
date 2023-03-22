@@ -35,7 +35,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     // MARK: - Initialization
 
     init(
-        configuration: FeaturesConfiguration.RUM.Instrumentation,
+        configuration: RUMConfiguration.Instrumentation,
         dateProvider: DateProvider
     ) {
         viewsHandler = RUMViewsHandler(

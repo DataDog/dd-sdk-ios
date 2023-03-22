@@ -55,7 +55,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         appConfiguration.testScenario?.configureFeatures()
 
         // Register RUMMonitor
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.shared()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

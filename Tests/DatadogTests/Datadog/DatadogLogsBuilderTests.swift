@@ -43,9 +43,6 @@ class DatadogLogsBuilderTests: XCTestCase {
     }
 
     func testDefaultLoggerWithRUMEnabled() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let logger1 = DatadogLogger.builder.build(in: core)
         XCTAssertNotNil((logger1.logger as? RemoteLogger)?.rumContextIntegration)
 

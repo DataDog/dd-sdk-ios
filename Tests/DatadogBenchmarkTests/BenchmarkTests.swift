@@ -55,7 +55,7 @@ class BenchmarkTests: XCTestCase {
             configuration: .init(customIntakeURL: anyURL)
         )
 
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.shared()
     }
 
     // MARK: - `HTTPServerMock` connection

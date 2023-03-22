@@ -197,7 +197,7 @@ internal final class RUMTelemetry: Telemetry {
 
     private func record(event id: String, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
-            let rum = core?.v1.scope(for: RUMFeature.self),
+            let rum = core?.scope(for: DatadogRUMFeature.name),
             sampler.sample()
         else {
             return
@@ -251,11 +251,11 @@ private extension FeaturesConfiguration {
             trackErrors: self.crashReporting != nil,
             trackFlutterPerformance: nil,
             trackFrustrations: self.rum?.frustrationTrackingEnabled,
-            trackInteractions: self.rum?.instrumentation?.uiKitRUMUserActionsPredicate != nil,
-            trackLongTask: self.rum?.instrumentation?.longTaskThreshold != nil,
+            trackInteractions: self.rum?.instrumentation.uiKitRUMUserActionsPredicate != nil,
+            trackLongTask: self.rum?.instrumentation.longTaskThreshold != nil,
             trackNativeErrors: nil,
-            trackNativeLongTasks: self.rum?.instrumentation?.longTaskThreshold != nil,
-            trackNativeViews: self.rum?.instrumentation?.uiKitRUMViewsPredicate != nil,
+            trackNativeLongTasks: self.rum?.instrumentation.longTaskThreshold != nil,
+            trackNativeViews: self.rum?.instrumentation.uiKitRUMViewsPredicate != nil,
             trackNetworkRequests: self.urlSessionAutoInstrumentation != nil,
             trackResources: nil,
             trackSessionAcrossSubdomains: nil,

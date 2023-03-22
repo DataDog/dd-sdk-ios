@@ -60,7 +60,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, writer in
+        core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { context, writer in
             guard let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids, !attributes.isEmpty else {
                 return writer.write(value: AnyEncodable(event))
             }
