@@ -497,11 +497,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if viewUpdatesThrottler.accept(event: event) {
-                writer.write(value: event)
-            } else { // if event was dropped by sampler
-                version -= 1
-            }
+//            if viewUpdatesThrottler.accept(event: event) {
+            writer.write(value: event)
+//            } else { // if event was dropped by sampler
+//                version -= 1
+//            }
 
             // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
             // have recent information if process is interrupted by crash):
