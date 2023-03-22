@@ -574,11 +574,9 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenScopeEnded_itDoesNotResetContextNextUpdate() {
         // Given
         var viewResetCallCount = 0
-        var viewEvent: RUMViewEvent? = nil
         let messageReciever = FeatureMessageReceiverMock { message in
             if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
                 viewResetCallCount += 1
-                viewEvent = nil
             }
         }
 

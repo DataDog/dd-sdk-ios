@@ -17,6 +17,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Might be re-created later according to session duration constraints.
     private(set) var sessionScopes: [RUMSessionScope] = []
 
+    /// Last active view from the last active  session. Used to restart the active view on a user action.
+    private var lastActiveView: RUMViewScope?
+
     var activeSession: RUMSessionScope? {
         get { return sessionScopes.first(where: { $0.isActive }) }
     }
@@ -51,7 +54,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         if activeSession == nil && command.isUserInteraction {
             // No active sessions, start a new one
-            startSession(on: command, context: context, writer: writer)
+            startNewSession(on: command, context: context, writer: writer)
+        }
+
+        if command is RUMStopSessionCommand {
+            // Reach in and grab the last active view
+            lastActiveView = activeSession?.viewScopes.first(where: { $0.isActiveView })
         }
 
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
@@ -112,17 +120,20 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func startSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        let session = RUMSessionScope(
+    private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
+        let newSession = RUMSessionScope(
             isInitialSession: false,
             parent: self,
             startTime: command.time,
             dependencies: dependencies,
-            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded,
+            resumingViewScope: resumingViewScope
         )
+        lastActiveView = nil
 
-        sessionScopes.append(session)
-        sessionScopeDidUpdate(session)
+        sessionScopes.append(newSession)
+        sessionScopeDidUpdate(newSession)
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {

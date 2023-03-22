@@ -63,7 +63,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         startTime: Date,
         dependencies: RUMScopeDependencies,
-        isReplayBeingRecorded: Bool?
+        isReplayBeingRecorded: Bool?,
+        resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
         self.dependencies = dependencies
@@ -80,6 +81,24 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             hasTrackedAnyView: false,
             didStartWithReplay: isReplayBeingRecorded
         )
+
+        if let viewScope = resumingViewScope,
+           let viewIdentifiable = viewScope.identity.identifiable {
+            viewScopes.append(
+                RUMViewScope(
+                    isInitialView: false,
+                    parent: self,
+                    dependencies: dependencies,
+                    identity: viewIdentifiable,
+                    path: viewScope.viewPath,
+                    name: viewScope.viewName,
+                    attributes: viewScope.attributes,
+                    customTimings: [:],
+                    startTime: startTime,
+                    serverTimeOffset: viewScope.serverTimeOffset
+                )
+            )
+        }
 
         // Update `CrashContext` with recent RUM session state:
         dependencies.core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: state]))
