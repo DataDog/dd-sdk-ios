@@ -34,14 +34,14 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The list of registered handlers.
     ///
     /// Accessing this list will acquire a read-write lock for fast read operation when mutating
-    /// an `URLRequest`
+    /// a `URLRequest`
     @ReadWriteLock
     internal var handlers: [DatadogURLSessionHandler] = []
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
     /// The interceptions **must** be accessed using the `queue`.
-    internal var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
+    private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
     init() throws {
         try URLSessionSwizzler.bind()
