@@ -184,6 +184,11 @@ public class Datadog {
 
         let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
+//        let serverDateProvider = FakeNTPDateProvider(
+//            simulation: [
+//                .init(after: 0.1, notifyValue: -60),
+//            ]
+//        )
         let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:

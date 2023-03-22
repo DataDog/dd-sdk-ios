@@ -22,6 +22,28 @@ public protocol ServerDateProvider {
     func synchronize(update: @escaping (TimeInterval) -> Void)
 }
 
+internal class FakeNTPDateProvider: ServerDateProvider {
+    struct SequenceItem {
+        let after: TimeInterval
+        let notifyValue: TimeInterval
+    }
+
+    let simulation: [SequenceItem]
+
+    init(simulation: [SequenceItem]) {
+        self.simulation = simulation
+    }
+
+    func synchronize(update: @escaping (TimeInterval) -> Void) {
+        for item in simulation {
+            DispatchQueue.main.asyncAfter(deadline: .now() + item.after) {
+                print("⏰ calling update(\(item.notifyValue))")
+                update(item.notifyValue)
+            }
+        }
+    }
+}
+
 internal class DatadogNTPDateProvider: ServerDateProvider {
     let kronos: KronosClockProtocol
 
@@ -33,6 +55,7 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
         kronos.sync(
             from: DatadogNTPServers.randomElement()!, // swiftlint:disable:this force_unwrapping
             first: { _, offset in
+                print("⏰ calling update(\(offset)) /a")
                 update(offset)
             },
             completion: { now, offset in
@@ -42,6 +65,7 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
                 // is `Clock.now` and it can be either offset computed from prior samples or persisted
                 // in user defaults from previous app session.
                 if let offset = offset ?? now?.timeIntervalSinceNow {
+                    print("⏰ calling update(\(offset)) /b")
                     update(offset)
 
                     let difference = (offset * 1_000).rounded() / 1_000
@@ -52,6 +76,7 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
                         """
                     )
                 } else {
+                    print("⏰ calling update(\(0)) /c")
                     update(0)
 
                     DD.logger.error(
@@ -67,6 +92,7 @@ internal class DatadogNTPDateProvider: ServerDateProvider {
         // `Kronos.sync` first loads the previous state from the `UserDefaults` if any.
         // We can invoke `Clock.now` to retrieve the stored offset.
         if let offset = kronos.now?.timeIntervalSinceNow {
+            print("⏰ calling update(\(offset)) /d")
             update(offset)
         }
     }
