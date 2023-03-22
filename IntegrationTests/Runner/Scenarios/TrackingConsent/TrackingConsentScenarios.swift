@@ -15,6 +15,20 @@ internal class TrackingConsentBaseScenario {
             .trackUIKitRUMActions()
             .trackURLSession(firstPartyHosts: ["datadoghq.com"])
     }
+
+    func configureFeatures() {
+        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
+            return
+        }
+
+        // Register Tracer
+        DatadogTracer.initialize(
+            configuration: .init(
+                sendNetworkInfo: true,
+                customIntakeURL: tracesEndpoint
+            )
+        )
+    }
 }
 
 /// Tracking consent scenario, which launches the app with `.pending` consent value.
