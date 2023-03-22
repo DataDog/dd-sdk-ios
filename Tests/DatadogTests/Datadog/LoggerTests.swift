@@ -9,6 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogLogs
+@testable import DatadogTrace
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets

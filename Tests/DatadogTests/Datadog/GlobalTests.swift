@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@testable import DatadogTrace
 @testable import Datadog
 
 class GlobalTests: XCTestCase {

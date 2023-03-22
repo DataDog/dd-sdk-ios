@@ -4,6 +4,8 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+import DatadogTrace
+
 /// Because `Global` is a common name widely used across different projects,
 /// `DDGlobal` typealias can be used to avoid compiler ambiguity.
 public typealias DDGlobal = Global
@@ -11,7 +13,7 @@ public typealias DDGlobal = Global
 /// Namespace storing global Datadog components.
 public struct Global {
     /// Shared Tracer instance to use throughout the app.
-    public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
+    public static var sharedTracer: OTTracer { DatadogTracer.shared() }
 
     /// Shared RUM Monitor instance to use throughout the app.
     public static var rum: DDRUMMonitor = DDNoopRUMMonitor()

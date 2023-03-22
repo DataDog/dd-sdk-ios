@@ -7,7 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-@testable import Datadog
+
+@testable import DatadogTrace
 
 class ActiveSpansPoolTests: XCTestCase {
     func testsWhenSpanIsStartedIsAssignedToActiveSpan() throws {

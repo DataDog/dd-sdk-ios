@@ -6,18 +6,17 @@
 
 import XCTest
 import TestUtilities
-@testable import Datadog
+@testable import DatadogTrace
 
 class TracerConfigurationTests: XCTestCase {
-    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: SingleFeatureCoreMock<DatadogTraceFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreProxy(context: .mockRandom())
+        core = .init(context: .mockRandom())
     }
 
     override func tearDown() {
-        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -33,8 +32,6 @@ class TracerConfigurationTests: XCTestCase {
     }
 
     func testDefaultTracerWithRUMDisabled() {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
         DatadogTracer.initialize(in: core, configuration: .init(bundleWithRUM: false))
         let tracer = DatadogTracer.shared(in: core).dd
         XCTAssertFalse(tracer.contextReceiver.bundleWithRUM)

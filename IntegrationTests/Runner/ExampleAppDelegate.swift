@@ -7,6 +7,7 @@
 import UIKit
 import Datadog
 import DatadogLogs
+import DatadogTrace
 
 var logger: DatadogLogger!
 var tracer: OTTracer { Global.sharedTracer }
@@ -52,8 +53,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         appConfiguration.testScenario?.configureFeatures()
-        
-        Global.sharedTracer = DatadogTracer.shared()
 
         // Register RUMMonitor
         Global.rum = RUMMonitor.initialize()

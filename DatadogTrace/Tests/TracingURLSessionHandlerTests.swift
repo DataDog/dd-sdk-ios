@@ -8,30 +8,26 @@ import XCTest
 import TestUtilities
 
 @testable import DatadogInternal
-@testable import DatadogLogs
-@testable import Datadog
+@testable import DatadogTrace
 
-class TracingURLSessionInterceptorTests: XCTestCase {
+class TracingURLSessionHandlerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
     var core: PassthroughCoreMock!
     var tracer: DatadogTracer!
-    var interceptor: TracingURLSessionHandler!
+    var handler: TracingURLSessionHandler!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         let receiver = ContextMessageReceiver(bundleWithRUM: true)
-        core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
-            LogMessageReceiver.mockAny(),
-            receiver
-        ]))
+        core = PassthroughCoreMock(messageReceiver: receiver)
 
         tracer = .mockWith(
             core: core,
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
         )
 
-        interceptor = TracingURLSessionHandler(
+        handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
             tracingSampler: .mockKeepAll(),
@@ -48,7 +44,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectTraceHeaders() throws {
         // Given
-        let interceptor = TracingURLSessionHandler(
+        let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
             tracingSampler: .mockKeepAll(),
@@ -56,7 +52,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        let request = interceptor.modify(
+        let request = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -79,7 +75,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
         // Given
-        let interceptor = TracingURLSessionHandler(
+        let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
             tracingSampler: .mockRejectAll(),
@@ -87,7 +83,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        let request = interceptor.modify(
+        let request = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
             headerTypes: [
                 .datadog,
@@ -128,7 +124,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         interception.register(traceID: 100, spanID: 200, parentSpanID: nil)
 
         // When
-        interceptor.interceptionDidComplete(interception: interception)
+        handler.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -141,9 +137,6 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
-
-        let log: LogEvent? = core.events().last
-        XCTAssertNil(log)
     }
 
     func testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan() throws {
@@ -163,7 +156,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        interceptor.interceptionDidComplete(interception: interception)
+        handler.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -178,148 +171,6 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpMethod], "POST")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "200")
         XCTAssertEqual(span.tags.count, 5)
-
-        let log: LogEvent? = core.events().last
-        XCTAssertNil(log)
-    }
-
-    func testGivenFirstPartyInterceptionWithNetworkError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
-
-        // Given
-        let request: URLRequest = .mockWith(
-            url: "http://www.example.com",
-            queryParams: [
-                URLQueryItem(name: "foo", value: "42"),
-                URLQueryItem(name: "lang", value: "en")
-            ],
-            httpMethod: "GET"
-        )
-        let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
-        interception.register(response: nil, error: error)
-        interception.register(
-            metrics: .mockWith(
-                fetch: .init(
-                    start: .mockDecember15th2019At10AMUTC(),
-                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 30)
-                )
-            )
-        )
-
-        // When
-        interceptor.interceptionDidComplete(interception: interception)
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let envelope: SpanEventsEnvelope? = core.events().last
-        let span = try XCTUnwrap(envelope?.spans.first)
-        XCTAssertEqual(span.operationName, "urlsession.request")
-        XCTAssertEqual(span.resource, "http://www.example.com")
-        XCTAssertEqual(span.duration, 30)
-        XCTAssertTrue(span.isError)
-        XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "domain - 123")
-        XCTAssertEqual(
-            span.tags[DatadogSpanTag.errorStack],
-            "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
-        )
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "network error")
-        XCTAssertEqual(span.tags.count, 7)
-
-        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
-        XCTAssertEqual(log.status, .error)
-        XCTAssertEqual(log.message, "network error")
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
-            AnyCodable(String(span.traceID))
-        )
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
-            AnyCodable(String(span.traceID))
-        )
-        XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? AnyCodable,
-            AnyCodable(String(span.spanID))
-        )
-        XCTAssertEqual(log.error?.kind, "domain - 123")
-        XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
-        DDAssertJSONEqual(
-            AnyEncodable(log.attributes.userAttributes[OTLogFields.event]),
-            "error"
-        )
-        XCTAssertEqual(
-            log.error?.stack,
-            "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
-        )
-        XCTAssertEqual(log.attributes.userAttributes.count, 1)
-    }
-
-    func testGivenFirstPartyInterceptionWithClientError_whenInterceptionCompletes_itEncodesRequestInfoInSpanAndSendsLog() throws {
-        core.expectation = expectation(description: "Send span and log")
-        core.expectation?.expectedFulfillmentCount = 2
-
-        // Given
-        let request: URLRequest = .mockWith(httpMethod: "GET")
-        let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
-        interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
-        interception.register(
-            metrics: .mockWith(
-                fetch: .init(
-                    start: .mockDecember15th2019At10AMUTC(),
-                    end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)
-                )
-            )
-        )
-
-        // When
-        interceptor.interceptionDidComplete(interception: interception)
-
-        // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let envelope: SpanEventsEnvelope? = core.events().last
-        let span = try XCTUnwrap(envelope?.spans.first)
-        XCTAssertEqual(span.operationName, "urlsession.request")
-        XCTAssertEqual(span.resource, "404")
-        XCTAssertEqual(span.duration, 2)
-        XCTAssertTrue(span.isError)
-        XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
-        XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
-        XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "HTTPURLResponse - 404")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "404 not found")
-        XCTAssertEqual(
-            span.tags[DatadogSpanTag.errorStack],
-            "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
-        )
-        XCTAssertEqual(span.tags.count, 8)
-
-        let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
-        XCTAssertEqual(log.status, .error)
-        XCTAssertEqual(log.message, "404 not found")
-        DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID]),
-            String(span.traceID)
-        )
-        DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID]),
-            String(span.spanID)
-        )
-        XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
-        XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
-        DDAssertJSONEqual(
-            AnyEncodable(log.attributes.userAttributes[OTLogFields.event]),
-            "error"
-        )
-        XCTAssertEqual(
-            log.error?.stack,
-            "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
-        )
-        XCTAssertEqual(log.attributes.userAttributes.count, 1)
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
@@ -331,7 +182,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         // `incompleteInterception` has no metrics and no completion
 
         // When
-        interceptor.interceptionDidComplete(interception: incompleteInterception)
+        handler.interceptionDidComplete(interception: incompleteInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -355,7 +206,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        interceptor.interceptionDidComplete(interception: interception)
+        handler.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -378,7 +229,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        interceptor.interceptionDidComplete(interception: interception)
+        handler.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -395,7 +246,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRUM: true)
 
-        let interceptor = TracingURLSessionHandler(
+        let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),
             contextReceiver: receiver,
             tracingSampler: .mockKeepAll(),
@@ -416,7 +267,7 @@ class TracingURLSessionInterceptorTests: XCTestCase {
         )
 
         // When
-        interceptor.interceptionDidComplete(interception: interception)
+        handler.interceptionDidComplete(interception: interception)
 
         // Then
         waitForExpectations(timeout: 0.5)

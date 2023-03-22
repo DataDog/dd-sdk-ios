@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogTrace
 
 internal class SendTracesFixtureViewController: UIViewController {
     private let backgroundQueue = DispatchQueue(label: "background-queue")

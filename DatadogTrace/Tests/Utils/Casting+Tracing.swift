@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-@testable import Datadog
+@testable import DatadogTrace
 
 /*
  NOTE: The casting methods defined here do shadow the ones defined in `Datadog.Casting`.

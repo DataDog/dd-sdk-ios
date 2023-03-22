@@ -25,7 +25,6 @@ class URLSessionInterceptorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock()
-        DatadogTracer.initialize(in: core)
     }
 
     override func tearDown() {
@@ -136,7 +135,6 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        DatadogTracer.initialize(in: core)
 
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
@@ -195,8 +193,6 @@ class URLSessionInterceptorTests: XCTestCase {
             handler: handler
         )
 
-        DatadogTracer.initialize(in: core)
-
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
         let interceptedThirdPartyRequest = interceptor.modify(request: thirdPartyRequest)
@@ -230,8 +226,6 @@ class URLSessionInterceptorTests: XCTestCase {
             handler: handler
         )
 
-        DatadogTracer.initialize(in: core)
-
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
         let interceptedThirdPartyRequest = interceptor.modify(request: thirdPartyRequest)
@@ -257,8 +251,6 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
             handler: handler
         )
-
-        DatadogTracer.initialize(in: core)
 
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -293,8 +285,6 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
             handler: handler
         )
-
-        DatadogTracer.initialize(in: core)
 
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])

@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import Datadog
+@testable import DatadogTrace
 
 class DDSpanContextTests: XCTestCase {
     func testIteratingOverBaggageItems() {

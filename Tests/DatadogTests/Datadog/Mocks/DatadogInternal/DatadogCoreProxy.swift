@@ -185,6 +185,17 @@ extension DatadogCoreProxy {
         return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
     }
 
+    /// Returns all events of given type for certain Feature.
+    /// - Parameters:
+    ///   - name: The Feature to retrieve events from
+    ///   - type: The type of events to filter out
+    /// - Returns: A list of events.
+    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type) -> [T] where T: Encodable {
+        flush()
+        let interceptor = self.featureScopeInterceptors[name]!
+        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
+    }
+
     /// Returns serialized events of given Feature.
     ///
     /// - Parameter feature: The Feature to retrieve events from
