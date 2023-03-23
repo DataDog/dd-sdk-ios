@@ -6,7 +6,7 @@
 
 import Foundation
 
-internal protocol UploadPerformancePreset {
+public protocol UploadPerformancePreset {
     /// Initial upload delay (in seconds).
     /// At runtime, the upload interval starts with `initialUploadDelay` and then ranges from `minUploadDelay` to `maxUploadDelay` depending
     /// on delivery success or failure.

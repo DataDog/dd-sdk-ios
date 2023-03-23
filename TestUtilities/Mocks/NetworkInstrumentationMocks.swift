@@ -38,3 +38,102 @@ public class RelativeTracingUUIDGenerator: TraceIDGenerator {
 private func + (lhs: TraceID, rhs: UInt64) -> TraceID {
     return TraceID(rawValue: (UInt64(String(lhs)) ?? 0) + rhs)
 }
+
+extension URLSession {
+    public static func mockWith(_ delegate: URLSessionDelegate) -> URLSession {
+        return URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+    }
+}
+
+public final class URLSessionHandlerMock: DatadogURLSessionHandler {
+    public let firstPartyHosts: FirstPartyHosts
+
+    public var modifiedRequest: URLRequest?
+    public var shouldInterceptRequest: ((URLRequest) -> Bool)?
+
+    public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>) -> Void)?
+    public var onRequestInterception: ((URLRequest) -> Void)?
+    public var onInterceptionStart: ((URLSessionTaskInterception) -> Void)?
+    public var onInterceptionComplete: ((URLSessionTaskInterception) -> Void)?
+
+    @ReadWriteLock
+    public private(set) var interceptions: [UUID: URLSessionTaskInterception] = [:]
+
+    public private(set) var interceptionStarted: [(
+        interception: URLSessionTaskInterception,
+        additionalFirstPartyHosts: FirstPartyHosts?
+    )] = []
+
+    public private(set) var interceptionCompleted: [(
+        interception: URLSessionTaskInterception,
+        additionalFirstPartyHosts: FirstPartyHosts?
+    )] = []
+
+    public init(firstPartyHosts: FirstPartyHosts = .init()) {
+        self.firstPartyHosts = firstPartyHosts
+    }
+
+    public func interception(for request: URLRequest) -> URLSessionTaskInterception? {
+        interceptions.values.first { $0.request == request }
+    }
+
+    public func interception(for url: URL) -> URLSessionTaskInterception? {
+        interceptions.values.first { $0.request.url == url }
+    }
+
+    public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest {
+        onRequestMutation?(request, headerTypes)
+        return modifiedRequest ?? request
+    }
+
+    public func interceptionDidStart(interception: URLSessionTaskInterception) {
+        onInterceptionStart?(interception)
+        interceptions[interception.identifier] = interception
+    }
+
+    public func interceptionDidComplete(interception: URLSessionTaskInterception) {
+        onInterceptionComplete?(interception)
+        interceptions[interception.identifier] = interception
+    }
+}
+
+extension ResourceCompletion: AnyMockable {
+    public static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    public static func mockWith(
+        response: URLResponse? = .mockAny(),
+        error: Error? = nil
+    ) -> Self {
+        return ResourceCompletion(response: response, error: error)
+    }
+}
+
+extension ResourceMetrics: AnyMockable {
+    public static func mockAny() -> Self {
+        return mockWith()
+    }
+
+    public static func mockWith(
+        fetch: DateInterval = .init(start: Date(), end: Date(timeIntervalSinceNow: 1)),
+        redirection: DateInterval? = nil,
+        dns: DateInterval? = nil,
+        connect: DateInterval? = nil,
+        ssl: DateInterval? = nil,
+        firstByte: DateInterval? = nil,
+        download: DateInterval? = nil,
+        responseSize: Int64? = nil
+    ) -> Self {
+        return .init(
+            fetch: fetch,
+            redirection: redirection,
+            dns: dns,
+            connect: connect,
+            ssl: ssl,
+            firstByte: firstByte,
+            download: download,
+            responseSize: responseSize
+        )
+    }
+}

@@ -5,9 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
 import DatadogInternal
-@testable import Datadog
 
 /// An utility header, added to each request by the `ServerMock` and removed while intercepting through `ServerMockProtocol`.
 /// It transmits an unique identifier of the `URLSession` instance obtained from `ServerMock`. It is used for consistency check
@@ -16,12 +14,12 @@ import DatadogInternal
 /// Added in RUMM-1381 to fix a range of flakiness caused by leaking asynchronous upload tasks.
 private let ddURLSessionUUIDHeaderField = "dd-urlsession-uuid"
 
-private class ServerMockProtocol: URLProtocol {
-    override class func canInit(with request: URLRequest) -> Bool {
+public class ServerMockProtocol: URLProtocol {
+    override public class func canInit(with request: URLRequest) -> Bool {
         return true
     }
 
-    override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+    override public class func canonicalRequest(for request: URLRequest) -> URLRequest {
         // By the time this `canonicalRequest(for:)` is called, the original `URLRequest` is
         // already transformed in `URLSession` by encoding `httpBody` into a stream and
         // setting `Content-Length` HTTP header. This means that the `request` is not the one
@@ -42,7 +40,7 @@ private class ServerMockProtocol: URLProtocol {
     /// An instance of the `ServerMock` configured to intercept request processed by this `URLProtocol`.
     private weak var server: ServerMock?
 
-    override init(request: URLRequest, cachedResponse: CachedURLResponse?, client: URLProtocolClient?) {
+    override public init(request: URLRequest, cachedResponse: CachedURLResponse?, client: URLProtocolClient?) {
         // Capture the active instance of `ServerMock`
         server = ServerMock.activeInstance
 
@@ -66,7 +64,7 @@ private class ServerMockProtocol: URLProtocol {
         )
     }
 
-    override func startLoading() {
+    override public func startLoading() {
         if let response = server?.mockedResponse {
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
         }
@@ -82,28 +80,28 @@ private class ServerMockProtocol: URLProtocol {
         server?.record(newRequest: request)
     }
 
-    override func stopLoading() {
+    override public func stopLoading() {
         // No-op. This method must be defined as this method is made abstract in a base class (`URLProtocol`).
     }
 }
 
-class ServerMock {
-    static weak var activeInstance: ServerMock?
+public class ServerMock {
+    public static weak var activeInstance: ServerMock?
 
     /// An unique identifier of the `URLSession` produced by this instance of `ServerMock`.
-    internal let urlSessionUUID = UUID()
+    public let urlSessionUUID = UUID()
     private let queue: DispatchQueue
 
     fileprivate let mockedResponse: HTTPURLResponse?
     fileprivate let mockedData: Data?
     fileprivate let mockedError: NSError?
 
-    enum Delivery {
+    public enum Delivery {
         case success(response: HTTPURLResponse, data: Data = .mockAny())
         case failure(error: NSError)
     }
 
-    init(delivery: Delivery) {
+    public init(delivery: Delivery) {
         switch delivery {
         case let .success(response: response, data: data):
             self.mockedResponse = response
@@ -157,7 +155,7 @@ class ServerMock {
 
     /// Produces `URLSession` intercepted by this instance of `ServerMock`. The session will use `delegate` if it's provided.
     /// Requests sent to this session can be obtained later with using `serverMock.wait...()` APIs.
-    func getInterceptedURLSession(delegate: URLSessionDelegate? = nil) -> URLSession {
+    public func getInterceptedURLSession(delegate: URLSessionDelegate? = nil) -> URLSession {
         precondition(!doesInterceptSession, "This instance of `ServerMock` already intercepts the `URLSession`. Re-use the existing one.")
         doesInterceptSession = true
 
@@ -173,7 +171,7 @@ class ServerMock {
     /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`) and returns that requests.
     /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     /// Calling this method guarantees also that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitAndReturnRequests(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
+    public func waitAndReturnRequests(count: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) -> [URLRequest] {
         precondition(waitAndReturnRequestsExpectation == nil, "The `ServerMock` is already waiting on `waitAndReturnRequests`.")
 
         let expectation = XCTestExpectation(description: "Receive \(count) requests.")
@@ -216,12 +214,12 @@ class ServerMock {
     /// Waits until given number of request callbacks is completed (in total for this instance of `ServerMock`).
     /// Passing no `timeout` will result with picking the recommended timeout for unit tests.
     /// Calling this method guarantees that no callbacks are leaked inside `URLSession`, which prevents tests flakiness.
-    func waitFor(requestsCompletion requestsCount: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) {
+    public func waitFor(requestsCompletion requestsCount: UInt, timeout: TimeInterval? = nil, file: StaticString = #file, line: UInt = #line) {
         _ = waitAndReturnRequests(count: requestsCount, timeout: timeout)
     }
 
     /// Waits an arbitrary amount of time and asserts that no requests were sent to `ServerMock`. 
-    func waitAndAssertNoRequestsSent(file: StaticString = #file, line: UInt = #line) {
+    public func waitAndAssertNoRequestsSent(file: StaticString = #file, line: UInt = #line) {
         waitFor(requestsCompletion: 0)
     }
 

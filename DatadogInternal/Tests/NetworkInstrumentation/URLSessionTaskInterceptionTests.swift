@@ -6,19 +6,16 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
-@testable import Datadog
+@testable import DatadogInternal
 
-class TaskInterceptionTests: XCTestCase {
+class URLSessionTaskInterceptionTests: XCTestCase {
     func testWhenInterceptionIsCreated_itHasUniqueIdentifier() {
         // When
-        let interception1 = TaskInterception(request: .mockAny(), isFirstParty: true)
-        let interception2 = TaskInterception(request: .mockAny(), isFirstParty: false)
+        let interception1 = URLSessionTaskInterception(request: .mockAny(), isFirstParty: true)
+        let interception2 = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
 
         // Then
         XCTAssertNotEqual(interception1.identifier, interception2.identifier)
-        XCTAssertTrue(interception1.isFirstPartyRequest)
-        XCTAssertFalse(interception2.isFirstPartyRequest)
     }
 
     func testWhenInterceptionReceivesData_itAppendsItToPreviousData() {
@@ -26,7 +23,7 @@ class TaskInterceptionTests: XCTestCase {
         let chunk2 = "def".utf8Data
         let chunk3 = "ghi".utf8Data
 
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: .random())
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
         XCTAssertNil(interception.data)
 
         // When
@@ -46,10 +43,10 @@ class TaskInterceptionTests: XCTestCase {
     }
 
     func testWhenInterceptionReceivesBothMetricsAndCompletion_itIsConsideredDone() {
-        let interception = TaskInterception(request: .mockAny(), isFirstParty: .mockAny())
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
 
         // When
-        interception.register(completion: .mockAny())
+        interception.register(response: .mockAny(), error: nil)
         XCTAssertFalse(interception.isDone)
         interception.register(metrics: .mockAny())
 

@@ -6,8 +6,7 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
-@testable import Datadog
+@testable import DatadogInternal
 
 class HostsSanitizerTests: XCTestCase {
     func testSanitizationAndWarningMessages() throws {

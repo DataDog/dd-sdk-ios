@@ -6,6 +6,7 @@
 
 import Foundation
 import Datadog
+import DatadogInternal
 
 /// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through inheritance.
 private class InheritedURLSessionDelegate: DDURLSessionDelegate {
@@ -18,7 +19,7 @@ private class InheritedURLSessionDelegate: DDURLSessionDelegate {
 /// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through composition.
 private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     // MARK: - __URLSessionDelegateProviding conformance
-    let ddURLSessionDelegate = DDURLSessionDelegate()
+    let ddURLSessionDelegate: DatadogURLSessionDelegate = DDURLSessionDelegate()
 
     // MARK: - __URLSessionDelegateProviding handling
 
