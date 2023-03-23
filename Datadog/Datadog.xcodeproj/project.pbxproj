@@ -133,7 +133,6 @@
 		6152C83E24BE1C91006A1679 /* HTTPServerMock in Frameworks */ = {isa = PBXBuildFile; productRef = 6152C83D24BE1C91006A1679 /* HTTPServerMock */; };
 		6152C84024BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6152C83F24BE1CC8006A1679 /* DataUploaderBenchmarkTests.swift */; };
 		6156CB8E24DDA1B5008CB2B2 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
-		6156CB9D24E18600008CB2B2 /* TracingWithRUMIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		61570007246AAED100E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		6157FA5E252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6157FA5D252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift */; };
@@ -816,7 +815,6 @@
 		D2CB6EBE27C50EAE00A62B57 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		D2CB6EBF27C50EAE00A62B57 /* KronosData+Bytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0CD277B23F0008BE766 /* KronosData+Bytes.swift */; };
 		D2CB6EC027C50EAE00A62B57 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5332B24B75C51003D6C4E /* RUMFeature.swift */; };
-		D2CB6EC127C50EAE00A62B57 /* TracingWithRUMIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */; };
 		D2CB6EC427C50EAE00A62B57 /* DataUploadDelay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BB32423979B00786299 /* DataUploadDelay.swift */; };
 		D2CB6EC727C50EAE00A62B57 /* PerformancePreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB2B1A244A185D009F3F56 /* PerformancePreset.swift */; };
 		D2CB6EC827C50EAE00A62B57 /* RUMUserInfoProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B0A4A24EBC43D00A2A780 /* RUMUserInfoProvider.swift */; };
@@ -1566,7 +1564,6 @@
 		615519262461BCE7002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 		61569894256D0E9A00C6AADA /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextProvider.swift; sourceTree = "<group>"; };
-		6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithRUMIntegration.swift; sourceTree = "<group>"; };
 		6157FA5D252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandler.swift; sourceTree = "<group>"; };
 		615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependencyTests.swift; sourceTree = "<group>"; };
 		615950ED291C058F00470E0C /* SessionReplayDependency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependency.swift; sourceTree = "<group>"; };
@@ -3906,7 +3903,6 @@
 			isa = PBXGroup;
 			children = (
 				61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */,
-				6156CB9B24E18224008CB2B2 /* TracingWithRUMIntegration.swift */,
 				D25BADA029C1EF3000112069 /* TracingURLSessionHandler.swift */,
 			);
 			path = Integrations;
@@ -5683,7 +5679,6 @@
 				61D3E0D7277B23F1008BE766 /* KronosData+Bytes.swift in Sources */,
 				D2CE604429912D2700DB6656 /* CoreLoggerLevel.swift in Sources */,
 				61E5332C24B75C51003D6C4E /* RUMFeature.swift in Sources */,
-				6156CB9D24E18600008CB2B2 /* TracingWithRUMIntegration.swift in Sources */,
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
 				D2EBEDD729B8F08E00B15732 /* DDFormat.swift in Sources */,
 				61BB2B1B244A185D009F3F56 /* PerformancePreset.swift in Sources */,
@@ -6374,7 +6369,6 @@
 				D2CE604529912D2700DB6656 /* CoreLoggerLevel.swift in Sources */,
 				D2CB6EBF27C50EAE00A62B57 /* KronosData+Bytes.swift in Sources */,
 				D2CB6EC027C50EAE00A62B57 /* RUMFeature.swift in Sources */,
-				D2CB6EC127C50EAE00A62B57 /* TracingWithRUMIntegration.swift in Sources */,
 				D2CB6EC427C50EAE00A62B57 /* DataUploadDelay.swift in Sources */,
 				D2EBEDD829B8F08E00B15732 /* DDFormat.swift in Sources */,
 				D2CB6EC727C50EAE00A62B57 /* PerformancePreset.swift in Sources */,
