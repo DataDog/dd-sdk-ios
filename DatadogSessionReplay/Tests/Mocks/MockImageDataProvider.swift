@@ -7,8 +7,22 @@
 import UIKit
 @testable import DatadogSessionReplay
 
-class MockImageDataProvider: ImageDataProvider {
-    override func contentBase64String(of image: UIImage?, tintColor: UIColor?) -> String {
-        return "mock_base64_string"
+struct MockImageDataProvider: ImageDataProviding {
+    var contentBase64String: String
+
+    func contentBase64String(of image: UIImage?) -> String {
+        return contentBase64String
     }
+
+    func contentBase64String(of image: UIImage?, tintColor: UIColor?) -> String {
+        return contentBase64String
+    }
+
+    init(contentBase64String: String = "mock_base64_string") {
+        self.contentBase64String = contentBase64String
+    }
+}
+
+internal func mockRandomImageDataProvider() -> ImageDataProviding {
+    return MockImageDataProvider(contentBase64String: .mockRandom())
 }

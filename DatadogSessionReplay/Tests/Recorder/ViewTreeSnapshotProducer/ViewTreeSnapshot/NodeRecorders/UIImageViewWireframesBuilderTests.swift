@@ -58,7 +58,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
             image: UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil),
-            imageDataProvider: MockImageDataProvider(),
+            imageDataProvider: mockRandomImageDataProvider(),
             tintColor: UIColor.mockRandom(),
             shouldRecordImage: false
         )

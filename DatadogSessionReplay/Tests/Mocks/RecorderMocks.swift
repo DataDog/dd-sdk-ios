@@ -291,7 +291,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             ids: NodeIDGenerator(),
             textObfuscator: mockRandomTextObfuscator(),
             selectionTextObfuscator: mockRandomTextObfuscator(),
-            sensitiveTextObfuscator: mockRandomTextObfuscator()
+            sensitiveTextObfuscator: mockRandomTextObfuscator(),
+            imageDataProvider: mockRandomImageDataProvider()
         )
     }
 
@@ -301,7 +302,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         ids: NodeIDGenerator = NodeIDGenerator(),
         textObfuscator: TextObfuscating = NOPTextObfuscator(),
         selectionTextObfuscator: TextObfuscating = NOPTextObfuscator(),
-        sensitiveTextObfuscator: TextObfuscating = NOPTextObfuscator()
+        sensitiveTextObfuscator: TextObfuscating = NOPTextObfuscator(),
+        imageDataProvider: ImageDataProviding = MockImageDataProvider()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
@@ -309,7 +311,8 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             ids: ids,
             textObfuscator: textObfuscator,
             selectionTextObfuscator: selectionTextObfuscator,
-            sensitiveTextObfuscator: sensitiveTextObfuscator
+            sensitiveTextObfuscator: sensitiveTextObfuscator,
+            imageDataProvider: imageDataProvider
         )
     }
 }

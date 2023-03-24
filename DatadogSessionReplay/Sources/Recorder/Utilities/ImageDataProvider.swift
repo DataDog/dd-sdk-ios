@@ -18,13 +18,17 @@ internal protocol ImageDataProviding {
     ) -> String
 }
 
-internal class ImageDataProvider: ImageDataProviding {
+final internal class ImageDataProvider: ImageDataProviding {
     private var cache: Cache<String, String>
 
+    private let maxBytesSize: Int
+
     internal init(
-        cache: Cache<String, String> = .init()
+        cache: Cache<String, String> = .init(),
+        maxBytesSize: Int = 10_000
     ) {
         self.cache = cache
+        self.maxBytesSize = maxBytesSize
     }
 
     func contentBase64String(
@@ -45,10 +49,12 @@ internal class ImageDataProvider: ImageDataProviding {
             }
             if let base64EncodedImage = cache[identifier] {
                 return base64EncodedImage
-            } else {
-                let base64EncodedImage = image.pngData()?.base64EncodedString() ?? ""
+            } else if let base64EncodedImage = image.pngData()?.base64EncodedString(), base64EncodedImage.count <= maxBytesSize {
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
                 return base64EncodedImage
+            } else {
+                cache[identifier] = ""
+                return ""
             }
         }
     }
