@@ -1,5 +1,9 @@
 # Unreleased
 
+# 1.17.0 / 23-03-2023
+- [BUGFIX] Fix crash in `VitalInfoSampler`. See [#1216][] (Thanks [@cltnschlosser][])
+- [IMPROVEMENT] Fix Xcode analysis warning. See[#1220][]
+
 # 1.16.0 / 02-03-2023
 - [IMPROVEMENT] Always create an ApplicationLaunch view on session initialization. See [#1160][]
 - [BUGFIX] Remove the data race caused by sampling on the RUM thread. See [#1177][] (Thanks [@cltnschlosser][])
@@ -438,6 +442,8 @@
 [#1160]: https://github.com/DataDog/dd-sdk-ios/pull/1160
 [#1177]: https://github.com/DataDog/dd-sdk-ios/pull/1177
 [#1188]: https://github.com/DataDog/dd-sdk-ios/pull/1188
+[#1216]: https://github.com/DataDog/dd-sdk-ios/pull/1216
+[#1220]: https://github.com/DataDog/dd-sdk-ios/pull/1220
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
