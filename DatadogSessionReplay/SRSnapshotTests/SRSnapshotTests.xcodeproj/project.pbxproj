@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		616C37DA299F6913005E0472 /* InputElements.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 616C37D9299F6913005E0472 /* InputElements.storyboard */; };
+		6196D32429AF7EB2002EACAF /* InputElements-DatePickers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6196D32329AF7EB2002EACAF /* InputElements-DatePickers.storyboard */; };
 		619C49B229952108006B66A6 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 619C49B129952108006B66A6 /* Framer */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
 		619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B62995512A006B66A6 /* ImageComparison.swift */; };
@@ -39,6 +40,7 @@
 
 /* Begin PBXFileReference section */
 		616C37D9299F6913005E0472 /* InputElements.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = InputElements.storyboard; sourceTree = "<group>"; };
+		6196D32329AF7EB2002EACAF /* InputElements-DatePickers.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "InputElements-DatePickers.storyboard"; sourceTree = "<group>"; };
 		619C49B329952E12006B66A6 /* SnapshotTestCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnapshotTestCase.swift; sourceTree = "<group>"; };
 		619C49B62995512A006B66A6 /* ImageComparison.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComparison.swift; sourceTree = "<group>"; };
 		619C49B8299551F5006B66A6 /* _snapshots_ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = _snapshots_; sourceTree = "<group>"; };
@@ -147,6 +149,7 @@
 				61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */,
 				616C37D9299F6913005E0472 /* InputElements.storyboard */,
 				61A735A929A5137400001820 /* InputViewControllers.swift */,
+				6196D32329AF7EB2002EACAF /* InputElements-DatePickers.storyboard */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -246,6 +249,7 @@
 				61B3BC572993BE2F0032C78A /* LaunchScreen.storyboard in Resources */,
 				61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */,
 				61B3BC522993BE2E0032C78A /* Main.storyboard in Resources */,
+				6196D32429AF7EB2002EACAF /* InputElements-DatePickers.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +443,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -466,6 +471,7 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -490,6 +496,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SRSnapshotTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -507,6 +514,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.SRSnapshotTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";

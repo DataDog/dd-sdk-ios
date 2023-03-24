@@ -7,15 +7,15 @@
 import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
-    /// An option for ignoring certain views by this recorder.
-    var dropPredicate: (UIView, ViewAttributes) -> Bool = { _, _ in false }
+    /// An option for overriding default semantics from parent recorder.
+    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
-        if dropPredicate(view, attributes) {
-            return nil
+        if let semantics = semanticsOverride(view, attributes) {
+            return semantics
         }
 
         guard attributes.hasAnyAppearance else {

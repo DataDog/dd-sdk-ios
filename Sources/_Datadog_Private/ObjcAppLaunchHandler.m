@@ -41,10 +41,10 @@ static __dd_private_AppLaunchHandler *_shared;
                                        loadTime:CFAbsoluteTimeGetCurrent()];
 
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
-    id __block token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
-                                           object:nil
-                                            queue:NSOperationQueue.mainQueue
-                                       usingBlock:^(NSNotification *_){
+    id __block __unused token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
+                                                    object:nil
+                                                     queue:NSOperationQueue.mainQueue
+                                                usingBlock:^(NSNotification *_){
 
         @synchronized(_shared) {
             NSTimeInterval time = CFAbsoluteTimeGetCurrent() - _shared->_processStartTime;

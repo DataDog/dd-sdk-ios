@@ -267,6 +267,18 @@ extension SpecificElement {
     }
 }
 
+internal class TextObfuscatorMock: TextObfuscating {
+    var result: (String) -> String = { $0 }
+
+    func mask(text: String) -> String {
+        return result(text)
+    }
+}
+
+internal func mockRandomTextObfuscator() -> TextObfuscating {
+    return [NOPTextObfuscator(), TextObfuscator(), SensitiveTextObfuscator()].randomElement()!
+}
+
 extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
     public static func mockAny() -> ViewTreeRecordingContext {
         return .mockWith()
@@ -277,8 +289,9 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            textObfuscator: TextObfuscator(),
-            imageDataProvider: MockImageDataProvider()
+            textObfuscator: mockRandomTextObfuscator(),
+            selectionTextObfuscator: mockRandomTextObfuscator(),
+            sensitiveTextObfuscator: mockRandomTextObfuscator()
         )
     }
 
@@ -286,15 +299,17 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        textObfuscator: TextObfuscator = TextObfuscator(),
-        imageDataProvider: ImageDataProviding = MockImageDataProvider()
+        textObfuscator: TextObfuscating = NOPTextObfuscator(),
+        selectionTextObfuscator: TextObfuscating = NOPTextObfuscator(),
+        sensitiveTextObfuscator: TextObfuscating = NOPTextObfuscator()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
             textObfuscator: textObfuscator,
-            imageDataProvider: imageDataProvider
+            selectionTextObfuscator: selectionTextObfuscator,
+            sensitiveTextObfuscator: sensitiveTextObfuscator
         )
     }
 }

@@ -16,9 +16,13 @@ internal struct ViewTreeRecordingContext {
     let coordinateSpace: UICoordinateSpace
     /// Generates stable IDs for traversed views.
     let ids: NodeIDGenerator
-    /// Masks text in recorded nodes.
+    /// Text obfuscator applied to all non-sensitive texts. No-op if privacy mode is disabled.
     /// Can be overwriten in by `NodeRecorder` if their subtree recording requires different masking.
     var textObfuscator: TextObfuscating
+    /// Text obfuscator applied to user selection texts (such as labels in picker control).
+    var selectionTextObfuscator: TextObfuscating
+    /// Text obfuscator applied to all sensitive texts (such as passwords or e-mail address).
+    let sensitiveTextObfuscator: TextObfuscating
     /// Provides base64 image data with a built in caching mechanism.
     let imageDataProvider: ImageDataProviding
 }

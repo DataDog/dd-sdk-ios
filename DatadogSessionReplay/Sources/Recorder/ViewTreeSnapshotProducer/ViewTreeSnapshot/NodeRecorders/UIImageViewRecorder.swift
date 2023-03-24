@@ -9,6 +9,14 @@ import UIKit
 internal struct UIImageViewRecorder: NodeRecorder {
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
+    /// An option for overriding default semantics from parent recorder.
+    var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { imageView, _ in
+        let className = "\(type(of: imageView))"
+        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
+        // Here we explicitly ignore the "shadow" effect applied to popover.
+        let isSystemShadow = className == "_UICutoutShadowView"
+        return isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
+    }
 
     internal init(
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { _ in
@@ -33,6 +41,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
     ) -> NodeSemantics? {
         guard let imageView = view as? UIImageView else {
             return nil
+        }
+        if let semantics = semanticsOverride(imageView, attributes) {
+            return semantics
         }
         guard attributes.hasAnyAppearance || imageView.image != nil else {
             return InvisibleElement.constant

@@ -147,7 +147,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
     func testItRecordsInvisibleViews() {
         // Given
-        let recorder = ViewTreeRecorder(nodeRecorders: defaultNodeRecorders)
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
         let views: [UIView] = [
             UIView.mock(withFixture: .invisible),
             UILabel.mock(withFixture: .invisible),
@@ -167,7 +167,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
     func testItRecordsViewsWithNoAppearance() {
         // Given
-        let recorder = ViewTreeRecorder(nodeRecorders: defaultNodeRecorders)
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
 
         let view = UIView.mock(withFixture: .visible(.noAppearance))
         let label = UILabel.mock(withFixture: .visible(.noAppearance))
@@ -197,7 +197,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
     func testItRecordsViewsWithSomeAppearance() {
         // Given
-        let recorder = ViewTreeRecorder(nodeRecorders: defaultNodeRecorders)
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
         let views: [UIView] = [
             UIView.mock(withFixture: .visible(.someAppearance)),
             UILabel.mock(withFixture: .visible(.someAppearance)),
