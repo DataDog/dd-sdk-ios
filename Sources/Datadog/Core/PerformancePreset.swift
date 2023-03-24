@@ -127,17 +127,14 @@ internal extension PerformancePreset {
     }
 
     func updated(with: PerformancePresetOverride?) -> PerformancePreset {
-        guard let with = with else {
-            return self
-        }
         return PerformancePreset(
-            maxFileSize: with.maxFileSize,
+            maxFileSize: with?.maxFileSize ?? maxFileSize,
             maxDirectorySize: maxDirectorySize,
             maxFileAgeForWrite: maxFileAgeForWrite,
             minFileAgeForRead: minFileAgeForRead,
             maxFileAgeForRead: maxFileAgeForRead,
             maxObjectsInFile: maxObjectsInFile,
-            maxObjectSize: with.maxObjectSize,
+            maxObjectSize: with?.maxObjectSize ?? maxObjectSize,
             initialUploadDelay: initialUploadDelay,
             minUploadDelay: minUploadDelay,
             maxUploadDelay: maxUploadDelay,
@@ -147,10 +144,10 @@ internal extension PerformancePreset {
 }
 
 public struct PerformancePresetOverride {
-    let maxFileSize: UInt64
-    let maxObjectSize: UInt64
+    let maxFileSize: UInt64?
+    let maxObjectSize: UInt64?
 
-    public init(maxFileSize: UInt64, maxObjectSize: UInt64) {
+    public init(maxFileSize: UInt64?, maxObjectSize: UInt64?) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
     }
