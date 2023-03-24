@@ -126,7 +126,6 @@ if __name__ == "__main__":
             # Publish CP podspecs:
             if publish_to_cp:
                 podspecs = [
-                    CPPodspec(name='DatadogSDKObjc'),
                     CPPodspec(name='DatadogSDKCrashReporting'),
                     CPPodspec(name='DatadogSDKAlamofireExtension'),
                 ]
