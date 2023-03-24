@@ -5,7 +5,6 @@
  */
 
 import XCTest
-import TestUtilities
 @testable import DatadogSessionReplay
 
 class UIViewRecorderTests: XCTestCase {
@@ -22,19 +21,16 @@ class UIViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
-    func testWhenViewIsVisible() throws {
+    func testWhenViewIsVisibleAndHasSomeAppearance() throws {
         // When
-        viewAttributes = .mock(fixture: .visible())
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is AmbiguousElement)
-
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIViewWireframesBuilder)
-        XCTAssertEqual(builder.attributes, viewAttributes)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIViewWireframesBuilder)
     }
 
     func testWhenViewIsVisibleButHasNoAppearance() throws {
@@ -44,7 +40,6 @@ class UIViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
-        DDAssertReflectionEqual(semantics.subtreeStrategy, .record)
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
     }
 }

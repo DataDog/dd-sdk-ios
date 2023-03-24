@@ -6,13 +6,16 @@
 
 import UIKit
 
-internal struct UILabelRecorder: NodeRecorder {
+internal class UILabelRecorder: NodeRecorder {
+    /// An option for customizing wireframes builder created by this recorder.
+    var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 }
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let label = view as? UILabel else {
             return nil
         }
 
-        let hasVisibleText = !(label.text?.isEmpty ?? true)
+        let hasVisibleText = attributes.isVisible && !(label.text?.isEmpty ?? true)
 
         guard hasVisibleText || attributes.hasAnyAppearance else {
             return InvisibleElement.constant
@@ -34,10 +37,11 @@ internal struct UILabelRecorder: NodeRecorder {
             textAlignment: nil,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
+            textObfuscator: context.textObfuscator,
             wireframeRect: textFrame
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
@@ -48,13 +52,13 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     /// The text inside label.
     let text: String
     /// The color of the text.
-    let textColor: CGColor?
+    var textColor: CGColor?
     /// The alignment of the text.
     var textAlignment: SRTextPosition.Alignment?
     /// The font used by the label.
     let font: UIFont?
     /// Flag that determines if font should be scaled
-    let fontScalingEnabled: Bool
+    var fontScalingEnabled: Bool
     /// Text obfuscator for masking text.
     let textObfuscator: TextObfuscating
 

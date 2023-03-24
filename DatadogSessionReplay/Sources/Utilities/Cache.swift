@@ -14,17 +14,20 @@ internal final class Cache<Key: Hashable, Value> {
 
     init(dateProvider: @escaping () -> Date = Date.init,
          entryLifetime: TimeInterval = 12 * 60 * 60,
-         maximumEntryCount: Int = 100) {
+         totalBytesLimit: Int = 5_000_000,
+         maximumEntryCount: Int = 50
+    ) {
         self.dateProvider = dateProvider
         self.entryLifetime = entryLifetime
         wrapped.countLimit = maximumEntryCount
+        wrapped.totalCostLimit = totalBytesLimit
         wrapped.delegate = keyTracker
     }
 
-    func insert(_ value: Value, forKey key: Key) {
+    func insert(_ value: Value, forKey key: Key, size: Int = 0) {
         let date = dateProvider().addingTimeInterval(entryLifetime)
         let entry = Entry(key: key, value: value, expirationDate: date)
-        wrapped.setObject(entry, forKey: WrappedKey(key))
+        wrapped.setObject(entry, forKey: WrappedKey(key), cost: size)
         keyTracker.keys.insert(key)
     }
 
@@ -94,7 +97,7 @@ private extension Cache {
 }
 
 extension Cache {
-    subscript(key: Key) -> Value? {
+    subscript(key: Key, size: Int = 0) -> Value? {
         get { return value(forKey: key) }
         set {
             guard let value = newValue else {
@@ -102,7 +105,7 @@ extension Cache {
                 return
             }
 
-            insert(value, forKey: key)
+            insert(value, forKey: key, size: size)
         }
     }
 }

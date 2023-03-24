@@ -6,7 +6,7 @@
 
 /// An object for sending crash reports.
 internal protocol CrashReportSender {
-    /// Send the crash report et context to integrations.
+    /// Send the crash report and context to integrations.
     ///
     /// - Parameters:
     ///   - report: The crash report.
@@ -21,14 +21,8 @@ internal struct MessageBusSender: CrashReportSender {
         /// The key for a crash message.
         ///
         /// Use this key when the crash should be reported
-        /// as a RUM event.
+        /// as a RUM and a Logs event.
         static let crash = "crash"
-
-        /// The key for a crash log message.
-        ///
-        /// Use this key when the crash should be reported
-        /// as a log event.
-        static let crashLog = "crash-log"
     }
 
     /// The core for sending crash report and context.
@@ -47,7 +41,7 @@ internal struct MessageBusSender: CrashReportSender {
             return
         }
 
-        sendRUM(
+        sendCrash(
             baggage: [
                 "report": report,
                 "context": context
@@ -55,28 +49,18 @@ internal struct MessageBusSender: CrashReportSender {
         )
     }
 
-    private func sendRUM(baggage: FeatureBaggage) {
+    private func sendCrash(baggage: FeatureBaggage) {
         core?.send(
             message: .custom(key: MessageKeys.crash, baggage: baggage),
-            else: { self.sendLog(baggage: baggage) }
-        )
-    }
-
-    private func sendLog(baggage: FeatureBaggage) {
-        core?.send(
-            message: .custom(key: MessageKeys.crashLog, baggage: baggage),
-            else: printError
-        )
-    }
-
-    private func printError() {
-        // This case is not reachable in higher abstraction but we add sanity warning.
-        DD.logger.error(
+            else: {
+                DD.logger.warn(
             """
             In order to use Crash Reporting, RUM or Logging feature must be enabled.
             Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
             when initializing Datadog SDK.
             """
+            )
+            }
         )
     }
 }

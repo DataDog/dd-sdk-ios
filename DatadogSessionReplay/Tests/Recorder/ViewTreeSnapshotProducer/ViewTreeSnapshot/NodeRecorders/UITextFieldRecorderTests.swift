@@ -6,7 +6,6 @@
 
 import XCTest
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 // swiftlint:disable opening_brace
 class UITextFieldRecorderTests: XCTestCase {
@@ -23,7 +22,6 @@ class UITextFieldRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
     func testWhenTextFieldHasText() throws {
@@ -47,34 +45,61 @@ class UITextFieldRecorderTests: XCTestCase {
                 self.textField.placeholder = .mockRandom()
             },
         ])
-        viewAttributes = .mock(fixture: .visible())
-        textField.layoutSubviews() // force layout (so TF creates its sub-tree)
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "TextField's subtree should not be recorded")
+        let semantics = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextFieldWireframesBuilder)
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)
         XCTAssertEqual(builder.textColor, textField.textColor?.cgColor)
         XCTAssertEqual(builder.font, textField.font)
-        XCTAssertNotNil(builder.editor)
     }
 
     func testWhenRecordingInDifferentPrivacyModes() throws {
         // Given
-        textField.text = .mockRandom()
+        let textField1 = UITextField(frame: .mockAny())
+        let textField2 = UITextField(frame: .mockAny())
+        let textField3 = UITextField(frame: .mockAny())
+        textField1.text = .mockRandom()
+        textField2.text = .mockRandom()
+        textField3.text = .mockRandom()
+
+        textField2.isSecureTextEntry = true
+        textField3.textContentType = [.telephoneNumber, .emailAddress].randomElement()!
 
         // When
         viewAttributes = .mock(fixture: .visible())
-        let semantics1 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .maskAll))))
-        let semantics2 = try XCTUnwrap(recorder.semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .allowAll))))
+        let context: ViewTreeRecordingContext = .mockWith(
+            recorder: .mockWith(privacy: .mockRandom()),
+            textObfuscator: TextObfuscatorMock(),
+            selectionTextObfuscator: mockRandomTextObfuscator(),
+            sensitiveTextObfuscator: TextObfuscatorMock()
+        )
+
+        let semantics1 = try XCTUnwrap(recorder.semantics(of: textField1, with: viewAttributes, in: context))
+        let semantics2 = try XCTUnwrap(recorder.semantics(of: textField2, with: viewAttributes, in: context))
+        let semantics3 = try XCTUnwrap(recorder.semantics(of: textField3, with: viewAttributes, in: context))
 
         // Then
-        let builder1 = try XCTUnwrap(semantics1.wireframesBuilder as? UITextFieldWireframesBuilder)
-        let builder2 = try XCTUnwrap(semantics2.wireframesBuilder as? UITextFieldWireframesBuilder)
-        XCTAssertTrue(builder1.textObfuscator is TextObfuscator, "With `.maskAll` privacy the text obfuscator should be used")
-        XCTAssertTrue(builder2.textObfuscator is NOPTextObfuscator, "With `.allowAll` privacy the text obfuscator should not be used")
+        let builder1 = try XCTUnwrap(semantics1.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
+        let builder2 = try XCTUnwrap(semantics2.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
+        let builder3 = try XCTUnwrap(semantics3.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
+
+        XCTAssertTrue(
+            (builder1.textObfuscator as? TextObfuscatorMock) === (context.textObfuscator as? TextObfuscatorMock),
+            "Non-sensitive text fields should use default text obfuscator specific to current privacy mode"
+        )
+        XCTAssertTrue(
+            (builder2.textObfuscator as? TextObfuscatorMock) === (context.sensitiveTextObfuscator as? TextObfuscatorMock),
+            "Sensitive text fields should use sensitive text obfuscator no matter of privacy mode"
+        )
+        XCTAssertTrue(
+            (builder3.textObfuscator as? TextObfuscatorMock) === (context.sensitiveTextObfuscator as? TextObfuscatorMock),
+            "Sensitive text fields should use sensitive text obfuscator no matter of privacy mode"
+        )
     }
 
     func testWhenViewIsNotOfExpectedType() {

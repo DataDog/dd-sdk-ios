@@ -7,40 +7,40 @@
 import XCTest
 @testable import DatadogSessionReplay
 
-class UIPickerViewRecorderTests: XCTestCase {
-    private let recorder = UIPickerViewRecorder()
-    private let picker = UIPickerView()
+class UIDatePickerRecorderTests: XCTestCase {
+    private let recorder = UIDatePickerRecorder()
+    private let datePicker = UIDatePicker()
     private var viewAttributes: ViewAttributes = .mockAny()
 
-    func testWhenPickerIsNotVisible() throws {
+    func testWhenDatePickerIsNotVisible() throws {
         // When
         viewAttributes = .mock(fixture: .invisible)
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: datePicker, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
     }
 
-    func testWhenPickerIsVisibleAndHasSomeAppearance() throws {
+    func testWhenDatePickerIsVisibleAndHasSomeAppearance() throws {
         // When
         viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: datePicker, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .ignore)
-        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIPickerViewWireframesBuilder)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIDatePickerWireframesBuilder)
     }
 
-    func testWhenPickerIsVisibleAndHasNoAppearance() throws {
+    func testWhenDatePickerIsVisibleAndHasNoAppearance() throws {
         // When
         viewAttributes = .mock(fixture: .visible(.noAppearance))
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: picker, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: datePicker, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .ignore)
-        XCTAssertFalse(semantics.nodes.first?.wireframesBuilder is UIPickerViewWireframesBuilder)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIDatePickerWireframesBuilder)
     }
 
     func testWhenViewIsNotOfExpectedType() {

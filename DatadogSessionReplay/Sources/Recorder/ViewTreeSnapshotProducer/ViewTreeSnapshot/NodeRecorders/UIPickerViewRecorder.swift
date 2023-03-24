@@ -13,24 +13,40 @@ import UIKit
 /// - We can't request `picker.dataSource` to receive the value - doing so will result in calling applicaiton code, which could be
 /// dangerous (if the code is faulty) and may significantly slow down the performance (e.g. if the underlying source requires database fetch).
 /// - Similarly, we don't call `picker.delegate` to avoid running application code outside `UIKit's` lifecycle.
-/// - Instead, we infer the value by traversing picker's subtree state and finding texts that are displayed closest to its geometry center.
+/// - Instead, we infer the value by traversing picker's subtree and finding texts that have no "3D wheel" effect applied.
 /// - If privacy mode is elevated, we don't replace individual characters with "x" letter - instead we change whole options to fixed-width mask value.
 internal struct UIPickerViewRecorder: NodeRecorder {
-    /// Custom text obfuscator for picker option labels.
-    ///
-    /// Unlike the default `TextObfuscator` it doesn't mask each individual character with "x" letter. Instead, it replaces
-    /// whole options with fixed "xxx" string. This elevates the level of privacy, because selected option can not be inferred
-    /// by counting number of characters.
-    private struct PickerOptionTextObfuscator: TextObfuscating {
-        private static let maskedString = "xxx"
-        func mask(text: String) -> String { Self.maskedString }
-    }
-    /// A sub-tree recorder for capturing shapes nested in picker's view hierarchy.
+    /// Records all shapes in picker's subtree.
     /// It is used to capture the background of selected option.
-    private let selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
-    /// A sub-tree recorder for capturing labels nested in picker's view hierarchy.
+    private let selectionRecorder: ViewTreeRecorder
+    /// Records all labels in picker's subtree.
     /// It is used to capture titles for displayed options.
-    private let labelsRecorder = ViewTreeRecorder(nodeRecorders: [UILabelRecorder()])
+    private let labelsRecorder: ViewTreeRecorder
+
+    init() {
+        let viewRecorder = UIViewRecorder()
+        viewRecorder.semanticsOverride = { view, attributes in
+            if #available(iOS 13.0, *) {
+                if attributes.isTranslucent || !CATransform3DIsIdentity(view.transform3D) {
+                    // If this view has any 3D effect applied, do not enter its subtree:
+                    return IgnoredElement(subtreeStrategy: .ignore)
+                }
+            }
+            // Otherwise, enter the subtree of this element, but do not consider it significant (`InvisibleElement`):
+            return InvisibleElement(subtreeStrategy: .record)
+        }
+
+        let labelRecorder = UILabelRecorder()
+        labelRecorder.builderOverride = { builder in
+            var builder = builder
+            builder.textAlignment = .init(horizontal: .center, vertical: .center)
+            builder.fontScalingEnabled = true
+            return builder
+        }
+
+        self.labelsRecorder = ViewTreeRecorder(nodeRecorders: [viewRecorder, labelRecorder])
+        self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let picker = view as? UIPickerView else {
@@ -44,29 +60,24 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         // For our "approximation", we render selected option text on top of selection background. However,
         // in the actual `UIPickerView's` tree their order is opposite (blending is used to make the label
         // pass through the shape). For that reason, we record both kinds of nodes separately and then reorder
-        // them in returned `.replace(subtreeNodes:)` strategy:
+        // them in returned semantics:
         let backgroundNodes = recordBackgroundOfSelectedOption(in: picker, using: context)
         let titleNodes = recordTitlesOfSelectedOption(in: picker, pickerAttributes: attributes, using: context)
 
         guard attributes.hasAnyAppearance else {
             // If the root view of `UIPickerView` defines no other appearance (e.g. no custom `.background`), we can
             // safely ignore it, with only forwarding child nodes to final recording.
-            return InvisibleElement(
-                subtreeStrategy: .replace(subtreeNodes: backgroundNodes + titleNodes)
-            )
+            return SpecificElement(subtreeStrategy: .ignore, nodes: backgroundNodes + titleNodes)
         }
 
-        // Otherwise, we build dedicated wireframes to describe additional appearance coming from picker's root `UIView`:
+        // Otherwise, we build dedicated wireframes to describe extra appearance coming from picker's root `UIView`:
         let builder = UIPickerViewWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
             backgroundWireframeID: context.ids.nodeID(for: picker)
         )
-
-        return SpecificElement(
-            wireframesBuilder: builder,
-            subtreeStrategy: .replace(subtreeNodes: backgroundNodes + titleNodes)
-        )
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node] + backgroundNodes + titleNodes)
     }
 
     /// Records `UIView` nodes that define background of selected option.
@@ -74,27 +85,10 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         return selectionRecorder.recordNodes(for: picker, in: context)
     }
 
-    /// Records `UILabel` nodes that hold titles of **selected** options - if picker defines N components, there will be N nodes returned.
+    /// Records `UILabel` nodes that hold titles of **selected** options.
     private func recordTitlesOfSelectedOption(in picker: UIPickerView, pickerAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
         var context = context
-        context.textObfuscator = PickerOptionTextObfuscator()
-        context.semanticsOverride = { currentSemantics, label, attributes in
-            // We consider option to be "selected" if it is displayed close enough to picker's geometry center
-            // and its `UILabel` is opaque:
-            let isNearCenter = abs(attributes.frame.midY - pickerAttributes.frame.midY) < 10
-            let isForeground = attributes.alpha == 1
-
-            if isNearCenter && isForeground, var wireframeBuilder = (currentSemantics.wireframesBuilder as? UILabelWireframesBuilder) {
-                // For some reason, the text within `UILabel` is not centered in regular way (with `intrinsicContentSize`), hence
-                // we need to manually center it within produced wireframe. Here we use SR text alignment options to achieve it:
-                var newSemantics = currentSemantics
-                wireframeBuilder.textAlignment = .init(horizontal: .center, vertical: .center)
-                newSemantics.wireframesBuilder = wireframeBuilder
-                return newSemantics
-            } else {
-                return InvisibleElement.constant // this node doesn't describe selected option - ignore it
-            }
-        }
+        context.textObfuscator = context.selectionTextObfuscator
         return labelsRecorder.recordNodes(for: picker, in: context)
     }
 }
@@ -106,11 +100,7 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(
-                id: backgroundWireframeID,
-                frame: wireframeRect,
-                attributes: attributes
-            )
+            builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
         ]
     }
 }

@@ -201,11 +201,7 @@ extension NodeSubtreeStrategy: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> NodeSubtreeStrategy {
-        let all: [NodeSubtreeStrategy] = [
-            .record,
-            .replace(subtreeNodes: [.mockAny()]),
-            .ignore,
-        ]
+        let all: [NodeSubtreeStrategy] = [.record, .ignore]
         return all.randomElement()!
     }
 }
@@ -218,8 +214,8 @@ func mockRandomNodeSemantics() -> NodeSemantics {
     let all: [NodeSemantics] = [
         UnknownElement.constant,
         InvisibleElement.constant,
-        AmbiguousElement(wireframesBuilder: NOPWireframesBuilderMock()),
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom()),
+        AmbiguousElement(nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
+        SpecificElement(subtreeStrategy: .mockRandom(), nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
     ]
     return all.randomElement()!
 }
@@ -239,35 +235,48 @@ extension Node: AnyMockable, RandomMockable {
 
     static func mockWith(
         viewAttributes: ViewAttributes = .mockAny(),
-        semantics: NodeSemantics = InvisibleElement.constant
+        wireframesBuilder: NodeWireframesBuilder = NOPWireframesBuilderMock()
     ) -> Node {
         return .init(
             viewAttributes: viewAttributes,
-            semantics: semantics
+            wireframesBuilder: wireframesBuilder
         )
     }
 
     public static func mockRandom() -> Node {
         return .init(
             viewAttributes: .mockRandom(),
-            semantics: mockRandomNodeSemantics()
+            wireframesBuilder: NOPWireframesBuilderMock()
         )
     }
 }
 
 extension SpecificElement {
     static func mockAny() -> SpecificElement {
-        SpecificElement(wireframesBuilder: NOPWireframesBuilderMock(), subtreeStrategy: .mockRandom())
+        SpecificElement(subtreeStrategy: .mockRandom(), nodes: [])
     }
-    static func mock(
-        wireframeRect: CGRect,
-        subtreeStrategy: NodeSubtreeStrategy = .mockRandom()
+
+    static func mockWith(
+        subtreeStrategy: NodeSubtreeStrategy = .mockAny(),
+        nodes: [Node] = .mockAny()
     ) -> SpecificElement {
         SpecificElement(
-            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: wireframeRect),
-            subtreeStrategy: subtreeStrategy
+            subtreeStrategy: subtreeStrategy,
+            nodes: nodes
         )
     }
+}
+
+internal class TextObfuscatorMock: TextObfuscating {
+    var result: (String) -> String = { $0 }
+
+    func mask(text: String) -> String {
+        return result(text)
+    }
+}
+
+internal func mockRandomTextObfuscator() -> TextObfuscating {
+    return [NOPTextObfuscator(), TextObfuscator(), SensitiveTextObfuscator()].randomElement()!
 }
 
 extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
@@ -280,7 +289,9 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            textObfuscator: mockRandomTextObfuscator(),
+            selectionTextObfuscator: mockRandomTextObfuscator(),
+            sensitiveTextObfuscator: mockRandomTextObfuscator()
         )
     }
 
@@ -288,13 +299,17 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        textObfuscator: TextObfuscator = TextObfuscator()
+        textObfuscator: TextObfuscating = NOPTextObfuscator(),
+        selectionTextObfuscator: TextObfuscating = NOPTextObfuscator(),
+        sensitiveTextObfuscator: TextObfuscating = NOPTextObfuscator()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            textObfuscator: textObfuscator
+            textObfuscator: textObfuscator,
+            selectionTextObfuscator: selectionTextObfuscator,
+            sensitiveTextObfuscator: sensitiveTextObfuscator
         )
     }
 }

@@ -20,10 +20,11 @@ internal struct UITextViewRecorder: NodeRecorder {
             text: textView.text,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
+            textObfuscator: context.textObfuscator,
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .record)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 }
 

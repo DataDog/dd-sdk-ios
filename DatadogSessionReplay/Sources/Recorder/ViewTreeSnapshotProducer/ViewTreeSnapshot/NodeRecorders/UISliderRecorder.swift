@@ -31,7 +31,8 @@ internal struct UISliderRecorder: NodeRecorder {
             maxTrackTintColor: slider.maximumTrackTintColor?.cgColor,
             thumbTintColor: slider.thumbTintColor?.cgColor
         )
-        return SpecificElement(wireframesBuilder: builder, subtreeStrategy: .ignore)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 

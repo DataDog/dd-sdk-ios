@@ -13,6 +13,14 @@ internal enum Fixture: CaseIterable {
     case segments
     case pickers
     case switches
+    case textFields
+    case steppers
+    case datePickersInline
+    case datePickersCompact
+    case datePickersWheels
+    case timePickersCountDown
+    case timePickersWheels
+    case timePickersCompact
 
     var menuItemTitle: String {
         switch self {
@@ -28,6 +36,22 @@ internal enum Fixture: CaseIterable {
             return "Pickers"
         case .switches:
             return "Switches"
+        case .textFields:
+            return "Text Fields"
+        case .steppers:
+            return "Steppers"
+        case .datePickersInline:
+            return "Date Picker (inline)"
+        case .datePickersCompact:
+            return "Date Picker (compact)"
+        case .datePickersWheels:
+            return "Date Picker (wheels)"
+        case .timePickersCountDown:
+            return "Time Picker (count down)"
+        case .timePickersWheels:
+            return "Time Picker (wheels)"
+        case .timePickersCompact:
+            return "Time Picker (compact)"
         }
     }
 
@@ -45,6 +69,22 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Pickers")
         case .switches:
             return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Switches")
+        case .textFields:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "TextFields")
+        case .steppers:
+            return UIStoryboard.inputElements.instantiateViewController(withIdentifier: "Steppers")
+        case .datePickersInline:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersInline")
+        case .datePickersCompact:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersCompact")
+        case .datePickersWheels:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersWheels")
+        case .timePickersCountDown:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "TimePickersCountDown")
+        case .timePickersWheels:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "TimePickersWheels")
+        case .timePickersCompact:
+            return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersCompact") // sharing the same VC with `datePickersCompact`
         }
     }
 }
@@ -52,4 +92,5 @@ internal enum Fixture: CaseIterable {
 internal extension UIStoryboard {
     static var basic: UIStoryboard { UIStoryboard(name: "Basic", bundle: nil) }
     static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: nil) }
+    static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: nil) }
 }

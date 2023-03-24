@@ -5,7 +5,6 @@
  */
 
 import XCTest
-@testable import TestUtilities
 @testable import DatadogSessionReplay
 
 class UISegmentRecorderTests: XCTestCase {
@@ -20,7 +19,6 @@ class UISegmentRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
     func testWhenSegmentIsVisible() throws {
@@ -31,15 +29,15 @@ class UISegmentRecorderTests: XCTestCase {
         }
 
         // When
-        viewAttributes = .mock(fixture: .visible())
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        DDAssertReflectionEqual(semantics.subtreeStrategy, .ignore, "Segment's subtree should not be recorded")
+        let semantics = try XCTUnwrap(recorder.semantics(of: segment, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UISegmentWireframesBuilder)
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UISegmentWireframesBuilder)
         XCTAssertEqual(builder.attributes, viewAttributes)
-
         XCTAssertEqual(builder.segmentTitles, ["first", "second", "third"])
         XCTAssertEqual(builder.selectedSegmentIndex, 2)
         if #available(iOS 13.0, *) {

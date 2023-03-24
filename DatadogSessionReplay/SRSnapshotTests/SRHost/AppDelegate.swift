@@ -34,10 +34,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     var keyWindow: UIWindow? {
-        return UIApplication.shared
-            .connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first { scene in scene.windows.contains { window in window.isKeyWindow } }?
-            .keyWindow
+        if #available(iOS 15.0, *) {
+            return UIApplication.shared
+                .connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first { scene in scene.windows.contains { window in window.isKeyWindow } }?
+                .keyWindow
+        } else {
+            let application = UIApplication.value(forKeyPath: #keyPath(UIApplication.shared)) as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
+            return application?
+                .connectedScenes
+                .flatMap { ($0 as? UIWindowScene)?.windows ?? [] }
+                .first { $0.isKeyWindow }
+        }
     }
 }
