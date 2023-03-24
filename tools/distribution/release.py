@@ -59,7 +59,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     try:
-        git_tag = args.git_tag
+        git_tag = "1.19.0"
         only_github = True if args.only_github else False
         only_cocoapods = True if args.only_cocoapods else False
         overwrite_github = True if args.overwrite_github else False
@@ -126,7 +126,6 @@ if __name__ == "__main__":
             # Publish CP podspecs:
             if publish_to_cp:
                 podspecs = [
-                    CPPodspec(name='DatadogSDK'),
                     CPPodspec(name='DatadogSDKObjc'),
                     CPPodspec(name='DatadogSDKCrashReporting'),
                     CPPodspec(name='DatadogSDKAlamofireExtension'),
