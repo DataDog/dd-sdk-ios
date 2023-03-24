@@ -15,6 +15,7 @@ private struct FeatureMock: DatadogFeature {
     var name: String
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+    var performanceOverride: PerformancePresetOverride? = nil
 }
 
 class DatadogCoreTests: XCTestCase {
