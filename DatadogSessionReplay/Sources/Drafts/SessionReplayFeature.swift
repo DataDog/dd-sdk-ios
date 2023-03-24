@@ -19,6 +19,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     let name: String = "session-replay"
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
+    let performanceOverride: PerformancePresetOverride?
 
     // MARK: - Integrations with other features
 
@@ -57,7 +58,10 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.writer = writer
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
         self.contextPublisher = SRContextPublisher(core: core)
-
+        self.performanceOverride = PerformancePresetOverride(
+            maxFileSize: UInt64(10).MB,
+            maxObjectSize: UInt64(10).MB
+        )
         // Set initial SR context (it is configured, but not yet started):
         contextPublisher.setRecordingIsPending(false)
     }

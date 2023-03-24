@@ -277,12 +277,14 @@ extension DatadogCore: DatadogCoreProtocol {
     /* public */ func register(feature: DatadogFeature) throws {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
 
+        let updatedPerformance = performance.updated(with: feature.performanceOverride)
+
         let storage = FeatureStorage(
             featureName: feature.name,
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            performance: performance,
+            performance: updatedPerformance,
             encryption: encryption
         )
 
@@ -292,7 +294,7 @@ extension DatadogCore: DatadogCoreProtocol {
             fileReader: storage.reader,
             requestBuilder: feature.requestBuilder,
             httpClient: httpClient,
-            performance: performance
+            performance: updatedPerformance
         )
 
         v2Features[feature.name] = (
