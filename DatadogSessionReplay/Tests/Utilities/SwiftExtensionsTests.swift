@@ -44,6 +44,13 @@ class FixedWidthIntegerTests: XCTestCase {
         let expectedConvertedValue = Int.min
         XCTAssertEqual(expectedConvertedValue, convertedValue)
     }
+
+    func testBytesSizeConvenience() {
+        let size = 1
+        XCTAssertEqual(size.KB, size * 1_024)
+        XCTAssertEqual(size.MB, size * 1_024 * 1_024)
+        XCTAssertEqual(size.GB, size * 1_024 * 1_024 * 1_024)
+    }
 }
 
 class TimeIntervalTests: XCTestCase {
@@ -64,5 +71,12 @@ class TimeIntervalTests: XCTestCase {
 
         let uInt64MaxDate = Date(timeIntervalSinceReferenceDate: -.greatestFiniteMagnitude)
         XCTAssertEqual(uInt64MaxDate.timeIntervalSince1970.toInt64Milliseconds, Int64.min)
+    }
+
+    func testTimeConvienience() {
+        let time = Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970
+        XCTAssertEqual(time.minutes, time * 60)
+        XCTAssertEqual(time.hours, time * 60 * 60)
+        XCTAssertEqual(time.days, time * 60 * 60 * 24)
     }
 }
