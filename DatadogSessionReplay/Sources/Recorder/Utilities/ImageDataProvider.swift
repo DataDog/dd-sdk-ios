@@ -18,7 +18,7 @@ internal protocol ImageDataProviding {
     ) -> String
 }
 
-final internal class ImageDataProvider: ImageDataProviding {
+internal final class ImageDataProvider: ImageDataProviding {
     private var cache: Cache<String, String>
 
     private let maxBytesSize: Int
