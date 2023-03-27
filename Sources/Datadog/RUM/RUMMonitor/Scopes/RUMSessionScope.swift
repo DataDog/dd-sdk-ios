@@ -177,28 +177,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 // Start view scope explicitly on receiving "start view" command
                 startView(on: startViewCommand, context: context)
             } else if !hasActiveView {
-                // Otherwise, if there is no active view scope, consider starting artificial scope for handling this command
-                let handlingRule = RUMOffViewEventsHandlingRule(
-                    sessionState: state,
-                    isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
-                    isBETEnabled: backgroundEventTrackingEnabled
-                )
-
-                switch handlingRule {
-                case .handleInBackgroundView where command.canStartBackgroundView:
-                    startBackgroundView(on: command, context: context)
-                default:
-                    if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
-                        // As no view scope will handle this command, warn the user on dropping it.
-                        DD.logger.warn(
-                        """
-                        \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
-                        DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
-                        the RumMonitor.startView() and RumMonitor.stopView() methods.
-                        """
-                        )
-                    }
-                }
+                handleOffViewCommand(command: command, context: context)
             }
         }
 
@@ -265,6 +244,30 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         viewScopes.append(
             scope
         )
+    }
+
+    private func handleOffViewCommand(command: RUMCommand, context: DatadogContext) {
+        let handlingRule = RUMOffViewEventsHandlingRule(
+            sessionState: state,
+            isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
+            isBETEnabled: backgroundEventTrackingEnabled
+        )
+
+        switch handlingRule {
+        case .handleInBackgroundView where command.canStartBackgroundView:
+            startBackgroundView(on: command, context: context)
+        default:
+            if !(command is RUMKeepSessionAliveCommand) { // it is expected to receive 'keep alive' while no active view (when tracking WebView events)
+                // As no view scope will handle this command, warn the user on dropping it.
+                DD.logger.warn(
+                """
+                \(String(describing: command)) was detected, but no view is active. To track views automatically, try calling the
+                DatadogConfiguration.Builder.trackUIKitRUMViews() method. You can also track views manually using
+                the RumMonitor.startView() and RumMonitor.stopView() methods.
+                """
+                )
+            }
+        }
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {

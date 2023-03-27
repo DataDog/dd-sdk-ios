@@ -636,10 +636,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         core.set(feature: "rum", attributes: {
             self.queue.sync {
                 let context = self.applicationScope.activeSession?.viewScopes.last?.context ??
-                              self.applicationScope.activeSession?.context ??
-                              self.applicationScope.context
+                                self.applicationScope.activeSession?.context ??
+                                self.applicationScope.context
 
                 guard context.sessionID != .nullUUID else {
+                    // if Session was sampled or not yet started
                     return [:]
                 }
 

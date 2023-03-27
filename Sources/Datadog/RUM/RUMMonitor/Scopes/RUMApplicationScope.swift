@@ -66,15 +66,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // that need a refresh
         sessionScopes = sessionScopes.compactMap({ scope in
             if scope.process(command: command, context: context, writer: writer) {
-                // Returned true, keep the scope around, it still has work to do.
+                // proccss(command:context:writer) returned true, so keep the scope around
+                // as it it still has work to do.
                 return scope
             }
 
+            // proccss(command:context:writer) returned false, but if the scope is  still active
+            // it means we timed out or expired and we need to refresh the session
             if scope.isActive {
-                // False, but still active means we timed out or expired, refresh the session
                 return refresh(expiredSession: scope, on: command, context: context, writer: writer)
             }
-            // Else, inactive and done processing events, remove
+
+            // Else, an inactive scope is done processing events and can be removed
             return nil
         })
 

@@ -26,10 +26,10 @@ internal class KioskSendEventsViewController: UIViewController {
         rumMonitor.stopView(viewController: self)
     }
 
-    @IBAction func didTapDownloadResourceButton(_ sender: Any) {
+    @IBAction func didTapDownloadResourceButton(_ sender: UIButton) {
         rumMonitor.addUserAction(
             type: .tap,
-            name: (sender as! UIButton).currentTitle!,
+            name: sender.currentTitle!,
             attributes: ["button.description": String(describing: sender)]
         )
 
