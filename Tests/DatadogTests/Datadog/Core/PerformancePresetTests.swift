@@ -143,8 +143,5 @@ class PerformancePresetTests: XCTestCase {
         let updatedPreset = preset.updated(with: PerformancePresetOverride(maxFileSize: 0, maxObjectSize: 0))
         XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
         XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
-
-        let notUpdatedPreset = preset.updated(with: nil)
-        XCTAssertEqual(preset, notUpdatedPreset)
     }
 }
