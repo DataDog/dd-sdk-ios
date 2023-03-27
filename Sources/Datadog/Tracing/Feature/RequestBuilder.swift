@@ -7,14 +7,14 @@
 import Foundation
 import DatadogInternal
 
-/// The Logging URL Request Builder for formatting and configuring the `URLRequest`
-/// to upload logs data.
-internal struct RequestBuilder: FeatureRequestBuilder {
-    /// A custom logs intake.
+/// The Tracing URL Request Builder for formatting and configuring the `URLRequest`
+/// to upload traces data.
+internal struct TracingRequestBuilder: FeatureRequestBuilder {
+    /// The tracing intake.
     let customIntakeURL: URL?
 
-    /// The logs request body format.
-    let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
+    /// The tracing request body format.
+    let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
     init(customIntakeURL: URL? = nil) {
         self.customIntakeURL = customIntakeURL
@@ -23,11 +23,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     func request(for events: [Data], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: url(with: context),
-            queryItems: [
-                .ddsource(source: context.source)
-            ],
+            queryItems: [],
             headers: [
-                .contentTypeHeader(contentType: .applicationJSON),
+                .contentTypeHeader(contentType: .textPlainUTF8),
                 .userAgentHeader(
                     appName: context.applicationName,
                     appVersion: context.version,
@@ -44,7 +42,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         return builder.uploadRequest(with: data)
     }
 
-    private func url(with context: DatadogContext) -> URL {
-        customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v2/logs")
+    func url(with context: DatadogContext) -> URL {
+        customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v2/spans")
     }
 }

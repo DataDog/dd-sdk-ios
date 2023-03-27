@@ -206,7 +206,6 @@ public class Datadog {
         )
 
         // First, initialize features:
-        var tracing: TracingFeature?
         var rum: RUMFeature?
 
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
@@ -247,21 +246,12 @@ public class Datadog {
         if let loggingConfiguration = configuration.logging {
             try DatadogLogger.initialise(
                 in: core,
-                uploadURL: loggingConfiguration.uploadURL,
                 applicationBundleIdentifier: loggingConfiguration.applicationBundleIdentifier,
                 eventMapper: loggingConfiguration.logEventMapper,
                 dateProvider: loggingConfiguration.dateProvider,
-                sampler: loggingConfiguration.remoteLoggingSampler
+                sampler: loggingConfiguration.remoteLoggingSampler,
+                customIntakeURL: loggingConfiguration.customURL
             )
-        }
-
-        if let tracingConfiguration = configuration.tracing {
-            tracing = try core.create(
-                configuration: createTracingConfiguration(intake: tracingConfiguration.uploadURL),
-                featureSpecificConfiguration: tracingConfiguration
-            )
-
-            core.register(feature: tracing)
         }
 
         if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {

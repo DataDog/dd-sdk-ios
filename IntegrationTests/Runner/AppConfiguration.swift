@@ -66,13 +66,6 @@ struct UITestsAppConfiguration: AppConfiguration {
             _ = configuration.enableLogging(false)
         }
 
-        // If `HTTPServerMock` endpoint is set for Tracing, enable the feature and send data to mock server
-        if let tracesEndpoint = serverMockConfiguration?.tracesEndpoint {
-            _ = configuration.set(customTracesEndpoint: tracesEndpoint)
-        } else {
-            _ = configuration.enableTracing(false)
-        }
-
         // If `HTTPServerMock` endpoint is set for RUM, enable the feature and send data to mock server
         if let rumEndpoint = serverMockConfiguration?.rumEndpoint {
             _ = configuration.set(customRUMEndpoint: rumEndpoint)

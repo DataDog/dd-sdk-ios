@@ -27,7 +27,7 @@ class URLSessionTracingHandlerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(messageReceiver: LogMessageReceiver.mockAny())
-        Global.sharedTracer = Tracer.mockWith(core: core)
+        Global.sharedTracer = DatadogTracer.mockWith(core: core)
     }
 
     override func tearDown() {
@@ -149,12 +149,12 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
-        XCTAssertEqual(span.tags[DDTags.errorType], "domain - 123")
+        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "domain - 123")
         XCTAssertEqual(
-            span.tags[DDTags.errorStack],
+            span.tags[DatadogSpanTag.errorStack],
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
-        XCTAssertEqual(span.tags[DDTags.errorMessage], "network error")
+        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "network error")
         XCTAssertEqual(span.tags.count, 7)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
@@ -217,10 +217,10 @@ class URLSessionTracingHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
-        XCTAssertEqual(span.tags[DDTags.errorType], "HTTPURLResponse - 404")
-        XCTAssertEqual(span.tags[DDTags.errorMessage], "404 not found")
+        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "HTTPURLResponse - 404")
+        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "404 not found")
         XCTAssertEqual(
-            span.tags[DDTags.errorStack],
+            span.tags[DatadogSpanTag.errorStack],
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
         XCTAssertEqual(span.tags.count, 8)
@@ -311,8 +311,8 @@ class URLSessionTracingHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
-        XCTAssertEqual(span.tags[DDTags.foregroundDuration], "10000000000")
-        XCTAssertEqual(span.tags[DDTags.isBackground], "false")
+        XCTAssertEqual(span.tags[DatadogSpanTag.foregroundDuration], "10000000000")
+        XCTAssertEqual(span.tags[DatadogSpanTag.isBackground], "false")
     }
 
     func testGivenRejectingHandler_itDoesNotRecordSpan() throws {

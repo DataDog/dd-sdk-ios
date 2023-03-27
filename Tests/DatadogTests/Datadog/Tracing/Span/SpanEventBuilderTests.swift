@@ -247,7 +247,7 @@ class SpanEventBuilderTests: XCTestCase {
             startTime: .mockAny(),
             finishTime: .mockAny(),
             tags: [
-                DDTags.resource: "custom resource name"
+                DatadogSpanTag.resource: "custom resource name"
             ],
             baggageItems: [:],
             logFields: []

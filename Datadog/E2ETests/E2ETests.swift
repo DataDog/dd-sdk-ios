@@ -66,7 +66,7 @@ class E2ETests: XCTestCase {
             configuration: configuration
         )
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        Global.sharedTracer = DatadogTracer.initialize(configuration: .init())
         Global.rum = RUMMonitor.initialize()
     }
 

@@ -8,27 +8,9 @@ import TestUtilities
 import DatadogInternal
 @testable import Datadog
 
-extension TracingFeature {
-    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-    static func mockAny() -> TracingFeature { .mockWith() }
-
-    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-    static func mockWith(
-        configuration: FeaturesConfiguration.Tracing = .mockAny(),
-        messageReceiver: FeatureMessageReceiver = TracingMessageReceiver()
-    ) -> TracingFeature {
-        return TracingFeature(
-            storage: .mockNoOp(),
-            upload: .mockNoOp(),
-            configuration: configuration,
-            messageReceiver: messageReceiver
-        )
-    }
-}
-
 extension DatadogCoreProxy {
     func waitAndReturnSpanMatchers(file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        return try waitAndReturnEventsData(of: TracingFeature.self)
+        return try waitAndReturnEventsData(ofFeature: DatadogTraceFeature.name)
             .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
     }
 }
@@ -67,7 +49,7 @@ extension DDSpan {
     }
 
     static func mockWith(
-        tracer: Tracer,
+        tracer: DatadogTracer,
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
@@ -194,8 +176,8 @@ extension SpanEvent.UserInfo: AnyMockable, RandomMockable {
 
 // MARK: - Component Mocks
 
-extension Tracer {
-    static func mockAny(in core: DatadogCoreProtocol) -> Tracer {
+extension DatadogTracer {
+    static func mockAny(in core: DatadogCoreProtocol) -> Self {
         return mockWith(core: core)
     }
 
@@ -206,8 +188,8 @@ extension Tracer {
         tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         rumIntegration: TracingWithRUMIntegration? = nil
-    ) -> Tracer {
-        return Tracer(
+    ) -> Self {
+        return .init(
             core: core,
             configuration: configuration,
             spanEventMapper: spanEventMapper,

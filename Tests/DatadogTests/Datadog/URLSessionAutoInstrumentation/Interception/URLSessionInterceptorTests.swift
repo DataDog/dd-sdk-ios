@@ -25,7 +25,7 @@ class URLSessionInterceptorTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock()
-        core.register(feature: TracingFeature.mockWith())
+        DatadogTracer.initialize(in: core)
     }
 
     override func tearDown() {
@@ -141,7 +141,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny(in: core)
+        Global.sharedTracer = DatadogTracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
@@ -199,7 +199,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny(in: core)
+        Global.sharedTracer = DatadogTracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -234,7 +234,7 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny(in: core)
+        Global.sharedTracer = DatadogTracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -262,7 +262,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny(in: core)
+        Global.sharedTracer = DatadogTracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
         // When
@@ -317,7 +317,7 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
             handler: handler
         )
-        Global.sharedTracer = Tracer.mockAny(in: core)
+        Global.sharedTracer = DatadogTracer.mockAny(in: core)
         defer { Global.sharedTracer = DDNoopGlobals.tracer }
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])

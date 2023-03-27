@@ -23,7 +23,7 @@ internal class SendTracesFixtureViewController: UIViewController {
         let dataDownloadingSpan = tracer.startSpan(operationName: "data downloading")
         dataDownloadingSpan.setTag(key: "data.kind", value: "image")
         dataDownloadingSpan.setTag(key: "data.url", value: URL(string: "https://example.com/image.png")!)
-        dataDownloadingSpan.setTag(key: DDTags.resource, value: "GET /image.png")
+        dataDownloadingSpan.setTag(key: DatadogSpanTag.resource, value: "GET /image.png")
 
         // Simulate downloading data required by the screen.
         downloadScreenData { data in

@@ -52,7 +52,7 @@ class DebugTracingViewController: UIViewController {
         queue1.async {
             let span = Global.sharedTracer.startSpan(operationName: spanName)
             if let resourceName = resourceName {
-                span.setTag(key: DDTags.resource, value: resourceName)
+                span.setTag(key: DatadogSpanTag.resource, value: resourceName)
             }
             if isError {
                 // To only mark the span as an error, use the Open Tracing `error` tag:

@@ -46,13 +46,16 @@ class BenchmarkTests: XCTestCase {
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: "rum-123", clientToken: "rum-abc", environment: "benchmarks")
                 .set(customLogsEndpoint: anyURL)
-                .set(customTracesEndpoint: anyURL)
                 .set(customRUMEndpoint: anyURL)
                 .build()
         )
 
+        DatadogTracer.initialize(
+            configuration: .init(customIntakeURL: anyURL)
+        )
+
         Global.rum = RUMMonitor.initialize()
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        Global.sharedTracer = DatadogTracer.shared()
     }
 
     // MARK: - `HTTPServerMock` connection
