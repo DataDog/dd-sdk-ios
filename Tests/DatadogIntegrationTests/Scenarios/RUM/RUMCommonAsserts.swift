@@ -71,7 +71,9 @@ extension RUMSessionMatcher {
         let eventMatchers = try requests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody, eventsPatch: eventsPatch) }
             .filter { event in try event.eventType() != "telemetry" }
-        let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers)
+        let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers).sorted(by: {
+            return $0.viewVisits.first?.viewEvents.first?.date ?? 0 < $1.viewVisits.first?.viewEvents.first?.date ?? 0
+        })
 
         if sessionMatchers.count > maxCount {
             throw Exception(

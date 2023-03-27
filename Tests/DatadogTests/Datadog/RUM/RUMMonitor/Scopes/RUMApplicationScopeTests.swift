@@ -40,7 +40,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 onSessionStart: onSessionStart
             )
         )
-        XCTAssertNil(scope.sessionScope)
+        XCTAssertNil(scope.activeSession)
 
         // When
         let command = mockRandomRUMCommand().replacing(time: currentTime.addingTimeInterval(1))
@@ -49,7 +49,7 @@ class RUMApplicationScopeTests: XCTestCase {
         waitForExpectations(timeout: 0.5)
 
         // Then
-        let sessionScope = try XCTUnwrap(scope.sessionScope)
+        let sessionScope = try XCTUnwrap(scope.activeSession)
         XCTAssertTrue(sessionScope.isInitialSession, "Starting the very first view in application must create initial session")
     }
 
@@ -79,7 +79,7 @@ class RUMApplicationScopeTests: XCTestCase {
             writer: writer
         )
 
-        let initialSession = try XCTUnwrap(scope.sessionScope)
+        let initialSession = try XCTUnwrap(scope.activeSession)
 
         // When
         // Push time forward by the max session duration:
@@ -93,7 +93,7 @@ class RUMApplicationScopeTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5)
 
-        let nextSession = try XCTUnwrap(scope.sessionScope)
+        let nextSession = try XCTUnwrap(scope.activeSession)
         XCTAssertNotEqual(initialSession.sessionUUID, nextSession.sessionUUID, "New session must have different id")
         XCTAssertEqual(initialSession.viewScopes.count, nextSession.viewScopes.count, "All view scopes must be transferred to the new session")
 
@@ -180,5 +180,193 @@ class RUMApplicationScopeTests: XCTestCase {
         let halfSessionsCount = 0.5 * Double(simulatedSessionsCount)
         XCTAssertGreaterThan(trackedSessionsCount, halfSessionsCount * 0.8) // -20%
         XCTAssertLessThan(trackedSessionsCount, halfSessionsCount * 1.2) // +20%
+    }
+
+    // MARK: - Stopping and Restarting Sessions
+
+    func testWhenStoppingSession_itHasNoActiveSesssion() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+
+        let command = mockRandomRUMCommand().replacing(time: currentTime.addingTimeInterval(1))
+        XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
+
+        // When
+        let stopCommand = RUMStopSessionCommand.mockAny()
+        XCTAssertFalse(scope.process(command: stopCommand, context: context, writer: writer))
+
+        // Then
+        XCTAssertNil(scope.activeSession)
+    }
+
+    func testGivenStoppedSession_whenUserActionEvent_itStartsANewSession() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+        XCTAssertTrue(scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertFalse(scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertTrue(scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: true),
+            context: context,
+            writer: writer
+        ))
+
+        // Then
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        XCTAssertNotNil(scope.activeSession)
+    }
+
+    func testGivenStoppedSession_whenAUserActionOccurs_itRestartsTheLastKnownView() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+        let viewName: String = .mockRandom()
+        let viewPath: String = .mockRandom()
+        XCTAssertTrue(scope.process(
+            command: RUMStartViewCommand.mockWith(
+                name: viewName,
+                path: viewPath
+            ),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertFalse(scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        ))
+        let secondSesionStartTime = currentTime.addingTimeInterval(3)
+        XCTAssertTrue(scope.process(
+            command: RUMCommandMock(time: secondSesionStartTime, isUserInteraction: true),
+            context: context,
+            writer: writer
+        ))
+
+        // Then
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        let activeSession = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(activeSession.viewScopes.count, 1)
+        let activeView = try XCTUnwrap(activeSession.viewScopes.first)
+        XCTAssertEqual(activeView.viewPath, viewPath)
+        XCTAssertEqual(activeView.viewName, viewName)
+        XCTAssertEqual(activeView.viewStartTime, secondSesionStartTime)
+    }
+
+    func testGivenStoppedSession_whenNonUserIntaractionEvent_itDoesNotStartANewSession() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+        XCTAssertTrue(scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(1), isUserInteraction: true),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertFalse(scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertFalse(scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: false),
+            context: context,
+            writer: writer
+        ))
+
+        // Then
+        XCTAssertEqual(scope.sessionScopes.count, 0)
+        XCTAssertNil(scope.activeSession)
+    }
+
+    func testGivenStoppedSessionProcessingResources_itCanStayInactive() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+        XCTAssertTrue(scope.process(
+            command: RUMStartResourceCommand.mockRandom(),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertFalse(scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        ))
+
+        // Then
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        XCTAssertNil(scope.activeSession)
+    }
+
+    func testGivenStoppedSessionProcessingResources_itIsRemovedWhenFinished() throws {
+        // Given
+        let currentTime = Date()
+        let scope = RUMApplicationScope(
+            dependencies: .mockWith(
+                sessionSampler: .mockKeepAll()
+            )
+        )
+        let resourceKey = "resources/1"
+        XCTAssertTrue(scope.process(
+            command: RUMStartResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: currentTime.addingTimeInterval(1)
+            ),
+            context: context,
+            writer: writer
+        ))
+        let firstSession = scope.activeSession
+        XCTAssertFalse(scope.process(
+            command: RUMStopSessionCommand.mockWith(time: currentTime.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        ))
+        XCTAssertTrue(scope.process(
+            command: RUMCommandMock(time: currentTime.addingTimeInterval(3), isUserInteraction: true),
+            context: context,
+            writer: writer
+        ))
+        let secondSession = scope.activeSession
+        XCTAssertTrue(scope.process(
+            command: RUMStopResourceCommand.mockWith(
+                resourceKey: resourceKey,
+                time: currentTime.addingTimeInterval(4)
+            ),
+            context: context,
+            writer: writer
+        ))
+
+        // Then
+        XCTAssertEqual(scope.sessionScopes.count, 1)
+        XCTAssertNotEqual(scope.activeSession?.sessionUUID, firstSession?.sessionUUID)
+        XCTAssertEqual(scope.activeSession?.sessionUUID, secondSession?.sessionUUID)
     }
 }
