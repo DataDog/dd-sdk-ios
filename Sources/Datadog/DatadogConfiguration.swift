@@ -300,8 +300,7 @@ extension Datadog {
             /// Enables or disables the tracing feature.
             ///
             /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
-            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `Global.sharedTracer` to `Tracer`,
-            /// and your app will be using the no-op tracer instance.
+            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not initialize the tracer `DatadogTracer.initialize`.
             ///
             /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
             /// running the tracing feature. This will give you additional performance optimization if you only use RUM or logging.

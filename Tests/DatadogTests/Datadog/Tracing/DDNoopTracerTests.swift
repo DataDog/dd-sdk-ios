@@ -28,8 +28,8 @@ class DDNoopTracerTests: XCTestCase {
 
         // Then
         let expectedWarningMessage = """
-        The `Global.sharedTracer` was called but no `Tracer` is registered. Configure and register the `Tracer` globally before invoking the feature:
-            Global.sharedTracer = DatadogTracer.initialize()
+        The `DatadogTracer.shared()` was called but `DatadogTracer` is not initialised. Configure the `DatadogTracer` before invoking the feature:
+            DatadogTracer.initialize()
         See https://docs.datadoghq.com/tracing/setup_overview/setup/ios
         """
 

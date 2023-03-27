@@ -31,14 +31,12 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                Global.sharedTracer is DDNoopTracer
-                    && Global.rum is DDNoopRUMMonitor
+                Global.rum is DDNoopRUMMonitor
             },
             problem: "All Global components must use no-op implementations.",
             solution: """
             Make sure each Global component is reset to its default implementation before the end of test that mocks it:
             ```
-            Global.sharedTracer = DDNoopGlobals.tracer
             Global.rum = DDNoopRUMMonitor()
             ```
             """

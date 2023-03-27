@@ -5,17 +5,12 @@
  */
 
 import Foundation
+import class Datadog.DatadogTracer
 import struct Datadog.Global
 
 @objc
 public class DDGlobal: NSObject {
-    @objc public static var sharedTracer = DatadogObjc.DDTracer(swiftTracer: Datadog.Global.sharedTracer) {
-        didSet {
-            // We must also set the Swift `Global.tracer`
-            // as it's used internally by auto-instrumentation feature.
-            Datadog.Global.sharedTracer = sharedTracer.swiftTracer
-        }
-    }
+    @objc public static var sharedTracer: DatadogObjc.DDTracer { .init(swiftTracer: DatadogTracer.shared()) }
 
     @objc public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum) {
         didSet {

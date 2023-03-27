@@ -15,7 +15,7 @@ import Foundation
 ///     var request = URLRequest(...)
 ///
 ///     let writer = W3CHTTPHeadersWriter()
-///     let span = Global.sharedTracer.startSpan("network request")
+///     let span = DatadogTracer.shared().startSpan("network request")
 ///     writer.inject(spanContext: span.context)
 ///
 ///     writer.traceHeaderFields.forEach { (field, value) in

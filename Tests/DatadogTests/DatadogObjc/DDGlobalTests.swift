@@ -28,27 +28,16 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenTracerIsNotSet_itReturnsNoOpImplementation() {
         XCTAssertTrue(DatadogObjc.DDGlobal.sharedTracer.swiftTracer is DDNoopTracer)
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
     }
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
         DatadogTracer.initialize()
 
-        let previousGlobal = (
-            objc: DatadogObjc.DDGlobal.sharedTracer,
-            swift: Global.sharedTracer
-        )
-        defer {
-            DatadogObjc.DDGlobal.sharedTracer = previousGlobal.objc
-            Global.sharedTracer = previousGlobal.swift
-        }
-
         // When
         DatadogObjc.DDTracer.initialize()
-        DatadogObjc.DDGlobal.sharedTracer = DatadogObjc.DDTracer.shared
 
         // Then
-        XCTAssertTrue(Global.sharedTracer is DatadogTracer)
+        XCTAssertTrue(DatadogObjc.DDTracer.shared.swiftTracer is DatadogTracer)
     }
 
     // MARK: - Test Global RUMMonitor

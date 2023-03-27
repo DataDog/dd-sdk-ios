@@ -8,10 +8,6 @@ import XCTest
 @testable import Datadog
 
 class GlobalTests: XCTestCase {
-    func testWhenTracerIsNotInitialized_itGivesNoOpImplementation() {
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
-    }
-
     func testWhenRUMMonitorIsNotInitialized_itGivesNoOpImplementation() {
         XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }

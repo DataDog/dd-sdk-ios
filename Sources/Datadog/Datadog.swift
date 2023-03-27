@@ -322,7 +322,6 @@ public class Datadog {
         (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
-        Global.sharedTracer = DDNoopGlobals.tracer
         Global.rum = DDNoopRUMMonitor()
         DD.telemetry = NOPTelemetry()
 

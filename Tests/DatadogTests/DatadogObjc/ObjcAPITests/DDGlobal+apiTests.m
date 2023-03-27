@@ -15,11 +15,6 @@
  */
 @implementation DDGlobal_apiTests
 
-- (void)testSharedTracerAPI {
-    id tracer = DDGlobal.sharedTracer;
-    DDGlobal.sharedTracer = tracer;
-}
-
 - (void)testRUMAPI {
     id rum = DDGlobal.rum;
     DDGlobal.rum = rum;

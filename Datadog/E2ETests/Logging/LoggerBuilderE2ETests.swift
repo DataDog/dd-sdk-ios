@@ -220,7 +220,7 @@ class LoggerBuilderE2ETests: E2ETests {
             logger = Logger.builder.bundleWithTrace(true).build()
         }
 
-        let activeSpan = Global.sharedTracer
+        let activeSpan = DatadogTracer.shared()
             .startRootSpan(operationName: .mockRandom())
             .setActive()
         logger.sendRandomLog(with: DD.logAttributes())
@@ -240,7 +240,7 @@ class LoggerBuilderE2ETests: E2ETests {
             logger = Logger.builder.bundleWithTrace(false).build()
         }
 
-        let activeSpan = Global.sharedTracer
+        let activeSpan = DatadogTracer.shared()
             .startRootSpan(operationName: .mockRandom())
             .setActive()
         logger.sendRandomLog(with: DD.logAttributes())

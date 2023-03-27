@@ -14,7 +14,7 @@ import DatadogCrashReporting
 let serviceName = "ios-sdk-example-app"
 
 var logger: Logger!
-var tracer: OTTracer { Global.sharedTracer }
+var tracer: OTTracer { DatadogTracer.shared() }
 var rumMonitor: DDRUMMonitor { Global.rum }
 
 @UIApplicationMain
@@ -84,8 +84,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                 customIntakeURL: Environment.readCustomTraceURL()
             )
         )
-
-        Global.sharedTracer = DatadogTracer.shared()
 
         // Register RUMMonitor
         Global.rum = RUMMonitor.initialize()
