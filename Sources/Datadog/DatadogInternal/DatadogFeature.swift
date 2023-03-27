@@ -39,6 +39,10 @@ public protocol DatadogFeature {
     var performanceOverride: PerformancePresetOverride? { get }
 }
 
+extension DatadogFeature {
+    public var performanceOverride: PerformancePresetOverride? { nil }
+}
+
 public protocol DatadogFeatureIntegration {
     /// The feature name.
     var name: String { get }

@@ -188,4 +188,50 @@ class DatadogCoreTests: XCTestCase {
         )
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 3, "It should send 3 requests")
     }
+
+    func testWhenPerformancePresetOverrideIsNotProvided() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
+            initialConsent: .granted,
+            userInfoProvider: .mockAny(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
+        )
+        try core.register(
+            feature: FeatureMock(
+                name: "mock",
+                performanceOverride: nil
+            )
+        )
+        let feature = core.v2Features.values.first
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+    }
+
+    func testWhenPerformancePresetOverrideIsProvided() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
+            initialConsent: .granted,
+            userInfoProvider: .mockAny(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
+        )
+        try core.register(
+            feature: FeatureMock(
+                name: "mock",
+                performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
+            )
+        )
+        let feature = core.v2Features.values.first
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+    }
 }

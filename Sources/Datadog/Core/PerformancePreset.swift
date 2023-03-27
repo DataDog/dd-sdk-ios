@@ -142,13 +142,3 @@ internal extension PerformancePreset {
         )
     }
 }
-
-public struct PerformancePresetOverride {
-    let maxFileSize: UInt64?
-    let maxObjectSize: UInt64?
-
-    public init(maxFileSize: UInt64?, maxObjectSize: UInt64?) {
-        self.maxFileSize = maxFileSize
-        self.maxObjectSize = maxObjectSize
-    }
-}
