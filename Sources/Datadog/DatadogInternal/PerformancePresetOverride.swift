@@ -10,7 +10,6 @@ import Foundation
 /// performance presets by setting optional limits. If the limits are not provided, the default values from
 /// the `PerformancePreset` object will be used.
 public struct PerformancePresetOverride {
-
     /// An optional value representing the maximum allowed file size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
     let maxFileSize: UInt64?

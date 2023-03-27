@@ -45,7 +45,6 @@ public extension TimeInterval {
 /// An extension for FixedWidthInteger that provides a more semantic and expressive
 /// API for converting time representations into TimeInterval's default unit: seconds.
 public extension FixedWidthInteger {
-
     /// A helper property that returns the current value as a direct representation in seconds.
     var seconds: TimeInterval { return TimeInterval(self) }
 
@@ -70,4 +69,3 @@ public extension FixedWidthInteger {
         return overflow ? TimeInterval.greatestFiniteMagnitude : TimeInterval(result)
     }
 }
-
