@@ -23,6 +23,8 @@ internal struct ViewTreeRecordingContext {
     var selectionTextObfuscator: TextObfuscating
     /// Text obfuscator applied to all sensitive texts (such as passwords or e-mail address).
     let sensitiveTextObfuscator: TextObfuscating
+    /// Provides base64 image data with a built in caching mechanism.
+    let imageDataProvider: ImageDataProviding
 }
 
 internal struct ViewTreeRecorder {

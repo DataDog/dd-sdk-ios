@@ -51,16 +51,6 @@ class ImageDataProviderTests: XCTestCase {
         XCTAssertEqual(imageData.count, 0)
     }
 
-    func test_ignoresAboveDimensions() throws {
-        let sut = ImageDataProvider(
-            maxDimensions: CGSize(width: 1, height: 1)
-        )
-        let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
-
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
-        XCTAssertEqual(imageData.count, 0)
-    }
-
     func test_imageIdentifierConsistency() {
         var ids = Set<String>()
         for _ in 0..<100 {

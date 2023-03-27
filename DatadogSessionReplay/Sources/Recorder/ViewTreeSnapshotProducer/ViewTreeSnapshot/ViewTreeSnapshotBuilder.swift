@@ -19,6 +19,8 @@ internal struct ViewTreeSnapshotBuilder {
     let textObfuscator = TextObfuscator()
     /// Text obfuscator applied to all sensitive texts.
     let sensitiveTextObfuscator = SensitiveTextObfuscator()
+    /// Provides base64 image data with a built in caching mechanism.
+    let imageDataProvider: ImageDataProviding
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -44,7 +46,8 @@ internal struct ViewTreeSnapshotBuilder {
                 case .allowAll: return nopTextObfuscator
                 }
             }(),
-            sensitiveTextObfuscator: sensitiveTextObfuscator
+            sensitiveTextObfuscator: sensitiveTextObfuscator,
+            imageDataProvider: imageDataProvider
         )
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
@@ -60,7 +63,8 @@ extension ViewTreeSnapshotBuilder {
     init() {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders()),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            imageDataProvider: ImageDataProvider()
         )
     }
 }

@@ -7,30 +7,34 @@
 import Foundation
 import UIKit
 
-internal class ImageDataProvider {
-    enum DataLoadingStatus: Encodable {
-        case loaded(_ base64: String), ignored
-    }
+internal protocol ImageDataProviding {
+    func contentBase64String(
+        of image: UIImage?
+    ) -> String
 
-    private var cache: Cache<String, DataLoadingStatus>
+    func contentBase64String(
+        of image: UIImage?,
+        tintColor: UIColor?
+    ) -> String
+}
+
+internal final class ImageDataProvider: ImageDataProviding {
+    private var cache: Cache<String, String>
 
     private let maxBytesSize: Int
-    private let maxDimensions: CGSize
 
     internal init(
-        cache: Cache<String, DataLoadingStatus> = .init(),
-        maxBytesSize: Int = 64_000,
-        maxDimensions: CGSize = CGSize(width: 120, height: 120)
+        cache: Cache<String, String> = .init(),
+        maxBytesSize: Int = 10_000
     ) {
         self.cache = cache
         self.maxBytesSize = maxBytesSize
-        self.maxDimensions = maxDimensions
     }
 
     func contentBase64String(
         of image: UIImage?,
-        tintColor: UIColor? = nil
-    ) -> String? {
+        tintColor: UIColor?
+    ) -> String {
         autoreleasepool {
             guard var image = image else {
                 return ""
@@ -43,22 +47,20 @@ internal class ImageDataProvider {
             if let tintColorIdentifier = tintColor?.srIdentifier {
                 identifier += tintColorIdentifier
             }
-            let dataLoadingStaus = cache[identifier]
-            switch dataLoadingStaus {
-            case .none:
-                if let imageData = image.pngData(), image.size <= maxDimensions && imageData.count <= maxBytesSize {
-                    let base64EncodedImage = imageData.base64EncodedString()
-                    cache[identifier, base64EncodedImage.count] = .loaded(base64EncodedImage)
-                } else {
-                    cache[identifier] = .ignored
-                }
-                return contentBase64String(of: image)
-            case .loaded(let base64String):
-                return base64String
-            case .ignored:
+            if let base64EncodedImage = cache[identifier] {
+                return base64EncodedImage
+            } else if let base64EncodedImage = image.pngData()?.base64EncodedString(), base64EncodedImage.count <= maxBytesSize {
+                cache[identifier, base64EncodedImage.count] = base64EncodedImage
+                return base64EncodedImage
+            } else {
+                cache[identifier] = ""
                 return ""
             }
         }
+    }
+
+    func contentBase64String(of image: UIImage?) -> String {
+        contentBase64String(of: image, tintColor: nil)
     }
 }
 

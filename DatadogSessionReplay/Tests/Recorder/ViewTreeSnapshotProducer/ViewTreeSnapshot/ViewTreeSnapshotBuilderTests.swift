@@ -16,7 +16,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When
@@ -36,7 +37,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When
@@ -63,7 +65,8 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
-            idsGenerator: NodeIDGenerator()
+            idsGenerator: NodeIDGenerator(),
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When
