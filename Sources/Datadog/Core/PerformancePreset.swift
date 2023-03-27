@@ -126,15 +126,15 @@ internal extension PerformancePreset {
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
     }
 
-    func updated(with: PerformancePresetOverride?) -> PerformancePreset {
+    func updated(with: PerformancePresetOverride) -> PerformancePreset {
         return PerformancePreset(
-            maxFileSize: with?.maxFileSize ?? maxFileSize,
+            maxFileSize: with.maxFileSize ?? maxFileSize,
             maxDirectorySize: maxDirectorySize,
             maxFileAgeForWrite: maxFileAgeForWrite,
             minFileAgeForRead: minFileAgeForRead,
             maxFileAgeForRead: maxFileAgeForRead,
             maxObjectsInFile: maxObjectsInFile,
-            maxObjectSize: with?.maxObjectSize ?? maxObjectSize,
+            maxObjectSize: with.maxObjectSize ?? maxObjectSize,
             initialUploadDelay: initialUploadDelay,
             minUploadDelay: minUploadDelay,
             maxUploadDelay: maxUploadDelay,
