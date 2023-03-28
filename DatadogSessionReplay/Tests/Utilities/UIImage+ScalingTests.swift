@@ -10,7 +10,6 @@ import XCTest
 
 @available(iOS 13.0, *)
 class UIImageScalingTests: XCTestCase {
-
     var sut: (image: UIImage, pngData: Data) {
         guard let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil), let imageData = image.pngData() else {
             XCTFail("Failed to load image")

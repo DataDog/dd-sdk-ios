@@ -17,35 +17,43 @@ extension UIImage {
 
      - Returns: The data object containing the scaled image, or an empty data object if the image data cannot be converted to PNG data or if the scaled image cannot be converted to PNG data.
      */
-    func scaledDownToApproximateSize(_ maxSizeInBytes: Int, _ maxIterations: Int = 20) -> Data {
+    func scaledDownToApproximateSize(_ desiredSizeInBytes: Int) -> Data {
         guard let imageData = pngData() else {
             return Data()
         }
-        guard imageData.count >= maxSizeInBytes else {
+        guard imageData.count > desiredSizeInBytes else {
             return imageData
         }
-        let percentage: CGFloat = CGFloat(maxSizeInBytes) / CGFloat(imageData.count)
-        var scaledData = scaledImage(by: percentage)?.pngData() ?? Data()
+        var scaledImage = scaledImage(by: CGFloat(desiredSizeInBytes) / CGFloat(imageData.count))
 
-        var iterations = 0, scale: Double = 1
-        while scaledData.count > maxSizeInBytes && iterations < maxIterations {
-            scale *= 0.9
-            let newScaledData = scaledImage(by: scale)?.pngData() ?? Data()
-            if newScaledData.count <= scaledData.count {
-                scaledData = newScaledData
+        var scale: Double = 1
+        let maxIterations = 20
+        for _ in 0...maxIterations {
+            guard let scaledImageData = scaledImage.pngData() else {
+                return imageData
             }
-            iterations += 1
+            if scaledImageData.count <= desiredSizeInBytes {
+                return scaledImageData
+            }
+            scale *= 0.9
+            scaledImage = scaledImage.scaledImage(by: scale)
         }
-        return scaledData.count < imageData.count ? scaledData : imageData
+        guard let scaledImageData = scaledImage.pngData() else {
+            return imageData
+        }
+        return scaledImageData.count < imageData.count ? scaledImageData : imageData
     }
 
-    private func scaledImage(by percentage: CGFloat) -> UIImage? {
+    private func scaledImage(by percentage: CGFloat) -> UIImage {
+        guard percentage > 0 else {
+            return UIImage()
+        }
         let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
-        UIGraphicsBeginImageContextWithOptions(newSize, false, 1)
+        UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
         draw(in: CGRect(origin: .zero, size: newSize))
         let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        return scaledImage
+
+        return scaledImage ?? UIImage()
     }
 }
-
