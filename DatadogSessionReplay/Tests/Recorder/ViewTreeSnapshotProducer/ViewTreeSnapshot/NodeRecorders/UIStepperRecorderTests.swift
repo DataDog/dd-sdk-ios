@@ -34,7 +34,7 @@ class UIStepperRecorderTests: XCTestCase {
         XCTAssertTrue(semantics is SpecificElement)
         XCTAssertEqual(semantics.subtreeStrategy, .ignore, "Stepper's subtree should not be recorded")
 
-        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIStepperWireframesBuilder)
+        _ = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIStepperWireframesBuilder)
     }
 
     func testWhenViewIsNotOfExpectedType() {
