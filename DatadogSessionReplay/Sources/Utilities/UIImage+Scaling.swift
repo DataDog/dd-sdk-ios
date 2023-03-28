@@ -32,7 +32,7 @@ extension UIImage {
         guard imageData.count > desiredSizeInBytes else {
             return imageData
         }
-        var scaledImage = scaledImage(by: CGFloat(desiredSizeInBytes) / CGFloat(imageData.count))
+        var scaledImage = scaledImage(by: sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count)))
 
         var scale: Double = 1
         let maxIterations = 20

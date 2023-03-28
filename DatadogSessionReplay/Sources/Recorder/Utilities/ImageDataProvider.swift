@@ -25,7 +25,7 @@ internal final class ImageDataProvider: ImageDataProviding {
 
     internal init(
         cache: Cache<String, String> = .init(),
-        desiredMaxBytesSize: Int = 10.KB
+        desiredMaxBytesSize: Int = 15.KB
     ) {
         self.cache = cache
         self.desiredMaxBytesSize = desiredMaxBytesSize
