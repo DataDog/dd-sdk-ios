@@ -7,16 +7,24 @@
 import UIKit
 
 extension UIImage {
-    /**
-     Returns a scaled version of the image that is approximately equal to the size specified by the `maxSizeInBytes` parameter.
-     The approximate size is calculated based on the bitmap dimensions of the image,
-     but does not take into account the size of the PNG header or any compression that may be applied.
-
-     - Parameters:
-         - maxSizeInBytes: The maximum size, in bytes, of the scaled image.
-
-     - Returns: The data object containing the scaled image, or an empty data object if the image data cannot be converted to PNG data or if the scaled image cannot be converted to PNG data.
-     */
+    /// Scales down the image to an approximate file size in bytes.
+    ///
+    /// - Parameter desiredSizeInBytes: The target file size in bytes.
+    /// - Returns: A Data object representing the scaled down image as PNG data.
+    ///
+    /// This function takes the desired file size in bytes as input and scales down the image iteratively
+    /// until the resulting PNG data size is less than or equal to the specified target size.
+    ///
+    /// Note: The function will return the original image data if it is already smaller than the desired size,
+    /// or if it fails to generate a smaller image.
+    ///
+    /// Example usage:
+    ///
+    /// let originalImage = UIImage(named: "exampleImage")
+    /// let desiredSizeInBytes = 10240 // 10 KB
+    /// if let imageData = originalImage?.scaledDownToApproximateSize(desiredSizeInBytes) {
+    ///     // Use the scaled down image data.
+    /// }
     func scaledDownToApproximateSize(_ desiredSizeInBytes: Int) -> Data {
         guard let imageData = pngData() else {
             return Data()
@@ -44,6 +52,13 @@ extension UIImage {
         return scaledImageData.count < imageData.count ? scaledImageData : imageData
     }
 
+    /// Scales the image by a given percentage.
+    ///
+    /// - Parameter percentage: The scaling factor to apply, where 1.0 represents the original size.
+    /// - Returns: A UIImage object representing the scaled image, or an empty UIImage if the percentage is less than or equal to zero.
+    ///
+    /// This private helper function takes a CGFloat percentage as input and scales the image accordingly.
+    /// It ensures that the resulting image has a size proportional to the original one, maintaining its aspect ratio.
     private func scaledImage(by percentage: CGFloat) -> UIImage {
         guard percentage > 0 else {
             return UIImage()
