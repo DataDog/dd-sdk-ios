@@ -25,7 +25,7 @@ internal final class ImageDataProvider: ImageDataProviding {
 
     internal init(
         cache: Cache<String, String> = .init(),
-        maxBytesSize: Int = 10_000
+        maxBytesSize: Int = 15_360 // 10.0 KB
     ) {
         self.cache = cache
         self.maxBytesSize = maxBytesSize
@@ -49,12 +49,9 @@ internal final class ImageDataProvider: ImageDataProviding {
                 if #available(iOS 13.0, *), let tintColor = tintColor {
                     image = image.withTintColor(tintColor)
                 }
-                let base64EncodedImage = image.scaledToMaxSize(maxBytesSize).base64EncodedString()
+                let base64EncodedImage = image.scaledDownToApproximateSize(maxBytesSize).base64EncodedString()
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
                 return base64EncodedImage
-            } else {
-                cache[identifier] = ""
-                return ""
             }
         }
     }
@@ -73,26 +70,6 @@ fileprivate extension CGSize {
 extension UIImage {
     var srIdentifier: String {
         return "\(hash)"
-    }
-
-    func scaledToMaxSize(_ maxSizeInBytes: Int) -> Data {
-        guard let imageData = pngData() else {
-            return Data()
-        }
-        guard imageData.count >= maxSizeInBytes else {
-            return imageData
-        }
-        let percentage: CGFloat = sqrt(CGFloat(maxSizeInBytes) / CGFloat(imageData.count))
-        return scaledImage(by: percentage).pngData() ?? Data()
-    }
-
-    func scaledImage(by percentage: CGFloat) -> UIImage {
-        let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
-        let format = UIGraphicsImageRendererFormat()
-        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
-        return renderer.image { context in
-            draw(in: CGRect(origin: .zero, size: newSize))
-        }
     }
 }
 
