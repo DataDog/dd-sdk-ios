@@ -22,7 +22,12 @@ internal func renderImage(for wireframes: [SRWireframe]) -> UIImage {
 
     let frame = wireframes[0].toFrame()
     let canvas = FramerCanvas.create(size: CGSize(width: frame.width, height: frame.height))
-    canvas.draw(blueprint: Blueprint(id: "snapshot", frames: wireframes.map { $0.toFrame() }))
+    canvas.draw(
+        blueprint: Blueprint(
+            id: "snapshot",
+            contents: wireframes.map { .frame($0.toFrame()) }
+        )
+    )
     return canvas.image
 }
 
@@ -83,8 +88,8 @@ private extension SRImageWireframe {
     }
 }
 
-private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrameStyle {
-    var fs = BlueprintFrameStyle(
+private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrame.Style {
+    var fs = BlueprintFrame.Style(
         lineWidth: 0,
         lineColor: .clear,
         fillColor: .clear,
@@ -106,34 +111,42 @@ private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> Bluepri
     return fs
 }
 
-private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrameContent {
-    var fc = BlueprintFrameContent(
-        text: text,
-        textColor: .clear,
-        font: .systemFont(ofSize: 8)
-    )
-
-    if let textStyle = textStyle {
-        fc.textColor = UIColor(hexString: textStyle.color)
-        fc.font = .systemFont(ofSize: CGFloat(textStyle.size))
-    }
+private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrame.Content {
+    var horizontalAlignment: BlueprintFrame.Content.Alignment = .leading
+    var verticalAlignment: BlueprintFrame.Content.Alignment = .leading
 
     if let textPosition = textPosition {
         switch textPosition.alignment?.horizontal {
-        case .left?:    fc.horizontalAlignment = .leading
-        case .center?:  fc.horizontalAlignment = .center
-        case .right?:   fc.horizontalAlignment = .trailing
+        case .left?:    horizontalAlignment = .leading
+        case .center?:  horizontalAlignment = .center
+        case .right?:   horizontalAlignment = .trailing
         default:        break
         }
         switch textPosition.alignment?.vertical {
-        case .top?:     fc.verticalAlignment = .leading
-        case .center?:  fc.verticalAlignment = .center
-        case .bottom?:  fc.verticalAlignment = .trailing
+        case .top?:     verticalAlignment = .leading
+        case .center?:  verticalAlignment = .center
+        case .bottom?:  verticalAlignment = .trailing
         default:        break
         }
     }
 
-    return fc
+    return .init(
+        contentType: frameContentType(text: text, textStyle: textStyle),
+        horizontalAlignment: horizontalAlignment,
+        verticalAlignment: verticalAlignment
+    )
+}
+
+private func frameContentType(text: String, textStyle: SRTextStyle?) -> BlueprintFrame.Content.ContentType {
+    if let textStyle = textStyle {
+        return .text(
+            text: text,
+            color: UIColor(hexString: textStyle.color),
+            font: .systemFont(ofSize: CGFloat(textStyle.size))
+        )
+    } else {
+        return .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
+    }
 }
 
 private extension UIColor {

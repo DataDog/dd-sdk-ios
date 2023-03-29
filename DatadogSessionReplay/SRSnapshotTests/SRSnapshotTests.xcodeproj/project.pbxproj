@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		616C37DA299F6913005E0472 /* InputElements.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 616C37D9299F6913005E0472 /* InputElements.storyboard */; };
 		6196D32429AF7EB2002EACAF /* InputElements-DatePickers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6196D32329AF7EB2002EACAF /* InputElements-DatePickers.storyboard */; };
-		619C49B229952108006B66A6 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 619C49B129952108006B66A6 /* Framer */; };
 		619C49B429952E12006B66A6 /* SnapshotTestCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B329952E12006B66A6 /* SnapshotTestCase.swift */; };
 		619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B62995512A006B66A6 /* ImageComparison.swift */; };
 		619C49B9299551F5006B66A6 /* _snapshots_ in Resources */ = {isa = PBXBuildFile; fileRef = 619C49B8299551F5006B66A6 /* _snapshots_ */; };
@@ -22,6 +21,7 @@
 		61B3BC652993BEAF0032C78A /* SRSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */; };
 		61B3BC6D2993C06D0032C78A /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */; };
 		61B634EB299A5DB3002BEABE /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B634EA299A5DB3002BEABE /* Fixtures.swift */; };
+		61C06D6029D487E7007521D8 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 61C06D5F29D487E7007521D8 /* Framer */; };
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
 		61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */; };
 		61E7DFBB299A5C9D001D7A3A /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */; };
@@ -66,6 +66,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61B3BC6D2993C06D0032C78A /* DatadogSessionReplay in Frameworks */,
+				61C06D6029D487E7007521D8 /* Framer in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,7 +74,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				619C49B229952108006B66A6 /* Framer in Frameworks */,
 				61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -172,6 +172,7 @@
 			name = SRHost;
 			packageProductDependencies = (
 				61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */,
+				61C06D5F29D487E7007521D8 /* Framer */,
 			);
 			productName = SRHost;
 			productReference = 61B3BC472993BE2E0032C78A /* SRHost.app */;
@@ -192,7 +193,6 @@
 			);
 			name = SRSnapshotTests;
 			packageProductDependencies = (
-				619C49B129952108006B66A6 /* Framer */,
 				61EC1A36299CFD7E00224FB6 /* TestUtilities */,
 			);
 			productName = SRSnapshotTests;
@@ -228,7 +228,7 @@
 			);
 			mainGroup = 61B3BC3E2993BE2E0032C78A;
 			packageReferences = (
-				619C49B029952108006B66A6 /* XCRemoteSwiftPackageReference "Framing" */,
+				61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */,
 			);
 			productRefGroup = 61B3BC482993BE2E0032C78A /* Products */;
 			projectDirPath = "";
@@ -557,25 +557,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		619C49B029952108006B66A6 /* XCRemoteSwiftPackageReference "Framing" */ = {
+		61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/ncreated/Framing";
+			repositoryURL = "https://github.com/ncreated/Framer";
 			requirement = {
-				branch = "ship-framer";
+				branch = "ncreated-patch-1";
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		619C49B129952108006B66A6 /* Framer */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 619C49B029952108006B66A6 /* XCRemoteSwiftPackageReference "Framing" */;
-			productName = Framer;
-		};
 		61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogSessionReplay;
+		};
+		61C06D5F29D487E7007521D8 /* Framer */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */;
+			productName = Framer;
 		};
 		61EC1A36299CFD7E00224FB6 /* TestUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
