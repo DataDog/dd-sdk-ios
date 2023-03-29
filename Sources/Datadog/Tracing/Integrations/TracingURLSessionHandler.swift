@@ -83,10 +83,6 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         return request
     }
 
-    func isInternal(request: URLRequest) -> Bool {
-        return false
-    }
-
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         // no-op
     }

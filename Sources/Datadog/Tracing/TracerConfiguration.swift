@@ -57,7 +57,7 @@ extension DatadogTracer {
         }
     }
 
-    /// Datadog Tracer configuration.
+    /// Datadog Distributed Tracing configuration.
     public struct DistributedTracingConfiguration {
         public var firstPartyHosts: [String: Set<TracingHeaderType>]
         public var tracingSamplingRate: Float

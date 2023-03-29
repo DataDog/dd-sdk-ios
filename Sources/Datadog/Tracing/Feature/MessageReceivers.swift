@@ -20,9 +20,9 @@ internal struct CoreContext {
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
     let bundleWithRUM: Bool
 
-    /// The RUM attributes that should be added as Span tags.
+    /// The up-to-date core context.
     ///
-    /// These attributes are synchronized using a read-write lock.
+    /// The context is synchronized using a read-write lock.
     @ReadWriteLock
     var context: CoreContext = .init()
 
