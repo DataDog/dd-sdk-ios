@@ -205,18 +205,7 @@ public class Datadog {
         )
 
         // First, initialize features:
-        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-
         var telemetry: RUMTelemetry?
-
-        if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
-            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: configuration.common.dateProvider
-            )
-
-            core.register(feature: urlSessionAutoInstrumentation)
-        }
 
         if let rumConfiguration = configuration.rum {
             telemetry = RUMTelemetry(

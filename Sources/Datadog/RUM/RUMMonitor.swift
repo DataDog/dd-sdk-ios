@@ -165,7 +165,10 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     /// Initializes the Datadog RUM Monitor.
     // swiftlint:disable:next function_default_parameter_at_end
-    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore, configuration: RUMConfiguration) throws {
+    public static func initialize(
+        in core: DatadogCoreProtocol = defaultDatadogCore,
+        configuration: RUMConfiguration
+    ) throws {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(
@@ -174,8 +177,21 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             }
 
             let feature = DatadogRUMFeature(in: core, configuration: configuration)
-            core.v1.feature(URLSessionAutoInstrumentation.self)?.publish(to: feature.monitor)
             try core.register(feature: feature)
+
+            let urlSessionHandler = URLSessionRUMResourcesHandler_(
+                dateProvider: configuration.dateProvider,
+                rumAttributesProvider: configuration.rumAttributesProvider,
+                distributedTracing: configuration.tracingSampler.map {
+                    .init(
+                        sampler: $0,
+                        firstPartyHosts: configuration.firstPartyHosts
+                    )
+                }
+            )
+
+            urlSessionHandler.publish(to: feature.monitor)
+            try core.register(urlSessionHandler: urlSessionHandler)
         } catch {
             consolePrint("\(error)")
             throw error

@@ -695,6 +695,10 @@
 		D2B3F04E282A85FD00C2B5EE /* DatadogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */; };
 		D2B3F052282E827700C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
 		D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
+		D2BCB11F29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift */; };
+		D2BCB12029D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift */; };
+		D2BCB12229D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift */; };
+		D2BCB12329D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift */; };
 		D2C1A4FA29C4C4CB00946C31 /* SpanSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61122ECD25B1B74500F9C7F5 /* SpanSanitizer.swift */; };
 		D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0A29AF56270054E00B /* MessageReceivers.swift */; };
 		D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0729AF55E90054E00B /* RequestBuilder.swift */; };
@@ -2088,6 +2092,8 @@
 		D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlockTests.swift; sourceTree = "<group>"; };
 		D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCore.swift; sourceTree = "<group>"; };
 		D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandler_.swift; sourceTree = "<group>"; };
+		D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests_.swift; sourceTree = "<group>"; };
 		D2C1A51929C4C5DD00946C31 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2C1A57329C4F2E800946C31 /* DatadogTraceTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogTraceTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3026,6 +3032,7 @@
 		613F23EF252B1287006CD2D7 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift */,
 				613F23F0252B129E006CD2D7 /* URLSessionRUMResourcesHandlerTests.swift */,
 			);
 			path = Resources;
@@ -3182,6 +3189,7 @@
 		6157FA5C252767B3009A8A3B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift */,
 				6157FA5D252767CB009A8A3B /* URLSessionRUMResourcesHandler.swift */,
 			);
 			path = Resources;
@@ -5916,6 +5924,7 @@
 				618715F924DC13A100FC0F69 /* RUMDataModelsMapping.swift in Sources */,
 				61C3638524361E9200C4D4E6 /* Globals.swift in Sources */,
 				D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */,
+				D2BCB12029D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift in Sources */,
 				61F3CDA3251118FB00C816E5 /* UIViewControllerHandler.swift in Sources */,
 				618DCFD924C7269500589570 /* RUMUUIDGenerator.swift in Sources */,
 				61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */,
@@ -6051,6 +6060,7 @@
 				61DA8CB2286215DE0074A606 /* CryptographyTests.swift in Sources */,
 				615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */,
 				615A4A8724A3452800233986 /* DDTracerConfigurationTests.swift in Sources */,
+				D2BCB12229D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift in Sources */,
 				613E81F725A743600084B751 /* RUMEventsMapperTests.swift in Sources */,
 				61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */,
 				E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */,
@@ -6682,6 +6692,7 @@
 				D2A7841029A53B2F003B03BB /* Directory.swift in Sources */,
 				61DA8CB028620C760074A606 /* Cryptography.swift in Sources */,
 				615950F1291C05D500470E0C /* SessionReplayDependency.swift in Sources */,
+				D2BCB11F29D30AF000737A9A /* URLSessionRUMResourcesHandler_.swift in Sources */,
 				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				D20605A7287476230047275C /* ServerOffsetPublisher.swift in Sources */,
@@ -6896,6 +6907,7 @@
 				D25CFAA029C860E300E3A43D /* TracingFeatureMocks.swift in Sources */,
 				D24C9C5D29A7C7E7002057CF /* DatadogLogsBuilderTests.swift in Sources */,
 				D2CB6F5F27C520D400A62B57 /* DDNSURLSessionDelegate+apiTests.m in Sources */,
+				D2BCB12329D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests_.swift in Sources */,
 				D2CB6F6027C520D400A62B57 /* DatadogConfigurationBuilderTests.swift in Sources */,
 				61A1A44A29643254007909E7 /* DatadogCoreProxy.swift in Sources */,
 				D20605C42875895C0047275C /* KronosClockMock.swift in Sources */,

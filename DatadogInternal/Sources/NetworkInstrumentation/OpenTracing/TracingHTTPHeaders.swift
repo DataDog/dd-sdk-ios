@@ -21,8 +21,4 @@ public enum TracingHTTPHeaders {
     /// To make sure that the Agent keeps the trace.
     /// It is used both in Tracing and RUM features.
     public static let samplingPriorityField = "x-datadog-sampling-priority"
-
-    /// To make sure the generated traces from RUM don’t affect APM Index Spans counts.
-    /// **Note:** it is only added to requests that we create RUM Resource for (it is not injected when RUM feature is disabled and only Tracing is used).
-    public static let ddOrigin = (field: "x-datadog-origin", value: "rum")
 }

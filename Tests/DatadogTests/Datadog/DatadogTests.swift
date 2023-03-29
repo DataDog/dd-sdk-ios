@@ -5,9 +5,9 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
 
+@testable import DatadogInternal
 @testable import DatadogLogs
 @testable import DatadogTrace
 @testable import Datadog
@@ -213,13 +213,6 @@ class DatadogTests: XCTestCase {
             XCTAssertNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
             XCTAssertNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
-        }
-
-        verify(configuration: defaultBuilder.trackURLSession(firstPartyHosts: ["example.com"]).build()) {
-            XCTAssertNotNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
-        }
-        verify(configuration: defaultBuilder.trackURLSession().build()) {
-            XCTAssertNotNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
         }
 
         verify(

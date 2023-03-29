@@ -95,7 +95,7 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
             if configuration.instrumentRUM {
                 // If RUM instrumentation is enabled, additional `x-datadog-origin: rum` header is injected to the user request,
                 // so that user's backend instrumentation can further process it and count on RUM quota (w/o affecting APM Index Spans counts).
-                self.datadogOriginHeader = TracingHTTPHeaders.ddOrigin
+                self.datadogOriginHeader = nil //TracingHTTPHeaders.ddOrigin
             } else {
                 self.datadogOriginHeader = nil
             }

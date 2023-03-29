@@ -7,7 +7,7 @@
 import XCTest
 import TestUtilities
 
-@testable import DatadogInternal
+import DatadogInternal
 @testable import DatadogTrace
 
 class TracingURLSessionHandlerTests: XCTestCase {

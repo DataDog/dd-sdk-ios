@@ -245,10 +245,6 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
-        // Deinitialize arbitrary V1 Features:
-        feature(RUMInstrumentation.self)?.deinitialize()
-        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
-
         // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
         get(feature: CrashReporter.self)?.deinitialize()
 
@@ -384,51 +380,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
             storage: feature.storage
         )
     }
-
-    /// Creates V1 Feature using its V2 configuration.
-    ///
-    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
-    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
-    ///
-    /// - Parameters:
-    ///   - configuration: The generic feature configuration.
-    ///   - featureSpecificConfiguration: The feature-specific configuration.
-    /// - Returns: an instance of V1 feature
-    func create<Feature: V1FeatureInitializable>(
-        configuration: DatadogFeatureConfiguration,
-        featureSpecificConfiguration: Feature.Configuration
-    ) throws -> Feature {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: configuration.name)
-
-        let storage = FeatureStorage(
-            featureName: configuration.name,
-            queue: readWriteQueue,
-            directories: featureDirectories,
-            dateProvider: dateProvider,
-            performance: performance,
-            encryption: encryption
-        )
-
-        let upload = FeatureUpload(
-            featureName: configuration.name,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: configuration.requestBuilder,
-            httpClient: httpClient,
-            performance: performance
-        )
-
-        // If there is any persisted data recorded with `.pending` consent,
-        // it should be deleted on Feature startup:
-        storage.clearUnauthorizedData()
-
-        return Feature(
-            storage: storage,
-            upload: upload,
-            configuration: featureSpecificConfiguration,
-            messageReceiver: configuration.messageReceiver
-        )
-    }
 }
 
 /// A v1 Feature with an associated stroage.
@@ -531,18 +482,4 @@ extension DatadogContextProvider {
         }
         #endif
     }
-}
-
-/// A shim interface for allowing V1 Features generic initialization in `DatadogCore`.
-internal protocol V1FeatureInitializable {
-    /// The configuration specific to this Feature.
-    /// In V2 this will likely become a part of the public interface for the Feature module.
-    associatedtype Configuration
-
-    init(
-        storage: FeatureStorage,
-        upload: FeatureUpload,
-        configuration: Configuration,
-        messageReceiver: FeatureMessageReceiver
-    )
 }
