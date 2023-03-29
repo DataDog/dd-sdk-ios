@@ -184,18 +184,15 @@ extension DatadogTracer {
     static func mockWith(
         core: DatadogCoreProtocol,
         configuration: Configuration = .init(),
-        spanEventMapper: SpanEventMapper? = nil,
         tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
-        dateProvider: DateProvider = SystemDateProvider(),
-        rumIntegration: TracingWithRUMIntegration? = nil
+        dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             core: core,
             configuration: configuration,
-            spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
-            rumIntegration: rumIntegration,
+            contextReceiver: ContextMessageReceiver(bundleWithRUM: configuration.bundleWithRUM),
             loggingIntegration: .init(core: core, tracerConfiguration: configuration)
         )
     }

@@ -29,25 +29,25 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNotNil(tracer.core)
         XCTAssertNil(tracer.configuration.serviceName)
         XCTAssertFalse(tracer.configuration.sendNetworkInfo)
-        XCTAssertNotNil(tracer.rumIntegration)
+        XCTAssertTrue(tracer.contextReceiver.bundleWithRUM)
     }
 
-    func testDefaultTracerWithRUMEnabled() {
+    func testDefaultTracerWithRUMDisabled() {
         let rum: RUMFeature = .mockAny()
         core.register(feature: rum)
-        DatadogTracer.initialize(configuration: .init(bundleWithRUM: false), in: core)
+        DatadogTracer.initialize(in: core, configuration: .init(bundleWithRUM: false))
         let tracer = DatadogTracer.shared(in: core).dd
-        XCTAssertNil(tracer.rumIntegration)
+        XCTAssertFalse(tracer.contextReceiver.bundleWithRUM)
     }
 
     func testCustomizedTracer() throws {
         DatadogTracer.initialize(
+            in: core,
             configuration: .init(
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true,
                 bundleWithRUM: false
-            ),
-            in: core
+            )
         )
 
         let tracer = DatadogTracer.shared(in: core).dd
@@ -55,6 +55,6 @@ class TracerConfigurationTests: XCTestCase {
         XCTAssertNotNil(tracer.core)
         XCTAssertEqual(tracer.configuration.serviceName, "custom-service-name")
         XCTAssertTrue(tracer.configuration.sendNetworkInfo)
-        XCTAssertNil(tracer.rumIntegration)
+        XCTAssertFalse(tracer.contextReceiver.bundleWithRUM)
     }
 }

@@ -10,6 +10,20 @@ import Datadog
 /// It also uses the `span.log()` to send logs.
 final class TracingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "TracingManualInstrumentationScenario"
+
+    func configureFeatures() {
+        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
+            return
+        }
+
+        // Register Tracer
+        DatadogTracer.initialize(
+            configuration: .init(
+                sendNetworkInfo: true,
+                customIntakeURL: tracesEndpoint
+            )
+        )
+    }
 }
 
 /// Scenario which uses Tracing auto instrumentation feature to track bunch of first party network requests

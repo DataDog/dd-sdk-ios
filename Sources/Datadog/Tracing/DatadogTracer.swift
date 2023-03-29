@@ -48,12 +48,10 @@ public class DatadogTracer: OTTracer {
 
     /// The Tracer configuration
     internal let configuration: Configuration
-    /// Span events mapper configured by the user, `nil` if not set.
-    internal let spanEventMapper: SpanEventMapper?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     internal let queue: DispatchQueue
-    /// Integration with RUM Context. `nil` if disabled for this Tracer or if the RUM feature is disabled.
-    internal let rumIntegration: TracingWithRUMIntegration?
+    /// Integration with Core Context.
+    internal let contextReceiver: ContextMessageReceiver
     /// Integration with Logging.
     internal let loggingIntegration: TracingWithLoggingIntegration
 
@@ -75,11 +73,21 @@ public class DatadogTracer: OTTracer {
     /// Initializes the Datadog Tracer.
     /// - Parameters:
     ///   - configuration: the tracer configuration obtained using `Tracer.Configuration()`.
+
+    /// Initializes the Datadog Tracer.
+    ///
+    /// - Parameters:
+    ///   - core: The core instance in which to register the Feature.
+    ///   - configuration: The Tracer configuration.
+    ///   - distributedTracingConfiguration: Distributed Tracing configuration. **Do not use this configuration if you intend to use RUM, configure Distributed Tracing in RUM instead**
+    ///   - dateProvider: The date provider.
+    ///   - traceIDGenerator: The trace ID generator.
     public static func initialize(
+        in core: DatadogCoreProtocol = defaultDatadogCore,
         configuration: Configuration = .init(),
-        spanEventMapper: SpanEventMapper? = nil,
+        distributedTracingConfiguration: DistributedTracingConfiguration? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
-        in core: DatadogCoreProtocol = defaultDatadogCore
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
     ) {
         do {
             if core is NOPDatadogCore {
@@ -88,15 +96,39 @@ public class DatadogTracer: OTTracer {
                 )
             }
 
-            let feature = DatadogTraceFeature(
+            let contextReceiver = ContextMessageReceiver(bundleWithRUM: configuration.bundleWithRUM)
+
+            let tracer = DatadogTracer(
                 core: core,
-                uuidGenerator: DefaultTraceIDGenerator(),
-                spanEventMapper: spanEventMapper,
+                configuration: configuration,
+                tracingUUIDGenerator: traceIDGenerator,
                 dateProvider: dateProvider,
-                configuration: configuration
+                contextReceiver: contextReceiver,
+                loggingIntegration: TracingWithLoggingIntegration(
+                    core: core,
+                    tracerConfiguration: configuration
+                )
+            )
+
+            let feature = DatadogTraceFeature(
+                tracer: tracer,
+                requestBuilder: TracingRequestBuilder(
+                    customIntakeURL: configuration.customIntakeURL
+                ),
+                messageReceiver: contextReceiver
             )
 
             try core.register(feature: feature)
+
+            if let config = distributedTracingConfiguration {
+                let handler = TracingURLSessionHandler(
+                    tracer: tracer,
+                    contextReceiver: contextReceiver,
+                    distributedTracingConfiguration: config
+                )
+
+                try core.register(urlSessionHandler: handler)
+            }
         } catch {
             consolePrint("\(error)")
         }
@@ -126,15 +158,13 @@ public class DatadogTracer: OTTracer {
     internal required init(
         core: DatadogCoreProtocol,
         configuration: Configuration,
-        spanEventMapper: SpanEventMapper?,
         tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
-        rumIntegration: TracingWithRUMIntegration?,
+        contextReceiver: ContextMessageReceiver,
         loggingIntegration: TracingWithLoggingIntegration
     ) {
         self.core = core
         self.configuration = configuration
-        self.spanEventMapper = spanEventMapper
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",
             target: .global(qos: .userInteractive)
@@ -142,7 +172,7 @@ public class DatadogTracer: OTTracer {
 
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.dateProvider = dateProvider
-        self.rumIntegration = rumIntegration
+        self.contextReceiver = contextReceiver
         self.loggingIntegration = loggingIntegration
     }
 
@@ -197,7 +227,7 @@ public class DatadogTracer: OTTracer {
             combinedTags.merge(userTags) { $1 }
         }
 
-        if let rumTags = rumIntegration?.attributes {
+        if let rumTags = contextReceiver.context.rum {
             combinedTags.merge(rumTags) { $1 }
         }
 

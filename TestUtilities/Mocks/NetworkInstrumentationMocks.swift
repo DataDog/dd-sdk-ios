@@ -46,7 +46,7 @@ extension URLSession {
 }
 
 public final class URLSessionHandlerMock: DatadogURLSessionHandler {
-    public let firstPartyHosts: FirstPartyHosts
+    public var firstPartyHosts: FirstPartyHosts
 
     public var modifiedRequest: URLRequest?
     public var shouldInterceptRequest: ((URLRequest) -> Bool)?
@@ -58,16 +58,6 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
 
     @ReadWriteLock
     public private(set) var interceptions: [UUID: URLSessionTaskInterception] = [:]
-
-    public private(set) var interceptionStarted: [(
-        interception: URLSessionTaskInterception,
-        additionalFirstPartyHosts: FirstPartyHosts?
-    )] = []
-
-    public private(set) var interceptionCompleted: [(
-        interception: URLSessionTaskInterception,
-        additionalFirstPartyHosts: FirstPartyHosts?
-    )] = []
 
     public init(firstPartyHosts: FirstPartyHosts = .init()) {
         self.firstPartyHosts = firstPartyHosts

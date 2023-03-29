@@ -226,7 +226,10 @@ extension URL: AnyMockable, RandomMockable {
         return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
     }
 
-    public static func mockWith(url: String, queryParams: [URLQueryItem]) -> URL {
+    public static func mockWith(
+        url: String,
+        queryParams: [URLQueryItem]? = nil
+    ) -> URL {
         var urlComponents = URLComponents(string: url)
         urlComponents!.queryItems = queryParams
         return urlComponents!.url!
@@ -544,7 +547,11 @@ extension URLRequest: AnyMockable {
         return request
     }
 
-    public static func mockWith(url: String, queryParams: [URLQueryItem], httpMethod: String) -> URLRequest {
+    public static func mockWith(
+        url: String,
+        queryParams: [URLQueryItem]? = nil,
+        httpMethod: String = "GET"
+    ) -> URLRequest {
         let url: URL = .mockWith(url: url, queryParams: queryParams)
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod

@@ -41,16 +41,12 @@ class URLSessionInterceptorTests: XCTestCase {
         let instrumentRUM = false
 
         // When
-        let appStateListener = AppStateListenerMock.mockAny()
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider(),
-            appStateListener: appStateListener
+            dateProvider: SystemDateProvider()
         )
 
         // Then
-        let tracingHandler = try XCTUnwrap(interceptor.handler as? URLSessionTracingHandler)
-        XCTAssert(tracingHandler.appStateListener === appStateListener)
         XCTAssertTrue(
             interceptor.injectTracingHeadersToFirstPartyRequests,
             "Tracing headers should be injected when only Tracing instrumentation is enabled."
@@ -69,8 +65,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // When
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListenerMock.mockAny()
+            dateProvider: SystemDateProvider()
         )
 
         // Then
@@ -93,8 +88,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // When
         let interceptor = URLSessionInterceptor(
             configuration: .mockWith(instrumentTracing: instrumentTracing, instrumentRUM: instrumentRUM),
-            dateProvider: SystemDateProvider(),
-            appStateListener: AppStateListenerMock.mockAny()
+            dateProvider: SystemDateProvider()
         )
 
         // Then

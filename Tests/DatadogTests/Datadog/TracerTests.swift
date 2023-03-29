@@ -39,15 +39,11 @@ class TracerTests: XCTestCase {
             applicationBundleIdentifier: "com.datadoghq.ios-sdk"
         )
 
-        let feature = DatadogTraceFeature(
-            core: core,
-            uuidGenerator: RelativeTracingUUIDGenerator(startingFrom: 1),
-            spanEventMapper: nil,
+        DatadogTracer.initialize(
+            in: core,
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            configuration: .init()
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
         )
-
-        try core.register(feature: feature)
 
         let tracer = DatadogTracer.shared(in: core)
 
@@ -83,11 +79,11 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithCustomizedTracer() throws {
         DatadogTracer.initialize(
+            in: core,
             configuration: .init(
                 serviceName: "custom-service-name",
                 sendNetworkInfo: true
-            ),
-            in: core
+            )
         )
 
         let tracer = DatadogTracer.shared(in: core)
@@ -113,14 +109,14 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithGlobalTags() throws {
         DatadogTracer.initialize(
+            in: core,
             configuration: .init(
                 serviceName: "custom-service-name",
                 globalTags: [
                     "globaltag1": "globalValue1",
                     "globaltag2": "globalValue2"
                 ]
-            ),
-            in: core
+            )
         )
 
         let tracer = DatadogTracer.shared(in: core)
@@ -384,7 +380,7 @@ class TracerTests: XCTestCase {
             carrierInfo: nil
         )
 
-        DatadogTracer.initialize(configuration: .init(sendNetworkInfo: true), in: core)
+        DatadogTracer.initialize(in: core, configuration: .init(sendNetworkInfo: true))
 
         let tracer = DatadogTracer.shared(in: core).dd
 
@@ -421,7 +417,7 @@ class TracerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         core.context = .mockWith(networkConnectionInfo: nil)
 
-        DatadogTracer.initialize(configuration: .init(sendNetworkInfo: true), in: core)
+        DatadogTracer.initialize(in: core, configuration: .init(sendNetworkInfo: true))
 
         let tracer = DatadogTracer.shared(in: core).dd
 
@@ -983,8 +979,8 @@ class TracerTests: XCTestCase {
 
         // When
         DatadogTracer.initialize(
-            dateProvider: RelativeDateProvider(using: deviceTime),
-            in: core
+            in: core,
+            dateProvider: RelativeDateProvider(using: deviceTime)
         )
 
         let tracer = DatadogTracer.shared(in: core)
@@ -1110,38 +1106,6 @@ class TracerTests: XCTestCase {
         // then
         core.flush()
         XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
-    }
-
-    func testGivenOnlyTracingAutoInstrumentationEnabled_whenTracerIsNotRegistered_itPrintsWarningsOnEachFirstPartyRequest() throws {
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: .mockAny(), environment: .mockAny())
-                .trackURLSession(firstPartyHosts: [.mockAny()])
-                .build()
-        )
-        defer { Datadog.flushAndDeinitialize() }
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // Given
-        let instrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
-        let tracingHandler = try XCTUnwrap(instrumentation?.interceptor.handler)
-
-        // When
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
-
-        // Then
-        tracingHandler.notify_taskInterceptionCompleted(interception: TaskInterception(request: .mockAny(), isFirstParty: true))
-        XCTAssertEqual(
-            dd.logger.warnLog?.message,
-            """
-            `URLSession` request was completed, but no `Tracer` is registered on `Global.sharedTracer`. Tracing auto instrumentation will not work.
-            Make sure `Global.sharedTracer = DatadogTracer.initialize()` is called before any network request is send.
-            """
-        )
     }
 }
 // swiftlint:enable multiline_arguments_brackets

@@ -77,11 +77,16 @@ extension NetworkInstrumentationFeature {
         }
 
         queue.async {
+            let firstPartyHosts = self.firstPartyHosts(for: session)
+            
             let interception = URLSessionTaskInterception(
                 request: request,
-                isFirstParty: self.firstPartyHosts(for: session)
-                    .isFirstParty(url: request.url)
+                isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
             )
+
+            if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
+                interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
+            }
 
             self.interceptions[task] = interception
             self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
@@ -153,5 +158,23 @@ extension NetworkInstrumentationFeature {
     private func finish(_ session: URLSession, task: URLSessionTask, interception: URLSessionTaskInterception) {
         interceptions[task] = nil
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
+    }
+
+    private func extractTrace(firstPartyHosts: FirstPartyHosts, request: URLRequest) -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
+        guard let headers = request.allHTTPHeaderFields else {
+            return nil
+        }
+
+        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: request.url)
+
+        let reader: TracePropagationHeadersReader
+        if tracingHeaderTypes.contains(.datadog) {
+            reader = HTTPHeadersReader(httpHeaderFields: headers)
+        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multi) {
+            reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
+        } else {
+            reader = W3CHTTPHeadersReader(httpHeaderFields: headers)
+        }
+        return reader.read()
     }
 }

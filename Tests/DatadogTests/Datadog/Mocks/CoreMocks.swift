@@ -493,38 +493,6 @@ extension DataFormat {
     }
 }
 
-class AppStateListenerMock: AppStateListening, AnyMockable {
-    let history: AppStateHistory
-
-    required init(history: AppStateHistory) {
-        self.history = history
-    }
-
-    static func mockAny() -> Self {
-        return mockAppInForeground(since: .mockDecember15th2019At10AMUTC())
-    }
-
-    static func mockAppInForeground(since date: Date = Date()) -> Self {
-        return .init(
-            history: .mockAppInForeground(since: date)
-        )
-    }
-
-    static func mockAppInBackground(since date: Date = Date()) -> Self {
-        return .init(
-            history: .mockAppInBackground(since: date)
-        )
-    }
-
-    static func mockRandom(since date: Date = Date()) -> Self {
-        return .init(
-            history: .mockRandom(since: date)
-        )
-    }
-
-    func subscribe<Observer: AppStateHistoryObserver>(_ subscriber: Observer) where Observer.ObservedValue == AppStateHistory {}
-}
-
 extension UserInfoProvider {
     static func mockAny() -> UserInfoProvider {
         return mockWith()
