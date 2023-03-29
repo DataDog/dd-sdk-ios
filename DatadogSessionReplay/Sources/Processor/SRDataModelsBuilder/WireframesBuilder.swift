@@ -25,7 +25,10 @@ internal class WireframesBuilder {
         /// The color (solid red) to use when the actual color conversion goes wrong.
         static let color = "#FF0000FF"
         /// The font family to use when the actual one cannot be read.
-        static let fontFamily = "-apple-system, Roboto, Helvetica, Arial"
+        ///
+        /// REPLAY-1421: This definition will promote SF font when running player in Safari, then “BlinkMacSystemFont” in macOS Chrome and
+        /// will ultimately fallback to “Roboto” or any “sans-serif” in other web browsers.
+        static let fontFamily = "-apple-system, BlinkMacSystemFont, 'Roboto', sans-serif"
         /// The font size to use when the actual one cannot be read.
         static let fontSize: CGFloat = 10
     }
