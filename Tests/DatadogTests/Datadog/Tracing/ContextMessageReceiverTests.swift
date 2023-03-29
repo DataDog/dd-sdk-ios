@@ -30,32 +30,38 @@ class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesRUMContext() throws {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        var ids: [String: String] = .mockRandom()
+
         let core = PassthroughCoreMock(
-            context: .mockWith(featuresAttributes: ["rum": ["ids": ["key": "value1"]]]),
+            context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),
             messageReceiver: receiver
         )
 
-        XCTAssertEqual(receiver.context.rum, ["key": "value1"])
+        XCTAssertEqual(receiver.context.rum, ids)
 
         // When
-        core.set(feature: "rum", attributes: { ["ids": ["key": "value2"]] })
+        ids = .mockRandom()
+        core.set(feature: "rum", attributes: { ["ids": ids] })
 
         // Then
-        XCTAssertEqual(receiver.context.rum, ["key": "value2"])
+        XCTAssertEqual(receiver.context.rum, ids)
     }
 
     func testItIngnoresRUMContext() throws {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRUM: false)
+        var ids: [String: String] = .mockRandom()
+
         let core = PassthroughCoreMock(
-            context: .mockWith(featuresAttributes: ["rum": ["ids": ["key": "value1"]]]),
+            context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),
             messageReceiver: receiver
         )
 
         XCTAssertNil(receiver.context.rum)
 
         // When
-        core.set(feature: "rum", attributes: { ["ids": ["key": "value2"]] })
+        ids = .mockRandom()
+        core.set(feature: "rum", attributes: { ["ids": ids] })
 
         // Then
         XCTAssertNil(receiver.context.rum)
