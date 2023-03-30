@@ -79,6 +79,7 @@ private extension SRImageWireframe {
             y: CGFloat(y),
             width: CGFloat(width),
             height: CGFloat(height),
+            style: frameStyle(border: border, style: shapeStyle),
             content: frameContent(base64ImageString: base64)
         )
     }
@@ -145,10 +146,10 @@ private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: S
 }
 
 private func frameContent(base64ImageString: String?) -> BlueprintFrame.Content {
-    let base64Data = base64ImageString?.data(using: .utf8)
-    let imageData = Data(base64Encoded: base64Data!)!
-
-    let contentType: BlueprintFrame.Content.ContentType = .image(image: UIImage(data: imageData, scale: UIScreen.main.scale)!)
+    let base64Data = base64ImageString?.data(using: .utf8) ?? Data()
+    let imageData = Data(base64Encoded: base64Data) ?? Data()
+    let image = UIImage(data: imageData, scale: UIScreen.main.scale) ?? UIImage()
+    let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
     return .init(contentType: contentType)
 }
 

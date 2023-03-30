@@ -26,6 +26,8 @@
 		61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */; };
 		61E7DFBB299A5C9D001D7A3A /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */; };
 		61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 61EC1A36299CFD7E00224FB6 /* TestUtilities */; };
+		A797A95029D5958400EE73EB /* Images.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A797A94F29D5958400EE73EB /* Images.storyboard */; };
+		A797A95229D59E7900EE73EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A797A95129D59E7900EE73EB /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -58,6 +60,8 @@
 		61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
 		61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Basic.storyboard; sourceTree = "<group>"; };
 		61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BasicViewControllers.swift; sourceTree = "<group>"; };
+		A797A94F29D5958400EE73EB /* Images.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Images.storyboard; sourceTree = "<group>"; };
+		A797A95129D59E7900EE73EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +124,7 @@
 				61B3BC502993BE2E0032C78A /* Main.storyboard */,
 				61B3BC552993BE2F0032C78A /* LaunchScreen.storyboard */,
 				61B3BC582993BE2F0032C78A /* Info.plist */,
+				A797A95129D59E7900EE73EB /* Assets.xcassets */,
 			);
 			path = SRHost;
 			sourceTree = "<group>";
@@ -150,6 +155,7 @@
 				616C37D9299F6913005E0472 /* InputElements.storyboard */,
 				61A735A929A5137400001820 /* InputViewControllers.swift */,
 				6196D32329AF7EB2002EACAF /* InputElements-DatePickers.storyboard */,
+				A797A94F29D5958400EE73EB /* Images.storyboard */,
 			);
 			path = Fixtures;
 			sourceTree = "<group>";
@@ -249,6 +255,8 @@
 				61B3BC572993BE2F0032C78A /* LaunchScreen.storyboard in Resources */,
 				61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */,
 				61B3BC522993BE2E0032C78A /* Main.storyboard in Resources */,
+				A797A95229D59E7900EE73EB /* Assets.xcassets in Resources */,
+				A797A95029D5958400EE73EB /* Images.storyboard in Resources */,
 				6196D32429AF7EB2002EACAF /* InputElements-DatePickers.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

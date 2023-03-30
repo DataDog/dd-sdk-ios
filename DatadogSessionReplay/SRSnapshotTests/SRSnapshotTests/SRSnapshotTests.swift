@@ -144,7 +144,6 @@ final class SRSnapshotTests: SnapshotTestCase {
         )
     }
 
-
     func testDatePickers() throws {
         let vc1 = show(fixture: .datePickersInline) as! DatePickersInlineViewController
         vc1.set(date: .mockDecember15th2019At10AMUTC())
@@ -253,6 +252,25 @@ final class SRSnapshotTests: SnapshotTestCase {
         DDAssertSnapshotTest(
             newImage: image,
             snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-compact-maskAll-privacy"),
+            record: recordingMode
+        )
+    }
+
+    func testImages() throws {
+        show(fixture: .images)
+
+        var image = try takeSnapshot(configuration: .init(privacy: .allowAll))
+        DDAssertSnapshotTest(
+            newImage: image,
+
+            snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-allowAll-privacy"),
+            record: recordingMode
+        )
+
+        image = try takeSnapshot(configuration: .init(privacy: .maskAll))
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-maskAll-privacy"),
             record: recordingMode
         )
     }
