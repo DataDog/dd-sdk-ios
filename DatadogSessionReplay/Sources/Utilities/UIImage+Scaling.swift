@@ -20,11 +20,11 @@ extension UIImage {
     ///
     /// Example usage:
     ///
-    /// let originalImage = UIImage(named: "exampleImage")
-    /// let desiredSizeInBytes = 10240 // 10 KB
-    /// if let imageData = originalImage?.scaledDownToApproximateSize(desiredSizeInBytes) {
-    ///     // Use the scaled down image data.
-    /// }
+    ///     let originalImage = UIImage(named: "exampleImage")
+    ///     let desiredSizeInBytes = 10240 // 10 KB
+    ///     if let imageData = originalImage?.scaledDownToApproximateSize(desiredSizeInBytes) {
+    ///         // Use the scaled down image data.
+    ///     }
     func scaledDownToApproximateSize(_ desiredSizeInBytes: Int) -> Data {
         guard let imageData = pngData() else {
             return Data()
@@ -32,7 +32,10 @@ extension UIImage {
         guard imageData.count > desiredSizeInBytes else {
             return imageData
         }
-        var scaledImage = scaledImage(by: sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count)))
+        // Initial scale is approximatation based on the average side of square for given size ratio.
+        // When running experiments it appeared to be closer to desired scale than using just a size ratio.
+        let initialScale = sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count))
+        var scaledImage = scaledImage(by: initialScale)
 
         var scale: Double = 1
         let maxIterations = 20
