@@ -21,14 +21,14 @@ internal protocol ImageDataProviding {
 internal final class ImageDataProvider: ImageDataProviding {
     private var cache: Cache<String, String>
 
-    private let maxBytesSize: Int
+    private let desiredMaxBytesSize: Int
 
     internal init(
         cache: Cache<String, String> = .init(),
-        maxBytesSize: Int = 10_000
+        desiredMaxBytesSize: Int = 15.KB
     ) {
         self.cache = cache
-        self.maxBytesSize = maxBytesSize
+        self.desiredMaxBytesSize = desiredMaxBytesSize
     }
 
     func contentBase64String(
@@ -39,22 +39,19 @@ internal final class ImageDataProvider: ImageDataProviding {
             guard var image = image else {
                 return ""
             }
-            if #available(iOS 13.0, *), let tintColor = tintColor {
-                image = image.withTintColor(tintColor)
-            }
-
             var identifier = image.srIdentifier
             if let tintColorIdentifier = tintColor?.srIdentifier {
                 identifier += tintColorIdentifier
             }
             if let base64EncodedImage = cache[identifier] {
                 return base64EncodedImage
-            } else if let base64EncodedImage = image.pngData()?.base64EncodedString(), base64EncodedImage.count <= maxBytesSize {
+            } else {
+                if #available(iOS 13.0, *), let tintColor = tintColor {
+                    image = image.withTintColor(tintColor)
+                }
+                let base64EncodedImage = image.scaledDownToApproximateSize(desiredMaxBytesSize).base64EncodedString()
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
                 return base64EncodedImage
-            } else {
-                cache[identifier] = ""
-                return ""
             }
         }
     }
