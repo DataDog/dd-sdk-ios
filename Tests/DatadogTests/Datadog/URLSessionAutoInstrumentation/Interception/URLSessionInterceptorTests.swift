@@ -47,6 +47,7 @@ class URLSessionInterceptorTests: XCTestCase {
         )
 
         // Then
+        XCTAssertTrue(interceptor.handler is NOPURLSessionInterceptionHandler)
         XCTAssertTrue(
             interceptor.injectTracingHeadersToFirstPartyRequests,
             "Tracing headers should be injected when only Tracing instrumentation is enabled."
@@ -135,8 +136,8 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = DatadogTracer.mockAny(in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+        DatadogTracer.initialize(in: core)
+
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
@@ -193,8 +194,8 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = DatadogTracer.mockAny(in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        DatadogTracer.initialize(in: core)
 
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -228,8 +229,8 @@ class URLSessionInterceptorTests: XCTestCase {
             ),
             handler: handler
         )
-        Global.sharedTracer = DatadogTracer.mockAny(in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        DatadogTracer.initialize(in: core)
 
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -256,27 +257,8 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: false, rumInstrumentationEnabled: true),
             handler: handler
         )
-        Global.sharedTracer = DatadogTracer.mockAny(in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
 
-        // When
-        let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
-        let interceptedThirdPartyRequest = interceptor.modify(request: thirdPartyRequest)
-        let interceptedInternalRequest = interceptor.modify(request: internalRequest)
-
-        // Then
-        assertRequestsEqual(firstPartyRequest, interceptedFirstPartyRequest, "Intercepted 1st party request should not be modified.")
-        assertRequestsEqual(thirdPartyRequest, interceptedThirdPartyRequest, "Intercepted 3rd party request should not be modified.")
-        assertRequestsEqual(internalRequest, interceptedInternalRequest, "Intercepted internal request should not be modified.")
-    }
-
-    func testGivenTracingInstrumentationEnabledButTracerNotRegistered_whenInterceptingRequests_itDoesNotInjectTracingContextToAnyRequest() throws {
-        // Given
-        let interceptor = URLSessionInterceptor(
-            configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
-            handler: handler
-        )
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
+        DatadogTracer.initialize(in: core)
 
         // When
         let interceptedFirstPartyRequest = interceptor.modify(request: firstPartyRequest)
@@ -311,8 +293,9 @@ class URLSessionInterceptorTests: XCTestCase {
             configuration: mockConfiguration(tracingInstrumentationEnabled: true, rumInstrumentationEnabled: .random()),
             handler: handler
         )
-        Global.sharedTracer = DatadogTracer.mockAny(in: core)
-        defer { Global.sharedTracer = DDNoopGlobals.tracer }
+
+        DatadogTracer.initialize(in: core)
+
         let sessionWithCustomFirstPartyHosts = URLSession.mockWith(
             DDURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [alternativeFirstPartyRequest.url!.host!: [.datadog]])
         )
@@ -367,7 +350,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        var interception: TaskInterception
+        var interception: URLSessionTaskInterception
 
         // We compare `URLRequests` by their `.url` in following assertions
         // due to https://openradar.appspot.com/radar?id=4988276943355904
@@ -378,17 +361,17 @@ class URLSessionInterceptorTests: XCTestCase {
         interception = try XCTUnwrap(
             startedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be started for 1st party request."
         )
-        XCTAssertNotNil(interception.spanContext, "Span context should be set for 1st party request.")
+        XCTAssertNotNil(interception.trace, "Span context should be set for 1st party request.")
 
         interception = try XCTUnwrap(
             startedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be started for 3rd party request."
         )
-        XCTAssertNil(interception.spanContext, "Span context should NOT be set for 3rd party request.")
+        XCTAssertNil(interception.trace, "Span context should NOT be set for 3rd party request.")
 
         interception = try XCTUnwrap(
             startedInterceptions.first { $0.request.url == alternativeFirstPartyRequest.url }, "Interception should be started for custom 1st party request."
         )
-        XCTAssertNotNil(interception.spanContext, "Span context should be set for custom 1st party request.")
+        XCTAssertNotNil(interception.trace, "Span context should be set for custom 1st party request.")
 
         let completedInterceptions = handler.completedInterceptions
         XCTAssertEqual(completedInterceptions.count, 3)
@@ -396,19 +379,19 @@ class URLSessionInterceptorTests: XCTestCase {
         interception = try XCTUnwrap(
             completedInterceptions.first { $0.request.url == firstPartyRequest.url }, "Interception should be completed for 1st party request."
         )
-        XCTAssertNotNil(interception.spanContext, "Span context should be set for 1st party request.")
+        XCTAssertNotNil(interception.trace, "Span context should be set for 1st party request.")
         XCTAssertEqual(interception.data, firstPartyTaskData, "Data should be recorded for 1st party request.")
 
         interception = try XCTUnwrap(
             completedInterceptions.first { $0.request.url == thirdPartyRequest.url }, "Interception should be completed for 3rd party request."
         )
-        XCTAssertNil(interception.spanContext, "Span context should NOT be set for 3rd party request.")
+        XCTAssertNil(interception.trace, "Span context should NOT be set for 3rd party request.")
         XCTAssertEqual(interception.data, thirdPartyTaskData, "Data should be recorded for 3rd party request.")
 
         interception = try XCTUnwrap(
             completedInterceptions.first { $0.request.url == alternativeFirstPartyRequest.url }, "Interception should be completed for custom 1st party request."
         )
-        XCTAssertNotNil(interception.spanContext, "Span context should be set for custom 1st party request.")
+        XCTAssertNotNil(interception.trace, "Span context should be set for custom 1st party request.")
         XCTAssertEqual(interception.data, alternativeFirstPartyTaskData, "Data should be recorded for custom 1st party request.")
     }
 
@@ -470,7 +453,7 @@ class URLSessionInterceptorTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.25, handler: nil)
 
-        var interception: TaskInterception
+        var interception: URLSessionTaskInterception
 
         // We compare `URLRequests` by their `.url` in following assertions
         // due to https://openradar.appspot.com/radar?id=4988276943355904
@@ -501,7 +484,7 @@ class URLSessionInterceptorTests: XCTestCase {
 
         let allInterceptions = startedInterceptions + completedInterceptions
         allInterceptions.forEach { interception in
-            XCTAssertNil(interception.spanContext, "Span context should NOT be set when Tracing instrumentation is disabled.")
+            XCTAssertNil(interception.trace, "Span context should NOT be set when Tracing instrumentation is disabled.")
         }
     }
 

@@ -6,6 +6,8 @@
 
 import Foundation
 import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 extension URLSession {
@@ -79,18 +81,18 @@ class URLSessionInterceptorMock: URLSessionInterceptorType {
 }
 
 class URLSessionInterceptionHandlerMock: URLSessionInterceptionHandler {
-    var didNotifyInterceptionStart: ((TaskInterception) -> Void)?
-    var startedInterceptions: [TaskInterception] = []
+    var didNotifyInterceptionStart: ((URLSessionTaskInterception) -> Void)?
+    var startedInterceptions: [URLSessionTaskInterception] = []
 
-    func notify_taskInterceptionStarted(interception: TaskInterception) {
+    func notify_taskInterceptionStarted(interception: URLSessionTaskInterception) {
         startedInterceptions.append(interception)
         didNotifyInterceptionStart?(interception)
     }
 
-    var didNotifyInterceptionCompletion: ((TaskInterception) -> Void)?
-    var completedInterceptions: [TaskInterception] = []
+    var didNotifyInterceptionCompletion: ((URLSessionTaskInterception) -> Void)?
+    var completedInterceptions: [URLSessionTaskInterception] = []
 
-    func notify_taskInterceptionCompleted(interception: TaskInterception) {
+    func notify_taskInterceptionCompleted(interception: URLSessionTaskInterception) {
         completedInterceptions.append(interception)
         didNotifyInterceptionCompletion?(interception)
     }

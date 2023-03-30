@@ -28,17 +28,17 @@ public class URLSessionTaskInterception {
         parentSpanID: SpanID?
     )?
 
-    init(request: URLRequest, isFirstParty: Bool) {
+    /* internal */ public init(request: URLRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
     }
 
-    func register(metrics: ResourceMetrics) {
+    /* internal */ public func register(metrics: ResourceMetrics) {
         self.metrics = metrics
     }
 
-    func register(nextData: Data) {
+    /* internal */ public func register(nextData: Data) {
         if data != nil {
             self.data?.append(nextData)
         } else {
@@ -46,7 +46,7 @@ public class URLSessionTaskInterception {
         }
     }
 
-    func register(response: URLResponse?, error: Error?) {
+    /* internal */ public func register(response: URLResponse?, error: Error?) {
         self.completion = ResourceCompletion(
             response: response as? HTTPURLResponse,
             error: error
