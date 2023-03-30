@@ -41,7 +41,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,
-            userInfoProvider: .mockWith(userInfo: context.userInfo ?? .empty),
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,

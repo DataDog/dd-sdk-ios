@@ -44,7 +44,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
                 uploadPerformance: .veryQuick
@@ -112,7 +111,6 @@ class DatadogTraceFeatureTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: StoragePerformanceMock(
                     maxFileSize: .max,
