@@ -7,6 +7,8 @@
 import Datadog
 import XCTest
 
+import DatadogTrace
+
 class TracingBenchmarkTests: BenchmarkTests {
     private let operationName = "foobar-span"
 

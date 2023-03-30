@@ -6,6 +6,8 @@
 
 import XCTest
 import DatadogInternal
+
+@testable import DatadogTrace
 @testable import Datadog
 
 class TracingStorageBenchmarkTests: XCTestCase {
