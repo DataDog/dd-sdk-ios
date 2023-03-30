@@ -7,7 +7,7 @@
 import XCTest
 import TestUtilities
 
-import DatadogInternal
+@testable import DatadogInternal
 @testable import DatadogTrace
 
 class TracingURLSessionHandlerTests: XCTestCase {
@@ -204,6 +204,23 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 )
             )
         )
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testRUM2APMInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
+        core.expectation = expectation(description: "Do not send span")
+        core.expectation?.isInverted = true
+
+        // Given
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
+        interception.enableRUM2APM()
+        interception.register(response: .mockAny(), error: nil)
 
         // When
         handler.interceptionDidComplete(interception: interception)

@@ -53,6 +53,15 @@ class URLSessionTaskInterceptionTests: XCTestCase {
         // Then
         XCTAssertTrue(interception.isDone)
     }
+
+    func testInterceptionSetsRUM2APM() {
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny())
+
+        // When
+        XCTAssertFalse(interception.rum2APM)
+        interception.enableRUM2APM()
+        XCTAssertTrue(interception.rum2APM)
+    }
 }
 
 class ResourceMetricsTests: XCTestCase {

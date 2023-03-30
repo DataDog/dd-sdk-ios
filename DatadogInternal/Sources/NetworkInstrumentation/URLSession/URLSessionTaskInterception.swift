@@ -27,18 +27,20 @@ public class URLSessionTaskInterception {
         spanID: SpanID,
         parentSpanID: SpanID?
     )?
+    /// Task metrics collected during this interception.
+    public private(set) var rum2APM: Bool = false
 
-    /* internal */ public init(request: URLRequest, isFirstParty: Bool) {
+    init(request: URLRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
     }
 
-    /* internal */ public func register(metrics: ResourceMetrics) {
+    func register(metrics: ResourceMetrics) {
         self.metrics = metrics
     }
 
-    /* internal */ public func register(nextData: Data) {
+    func register(nextData: Data) {
         if data != nil {
             self.data?.append(nextData)
         } else {
@@ -46,7 +48,7 @@ public class URLSessionTaskInterception {
         }
     }
 
-    /* internal */ public func register(response: URLResponse?, error: Error?) {
+    func register(response: URLResponse?, error: Error?) {
         self.completion = ResourceCompletion(
             response: response as? HTTPURLResponse,
             error: error
@@ -63,6 +65,10 @@ public class URLSessionTaskInterception {
             spanID: spanID,
             parentSpanID: parentSpanID
         )
+    }
+
+    public func enableRUM2APM() {
+        self.rum2APM = true
     }
 
     /// Tells if the interception is done (mean: both metrics and completion were collected).

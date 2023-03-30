@@ -179,7 +179,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             let feature = DatadogRUMFeature(in: core, configuration: configuration)
             try core.register(feature: feature)
 
-            let urlSessionHandler = URLSessionRUMResourcesHandler_(
+            let urlSessionHandler = URLSessionRUMResourcesHandler(
                 dateProvider: configuration.dateProvider,
                 rumAttributesProvider: configuration.rumAttributesProvider,
                 distributedTracing: configuration.tracingSampler.map {

@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogInternal
 
 internal class TSPictureViewController: UIViewController {
     private lazy var session = URLSession(

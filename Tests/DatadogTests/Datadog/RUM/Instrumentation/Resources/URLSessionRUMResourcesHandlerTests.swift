@@ -6,24 +6,93 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
+@testable import DatadogInternal
 @testable import Datadog
 
 class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-    private let traceSamplingRate: Double = .mockRandom(min: 0, max: 1)
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private func createHandler(rumAttributesProvider: URLSessionRUMAttributesProvider? = nil) -> URLSessionRUMResourcesHandler {
+    private func createHandler(
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
+        distributedTracing: DistributedTracing? = nil
+    ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
             dateProvider: dateProvider,
-            tracingSampler: Sampler(samplingRate: Float(traceSamplingRate * 100)),
-            rumAttributesProvider: rumAttributesProvider
+            rumAttributesProvider: rumAttributesProvider,
+            distributedTracing: distributedTracing
         )
         handler.publish(to: commandSubscriber)
         return handler
     }
+
     private lazy var handler = createHandler(rumAttributesProvider: nil)
+
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectTraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ]
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: "x-datadog-origin"), "rum")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField), "0000000000000001")
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-01")
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
+        /// Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockRejectAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [
+                .datadog,
+                .b3,
+                .b3multi,
+                .tracecontext
+            ]
+        )
+
+        XCTAssertEqual(request.value(forHTTPHeaderField: "x-datadog-origin"), "rum")
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-00")
+    }
 
     func testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
         let receiveCommand = expectation(description: "Receive RUM command")
@@ -36,7 +105,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(taskInterception.trace)
 
         // When
-        handler.notify_taskInterceptionStarted(interception: taskInterception)
+        handler.interceptionDidStart(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -50,17 +119,38 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNil(resourceStartCommand.spanContext)
     }
 
+    func testGivenTaskInterception_whenInterceptionStarts_itEnablesRUM2APM() throws {
+        // Given
+        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
+        XCTAssertFalse(interception.rum2APM)
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception)
+
+        // Then
+        XCTAssertTrue(interception.rum2APM)
+    }
+
     func testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {
         let receiveCommand = expectation(description: "Receive RUM command")
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
+        let traceSamplingRate: Double = .mockRandom(min: 0, max: 100)
+
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: Sampler(samplingRate: Float(traceSamplingRate)),
+                firstPartyHosts: .init()
+            )
+        )
+
         let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
         taskInterception.register(traceID: 1, spanID: 2, parentSpanID: nil)
         XCTAssertNotNil(taskInterception.trace)
 
         // When
-        handler.notify_taskInterceptionStarted(interception: taskInterception)
+        handler.interceptionDidStart(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -69,7 +159,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let spanContext = try XCTUnwrap(resourceStartCommand.spanContext)
         XCTAssertEqual(spanContext.traceID, "1")
         XCTAssertEqual(spanContext.spanID, "2")
-        XCTAssertEqual(spanContext.samplingRate, traceSamplingRate, accuracy: 0.01)
+        XCTAssertEqual(spanContext.samplingRate, traceSamplingRate / 100, accuracy: 0.01)
     }
 
     func testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics() throws {
@@ -89,7 +179,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         taskInterception.register(response: response, error: nil)
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+        handler.interceptionDidComplete(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -126,7 +216,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         taskInterception.register(response: nil, error: taskError)
 
         // When
-        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+        handler.interceptionDidComplete(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -179,7 +269,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         taskInterception.register(nextData: mockData)
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: mockResponse, error: nil)
-        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+        handler.interceptionDidComplete(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -214,7 +304,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let taskInterception = URLSessionTaskInterception(request: mockRequest, isFirstParty: .random())
         taskInterception.register(metrics: .mockAny())
         taskInterception.register(response: nil, error: mockError)
-        handler.notify_taskInterceptionCompleted(interception: taskInterception)
+        handler.interceptionDidComplete(interception: taskInterception)
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)

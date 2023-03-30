@@ -234,8 +234,6 @@ public class Datadog {
             )
         }
 
-        core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
-
         defaultDatadogCore = core
 
         // After everything is set up, if the Crash Reporting feature was enabled,

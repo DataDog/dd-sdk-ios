@@ -90,6 +90,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
         guard
             interception.isFirstPartyRequest,  // `Span` should be only send for 1st party requests
+            !interception.rum2APM, // Send a span only if RUM 2 APM is disabled
             let tracer = tracer,
             let resourceMetrics = interception.metrics,
             let resourceCompletion = interception.completion
