@@ -22,7 +22,12 @@ internal func renderImage(for wireframes: [SRWireframe]) -> UIImage {
 
     let frame = wireframes[0].toFrame()
     let canvas = FramerCanvas.create(size: CGSize(width: frame.width, height: frame.height))
-    canvas.draw(blueprint: Blueprint(id: "snapshot", frames: wireframes.map { $0.toFrame() }))
+    canvas.draw(
+        blueprint: Blueprint(
+            id: "snapshot",
+            contents: wireframes.map { .frame($0.toFrame()) }
+        )
+    )
     return canvas.image
 }
 
@@ -74,17 +79,14 @@ private extension SRImageWireframe {
             y: CGFloat(y),
             width: CGFloat(width),
             height: CGFloat(height),
-            style: .init(lineWidth: 1, lineColor: .black, fillColor: .red),
-            annotation: .init(
-                text: "IMG \(width) x \(height)",
-                style: .init(size: .small, position: .top, alignment: .trailing)
-            )
+            style: frameStyle(border: border, style: shapeStyle),
+            content: frameContent(base64ImageString: base64)
         )
     }
 }
 
-private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrameStyle {
-    var fs = BlueprintFrameStyle(
+private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrame.Style {
+    var fs = BlueprintFrame.Style(
         lineWidth: 0,
         lineColor: .clear,
         fillColor: .clear,
@@ -106,34 +108,49 @@ private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> Bluepri
     return fs
 }
 
-private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrameContent {
-    var fc = BlueprintFrameContent(
-        text: text,
-        textColor: .clear,
-        font: .systemFont(ofSize: 8)
-    )
-
-    if let textStyle = textStyle {
-        fc.textColor = UIColor(hexString: textStyle.color)
-        fc.font = .systemFont(ofSize: CGFloat(textStyle.size))
-    }
+private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: SRTextPosition?) -> BlueprintFrame.Content {
+    var horizontalAlignment: BlueprintFrame.Content.Alignment = .leading
+    var verticalAlignment: BlueprintFrame.Content.Alignment = .leading
 
     if let textPosition = textPosition {
         switch textPosition.alignment?.horizontal {
-        case .left?:    fc.horizontalAlignment = .leading
-        case .center?:  fc.horizontalAlignment = .center
-        case .right?:   fc.horizontalAlignment = .trailing
+        case .left?:    horizontalAlignment = .leading
+        case .center?:  horizontalAlignment = .center
+        case .right?:   horizontalAlignment = .trailing
         default:        break
         }
         switch textPosition.alignment?.vertical {
-        case .top?:     fc.verticalAlignment = .leading
-        case .center?:  fc.verticalAlignment = .center
-        case .bottom?:  fc.verticalAlignment = .trailing
+        case .top?:     verticalAlignment = .leading
+        case .center?:  verticalAlignment = .center
+        case .bottom?:  verticalAlignment = .trailing
         default:        break
         }
     }
 
-    return fc
+    let contentType: BlueprintFrame.Content.ContentType
+    if let textStyle = textStyle {
+        contentType = .text(
+            text: text,
+            color: UIColor(hexString: textStyle.color),
+            font: .systemFont(ofSize: CGFloat(textStyle.size))
+        )
+    } else {
+        contentType = .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
+    }
+
+    return .init(
+        contentType: contentType,
+        horizontalAlignment: horizontalAlignment,
+        verticalAlignment: verticalAlignment
+    )
+}
+
+private func frameContent(base64ImageString: String?) -> BlueprintFrame.Content {
+    let base64Data = base64ImageString?.data(using: .utf8) ?? Data()
+    let imageData = Data(base64Encoded: base64Data) ?? Data()
+    let image = UIImage(data: imageData, scale: UIScreen.main.scale) ?? UIImage()
+    let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
+    return .init(contentType: contentType)
 }
 
 private extension UIColor {
