@@ -79,11 +79,7 @@ private extension SRImageWireframe {
             y: CGFloat(y),
             width: CGFloat(width),
             height: CGFloat(height),
-            style: .init(lineWidth: 1, lineColor: .black, fillColor: .red),
-            annotation: .init(
-                text: "IMG \(width) x \(height)",
-                style: .init(size: .small, position: .top, alignment: .trailing)
-            )
+            content: frameContent(base64ImageString: base64)
         )
     }
 }
@@ -130,23 +126,30 @@ private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: S
         }
     }
 
-    return .init(
-        contentType: frameContentType(text: text, textStyle: textStyle),
-        horizontalAlignment: horizontalAlignment,
-        verticalAlignment: verticalAlignment
-    )
-}
-
-private func frameContentType(text: String, textStyle: SRTextStyle?) -> BlueprintFrame.Content.ContentType {
+    let contentType: BlueprintFrame.Content.ContentType
     if let textStyle = textStyle {
-        return .text(
+        contentType = .text(
             text: text,
             color: UIColor(hexString: textStyle.color),
             font: .systemFont(ofSize: CGFloat(textStyle.size))
         )
     } else {
-        return .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
+        contentType = .text(text: text, color: .clear, font: .systemFont(ofSize: 8))
     }
+
+    return .init(
+        contentType: contentType,
+        horizontalAlignment: horizontalAlignment,
+        verticalAlignment: verticalAlignment
+    )
+}
+
+private func frameContent(base64ImageString: String?) -> BlueprintFrame.Content {
+    let base64Data = base64ImageString?.data(using: .utf8)
+    let imageData = Data(base64Encoded: base64Data!)!
+
+    let contentType: BlueprintFrame.Content.ContentType = .image(image: UIImage(data: imageData, scale: UIScreen.main.scale)!)
+    return .init(contentType: contentType)
 }
 
 private extension UIColor {
