@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class CrashReportReceiverTests: XCTestCase {
@@ -47,11 +48,15 @@ class CrashReportReceiverTests: XCTestCase {
             messageReceiver: CrashReportReceiver.mockAny()
         )
 
+        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+
         // When
         core.send(
             message: .custom(key: CrashReportReceiver.MessageKeys.crash, baggage: [
                 "report": DDCrashReport.mockWith(date: Date()),
-                "context": CrashContext.mockWith(lastRUMViewEvent: .mockRandom())
+                "context": CrashContext.mockWith(
+                    lastRUMViewEvent: AnyCodable(lastRUMViewEvent)
+                )
             ])
         )
 
@@ -69,12 +74,12 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
-        let activeRUMView: RUMViewEvent = .mockRandom()
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
+            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -100,18 +105,53 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoWithPreviousCrash_whenSending_itSendsNothing() throws {
+        let secondsIn4Hours: TimeInterval = 4 * 60 * 60
+
+        // Given
+        let currentDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashDate: Date = currentDate.secondsAgo(.random(in: 0..<secondsIn4Hours))
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 1)
+
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            dateProvider: RelativeDateProvider(using: currentDate),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        // When
+        XCTAssertFalse(
+            receiver.receive(message: .custom(
+                key: CrashReportReceiver.MessageKeys.crash,
+                baggage: [
+                    "report": crashReport,
+                    "context": crashContext
+                ]
+            ), from: core)
+        )
+
+        // Then
+        XCTAssertEqual(core.events.count, 0, "It must send no message")
+    }
+
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgo_whenSending_itSendsOnlyRUMError() throws {
         let secondsIn4Hours: TimeInterval = 4 * 60 * 60
 
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: secondsIn4Hours..<TimeInterval.greatestFiniteMagnitude))
-        let activeRUMView: RUMViewEvent = .mockRandom()
+        let activeRUMView: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
-            lastRUMViewEvent: activeRUMView // means there was a RUM session and it was sampled
+            lastRUMViewEvent: AnyCodable(activeRUMView) // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -140,12 +180,13 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+        let activeRUMSessionState: RUMSessionState = .mockRandom()
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // means there was no active view in this RUM session
-            lastRUMSessionState: .mockRandom(), // means there was RUM session (sampled)
+            lastRUMSessionState: AnyCodable(activeRUMSessionState), // means there was RUM session (sampled)
             lastIsAppInForeground: false // app in background
         )
 
@@ -176,12 +217,14 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+        let activeRUMSessionState = Bool.random() ?
+            nil : RUMSessionState.mockWith(isInitialSession: true, hasTrackedAnyView: false)
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // means there was no active view
-            lastRUMSessionState: Bool.random() ? nil : .mockWith(isInitialSession: true, hasTrackedAnyView: false), // there was no RUM session OR it was just started w/o yet tracking first view
+            lastRUMSessionState: AnyCodable(activeRUMSessionState), // there was no RUM session OR it was just started w/o yet tracking first view
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
@@ -277,16 +320,19 @@ class CrashReportReceiverTests: XCTestCase {
         // Given
         let currentDate: Date = .mockDecember15th2019At10AMUTC()
         let crashDate: Date = currentDate.secondsAgo(.random(in: 10..<1_000))
+        let activeRUMSessionState = AnyCodable(
+            RUMSessionState.mockWith(
+                sessionUUID: .nullUUID, // there was RUM session but it was not sampled
+                isInitialSession: .mockRandom(),
+                hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
+            )
+        )
 
         let crashReport: DDCrashReport = .mockWith(date: crashDate)
         let crashContext: CrashContext = .mockWith(
             trackingConsent: .granted,
             lastRUMViewEvent: nil, // means there was no active view
-            lastRUMSessionState: .mockWith(
-                sessionUUID: .nullUUID, // there was RUM session but it was not sampled
-                isInitialSession: .mockRandom(),
-                hasTrackedAnyView: false // as it was not sampled, it couldn't track any view
-            ),
+            lastRUMSessionState: activeRUMSessionState,
             lastIsAppInForeground: .mockRandom() // no matter if crashed in foreground or in background
         )
 
@@ -314,7 +360,7 @@ class CrashReportReceiverTests: XCTestCase {
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With Active View
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
-        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -323,7 +369,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -352,8 +398,8 @@ class CrashReportReceiverTests: XCTestCase {
             && sendRUMViewEvent.view.id == lastRUMViewEvent.view.id,
             "The `RUMViewEvent` sent must be linked to the same RUM Session as the last `RUMViewEvent`."
         )
-        XCTAssertEqual(sendRUMViewEvent.connectivity, lastRUMViewEvent.connectivity)
-        XCTAssertEqual(sendRUMViewEvent.usr, lastRUMViewEvent.usr)
+        DDAssertJSONEqual(sendRUMViewEvent.connectivity, lastRUMViewEvent.connectivity)
+        DDAssertJSONEqual(sendRUMViewEvent.usr, lastRUMViewEvent.usr)
         XCTAssertEqual(
             sendRUMViewEvent.view.crash?.count, 1, "The `RUMViewEvent` must include incremented crash count."
         )
@@ -367,7 +413,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
         XCTAssertEqual(sendRUMViewEvent.view.name, lastRUMViewEvent.view.name)
         XCTAssertEqual(sendRUMViewEvent.view.url, lastRUMViewEvent.view.url)
-        XCTAssertEqual(sendRUMViewEvent.view.error.count, lastRUMViewEvent.view.error.count)
+        XCTAssertEqual(sendRUMViewEvent.view.error.count, lastRUMViewEvent.view.error.count + 1)
         XCTAssertEqual(sendRUMViewEvent.view.resource.count, lastRUMViewEvent.view.resource.count)
         XCTAssertEqual(sendRUMViewEvent.view.action.count, lastRUMViewEvent.view.action.count)
         XCTAssertEqual(
@@ -376,12 +422,12 @@ class CrashReportReceiverTests: XCTestCase {
             "The `RUMViewEvent` sent must include crash date corrected by current correction offset and shifted back by 1ms."
         )
         XCTAssertEqual(sendRUMViewEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(sendRUMViewEvent.device, lastRUMViewEvent.device)
-        XCTAssertEqual(sendRUMViewEvent.os, lastRUMViewEvent.os)
+        DDAssertReflectionEqual(sendRUMViewEvent.device, lastRUMViewEvent.device)
+        DDAssertReflectionEqual(sendRUMViewEvent.os, lastRUMViewEvent.os)
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesCrashInformation() throws {
-        let lastRUMViewEvent: RUMViewEvent = .mockRandom()
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
         let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -419,7 +465,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: lastRUMViewEvent // means there was a RUM session and it was sampled
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -477,10 +523,10 @@ class CrashReportReceiverTests: XCTestCase {
             """
         )
         XCTAssertEqual(sendRUMErrorEvent.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        XCTAssertEqual(sendRUMErrorEvent.additionalAttributes?[DDError.threads] as? [DDCrashReport.Thread], crashReport.threads)
-        XCTAssertEqual(sendRUMErrorEvent.additionalAttributes?[DDError.binaryImages] as? [DDCrashReport.BinaryImage], crashReport.binaryImages)
-        XCTAssertEqual(sendRUMErrorEvent.additionalAttributes?[DDError.meta] as? DDCrashReport.Meta, crashReport.meta)
-        XCTAssertEqual(sendRUMErrorEvent.additionalAttributes?[DDError.wasTruncated] as? Bool, crashReport.wasTruncated)
+        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.threads]), crashReport.threads)
+        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.binaryImages]), crashReport.binaryImages)
+        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.meta]), crashReport.meta)
+        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.wasTruncated]), crashReport.wasTruncated)
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
@@ -524,7 +570,7 @@ class CrashReportReceiverTests: XCTestCase {
                 networkConnectionInfo: randomNetworkConnectionInfo,
                 carrierInfo: randomCarrierInfo,
                 lastRUMViewEvent: nil, // means there was no active RUM view
-                lastRUMSessionState: lastRUMSessionState, // means there was RUM session (sampled)
+                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
                 lastIsAppInForeground: launchInForeground
             )
 
@@ -557,12 +603,12 @@ class CrashReportReceiverTests: XCTestCase {
                 && sentRUMView.view.id.matches(regex: .uuidRegex),
                 "It must send `RUMViewEvent` linked to previous RUM Session"
             )
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMView.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
                 "It must contain connectity info from the moment of crash"
             )
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMView.usr,
                 RUMUser(userInfo: randomUserInfo),
                 "It must contain user info from the moment of crash"
@@ -571,7 +617,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMView.view.isActive == false, "The view must be marked inactive")
             XCTAssertEqual(sentRUMView.view.name, expectedViewName)
             XCTAssertEqual(sentRUMView.view.url, expectedViewURL)
-            XCTAssertEqual(sentRUMView.view.error.count, 0)
+            XCTAssertEqual(sentRUMView.view.error.count, 1, "The view must increase number of errors by 1")
             XCTAssertEqual(sentRUMView.view.resource.count, 0)
             XCTAssertEqual(sentRUMView.view.action.count, 0)
             XCTAssertEqual(sentRUMView.source, .init(rawValue: randomSource))
@@ -588,12 +634,12 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMError.model.view.id, sentRUMView.view.id, "It must be linked to the RUM view")
             XCTAssertEqual(sentRUMError.model.source, .init(rawValue: randomSource), "Must support configured sources")
             XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMError.model.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
                 "It must contain connectity info from the moment of crash"
             )
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMError.model.usr,
                 RUMUser(userInfo: randomUserInfo),
                 "It must contain user info from the moment of crash"
@@ -700,12 +746,12 @@ class CrashReportReceiverTests: XCTestCase {
                 && sentRUMView.view.id.matches(regex: .uuidRegex),
                 "It must send `RUMViewEvent` linked to new RUM Session"
             )
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMView.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
                 "It must contain connectity info from the moment of crash"
             )
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMView.usr,
                 RUMUser(userInfo: randomUserInfo),
                 "It must contain user info from the moment of crash"
@@ -714,7 +760,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertTrue(sentRUMView.view.isActive == false, "The view must be marked inactive")
             XCTAssertEqual(sentRUMView.view.name, expectedViewName)
             XCTAssertEqual(sentRUMView.view.url, expectedViewURL)
-            XCTAssertEqual(sentRUMView.view.error.count, 0)
+            XCTAssertEqual(sentRUMView.view.error.count, 1, "The view must increase number of errors by 1")
             XCTAssertEqual(sentRUMView.view.resource.count, 0)
             XCTAssertEqual(sentRUMView.view.action.count, 0)
             XCTAssertEqual(
@@ -728,12 +774,12 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMError.model.application.id, sentRUMView.application.id, "It must be linked to the same application as RUM view")
             XCTAssertEqual(sentRUMError.model.session.id, sentRUMView.session.id, "It must be linked to the same session as RUM view")
             XCTAssertEqual(sentRUMError.model.view.id, sentRUMView.view.id, "It must be linked to the RUM view")
-            XCTAssertEqual(
+            DDAssertReflectionEqual(
                 sentRUMError.model.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
                 "It must contain connectity info from the moment of crash"
             )
-            XCTAssertEqual(
+            DDAssertJSONEqual(
                 sentRUMError.usr,
                 RUMUser(userInfo: randomUserInfo),
                 "It must contain user info from the moment of crash"

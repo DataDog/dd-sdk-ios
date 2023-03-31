@@ -5,7 +5,7 @@
  */
 
 import Foundation
-
+import TestUtilities
 @testable import Datadog
 
 internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
@@ -52,7 +52,7 @@ internal struct FailingRequestBuilderMock: FeatureRequestBuilder {
 }
 
 extension URLRequestBuilder.QueryItem: RandomMockable, AnyMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         let all: [URLRequestBuilder.QueryItem] = [
             .ddsource(source: .mockRandom()),
             .ddtags(tags: .mockRandom()),
@@ -60,13 +60,13 @@ extension URLRequestBuilder.QueryItem: RandomMockable, AnyMockable {
         return all.randomElement()!
     }
 
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return .ddsource(source: .mockRandom(among: .alphanumerics))
     }
 }
 
 extension URLRequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
-    static func mockRandom() -> Self {
+    public static func mockRandom() -> Self {
         let all: [URLRequestBuilder.HTTPHeader] = [
             .contentTypeHeader(contentType: Bool.random() ? .applicationJSON : .textPlainUTF8),
             .userAgentHeader(appName: .mockRandom(among: .alphanumerics), appVersion: .mockRandom(among: .alphanumerics), device: .mockAny()),
@@ -78,17 +78,17 @@ extension URLRequestBuilder.HTTPHeader: RandomMockable, AnyMockable {
         return all.randomElement()!
     }
 
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return .ddEVPOriginVersionHeader(sdkVersion: "1.2.3")
     }
 }
 
 extension URLRequestBuilder: AnyMockable {
-    static func mockAny() -> Self {
+    public static func mockAny() -> Self {
         return mockWith()
     }
 
-    static func mockWith(
+    public static func mockWith(
         url: URL = .mockAny(),
         queryItems: [QueryItem] = [],
         headers: [HTTPHeader] = []

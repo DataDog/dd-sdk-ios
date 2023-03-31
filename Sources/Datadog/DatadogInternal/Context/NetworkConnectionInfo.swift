@@ -7,7 +7,7 @@
 import Foundation
 
 /// Network connection details.
-public struct NetworkConnectionInfo: Codable, Equatable {
+public struct NetworkConnectionInfo: Codable, Equatable, DictionaryEncodable {
     /// Tells if network is reachable.
     public enum Reachability: String, Codable, CaseIterable {
         /// The network is reachable.
@@ -39,6 +39,22 @@ public struct NetworkConnectionInfo: Codable, Equatable {
     public let isExpensive: Bool?
     /// A Boolean indicating if the connection uses an interface in Low Data Mode.
     public let isConstrained: Bool?
+
+    public init(
+        reachability: Reachability,
+        availableInterfaces: [Interface]?,
+        supportsIPv4: Bool?,
+        supportsIPv6: Bool?,
+        isExpensive: Bool?,
+        isConstrained: Bool?
+    ) {
+        self.reachability = reachability
+        self.availableInterfaces = availableInterfaces
+        self.supportsIPv4 = supportsIPv4
+        self.supportsIPv6 = supportsIPv6
+        self.isExpensive = isExpensive
+        self.isConstrained = isConstrained
+    }
 }
 
 extension NetworkConnectionInfo {

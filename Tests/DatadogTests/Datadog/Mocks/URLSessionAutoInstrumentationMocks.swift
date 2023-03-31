@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import TestUtilities
 @testable import Datadog
 
 extension URLSession {

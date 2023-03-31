@@ -24,6 +24,61 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
     }
 
+    private struct CrashReport: Decodable {
+        /// The date of the crash occurrence.
+        let date: Date?
+        /// Crash report type - used to group similar crash reports.
+        /// In Datadog Error Tracking this corresponds to `error.type`.
+        let type: String
+        /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
+        /// In Datadog Error Tracking this corresponds to `error.message`.
+        let message: String
+        /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
+        /// In Datadog Error Tracking this corresponds to `error.stack`.
+        let stack: String
+        /// All threads running in the process.
+        let threads: AnyCodable
+        /// List of binary images referenced from all stack traces.
+        let binaryImages: AnyCodable
+        /// Meta information about the crash and process.
+        let meta: AnyCodable
+        /// If any stack trace information was truncated due to crash report minimization.
+        let wasTruncated: Bool
+    }
+
+    private struct CrashContext: Decodable {
+        /// Interval between device and server time.
+        let serverTimeOffset: TimeInterval
+        /// The name of the service that data is generated from.
+        let service: String
+        /// Current device information.
+        let device: DeviceInfo
+        /// The version of the application that data is generated from.
+        let version: String
+        /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
+        let source: String
+        /// The last RUM view in crashed app process.
+        var lastRUMViewEvent: RUMViewEvent?
+        /// State of the last RUM session in crashed app process.
+        var lastRUMSessionState: RUMSessionState?
+        /// The last _"Is app in foreground?"_ information from crashed app process.
+        let lastIsAppInForeground: Bool
+        /// Network information.
+        ///
+        /// Represents the current state of the device network connectivity and interface.
+        /// The value can be `unknown` if the network interface is not available or if it has not
+        /// yet been evaluated.
+        let networkConnectionInfo: NetworkConnectionInfo?
+        /// Carrier information.
+        ///
+        /// Represents the current telephony service info of the device.
+        /// This value can be `nil` of no service is currently registered, or if the device does
+        /// not support telephony services.
+        let carrierInfo: CarrierInfo?
+        /// Current user information.
+        let userInfo: UserInfo?
+    }
+
     private struct AdjustedCrashTimings {
         /// Crash date read from `CrashReport`. It uses device time.
         let crashDate: Date
@@ -65,7 +120,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
     private func write(crash attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
         guard
-            let report = attributes["report", type: DDCrashReport.self],
+            let report = attributes["report", type: CrashReport.self],
             let context = attributes["context", type: CrashContext.self]
         else {
             return false
@@ -74,7 +129,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return send(report: report, with: context, to: core)
     }
 
-    private func send(report: DDCrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -87,8 +142,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection)
         )
 
+        // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if let lastRUMViewEvent = context.lastRUMViewEvent {
-            sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
+            if lastRUMViewEvent.view.crash?.count ?? 0 < 1 {
+                sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
+            } else {
+                DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
+                return false
+            }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
             sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings, to: core)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
@@ -104,7 +165,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
     /// the crash to that view. The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
     private func sendCrashReportLinkedToLastViewInPreviousSession(
-        _ crashReport: DDCrashReport,
+        _ crashReport: CrashReport,
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
         using crashTimings: AdjustedCrashTimings,
         to core: DatadogCoreProtocol
@@ -126,7 +187,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     /// still send the error using that session UUID. Lack of `lastRUMViewEvent` means that there was no **active** view, but the presence of
     /// `lastRUMSessionState` indicates that some views were tracked before.
     private func sendCrashReportToPreviousSession(
-        _ crashReport: DDCrashReport,
+        _ crashReport: CrashReport,
         crashContext: CrashContext,
         lastRUMSessionStateInPreviousSession lastRUMSessionState: RUMSessionState,
         using crashTimings: AdjustedCrashTimings,
@@ -177,7 +238,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     /// If the crash occurred before starting RUM session (after initializing SDK, but before starting the first view) we don't have any session UUID to associate the error with.
     /// In that case, we consider sending this crash within a new, single-view session: either "ApplicationLaunch" view or "Background" view.
     private func sendCrashReportToNewSession(
-        _ crashReport: DDCrashReport,
+        _ crashReport: CrashReport,
         crashContext: CrashContext,
         using crashTimings: AdjustedCrashTimings,
         to core: DatadogCoreProtocol
@@ -229,7 +290,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
+    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
         let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
@@ -245,7 +306,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     // MARK: - Building RUM events
 
     /// Creates RUM error based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
-    private func createRUMError(from crashReport: DDCrashReport, and lastRUMView: RUMViewEvent, crashDate: Date) -> RUMCrashEvent {
+    private func createRUMError(from crashReport: CrashReport, and lastRUMView: RUMViewEvent, crashDate: Date) -> RUMCrashEvent {
         let errorType = crashReport.type
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
@@ -286,6 +347,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
+                isActive: true,
                 type: lastRUMView.ciTest != nil ? .ciTest : .user
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
@@ -338,7 +400,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 domComplete: original.view.domComplete,
                 domContentLoaded: original.view.domContentLoaded,
                 domInteractive: original.view.domInteractive,
-                error: original.view.error,
+                error: .init(count: original.view.error.count + 1),
                 firstByte: nil,
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
@@ -408,6 +470,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             session: .init(
                 hasReplay: hasReplay,
                 id: sessionUUID.toRUMDataFormat,
+                isActive: true,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

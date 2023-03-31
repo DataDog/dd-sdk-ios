@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class WebViewEventReceiverTests: XCTestCase {
@@ -18,8 +19,10 @@ class WebViewEventReceiverTests: XCTestCase {
                 serverTimeOffset: 123,
                 featuresAttributes: [
                     "rum": [
-                        RUMContextAttributes.applicationID: "123456",
-                        RUMContextAttributes.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                        "ids": [
+                            RUMContextAttributes.IDs.applicationID: "123456",
+                            RUMContextAttributes.IDs.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
+                        ]
                     ]
                 ]
             ),
@@ -56,7 +59,7 @@ class WebViewEventReceiverTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         let received: AnyEncodable = try XCTUnwrap(core.events().last, "It should send event")
-        try AssertEncodedRepresentationsEqual(received, AnyEncodable(sent))
+        DDAssertJSONEqual(received, AnyEncodable(sent))
     }
 
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToCoreMessageBus() throws {
@@ -98,7 +101,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
-        AssertDictionariesEqual(writtenJSON, expectedWebRUMEvent)
+        DDAssertDictionariesEqual(writtenJSON, expectedWebRUMEvent)
         let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
@@ -130,7 +133,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
-        AssertDictionariesEqual(writtenJSON, webRUMEvent)
+        DDAssertDictionariesEqual(writtenJSON, webRUMEvent)
         let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
@@ -151,7 +154,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
-        AssertDictionariesEqual(writtenJSON, webRUMEvent)
+        DDAssertDictionariesEqual(writtenJSON, webRUMEvent)
         let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }
@@ -172,7 +175,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
 
-        AssertDictionariesEqual(writtenJSON, unknownWebRUMEvent)
+        DDAssertDictionariesEqual(writtenJSON, unknownWebRUMEvent)
         let webViewCommand = try XCTUnwrap(mockCommandSubscriber.lastReceivedCommand)
         XCTAssertEqual(webViewCommand.time, .mockDecember15th2019At10AMUTC())
     }

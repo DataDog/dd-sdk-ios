@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 
 @testable import Datadog
 
@@ -75,13 +76,17 @@ class ErrorMessageReceiverTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         // When
+        let mockAttribute: String = .mockRandom()
         core.send(
             message: .error(
                 message: "message-test",
                 baggage: [
                     "type": "type-test",
                     "stack": "stack-test",
-                    "source": "logger"
+                    "source": "logger",
+                    "attributes": [
+                        "any-key": mockAttribute
+                    ]
                 ]
             )
         )
@@ -94,5 +99,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")
         XCTAssertEqual(event.error.source, .logger)
+        let attributeValue = (event.context?.contextInfo["any-key"] as? DDAnyCodable)?.value as? String
+        XCTAssertEqual(attributeValue, mockAttribute)
     }
 }

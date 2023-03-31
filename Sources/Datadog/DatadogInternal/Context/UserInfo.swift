@@ -6,15 +6,15 @@
 
 import Foundation
 
-internal struct UserInfo: Codable {
+public struct UserInfo: Codable, DictionaryEncodable {
     /// User ID, if any.
-    internal let id: String?
+    public let id: String?
     /// Name representing the user, if any.
-    internal let name: String?
+    public let name: String?
     /// User email, if any.
-    internal let email: String?
+    public let email: String?
     /// User custom attributes, if any.
-    internal var extraInfo: [AttributeKey: AttributeValue]
+    public var extraInfo: [AttributeKey: AttributeValue]
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -22,7 +22,7 @@ internal struct UserInfo: Codable {
         case email
     }
 
-    init(
+    public init(
         id: String? = nil,
         name: String? = nil,
         email: String? = nil,
@@ -34,7 +34,7 @@ internal struct UserInfo: Codable {
         self.extraInfo = extraInfo
     }
 
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         // Encode static properties:
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encodeIfPresent(id, forKey: .id)
@@ -49,7 +49,7 @@ internal struct UserInfo: Codable {
         }
     }
 
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         // Decode static properties:
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decodeIfPresent(String.self, forKey: .id)
@@ -67,5 +67,5 @@ internal struct UserInfo: Codable {
 }
 
 extension UserInfo {
-    internal static var empty: Self { .init() }
+    public static var empty: Self { .init() }
 }

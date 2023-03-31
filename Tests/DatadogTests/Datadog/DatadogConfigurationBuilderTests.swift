@@ -5,12 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
-
-extension Datadog.Configuration.DatadogEndpoint: EquatableInTests {}
-extension Datadog.Configuration.LogsEndpoint: EquatableInTests {}
-extension Datadog.Configuration.TracesEndpoint: EquatableInTests {}
-extension Datadog.Configuration.RUMEndpoint: EquatableInTests {}
 
 class DatadogConfigurationBuilderTests: XCTestCase {
     func testDefaultBuilder() {
@@ -164,12 +160,12 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
             XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
             XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
-            XCTAssertEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
-            XCTAssertEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
-            XCTAssertEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
-            XCTAssertEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
-            XCTAssertEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
-            XCTAssertEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
+            DDAssertReflectionEqual(configuration.spanEventMapper?(.mockRandom()), mockSpanEvent)
+            DDAssertReflectionEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
+            DDAssertReflectionEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
+            DDAssertReflectionEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
+            DDAssertReflectionEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
+            DDAssertReflectionEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
             XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
             XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
             XCTAssertFalse(configuration.rumFrustrationSignalsTrackingEnabled)
@@ -188,7 +184,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
             // Aync mapper:
             configuration.logEventMapper?.map(event: .mockRandom()) { event in
-                XCTAssertEqual(event, mockLogEvent)
+                DDAssertReflectionEqual(event, mockLogEvent)
             }
         }
 

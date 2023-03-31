@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class RUMInternalProxyTests: XCTestCase {

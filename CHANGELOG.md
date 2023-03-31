@@ -1,6 +1,19 @@
 # Unreleased
 
+# 1.17.0 / 23-03-2023
+- [BUGFIX] Fix crash in `VitalInfoSampler`. See [#1216][] (Thanks [@cltnschlosser][])
+- [IMPROVEMENT] Fix Xcode analysis warning. See [#1220][]
+- [BUGFIX] Send crashes to both RUM and Logs. See [#1209][]
+
+# 1.16.0 / 02-03-2023
+- [IMPROVEMENT] Always create an ApplicationLaunch view on session initialization. See [#1160][]
+- [BUGFIX] Remove the data race caused by sampling on the RUM thread. See [#1177][] (Thanks [@cltnschlosser][])
+- [BUGFIX] Add ability to adjust configuration telemetry sampling rate. See [#1188][]
+
+# 1.15.0 / 23-01-2023
+
 - [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
+- [BUGFIX] Fix error count on the view update event following a crash. See [#1145][] 
 
 # 1.14.0 / 20-12-2022
 
@@ -426,6 +439,13 @@
 [#1061]: https://github.com/DataDog/dd-sdk-ios/pull/1061
 [#1071]: https://github.com/DataDog/dd-sdk-ios/pull/1071
 [#1089]: https://github.com/DataDog/dd-sdk-ios/pull/1089
+[#1145]: https://github.com/DataDog/dd-sdk-ios/pull/1145
+[#1160]: https://github.com/DataDog/dd-sdk-ios/pull/1160
+[#1177]: https://github.com/DataDog/dd-sdk-ios/pull/1177
+[#1188]: https://github.com/DataDog/dd-sdk-ios/pull/1188
+[#1209]: https://github.com/DataDog/dd-sdk-ios/pull/1209
+[#1216]: https://github.com/DataDog/dd-sdk-ios/pull/1216
+[#1220]: https://github.com/DataDog/dd-sdk-ios/pull/1220
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

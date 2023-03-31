@@ -63,16 +63,17 @@ internal final class VitalInfoSampler {
         self.refreshRateReader.register(self.refreshRatePublisher)
         self.maximumRefreshRate = maximumRefreshRate
 
-        takeSample()
+        // Take initial sample
+        RunLoop.main.perform(inModes: [.common]) { [weak self] in
+            self?.takeSample()
+        }
+        // Schedule reoccuring samples
         let timer = Timer(
             timeInterval: frequency,
             repeats: true
         ) { [weak self] _ in
             self?.takeSample()
         }
-        // NOTE: RUMM-1280 based on my running Example app
-        // non-main run loops don't fire the timer.
-        // Although i can't catch this in unit tests
         RunLoop.main.add(timer, forMode: .common)
         self.timer = timer
     }

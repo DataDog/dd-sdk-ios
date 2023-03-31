@@ -17,7 +17,7 @@ internal typealias RUMTelemetryDelayedDispatcher = (@escaping () -> Void) -> Voi
 /// Events are reported up to 100 per sessions with a sampling mechanism that is
 /// configured at initialisation. Duplicates are discared.
 internal final class RUMTelemetry: Telemetry {
-    /// Maximium number of telemetry events allowed per user sessions.
+    /// Maximum number of telemetry events allowed per user sessions.
     static let maxEventsPerSessions: Int = 100
 
     /// The core for sending telemetry to.
@@ -28,6 +28,7 @@ internal final class RUMTelemetry: Telemetry {
     var configurationEventMapper: RUMTelemetryConfiguratoinMapper?
     let delayedDispatcher: RUMTelemetryDelayedDispatcher
     let sampler: Sampler
+    var configurationExtraSampler = Sampler(samplingRate: 20.0)
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -48,7 +49,8 @@ internal final class RUMTelemetry: Telemetry {
         dateProvider: DateProvider,
         configurationEventMapper: RUMTelemetryConfiguratoinMapper?,
         delayedDispatcher: RUMTelemetryDelayedDispatcher?,
-        sampler: Sampler
+        sampler: Sampler,
+        configurationExtraSampler: Sampler = Sampler(samplingRate: 20.0) // Extra sample of 20% for configuration events
     ) {
         self.core = core
         self.dateProvider = dateProvider
@@ -60,6 +62,7 @@ internal final class RUMTelemetry: Telemetry {
             }
         }
         self.sampler = sampler
+        self.configurationExtraSampler = configurationExtraSampler
     }
 
     /// Sends a `TelemetryDebugEvent` event.
@@ -75,12 +78,12 @@ internal final class RUMTelemetry: Telemetry {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
-            let attributes = context.featuresAttributes["rum"]
+            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
 
-            let applicationId = attributes?[RUMContextAttributes.applicationID, type: String.self]
-            let sessionId = attributes?[RUMContextAttributes.sessionID, type: String.self]
-            let viewId = attributes?[RUMContextAttributes.viewID, type: String.self]
-            let actionId = attributes?[RUMContextAttributes.userActionID, type: String.self]
+            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
+            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
+            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
+            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
@@ -115,12 +118,12 @@ internal final class RUMTelemetry: Telemetry {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
-            let attributes = context.featuresAttributes["rum"]
+            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
 
-            let applicationId = attributes?[RUMContextAttributes.applicationID, type: String.self]
-            let sessionId = attributes?[RUMContextAttributes.sessionID, type: String.self]
-            let viewId = attributes?[RUMContextAttributes.viewID, type: String.self]
-            let actionId = attributes?[RUMContextAttributes.userActionID, type: String.self]
+            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
+            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
+            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
+            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
@@ -155,14 +158,18 @@ internal final class RUMTelemetry: Telemetry {
     func configuration(configuration: FeaturesConfiguration) {
         let date = dateProvider.now
 
+        if !configurationExtraSampler.sample() {
+            return
+        }
+
         self.delayedDispatcher {
             self.record(event: "_dd.configuration") { context, writer in
-                let attributes = context.featuresAttributes["rum"]
+                let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
 
-                let applicationId = attributes?[RUMContextAttributes.applicationID, type: String.self]
-                let sessionId = attributes?[RUMContextAttributes.sessionID, type: String.self]
-                let viewId = attributes?[RUMContextAttributes.viewID, type: String.self]
-                let actionId = attributes?[RUMContextAttributes.userActionID, type: String.self]
+                let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
+                let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
+                let viewId = attributes?[RUMContextAttributes.IDs.viewID]
+                let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
 
                 var event = TelemetryConfigurationEvent(
                     dd: .init(),
@@ -197,8 +204,8 @@ internal final class RUMTelemetry: Telemetry {
 
         rum.eventWriteContext { context, writer in
             // reset recorded events on session renewal
-            let attributes = context.featuresAttributes["rum"]
-            let sessionId = attributes?[RUMContextAttributes.sessionID, type: String.self]
+            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
+            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
 
             if sessionId != self.currentSessionID {
                 self.currentSessionID = sessionId
@@ -228,7 +235,10 @@ private extension FeaturesConfiguration {
             initializationType: nil,
             mobileVitalsUpdatePeriod: self.rum?.vitalsFrequency?.toInt64Milliseconds,
             premiumSampleRate: nil,
+            reactNativeVersion: nil,
+            reactVersion: nil,
             replaySampleRate: nil,
+            selectedTracingPropagators: nil,
             sessionReplaySampleRate: nil,
             sessionSampleRate: self.rum?.sessionSampler.samplingRate.toInt64(),
             silentMultipleInit: nil,
@@ -250,6 +260,7 @@ private extension FeaturesConfiguration {
             trackSessionAcrossSubdomains: nil,
             trackViewsManually: nil,
             useAllowedTracingOrigins: nil,
+            useAllowedTracingUrls: nil,
             useBeforeSend: nil,
             useCrossSiteSessionCookie: nil,
             useExcludedActivityUrls: nil,

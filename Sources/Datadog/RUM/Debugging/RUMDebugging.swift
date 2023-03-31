@@ -21,7 +21,7 @@ private struct RUMDebugInfo {
     let views: [View]
 
     init(applicationScope: RUMApplicationScope) {
-        self.views = (applicationScope.sessionScope?.viewScopes ?? [])
+        self.views = (applicationScope.activeSession?.viewScopes ?? [])
             .map { View(scope: $0) }
     }
 }

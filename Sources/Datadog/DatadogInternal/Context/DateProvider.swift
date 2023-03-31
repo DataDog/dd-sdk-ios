@@ -7,7 +7,7 @@
 import Foundation
 
 /// Provides current device time information.
-internal protocol DateProvider {
+public protocol DateProvider {
     /// Current device time.
     ///
     /// A specific point in time, independent of any calendar or time zone.
@@ -15,7 +15,9 @@ internal protocol DateProvider {
 }
 
 /// Provides system date.
-internal struct SystemDateProvider: DateProvider {
+public struct SystemDateProvider: DateProvider {
+    public init() { }
+
     /// Returns current system time.
-    var now: Date { .init() }
+    public var now: Date { .init() }
 }

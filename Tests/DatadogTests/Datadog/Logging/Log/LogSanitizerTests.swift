@@ -132,10 +132,10 @@ class LogSanitizerTests: XCTestCase {
                 userAttributes: [
                     Tracer.Attributes.traceID: mockValue(),
                     Tracer.Attributes.spanID: mockValue(),
-                    RUMContextAttributes.applicationID: mockValue(),
-                    RUMContextAttributes.sessionID: mockValue(),
-                    RUMContextAttributes.viewID: mockValue(),
-                    RUMContextAttributes.userActionID: mockValue(),
+                    RUMContextAttributes.IDs.applicationID: mockValue(),
+                    RUMContextAttributes.IDs.sessionID: mockValue(),
+                    RUMContextAttributes.IDs.viewID: mockValue(),
+                    RUMContextAttributes.IDs.userActionID: mockValue(),
                     "attribute3": mockValue(),
                 ]
             )

@@ -66,10 +66,26 @@ internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
 
 internal extension RUMErrorSourceType {
     static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> Self {
-        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String)
+        return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType))
+            .flatMap({
+                $0.decoded()
+            })
             .flatMap {
                 return RUMErrorEvent.Error.SourceType(rawValue: $0)
             } ?? .ios
+    }
+}
+
+internal extension AttributeValue {
+    func decoded<T>() -> T? {
+        switch self {
+        case let codable as DDAnyCodable:
+            return codable.value as? T
+        case let val as T:
+            return val
+        default:
+            return nil
+        }
     }
 }
 
@@ -96,7 +112,7 @@ public enum RUMErrorSource {
     case custom
 }
 
-internal enum RUMInternalErrorSource: String {
+internal enum RUMInternalErrorSource: String, Decodable {
     case custom
     case source
     case network
@@ -561,6 +577,16 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         )
     }
 
+    override public func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        process(
+            command: RUMAddFeatureFlagEvaluationCommand(
+                time: dateProvider.now,
+                name: name,
+                value: value
+            )
+        )
+    }
+
     // MARK: - Attributes
 
     override public func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -573,6 +599,12 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         queue.async {
             self.rumAttributes[key] = nil
         }
+    }
+
+    // MARK: - Session
+
+    override public func stopSession() {
+        process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
 
     // MARK: - Internal
@@ -603,8 +635,8 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         // update the core context with rum context
         core.set(feature: "rum", attributes: {
             self.queue.sync {
-                let context = self.applicationScope.sessionScope?.viewScopes.last?.context ??
-                                self.applicationScope.sessionScope?.context ??
+                let context = self.applicationScope.activeSession?.viewScopes.last?.context ??
+                                self.applicationScope.activeSession?.context ??
                                 self.applicationScope.context
 
                 guard context.sessionID != .nullUUID else {
@@ -613,10 +645,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 }
 
                 return [
-                    RUMContextAttributes.applicationID: context.rumApplicationID,
-                    RUMContextAttributes.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                    RUMContextAttributes.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased()
+                    RUMContextAttributes.ids: [
+                        RUMContextAttributes.IDs.applicationID: context.rumApplicationID,
+                        RUMContextAttributes.IDs.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                        RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                    ],
+                    RUMContextAttributes.serverTimeOffset: self.applicationScope.activeSession?.viewScopes.last?.serverTimeOffset
                 ]
             }
         })

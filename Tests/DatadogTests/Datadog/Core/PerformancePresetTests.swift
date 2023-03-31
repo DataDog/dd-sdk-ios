@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class PerformancePresetTests: XCTestCase {
@@ -135,5 +136,12 @@ class PerformancePresetTests: XCTestCase {
                 "Upload delay must change at non-zero rate."
             )
         }
+    }
+
+    func testPresetsUpdate() {
+        let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
+        let updatedPreset = preset.updated(with: PerformancePresetOverride(maxFileSize: .mockRandom(), maxObjectSize: .mockRandom()))
+        XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
+        XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
     }
 }

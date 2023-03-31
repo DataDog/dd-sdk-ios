@@ -7,8 +7,6 @@
 import XCTest
 @testable import Datadog
 
-extension FeaturesConfiguration.Common: EquatableInTests {}
-
 class FeaturesConfigurationTests: XCTestCase {
     // MARK: - Common Configuration
 
@@ -198,101 +196,113 @@ class FeaturesConfigurationTests: XCTestCase {
 
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-datadoghq.com/api/v2/logs"
+            "https://browser-intake-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us3).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-us3-datadoghq.com/api/v2/logs"
+            "https://browser-intake-us3-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us5).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-us5-datadoghq.com/api/v2/logs"
+            "https://browser-intake-us5-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).logging?.uploadURL.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.eu/api/v2/logs"
+            "https://browser-intake-datadoghq.eu/api/v2/logs"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .ap1).logging?.uploadURL.absoluteString,
+            "https://browser-intake-ap1-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1_fed).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-ddog-gov.com/api/v2/logs"
+            "https://browser-intake-ddog-gov.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.us).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-datadoghq.com/api/v2/logs"
+            "https://browser-intake-datadoghq.com/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.eu).logging?.uploadURL.absoluteString,
-            "https://mobile-http-intake.logs.datadoghq.eu/api/v2/logs"
+            "https://browser-intake-datadoghq.eu/api/v2/logs"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.gov).logging?.uploadURL.absoluteString,
-            "https://logs.browser-intake-ddog-gov.com/api/v2/logs"
+            "https://browser-intake-ddog-gov.com/api/v2/logs"
         )
 
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-datadoghq.com/api/v2/spans"
+            "https://browser-intake-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us3).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-us3-datadoghq.com/api/v2/spans"
+            "https://browser-intake-us3-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us5).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-us5-datadoghq.com/api/v2/spans"
+            "https://browser-intake-us5-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).tracing?.uploadURL.absoluteString,
-            "https:/public-trace-http-intake.logs.datadoghq.eu/api/v2/spans"
+            "https://browser-intake-datadoghq.eu/api/v2/spans"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .ap1).tracing?.uploadURL.absoluteString,
+            "https://browser-intake-ap1-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1_fed).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-ddog-gov.com/api/v2/spans"
+            "https://browser-intake-ddog-gov.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.us).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-datadoghq.com/api/v2/spans"
+            "https://browser-intake-datadoghq.com/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.eu).tracing?.uploadURL.absoluteString,
-            "https:/public-trace-http-intake.logs.datadoghq.eu/api/v2/spans"
+            "https://browser-intake-datadoghq.eu/api/v2/spans"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.gov).tracing?.uploadURL.absoluteString,
-            "https://trace.browser-intake-ddog-gov.com/api/v2/spans"
+            "https://browser-intake-ddog-gov.com/api/v2/spans"
         )
 
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-datadoghq.com/api/v2/rum"
+            "https://browser-intake-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us3).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-us3-datadoghq.com/api/v2/rum"
+            "https://browser-intake-us3-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us5).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-us5-datadoghq.com/api/v2/rum"
+            "https://browser-intake-us5-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .eu1).rum?.uploadURL.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.eu/api/v2/rum"
+            "https://browser-intake-datadoghq.eu/api/v2/rum"
+        )
+        XCTAssertEqual(
+            try configuration(datadogEndpoint: .ap1).rum?.uploadURL.absoluteString,
+            "https://browser-intake-ap1-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: .us1_fed).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-ddog-gov.com/api/v2/rum"
+            "https://browser-intake-ddog-gov.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.us).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-datadoghq.com/api/v2/rum"
+            "https://browser-intake-datadoghq.com/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.eu).rum?.uploadURL.absoluteString,
-            "https://rum-http-intake.logs.datadoghq.eu/api/v2/rum"
+            "https://browser-intake-datadoghq.eu/api/v2/rum"
         )
         XCTAssertEqual(
             try configuration(datadogEndpoint: DeprecatedEndpoints.gov).rum?.uploadURL.absoluteString,
-            "https://rum.browser-intake-ddog-gov.com/api/v2/rum"
+            "https://browser-intake-ddog-gov.com/api/v2/rum"
         )
 
         XCTAssertEqual(

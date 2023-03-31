@@ -271,6 +271,16 @@ public class DDRUMMonitor {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {}
 
+    /// Adds the result of evaluating a feature flag to the view
+    /// Feature flag evaluations are local to the active view and are cleared when the view is stopped
+    /// - Parameters:
+    ///   - name: the name of the feature flag
+    ///   - value: the result of the evaluation
+    public func addFeatureFlagEvaluation(
+        name: String,
+        value: Encodable
+    ) {}
+
     // MARK: - Attributes
 
     /// Adds a custom attribute to all future events sent by the RUM monitor.
@@ -285,6 +295,13 @@ public class DDRUMMonitor {
     /// Events created prior to this call will not lose this attribute.
     /// - Parameter key: key for the attribute that will be removed.
     public func removeAttribute(forKey key: AttributeKey) {}
+
+    // MARK: - Session
+
+    /// Stops the current session.
+    /// A new session will start in response to a call to `startView` or `addUserAction`.
+    /// If the session is started because of a call to `addUserAction`, the last know view is restarted in the new session.
+    public func stopSession() {}
 
     // MARK: - Internal
 

@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version: 5.5
 
 import PackageDescription
 
@@ -18,28 +18,12 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
-            name: "DatadogDynamic",
-            type: .dynamic,
-            targets: ["Datadog"]
-        ),
-        .library(
-            name: "DatadogDynamicObjc",
-            type: .dynamic,
-            targets: ["DatadogObjc"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStatic",
-            type: .static,
-            targets: ["Datadog"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStaticObjc",
-            type: .static,
-            targets: ["DatadogObjc"]
-        ),
-        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
+        ),
+        .library(
+            name: "DatadogSessionReplay",
+            targets: ["DatadogSessionReplay"]
         ),
     ],
     dependencies: [
@@ -68,6 +52,11 @@ let package = Package(
                 "Datadog",
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
             ]
-        )
+        ),
+        .target(
+            name: "DatadogSessionReplay",
+            dependencies: ["Datadog"],
+            path: "DatadogSessionReplay/Sources"
+        ),
     ]
 )

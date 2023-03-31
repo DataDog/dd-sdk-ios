@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class CrashLogReceiverTests: XCTestCase {
@@ -104,7 +105,7 @@ class CrashLogReceiverTests: XCTestCase {
             userInfo: Bool.random() ? .mockRandom() : .empty,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: .mockRandom()
+            lastRUMViewEvent: AnyCodable(mockRandomAttributes())
         )
 
         // When
@@ -157,6 +158,6 @@ class CrashLogReceiverTests: XCTestCase {
             tags: nil
         )
 
-        XCTAssertEqual(expectedLog, log)
+        DDAssertJSONEqual(expectedLog, log)
     }
 }

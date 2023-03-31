@@ -4,18 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 @testable import Datadog
-
-extension RUMUser: EquatableInTests {}
-extension RUMConnectivity: EquatableInTests {}
-extension RUMViewEvent: EquatableInTests {}
-extension RUMResourceEvent: EquatableInTests {}
-extension RUMActionEvent: EquatableInTests {}
-extension RUMErrorEvent: EquatableInTests {}
-extension RUMLongTaskEvent: EquatableInTests {}
-extension RUMCrashEvent: EquatableInTests {}
-extension RUMDevice: EquatableInTests {}
-extension RUMOperatingSystem: EquatableInTests {}
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {
@@ -42,19 +32,19 @@ extension RUMConnectivity {
 }
 
 extension RUMMethod: RandomMockable {
-    static func mockRandom() -> RUMMethod {
+    public static func mockRandom() -> RUMMethod {
         return [.post, .get, .head, .put, .delete, .patch].randomElement()!
     }
 }
 
 extension RUMEventAttributes: RandomMockable {
-    static func mockRandom() -> RUMEventAttributes {
+    public static func mockRandom() -> RUMEventAttributes {
         return .init(contextInfo: mockRandomAttributes())
     }
 }
 
 extension RUMDevice: RandomMockable {
-    static func mockRandom() -> RUMDevice {
+    public static func mockRandom() -> RUMDevice {
         return .init(
             architecture: .mockRandom(),
             brand: .mockRandom(),
@@ -66,7 +56,7 @@ extension RUMDevice: RandomMockable {
 }
 
 extension RUMActionID: RandomMockable {
-    static func mockRandom() -> RUMActionID {
+    public static func mockRandom() -> RUMActionID {
         if Bool.random() {
             return .string(value: .mockRandom())
         } else {
@@ -87,13 +77,13 @@ extension RUMActionID {
 }
 
 extension RUMDevice.RUMDeviceType: RandomMockable {
-    static func mockRandom() -> RUMDevice.RUMDeviceType {
+    public static func mockRandom() -> RUMDevice.RUMDeviceType {
         return [.mobile, .desktop, .tablet, .tv, .gamingConsole, .bot, .other].randomElement()!
     }
 }
 
 extension RUMOperatingSystem: RandomMockable {
-    static func mockRandom() -> RUMOperatingSystem {
+    public static func mockRandom() -> RUMOperatingSystem {
         return .init(
             name: .mockRandom(length: 5),
             version: .mockRandom(among: .decimalDigits, length: 2),
@@ -103,14 +93,15 @@ extension RUMOperatingSystem: RandomMockable {
 }
 
 extension RUMViewEvent: RandomMockable {
-    static func mockRandom() -> RUMViewEvent {
+    public static func mockRandom() -> RUMViewEvent {
         return mockRandomWith()
     }
 
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     static func mockRandomWith(
         viewIsActive: Bool? = .random(),
-        viewTimeSpent: Int64 = .mockRandom()
+        viewTimeSpent: Int64 = .mockRandom(),
+        crashCount: Int64? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
             dd: .init(
@@ -130,6 +121,7 @@ extension RUMViewEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
+                isActive: true,
                 type: .user
             ),
             source: .ios,
@@ -140,7 +132,7 @@ extension RUMViewEvent: RandomMockable {
                 action: .init(count: .mockRandom()),
                 cpuTicksCount: .mockRandom(),
                 cpuTicksPerSecond: .mockRandom(),
-                crash: .init(count: .mockRandom()),
+                crash: crashCount.map { .init(count: $0) },
                 cumulativeLayoutShift: .mockRandom(),
                 customTimings: .mockAny(),
                 domComplete: .mockRandom(),
@@ -185,7 +177,7 @@ extension RUMViewEvent: RandomMockable {
 }
 
 extension RUMResourceEvent: RandomMockable {
-    static func mockRandom() -> RUMResourceEvent {
+    public static func mockRandom() -> RUMResourceEvent {
         return RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -228,6 +220,7 @@ extension RUMResourceEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
+                isActive: true,
                 type: .user
             ),
             source: .ios,
@@ -244,7 +237,7 @@ extension RUMResourceEvent: RandomMockable {
 }
 
 extension RUMActionEvent: RandomMockable {
-    static func mockRandom() -> RUMActionEvent {
+    public static func mockRandom() -> RUMActionEvent {
         return RUMActionEvent(
             dd: .init(
                 action: .init(
@@ -281,6 +274,7 @@ extension RUMActionEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
+                isActive: nil,
                 type: .user
             ),
             source: .ios,
@@ -298,13 +292,13 @@ extension RUMActionEvent: RandomMockable {
 }
 
 extension RUMErrorEvent.Error.SourceType: RandomMockable {
-    static func mockRandom() -> RUMErrorEvent.Error.SourceType {
+    public static func mockRandom() -> RUMErrorEvent.Error.SourceType {
         return [.android, .browser, .ios, .reactNative].randomElement()!
     }
 }
 
 extension RUMErrorEvent: RandomMockable {
-    static func mockRandom() -> RUMErrorEvent {
+    public static func mockRandom() -> RUMErrorEvent {
         return RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -344,6 +338,7 @@ extension RUMErrorEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
+                isActive: nil,
                 type: .user
             ),
             source: .ios,
@@ -368,13 +363,13 @@ extension RUMCrashEvent: RandomMockable {
         )
     }
 
-    static func mockRandom() -> RUMCrashEvent {
+    public static func mockRandom() -> RUMCrashEvent {
         return mockRandom(error: .mockRandom())
     }
 }
 
 extension RUMLongTaskEvent: RandomMockable {
-    static func mockRandom() -> RUMLongTaskEvent {
+    public static func mockRandom() -> RUMLongTaskEvent {
         return RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -392,7 +387,12 @@ extension RUMLongTaskEvent: RandomMockable {
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
             os: .mockRandom(),
             service: .mockRandom(),
-            session: .init(hasReplay: false, id: .mockRandom(), type: .user),
+            session: .init(
+                hasReplay: false,
+                id: .mockRandom(),
+                isActive: true,
+                type: .user
+            ),
             source: .ios,
             synthetics: nil,
             usr: .mockRandom(),
@@ -402,11 +402,8 @@ extension RUMLongTaskEvent: RandomMockable {
     }
 }
 
-extension TelemetryConfigurationEvent: EquatableInTests {
-}
-
 extension TelemetryConfigurationEvent: RandomMockable {
-    static func mockRandom() -> TelemetryConfigurationEvent {
+    public static func mockRandom() -> TelemetryConfigurationEvent {
         return TelemetryConfigurationEvent(
             dd: .init(),
             action: .init(id: .mockRandom()),
@@ -428,7 +425,10 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     initializationType: nil,
                     mobileVitalsUpdatePeriod: .mockRandom(),
                     premiumSampleRate: nil,
+                    reactNativeVersion: nil,
+                    reactVersion: nil,
                     replaySampleRate: nil,
+                    selectedTracingPropagators: nil,
                     sessionReplaySampleRate: nil,
                     sessionSampleRate: .mockRandom(),
                     silentMultipleInit: nil,
@@ -450,6 +450,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     trackSessionAcrossSubdomains: nil,
                     trackViewsManually: nil,
                     useAllowedTracingOrigins: .mockRandom(),
+                    useAllowedTracingUrls: nil,
                     useBeforeSend: nil,
                     useCrossSiteSessionCookie: nil,
                     useExcludedActivityUrls: nil,

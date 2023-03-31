@@ -32,6 +32,14 @@ The following diagram illustrates the RUM event hierarchy:
 
 {{< img src="real_user_monitoring/data_collected/event-hierarchy.png" alt="RUM Event hierarchy" style="width:50%;border:none" >}}
 
+## Application launch
+
+During initialization, the RUM iOS SDK creates a view called "ApplicationLaunch". This view's start time matches the start of the iOS process, and can be used to track your application launch time.
+
+The ApplicationLaunch view includes any logs, actions, and resources created before your first call to `startView`. Use the duration of this view to determine time to first view. This view has an action, `application_start`, with a duration equal to the amount of time from process start until the call to `applicationDidBecomeActive`.
+
+In cases where iOS decides to [prewarm your application][4], the ApplicationLaunch view instead starts when the RUM iOS SDK is initialized, and the `application_start` event does not have a duration.
+
 ## Default attributes
 
 RUM collects common attributes for all events and attributes specific to each event by default listed below. You can also choose to enrich your user session data with [additional events][1] to default events specific to your application monitoring and business analytics needs.
@@ -75,7 +83,9 @@ The following OS-related attributes are attached automatically to all events col
 
 ### Geo-location
 
-The following attributes are related to the geo-location of IP addresses:
+The below attributes are related to the geo-location of IP addresses.
+
+**Note:** If you want to stop collecting geo-location attributes, change the setting in your [application details][6].
 
 | Fullname                           | Type   | Description                                                                                                                               |
 |------------------------------------|--------|-------------------------------------------------------------------------------------------------------------------------------------------|
@@ -123,7 +133,7 @@ You can enable [tracking user info][2] globally to collect and apply user attrib
 | `session.initial_view.name` | string | Name of the initial view of the session.                                    |
 | `session.last_view.url`      | string | URL of the last view of the session.                                        |
 | `session.last_view.name`     | string | Name of the last view of the session.                                       |
-| `session.ip`                 | string | IP address of the session extracted from the TCP connection of the intake. |
+| `session.ip`                 | string | IP address of the session extracted from the TCP connection of the intake. If you want to stop collecting this attribute, change the setting in your [application details][5]. |
 | `session.useragent`          | string | System user agent info to interpret device info.                            |
 
 
@@ -231,3 +241,6 @@ Before data is uploaded to Datadog, it is stored in cleartext in the cache direc
 [1]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#enrich-user-sessions
 [2]: https://docs.datadoghq.com/real_user_monitoring/ios/advanced_configuration/#track-user-sessions
 [3]: https://support.apple.com/guide/security/security-of-runtime-process-sec15bfe098e/web
+[4]: https://developer.apple.com/documentation/uikit/app_and_environment/responding_to_the_launch_of_your_app/about_the_app_launch_sequence
+[5]: https://docs.datadoghq.com/data_security/real_user_monitoring/#ip-address
+[6]: https://docs.datadoghq.com/data_security/real_user_monitoring/#geolocation
