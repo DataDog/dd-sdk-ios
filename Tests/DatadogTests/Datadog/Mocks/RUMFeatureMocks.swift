@@ -150,7 +150,6 @@ struct RUMCommandMock: RUMCommand {
     var time = Date()
     var attributes: [AttributeKey: AttributeValue] = [:]
     var canStartBackgroundView = false
-    var canStartApplicationLaunchView = false
     var isUserInteraction = false
 }
 
@@ -597,6 +596,14 @@ extension RUMAddFeatureFlagEvaluationCommand: AnyMockable, RandomMockable {
     }
 }
 
+extension RUMStopSessionCommand: AnyMockable {
+    public static func mockAny() -> RUMStopSessionCommand { mockWith() }
+
+    static func mockWith(time: Date = .mockAny()) -> RUMStopSessionCommand {
+        return RUMStopSessionCommand(time: time)
+    }
+}
+
 // MARK: - RUMCommand Property Mocks
 
 extension RUMInternalErrorSource: RandomMockable {
@@ -621,6 +628,7 @@ extension RUMContext {
     static func mockWith(
         rumApplicationID: String = .mockAny(),
         sessionID: RUMUUID = .mockRandom(),
+        isSessionActive: Bool = true,
         activeViewID: RUMUUID? = nil,
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
@@ -629,6 +637,7 @@ extension RUMContext {
         return RUMContext(
             rumApplicationID: rumApplicationID,
             sessionID: sessionID,
+            isSessionActive: true,
             activeViewID: activeViewID,
             activeViewPath: activeViewPath,
             activeViewName: activeViewName,

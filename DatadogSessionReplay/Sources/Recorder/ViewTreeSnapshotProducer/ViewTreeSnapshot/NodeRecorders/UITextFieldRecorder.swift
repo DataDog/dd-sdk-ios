@@ -40,12 +40,12 @@ internal struct UITextFieldRecorder: NodeRecorder {
 
     /// Records `UIView` and `UIImageViewRecorder` nodes that define text field's appearance.
     private func recordAppearance(in textField: UITextField, textFieldAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
-        backgroundViewRecorder.dropPredicate = { _, viewAttributes in
+        backgroundViewRecorder.semanticsOverride = { _, viewAttributes in
             // We consider view to define text field's appearance if it has the same
             // size as text field:
             let hasSameSize = textFieldAttributes.frame == viewAttributes.frame
             let isBackground = hasSameSize && viewAttributes.hasAnyAppearance
-            return !isBackground
+            return !isBackground ? IgnoredElement(subtreeStrategy: .record) : nil
         }
 
         return subtreeRecorder.recordNodes(for: textField, in: context)
@@ -88,10 +88,10 @@ internal struct UITextFieldRecorder: NodeRecorder {
 
     private func textObfuscator(for textField: UITextField, in context: ViewTreeRecordingContext) -> TextObfuscating {
         if textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber {
-            return InputTextObfuscator()
+            return context.sensitiveTextObfuscator
         }
 
-        return context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator // default one
+        return context.textObfuscator
     }
 }
 

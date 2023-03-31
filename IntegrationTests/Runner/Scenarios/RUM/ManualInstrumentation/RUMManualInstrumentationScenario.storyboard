@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.2" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="pf8-bf-lC4">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="pf8-bf-lC4">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -17,7 +18,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SX8-ub-OtU">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
+                                <rect key="frame" x="116.5" y="437.5" width="181.5" height="21"/>
                                 <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -47,7 +48,7 @@
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Zk-BI-nQq">
                                 <rect key="frame" x="107" y="518.5" width="200" height="44"/>
-                                <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
+                                <color key="backgroundColor" red="0.47058823529999999" green="0.27058823529999998" blue="0.70980392160000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
                                     <constraint firstAttribute="width" relation="greaterThanOrEqual" constant="200" id="CE5-a3-tvy"/>
                                     <constraint firstAttribute="height" constant="44" id="Pp2-Pg-Ujp"/>
@@ -68,7 +69,8 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="sfr-fJ-Afg"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="9Zk-BI-nQq" firstAttribute="centerX" secondItem="NN5-07-h1G" secondAttribute="centerX" id="CbM-JR-3Ix"/>
                             <constraint firstItem="9Zk-BI-nQq" firstAttribute="top" secondItem="0Ll-7g-WYi" secondAttribute="bottom" constant="8" id="H0p-mE-2kE"/>
@@ -77,7 +79,6 @@
                             <constraint firstItem="SX8-ub-OtU" firstAttribute="centerX" secondItem="NN5-07-h1G" secondAttribute="centerX" id="l36-2f-KNu"/>
                             <constraint firstItem="0Ll-7g-WYi" firstAttribute="top" secondItem="SX8-ub-OtU" secondAttribute="bottom" constant="8" id="q6k-4c-XJf"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="sfr-fJ-Afg"/>
                     </view>
                     <navigationItem key="navigationItem" id="jZu-uz-Pcj"/>
                     <connections>
@@ -97,7 +98,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ken-2c-0bK">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
+                                <rect key="frame" x="116.5" y="437.5" width="181.5" height="21"/>
                                 <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
@@ -126,14 +127,14 @@
                                 </connections>
                             </button>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="nHg-xq-2vI"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="Tz6-6i-kw5" firstAttribute="centerX" secondItem="Epx-Nl-L0w" secondAttribute="centerX" id="Edn-KE-PZv"/>
                             <constraint firstItem="Tz6-6i-kw5" firstAttribute="top" secondItem="ken-2c-0bK" secondAttribute="bottom" constant="10" id="Mo8-G7-vuP"/>
                             <constraint firstItem="ken-2c-0bK" firstAttribute="centerX" secondItem="Epx-Nl-L0w" secondAttribute="centerX" id="PWg-xS-Nch"/>
                             <constraint firstItem="ken-2c-0bK" firstAttribute="centerY" secondItem="Epx-Nl-L0w" secondAttribute="centerY" id="qpB-Kq-Bah"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="nHg-xq-2vI"/>
                     </view>
                     <navigationItem key="navigationItem" id="uVq-YZ-YVI"/>
                 </viewController>
@@ -150,19 +151,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text=" Sending RUM events... " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="QFu-tk-7iM">
-                                <rect key="frame" x="116" y="437.5" width="182.5" height="21"/>
+                                <rect key="frame" x="116.5" y="437.5" width="181.5" height="21"/>
                                 <color key="backgroundColor" red="0.38823529410000002" green="0.17254901959999999" blue="0.65098039220000004" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                        <viewLayoutGuide key="safeArea" id="42g-hj-wb0"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="QFu-tk-7iM" firstAttribute="centerX" secondItem="06R-3w-ldx" secondAttribute="centerX" id="Dua-kk-TFJ"/>
                             <constraint firstItem="QFu-tk-7iM" firstAttribute="centerY" secondItem="06R-3w-ldx" secondAttribute="centerY" id="fLg-Be-JMm"/>
                         </constraints>
-                        <viewLayoutGuide key="safeArea" id="42g-hj-wb0"/>
                     </view>
                     <navigationItem key="navigationItem" id="0d3-JV-H2n"/>
                 </viewController>
@@ -175,7 +176,7 @@
             <objects>
                 <navigationController id="pf8-bf-lC4" sceneMemberID="viewController">
                     <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="Asf-nL-UKR">
-                        <rect key="frame" x="0.0" y="44" width="414" height="44"/>
+                        <rect key="frame" x="0.0" y="48" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
                     </navigationBar>
                     <connections>
@@ -187,4 +188,9 @@
             <point key="canvasLocation" x="-636" y="1233"/>
         </scene>
     </scenes>
+    <resources>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+    </resources>
 </document>

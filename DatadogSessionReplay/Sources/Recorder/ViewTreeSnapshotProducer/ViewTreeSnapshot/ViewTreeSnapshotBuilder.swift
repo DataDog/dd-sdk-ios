@@ -15,8 +15,12 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
-    /// Masks text in recorded nodes.
-    let textObfuscator: TextObfuscator
+    /// Text obfuscator applied to all non-sensitive texts. No-op if privacy mode is disabled.
+    let textObfuscator = TextObfuscator()
+    /// Text obfuscator applied to all sensitive texts.
+    let sensitiveTextObfuscator = SensitiveTextObfuscator()
+    /// Provides base64 image data with a built in caching mechanism.
+    let imageDataProvider: ImageDataProviding
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -30,7 +34,20 @@ internal struct ViewTreeSnapshotBuilder {
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            textObfuscator: textObfuscator
+            textObfuscator: {
+                switch recorderContext.privacy {
+                case .maskAll:  return textObfuscator
+                case .allowAll: return nopTextObfuscator
+                }
+            }(),
+            selectionTextObfuscator: {
+                switch recorderContext.privacy {
+                case .maskAll:  return sensitiveTextObfuscator
+                case .allowAll: return nopTextObfuscator
+                }
+            }(),
+            sensitiveTextObfuscator: sensitiveTextObfuscator,
+            imageDataProvider: imageDataProvider
         )
         let snapshot = ViewTreeSnapshot(
             date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
@@ -45,24 +62,28 @@ internal struct ViewTreeSnapshotBuilder {
 extension ViewTreeSnapshotBuilder {
     init() {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: defaultNodeRecorders),
+            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders()),
             idsGenerator: NodeIDGenerator(),
-            textObfuscator: TextObfuscator()
+            imageDataProvider: ImageDataProvider()
         )
     }
 }
 
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
-internal let defaultNodeRecorders: [NodeRecorder] = [
-    UIViewRecorder(),
-    UILabelRecorder(),
-    UIImageViewRecorder(),
-    UITextFieldRecorder(),
-    UITextViewRecorder(),
-    UISwitchRecorder(),
-    UISliderRecorder(),
-    UISegmentRecorder(),
-    UINavigationBarRecorder(),
-    UITabBarRecorder(),
-    UIPickerViewRecorder(),
-]
+internal func createDefaultNodeRecorders() -> [NodeRecorder] {
+    return [
+        UIViewRecorder(),
+        UILabelRecorder(),
+        UIImageViewRecorder(),
+        UITextFieldRecorder(),
+        UITextViewRecorder(),
+        UISwitchRecorder(),
+        UISliderRecorder(),
+        UISegmentRecorder(),
+        UIStepperRecorder(),
+        UINavigationBarRecorder(),
+        UITabBarRecorder(),
+        UIPickerViewRecorder(),
+        UIDatePickerRecorder(),
+    ]
+}

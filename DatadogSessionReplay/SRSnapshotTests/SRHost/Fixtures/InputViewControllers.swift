@@ -57,3 +57,67 @@ internal class PickersViewController: UIViewController {
         secondPicker.selectRow(4, inComponent: 2, animated: false)
     }
 }
+
+internal class DatePickersInlineViewController: UIViewController {
+    @IBOutlet weak var datePicker: UIDatePicker!
+
+    func set(date: Date) {
+        datePicker.setDate(date, animated: false)
+    }
+}
+
+internal class DatePickersCompactViewController: UIViewController {
+    @IBOutlet weak var datePicker: UIDatePicker!
+
+    func set(date: Date) {
+        datePicker.setDate(date, animated: false)
+    }
+
+    /// Forces the "compact" date picker to open full calendar view in a popover.
+    func openCalendarPopover() {
+        // Here we use private Objc APIs. It works fine on iOS 15.0+ which matches the OS version used
+        // for snapshot tests, but might need updates in the future.
+        if #available(iOS 15.0, *) {
+            let label = datePicker.subviews[0].subviews[0]
+            let tapAction = NSSelectorFromString("_didTapTextLabel")
+            label.perform(tapAction)
+        }
+    }
+
+    /// Forces the "wheel" time picker to open in a popover.
+    func openTimePickerPopover() {
+        // Here we use private Objc APIs - it works fine on iOS 15.0+ which matches the OS version used
+        // for snapshot tests, but might need updates in the future.
+        if #available(iOS 15.0, *) {
+            class DummySender: NSObject {
+                @objc
+                func activeTouch() -> UITouch? { return nil }
+            }
+
+            let label = datePicker.subviews[0].subviews[1]
+            let tapAction = NSSelectorFromString("didTapInputLabel:")
+            label.perform(tapAction, with: DummySender())
+        }
+    }
+}
+
+internal class DatePickersWheelsViewController: UIViewController {
+    @IBOutlet weak var datePicker: UIDatePicker!
+
+    func set(date: Date) {
+        datePicker.setDate(date, animated: false)
+    }
+}
+
+internal class TimePickersCountDownViewController: UIViewController {}
+
+internal class TimePickersWheelViewController: UIViewController {
+    @IBOutlet weak var datePicker: UIDatePicker!
+
+    func set(date: Date) {
+        datePicker.setDate(date, animated: false)
+    }
+}
+
+/// Sharing the same VC for compact time and date picker.
+internal typealias TimePickersCompactViewController = DatePickersCompactViewController

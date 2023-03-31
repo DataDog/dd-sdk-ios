@@ -666,6 +666,10 @@ public class DDRUMActionEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
+    }
+
     @objc public var type: DDRUMActionEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -1628,6 +1632,10 @@ public class DDRUMErrorEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
+    }
+
     @objc public var type: DDRUMErrorEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -2240,6 +2248,10 @@ public class DDRUMLongTaskEventSession: NSObject {
 
     @objc public var id: String {
         root.swiftModel.session.id
+    }
+
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
     }
 
     @objc public var type: DDRUMLongTaskEventSessionSessionType {
@@ -3173,6 +3185,10 @@ public class DDRUMResourceEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
+    }
+
     @objc public var type: DDRUMResourceEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -3733,6 +3749,10 @@ public class DDRUMViewEventSession: NSObject {
 
     @objc public var id: String {
         root.swiftModel.session.id
+    }
+
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
     }
 
     @objc public var type: DDRUMViewEventSessionSessionType {
@@ -5091,4 +5111,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/581880e6d9e9bb51f6c81ecd87bae2923865a2a5
+// Generated from https://github.com/DataDog/rum-events-format/tree/f964339c5f07f476dee5fc6a12b6c1214a40c1da

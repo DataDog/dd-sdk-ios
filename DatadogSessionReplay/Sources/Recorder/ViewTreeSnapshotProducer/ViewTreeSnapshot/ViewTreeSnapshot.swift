@@ -180,7 +180,8 @@ internal struct UnknownElement: NodeSemantics {
 
 /// A semantics of an UI element that is either `UIView` or one of its known subclasses. This semantics mean that the element
 /// has no visual appearance that can be presented in SR (e.g. a `UILabel` with no text, no border and fully transparent color).
-/// Nodes with this semantics can be safely ignored in `Recorder` or in `Processor`.
+/// Unlike `IgnoredElement`, this semantics can be overwritten with another one with higher importance. This means that even
+/// if the root view of certain element has no appearance, other node recorders will continue checking it for strictkier semantics.
 internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
     let subtreeStrategy: NodeSubtreeStrategy
@@ -195,8 +196,16 @@ internal struct InvisibleElement: NodeSemantics {
         self.subtreeStrategy = subtreeStrategy
     }
 
-    /// A constant value of `InvisibleElement` semantics with `subtreeStrategy: .ignore`.
+    /// A constant value of `InvisibleElement` semantics.
     static let constant = InvisibleElement()
+}
+
+/// A semantics of an UI element that should be ignored when traversing view-tree. Unlike `InvisibleElement` this semantics cannot
+/// be overwritten by any other. This means that next node recorders won't be asked for further check of a strictkier semantics.
+internal struct IgnoredElement: NodeSemantics {
+    static var importance: Int = .max
+    let subtreeStrategy: NodeSubtreeStrategy
+    let nodes: [Node] = []
 }
 
 /// A semantics of an UI element that is of `UIView` type. This semantics mean that the element has visual appearance in SR, but

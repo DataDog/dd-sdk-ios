@@ -34,6 +34,24 @@ internal enum SystemColors {
         }
     }
 
+    static var systemBackground: CGColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.systemBackground.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 255 / 255, green: 255 / 255, blue: 255 / 255, alpha: 1).cgColor
+        }
+    }
+
+    static var secondarySystemGroupedBackground: CGColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.secondarySystemGroupedBackground.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 255 / 255, green: 255 / 255, blue: 255 / 255, alpha: 1).cgColor
+        }
+    }
+
     static var secondarySystemFill: CGColor {
         if #available(iOS 13.0, *) {
             return UIColor.secondarySystemFill.cgColor
