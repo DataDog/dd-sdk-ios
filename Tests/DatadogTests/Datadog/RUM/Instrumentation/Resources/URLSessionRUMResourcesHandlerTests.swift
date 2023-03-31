@@ -125,7 +125,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertFalse(interception.rum2APM)
 
         // When
-        handler.interceptionDidStart(interception: taskInterception)
+        handler.interceptionDidStart(interception: interception)
 
         // Then
         XCTAssertTrue(interception.rum2APM)

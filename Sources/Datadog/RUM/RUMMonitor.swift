@@ -179,19 +179,20 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             let feature = DatadogRUMFeature(in: core, configuration: configuration)
             try core.register(feature: feature)
 
-            let urlSessionHandler = URLSessionRUMResourcesHandler(
-                dateProvider: configuration.dateProvider,
-                rumAttributesProvider: configuration.rumAttributesProvider,
-                distributedTracing: configuration.tracingSampler.map {
-                    .init(
-                        sampler: $0,
-                        firstPartyHosts: configuration.firstPartyHosts
+            if let firstPartyHosts = configuration.firstPartyHosts {
+                let urlSessionHandler = URLSessionRUMResourcesHandler(
+                    dateProvider: configuration.dateProvider,
+                    rumAttributesProvider: configuration.rumAttributesProvider,
+                    distributedTracing: .init(
+                        sampler: configuration.tracingSampler,
+                        firstPartyHosts: firstPartyHosts,
+                        traceIDGenerator: configuration.traceIDGenerator
                     )
-                }
-            )
+                )
 
-            urlSessionHandler.publish(to: feature.monitor)
-            try core.register(urlSessionHandler: urlSessionHandler)
+                urlSessionHandler.publish(to: feature.monitor)
+                try core.register(urlSessionHandler: urlSessionHandler)
+            }
         } catch {
             consolePrint("\(error)")
             throw error
