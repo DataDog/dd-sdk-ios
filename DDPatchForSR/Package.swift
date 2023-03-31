@@ -21,10 +21,6 @@ let package = Package(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),
-        .library(
-            name: "DatadogSessionReplay",
-            targets: ["DatadogSessionReplay"]
-        ),
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
@@ -35,12 +31,18 @@ let package = Package(
             dependencies: [
                 "_Datadog_Private",
             ],
-            swiftSettings: [.define("SPM_BUILD")]
+            swiftSettings: [
+                .define("SPM_BUILD"),
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
+            ]
         ),
         .target(
             name: "DatadogObjc",
             dependencies: [
                 "Datadog",
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
         ),
         .target(
@@ -51,12 +53,10 @@ let package = Package(
             dependencies: [
                 "Datadog",
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ],
+            swiftSettings: [
+                .define("DD_SDK_ENABLE_EXPERIMENTAL_APIS"),
             ]
-        ),
-        .target(
-            name: "DatadogSessionReplay",
-            dependencies: ["Datadog"],
-            path: "DatadogSessionReplay/Sources"
         ),
     ]
 )
