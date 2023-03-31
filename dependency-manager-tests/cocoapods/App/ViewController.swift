@@ -43,7 +43,7 @@ internal class ViewController: UIViewController {
         Global.rum = RUMMonitor.initialize()
 
         logger.info("It works")
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        _ = DatadogTracer.shared().startSpan(operationName: "This too")
         Global.rum.startView(viewController: self)
 
         createInstrumentedAlamofireSession()

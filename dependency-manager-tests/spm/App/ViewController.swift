@@ -35,7 +35,7 @@ internal class ViewController: UIViewController {
         logger.info("It works")
 
         // Start span, but never finish it (no upload)
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        _ = DatadogTracer.shared().startSpan(operationName: "This too")
 
         addLabel()
     }
