@@ -7,7 +7,7 @@
 import Foundation
 
 /// Carrier details specific to cellular radio access.
-public struct CarrierInfo: Codable, Equatable {
+public struct CarrierInfo: Codable, Equatable, DictionaryEncodable {
     // swiftlint:disable identifier_name
     public enum RadioAccessTechnology: String, Codable, CaseIterable {
         case GPRS
@@ -33,4 +33,16 @@ public struct CarrierInfo: Codable, Equatable {
     public let carrierAllowsVOIP: Bool
     /// The radio access technology used for cellular connection.
     public let radioAccessTechnology: RadioAccessTechnology
+
+    public init(
+        carrierName: String?,
+        carrierISOCountryCode: String?,
+        carrierAllowsVOIP: Bool,
+        radioAccessTechnology: RadioAccessTechnology
+    ) {
+        self.carrierName = carrierName
+        self.carrierISOCountryCode = carrierISOCountryCode
+        self.carrierAllowsVOIP = carrierAllowsVOIP
+        self.radioAccessTechnology = radioAccessTechnology
+    }
 }

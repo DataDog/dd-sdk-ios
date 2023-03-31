@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 import Datadog
 
 class LoggerE2ETests: E2ETests {

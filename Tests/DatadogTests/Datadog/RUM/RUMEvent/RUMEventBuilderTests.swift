@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class RUMEventBuilderTests: XCTestCase {
@@ -20,7 +21,8 @@ class RUMEventBuilderTests: XCTestCase {
         let event = try XCTUnwrap(
             builder.build(from: RUMViewEvent.mockRandom())
         )
-        XCTAssertNotEqual(event, originalEventModel)
+
+        DDAssertReflectionNotEqual(event, originalEventModel)
     }
 
     func testGivenEventBuilderWithEventMapper_whenEventIsDropped_itBuildsNoEvent() {
@@ -47,6 +49,6 @@ class RUMEventBuilderTests: XCTestCase {
         let event = try XCTUnwrap(
             builder.build(from: originalEventModel)
         )
-        XCTAssertEqual(event, originalEventModel)
+        DDAssertReflectionEqual(event, originalEventModel)
     }
 }

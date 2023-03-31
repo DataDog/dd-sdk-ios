@@ -106,7 +106,7 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
             type: attributes["type"],
             stack: attributes["stack"],
             source: source,
-            attributes: attributes["attributes"] ?? [:]
+            attributes: attributes["attributes"] ?? [String: AnyCodable]()
         )
 
         return true

@@ -109,7 +109,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void)
 }
 
-internal extension DatadogCoreProtocol {
+public extension DatadogCoreProtocol {
     /// Retrieves a Feature by its name and type.
     ///
     /// A Feature type can be specified as parameter or inferred from the return type:

@@ -5,13 +5,14 @@
 */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 @testable import DatadogObjc
 
 extension Datadog.Configuration.LogsEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -21,7 +22,17 @@ extension Datadog.Configuration.LogsEndpoint: Equatable {
 extension Datadog.Configuration.TracesEndpoint: Equatable {
     public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
         switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.us1_fed, .us1_fed): return true
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
+        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
+        default: return false
+        }
+    }
+}
+
+extension Datadog.Configuration.RUMEndpoint: Equatable {
+    public static func == (_ lhs: Datadog.Configuration.RUMEndpoint, _ rhs: Datadog.Configuration.RUMEndpoint) -> Bool {
+        switch (lhs, rhs) {
+        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
         case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
         default: return false
         }
@@ -98,6 +109,9 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(endpoint: .eu1())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
+
+        objcBuilder.set(endpoint: .ap1())
+        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .ap1)
 
         objcBuilder.set(endpoint: .us1())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1)
@@ -254,27 +268,27 @@ class DDConfigurationTests: XCTestCase {
         let swiftLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         objcBuilder.setRUMViewEventMapper { objcViewEvent in
-            XCTAssertEqual(objcViewEvent.swiftModel, swiftViewEvent)
+            DDAssertReflectionEqual(objcViewEvent.swiftModel, swiftViewEvent)
             objcViewEvent.view.url = "redacted view.url"
             return objcViewEvent
         }
 
         objcBuilder.setRUMResourceEventMapper { objcResourceEvent in
-            XCTAssertEqual(objcResourceEvent.swiftModel, swiftResourceEvent)
+            DDAssertReflectionEqual(objcResourceEvent.swiftModel, swiftResourceEvent)
             objcResourceEvent.view.url = "redacted view.url"
             objcResourceEvent.resource.url = "redacted resource.url"
             return objcResourceEvent
         }
 
         objcBuilder.setRUMActionEventMapper { objcActionEvent in
-            XCTAssertEqual(objcActionEvent.swiftModel, swiftActionEvent)
+            DDAssertReflectionEqual(objcActionEvent.swiftModel, swiftActionEvent)
             objcActionEvent.view.url = "redacted view.url"
             objcActionEvent.action.target?.name = "redacted action.target.name"
             return objcActionEvent
         }
 
         objcBuilder.setRUMErrorEventMapper { objcErrorEvent in
-            XCTAssertEqual(objcErrorEvent.swiftModel, swiftErrorEvent)
+            DDAssertReflectionEqual(objcErrorEvent.swiftModel, swiftErrorEvent)
             objcErrorEvent.view.url = "redacted view.url"
             objcErrorEvent.error.message = "redacted error.message"
             objcErrorEvent.error.resource?.url = "redacted error.resource.url"
@@ -282,7 +296,7 @@ class DDConfigurationTests: XCTestCase {
         }
 
         objcBuilder.setRUMLongTaskEventMapper { objcLongTaskEvent in
-            XCTAssertEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
+            DDAssertReflectionEqual(objcLongTaskEvent.swiftModel, swiftLongTaskEvent)
             objcLongTaskEvent.view.url = "redacted view.url"
             return objcLongTaskEvent
         }

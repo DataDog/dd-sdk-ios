@@ -1,5 +1,4 @@
-// swift-tools-version: 5.7
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.5
 
 import PackageDescription
 
@@ -12,7 +11,8 @@ let package = Package(
     products: [
         .library(
             name: "TestUtilities",
-            targets: ["TestUtilities"]),
+            targets: ["TestUtilities"]
+        ),
     ],
     dependencies: [
         .package(name: "Datadog", path: ".."),
@@ -20,6 +20,9 @@ let package = Package(
     targets: [
         .target(
             name: "TestUtilities",
-            dependencies: ["Datadog"])
+            dependencies: ["Datadog"],
+            path: ".",
+            sources: ["Helpers", "Mocks"]
+        ),
     ]
 )

@@ -308,12 +308,16 @@ public struct RUMActionEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
+        /// Whether this session is currently active. Set to false to manually stop a session
+        public let isActive: Bool?
+
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isActive = "is_active"
             case type = "type"
         }
 
@@ -702,12 +706,16 @@ public struct RUMErrorEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
+        /// Whether this session is currently active. Set to false to manually stop a session
+        public let isActive: Bool?
+
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isActive = "is_active"
             case type = "type"
         }
 
@@ -963,12 +971,16 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
+        /// Whether this session is currently active. Set to false to manually stop a session
+        public let isActive: Bool?
+
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isActive = "is_active"
             case type = "type"
         }
 
@@ -1123,7 +1135,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
-        /// tracing sample rate in decimal format
+        /// trace sample rate in decimal format
         public let rulePsr: Double?
 
         /// Session-related internal properties
@@ -1387,12 +1399,16 @@ public struct RUMResourceEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
+        /// Whether this session is currently active. Set to false to manually stop a session
+        public let isActive: Bool?
+
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isActive = "is_active"
             case type = "type"
         }
 
@@ -1593,12 +1609,16 @@ public struct RUMViewEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
+        /// Whether this session is currently active. Set to false to manually stop a session
+        public let isActive: Bool?
+
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
+            case isActive = "is_active"
             case type = "type"
         }
 
@@ -2385,6 +2405,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
+            /// The version of Dart used in a Flutter application
+            public var dartVersion: String?
+
             /// Session replay default privacy level
             public var defaultPrivacyLevel: String?
 
@@ -2406,8 +2429,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let premiumSampleRate: Int64?
 
+            /// The version of ReactNative used in a ReactNative application
+            public var reactNativeVersion: String?
+
+            /// The version of React used in a ReactNative application
+            public var reactVersion: String?
+
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked (deprecated in favor of session_replay_sample_rate)
             public let replaySampleRate: Int64?
+
+            /// A list of selected tracing propagators
+            public let selectedTracingPropagators: [SelectedTracingPropagators]?
 
             /// The percentage of sessions with Browser RUM & Session Replay pricing tracked
             public var sessionReplaySampleRate: Int64?
@@ -2442,7 +2474,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether user frustrations are tracked
             public var trackFrustrations: Bool?
 
-            /// Whether user actions are tracked
+            /// Whether user actions are tracked (deprecated in favor of track_user_interactions)
             public var trackInteractions: Bool?
 
             /// Whether long tasks are tracked
@@ -2466,11 +2498,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether sessions across subdomains for the same site are tracked
             public let trackSessionAcrossSubdomains: Bool?
 
+            /// Whether user actions are tracked
+            public var trackUserInteractions: Bool?
+
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
 
-            /// Whether the allowed tracing origins list is used
+            /// Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             public let useAllowedTracingOrigins: Bool?
+
+            /// Whether the allowed tracing urls list is used
+            public let useAllowedTracingUrls: Bool?
 
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
@@ -2503,6 +2541,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case actionNameAttribute = "action_name_attribute"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
                 case forwardConsoleLogs = "forward_console_logs"
                 case forwardErrorsToLogs = "forward_errors_to_logs"
@@ -2510,7 +2549,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case initializationType = "initialization_type"
                 case mobileVitalsUpdatePeriod = "mobile_vitals_update_period"
                 case premiumSampleRate = "premium_sample_rate"
+                case reactNativeVersion = "react_native_version"
+                case reactVersion = "react_version"
                 case replaySampleRate = "replay_sample_rate"
+                case selectedTracingPropagators = "selected_tracing_propagators"
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
@@ -2530,8 +2572,10 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackNetworkRequests = "track_network_requests"
                 case trackResources = "track_resources"
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
+                case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
+                case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useBeforeSend = "use_before_send"
                 case useCrossSiteSessionCookie = "use_cross_site_session_cookie"
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
@@ -2625,6 +2669,13 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                     )
                     throw DecodingError.typeMismatch(ForwardReports.self, error)
                 }
+            }
+
+            public enum SelectedTracingPropagators: String, Codable {
+                case datadog = "datadog"
+                case b3 = "b3"
+                case b3multi = "b3multi"
+                case tracecontext = "tracecontext"
             }
 
             /// View tracking strategy
@@ -2926,4 +2977,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/083edbb0f9fec392224820bd05c6336ce6d62c30
+// Generated from https://github.com/DataDog/rum-events-format/tree/f964339c5f07f476dee5fc6a12b6c1214a40c1da

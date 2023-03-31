@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import TestUtilities
 
 /*
 A collection of mocks for different `UIKit` types.
@@ -179,11 +180,11 @@ private class UIPressMock: UIPress {
 }
 
 extension UIApplication.State: AnyMockable, RandomMockable {
-    static func mockAny() -> UIApplication.State {
+    public static func mockAny() -> UIApplication.State {
         return .active
     }
 
-    static func mockRandom() -> UIApplication.State {
+    public static func mockRandom() -> UIApplication.State {
         return [.active, .inactive, .background].randomElement()!
     }
 }

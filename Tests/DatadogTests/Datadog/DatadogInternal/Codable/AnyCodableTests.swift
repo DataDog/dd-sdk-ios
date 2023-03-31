@@ -24,6 +24,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import Datadog
 
 class AnyCodableTests: XCTestCase {
@@ -260,7 +261,7 @@ class AnyCodableTests: XCTestCase {
             let decodedCodableValue = try decoder.decode(AnyCodable.self, from: encodedCodableValue)
 
             // Then
-            try AssertEncodedRepresentationsEqual(codableValue, decodedCodableValue)
+            DDAssertJSONEqual(codableValue, decodedCodableValue)
         }
 
         try test(value: EncodingContainer(Bool.mockRandom()))

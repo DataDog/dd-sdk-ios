@@ -67,7 +67,7 @@ internal enum LoggingMessageKeys {
     static let log = "log"
 
     /// The key references a crash message.
-    static let crash = "crash-log"
+    static let crash = "crash"
 
     /// The key references a browser log message.
     static let browserLog = "browser-log"
@@ -95,6 +95,9 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
             return false
         }
 
+        let userAttributes: [String: AnyCodable] = attributes["userAttributes"] ?? [:]
+        let internalAttributes: [String: AnyCodable]? = attributes["internalAttributes"]
+
         core.v1.scope(for: LoggingFeature.self)?.eventWriteContext(bypassConsent: false) { context, writer in
             let builder = LogEventBuilder(
                 service: attributes["service"] ?? context.service,
@@ -109,8 +112,8 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                 message: message,
                 error: attributes["error"],
                 attributes: .init(
-                    userAttributes: attributes["userAttributes"] ?? [:],
-                    internalAttributes: attributes["internalAttributes"]
+                    userAttributes: userAttributes,
+                    internalAttributes: internalAttributes
                 ),
                 tags: [],
                 context: context,
@@ -125,6 +128,57 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
 
 /// Receiver to consume a Crash Log message as Log.
 internal struct CrashLogReceiver: FeatureMessageReceiver {
+    private struct CrashReport: Decodable {
+        /// The date of the crash occurrence.
+        let date: Date?
+        /// Crash report type - used to group similar crash reports.
+        /// In Datadog Error Tracking this corresponds to `error.type`.
+        let type: String
+        /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
+        /// In Datadog Error Tracking this corresponds to `error.message`.
+        let message: String
+        /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
+        /// In Datadog Error Tracking this corresponds to `error.stack`.
+        let stack: String
+        /// All threads running in the process.
+        let threads: AnyCodable
+        /// List of binary images referenced from all stack traces.
+        let binaryImages: AnyCodable
+        /// Meta information about the crash and process.
+        let meta: AnyCodable
+        /// If any stack trace information was truncated due to crash report minimization.
+        let wasTruncated: Bool
+    }
+
+    private struct CrashContext: Decodable {
+        /// Interval between device and server time.
+        let serverTimeOffset: TimeInterval
+        /// The name of the service that data is generated from.
+        let service: String
+        /// The name of the environment that data is generated from.
+        let env: String
+        /// The version of the application that data is generated from.
+        let version: String
+        /// Current device information.
+        let device: DeviceInfo
+        /// The version of Datadog iOS SDK.
+        let sdkVersion: String
+        /// Network information.
+        ///
+        /// Represents the current state of the device network connectivity and interface.
+        /// The value can be `unknown` if the network interface is not available or if it has not
+        /// yet been evaluated.
+        let networkConnectionInfo: NetworkConnectionInfo?
+        /// Carrier information.
+        ///
+        /// Represents the current telephony service info of the device.
+        /// This value can be `nil` of no service is currently registered, or if the device does
+        /// not support telephony services.
+        let carrierInfo: CarrierInfo?
+        /// Current user information.
+        let userInfo: UserInfo?
+    }
+
     /// Time provider.
     let dateProvider: DateProvider
 
@@ -136,7 +190,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard
             case let .custom(key, attributes) = message, key == LoggingMessageKeys.crash,
-            let report = attributes["report", type: DDCrashReport.self],
+            let report = attributes["report", type: CrashReport.self],
             let context = attributes["context", type: CrashContext.self]
         else {
             return false
@@ -209,7 +263,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             return false
         }
 
-        var event: [String: Any] = baggage.all()
+        var event = baggage.attributes
 
         let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
         let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
@@ -225,14 +279,14 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 event[tagsKey] = ddTags
             }
 
-            if let timestampInMs = event[dateKey] as? Int {
+            if let timestampInMs = event[dateKey] as? Int64 {
                 let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
-                let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+                let correctedTimestamp = timestampInMs + serverTimeOffsetInMs
                 event[dateKey] = correctedTimestamp
             }
 
-            if let attributes = context.featuresAttributes["rum"] {
-                event.merge(attributes.all()) { $1 }
+            if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
+                event.merge(baggage as [String: Any]) { $1 }
             }
 
             writer.write(value: AnyEncodable(event))

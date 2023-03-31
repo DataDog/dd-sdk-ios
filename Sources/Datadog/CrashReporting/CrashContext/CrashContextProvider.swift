@@ -30,11 +30,11 @@ internal class CrashContextProvider: CrashContextProviderType {
         didSet { _context.map(_callback) }
     }
 
-    private var viewEvent: RUMViewEvent? {
+    private var viewEvent: AnyCodable? {
         didSet { _context?.lastRUMViewEvent = viewEvent }
     }
 
-    private var sessionState: RUMSessionState? {
+    private var sessionState: AnyCodable? {
         didSet { _context?.lastRUMSessionState = sessionState }
     }
 
@@ -101,12 +101,12 @@ extension CrashContextProvider: FeatureMessageReceiver {
             return true
         }
 
-        if let event = attributes[RUMBaggageKeys.viewEvent, type: RUMViewEvent.self] {
+        if let event = attributes[RUMBaggageKeys.viewEvent, type: AnyCodable.self] {
             queue.async { self.viewEvent = event }
             return true
         }
 
-        if let state = attributes["session-state", type: RUMSessionState.self] {
+        if let state = attributes["session-state", type: AnyCodable.self] {
             queue.async { self.sessionState = state }
             return true
         }

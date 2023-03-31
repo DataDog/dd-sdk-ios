@@ -58,6 +58,7 @@ internal struct FeaturesConfiguration {
         let applicationID: String
         let sessionSampler: Sampler
         let telemetrySampler: Sampler
+        let configurationTelemetrySampler: Sampler?
         let uuidGenerator: RUMUUIDGenerator
         let viewEventMapper: RUMViewEventMapper?
         let resourceEventMapper: RUMResourceEventMapper?
@@ -216,12 +217,18 @@ extension FeaturesConfiguration {
                 longTaskThreshold: configuration.rumLongTaskDurationThreshold
             )
 
+            var configurationSampler: Sampler?
+            if let internalConfigurationSampleRate = configuration.additionalConfiguration[CrossPlatformAttributes.telemetryConfigurationSampleRate] as? Float {
+                configurationSampler = Sampler(samplingRate: internalConfigurationSampleRate)
+            }
+
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUM(
                     uploadURL: try ifValid(endpointURLString: rumEndpoint.url),
                     applicationID: rumApplicationID,
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
+                    configurationTelemetrySampler: configurationSampler,
                     uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 @testable import Datadog
 
 extension CrashReporter {
@@ -86,7 +87,33 @@ class CrashReportSenderMock: CrashReportSender {
     var didSendCrashReport: (() -> Void)?
 }
 
-extension CrashContext: EquatableInTests {}
+class RUMCrashReceiverMock: FeatureMessageReceiver {
+    var receivedBaggage: FeatureBaggage = [:]
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .custom(let key, let attributes) where key == CrashReportReceiver.MessageKeys.crash:
+            receivedBaggage = attributes
+            return true
+        default:
+            return false
+        }
+    }
+}
+
+class LogsCrashReceiverMock: FeatureMessageReceiver {
+    var receivedBaggage: FeatureBaggage = [:]
+
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case .custom(let key, let attributes) where key == LoggingMessageKeys.crash:
+            receivedBaggage = attributes
+            return true
+        default:
+            return false
+        }
+    }
+}
 
 extension CrashContext {
     static func mockAny() -> CrashContext {
@@ -105,8 +132,8 @@ extension CrashContext {
         userInfo: UserInfo? = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo? = .mockAny(),
         carrierInfo: CarrierInfo? = .mockAny(),
-        lastRUMViewEvent: RUMViewEvent? = nil,
-        lastRUMSessionState: RUMSessionState? = .mockAny(),
+        lastRUMViewEvent: AnyCodable? = nil,
+        lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny()
     ) -> Self {
         .init(
@@ -140,19 +167,14 @@ extension CrashContext {
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: nil,
-            lastRUMSessionState: .mockRandom(),
+            lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
+            lastRUMSessionState: AnyCodable(mockRandomAttributes()),
             lastIsAppInForeground: .mockRandom()
         )
     }
 
     var data: Data { try! JSONEncoder.default().encode(self) }
 }
-
-extension DDCrashReport: EquatableInTests {}
-extension DDCrashReport.Thread: EquatableInTests {}
-extension DDCrashReport.BinaryImage: EquatableInTests {}
-extension DDCrashReport.Meta: EquatableInTests {}
 
 internal extension DDCrashReport {
     static func mockAny() -> DDCrashReport {

@@ -21,11 +21,16 @@ let package = Package(
     targets: [
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["Datadog"]
+            dependencies: ["Datadog"],
+            path: "Sources"
         ),
         .testTarget(
             name: "DatadogSessionReplayTests",
-            dependencies: ["DatadogSessionReplay", "TestUtilities"]
-        ),
+            dependencies: [
+                .target(name: "DatadogSessionReplay"),
+                "TestUtilities"
+            ],
+            path: "Tests"
+        )
     ]
 )

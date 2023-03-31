@@ -15,6 +15,10 @@ private extension ExampleApplication {
     func tapBlockMainThreadButton() {
         buttons["Block Main Thread"].tap()
     }
+
+    func tapStartNewViewButton() {
+        buttons["Start New View"].tap()
+    }
 }
 
 class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
@@ -65,5 +69,36 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(longTask1.longTask.duration, 3_000_000_000)
         let longTask2 = longTaskEvents[1]
         XCTAssertGreaterThan(longTask2.longTask.duration, 3_000_000_000)
+    }
+
+    func testRUMShortTimeSpentCPUScenario() throws {
+        // Server session recording RUM events send to `HTTPServerMock`.
+        let rumServerSession = server.obtainUniqueRecordingSession()
+
+        let app = ExampleApplication()
+        app.launchWith(
+            testScenarioClassName: "RUMMobileVitalsScenario",
+            serverConfiguration: HTTPServerMockConfiguration(
+                rumEndpoint: rumServerSession.recordingURL
+            )
+        )
+
+        // NOTE: RUMM-1086 even tapNoOpButton() can take up to 0.25sec in my local,
+        // therefore i used `threshold: 2.5` for long tasks in this scenario
+        app.tapStartNewViewButton()
+        try app.endRUMSession()
+
+        // Get RUM Sessions with expected number of View visits
+        let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
+        }
+
+        assertRUM(requests: recordedRUMRequests)
+
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
+        sendCIAppLog(session)
+
+        let lastViewEvent = try XCTUnwrap(session.viewVisits[1].viewEvents.last)
+        XCTAssertNil(lastViewEvent.view.cpuTicksPerSecond)
     }
 }
