@@ -67,6 +67,8 @@ let package = Package(
             name: "DatadogObjc",
             dependencies: [
                 .target(name: "Datadog"),
+                .target(name: "DatadogLogs"),
+                .target(name: "DatadogTrace"),
             ]
         ),
         .target(
