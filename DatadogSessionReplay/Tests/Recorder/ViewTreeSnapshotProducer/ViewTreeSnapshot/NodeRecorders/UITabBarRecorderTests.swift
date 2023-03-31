@@ -11,15 +11,15 @@ class UITabBarRecorderTests: XCTestCase {
     private let recorder = UITabBarRecorder()
 
     func testWhenViewIsOfExpectedType() throws {
-        // Given
+        // When
         let tabBar = UITabBar.mock(withFixture: .allCases.randomElement()!)
         let viewAttributes = ViewAttributes(frameInRootView: tabBar.frame, view: tabBar)
 
-        // When
-        let semantics = try XCTUnwrap(recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-
         // Then
-        XCTAssertTrue(semantics.recordSubtree, "Tab Bar's subtree should be recorded")
+        let semantics = try XCTUnwrap(recorder.semantics(of: tabBar, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UITabBarWireframesBuilder)
     }
 
     func testWhenViewIsNotOfExpectedType() {

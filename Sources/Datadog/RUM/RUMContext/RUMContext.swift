@@ -11,6 +11,8 @@ internal struct RUMContext {
     let rumApplicationID: String
     /// The ID of current RUM session. May change over time.
     var sessionID: RUMUUID
+    /// Whether the session for this context is currently active
+    var isSessionActive: Bool
 
     /// The ID of currently displayed view.
     var activeViewID: RUMUUID?

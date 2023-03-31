@@ -65,7 +65,7 @@ internal final class DatadogCore {
 
     /// Registry for Features.
     @ReadWriteLock
-    private var v2Features: [String: (
+    private(set) var v2Features: [String: (
         feature: DatadogFeature,
         storage: FeatureStorage,
         upload: FeatureUpload
@@ -277,12 +277,19 @@ extension DatadogCore: DatadogCoreProtocol {
     /* public */ func register(feature: DatadogFeature) throws {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
 
+        let performancePreset: PerformancePreset
+        if let override = feature.performanceOverride {
+            performancePreset = performance.updated(with: override)
+        } else {
+            performancePreset = performance
+        }
+
         let storage = FeatureStorage(
             featureName: feature.name,
             queue: readWriteQueue,
             directories: featureDirectories,
             dateProvider: dateProvider,
-            performance: performance,
+            performance: performancePreset,
             encryption: encryption
         )
 
@@ -292,7 +299,7 @@ extension DatadogCore: DatadogCoreProtocol {
             fileReader: storage.reader,
             requestBuilder: feature.requestBuilder,
             httpClient: httpClient,
-            performance: performance
+            performance: performancePreset
         )
 
         v2Features[feature.name] = (

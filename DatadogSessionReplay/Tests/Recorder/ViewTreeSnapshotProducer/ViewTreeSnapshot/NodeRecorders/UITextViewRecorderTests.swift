@@ -23,7 +23,6 @@ class UITextViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
     func testWhenTextViewHasText() throws {
@@ -39,10 +38,11 @@ class UITextViewRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
-        XCTAssertTrue(semantics.recordSubtree, "TextView's subtree should be recorded")
+        let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UITextViewWireframesBuilder)
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextViewWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)
         XCTAssertEqual(builder.textColor, textView.textColor?.cgColor)
         XCTAssertEqual(builder.font, textView.font)
@@ -54,14 +54,20 @@ class UITextViewRecorderTests: XCTestCase {
 
         // When
         viewAttributes = .mock(fixture: .visible())
-        let semantics1 = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .maskAll))))
-        let semantics2 = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: .allowAll))))
+        let context: ViewTreeRecordingContext = .mockWith(
+            recorder: .mockWith(privacy: .mockRandom()),
+            textObfuscator: TextObfuscatorMock(),
+            selectionTextObfuscator: mockRandomTextObfuscator(),
+            sensitiveTextObfuscator: mockRandomTextObfuscator()
+        )
+        let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: context))
 
         // Then
-        let builder1 = try XCTUnwrap(semantics1.wireframesBuilder as? UITextViewWireframesBuilder)
-        let builder2 = try XCTUnwrap(semantics2.wireframesBuilder as? UITextViewWireframesBuilder)
-        XCTAssertTrue(builder1.textObfuscator is TextObfuscator, "With `.maskAll` privacy the text obfuscator should be used")
-        XCTAssertTrue(builder2.textObfuscator is NOPTextObfuscator, "With `.allowAll` privacy the text obfuscator should not be used")
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextViewWireframesBuilder)
+        XCTAssertTrue(
+          (builder.textObfuscator as? TextObfuscatorMock) === (context.textObfuscator as? TextObfuscatorMock),
+          "Text views should use default text obfuscator specific to current privacy mode"
+        )
     }
 
     func testWhenViewIsNotOfExpectedType() {

@@ -26,6 +26,17 @@ internal struct RUMApplicationStartCommand: RUMCommand {
     var isUserInteraction = false
 }
 
+internal struct RUMStopSessionCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    let canStartBackgroundView = false // no, stopping a session should not start a backgorund session
+    let isUserInteraction = false
+
+    init(time: Date) {
+        self.time = time
+    }
+}
+
 // MARK: - RUM View related commands
 
 internal struct RUMStartViewCommand: RUMCommand {

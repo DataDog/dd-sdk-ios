@@ -41,24 +41,22 @@ class ImageDataProviderTests: XCTestCase {
         XCTAssertGreaterThan(imageData.count, 0)
     }
 
-    func test_ignoresAboveSize() throws {
-        let sut = ImageDataProvider(
-            maxBytesSize: 1
-        )
-        let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
-
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
-        XCTAssertEqual(imageData.count, 0)
+    func test_imageIdentifierConsistency() {
+        var ids = Set<String>()
+        for _ in 0..<100 {
+            if let imageIdentifier = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)?.srIdentifier {
+                ids.insert(imageIdentifier)
+            }
+        }
+        XCTAssertEqual(ids.count, 1)
     }
 
-    func test_ignoresAboveDimensions() throws {
-        let sut = ImageDataProvider(
-            maxDimensions: CGSize(width: 1, height: 1)
-        )
-        let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
-
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
-        XCTAssertEqual(imageData.count, 0)
+    func test_colorIdentifierConsistency() {
+        var ids = Set<String>()
+        for _ in 0..<100 {
+            ids.insert( UIColor.red.srIdentifier)
+        }
+        XCTAssertEqual(ids.count, 1)
     }
 }
 

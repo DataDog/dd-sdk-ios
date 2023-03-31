@@ -67,7 +67,7 @@ internal enum LoggingMessageKeys {
     static let log = "log"
 
     /// The key references a crash message.
-    static let crash = "crash-log"
+    static let crash = "crash"
 
     /// The key references a browser log message.
     static let browserLog = "browser-log"

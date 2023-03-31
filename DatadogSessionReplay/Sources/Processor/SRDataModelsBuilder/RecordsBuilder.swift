@@ -17,9 +17,9 @@ internal class RecordsBuilder {
     func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
-                height: Int64(withNoOverflow: snapshot.root.viewAttributes.frame.height),
+                height: Int64(withNoOverflow: snapshot.viewportSize.height),
                 href: nil,
-                width: Int64(withNoOverflow: snapshot.root.viewAttributes.frame.width)
+                width: Int64(withNoOverflow: snapshot.viewportSize.width)
             ),
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
@@ -114,17 +114,15 @@ internal class RecordsBuilder {
         from snapshot: ViewTreeSnapshot,
         lastSnapshot: ViewTreeSnapshot
     ) -> SRRecord? {
-        let lastSize = lastSnapshot.root.viewAttributes.frame.size
-        let currentSize = snapshot.root.viewAttributes.frame.size
-        guard lastSize.aspectRatio != currentSize.aspectRatio else {
+        guard lastSnapshot.viewportSize.aspectRatio != snapshot.viewportSize.aspectRatio else {
             return nil
         }
         return .incrementalSnapshotRecord(
             value: SRIncrementalSnapshotRecord(
                 data: .viewportResizeData(
                     value: .init(
-                        height: Int64(withNoOverflow: currentSize.height),
-                        width: Int64(withNoOverflow: currentSize.width)
+                        height: Int64(withNoOverflow: snapshot.viewportSize.height),
+                        width: Int64(withNoOverflow: snapshot.viewportSize.width)
                     )
                 ),
                 timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds

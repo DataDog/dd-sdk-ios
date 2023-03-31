@@ -98,8 +98,10 @@ class ProcessorTests: XCTestCase {
 
         // Given
         let processor = Processor(queue: NoQueue(), writer: writer)
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: 100, height: 200))
-        let rotatedView = UIView(frame: CGRect(x: 0, y: 0, width: 200, height: 100))
+        let view = UIView.mock(withFixture: .visible(.someAppearance))
+        view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
+        let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
+        rotatedView.frame = CGRect(x: 0, y: 0, width: 200, height: 100)
 
         // When
         let snapshot1 = generateViewTreeSnapshot(for: view, date: time, rumContext: rum)
@@ -224,8 +226,8 @@ class ProcessorTests: XCTestCase {
     }
 
     private func generateSimpleViewTree() -> UIView {
-        let root = UIView.mock(withFixture: .visible(.noAppearance))
-        let child = UIView.mock(withFixture: .visible(.noAppearance))
+        let root = UIView.mock(withFixture: .visible(.someAppearance))
+        let child = UIView.mock(withFixture: .visible(.someAppearance))
         root.addSubview(child)
         return root
     }

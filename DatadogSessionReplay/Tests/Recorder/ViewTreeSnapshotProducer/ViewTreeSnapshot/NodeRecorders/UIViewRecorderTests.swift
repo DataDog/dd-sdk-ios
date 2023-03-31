@@ -21,18 +21,25 @@ class UIViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is InvisibleElement)
-        XCTAssertNil(semantics.wireframesBuilder)
     }
 
-    func testWhenViewIsVisible() throws {
+    func testWhenViewIsVisibleAndHasSomeAppearance() throws {
         // When
-        viewAttributes = .mock(fixture: .visible())
+        viewAttributes = .mock(fixture: .visible(.someAppearance))
 
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is AmbiguousElement)
+        XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UIViewWireframesBuilder)
+    }
 
-        let builder = try XCTUnwrap(semantics.wireframesBuilder as? UIViewWireframesBuilder)
-        XCTAssertEqual(builder.attributes, viewAttributes)
+    func testWhenViewIsVisibleButHasNoAppearance() throws {
+        // When
+        viewAttributes = .mock(fixture: .visible(.noAppearance))
+
+        // Then
+        let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+        XCTAssertTrue(semantics is InvisibleElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
     }
 }

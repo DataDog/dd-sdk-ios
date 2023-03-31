@@ -7,63 +7,57 @@
 import Foundation
 import UIKit
 
-internal class ImageDataProvider {
-    enum DataLoadingStatus: Encodable {
-        case loaded(_ base64: String), ignored
-    }
+internal protocol ImageDataProviding {
+    func contentBase64String(
+        of image: UIImage?
+    ) -> String
 
-    private var cache: Cache<String, DataLoadingStatus>
+    func contentBase64String(
+        of image: UIImage?,
+        tintColor: UIColor?
+    ) -> String
+}
 
-    private let maxBytesSize: Int
-    private let maxDimensions: CGSize
+internal final class ImageDataProvider: ImageDataProviding {
+    private var cache: Cache<String, String>
+
+    private let desiredMaxBytesSize: Int
 
     internal init(
-        cache: Cache<String, DataLoadingStatus> = .init(),
-        maxBytesSize: Int = 64_000,
-        maxDimensions: CGSize = CGSize(width: 120, height: 120)
+        cache: Cache<String, String> = .init(),
+        desiredMaxBytesSize: Int = 15.KB
     ) {
         self.cache = cache
-        self.maxBytesSize = maxBytesSize
-        self.maxDimensions = maxDimensions
+        self.desiredMaxBytesSize = desiredMaxBytesSize
     }
 
     func contentBase64String(
         of image: UIImage?,
-        tintColor: UIColor? = nil
-    ) -> String? {
-        guard var image = image else {
-            return ""
-        }
-        if #available(iOS 13.0, *), let tintColor = tintColor {
-            image = image.withTintColor(tintColor)
-        }
-        guard let imageData = image.pngData() else {
-            return ""
-        }
-
-        var identifier: String
-        if let md5 = image.md5 {
-            identifier = md5
-        } else {
-            let md5 = imageData.md5
-            image.md5 = md5
-            identifier = md5
-        }
-
-        let dataLoadingStaus = cache[identifier]
-        switch dataLoadingStaus {
-        case .none:
-            if let imageData = image.pngData(), image.size <= maxDimensions && imageData.count <= maxBytesSize {
-                cache[identifier] = .loaded(imageData.base64EncodedString())
-            } else {
-                cache[identifier] = .ignored
+        tintColor: UIColor?
+    ) -> String {
+        autoreleasepool {
+            guard var image = image else {
+                return ""
             }
-            return contentBase64String(of: image)
-        case .loaded(let base64String):
-            return base64String
-        case .ignored:
-            return ""
+            var identifier = image.srIdentifier
+            if let tintColorIdentifier = tintColor?.srIdentifier {
+                identifier += tintColorIdentifier
+            }
+            if let base64EncodedImage = cache[identifier] {
+                return base64EncodedImage
+            } else {
+                if #available(iOS 13.0, *), let tintColor = tintColor {
+                    image = image.withTintColor(tintColor)
+                }
+                let base64EncodedImage = image.scaledDownToApproximateSize(desiredMaxBytesSize).base64EncodedString()
+                cache[identifier, base64EncodedImage.count] = base64EncodedImage
+                return base64EncodedImage
+            }
         }
+    }
+
+    func contentBase64String(of image: UIImage?) -> String {
+        contentBase64String(of: image, tintColor: nil)
     }
 }
 
@@ -73,27 +67,14 @@ fileprivate extension CGSize {
     }
 }
 
-fileprivate var imageMd5Key: UInt8 = 1
-
-fileprivate extension UIImage {
-    var md5: String? {
-        set { objc_setAssociatedObject(self, &imageMd5Key, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN) }
-        get { objc_getAssociatedObject(self, &imageMd5Key) as? String }
+extension UIImage {
+    var srIdentifier: String {
+        return "\(hash)"
     }
 }
 
-import var CommonCrypto.CC_MD5_DIGEST_LENGTH
-import func CommonCrypto.CC_MD5
-import typealias CommonCrypto.CC_LONG
-
-fileprivate extension Data {
-    var md5: String {
-        var result = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
-        _ = withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
-            result.withUnsafeMutableBytes { resultBytes in
-                CC_MD5(bytes.baseAddress, CC_LONG(count), resultBytes.baseAddress)
-            }
-        }
-        return Data(result).map { String(format: "%02hhx", $0) }.joined()
+extension UIColor {
+    var srIdentifier: String {
+        return "\(hash)"
     }
 }

@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let textView = view as? UITextView else {
             return nil
         }
@@ -20,10 +20,11 @@ internal struct UITextViewRecorder: NodeRecorder {
             text: textView.text,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
+            textObfuscator: context.textObfuscator,
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: true)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .record, nodes: [node])
     }
 }
 

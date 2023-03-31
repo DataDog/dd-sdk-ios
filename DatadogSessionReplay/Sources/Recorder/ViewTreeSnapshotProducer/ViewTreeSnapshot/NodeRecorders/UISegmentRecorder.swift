@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let segment = view as? UISegmentedControl else {
             return nil
         }
@@ -21,7 +21,7 @@ internal struct UISegmentRecorder: NodeRecorder {
         let builder = UISegmentWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
-            textObfuscator: context.recorder.privacy == .maskAll ? context.textObfuscator : nopTextObfuscator,
+            textObfuscator: context.textObfuscator,
             backgroundWireframeID: ids[0],
             segmentWireframeIDs: Array(ids[1..<ids.count]),
             segmentTitles: (0..<segment.numberOfSegments).map { segment.titleForSegment(at: $0) },
@@ -34,7 +34,8 @@ internal struct UISegmentRecorder: NodeRecorder {
                 }
             }()
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 

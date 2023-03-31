@@ -7,43 +7,34 @@
 import Foundation
 import CoreGraphics
 
-/// Flattens VTS received from `Recorder` by transforming its tree-structure of nodes into array of nodes.
+/// Flattens VTS received from `Recorder` by removing invisible nodes.
 ///
-/// Flattening includes removal of nodes that are invisible because of being covered by other nodes displayed
-/// closer to the screen surface.
+/// Nodes are invisible if:
+/// - they have no appearance (e.g. nodes denoting container views)
+/// - they are covered by another opaque nodes (displayed closer to the screen surface).
 internal struct NodesFlattener {
     /// This current implementation is greedy and works in `O(n*log(n))`, wheares `O(n)` is possible.
     /// TODO: RUMM-2461 Improve flattening performance.
     func flattenNodes(in snapshot: ViewTreeSnapshot) -> [Node] {
         var flattened: [Node] = []
 
-        dfsVisit(startingFrom: snapshot.root) { nextNode in
-            // Skip invisible nodes:
-            if !(nextNode.semantics is InvisibleElement) {
-                // When accepting nodes, remove ones that are covered by another opaque node:
-                flattened = flattened.compactMap { previousNode in
-                    let previousFrame = previousNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
-                    let nextFrame = nextNode.semantics.wireframesBuilder?.wireframeRect ?? .zero
+        for nextNode in snapshot.nodes {
+            // When accepting nodes, remove ones that are covered by another opaque node:
+            flattened = flattened.compactMap { previousNode in
+                let previousFrame = previousNode.wireframesBuilder.wireframeRect
+                let nextFrame = nextNode.wireframesBuilder.wireframeRect
 
-                    // Drop previous node when:
-                    let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
-                        && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
-                        && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
+                // Drop previous node when:
+                let dropPreviousNode = nextFrame.contains(previousFrame) // its rect is fully covered by the next node
+                    && nextNode.viewAttributes.hasAnyAppearance // and the next node brings something visual
+                    && !nextNode.viewAttributes.isTranslucent // and the next node is opaque
 
-                    return dropPreviousNode ? nil : previousNode
-                }
-
-                flattened.append(nextNode)
+                return dropPreviousNode ? nil : previousNode
             }
+
+            flattened.append(nextNode)
         }
 
         return flattened
-    }
-
-    private func dfsVisit(startingFrom node: Node, visit: (Node) -> Void) {
-        visit(node)
-        node.children.forEach { child in
-            dfsVisit(startingFrom: child, visit: visit)
-        }
     }
 }

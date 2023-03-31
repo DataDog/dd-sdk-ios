@@ -6,10 +6,22 @@
 
 import UIKit
 
-internal struct UIViewRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+internal class UIViewRecorder: NodeRecorder {
+    /// An option for overriding default semantics from parent recorder.
+    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard attributes.isVisible else {
             return InvisibleElement.constant
+        }
+        if let semantics = semanticsOverride(view, attributes) {
+            return semantics
+        }
+
+        guard attributes.hasAnyAppearance else {
+            // The view has no appearance, but it may contain subviews that bring visual elements, so
+            // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
+            return InvisibleElement(subtreeStrategy: .record)
         }
 
         let builder = UIViewWireframesBuilder(
@@ -17,8 +29,8 @@ internal struct UIViewRecorder: NodeRecorder {
             attributes: attributes,
             wireframeRect: attributes.frame
         )
-
-        return AmbiguousElement(wireframesBuilder: builder)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return AmbiguousElement(nodes: [node])
     }
 }
 

@@ -29,7 +29,7 @@ internal protocol Processing {
 /// - succeeding records are enriched with their RUM context and written to `DatadogCore`;
 /// - when `DatadogCore` triggers an upload, batched records are deserialized, grouped into SR segments and then uploaded.
 internal class Processor: Processing {
-    /// Flattens VTS received from `Recorder` by transforming its tree-structure into flat array of nodes and removing invisible nodes.
+    /// Flattens VTS received from `Recorder` by removing invisible nodes.
     private let nodesFlattener = NodesFlattener()
     /// Builds SR wireframes to describe UI elements.
     private let wireframesBuilder = WireframesBuilder()
@@ -66,7 +66,7 @@ internal class Processor: Processing {
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
         let flattenedNodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
         let wireframes: [SRWireframe] = flattenedNodes
-            .compactMap { node in node.semantics.wireframesBuilder }
+            .map { node in node.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
         #if DEBUG

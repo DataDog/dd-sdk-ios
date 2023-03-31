@@ -34,6 +34,24 @@ internal enum SystemColors {
         }
     }
 
+    static var systemBackground: CGColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.systemBackground.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 255 / 255, green: 255 / 255, blue: 255 / 255, alpha: 1).cgColor
+        }
+    }
+
+    static var secondarySystemGroupedBackground: CGColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.secondarySystemGroupedBackground.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 255 / 255, green: 255 / 255, blue: 255 / 255, alpha: 1).cgColor
+        }
+    }
+
     static var secondarySystemFill: CGColor {
         if #available(iOS 13.0, *) {
             return UIColor.secondarySystemFill.cgColor
@@ -58,6 +76,19 @@ internal enum SystemColors {
         } else {
             // Fallback to iOS 16.2 light mode color:
             return UIColor(red: 0 / 255, green: 0 / 255, blue: 0 / 255, alpha: 1).cgColor
+        }
+    }
+
+    static var systemGreen: CGColor {
+        return UIColor.systemGreen.cgColor
+    }
+
+    static var placeholderText: CGColor {
+        if #available(iOS 13.0, *) {
+            return UIColor.placeholderText.cgColor
+        } else {
+            // Fallback to iOS 16.2 light mode color:
+            return UIColor(red: 197 / 255, green: 197 / 255, blue: 197 / 255, alpha: 1).cgColor
         }
     }
 }

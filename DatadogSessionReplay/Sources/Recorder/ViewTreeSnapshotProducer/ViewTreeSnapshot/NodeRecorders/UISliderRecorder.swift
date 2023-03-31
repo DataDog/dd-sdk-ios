@@ -7,7 +7,7 @@
 import UIKit
 
 internal struct UISliderRecorder: NodeRecorder {
-    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeSnapshotBuilder.Context) -> NodeSemantics? {
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let slider = view as? UISlider else {
             return nil
         }
@@ -31,7 +31,8 @@ internal struct UISliderRecorder: NodeRecorder {
             maxTrackTintColor: slider.maximumTrackTintColor?.cgColor,
             thumbTintColor: slider.thumbTintColor?.cgColor
         )
-        return SpecificElement(wireframesBuilder: builder, recordSubtree: false)
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
