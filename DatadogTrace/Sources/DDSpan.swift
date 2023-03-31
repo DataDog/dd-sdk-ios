@@ -7,10 +7,6 @@
 import Foundation
 import DatadogInternal
 
-#if SPM_BUILD
-import _Datadog_Private
-#endif
-
 internal class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
     private let ddTracer: DatadogTracer

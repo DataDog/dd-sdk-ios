@@ -7,6 +7,7 @@ target 'Runner iOS' do
     pod 'DatadogSDKSessionReplay', :path => '..'
 
     pod 'DatadogLogs', :path => '..'
+    pod 'DatadogTrace', :path => '..'
 
     target 'IntegrationScenarios' do
         pod 'DatadogInternal', :path => '..'

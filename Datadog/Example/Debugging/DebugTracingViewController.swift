@@ -6,6 +6,7 @@
 
 import UIKit
 import Datadog
+import DatadogTrace
 
 class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!

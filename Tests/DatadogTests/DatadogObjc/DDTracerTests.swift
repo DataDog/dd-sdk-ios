@@ -8,6 +8,7 @@ import XCTest
 import DatadogInternal
 
 @testable import DatadogLogs
+@testable import DatadogTrace
 @testable import Datadog
 @testable import DatadogObjc
 

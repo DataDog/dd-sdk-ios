@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogTrace
 
 @objc
 public class DDTracerConfiguration: NSObject {

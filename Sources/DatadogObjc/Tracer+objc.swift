@@ -6,17 +6,15 @@
 
 import Foundation
 import DatadogInternal
-import class Datadog.DatadogTracer
-import protocol Datadog.OTTracer
-import struct Datadog.OTReference
+import DatadogTrace
 
 @objc
 public class DDTracer: NSObject, DatadogObjc.OTTracer {
     // MARK: - Internal
 
-    internal let swiftTracer: Datadog.OTTracer
+    internal let swiftTracer: DatadogTrace.OTTracer
 
-    internal init(swiftTracer: Datadog.OTTracer) {
+    internal init(swiftTracer: DatadogTrace.OTTracer) {
         self.swiftTracer = swiftTracer
     }
 

@@ -7,6 +7,7 @@
 import UIKit
 import Datadog
 import DatadogLogs
+import DatadogTrace
 import DatadogCrashReporting
 
 internal class ViewController: UIViewController {
@@ -29,12 +30,12 @@ internal class ViewController: UIViewController {
             .printLogsToConsole(true)
             .build()
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize()
 
         logger.info("It works")
 
         // Start span, but never finish it (no upload)
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        _ = DatadogTracer.shared().startSpan(operationName: "This too")
 
         addLabel()
     }

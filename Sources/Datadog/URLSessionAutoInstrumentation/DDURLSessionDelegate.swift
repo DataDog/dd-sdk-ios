@@ -11,7 +11,6 @@ import DatadogInternal
 /// used together with** `Datadog.Configuration.trackURLSession(firstPartyHosts:)`.
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
-@objc
 open class DDURLSessionDelegate: DatadogURLSessionDelegate {
     var instrumentation: URLSessionAutoInstrumentation? {
         let core = self.core ?? defaultDatadogCore

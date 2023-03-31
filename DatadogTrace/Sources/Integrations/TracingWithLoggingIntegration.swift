@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 
 /// Integration between Tracing and Logging Features to allow sending logs for spans (`span.log(fields:timestamp:)`)
 internal struct TracingWithLoggingIntegration {
@@ -18,6 +17,17 @@ internal struct TracingWithLoggingIntegration {
     private struct Constants {
         static let defaultLogMessage = "Span event"
         static let defaultErrorProperty = "Unknown"
+    }
+
+    /// Log levels ordered by their severity, with `.debug` being the least severe and
+    /// `.critical` being the most severe.
+    public enum LogLevel: Int, Codable {
+        case debug
+        case info
+        case notice
+        case warn
+        case error
+        case critical
     }
 
     struct Configuration {

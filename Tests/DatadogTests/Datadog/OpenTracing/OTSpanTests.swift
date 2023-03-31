@@ -6,7 +6,7 @@
 
 import XCTest
 import TestUtilities
-@testable import Datadog
+@testable import DatadogTrace
 
 private class MockSpan: OTSpan {
     var context: OTSpanContext = DDNoopGlobals.context

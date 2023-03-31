@@ -7,7 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-@testable import Datadog
+
+@testable import DatadogTrace
 
 class SpanSanitizerTests: XCTestCase {
     func testWhenAttributeNameExceeds10NestedLevels_itIsEscapedByUnderscore() {

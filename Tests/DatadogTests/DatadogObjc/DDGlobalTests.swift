@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+@testable import DatadogTrace
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -31,10 +32,8 @@ class DDGlobalTests: XCTestCase {
     }
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
-        DatadogTracer.initialize()
-
         // When
-        DatadogObjc.DDTracer.initialize()
+        DatadogObjc.DDTracer.initialize(configuration: .init())
 
         // Then
         XCTAssertTrue(DatadogObjc.DDTracer.shared.swiftTracer is DatadogTracer)

@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class Datadog.DatadogTracer
+import DatadogTrace
 import struct Datadog.Global
 
 @objc

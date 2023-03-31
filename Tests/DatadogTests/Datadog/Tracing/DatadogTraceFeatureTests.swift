@@ -7,6 +7,8 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
+@testable import DatadogTrace
 @testable import Datadog
 
 class DatadogTraceFeatureTests: XCTestCase {

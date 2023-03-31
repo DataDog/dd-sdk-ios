@@ -7,7 +7,7 @@
 import XCTest
 import TestUtilities
 
-@testable import Datadog
+@testable import DatadogTrace
 
 class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {

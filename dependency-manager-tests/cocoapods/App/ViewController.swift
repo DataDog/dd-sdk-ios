@@ -7,6 +7,7 @@
 import UIKit
 import Datadog
 import DatadogLogs
+import DatadogTrace
 import DatadogAlamofireExtension
 import DatadogCrashReporting
 #if os(iOS)
@@ -37,12 +38,12 @@ internal class ViewController: UIViewController {
             .printLogsToConsole(true)
             .build()
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize()
 
         Global.rum = RUMMonitor.initialize()
 
         logger.info("It works")
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        _ = DatadogTracer.shared().startSpan(operationName: "This too")
         Global.rum.startView(viewController: self)
 
         createInstrumentedAlamofireSession()

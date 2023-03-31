@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogTrace
 
 /// An interface for handling `URLSession` interceptions start and completion.
 internal protocol URLSessionInterceptionHandler {
