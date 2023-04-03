@@ -7,7 +7,7 @@
 import XCTest
 @testable import Datadog
 
-final class TimeIntervalConvinienceTests: XCTestCase {
+final class TimeIntervalConvenienceTests: XCTestCase {
     func test_Seconds() {
         XCTAssertEqual(TimeInterval(30).seconds, 30)
         XCTAssertEqual(Int(30).seconds, 30)

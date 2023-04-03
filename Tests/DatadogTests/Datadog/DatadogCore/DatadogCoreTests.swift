@@ -204,24 +204,19 @@ class DatadogCoreTests: XCTestCase {
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
-        let name = "mock"
         try core.register(
-            feature: FeatureMock(
-                name: name,
-                performanceOverride: nil
-            )
+            feature: FeatureMock(performanceOverride: nil)
         )
-        var feature = core.v2Features.values.first
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+        var store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
         try core.register(
             feature: FeatureMock(
-                name: name,
                 performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
             )
         )
-        feature = core.v2Features.values.first
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
     }
 }

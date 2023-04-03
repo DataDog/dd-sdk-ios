@@ -5,9 +5,9 @@
  */
 
 import XCTest
-@testable import Datadog
+@testable import DatadogInternal
 
-final class FixedWidthIntegerConvinienceTests: XCTestCase {
+final class FixedWidthIntegerConvenienceTests: XCTestCase {
     func test_Bytes() {
         let value: Int = 1_000
         XCTAssertEqual(value.bytes, 1_000)

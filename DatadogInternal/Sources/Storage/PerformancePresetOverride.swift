@@ -12,11 +12,11 @@ import Foundation
 public struct PerformancePresetOverride {
     /// An optional value representing the maximum allowed file size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    let maxFileSize: UInt64?
+    public let maxFileSize: UInt64?
 
     /// An optional value representing the maximum allowed object size in bytes.
     /// If not provided, the default value from the `PerformancePreset` object is used.
-    let maxObjectSize: UInt64?
+    public let maxObjectSize: UInt64?
 
     /// Initializes a new `PerformancePresetOverride` instance with the provided
     /// maximum file size and maximum object size limits.
