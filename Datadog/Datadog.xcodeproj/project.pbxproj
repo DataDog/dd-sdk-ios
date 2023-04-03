@@ -7,11 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		490D5EC929C9E17E004F969C /* RUMStopSessionScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5EC829C9E17E004F969C /* RUMStopSessionScenarioTests.swift */; };
-		490D5ECF29CA0745004F969C /* RUMStopSessionScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */; };
-		490D5ED029CA074A004F969C /* KioskViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ECD29CA0738004F969C /* KioskViewController.swift */; };
-		490D5ED329CA08F7004F969C /* KioskSendEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */; };
-		490D5ED629CA1DD6004F969C /* KioskSendInterruptedEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */; };
 		49274906288048B500ECD49B /* InternalTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalTelemetryTests.swift */; };
 		49274907288048B800ECD49B /* InternalTelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalTelemetryTests.swift */; };
 		4927490B288048FF00ECD49B /* RUMInternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274908288048F400ECD49B /* RUMInternalProxyTests.swift */; };
@@ -1517,11 +1512,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		490D5EC829C9E17E004F969C /* RUMStopSessionScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMStopSessionScenarioTests.swift; sourceTree = "<group>"; };
-		490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMStopSessionScenario.storyboard; sourceTree = "<group>"; };
-		490D5ECD29CA0738004F969C /* KioskViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskViewController.swift; sourceTree = "<group>"; };
-		490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskSendEventsViewController.swift; sourceTree = "<group>"; };
-		490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KioskSendInterruptedEventsViewController.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalTelemetryTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalTelemetryTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
@@ -2436,17 +2426,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		490D5ECA29C9E28F004F969C /* StopSessionScenario */ = {
-			isa = PBXGroup;
-			children = (
-				490D5ECB29C9E2D0004F969C /* RUMStopSessionScenario.storyboard */,
-				490D5ECD29CA0738004F969C /* KioskViewController.swift */,
-				490D5ED129CA087D004F969C /* KioskSendEventsViewController.swift */,
-				490D5ED429CA1D9F004F969C /* KioskSendInterruptedEventsViewController.swift */,
-			);
-			path = StopSessionScenario;
-			sourceTree = "<group>";
-		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
 			isa = PBXGroup;
 			children = (

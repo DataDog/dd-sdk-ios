@@ -83,7 +83,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
             let view1 = appStartSession.viewVisits[0]
             XCTAssertEqual(view1.name, "KioskViewController")
-            XCTAssertEqual(view1.path, "Example.KioskViewController")
+            XCTAssertEqual(view1.path, "Runner.KioskViewController")
             XCTAssertEqual(view1.viewEvents.last?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
         }
@@ -96,7 +96,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let view1 = normalSession.viewVisits[0]
             XCTAssertTrue(try XCTUnwrap(view1.viewEvents.first?.session.isActive))
             XCTAssertEqual(view1.name, "KioskSendEvents")
-            XCTAssertEqual(view1.path, "Example.KioskSendEventsViewController")
+            XCTAssertEqual(view1.path, "Runner.KioskSendEventsViewController")
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
             XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
             XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
@@ -106,7 +106,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
             let view2 = normalSession.viewVisits[1]
             XCTAssertEqual(view2.name, "KioskViewController")
-            XCTAssertEqual(view2.path, "Example.KioskViewController")
+            XCTAssertEqual(view2.path, "Runner.KioskViewController")
             XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
         }
@@ -119,7 +119,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let view1 = interruptedSession.viewVisits[0]
             XCTAssertTrue(try XCTUnwrap(view1.viewEvents.first?.session.isActive))
             XCTAssertEqual(view1.name, "KioskSendInterruptedEvents")
-            XCTAssertEqual(view1.path, "Example.KioskSendInterruptedEventsViewController")
+            XCTAssertEqual(view1.path, "Runner.KioskSendInterruptedEventsViewController")
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
             XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
             XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
@@ -129,7 +129,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
 
             let view2 = interruptedSession.viewVisits[1]
             XCTAssertEqual(view2.name, "KioskViewController")
-            XCTAssertEqual(view2.path, "Example.KioskViewController")
+            XCTAssertEqual(view2.path, "Runner.KioskViewController")
             XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
         }
