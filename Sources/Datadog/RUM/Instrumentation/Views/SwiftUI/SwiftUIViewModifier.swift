@@ -53,6 +53,7 @@ public extension SwiftUI.View {
     /// - Parameters:
     ///   - name: the View name used for RUM Explorer.
     ///   - attributes: custom attributes to attach to the View.
+    ///   - core: The SDK core instance.
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
     func trackRUMView(
         name: String,
@@ -60,7 +61,7 @@ public extension SwiftUI.View {
         in core: DatadogCoreProtocol = defaultDatadogCore
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
-        let instrumentation = core.v1.feature(RUMInstrumentation.self)
+        let instrumentation = core.get(feature: DatadogRUMFeature.self)?.instrumentation
         return modifier(
             RUMViewModifier(
                 instrumentation: instrumentation,

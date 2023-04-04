@@ -6,6 +6,7 @@
 
 #if canImport(SwiftUI)
 import SwiftUI
+import DatadogInternal
 
 #if !os(tvOS)
 
@@ -13,6 +14,9 @@ import SwiftUI
 /// global RUM Monitor when the modified view receives a tap.
 @available(iOS 13, *)
 internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
+    /// The SDK core instance.
+    let core: DatadogCoreProtocol
+
     /// The required number of taps to complete the tap action.
     let count: Int
 
@@ -25,7 +29,8 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     func body(content: Content) -> some View {
         content.simultaneousGesture(
             TapGesture(count: count).onEnded { _ in
-                Global.rum.addUserAction(type: .tap, name: name, attributes: attributes)
+                RUMMonitor.shared(in: core)
+                    .addUserAction(type: .tap, name: name, attributes: attributes)
             }
         )
     }
@@ -40,13 +45,22 @@ public extension SwiftUI.View {
     ///   - name: The action name.
     ///   - attributes: custom attributes to attach to the View.
     ///   - count: The required number of taps to complete the tap action.
+    ///   - core: The SDK core instance.
     /// - Returns: This view after applying a `ViewModifier` for monitoring the view.
     func trackRUMTapAction(
         name: String,
         attributes: [String: Encodable] = [:],
-        count: Int = 1
+        count: Int = 1,
+        in core: DatadogCoreProtocol = defaultDatadogCore
     ) -> some View {
-        return modifier(RUMTapActionModifier(count: count, name: name, attributes: attributes))
+        return modifier(
+            RUMTapActionModifier(
+                core: core,
+                count: count,
+                name: name,
+                attributes: attributes
+            )
+        )
     }
 }
 
