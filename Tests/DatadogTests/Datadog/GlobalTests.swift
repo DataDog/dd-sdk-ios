@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@testable import DatadogRUM
 @testable import DatadogTrace
 @testable import Datadog
 

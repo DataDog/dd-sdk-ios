@@ -10,6 +10,7 @@ import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogLogs
 @testable import DatadogTrace
+@testable import DatadogRUM
 @testable import Datadog
 
 class DatadogTests: XCTestCase {

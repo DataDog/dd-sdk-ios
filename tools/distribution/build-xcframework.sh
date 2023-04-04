@@ -95,5 +95,6 @@ bundle Datadog
 bundle DatadogInternal
 bundle DatadogLogs
 bundle DatadogTrace
+bundle DatadogRUM
 bundle DatadogObjc
 bundle DatadogCrashReporting

@@ -7,12 +7,59 @@
 import XCTest
 import DatadogInternal
 import TestUtilities
-@testable import Datadog
+
+@testable import DatadogRUM
 
 extension DatadogCoreProxy {
     func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
         return try waitAndReturnEventsData(ofFeature: DatadogRUMFeature.name)
             .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
+    }
+}
+
+extension RUMConfiguration {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        telemetrySampler: Sampler = .mockKeepAll(),
+        configurationTelemetrySampler: Sampler = .mockKeepAll(),
+        viewEventMapper: RUMViewEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
+        instrumentation: Instrumentation = .init(),
+        backgroundEventTrackingEnabled: Bool = false,
+        frustrationTrackingEnabled: Bool = true,
+        onSessionStart: RUMSessionListener? = nil,
+        firstPartyHosts: FirstPartyHosts = .init(),
+        vitalsFrequency: TimeInterval? = 0.5,
+        dateProvider: DateProvider = SystemDateProvider(),
+        customIntakeURL: URL? = nil
+    ) -> Self {
+        return .init(
+            applicationID: applicationID,
+            uuidGenerator: uuidGenerator,
+            sessionSampler: sessionSampler,
+            telemetrySampler: telemetrySampler,
+            configurationTelemetrySampler: configurationTelemetrySampler,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            instrumentation: instrumentation,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
+            onSessionStart: onSessionStart,
+            firstPartyHosts: firstPartyHosts,
+            vitalsFrequency: vitalsFrequency,
+            dateProvider: dateProvider,
+            customIntakeURL: customIntakeURL
+        )
     }
 }
 
@@ -42,14 +89,16 @@ extension CrashReportReceiver: AnyMockable {
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
         backgroundEventTrackingEnabled: Bool = true,
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        ciTest: RUMCITest? = nil
     ) -> Self {
         .init(
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
             backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            uuidGenerator: uuidGenerator
+            uuidGenerator: uuidGenerator,
+            ciTest: ciTest
         )
     }
 }
@@ -62,24 +111,6 @@ extension RUMMethod {
 
 extension RUMResourceType {
     static func mockAny() -> RUMResourceType { .image }
-}
-
-// MARK: - Telemetry Mocks
-
-extension TelemetryReceiver: AnyMockable {
-    public static func mockAny() -> Self { .mockWith() }
-
-    static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
-        sampler: Sampler = .mockKeepAll(),
-        configurationExtraSampler: Sampler = .mockKeepAll()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            sampler: sampler,
-            configurationExtraSampler: configurationExtraSampler
-        )
-    }
 }
 
 // MARK: - RUMDataModel Mocks
@@ -785,7 +816,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
     return viewController
 }
 
-/// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
+///// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
 
 extension RUMViewScope {
@@ -1010,17 +1041,5 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
         publishers.removeAll { existingPublisher in
             return existingPublisher === valuePublisher
         }
-    }
-}
-
-// MARK: - Dependency on Session Replay
-
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
-        return [
-            SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
-            ]
-        ]
     }
 }

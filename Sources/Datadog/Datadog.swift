@@ -7,6 +7,7 @@
 import Foundation
 import DatadogInternal
 import DatadogLogs
+import DatadogRUM
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -112,9 +113,7 @@ public class Datadog {
     /// May be used to debug issues with RUM instrumentation in your app.
     /// Default is `false`.
     public static var debugRUM = false {
-        didSet {
-            (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
-        }
+        didSet { RUMMonitor.enableRUMDebugging(debugRUM) }
     }
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
@@ -215,20 +214,11 @@ public class Datadog {
         if let rumConfiguration = configuration.rum {
             try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
 
-            telemetry.configuration(
-                mobileVitalsUpdatePeriod: rumConfiguration.vitalsFrequency?.toInt64Milliseconds,
-                sessionSampleRate: Int64(withNoOverflow: rumConfiguration.sessionSampler.samplingRate),
-                telemetrySampleRate: Int64(withNoOverflow: rumConfiguration.telemetrySampler.samplingRate),
-                traceSampleRate: Int64(withNoOverflow: rumConfiguration.tracingSampler.samplingRate),
-                trackBackgroundEvents: rumConfiguration.backgroundEventTrackingEnabled,
-                trackFrustrations: rumConfiguration.frustrationTrackingEnabled,
-                trackInteractions: rumConfiguration.instrumentation.uiKitRUMUserActionsPredicate != nil,
-                trackLongTask: rumConfiguration.instrumentation.longTaskThreshold != nil,
-                trackNativeLongTasks: rumConfiguration.instrumentation.longTaskThreshold != nil,
-                trackNativeViews: rumConfiguration.instrumentation.uiKitRUMViewsPredicate != nil,
-                trackNetworkRequests: rumConfiguration.firstPartyHosts != nil,
-                useFirstPartyHosts: rumConfiguration.firstPartyHosts.map { !$0.hosts.isEmpty }
-            )
+            if Datadog.debugRUM {
+                RUMMonitor.enableRUMDebugging(debugRUM, in: core)
+            }
+
+            CITestIntegration.active?.startIntegration()
         }
 
         if let loggingConfiguration = configuration.logging {
@@ -300,7 +290,6 @@ public class Datadog {
         (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
-        Global.rum = DDNoopRUMMonitor()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:

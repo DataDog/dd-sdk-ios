@@ -12,6 +12,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogLogs
+@testable import DatadogRUM
 @testable import Datadog
 
 final class DDUserContentController: WKUserContentController {
@@ -167,9 +168,6 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let rum: DatadogRUMFeature = .init(in: core, configuration: .mockAny())
         try core.register(feature: rum)
-
-        Global.rum = RUMMonitor.shared(in: core)
-        defer { Global.rum = DDNoopRUMMonitor() }
 
         let controller = DDUserContentController()
         controller.addDatadogMessageHandler(

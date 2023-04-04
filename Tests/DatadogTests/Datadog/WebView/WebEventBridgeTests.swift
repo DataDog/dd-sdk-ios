@@ -9,6 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogLogs
+@testable import DatadogRUM
 @testable import Datadog
 
 class WebEventBridgeTests: XCTestCase {

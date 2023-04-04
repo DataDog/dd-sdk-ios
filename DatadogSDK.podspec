@@ -29,5 +29,6 @@ Pod::Spec.new do |s|
   s.dependency 'DatadogInternal', s.version.to_s
   s.dependency 'DatadogLogs', s.version.to_s
   s.dependency 'DatadogTrace', s.version.to_s
+  s.dependency 'DatadogRUM', s.version.to_s
 
 end

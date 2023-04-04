@@ -6,17 +6,12 @@
 
 import Foundation
 import DatadogTrace
+import DatadogRUM
 import struct Datadog.Global
 
 @objc
 public class DDGlobal: NSObject {
     @objc public static var sharedTracer: DatadogObjc.DDTracer { .init(swiftTracer: DatadogTracer.shared()) }
 
-    @objc public static var rum = DatadogObjc.DDRUMMonitor(swiftRUMMonitor: Datadog.Global.rum) {
-        didSet {
-            // We must also set the Swift `Global.rum`
-            // as it's used internally by auto-instrumentation feature.
-            Datadog.Global.rum = rum.swiftRUMMonitor
-        }
-    }
+    @objc public static var rum: DatadogObjc.DDRUMMonitor { .init(swiftRUMMonitor: RUMMonitor.shared()) }
 }

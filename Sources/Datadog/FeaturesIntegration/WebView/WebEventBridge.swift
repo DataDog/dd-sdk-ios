@@ -7,6 +7,8 @@
 import Foundation
 import DatadogInternal
 
+internal typealias JSON = [String: Any]
+
 internal enum WebEventError: Error, Equatable {
     case dataSerialization(message: String)
     case JSONDeserialization(rawJSONDescription: String)

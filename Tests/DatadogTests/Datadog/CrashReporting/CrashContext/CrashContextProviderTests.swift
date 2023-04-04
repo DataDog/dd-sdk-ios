@@ -11,6 +11,8 @@ import CoreTelephony
 
 import DatadogInternal
 import TestUtilities
+
+@testable import DatadogRUM
 @testable import Datadog
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
