@@ -10,6 +10,7 @@ import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogTrace
+@testable import DatadogRUM
 @testable import Datadog
 
 // swiftlint:disable multiline_arguments_brackets
@@ -583,10 +584,9 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor.shared(in: core)
-        Global.rum.startView(viewController: mockView)
-        Global.rum.startUserAction(type: .tap, name: .mockAny())
-        defer { Global.rum = DDNoopRUMMonitor() }
+        let rum = RUMMonitor.shared(in: core)
+        rum.startView(viewController: mockView)
+        rum.startUserAction(type: .tap, name: .mockAny())
 
         // when
         logger.info("info message")
@@ -617,9 +617,8 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = try createTestableRUMMonitor()
-        Global.rum.startView(viewController: mockView)
-        defer { Global.rum = DDNoopRUMMonitor() }
+        let rum = try createTestableRUMMonitor()
+        rum.startView(viewController: mockView)
 
         // when
         logger.debug("debug message")
@@ -651,9 +650,8 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = try createTestableRUMMonitor()
-        Global.rum.startView(viewController: mockView)
-        defer { Global.rum = DDNoopRUMMonitor() }
+        let rum = try createTestableRUMMonitor()
+        rum.startView(viewController: mockView)
 
         // when
         let attributeValueA: String = .mockRandom()
@@ -691,9 +689,8 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = try createTestableRUMMonitor()
-        Global.rum.startView(viewController: mockView)
-        defer { Global.rum = DDNoopRUMMonitor() }
+        let rum = try createTestableRUMMonitor()
+        rum.startView(viewController: mockView)
 
         // when
         logger.error("error message", attributes: [
@@ -727,9 +724,8 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = try createTestableRUMMonitor()
-        Global.rum.startView(viewController: mockView)
-        defer { Global.rum = DDNoopRUMMonitor() }
+        let rum = try createTestableRUMMonitor()
+        rum.startView(viewController: mockView)
 
         // when
         logger.error("error message", attributes: [

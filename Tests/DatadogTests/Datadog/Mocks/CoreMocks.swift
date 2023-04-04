@@ -9,6 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogLogs
+@testable import DatadogRUM
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -180,52 +181,6 @@ extension FeaturesConfiguration.Logging {
             dateProvider: dateProvider,
             applicationBundleIdentifier: applicationBundleIdentifier,
             remoteLoggingSampler: remoteLoggingSampler
-        )
-    }
-}
-
-extension RUMConfiguration {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(
-        applicationID: String = .mockAny(),
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        sessionSampler: Sampler = .mockKeepAll(),
-        telemetrySampler: Sampler = .mockKeepAll(),
-        configurationTelemetrySampler: Sampler = .mockKeepAll(),
-        viewEventMapper: RUMViewEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        instrumentation: Instrumentation = .init(),
-        backgroundEventTrackingEnabled: Bool = false,
-        frustrationTrackingEnabled: Bool = true,
-        onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts = .init(),
-        vitalsFrequency: TimeInterval? = 0.5,
-        dateProvider: DateProvider = SystemDateProvider(),
-        customIntakeURL: URL? = nil
-    ) -> Self {
-        return .init(
-            applicationID: applicationID,
-            uuidGenerator: uuidGenerator,
-            sessionSampler: sessionSampler,
-            telemetrySampler: telemetrySampler,
-            configurationTelemetrySampler: configurationTelemetrySampler,
-            viewEventMapper: viewEventMapper,
-            resourceEventMapper: resourceEventMapper,
-            actionEventMapper: actionEventMapper,
-            errorEventMapper: errorEventMapper,
-            longTaskEventMapper: longTaskEventMapper,
-            instrumentation: instrumentation,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            frustrationTrackingEnabled: frustrationTrackingEnabled,
-            onSessionStart: onSessionStart,
-            firstPartyHosts: firstPartyHosts,
-            vitalsFrequency: vitalsFrequency,
-            dateProvider: dateProvider,
-            customIntakeURL: customIntakeURL
         )
     }
 }
@@ -510,45 +465,6 @@ extension DataUploadStatus: RandomMockable {
 extension BatteryStatus.State {
     static func mockRandom(within cases: [BatteryStatus.State] = [.unknown, .unplugged, .charging, .full]) -> BatteryStatus.State {
         return cases.randomElement()!
-    }
-}
-
-extension ValuePublisher: AnyMockable where Value: AnyMockable {
-    public static func mockAny() -> Self {
-        return .init(initialValue: .mockAny())
-    }
-}
-
-extension ValuePublisher: RandomMockable where Value: RandomMockable {
-    public static func mockRandom() -> Self {
-        return .init(initialValue: .mockRandom())
-    }
-}
-
-extension ValuePublisher {
-    /// Publishes `newValue` using `publishSync(:_)` or `publishAsync(:_)`.
-    func publishSyncOrAsync(_ newValue: Value) {
-        if Bool.random() {
-            publishSync(newValue)
-        } else {
-            publishAsync(newValue)
-        }
-    }
-}
-
-internal class ValueObserverMock<Value>: ValueObserver {
-    typealias ObservedValue = Value
-
-    private(set) var onValueChange: ((Value, Value) -> Void)?
-    private(set) var lastChange: (oldValue: Value, newValue: Value)?
-
-    init(onValueChange: ((Value, Value) -> Void)? = nil) {
-        self.onValueChange = onValueChange
-    }
-
-    func onValueChanged(oldValue: Value, newValue: Value) {
-        lastChange = (oldValue, newValue)
-        onValueChange?(oldValue, newValue)
     }
 }
 

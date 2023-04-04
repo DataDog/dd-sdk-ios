@@ -8,6 +8,7 @@ import UIKit
 import Datadog
 import DatadogLogs
 import DatadogTrace
+import DatadogRUM
 import DatadogCrashReporting
 
 @_exported import enum DatadogInternal.TrackingConsent
@@ -85,9 +86,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                 customIntakeURL: Environment.readCustomTraceURL()
             )
         )
-
-        // Register RUMMonitor
-        Global.rum = RUMMonitor.shared()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

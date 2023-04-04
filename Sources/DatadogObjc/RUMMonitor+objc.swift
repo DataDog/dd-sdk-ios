@@ -7,17 +7,18 @@
 import Foundation
 import UIKit
 import DatadogInternal
-import class Datadog.DDRUMMonitor
-import class Datadog.RUMMonitor
-import enum Datadog.RUMErrorSource
-import enum Datadog.RUMUserActionType
-import typealias Datadog.RUMResourceType
-import enum Datadog.RUMMethod
-import struct Datadog.RUMView
-import protocol Datadog.UIKitRUMViewsPredicate
-import struct Datadog.RUMAction
-import protocol Datadog.UITouchRUMUserActionsPredicate
-import protocol Datadog.UIPressRUMUserActionsPredicate
+
+import class DatadogRUM.DDRUMMonitor
+import class DatadogRUM.RUMMonitor
+import enum DatadogRUM.RUMErrorSource
+import enum DatadogRUM.RUMUserActionType
+import typealias DatadogRUM.RUMResourceType
+import enum DatadogRUM.RUMMethod
+import struct DatadogRUM.RUMView
+import protocol DatadogRUM.UIKitRUMViewsPredicate
+import struct DatadogRUM.RUMAction
+import protocol DatadogRUM.UITouchRUMUserActionsPredicate
+import protocol DatadogRUM.UIPressRUMUserActionsPredicate
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
@@ -227,9 +228,9 @@ public enum DDRUMMethod: Int {
 public class DDRUMMonitor: NSObject {
     // MARK: - Internal
 
-    internal let swiftRUMMonitor: Datadog.DDRUMMonitor
+    internal let swiftRUMMonitor: DatadogRUM.DDRUMMonitor
 
-    internal init(swiftRUMMonitor: Datadog.DDRUMMonitor) {
+    internal init(swiftRUMMonitor: DatadogRUM.DDRUMMonitor) {
         self.swiftRUMMonitor = swiftRUMMonitor
     }
 

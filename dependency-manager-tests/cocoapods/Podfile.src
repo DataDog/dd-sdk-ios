@@ -2,6 +2,7 @@ abstract_target 'Common' do
   pod 'DatadogInternal', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogLogs', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogTrace', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogRUM', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogSDK', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogSDKAlamofireExtension', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogSDKCrashReporting', :git => 'GIT_REMOTE', :GIT_REFERENCE

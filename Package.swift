@@ -74,6 +74,7 @@ let package = Package(
                 .target(name: "Datadog"),
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
+                .target(name: "DatadogRUM"),
             ]
         ),
         .target(
@@ -130,6 +131,22 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogTrace/Tests"
+        ),
+
+        .target(
+            name: "DatadogRUM",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "DatadogRUM/Sources"
+        ),
+        .testTarget(
+            name: "DatadogRUMTests",
+            dependencies: [
+                .target(name: "DatadogRUM"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogRUM/Tests"
         ),
 
         .target(

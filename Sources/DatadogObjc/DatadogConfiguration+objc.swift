@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import DatadogRUM
 import Datadog
 
 @objc

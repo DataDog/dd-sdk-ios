@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 
 @testable import DatadogLogs
+@testable import DatadogRUM
 @testable import Datadog
 
 class DatadogConfigurationBuilderTests: XCTestCase {
