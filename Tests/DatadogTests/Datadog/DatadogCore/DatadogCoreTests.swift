@@ -18,6 +18,7 @@ private struct FeatureMock: DatadogRemoteFeature {
 
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+    var performanceOverride: PerformancePresetOverride? = nil
 }
 
 class DatadogCoreTests: XCTestCase {
@@ -189,5 +190,33 @@ class DatadogCoreTests: XCTestCase {
             "It should upload all events"
         )
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 3, "It should send 3 requests")
+    }
+
+    func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
+            initialConsent: .granted,
+            userInfoProvider: .mockAny(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
+        )
+        try core.register(
+            feature: FeatureMock(performanceOverride: nil)
+        )
+        var store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+        try core.register(
+            feature: FeatureMock(
+                performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
+            )
+        )
+        store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
     }
 }

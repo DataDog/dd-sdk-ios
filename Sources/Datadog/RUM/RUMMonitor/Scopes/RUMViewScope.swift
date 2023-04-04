@@ -169,6 +169,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             didReceiveStartCommand = true
             needsViewUpdate = true
 
+        // Session stop
+        case is RUMStopSessionCommand:
+            isActiveView = false
+            needsViewUpdate = true
+
         // View commands
         case let command as RUMStartViewCommand where identity.equals(command.identity):
             if didReceiveStartCommand {
@@ -392,6 +397,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -448,6 +454,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -555,6 +562,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -606,6 +614,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
+                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

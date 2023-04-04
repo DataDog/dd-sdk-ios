@@ -10,9 +10,20 @@ import DatadogInternal
 internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - Child Scopes
 
+    // Whether the applciation is already active. Set to true
+    // when the first session starts.
+    private(set) var applicationActive = false
+
     /// Session scope. It gets created with the first event.
     /// Might be re-created later according to session duration constraints.
-    private(set) var sessionScope: RUMSessionScope?
+    private(set) var sessionScopes: [RUMSessionScope] = []
+
+    /// Last active view from the last active  session. Used to restart the active view on a user action.
+    private var lastActiveView: RUMViewScope?
+
+    var activeSession: RUMSessionScope? {
+        get { return sessionScopes.first(where: { $0.isActive }) }
+    }
 
     // MARK: - Initialization
 
@@ -23,6 +34,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         self.context = RUMContext(
             rumApplicationID: dependencies.rumApplicationID,
             sessionID: .nullUUID,
+            isSessionActive: false,
             activeViewID: nil,
             activeViewPath: nil,
             activeViewName: nil,
@@ -37,31 +49,58 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if sessionScope == nil {
+        if sessionScopes.isEmpty && !applicationActive {
             startInitialSession(on: command, context: context, writer: writer)
         }
 
-        if let currentSession = sessionScope {
-            sessionScope = sessionScope?.scope(byPropagating: command, context: context, writer: writer)
-
-            if sessionScope == nil { // if session expired
-                refresh(expiredSession: currentSession, on: command, context: context, writer: writer)
-            }
+        if activeSession == nil && command.isUserInteraction {
+            // No active sessions, start a new one
+            startNewSession(on: command, context: context, writer: writer)
         }
 
-        return true
+        if command is RUMStopSessionCommand {
+            // Reach in and grab the last active view
+            lastActiveView = activeSession?.viewScopes.first(where: { $0.isActiveView })
+        }
+
+        // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
+        // that need a refresh
+        sessionScopes = sessionScopes.compactMap({ scope in
+            if scope.process(command: command, context: context, writer: writer) {
+                // proccss(command:context:writer) returned true, so keep the scope around
+                // as it it still has work to do.
+                return scope
+            }
+
+            // proccss(command:context:writer) returned false, but if the scope is  still active
+            // it means we timed out or expired and we need to refresh the session
+            if scope.isActive {
+                return refresh(expiredSession: scope, on: command, context: context, writer: writer)
+            }
+
+            // Else, an inactive scope is done processing events and can be removed
+            return nil
+        })
+
+        // Sanity telemety, only end up with one active session
+        if sessionScopes.filter({ $0.isActive }).count > 1 {
+            DD.telemetry.error("An application has multiple active sessions!")
+        }
+
+        return activeSession != nil
     }
 
     // MARK: - Private
 
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time, context: context)
-        sessionScope = refreshedSession
         sessionScopeDidUpdate(refreshedSession)
         _ = refreshedSession.process(command: command, context: context, writer: writer)
+        return refreshedSession
     }
 
     private func startInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        applicationActive = true
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
@@ -70,11 +109,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
         )
 
-        sessionScope = initialSession
+        sessionScopes.append(initialSession)
         sessionScopeDidUpdate(initialSession)
         if context.applicationStateHistory.currentSnapshot.state != .background {
             // Immediately start the ApplicationLaunchView for the new session
-            _ = sessionScope?.process(
+            _ = initialSession.process(
                 command: RUMApplicationStartCommand(
                     time: command.time,
                     attributes: command.attributes
@@ -83,6 +122,22 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 writer: writer
             )
         }
+    }
+
+    private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
+        let newSession = RUMSessionScope(
+            isInitialSession: false,
+            parent: self,
+            startTime: command.time,
+            dependencies: dependencies,
+            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded,
+            resumingViewScope: resumingViewScope
+        )
+        lastActiveView = nil
+
+        sessionScopes.append(newSession)
+        sessionScopeDidUpdate(newSession)
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope) {

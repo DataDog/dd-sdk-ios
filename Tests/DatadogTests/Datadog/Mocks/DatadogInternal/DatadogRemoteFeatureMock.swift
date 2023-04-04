@@ -13,4 +13,5 @@ internal struct DatadogRemoteFeatureMock: DatadogRemoteFeature {
     static let name = "mock"
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+    var performanceOverride: PerformancePresetOverride? = nil
 }

@@ -51,7 +51,7 @@ Datadog Real User Monitoring (RUM) enables you to visualize and analyze the real
 3. To instrument your web views, click the **Instrument your webviews** toggle. For more information, see [Web View Tracking][12].
 4. To disable automatic user data collection for either client IP or geolocation data, uncheck the boxes for those settings. For more information, see [RUM iOS Data Collected][14].
 
-   {{< img src="real_user_monitoring/ios/new-rum-app-ios.png" alt="Create a RUM application for iOS in Datadog" style="width:100%;border:none" >}}
+   {{< img src="real_user_monitoring/ios/ios-create-application.png" alt="Create a RUM application for iOS in Datadog" style="width:100%;border:none" >}}
 
 To ensure the safety of your data, you must use a client token. If you used only [Datadog API keys][6] to configure the `dd-sdk-ios` library, they would be exposed client-side in the iOS application's byte code. 
 

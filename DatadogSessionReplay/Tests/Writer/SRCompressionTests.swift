@@ -89,7 +89,7 @@ struct Deflate {
     ///   - data: The compressed data.
     ///   - capacity: Capacity of the allocated memory to contain the decoded data. 1MB by default.
     /// - Returns: Decompressed data.
-    static func decode(_ data: Data, capacity: Int = 1_000_000) -> Data? {
+    static func decode(_ data: Data, capacity: Int = 1.MB) -> Data? {
         // Skip `deflate` header (2 bytes) and checksum (4 bytes)
         // validations and inflate raw deflated data.
         let range = 2..<data.count - 4
@@ -111,7 +111,7 @@ struct Deflate {
     ///   - data: Raw deflated data stream.
     ///   - capacity: Capacity of the allocated memory to contain the decoded data. 1MB by default.
     /// - Returns: Decompressed data.
-    static func decompress(_ data: Data, capacity: Int = 1_000_000) -> Data? {
+    static func decompress(_ data: Data, capacity: Int = 1.MB) -> Data? {
         data.withUnsafeBytes {
             guard let ptr = $0.bindMemory(to: UInt8.self).baseAddress else {
                 return nil

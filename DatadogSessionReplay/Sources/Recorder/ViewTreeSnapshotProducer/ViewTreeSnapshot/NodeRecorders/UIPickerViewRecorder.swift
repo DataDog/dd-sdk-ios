@@ -13,11 +13,9 @@ import UIKit
 /// - We can't request `picker.dataSource` to receive the value - doing so will result in calling applicaiton code, which could be
 /// dangerous (if the code is faulty) and may significantly slow down the performance (e.g. if the underlying source requires database fetch).
 /// - Similarly, we don't call `picker.delegate` to avoid running application code outside `UIKit's` lifecycle.
-/// - Instead, we infer the value by traversing picker's subtree state and finding texts that are displayed closest to its geometry center.
+/// - Instead, we infer the value by traversing picker's subtree and finding texts that have no "3D wheel" effect applied.
 /// - If privacy mode is elevated, we don't replace individual characters with "x" letter - instead we change whole options to fixed-width mask value.
 internal struct UIPickerViewRecorder: NodeRecorder {
-    /// Records individual labels in picker's subtree.
-    private let labelRecorder: UILabelRecorder
     /// Records all shapes in picker's subtree.
     /// It is used to capture the background of selected option.
     private let selectionRecorder: ViewTreeRecorder
@@ -26,8 +24,27 @@ internal struct UIPickerViewRecorder: NodeRecorder {
     private let labelsRecorder: ViewTreeRecorder
 
     init() {
-        self.labelRecorder = UILabelRecorder()
-        self.labelsRecorder = ViewTreeRecorder(nodeRecorders: [labelRecorder])
+        let viewRecorder = UIViewRecorder()
+        viewRecorder.semanticsOverride = { view, attributes in
+            if #available(iOS 13.0, *) {
+                if attributes.isTranslucent || !CATransform3DIsIdentity(view.transform3D) {
+                    // If this view has any 3D effect applied, do not enter its subtree:
+                    return IgnoredElement(subtreeStrategy: .ignore)
+                }
+            }
+            // Otherwise, enter the subtree of this element, but do not consider it significant (`InvisibleElement`):
+            return InvisibleElement(subtreeStrategy: .record)
+        }
+
+        let labelRecorder = UILabelRecorder()
+        labelRecorder.builderOverride = { builder in
+            var builder = builder
+            builder.textAlignment = .init(horizontal: .center, vertical: .center)
+            builder.fontScalingEnabled = true
+            return builder
+        }
+
+        self.labelsRecorder = ViewTreeRecorder(nodeRecorders: [viewRecorder, labelRecorder])
         self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
     }
 
@@ -68,25 +85,10 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         return selectionRecorder.recordNodes(for: picker, in: context)
     }
 
-    /// Records `UILabel` nodes that hold titles of **selected** options - if picker defines N components, there will be N nodes returned.
+    /// Records `UILabel` nodes that hold titles of **selected** options.
     private func recordTitlesOfSelectedOption(in picker: UIPickerView, pickerAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
-        labelRecorder.dropPredicate = { _, labelAttributes in
-            // We consider option to be "selected" if it is displayed close enough to picker's geometry center
-            // and its `UILabel` is opaque:
-            let isNearCenter = abs(labelAttributes.frame.midY - pickerAttributes.frame.midY) < 10
-            let isForeground = labelAttributes.alpha == 1
-            let isSelectedOption = isNearCenter && isForeground
-            return !isSelectedOption // drop other options than selected one
-        }
-
-        labelRecorder.builderOverride = { builder in
-            var builder = builder
-            builder.textAlignment = .init(horizontal: .center, vertical: .center)
-            return builder
-        }
-
         var context = context
-        context.textObfuscator = InputTextObfuscator()
+        context.textObfuscator = context.selectionTextObfuscator
         return labelsRecorder.recordNodes(for: picker, in: context)
     }
 }
@@ -98,11 +100,7 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createShapeWireframe(
-                id: backgroundWireframeID,
-                frame: wireframeRect,
-                attributes: attributes
-            )
+            builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
         ]
     }
 }
