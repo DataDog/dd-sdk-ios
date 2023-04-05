@@ -71,6 +71,11 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: seconds * 2)
     }
 
+    func forEachPrivacyMode(do work: (SessionReplayPrivacy) throws -> Void) rethrows {
+        let modes: [SessionReplayPrivacy] = [.maskAll, .allowAll]
+        try modes.forEach { try work($0) }
+    }
+
     /// Puts two images side-by-side, adds titles and returns new, composite image.
     private func createSideBySideImage(_ image1: UIImage, _ image2: UIImage) -> UIImage {
         var leftRect = CGRect(origin: .zero, size: image1.size)
