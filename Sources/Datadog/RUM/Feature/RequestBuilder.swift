@@ -10,7 +10,7 @@ import DatadogInternal
 /// The RUM URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload RUM data.
 internal struct RequestBuilder: FeatureRequestBuilder {
-    /// The tracing intake.
+    /// A custom RUM intake.
     let customIntakeURL: URL?
 
     /// The RUM request body format.

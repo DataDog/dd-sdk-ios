@@ -9,24 +9,6 @@ import DatadogInternal
 import TestUtilities
 @testable import Datadog
 
-//extension RUMFeature {
-//    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-//    static func mockAny() -> RUMFeature { .mockWith() }
-//
-//    /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
-//    static func mockWith(
-//        configuration: RUMConfiguration = .mockAny(),
-//        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-//    ) -> RUMFeature {
-//        return RUMFeature(
-//            storage: .mockNoOp(),
-//            upload: .mockNoOp(),
-//            configuration: configuration,
-//            messageReceiver: messageReceiver
-//        )
-//    }
-//}
-
 extension DatadogCoreProxy {
     func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
         return try waitAndReturnEventsData(ofFeature: DatadogRUMFeature.name)
