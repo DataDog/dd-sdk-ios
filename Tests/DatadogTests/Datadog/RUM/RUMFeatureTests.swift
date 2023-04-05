@@ -160,4 +160,63 @@ class RUMFeatureTests: XCTestCase {
         let tagsItem = components?.queryItems?.first(where: { $0.name == "ddtags" })
         XCTAssertTrue(tagsItem?.value?.contains("variant:\(randomVariant)") == true)
     }
+
+    // MARK: - HTTP Payload
+
+    func testItUsesExpectedPayloadFormatForUploads() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            userInfoProvider: .mockAny(),
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        // Given
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+
+        core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { _, writer in
+            writer.write(value: RUMDataModelMock(attribute: "1st event"))
+            writer.write(value: RUMDataModelMock(attribute: "2nd event"))
+            writer.write(value: RUMDataModelMock(attribute: "3rd event"))
+        }
+
+        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+
+        // Expected payload format:
+        // ```
+        // event1JSON
+        // event2JSON
+        // event3JSON
+        // ```
+
+        let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
+        XCTAssertEqual((try eventMatchers[0].model() as RUMDataModelMock).attribute, "1st event")
+        XCTAssertEqual((try eventMatchers[1].model() as RUMDataModelMock).attribute, "2nd event")
+        XCTAssertEqual((try eventMatchers[2].model() as RUMDataModelMock).attribute, "3rd event")
+    }
 }
