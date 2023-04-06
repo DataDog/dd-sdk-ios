@@ -10,6 +10,7 @@ import DatadogInternal
 
 @testable import DatadogLogs
 @testable import Datadog
+@testable import DatadogCrashReporting
 
 class CrashLogReceiverTests: XCTestCase {
     func testReceiveCrashLog() throws {

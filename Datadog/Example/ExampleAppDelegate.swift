@@ -51,7 +51,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             .enableLogging(true)
             .enableTracing(true)
             .enableRUM(true)
-            .enableCrashReporting(using: DDCrashReportingPlugin())
             .trackBackgroundEvents()
 
         // Initialize Datadog SDK
@@ -86,6 +85,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                 customIntakeURL: Environment.readCustomTraceURL()
             )
         )
+
+        DatadogCrashReporter.initialize()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

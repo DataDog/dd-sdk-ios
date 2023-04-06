@@ -94,7 +94,6 @@
     [builder enableLogging:YES];
     [builder enableTracing:YES];
     [builder enableRUM:YES];
-    [builder enableCrashReportingUsing:[DDCrashReportingPlugin new]];
     [builder setWithEndpoint:[DDEndpoint us]];
     [builder setWithCustomLogsEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];

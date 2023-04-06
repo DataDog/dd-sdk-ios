@@ -75,13 +75,6 @@ let package = Package(
         .target(
             name: "_Datadog_Private"
         ),
-        .target(
-            name: "DatadogCrashReporting",
-            dependencies: [
-                .target(name: "Datadog"),
-                .product(name: "CrashReporter", package: "PLCrashReporter"),
-            ]
-        ),
 
         .target(
             name: "DatadogInternal",
@@ -142,6 +135,23 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogRUM/Tests"
+        ),
+
+        .target(
+            name: "DatadogCrashReporting",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .product(name: "CrashReporter", package: "PLCrashReporter"),
+            ],
+            path: "DatadogCrashReporting/Sources"
+        ),
+        .testTarget(
+            name: "DatadogCrashReportingTests",
+            dependencies: [
+                .target(name: "DatadogCrashReporting"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogCrashReporting/Tests"
         ),
 
         .target(

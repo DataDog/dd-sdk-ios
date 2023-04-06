@@ -10,8 +10,9 @@ import DatadogInternal
 import DatadogLogs
 
 @testable import Datadog
+@testable import DatadogCrashReporting
 
-class CrashReporterTests: XCTestCase {
+class DatadogCrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
     func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
@@ -26,7 +27,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -64,7 +65,7 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = crashContext.data
 
         // When
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -95,7 +96,7 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = crashContext.data
 
         // When
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -121,7 +122,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -149,7 +150,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -176,7 +177,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let initialCrashContext: CrashContext = .mockRandom()
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
             sender: CrashReportSenderMock(),
@@ -200,7 +201,7 @@ class CrashReporterTests: XCTestCase {
         plugin.didInjectContext = { expectation.fulfill() }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
@@ -240,7 +241,7 @@ class CrashReporterTests: XCTestCase {
         plugin.pendingCrashReport = crashReport
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -262,7 +263,7 @@ class CrashReporterTests: XCTestCase {
         expectation.expectedFulfillmentCount = 100
         expectation.assertForOverFulfill = false // to mitigate the call for initial context injection
 
-        // State mutated by the mock plugin implementation - `CrashReporter` ensures its thread safety
+        // State mutated by the mock plugin implementation - `DatadogCrashReporter` ensures its thread safety
         var mutableState: Bool = .random()
 
         let plugin = CrashReportingPluginMock()
@@ -276,7 +277,7 @@ class CrashReporterTests: XCTestCase {
         }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
@@ -313,7 +314,7 @@ class CrashReporterTests: XCTestCase {
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         // When
-        let crashReporter = CrashReporter(
+        let crashReporter = DatadogCrashReporter(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),

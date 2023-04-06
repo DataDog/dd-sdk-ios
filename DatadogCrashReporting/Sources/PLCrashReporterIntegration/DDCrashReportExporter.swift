@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import Datadog
 
 /// Exports intermediate `CrashReport` to `DDCrashReport`.
 ///

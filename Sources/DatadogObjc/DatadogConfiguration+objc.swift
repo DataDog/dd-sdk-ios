@@ -208,11 +208,6 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) {
-        _ = sdkBuilder.enableCrashReporting(using: crashReportingPlugin)
-    }
-
-    @objc
     public func set(endpoint: DDEndpoint) {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
     }

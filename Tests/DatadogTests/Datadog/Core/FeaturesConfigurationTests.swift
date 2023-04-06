@@ -352,59 +352,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertNil(custom.rum?.vitalsFrequency)
     }
 
-    // MARK: - Crash Reporting Configuration Tests
-
-    func testWhenCrashReportingIsDisabled() throws {
-        XCTAssertNil(
-            try FeaturesConfiguration(configuration: .mockWith(crashReportingPlugin: nil), appContext: .mockAny()).crashReporting,
-            "Feature configuration should not be available if the feature is disabled"
-        )
-    }
-
-    func testWhenRUMorLoggingFeaturesAreEnabled_thenCrashReportingFeatureCanBeEnabled() throws {
-        let random = [true, true, false].shuffled() // get at least one `true` on first two positions
-        let enableLogging = random[0]
-        let enableRUM = random[1]
-
-        XCTAssertNotNil(
-            try FeaturesConfiguration(
-                configuration: .mockWith(
-                    loggingEnabled: enableLogging,
-                    rumEnabled: enableRUM,
-                    crashReportingPlugin: CrashReportingPluginMock()
-                ),
-                appContext: .mockAny()
-            ).crashReporting,
-            """
-            When Logging is \(enableLogging ? "" : "dis")abled and RUM is \(enableRUM ? "" : "dis")abled,
-            then Crash Reporting should be enabled.
-            """
-        )
-    }
-
-    func testGivenRUMAndLoggingFeaturesDisabled_whenCrashReportingFeatureIsEnabled_itPrintsConsoleWarning() throws {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        _ = try FeaturesConfiguration(
-            configuration: .mockWith(
-                loggingEnabled: false,
-                rumEnabled: false,
-                crashReportingPlugin: CrashReportingPluginMock()
-            ),
-            appContext: .mockAny()
-        )
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
-            Use: `.enableLogging(true)` or `.enableRUM(true)`.
-            """
-        )
-    }
-
     func testLoggingSamplingRate() throws {
         let custom = try FeaturesConfiguration(
             configuration: .mockWith(

@@ -10,6 +10,7 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogRUM
+@testable import DatadogCrashReporting
 @testable import Datadog
 
 class RUMMonitorTests: XCTestCase {
@@ -1179,12 +1180,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // Given
-        let crashReporter = try XCTUnwrap(
-            CrashReporter(
-                core: core,
-                configuration: .mockAny()
-            )
-        )
+        DatadogCrashReporter.initialize(in: core)
+        let crashReporter = try XCTUnwrap(core.get(feature: DatadogCrashReporter.self))
 
         try core.register(feature: crashReporter)
 
