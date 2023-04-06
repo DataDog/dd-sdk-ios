@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import XCTest
 import DatadogInternal
 
 public class CoreLoggerMock: CoreLogger {
@@ -47,22 +48,31 @@ public class CoreLoggerMock: CoreLogger {
     public var criticalLog: RecordedLog? { criticalLogs.last }
 }
 
-/// `Telemtry` recording received telemetry.
+/// `Telemetry` recording received telemetry.
 public class TelemetryMock: Telemetry, CustomStringConvertible {
-    public private(set) var debugs: [String] = []
-    public private(set) var errors: [(message: String, kind: String?, stack: String?)] = []
+    public let expectation: XCTestExpectation?
+
+    @ReadWriteLock
+    public private(set) var messages: [TelemetryMessage] = []
+
+    @ReadWriteLock
     public private(set) var description: String = "Telemetry logs:"
 
-    public init() { }
-
-    public func debug(id: String, message: String) {
-        debugs.append(message)
-        description.append("\n- [debug] \(message)")
+    public init(expectation: XCTestExpectation? = nil) {
+        self.expectation = expectation
     }
 
-    public func error(id: String, message: String, kind: String?, stack: String?) {
-        errors.append((message: message, kind: kind, stack: stack))
-        description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+    public func send(telemetry: DatadogInternal.TelemetryMessage) {
+        messages.append(telemetry)
+
+        switch telemetry {
+        case .debug(_, let message):
+            description.append("\n- [debug] \(message)")
+        case .error(_, let message, let kind, let stack):
+            description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+        case .configuration(let configuration):
+            description.append("\n- [configuration] \(configuration)")
+        }
     }
 }
 

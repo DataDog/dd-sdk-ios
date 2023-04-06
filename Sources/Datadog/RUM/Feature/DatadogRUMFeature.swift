@@ -55,6 +55,11 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
                 customIntakeURL: configuration.customIntakeURL
             ),
             messageReceiver: CombinedFeatureMessageReceiver(
+                TelemetryReceiver(
+                    dateProvider: configuration.dateProvider,
+                    sampler: configuration.telemetrySampler,
+                    configurationExtraSampler: configuration.configurationTelemetrySampler
+                ),
                 ErrorMessageReceiver(monitor: monitor),
                 WebViewEventReceiver(
                     dateProvider: configuration.dateProvider

@@ -129,6 +129,9 @@ public class DatadogTracer: OTTracer {
 
                 try core.register(urlSessionHandler: handler)
             }
+
+            TelemetryCore(core: core)
+                .configuration(useTracing: true)
         } catch {
             consolePrint("\(error)")
         }

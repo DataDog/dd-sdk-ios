@@ -192,7 +192,7 @@ extension RUMConfiguration {
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         sessionSampler: Sampler = .mockKeepAll(),
         telemetrySampler: Sampler = .mockKeepAll(),
-        configurationTelemetrySampler: Sampler? = .mockKeepAll(),
+        configurationTelemetrySampler: Sampler = .mockKeepAll(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,

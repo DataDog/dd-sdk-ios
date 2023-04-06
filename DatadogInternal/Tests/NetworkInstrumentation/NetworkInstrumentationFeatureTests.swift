@@ -359,7 +359,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         handler.onInterceptionStart = {
             // Then
-            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            XCTAssertTrue($0.isFirstPartyRequest)
             notifyInterceptionStart.fulfill()
         }
 
@@ -390,7 +390,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         handler.onInterceptionStart = {
             // Then
-            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            XCTAssertTrue($0.isFirstPartyRequest)
             notifyInterceptionStart.fulfill()
         }
 
@@ -429,7 +429,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         handler.onInterceptionStart = {
             // Then
-            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            XCTAssertTrue($0.isFirstPartyRequest)
             notifyInterceptionStart.fulfill()
         }
 

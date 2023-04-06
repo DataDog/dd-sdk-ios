@@ -33,4 +33,9 @@ public enum FeatureMessage {
     /// The core will send updated context throught the bus. Do not send new context values
     /// from a Feature or Integration.
     case context(DatadogContext)
+
+    /// A telemtry message.
+    ///
+    /// The core can send telemtry data coming from all Features.
+    case telemetry(TelemetryMessage)
 }

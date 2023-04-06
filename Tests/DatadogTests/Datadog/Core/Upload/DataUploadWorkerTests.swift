@@ -380,13 +380,13 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.messages.count, 1)
 
-        XCTAssertEqual(
-            dd.telemetry.errors.first?.message,
-            "Data upload finished with status code: 500",
-            "An error should be send to `DD.telemetry`."
-        )
+        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
+            return XCTFail("An error should be send to `DD.telemetry`.")
+        }
+
+        XCTAssertEqual(message,"Data upload finished with status code: 500")
     }
 
     func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() {
@@ -416,13 +416,13 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.messages.count, 1)
 
-        XCTAssertEqual(
-            dd.telemetry.errors.first?.message,
-            #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#,
-            "An error should be send to `DD.telemetry`."
-        )
+        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
+            return XCTFail("An error should be send to `DD.telemetry`.")
+        }
+
+        XCTAssertEqual(message,#"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
     }
 
     func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() {
@@ -454,13 +454,13 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.errors.count, 1)
+        XCTAssertEqual(dd.telemetry.messages.count, 1)
 
-        XCTAssertEqual(
-            dd.telemetry.errors.first?.message,
-            #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#,
-            "An error should be send to `DD.telemetry`."
-        )
+        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
+            return XCTFail("An error should be send to `DD.telemetry`.")
+        }
+
+        XCTAssertEqual(message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
     }
 
     // MARK: - Tearing Down
