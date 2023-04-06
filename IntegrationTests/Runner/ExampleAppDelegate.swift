@@ -8,6 +8,7 @@ import UIKit
 import Datadog
 import DatadogLogs
 import DatadogTrace
+import DatadogRUM
 
 var logger: DatadogLogger!
 var tracer: OTTracer { DatadogTracer.shared() }
@@ -53,9 +54,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         appConfiguration.testScenario?.configureFeatures()
-
-        // Register RUMMonitor
-        Global.rum = RUMMonitor.shared()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

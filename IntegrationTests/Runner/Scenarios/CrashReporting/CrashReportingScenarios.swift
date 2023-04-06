@@ -4,9 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
-import DatadogCrashReporting
 import UIKit
+
+import Datadog
+import DatadogRUM
+import DatadogCrashReporting
 
 /// Scenario that launches single-view app which can cause a crash and/or upload the crash report to Datadog.
 /// It includes the condition determined by crash report file presence:

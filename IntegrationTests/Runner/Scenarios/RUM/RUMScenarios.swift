@@ -6,6 +6,7 @@
 
 import UIKit
 import DatadogInternal
+import DatadogRUM
 import Datadog
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
