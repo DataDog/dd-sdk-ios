@@ -7,6 +7,8 @@
 import Foundation
 import XCTest
 import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 class RUMInternalProxyTests: XCTestCase {
@@ -26,22 +28,35 @@ class RUMInternalProxyTests: XCTestCase {
     /// Creates `RUMMonitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableRUMMonitor() throws -> DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        return RUMMonitor(
+        let configuration: RUMConfiguration = .mockAny()
+
+        let monitor = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,
-                rumFeature: rumFeature
+                configuration: configuration
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rumFeature.configuration.dateProvider
+            dateProvider: configuration.dateProvider
         )
+
+        let instrumentation = RUMInstrumentation(
+            configuration: configuration.instrumentation,
+            dateProvider: configuration.dateProvider
+        )
+
+        let feature = DatadogRUMFeature(
+            monitor: monitor,
+            instrumentation: instrumentation,
+            requestBuilder: FeatureRequestBuilderMock(),
+            messageReceiver: NOPFeatureMessageReceiver()
+        )
+
+        try core.register(feature: feature)
+        return monitor
     }
 
     func testProxyAddLongTaskSendsLongTasks() throws {
         // Given
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
 
         let date = Date()
@@ -62,8 +77,6 @@ class RUMInternalProxyTests: XCTestCase {
 
     func testProxyRecordsPerformanceMetricsAreSent() throws {
         // Given
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
         let date: Date = .mockRandomInThePast()
 
         let monitor = try createTestableRUMMonitor()

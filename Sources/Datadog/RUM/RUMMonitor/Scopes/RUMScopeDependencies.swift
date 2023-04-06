@@ -7,8 +7,6 @@
 import Foundation
 import DatadogInternal
 
-internal typealias RUMSessionListener = (String, Bool) -> Void
-
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
     struct VitalsReaders {
@@ -18,7 +16,7 @@ internal struct RUMScopeDependencies {
         let refreshRate: ContinuousVitalReader
     }
 
-    let core: DatadogCoreProtocol
+    weak var core: DatadogCoreProtocol?
     let rumApplicationID: String
     let sessionSampler: Sampler
     let backgroundEventTrackingEnabled: Bool
@@ -38,28 +36,28 @@ internal struct RUMScopeDependencies {
 internal extension RUMScopeDependencies {
     init(
         core: DatadogCoreProtocol,
-        rumFeature: RUMFeature
+        configuration: RUMConfiguration
     ) {
         self.init(
             core: core,
-            rumApplicationID: rumFeature.configuration.applicationID,
-            sessionSampler: rumFeature.configuration.sessionSampler,
-            backgroundEventTrackingEnabled: rumFeature.configuration.backgroundEventTrackingEnabled,
-            frustrationTrackingEnabled: rumFeature.configuration.frustrationTrackingEnabled,
-            firstPartyHosts: rumFeature.configuration.firstPartyHosts,
+            rumApplicationID: configuration.applicationID,
+            sessionSampler: configuration.sessionSampler,
+            backgroundEventTrackingEnabled: configuration.backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: configuration.frustrationTrackingEnabled,
+            firstPartyHosts: configuration.firstPartyHosts,
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(
-                    viewEventMapper: rumFeature.configuration.viewEventMapper,
-                    errorEventMapper: rumFeature.configuration.errorEventMapper,
-                    resourceEventMapper: rumFeature.configuration.resourceEventMapper,
-                    actionEventMapper: rumFeature.configuration.actionEventMapper,
-                    longTaskEventMapper: rumFeature.configuration.longTaskEventMapper
+                    viewEventMapper: configuration.viewEventMapper,
+                    errorEventMapper: configuration.errorEventMapper,
+                    resourceEventMapper: configuration.resourceEventMapper,
+                    actionEventMapper: configuration.actionEventMapper,
+                    longTaskEventMapper: configuration.longTaskEventMapper
                 )
             ),
-            rumUUIDGenerator: rumFeature.configuration.uuidGenerator,
+            rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: CITestIntegration.active?.rumCITest,
             viewUpdatesThrottlerFactory: { RUMViewUpdatesThrottler() },
-            vitalsReaders: rumFeature.configuration.vitalsFrequency.map {
+            vitalsReaders: configuration.vitalsFrequency.map {
                 .init(
                     frequency: $0,
                     cpu: VitalCPUReader(),
@@ -67,7 +65,7 @@ internal extension RUMScopeDependencies {
                     refreshRate: VitalRefreshRateReader()
                 )
             },
-            onSessionStart: rumFeature.configuration.onSessionStart
+            onSessionStart: configuration.onSessionStart
         )
     }
 }

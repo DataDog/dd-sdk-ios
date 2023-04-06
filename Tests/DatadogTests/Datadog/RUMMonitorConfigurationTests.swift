@@ -30,18 +30,15 @@ class RUMMonitorConfigurationTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        let feature: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                applicationID: "rum-123",
-                sessionSampler: Sampler(samplingRate: 42.5)
-            )
-        )
-        core.register(feature: feature)
+        try RUMMonitor.initialize(in: core, configuration: .mockWith(
+            applicationID: "rum-123",
+            sessionSampler: Sampler(samplingRate: 42.5)
+        ))
 
-        let monitor = RUMMonitor.initialize(in: core).dd
+        let monitor = RUMMonitor.shared(in: core).dd
 
         let dependencies = monitor.applicationScope.dependencies
-        monitor.core.v1.scope(for: RUMFeature.self)?.eventWriteContext { context, _ in
+        monitor.core?.scope(for: DatadogRUMFeature.name)?.eventWriteContext { context, _ in
             DDAssertReflectionEqual(context.userInfo, self.userIno)
             XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
             XCTAssertEqual(context.carrierInfo, self.carrierInfo)

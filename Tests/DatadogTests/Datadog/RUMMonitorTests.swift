@@ -26,16 +26,30 @@ class RUMMonitorTests: XCTestCase {
 
     /// Creates `RUMMonitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor() throws -> DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        return RUMMonitor(
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
+        let monitor = RUMMonitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,
-                rumFeature: rumFeature
+                configuration: configuration
             ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rumFeature.configuration.dateProvider
+            dateProvider: configuration.dateProvider
         )
+
+        let instrumentation = RUMInstrumentation(
+            configuration: configuration.instrumentation,
+            dateProvider: configuration.dateProvider
+        )
+
+        let feature = DatadogRUMFeature(
+            monitor: monitor,
+            instrumentation: instrumentation,
+            requestBuilder: FeatureRequestBuilderMock(),
+            messageReceiver: NOPFeatureMessageReceiver()
+        )
+
+        try core.register(feature: feature)
+        return monitor
     }
 
     // MARK: - Sending RUM events
@@ -47,14 +61,9 @@ class RUMMonitorTests: XCTestCase {
             service: randomServiceName
         )
 
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        ))
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -74,14 +83,9 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingViewIdentifiedByStringKey() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        ))
         setGlobalAttributes(of: monitor)
 
         monitor.startView(key: "view1-key", name: "View1")
@@ -100,9 +104,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -130,9 +131,6 @@ class RUMMonitorTests: XCTestCase {
         guard #available(iOS 13, *) else {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
-
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -166,9 +164,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -234,9 +229,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURL() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -256,9 +248,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURLString() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -279,15 +268,10 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testLoadingResourceWithURL_thenMarksFirstPartyURLs() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                // .mockRandom always uses foo.com
-                firstPartyHosts: .init(["foo.com": [.datadog]])
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            // .mockRandom always uses foo.com
+            firstPartyHosts: .init(["foo.com": [.datadog]])
+        ))
         setGlobalAttributes(of: monitor)
 
         let url: URL = .mockRandom()
@@ -304,14 +288,10 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                firstPartyHosts: .init(["foo.com": [.datadog]])
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            // .mockRandom always uses foo.com
+            firstPartyHosts: .init(["foo.com": [.datadog]])
+        ))
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -327,9 +307,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenTappingButton() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -368,9 +345,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -423,14 +397,9 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenIssuingErrors_whileScrolling() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
+        ))
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -481,17 +450,12 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: RUMUserActionScope.Constants.discreteActionTimeoutDuration
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: RUMUserActionScope.Constants.discreteActionTimeoutDuration
             )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        ))
         setGlobalAttributes(of: monitor)
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
@@ -538,9 +502,6 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
 
@@ -602,14 +563,9 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        ))
 
         monitor.startView(viewController: mockView)
         monitor.addUserAction(type: .tap, name: "1st action")
@@ -646,9 +602,6 @@ class RUMMonitorTests: XCTestCase {
                 ]
             )
         )
-
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
 
         let monitor = try createTestableRUMMonitor()
 
@@ -695,9 +648,6 @@ class RUMMonitorTests: XCTestCase {
             carrierInfo: .mockWith(carrierName: "Carrier Name", radioAccessTechnology: .GPRS)
         )
 
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
@@ -733,9 +683,6 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Attributes
 
     func testSendingAttributes() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
 
@@ -809,17 +756,12 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Custom Timings
 
     func testStartingView_thenAddingTiming() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        ))
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
@@ -839,17 +781,13 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenAddingFeatureFlags() throws {
         // Given
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
+        ))
 
-        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
 
         // When
@@ -857,7 +795,7 @@ class RUMMonitorTests: XCTestCase {
         let flagValue: Bool = .mockRandom()
         monitor.addFeatureFlagEvaluation(name: flagName, value: flagValue)
 
-        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let rumEventMatchers = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMViewEvent.self)
         let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
         let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
@@ -865,17 +803,13 @@ class RUMMonitorTests: XCTestCase {
 
     func testGivenActiveViewWithFlags_thenAddingError_sendsFlags() throws {
         // Given
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: Date(),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
+        ))
 
-        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
         let flagName: String = .mockRandom()
         let flagValue: Bool = .mockRandom()
@@ -885,7 +819,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addError(message: .mockAny())
 
         // Then
-        let rumErrorEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
+        let rumErrorEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMErrorEvent.self)
         let lastError = try XCTUnwrap(rumErrorEvents.last)
         let flags = try XCTUnwrap(lastError.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo[flagName] as? Bool, flagValue)
@@ -893,7 +827,7 @@ class RUMMonitorTests: XCTestCase {
 
     func testGivenAnActiveViewWithFlags_startingANewView_resetsFlags() throws {
         // Given
-        let rum: RUMFeature = .mockWith(
+        let monitor = try createTestableRUMMonitor(
             configuration: .mockWith(
                 dateProvider: RelativeDateProvider(
                     startingFrom: Date(),
@@ -901,9 +835,6 @@ class RUMMonitorTests: XCTestCase {
                 )
             )
         )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
         monitor.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
 
@@ -912,7 +843,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockSecondView)
 
         // Then
-        let rumEventMatchers = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let rumEventMatchers = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMViewEvent.self)
         let lastViewUpdate = try XCTUnwrap(rumEventMatchers.last)
         let flags = try XCTUnwrap(lastViewUpdate.featureFlags)
         XCTAssertEqual(flags.featureFlagsInfo.count, 0)
@@ -924,21 +855,16 @@ class RUMMonitorTests: XCTestCase {
         let keepAllSessions: Bool = .random()
         let expectation = self.expectation(description: "onSessionStart is called")
 
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                sessionSampler: keepAllSessions ? .mockKeepAll() : .mockRejectAll(),
-                onSessionStart: { sessionId, isDiscarded in
-                    XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
-                    XCTAssertEqual(isDiscarded, !keepAllSessions)
-                    expectation.fulfill()
-                }
-            )
-        )
-        core.register(feature: rum)
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            sessionSampler: keepAllSessions ? .mockKeepAll() : .mockRejectAll(),
+            onSessionStart: { sessionId, isDiscarded in
+                XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+                XCTAssertEqual(isDiscarded, !keepAllSessions)
+                expectation.fulfill()
+            }
+        ))
 
-        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
-
         waitForExpectations(timeout: 0.5)
     }
 
@@ -955,17 +881,12 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // When
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: deviceTime,
-                    advancingBySeconds: 1 // short advancing, so all events will be collected less than a minute after `deviceTime`
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: deviceTime,
+                advancingBySeconds: 1 // short advancing, so all events will be collected less than a minute after `deviceTime`
             )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        ))
 
         monitor.startView(viewController: mockView)
         monitor.addUserAction(type: .tap, name: .mockAny())
@@ -1023,21 +944,16 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // When
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: sdkInitDate.addingTimeInterval(10),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: sdkInitDate.addingTimeInterval(10),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        ))
         monitor.startView(viewController: mockView)
 
         // Then
-        let viewEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let viewEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMViewEvent.self)
         let view = try XCTUnwrap(viewEvents.first)
 
         XCTAssertEqual(view.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
@@ -1060,21 +976,17 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // When
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: sdkInitDate.addingTimeInterval(10),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: sdkInitDate.addingTimeInterval(10),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
+        ))
 
-        let monitor = try createTestableRUMMonitor()
         monitor.startView(viewController: mockView)
 
         // Then
-        let viewEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMViewEvent.self)
+        let viewEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMViewEvent.self)
         let view = try XCTUnwrap(viewEvents.first)
 
         XCTAssertEqual(view.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
@@ -1096,17 +1008,12 @@ class RUMMonitorTests: XCTestCase {
             )
         )
 
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: sdkInitDate.addingTimeInterval(1),
-                    advancingBySeconds: 1
-                )
+        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
+            dateProvider: RelativeDateProvider(
+                startingFrom: sdkInitDate.addingTimeInterval(1),
+                advancingBySeconds: 1
             )
-        )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
+        ))
 
         // When
         monitor.addUserAction(type: .custom, name: "A1")
@@ -1148,7 +1055,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Data Scrubbing
 
     func testModifyingEventsBeforeTheyGetSend() throws {
-        let rum: RUMFeature = .mockWith(
+        let monitor = try createTestableRUMMonitor(
             configuration: .mockWith(
                 viewEventMapper: { viewEvent in
                     if viewEvent.view.url == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
@@ -1187,9 +1094,6 @@ class RUMMonitorTests: XCTestCase {
                 dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
             )
         )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
@@ -1220,7 +1124,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
-        let rum: RUMFeature = .mockWith(
+        let monitor = try createTestableRUMMonitor(
             configuration: .mockWith(
                 resourceEventMapper: { _ in nil },
                 actionEventMapper: { event in
@@ -1230,9 +1134,6 @@ class RUMMonitorTests: XCTestCase {
                 longTaskEventMapper: { _ in nil }
             )
         )
-        core.register(feature: rum)
-
-        let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
@@ -1275,9 +1176,6 @@ class RUMMonitorTests: XCTestCase {
             )
         )
 
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         // Given
         let crashReporter = try XCTUnwrap(
             CrashReporter(
@@ -1302,11 +1200,9 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Thread safety
 
-    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
-        let monitor = RUMMonitor.initialize(in: core)
+    func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        let monitor = RUMMonitor.shared(in: core)
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -1334,7 +1230,7 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() {
+    func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() throws {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
         defer { consolePrint = { print($0) } }
@@ -1343,8 +1239,15 @@ class RUMMonitorTests: XCTestCase {
         let core = NOPDatadogCore()
 
         // when
-        let monitor = RUMMonitor.initialize(in: core)
+        XCTAssertThrowsError(try RUMMonitor.initialize(in: core, configuration: .mockAny()))
+        // then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+        )
 
+        // when
+        let monitor = RUMMonitor.shared(in: core)
         // then
         XCTAssertEqual(
             printFunction.printedMessage,
@@ -1353,55 +1256,11 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(monitor is DDNoopRUMMonitor)
     }
 
-    func testGivenRUMFeatureDisabled_whenInitializingRUMMonitor_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
+    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
         // given
-        XCTAssertNil(core.feature(RUMFeature.self))
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
-        // when
-        let monitor = RUMMonitor.initialize(in: core)
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `RUMMonitor.initialize()` produces a non-functional monitor, as the RUM feature is disabled."
-        )
-        XCTAssertTrue(monitor is DDNoopRUMMonitor)
-    }
-
-    func testGivenRUMMonitorInitialized_whenInitializingAnotherTime_itPrintsError() {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        // given
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
-        Global.rum = RUMMonitor.initialize(in: core)
-        defer { Global.rum = DDNoopRUMMonitor() }
-
-        // when
-        _ = RUMMonitor.initialize(in: core)
-
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: The `RUMMonitor` instance was already created. Use existing `Global.rum` instead of initializing the `RUMMonitor` another time.
-            """
-        )
-    }
-
-    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() {
-        // given
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
-        Global.rum = RUMMonitor.initialize(in: core)
+        Global.rum = RUMMonitor.shared(in: core)
         defer { Global.rum = DDNoopRUMMonitor() }
 
         let monitor = Global.rum.dd
@@ -1418,86 +1277,15 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNil(monitor.debugging)
     }
 
-    func testGivenRUMAutoInstrumentationEnabled_whenRUMMonitorIsNotRegistered_itPrintsWarningsOnEachEvent() throws {
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration
-                .builderUsing(rumApplicationID: .mockAny(), clientToken: .mockAny(), environment: .mockAny())
-                .trackURLSession(firstPartyHosts: [.mockAny()])
-                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock(result: .init(name: .mockAny())))
-                .trackUIKitRUMActions()
-                .build()
-        )
-        defer { Datadog.flushAndDeinitialize() }
-
-        let dd = DD.mockWith(logger: CoreLoggerMock())
-        defer { dd.reset() }
-
-        // Given
-        let urlInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
-        let resourcesHandler = urlInstrumentation.interceptor.handler
-        let rumInstrumentation = try XCTUnwrap(defaultDatadogCore.v1.feature(RUMInstrumentation.self))
-        let viewsHandler = rumInstrumentation.viewsHandler
-        let userActionsHandler = try XCTUnwrap(rumInstrumentation.userActionsAutoInstrumentation?.handler)
-
-        // When
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
-
-        // Then
-        resourcesHandler.notify_taskInterceptionCompleted(interception: URLSessionTaskInterception(request: .mockAny(), isFirstParty: .mockAny()))
-        XCTAssertEqual(
-            dd.logger.warnLog?.message,
-            """
-            RUM Resource was completed, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
-            Make sure `Global.rum = RUMMonitor.initialize()` is called before any network request is send.
-            """
-        )
-
-        viewsHandler.notify_viewDidAppear(viewController: mockView, animated: .mockAny())
-        XCTAssertEqual(
-            dd.logger.warnLog?.message,
-            """
-            RUM View was started, but no `RUMMonitor` is registered on `Global.rum`. RUM instrumentation will not work.
-            Make sure `Global.rum = RUMMonitor.initialize()` is called before any view appears.
-            """
-        )
-
-        let mockWindow = UIWindow(frame: .zero)
-        let mockUIControl = UIControl()
-        mockWindow.addSubview(mockUIControl)
-
-        userActionsHandler.notify_sendEvent(
-            application: .shared,
-            event: .mockWith(touch: .mockWith(view: mockUIControl))
-        )
-
-        userActionsHandler.notify_sendEvent(
-            application: .shared,
-            event: .mockWith(press: .mockWith(view: mockUIControl))
-        )
-
-        XCTAssertEqual(
-            dd.logger.warnLog?.message,
-            """
-            RUM Action was detected, but no `RUMMonitor` is registered on `Global.rum`. RUM auto instrumentation will not work.
-            Make sure `Global.rum = RUMMonitor.initialize()` is called before any action happens.
-            """
-        )
-    }
-
     // MARK: - Internal attributes
 
     func testHandlingInternalTimestampAttribute() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
         var mockCommand = RUMCommandMock()
         mockCommand.attributes = [
             CrossPlatformAttributes.timestampInMilliseconds: Int64(1_000)
         ]
 
-        let monitor = try XCTUnwrap(RUMMonitor.initialize(in: core) as? RUMMonitor)
+        let monitor = try XCTUnwrap(createTestableRUMMonitor() as? RUMMonitor)
 
         let transformedCommand = monitor.transform(command: mockCommand)
         XCTAssertTrue(transformedCommand.attributes.isEmpty)

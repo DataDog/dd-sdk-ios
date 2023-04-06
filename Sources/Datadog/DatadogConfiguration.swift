@@ -50,52 +50,6 @@ extension Datadog {
             case never
         }
 
-        /// Determines the server for uploading RUM events.
-        public enum RUMEndpoint {
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us
-            /// Europe based servers.
-            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu
-            /// Gov servers.
-            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case gov
-            /// User-defined server.
-            case custom(url: String)
-
-            internal var url: String {
-                let endpoint = "api/v2/rum"
-                switch self {
-                case .us1, .us: return "https://browser-intake-datadoghq.com/" + endpoint
-                case .us3: return "https://browser-intake-us3-datadoghq.com/" + endpoint
-                case .us5: return "https://browser-intake-us5-datadoghq.com/" + endpoint
-                case .eu1, .eu: return "https://browser-intake-datadoghq.eu/" + endpoint
-                case .ap1: return "https://browser-intake-ap1-datadoghq.com/" + endpoint
-                case .us1_fed, .gov: return "https://browser-intake-ddog-gov.com/" + endpoint
-                case let .custom(url: url): return url
-                }
-            }
-        }
-
         /// The RUM Application ID.
         private(set) var rumApplicationID: String?
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.

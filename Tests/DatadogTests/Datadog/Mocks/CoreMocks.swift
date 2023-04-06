@@ -102,19 +102,13 @@ extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
 }
 
-extension Datadog.Configuration.RUMEndpoint {
-    static func mockRandom() -> Self {
-        return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed, .us, .eu, .gov, .custom(url: "http://example.com/api/")].randomElement()!
-    }
-}
-
 extension FeaturesConfiguration {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
         common: Common = .mockAny(),
         logging: Logging? = .mockAny(),
-        rum: RUM? = .mockAny(),
+        rum: RUMConfiguration? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
         urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
         tracingEnabled: Bool = .mockAny()
@@ -192,36 +186,35 @@ extension FeaturesConfiguration.Logging {
     }
 }
 
-extension FeaturesConfiguration.RUM {
+extension RUMConfiguration {
     static func mockAny() -> Self { mockWith() }
 
     static func mockWith(
-        uploadURL: URL = .mockAny(),
         applicationID: String = .mockAny(),
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         sessionSampler: Sampler = .mockKeepAll(),
         telemetrySampler: Sampler = .mockKeepAll(),
-        configurationTelemetrySampler: Sampler = .mockKeepAll(),
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        configurationTelemetrySampler: Sampler? = .mockKeepAll(),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        instrumentation: FeaturesConfiguration.RUM.Instrumentation? = nil,
+        instrumentation: Instrumentation = .init(),
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener(),
+        onSessionStart: RUMSessionListener? = nil,
         firstPartyHosts: FirstPartyHosts = .init(),
         vitalsFrequency: TimeInterval? = 0.5,
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider = SystemDateProvider(),
+        customIntakeURL: URL? = nil
     ) -> Self {
         return .init(
-            uploadURL: uploadURL,
             applicationID: applicationID,
+            uuidGenerator: uuidGenerator,
             sessionSampler: sessionSampler,
             telemetrySampler: telemetrySampler,
             configurationTelemetrySampler: configurationTelemetrySampler,
-            uuidGenerator: uuidGenerator,
             viewEventMapper: viewEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
@@ -233,7 +226,8 @@ extension FeaturesConfiguration.RUM {
             onSessionStart: onSessionStart,
             firstPartyHosts: firstPartyHosts,
             vitalsFrequency: vitalsFrequency,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            customIntakeURL: customIntakeURL
         )
     }
 }

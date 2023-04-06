@@ -250,7 +250,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            configuration.rum?.uploadURL,
+            configuration.rum?.customIntakeURL,
             randomCustomEndpoint,
             "When custom endpoint is set it should override `DatadogSite`"
         )
@@ -279,9 +279,9 @@ class FeaturesConfigurationTests: XCTestCase {
             ),
             appContext: .mockAny()
         )
-        XCTAssertNotNil(viewsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation!.longTaskThreshold)
+        XCTAssertNotNil(viewsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation.longTaskThreshold)
 
         let actionsConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
@@ -293,9 +293,9 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
 
-        XCTAssertNotNil(actionsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation!.longTaskThreshold)
+        XCTAssertNotNil(actionsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation.longTaskThreshold)
 
         let longTaskConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
@@ -307,9 +307,9 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
 
-        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation!.longTaskThreshold)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
+        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation.longTaskThreshold)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
     }
 
     func testMobileVitalsFrequency() throws {
@@ -426,7 +426,6 @@ class FeaturesConfigurationTests: XCTestCase {
         ])
         let expectedSDKInternalURLs: Set<String> = [
             randomDatadogEndpoint.endpoint.absoluteString,
-            randomCustomRUMEndpoint?.absoluteString ?? randomDatadogEndpoint.rumEndpoint.url
         ]
 
         func createConfiguration(

@@ -199,11 +199,7 @@ internal final class DatadogCore {
 
     /// A list of upload units of currently registered Features.
     private var allUploads: [FeatureUpload] {
-        let v1Uploads = [
-            feature(RUMFeature.self)?.upload,
-        ].compactMap { $0 }
-        let v2Uploads = stores.values.map { $0.upload }
-        return v1Uploads + v2Uploads
+        stores.values.map { $0.upload }
     }
 
     /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK

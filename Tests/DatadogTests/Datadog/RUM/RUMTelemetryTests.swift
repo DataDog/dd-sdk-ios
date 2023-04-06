@@ -22,8 +22,7 @@ class RUMTelemetryTests: XCTestCase {
             )
         )
 
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        try? RUMMonitor.initialize(in: core, configuration: .mockAny())
     }
 
     override func tearDown() {

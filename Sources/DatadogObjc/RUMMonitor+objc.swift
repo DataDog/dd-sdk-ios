@@ -237,7 +237,7 @@ public class DDRUMMonitor: NSObject {
 
     @objc
     override public convenience init() {
-        self.init(swiftRUMMonitor: RUMMonitor.initialize())
+        self.init(swiftRUMMonitor: RUMMonitor.shared())
     }
 
     @objc

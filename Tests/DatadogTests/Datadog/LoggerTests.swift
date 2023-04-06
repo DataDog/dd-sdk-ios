@@ -27,6 +27,34 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
+    /// Creates `RUMMonitor` instance for tests.
+    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
+        let monitor = RUMMonitor(
+            core: core,
+            dependencies: RUMScopeDependencies(
+                core: core,
+                configuration: configuration
+            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            dateProvider: configuration.dateProvider
+        )
+
+        let instrumentation = RUMInstrumentation(
+            configuration: configuration.instrumentation,
+            dateProvider: configuration.dateProvider
+        )
+
+        let feature = DatadogRUMFeature(
+            monitor: monitor,
+            instrumentation: instrumentation,
+            requestBuilder: FeatureRequestBuilderMock(),
+            messageReceiver: ErrorMessageReceiver(monitor: monitor)
+        )
+
+        try core.register(feature: feature)
+        return monitor
+    }
+
     // MARK: - Customizing Logger
 
     func testSendingLogWithDefaultLogger() throws {
@@ -550,12 +578,12 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        let applicationID: String = .mockRandom()
+        try RUMMonitor.initialize(in: core, configuration: .mockWith(applicationID: applicationID))
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor.initialize(in: core)
+        Global.rum = RUMMonitor.shared(in: core)
         Global.rum.startView(viewController: mockView)
         Global.rum.startUserAction(type: .tap, name: .mockAny())
         defer { Global.rum = DDNoopRUMMonitor() }
@@ -567,7 +595,7 @@ class LoggerTests: XCTestCase {
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
         logMatcher.assertValue(
             forKeyPath: RUMContextAttributes.IDs.applicationID,
-            equals: rum.configuration.applicationID
+            equals: applicationID
         )
         logMatcher.assertValue(
             forKeyPath: RUMContextAttributes.IDs.sessionID,
@@ -587,19 +615,9 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
-        core.register(feature: rum)
-
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: SystemDateProvider()
-        )
+        Global.rum = try createTestableRUMMonitor()
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -631,19 +649,9 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
-        core.register(feature: rum)
-
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: SystemDateProvider()
-        )
+        Global.rum = try createTestableRUMMonitor()
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -681,19 +689,9 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
-        core.register(feature: rum)
-
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: SystemDateProvider()
-        )
+        Global.rum = try createTestableRUMMonitor()
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -727,19 +725,9 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let rum: RUMFeature = .mockWith(messageReceiver: ErrorMessageReceiver())
-        core.register(feature: rum)
-
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        Global.rum = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: SystemDateProvider()
-        )
+        Global.rum = try createTestableRUMMonitor()
         Global.rum.startView(viewController: mockView)
         defer { Global.rum = DDNoopRUMMonitor() }
 
@@ -752,7 +740,7 @@ class LoggerTests: XCTestCase {
         ])
 
         // then
-        let errorEvents = core.waitAndReturnEvents(of: RUMFeature.self, ofType: RUMErrorEvent.self)
+        let errorEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMErrorEvent.self)
         let error1 = try XCTUnwrap(errorEvents.first)
         XCTAssertEqual(error1.error.message, "error message")
         XCTAssertEqual(error1.error.source, .logger)

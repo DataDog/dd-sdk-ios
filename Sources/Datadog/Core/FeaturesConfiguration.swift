@@ -42,34 +42,6 @@ internal struct FeaturesConfiguration {
         let remoteLoggingSampler: Sampler
     }
 
-    struct RUM {
-        struct Instrumentation {
-            let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
-            let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
-            let longTaskThreshold: TimeInterval?
-        }
-
-        let uploadURL: URL
-        let applicationID: String
-        let sessionSampler: Sampler
-        let telemetrySampler: Sampler
-        let configurationTelemetrySampler: Sampler?
-        let uuidGenerator: RUMUUIDGenerator
-        let viewEventMapper: RUMViewEventMapper?
-        let resourceEventMapper: RUMResourceEventMapper?
-        let actionEventMapper: RUMActionEventMapper?
-        let errorEventMapper: RUMErrorEventMapper?
-        let longTaskEventMapper: RUMLongTaskEventMapper?
-        /// RUM auto instrumentation configuration, `nil` if not enabled.
-        let instrumentation: Instrumentation?
-        let backgroundEventTrackingEnabled: Bool
-        let frustrationTrackingEnabled: Bool
-        let onSessionStart: RUMSessionListener?
-        let firstPartyHosts: FirstPartyHosts
-        let vitalsFrequency: TimeInterval?
-        let dateProvider: DateProvider
-    }
-
     struct URLSessionAutoInstrumentation {
         /// First party hosts defined by the user with custom tracing header types.
         let userDefinedFirstPartyHosts: FirstPartyHosts
@@ -100,7 +72,7 @@ internal struct FeaturesConfiguration {
     /// Logging feature configuration or `nil` if the feature is disabled.
     let logging: Logging?
     /// RUM feature configuration or `nil` if the feature is disabled.
-    let rum: RUM?
+    let rum: RUMConfiguration?
     /// `URLSession` auto instrumentation configuration, `nil` if not enabled.
     let urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
     /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
@@ -119,17 +91,11 @@ extension FeaturesConfiguration {
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
         var logging: Logging?
-        var rum: RUM?
+        var rum: RUMConfiguration?
         var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
         var crashReporting: CrashReporting?
 
         tracingEnabled = configuration.tracingEnabled
-
-        var rumEndpoint = configuration.datadogEndpoint.rumEndpoint.url
-        if let customRUMEndpoint = configuration.customRUMEndpoint {
-            // If `.set(customRUMEndpoint:)` API was used, it should override RUM endpoint
-            rumEndpoint = customRUMEndpoint.absoluteString
-        }
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
@@ -178,7 +144,7 @@ extension FeaturesConfiguration {
         }
 
         if configuration.rumEnabled {
-            let instrumentation = RUM.Instrumentation(
+            let instrumentation = RUMConfiguration.Instrumentation(
                 uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
                 uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
                 longTaskThreshold: configuration.rumLongTaskDurationThreshold
@@ -190,13 +156,12 @@ extension FeaturesConfiguration {
             }
 
             if let rumApplicationID = configuration.rumApplicationID {
-                rum = RUM(
-                    uploadURL: try ifValid(endpointURLString: rumEndpoint),
+                rum = RUMConfiguration(
                     applicationID: rumApplicationID,
+                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
                     configurationTelemetrySampler: configurationSampler,
-                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     viewEventMapper: configuration.rumViewEventMapper,
                     resourceEventMapper: configuration.rumResourceEventMapper,
                     actionEventMapper: configuration.rumActionEventMapper,
@@ -208,7 +173,8 @@ extension FeaturesConfiguration {
                     onSessionStart: configuration.rumSessionsListener,
                     firstPartyHosts: configuration.firstPartyHosts ?? .init(),
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
-                    dateProvider: dateProvider
+                    dateProvider: dateProvider,
+                    customIntakeURL: configuration.customRUMEndpoint
                 )
             } else {
                 let error = ProgrammerError(
@@ -227,7 +193,6 @@ extension FeaturesConfiguration {
                     userDefinedFirstPartyHosts: firstPartyHosts,
                     sdkInternalURLs: [
                         common.site.endpoint.absoluteString,
-                        rumEndpoint
                     ],
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
 
@@ -274,19 +239,6 @@ extension FeaturesConfiguration {
         self.rum = rum
         self.urlSessionAutoInstrumentation = urlSessionAutoInstrumentation
         self.crashReporting = crashReporting
-    }
-}
-
-extension DatadogSite {
-    internal var rumEndpoint: Datadog.Configuration.RUMEndpoint {
-        switch self {
-        case .us1: return .us1
-        case .us3: return .us3
-        case .us5: return .us5
-        case .eu1: return .eu1
-        case .ap1: return .ap1
-        case .us1_fed: return .us1_fed
-        }
     }
 }
 

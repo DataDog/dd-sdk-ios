@@ -7,12 +7,6 @@
 import Foundation
 import DatadogInternal
 
-internal typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
-internal typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
-internal typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
-internal typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
-internal typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
-
 /// The `EventMapper` for RUM events.
 internal struct RUMEventsMapper {
     let viewEventMapper: RUMViewEventMapper?
