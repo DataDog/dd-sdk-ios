@@ -44,15 +44,6 @@
       enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
-      <MacroExpansion>
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
-            BuildableName = "DatadogTests.xctest"
-            BlueprintName = "DatadogTests tvOS"
-            ReferencedContainer = "container:Datadog.xcodeproj">
-         </BuildableReference>
-      </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "IS_RUNNING_UNIT_TESTS"
@@ -174,8 +165,7 @@
       </CodeCoverageTargets>
       <Testables>
          <TestableReference
-            skipped = "NO"
-            testExecutionOrdering = "random">
+            skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
@@ -221,6 +211,26 @@
                BlueprintIdentifier = "D23F8E9A29DDCD38001CFAE8"
                BuildableName = "DatadogRUMTests tvOS.xctest"
                BlueprintName = "DatadogRUMTests tvOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
+               BuildableName = "DatadogCrashReportingTests.xctest"
+               BlueprintName = "DatadogCrashReportingTests tvOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3CE11A2629F7BE1B00202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>

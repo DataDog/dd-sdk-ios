@@ -60,7 +60,6 @@ extension Datadog {
         private(set) var tracingEnabled: Bool
         private(set) var rumEnabled: Bool
         private(set) var serverDateProvider: ServerDateProvider?
-        private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
         /// If `DatadogSite` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
         private(set) var datadogEndpoint: DatadogSite
@@ -138,7 +137,6 @@ extension Datadog {
                     loggingEnabled: true,
                     tracingEnabled: true,
                     rumEnabled: rumApplicationID != nil,
-                    crashReportingPlugin: nil,
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: .us1,
@@ -567,23 +565,6 @@ extension Datadog {
             /// - Parameter mobileVitalsFrequency: `.average` by default.
             public func set(mobileVitalsFrequency: VitalsFrequency) -> Builder {
                 configuration.mobileVitalsFrequency = mobileVitalsFrequency
-                return self
-            }
-
-            // MARK: - Crash Reporting Configuration
-
-            /// Enables the crash reporting feature.
-            ///
-            /// To enable Datadog crash reporting, configure this option by passing the `crashReportingPlugin`.
-            /// The plugin must be obtained from `DatadogCrashReporting` library:
-            ///
-            ///         import DatadogCrashReporting
-            ///
-            ///         .enableCrashReporting(using: DDCrashReportingPlugin())
-            ///
-            /// - Parameter crashReportingPlugin: `nil` by default (Datadog crash reporting is disabled by default)
-            public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder {
-                configuration.crashReportingPlugin = crashReportingPlugin
                 return self
             }
 

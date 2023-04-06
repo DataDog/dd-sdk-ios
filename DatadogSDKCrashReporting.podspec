@@ -19,9 +19,9 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '11.0'
 
   s.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => s.version.to_s }
-  s.static_framework = true
+  # s.static_framework = true
 
-  s.source_files = "Sources/DatadogCrashReporting/**/*.swift"
-  s.dependency 'DatadogSDK', s.version.to_s
+  s.source_files = "DatadogCrashReporting/Sources/**/*.swift"
+  s.dependency 'DatadogInternal', s.version.to_s
   s.dependency 'PLCrashReporter', '~> 1.11.0'
 end

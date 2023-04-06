@@ -7,10 +7,10 @@
 import Foundation
 import DatadogInternal
 
-/* public */ internal class CrashReporter: DatadogFeature {
-    /* public */ static let name = "crash-reporter"
+public final class DatadogCrashReporter: DatadogFeature {
+    public static let name = "crash-reporter"
 
-    /* public */ let messageReceiver: FeatureMessageReceiver
+    public let messageReceiver: FeatureMessageReceiver
 
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
@@ -22,18 +22,30 @@ import DatadogInternal
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let sender: CrashReportSender
 
-    convenience init?(
-        core: DatadogCoreProtocol,
-        configuration: FeaturesConfiguration.CrashReporting
+    /// Initializes the Datadog Crash Reporter.
+    public static func initialize(
+        plugin: DDCrashReportingPluginType = DDCrashReportingPlugin(),
+        in core: DatadogCoreProtocol = defaultDatadogCore
     ) {
-        let contextProvider = CrashContextProvider()
+        do {
+            let contextProvider = CrashContextProvider()
 
-        self.init(
-            crashReportingPlugin: configuration.crashReportingPlugin,
-            crashContextProvider: contextProvider,
-            sender: MessageBusSender(core: core),
-            messageReceiver: contextProvider
-        )
+            let reporter = DatadogCrashReporter(
+                crashReportingPlugin: plugin,
+                crashContextProvider: contextProvider,
+                sender: MessageBusSender(core: core),
+                messageReceiver: contextProvider
+            )
+
+            try core.register(feature: reporter)
+
+            reporter.sendCrashReportIfFound()
+
+            TelemetryCore(core: core)
+                .configuration(trackErrors: true)
+        } catch {
+            consolePrint("\(error)")
+        }
     }
 
     init(
@@ -100,7 +112,7 @@ import DatadogInternal
     /// Note: this `JSONEncoder` must have the same configuration as the `JSONEncoder` used later for writing payloads to uploadable files.
     /// Otherwise the format of data read and uploaded from crash report context will be different than the format of data retrieved from the user
     /// and written directly to uploadable file.
-    private let crashContextEncoder: JSONEncoder = .default()
+    private let crashContextEncoder: JSONEncoder = .dd.default()
     /// JSON decoder used for reading `CrashContext` from JSON `Data` injected to crash report. 
     private let crashContextDecoder = JSONDecoder()
 

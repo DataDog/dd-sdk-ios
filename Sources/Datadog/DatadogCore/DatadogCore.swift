@@ -206,9 +206,6 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
-        // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
-        get(feature: CrashReporter.self)?.deinitialize()
-
         // Deallocate all Features and their storage & upload units:
         v1Features = [:]
         stores = [:]

@@ -4,8 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import CrashReporter
-import Datadog
 
 internal extension PLCrashReporterConfig {
     /// `PLCR` configuration used for `DatadogCrashReporting`

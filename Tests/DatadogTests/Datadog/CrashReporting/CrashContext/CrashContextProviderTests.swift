@@ -13,6 +13,7 @@ import DatadogInternal
 import TestUtilities
 
 @testable import DatadogRUM
+@testable import DatadogCrashReporting
 @testable import Datadog
 
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating

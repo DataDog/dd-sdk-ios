@@ -9,14 +9,15 @@ import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
+@testable import DatadogCrashReporting
 @testable import Datadog
 
-extension CrashReporter {
+extension DatadogCrashReporter {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp(
             core: DatadogCoreProtocol = NOPDatadogCore(),
             crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
-    ) -> CrashReporter {
+    ) -> Self {
         return .mockWith(
             integration: MessageBusSender(core: core),
             crashReportingPlugin: crashReportingPlugin
@@ -28,7 +29,7 @@ extension CrashReporter {
         crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
         crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-    ) -> CrashReporter {
+    ) -> Self {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
@@ -177,7 +178,7 @@ extension CrashContext {
         )
     }
 
-    var data: Data { try! JSONEncoder.default().encode(self) }
+    var data: Data { try! JSONEncoder.dd.default().encode(self) }
 }
 
 internal extension DDCrashReport {

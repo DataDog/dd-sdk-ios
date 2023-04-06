@@ -43,19 +43,12 @@ internal struct FeaturesConfiguration {
         let remoteLoggingSampler: Sampler
     }
 
-    struct CrashReporting {
-        /// The `DDCrashReportingPluginType` implementation provided by `DatadogCrashReporting` library.
-        let crashReportingPlugin: DDCrashReportingPluginType
-    }
-
     /// Configuration common to all features.
     let common: Common
     /// Logging feature configuration or `nil` if the feature is disabled.
     let logging: Logging?
     /// RUM feature configuration or `nil` if the feature is disabled.
     let rum: RUMConfiguration?
-    /// Crash Reporting feature configuration or `nil` if the feature was not enabled.
-    let crashReporting: CrashReporting?
     /// Tracing feature enabled.
     let tracingEnabled: Bool
 }
@@ -71,7 +64,6 @@ extension FeaturesConfiguration {
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
         var logging: Logging?
         var rum: RUMConfiguration?
-        var crashReporting: CrashReporting?
 
         tracingEnabled = configuration.tracingEnabled
 
@@ -189,24 +181,9 @@ extension FeaturesConfiguration {
             consolePrint("\(error)")
         }
 
-        if let crashReportingPlugin = configuration.crashReportingPlugin {
-            if configuration.loggingEnabled || configuration.rumEnabled {
-                crashReporting = CrashReporting(crashReportingPlugin: crashReportingPlugin)
-            } else {
-                let error = ProgrammerError(
-                    description: """
-                    To use `.enableCrashReporting(using:)` either RUM or Logging must be enabled.
-                    Use: `.enableLogging(true)` or `.enableRUM(true)`.
-                    """
-                )
-                consolePrint("\(error)")
-            }
-        }
-
         self.common = common
         self.logging = logging
         self.rum = rum
-        self.crashReporting = crashReporting
     }
 }
 

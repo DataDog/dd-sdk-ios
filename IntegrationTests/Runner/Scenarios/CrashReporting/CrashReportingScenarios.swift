@@ -49,7 +49,10 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
 
         _ = builder
             .trackUIKitRUMViews(using: CustomPredicate())
-            .enableCrashReporting(using: DDCrashReportingPlugin())
+    }
+
+    func configureFeatures() {
+        DatadogCrashReporter.initialize()
     }
 }
 
@@ -58,6 +61,9 @@ final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseSc
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .enableRUM(false) // disable RUM, so the crash report is sent with Logging
-            .enableCrashReporting(using: DDCrashReportingPlugin())
+    }
+
+    func configureFeatures() {
+        DatadogCrashReporter.initialize()
     }
 }

@@ -139,7 +139,7 @@ private struct FeatureScopeProxy: FeatureScope {
 
 private class FeatureScopeInterceptor {
     struct InterceptingWriter: Writer {
-        static let jsonEncoder = JSONEncoder.default()
+        static let jsonEncoder = JSONEncoder.dd.default()
 
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
