@@ -57,33 +57,30 @@ class UILabelRecorderTests: XCTestCase {
         XCTAssertEqual(builder.font, label.font)
     }
 
-    func testWhenRecordingInDifferentPrivacyModes() throws {
-        // Given
-        label.text = .mockRandom()
-
-        // When
-        let context: ViewTreeRecordingContext = .mockWith(
-            recorder: .mockWith(privacy: .mockRandom()),
-            textObfuscator: TextObfuscatorMock(),
-            selectionTextObfuscator: mockRandomTextObfuscator(),
-            sensitiveTextObfuscator: mockRandomTextObfuscator()
-        )
-        let semantics = try XCTUnwrap(recorder.semantics(of: label, with: viewAttributes, in: context))
-
-        // Then
-        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UILabelWireframesBuilder)
-        XCTAssertTrue(
-            (builder.textObfuscator as? TextObfuscatorMock) === (context.textObfuscator as? TextObfuscatorMock),
-            "Labels should use default text obfuscator specific to current privacy mode"
-        )
-    }
-
     func testWhenViewIsNotOfExpectedType() {
         // When
         let view = UITextField()
 
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    func testTextObfuscationInDifferentPrivacyModes() throws {
+        // When
+        label.text = .mockRandom()
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        func textObfuscator(in privacyMode: SessionReplayPrivacy) throws -> TextObfuscating {
+            return try recorder
+                .semantics(of: label, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
+                .expectWireframeBuilder(ofType: UILabelWireframesBuilder.self)
+                .textObfuscator
+        }
+
+        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace

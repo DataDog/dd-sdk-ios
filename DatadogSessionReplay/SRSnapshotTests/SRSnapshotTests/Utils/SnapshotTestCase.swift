@@ -72,7 +72,7 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     func forEachPrivacyMode(do work: (SessionReplayPrivacy) throws -> Void) rethrows {
-        let modes: [SessionReplayPrivacy] = [.maskAll, .allowAll]
+        let modes: [SessionReplayPrivacy] = [.maskAll, .allowAll, .maskUserInput]
         try modes.forEach { try work($0) }
     }
 

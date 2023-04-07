@@ -8,7 +8,22 @@ import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
     /// An option for customizing wireframes builder created by this recorder.
-    var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 }
+    var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder
+    var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
+
+    init(
+        builderOverride: @escaping (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 },
+        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
+            switch context.recorder.privacy {
+            case .allowAll:         return context.textObfuscators.nop
+            case .maskAll:          return context.textObfuscators.spacePreservingMask
+            case .maskUserInput:    return context.textObfuscators.nop
+            }
+        }
+    ) {
+        self.builderOverride = builderOverride
+        self.textObfuscator = textObfuscator
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let label = view as? UILabel else {
@@ -37,7 +52,7 @@ internal class UILabelRecorder: NodeRecorder {
             textAlignment: nil,
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
-            textObfuscator: context.textObfuscator,
+            textObfuscator: textObfuscator(context),
             wireframeRect: textFrame
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builderOverride(builder))
