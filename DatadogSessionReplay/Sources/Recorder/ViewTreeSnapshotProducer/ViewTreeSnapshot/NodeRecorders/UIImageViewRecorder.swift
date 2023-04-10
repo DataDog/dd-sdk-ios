@@ -28,6 +28,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
         },
         shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
             if #available(iOS 13.0, *), let image = imageView.image {
+                if let button = imageView.superview as? UIButton, button.buttonType == .custom {
+                    return true
+                }
                 return image.isSymbolImage || image.isBundled || image.isAlwaysTemplate
             } else {
                 return false
@@ -144,7 +147,6 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 tintColor: tintColor
             )
         }
-
         if let contentFrame = contentFrame {
             wireframes.append(
                 builder.createImageWireframe(
