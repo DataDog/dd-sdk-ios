@@ -20,15 +20,15 @@ internal struct UIImageViewRecorder: NodeRecorder {
 
     internal init(
         tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
-            if #available(iOS 13.0, *) {
-                return imageView.image?.isSymbolImage == true ? imageView.tintColor : nil
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isSymbolImage || image.isAlwaysTemplate ? imageView.tintColor : nil
             } else {
                 return nil
             }
         },
         shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
-            if #available(iOS 13.0, *) {
-                return imageView.image?.isSymbolImage == true || imageView.image?.description.isBundled == true
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isSymbolImage || image.isBundled || image.isAlwaysTemplate
             } else {
                 return false
             }
@@ -159,8 +159,12 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
     }
 }
 
-fileprivate extension String {
+fileprivate extension UIImage {
     var isBundled: Bool {
-        return contains("named(")
+        return description.contains("named(")
+    }
+
+    var isAlwaysTemplate: Bool {
+        return renderingMode == .alwaysTemplate
     }
 }
