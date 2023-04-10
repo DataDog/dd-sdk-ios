@@ -9,11 +9,18 @@ import UIKit
 internal class ImagesViewController: UIViewController {
     @IBOutlet weak var customButton: UIButton!
     @IBOutlet weak var customImageView: UIImageView!
+    @IBOutlet weak var tabBar: UITabBar!
+    @IBOutlet weak var navigationBar: UINavigationBar!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        customButton.setBackgroundImage(UIImage(color: .lightGray), for: .normal)
+        let color = UIColor(white: 0, alpha: 0.05)
+        customButton.setBackgroundImage(UIImage(color: color), for: .normal)
+
+        tabBar.backgroundImage = UIImage(color: color)
+        tabBar.selectedItem = tabBar.items?.first
+        navigationBar.setBackgroundImage(UIImage(color: color), for: .default)
 
         customImageView.image = UIImage(named: "dd_logo")?.withRenderingMode(.alwaysTemplate)
     }

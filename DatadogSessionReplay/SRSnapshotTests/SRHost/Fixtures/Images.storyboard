@@ -260,6 +260,8 @@
                     <connections>
                         <outlet property="customButton" destination="KxN-zV-mGU" id="zX2-X5-J8J"/>
                         <outlet property="customImageView" destination="vKz-Ut-7bS" id="aJg-Sy-OrB"/>
+                        <outlet property="navigationBar" destination="ftc-4B-7Pp" id="Cz6-ki-X2T"/>
+                        <outlet property="tabBar" destination="raw-wh-zEy" id="TaQ-44-tXa"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
