@@ -28,7 +28,6 @@ internal struct UIImageViewRecorder: NodeRecorder {
             } else {
                 return false
             }
-
         }
     ) {
         self.tintColorProvider = tintColorProvider
@@ -176,7 +175,6 @@ fileprivate extension UIImage {
 }
 
 fileprivate extension UIImageView {
-
     var isSystemControlBackground: Bool {
         return isButtonBackground || isBarBackground
     }
@@ -196,7 +194,9 @@ fileprivate extension UIImageView {
     }
 
     var isBarBackground: Bool {
-        guard let superview = superview else { return false }
+        guard let superview = superview else {
+            return false
+        }
         let superViewType = "\(type(of: superview))"
         return superViewType == "_UIBarBackground"
     }
