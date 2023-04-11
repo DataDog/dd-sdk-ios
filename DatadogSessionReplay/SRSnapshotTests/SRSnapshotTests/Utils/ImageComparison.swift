@@ -77,10 +77,11 @@ private func DDSaveSnapshot(image: UIImage, into location: ImageLocation, file: 
 
 /// Compares image against the snapshot saved in given location.
 private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
-    _DDEvaluateAssertion(message: "Image is visibly different than snapshot", file: file, line: line) {
+    let imageName = snapshotLocation.url.lastPathComponent
+    _DDEvaluateAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
         let oldImageData = try Data(contentsOf: snapshotLocation.url)
         guard let oldImage = UIImage(data: oldImageData) else {
-            throw DDAssertError.expectedFailure("Failed to create `UIImage()` from snapshot data")
+            throw DDAssertError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
         }
 
         // Check if both images are identical (precission: 1) or their difference is not

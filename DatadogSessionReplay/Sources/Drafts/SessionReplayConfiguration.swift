@@ -41,4 +41,19 @@ public enum SessionReplayPrivacy {
     ///
     /// This is the default content policy.
     case maskAll
+
+    /// Mask input elements, but record all other content as it is.
+    /// When uing this option: all user input and selected values (text fields, switches, pickers, segmented controls etc.) will be masked,
+    /// but static text (e.g. in labels) will be not.
+    case maskUserInput
+}
+
+internal extension SessionReplayPrivacy {
+    /// If input elements should be masked in this privacy mode.
+    var shouldMaskInputElements: Bool {
+        switch self {
+        case .maskAll, .maskUserInput: return true
+        case .allowAll: return false
+        }
+    }
 }

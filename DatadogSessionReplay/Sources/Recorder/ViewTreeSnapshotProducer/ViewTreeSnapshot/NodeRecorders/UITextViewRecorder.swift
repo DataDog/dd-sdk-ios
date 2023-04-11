@@ -7,6 +7,18 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
+        if isSensitiveText {
+            return context.textObfuscators.fixLegthMask
+        }
+
+        switch context.recorder.privacy {
+        case .allowAll:         return context.textObfuscators.nop
+        case .maskAll:          return context.textObfuscators.spacePreservingMask
+        case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+        }
+    }
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let textView = view as? UITextView else {
             return nil
@@ -14,13 +26,16 @@ internal struct UITextViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
+
+        let isSensitiveText = textView.isSecureTextEntry || textView.textContentType == .emailAddress || textView.textContentType == .telephoneNumber
+
         let builder = UITextViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: textView),
             attributes: attributes,
             text: textView.text,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: context.textObfuscator,
+            textObfuscator: textObfuscator(context, isSensitiveText),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

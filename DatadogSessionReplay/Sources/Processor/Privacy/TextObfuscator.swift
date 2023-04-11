@@ -13,8 +13,18 @@ internal protocol TextObfuscating {
     func mask(text: String) -> String
 }
 
+/// Available text obfuscators.
+internal struct TextObfuscators {
+    /// Text obfuscator that returns original text (no obfuscation).
+    let nop = NOPTextObfuscator()
+    /// Text obfuscator that replaces each character with `"x"` mask.
+    let spacePreservingMask = SpacePreservingMaskObfuscator()
+    /// Text obfuscator that replaces whole text with fixed-length `"xxx"` mask (three asterics).
+    let fixLegthMask = FixLegthMaskObfuscator()
+}
+
 /// Text obfuscator which replaces all readable characters with space-preserving `"x"` characters.
-internal struct TextObfuscator: TextObfuscating {
+internal struct SpacePreservingMaskObfuscator: TextObfuscating {
     /// The character to mask text with.
     let maskCharacter: UnicodeScalar = "x"
 
@@ -39,23 +49,16 @@ internal struct TextObfuscator: TextObfuscating {
     }
 }
 
-/// Text obfuscator which replaces the whole text with fixed-width `"xxx"` mask value.
-///
-/// It should be used **by default** for input elements that bring sensitive information (such as passwords).
-/// It shuold be used for input elements that can't safely use space-preserving masking (such as date pickers, where selection can be still
-/// inferred by counting the number of x-es in the mask).
-internal struct SensitiveTextObfuscator: TextObfuscating {
+/// Text obfuscator which replaces entire text with fix-length `"xxx"` mask value.
+internal struct FixLegthMaskObfuscator: TextObfuscating {
     private static let maskedString = "xxx"
 
     func mask(text: String) -> String { Self.maskedString }
 }
 
-/// Text obfuscator which only returns the original text.
+/// Text obfuscator which returns the original text.
 internal struct NOPTextObfuscator: TextObfuscating {
     func mask(text: String) -> String {
         return text
     }
 }
-
-/// Text obfuscator which only returns the original text.
-internal let nopTextObfuscator: TextObfuscating = NOPTextObfuscator()

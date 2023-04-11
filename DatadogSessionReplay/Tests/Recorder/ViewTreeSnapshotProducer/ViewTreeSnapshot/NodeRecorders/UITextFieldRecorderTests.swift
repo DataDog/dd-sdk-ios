@@ -58,56 +58,39 @@ class UITextFieldRecorderTests: XCTestCase {
         XCTAssertEqual(builder.font, textField.font)
     }
 
-    func testWhenRecordingInDifferentPrivacyModes() throws {
-        // Given
-        let textField1 = UITextField(frame: .mockAny())
-        let textField2 = UITextField(frame: .mockAny())
-        let textField3 = UITextField(frame: .mockAny())
-        textField1.text = .mockRandom()
-        textField2.text = .mockRandom()
-        textField3.text = .mockRandom()
-
-        textField2.isSecureTextEntry = true
-        textField3.textContentType = [.telephoneNumber, .emailAddress].randomElement()!
-
-        // When
-        viewAttributes = .mock(fixture: .visible())
-        let context: ViewTreeRecordingContext = .mockWith(
-            recorder: .mockWith(privacy: .mockRandom()),
-            textObfuscator: TextObfuscatorMock(),
-            selectionTextObfuscator: mockRandomTextObfuscator(),
-            sensitiveTextObfuscator: TextObfuscatorMock()
-        )
-
-        let semantics1 = try XCTUnwrap(recorder.semantics(of: textField1, with: viewAttributes, in: context))
-        let semantics2 = try XCTUnwrap(recorder.semantics(of: textField2, with: viewAttributes, in: context))
-        let semantics3 = try XCTUnwrap(recorder.semantics(of: textField3, with: viewAttributes, in: context))
-
-        // Then
-        let builder1 = try XCTUnwrap(semantics1.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
-        let builder2 = try XCTUnwrap(semantics2.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
-        let builder3 = try XCTUnwrap(semantics3.nodes.first?.wireframesBuilder as? UITextFieldWireframesBuilder)
-
-        XCTAssertTrue(
-            (builder1.textObfuscator as? TextObfuscatorMock) === (context.textObfuscator as? TextObfuscatorMock),
-            "Non-sensitive text fields should use default text obfuscator specific to current privacy mode"
-        )
-        XCTAssertTrue(
-            (builder2.textObfuscator as? TextObfuscatorMock) === (context.sensitiveTextObfuscator as? TextObfuscatorMock),
-            "Sensitive text fields should use sensitive text obfuscator no matter of privacy mode"
-        )
-        XCTAssertTrue(
-            (builder3.textObfuscator as? TextObfuscatorMock) === (context.sensitiveTextObfuscator as? TextObfuscatorMock),
-            "Sensitive text fields should use sensitive text obfuscator no matter of privacy mode"
-        )
-    }
-
     func testWhenViewIsNotOfExpectedType() {
         // When
         let view = UILabel()
 
         // Then
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
+    }
+
+    func testTextObfuscationInDifferentPrivacyModes() throws {
+        // When
+        textField.text = .mockRandom()
+        viewAttributes = .mock(fixture: .visible())
+
+        // Then
+        func textObfuscator(in privacyMode: SessionReplayPrivacy) throws -> TextObfuscating {
+            return try recorder
+                .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
+                .expectWireframeBuilder(ofType: UITextFieldWireframesBuilder.self)
+                .textObfuscator
+        }
+
+        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
+
+        // When
+        oneOf([
+            { self.textField.isSecureTextEntry = true },
+            { self.textField.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+        ])
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
     }
 }
 // swiftlint:enable opening_brace

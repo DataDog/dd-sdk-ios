@@ -8,7 +8,13 @@ import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
     /// An option for overriding default semantics from parent recorder.
-    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
+
+    init(
+        semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+    ) {
+        self.semanticsOverride = semanticsOverride
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard attributes.isVisible else {
