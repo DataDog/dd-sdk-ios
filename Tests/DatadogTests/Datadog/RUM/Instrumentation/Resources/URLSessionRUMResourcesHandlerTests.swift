@@ -49,7 +49,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: "x-datadog-origin"), "rum")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
@@ -82,7 +82,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: "x-datadog-origin"), "rum")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
@@ -117,18 +117,6 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStartCommand.url, taskInterception.request.url?.absoluteString)
         XCTAssertEqual(resourceStartCommand.httpMethod, RUMMethod(httpMethod: request.httpMethod))
         XCTAssertNil(resourceStartCommand.spanContext)
-    }
-
-    func testGivenTaskInterception_whenInterceptionStarts_itEnablesRUM2APM() throws {
-        // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
-        XCTAssertFalse(interception.rum2APM)
-
-        // When
-        handler.interceptionDidStart(interception: interception)
-
-        // Then
-        XCTAssertTrue(interception.rum2APM)
     }
 
     func testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource() throws {

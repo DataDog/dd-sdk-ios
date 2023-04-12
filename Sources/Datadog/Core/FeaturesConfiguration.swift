@@ -167,6 +167,7 @@ extension FeaturesConfiguration {
             }
         }
 
+        // TODO: RUMM-2538 Update this wording with final V2 APIs
         if configuration.firstPartyHosts != nil && !configuration.tracingEnabled && !configuration.rumEnabled {
             let error = ProgrammerError(
                 description: """

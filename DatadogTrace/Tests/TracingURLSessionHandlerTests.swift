@@ -218,8 +218,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        let interception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: false)
-        interception.enableRUM2APM()
+        var request: URLRequest = .mockAny()
+        request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
         interception.register(response: .mockAny(), error: nil)
 
         // When

@@ -21,4 +21,9 @@ public enum TracingHTTPHeaders {
     /// To make sure that the Agent keeps the trace.
     /// It is used both in Tracing and RUM features.
     public static let samplingPriorityField = "x-datadog-sampling-priority"
+
+    /// The Datadog origin of the Trace.
+    ///
+    /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
+    public static let originField = "x-datadog-origin"
 }

@@ -68,7 +68,6 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
-        interception.enableRUM2APM()
 
         subscriber?.process(
             command: RUMStartResourceCommand(
@@ -152,7 +151,7 @@ extension DistributedTracing {
             case .datadog:
                 writer = HTTPHeadersWriter(sampler: sampler)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
-                request.setValue("rum", forHTTPHeaderField: "x-datadog-origin")
+                request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
                 writer = OTelHTTPHeadersWriter(
                     sampler: sampler,
