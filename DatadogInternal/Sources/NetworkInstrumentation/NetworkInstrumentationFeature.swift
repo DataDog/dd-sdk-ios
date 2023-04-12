@@ -61,6 +61,11 @@ extension NetworkInstrumentationFeature {
     /// - Returns: The modified request.
     func urlSession(_ session: URLSession, intercept request: URLRequest) -> URLRequest {
         let headerTypes = firstPartyHosts(for: session).tracingHeaderTypes(for: request.url)
+
+        guard !headerTypes.isEmpty else {
+            return request
+        }
+
         return handlers.reduce(request) {
             $1.modify(request: $0, headerTypes: headerTypes)
         }
@@ -86,6 +91,10 @@ extension NetworkInstrumentationFeature {
 
             if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
                 interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
+            }
+
+            if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
+                interception.register(origin: origin)
             }
 
             self.interceptions[task] = interception
