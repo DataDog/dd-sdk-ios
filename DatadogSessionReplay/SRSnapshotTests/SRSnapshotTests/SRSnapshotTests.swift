@@ -203,4 +203,16 @@ final class SRSnapshotTests: SnapshotTestCase {
             )
         }
     }
+
+    func testUnsupportedView() throws {
+        show(fixture: .unsupportedViews)
+
+        let image = try takeSnapshot(configuration: .init(privacy: .allowAll))
+        DDAssertSnapshotTest(
+            newImage: image,
+
+            snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-allowAll-privacy"),
+            record: recordingMode
+        )
+    }
 }

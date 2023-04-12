@@ -11,22 +11,19 @@ import SwiftUI
 internal struct UnsupportedViewRecorder: NodeRecorder {
     // swiftlint:disable opening_brace
     private let unsupportedViewsPredicates: [(UIView) -> Bool] = [
-        {
-            if #available(iOS 13.0, *) {
-                return $0 is (any View)
-            } else {
-                return false
-            }
-        },
         { $0 is UIProgressView },
         { $0 is UIWebView },
         { $0 is WKWebView },
-        { $0 is UIActivityIndicatorView }
+        { $0 is UIActivityIndicatorView },
+        {
+            let typeString = String(reflecting: type(of: $0))
+            return typeString.contains("SwiftUI") && !typeString.contains("_UIHostingView")
+        }
     ]
     // swiftlint:enable opening_brace
     
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard unsupportedViewsPredicates.reduce(false, { $0 || $1(view) }) else {
+        guard unsupportedViewsPredicates.contains(where: { $0(view) }) else {
             return nil
         }
         guard attributes.isVisible else {
@@ -35,7 +32,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(for: view),
-            unsupportedClassName: String(describing: type(of: view)),
+            unsupportedClassName: String(reflecting: type(of: view)).trimLongClassName(),
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -62,8 +59,14 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
                 borderColor: UIColor.lightGray.cgColor,
                 borderWidth: 1,
                 backgroundColor: UIColor(white: 0, alpha: 0.05).cgColor,
-                cornerRadius: 8
+                cornerRadius: 4
             )
         ]
+    }
+}
+
+fileprivate extension String {
+    func trimLongClassName() -> String {
+        return components(separatedBy: ".").last ?? self
     }
 }
