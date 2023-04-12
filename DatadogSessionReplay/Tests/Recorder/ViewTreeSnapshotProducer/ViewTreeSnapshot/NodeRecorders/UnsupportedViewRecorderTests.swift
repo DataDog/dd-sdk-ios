@@ -12,9 +12,13 @@ import SwiftUI
 @available(iOS 13.0, *)
 class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
-    
-    private let unsupportedViews: [UIView] = [UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView()]
-    private let expectedUnsupportedViewsClassNames = ["UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView"]
+
+    private let unsupportedViews: [UIView] = [
+        UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView(), UIHostingController(rootView: Text("Test")).view
+    ].compactMap { $0 }
+    private let expectedUnsupportedViewsClassNames = [
+        "UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView", "SwiftUI.Text"
+    ]
     private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
 
     /// `ViewAttributes` simulating common attributes of the view.

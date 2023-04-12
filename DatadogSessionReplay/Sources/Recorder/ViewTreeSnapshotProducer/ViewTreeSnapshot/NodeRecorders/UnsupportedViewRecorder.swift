@@ -15,13 +15,10 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         { $0 is UIWebView },
         { $0 is WKWebView },
         { $0 is UIActivityIndicatorView },
-        {
-            let typeString = String(reflecting: type(of: $0))
-            return typeString.contains("SwiftUI") && !typeString.contains("_UIHostingView")
-        }
+        { String(reflecting: type(of: $0)).contains("SwiftUI") }
     ]
     // swiftlint:enable opening_brace
-    
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard unsupportedViewsPredicates.contains(where: { $0(view) }) else {
             return nil
@@ -32,7 +29,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(for: view),
-            unsupportedClassName: String(reflecting: type(of: view)).trimLongClassName(),
+            unsupportedClassName: String(reflecting: type(of: view)).extractGenericClassNameIfNeeded(),
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -66,7 +63,12 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
 }
 
 fileprivate extension String {
-    func trimLongClassName() -> String {
-        return components(separatedBy: ".").last ?? self
+    func extractGenericClassNameIfNeeded() -> String {
+        let regex = try? NSRegularExpression(pattern: "<([^>]*)>[^<>]*$", options: [])
+        if let match = regex?.firstMatch(in: self, range: NSRange(startIndex..., in: self)),
+            let range = Range(match.range(at: 1), in: self) {
+            return String(self[range])
+        }
+        return self
     }
 }
