@@ -6,12 +6,17 @@
 
 import XCTest
 import WebKit
+import SwiftUI
 @testable import DatadogSessionReplay
 
-class UnsupportedViewwRecorderTests: XCTestCase {
+@available(iOS 13.0, *)
+class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
-    /// The view under test.
-    private let views = [UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView()]
+    
+    private let unsupportedViews: [UIView] = [UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView()]
+    private let expectedUnsupportedViewsClassNames = ["UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView"]
+    private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
+
     /// `ViewAttributes` simulating common attributes of the view.
     private var viewAttributes: ViewAttributes = .mockAny()
 
@@ -20,33 +25,29 @@ class UnsupportedViewwRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .invisible)
 
         // Then
-        try views.forEach { view in
+        try unsupportedViews.forEach { view in
             let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
             XCTAssertTrue(semantics is InvisibleElement)
         }
-    }
-
-    func testWhenViewIsVisibleAndHasSomeAppearance() throws {
-        // When
-        viewAttributes = .mock(fixture: .visible(.someAppearance))
-
-        // Then
-        try views.forEach { view in
-            let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
-            XCTAssertTrue(semantics is SpecificElement)
-            XCTAssertTrue(semantics.nodes.first?.wireframesBuilder is UnsupportedViewWireframesBuilder)
+        otherViews.forEach { view in
+            XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         }
     }
 
-    func testWhenViewIsVisibleButHasNoAppearance() throws {
+    func testWhenViewIsVisible() throws {
         // When
-        viewAttributes = .mock(fixture: .visible(.noAppearance))
+        viewAttributes = .mock(fixture: .visible([.noAppearance, .someAppearance].randomElement()!))
 
         // Then
-        try views.forEach { view in
+        try unsupportedViews.enumerated().forEach { index, view in
             let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
             XCTAssertTrue(semantics is SpecificElement)
             XCTAssertEqual(semantics.subtreeStrategy, .ignore)
+            let wireframeBuilder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UnsupportedViewWireframesBuilder)
+            XCTAssertEqual(wireframeBuilder.unsupportedClassName, expectedUnsupportedViewsClassNames[index])
+        }
+        otherViews.forEach { view in
+            XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         }
     }
 }
