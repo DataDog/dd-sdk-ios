@@ -146,14 +146,13 @@ extension DistributedTracing {
         let spanID = traceIDGenerator.generate()
 
         var request = request
-        // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
-        request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
-
         headerTypes.forEach {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
                 writer = HTTPHeadersWriter(sampler: sampler)
+                // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
+                request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
                 writer = OTelHTTPHeadersWriter(
                     sampler: sampler,

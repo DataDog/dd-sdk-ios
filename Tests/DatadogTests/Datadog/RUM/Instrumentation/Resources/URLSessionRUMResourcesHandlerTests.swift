@@ -28,7 +28,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
     private lazy var handler = createHandler(rumAttributesProvider: nil)
 
-    func testGivenFirstPartyInterception_withSampledTrace_itInjectTraceHeaders() throws {
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders() throws {
         // Given
         let handler = createHandler(
             distributedTracing: .init(
@@ -41,27 +41,79 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When
         let request = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [
-                .datadog,
-                .b3,
-                .b3multi,
-                .tracecontext
-            ]
+            headerTypes: [.datadog]
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "1")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+    }
+
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectB3TraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+    }
+
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3multi]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
         XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
         XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField), "0000000000000001")
         XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+    }
+
+    func testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders() throws {
+        // Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.tracecontext]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-01")
     }
 
-    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectTraceHeaders() throws {
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders() throws {
         /// Given
         let handler = createHandler(
             distributedTracing: .init(
@@ -74,23 +126,75 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         // When
         let request = handler.modify(
             request: .mockWith(url: "https://www.example.com"),
-            headerTypes: [
-                .datadog,
-                .b3,
-                .b3multi,
-                .tracecontext
-            ]
+            headerTypes: [.datadog]
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders() throws {
+        /// Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockRejectAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "0")
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders() throws {
+        /// Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockRejectAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.b3multi]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
         XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "0")
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "0")
+    }
+
+    func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders() throws {
+        /// Given
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockRejectAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+
+        // When
+        let request = handler.modify(
+            request: .mockWith(url: "https://www.example.com"),
+            headerTypes: [.tracecontext]
+        )
+
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-00")
     }
 
