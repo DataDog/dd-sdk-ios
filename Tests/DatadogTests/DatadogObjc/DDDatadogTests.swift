@@ -80,7 +80,7 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        let userInfo = try XCTUnwrap(core?.userInfoProvider)
+        let userInfo = try XCTUnwrap(core?.userInfoPublisher)
 
         DDDatadog.setUserInfo(
             id: "id",
@@ -92,19 +92,19 @@ class DDDatadogTests: XCTestCase {
                 "attribute-string": "string value"
             ]
         )
-        XCTAssertEqual(userInfo.value.id, "id")
-        XCTAssertEqual(userInfo.value.name, "name")
-        XCTAssertEqual(userInfo.value.email, "email")
-        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: AnyEncodable])
+        XCTAssertEqual(userInfo.current.id, "id")
+        XCTAssertEqual(userInfo.current.name, "name")
+        XCTAssertEqual(userInfo.current.email, "email")
+        let extraInfo = try XCTUnwrap(userInfo.current.extraInfo as? [String: AnyEncodable])
         XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")
 
         DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-        XCTAssertNil(userInfo.value.id)
-        XCTAssertNil(userInfo.value.name)
-        XCTAssertNil(userInfo.value.email)
-        XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
+        XCTAssertNil(userInfo.current.id)
+        XCTAssertNil(userInfo.current.name)
+        XCTAssertNil(userInfo.current.email)
+        XCTAssertTrue(userInfo.current.extraInfo.isEmpty)
 
         Datadog.flushAndDeinitialize()
     }

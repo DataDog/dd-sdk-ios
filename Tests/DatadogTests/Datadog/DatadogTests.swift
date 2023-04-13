@@ -123,7 +123,6 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: CrashReporter.self))
             // verify integrations:
             XCTAssertTrue(DD.telemetry is RUMTelemetry, "When RUM is enabled, telemetry monitor should be set")
@@ -142,7 +141,6 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: CrashReporter.self))
             // verify integrations:
             XCTAssertTrue(DD.telemetry is RUMTelemetry)
@@ -160,7 +158,6 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: CrashReporter.self))
             XCTAssertTrue(DD.telemetry is RUMTelemetry)
         }
@@ -169,7 +166,6 @@ class DatadogTests: XCTestCase {
             // verify features:
             XCTAssertNotNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: DatadogRUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
-            XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
             XCTAssertNil(defaultDatadogCore.get(feature: CrashReporter.self))
             // verify integrations:
             XCTAssertTrue(DD.telemetry is NOPTelemetry)
@@ -353,12 +349,6 @@ class DatadogTests: XCTestCase {
 
         let core = defaultDatadogCore as? DatadogCore
 
-        XCTAssertNotNil(core?.userInfoProvider.value)
-        XCTAssertNil(core?.userInfoProvider.value.id)
-        XCTAssertNil(core?.userInfoProvider.value.email)
-        XCTAssertNil(core?.userInfoProvider.value.name)
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], [:])
-
         XCTAssertNil(core?.userInfoPublisher.current.id)
         XCTAssertNil(core?.userInfoPublisher.current.email)
         XCTAssertNil(core?.userInfoPublisher.current.name)
@@ -370,11 +360,6 @@ class DatadogTests: XCTestCase {
             email: "foo@bar.com",
             extraInfo: ["abc": 123]
         )
-
-        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 123])
 
         XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
@@ -401,14 +386,6 @@ class DatadogTests: XCTestCase {
         )
 
         Datadog.addUserExtraInfo(["second": 667])
-
-        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(
-            core?.userInfoProvider.value.extraInfo as? [String: Int],
-            ["abc": 123, "second": 667]
-        )
 
         XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
@@ -439,11 +416,6 @@ class DatadogTests: XCTestCase {
 
         Datadog.addUserExtraInfo(["abc": nil, "second": 667])
 
-        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["second": 667])
-
         XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")
         XCTAssertEqual(core?.userInfoPublisher.current.email, "foo@bar.com")
@@ -469,11 +441,6 @@ class DatadogTests: XCTestCase {
         )
 
         Datadog.addUserExtraInfo(["abc": 444])
-
-        XCTAssertEqual(core?.userInfoProvider.value.id, "foo")
-        XCTAssertEqual(core?.userInfoProvider.value.name, "bar")
-        XCTAssertEqual(core?.userInfoProvider.value.email, "foo@bar.com")
-        XCTAssertEqual(core?.userInfoProvider.value.extraInfo as? [String: Int], ["abc": 444])
 
         XCTAssertEqual(core?.userInfoPublisher.current.id, "foo")
         XCTAssertEqual(core?.userInfoPublisher.current.name, "bar")

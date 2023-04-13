@@ -184,7 +184,6 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
 
         // Set default `DatadogCore`:
@@ -192,7 +191,6 @@ public class Datadog {
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
             dateProvider: configuration.common.dateProvider,
             initialConsent: initialTrackingConsent,
-            userInfoProvider: userInfoProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             encryption: configuration.common.encryption,

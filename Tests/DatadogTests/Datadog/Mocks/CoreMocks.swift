@@ -463,18 +463,6 @@ extension DataFormat {
     }
 }
 
-extension UserInfoProvider {
-    static func mockAny() -> UserInfoProvider {
-        return mockWith()
-    }
-
-    static func mockWith(userInfo: UserInfo = .mockAny()) -> UserInfoProvider {
-        let provider = UserInfoProvider()
-        provider.value = userInfo
-        return provider
-    }
-}
-
 extension HTTPClient {
     static func mockAny() -> HTTPClient {
         return HTTPClient(session: .mockAny())

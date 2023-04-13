@@ -16,7 +16,6 @@ class FeatureContextTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,

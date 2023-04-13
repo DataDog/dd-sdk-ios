@@ -41,10 +41,6 @@ internal final class DatadogCore {
     /// The user consent publisher.
     let consentPublisher: TrackingConsentPublisher
 
-    /// The user info provider that provide values to the
-    /// `v1Context`.
-    let userInfoProvider: UserInfoProvider
-
     /// The core SDK performance presets.
     let performance: PerformancePreset
 
@@ -97,7 +93,6 @@ internal final class DatadogCore {
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-        userInfoProvider: UserInfoProvider,
     	performance: PerformancePreset,
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
@@ -106,7 +101,6 @@ internal final class DatadogCore {
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
-        self.userInfoProvider = userInfoProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
@@ -147,7 +141,6 @@ internal final class DatadogCore {
         )
 
         userInfoPublisher.current = userInfo
-        userInfoProvider.value = userInfo
     }
 
     /// Add or override the extra info of the current user
@@ -158,7 +151,6 @@ internal final class DatadogCore {
         var extraInfo = userInfoPublisher.current.extraInfo
         newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
         userInfoPublisher.current.extraInfo = extraInfo
-        userInfoProvider.value.extraInfo = extraInfo
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.

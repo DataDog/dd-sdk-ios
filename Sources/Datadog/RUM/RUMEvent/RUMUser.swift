@@ -7,23 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Maps the value from shared `UserInfoProvider` to `RUMUSR` format.
-internal struct RUMUserInfoProvider {
-    /// Shared user info provider.
-    let userInfoProvider: UserInfoProvider
-
-    var current: RUMUser? {
-        let userInfo = userInfoProvider.value
-
-        // Returns nil if UserInfo has no data
-        if userInfo.id == nil, userInfo.name == nil, userInfo.email == nil, userInfo.extraInfo.isEmpty {
-            return nil
-        }
-
-        return RUMUser(userInfo: userInfo)
-    }
-}
-
 extension RUMUser {
     init?(context: DatadogContext) {
         guard let userInfo = context.userInfo else {

@@ -21,7 +21,6 @@ class MessageBusTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
-            userInfoProvider: .mockAny(),
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,
