@@ -666,10 +666,6 @@ public class DDRUMActionEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var isActive: NSNumber? {
-        root.swiftModel.session.isActive as NSNumber?
-    }
-
     @objc public var type: DDRUMActionEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -1632,10 +1628,6 @@ public class DDRUMErrorEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var isActive: NSNumber? {
-        root.swiftModel.session.isActive as NSNumber?
-    }
-
     @objc public var type: DDRUMErrorEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -2248,10 +2240,6 @@ public class DDRUMLongTaskEventSession: NSObject {
 
     @objc public var id: String {
         root.swiftModel.session.id
-    }
-
-    @objc public var isActive: NSNumber? {
-        root.swiftModel.session.isActive as NSNumber?
     }
 
     @objc public var type: DDRUMLongTaskEventSessionSessionType {
@@ -3185,10 +3173,6 @@ public class DDRUMResourceEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var isActive: NSNumber? {
-        root.swiftModel.session.isActive as NSNumber?
-    }
-
     @objc public var type: DDRUMResourceEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
@@ -3755,9 +3739,45 @@ public class DDRUMViewEventSession: NSObject {
         root.swiftModel.session.isActive as NSNumber?
     }
 
+    @objc public var startReason: DDRUMViewEventSessionStartReason {
+        .init(swift: root.swiftModel.session.startReason)
+    }
+
     @objc public var type: DDRUMViewEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
+}
+
+@objc
+public enum DDRUMViewEventSessionStartReason: Int {
+    internal init(swift: RUMViewEvent.Session.StartReason?) {
+        switch swift {
+        case nil: self = .none
+        case .appStart?: self = .appStart
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .stopApi?: self = .stopApi
+        case .backgroundEvent?: self = .backgroundEvent
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Session.StartReason? {
+        switch self {
+        case .none: return nil
+        case .appStart: return .appStart
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .stopApi: return .stopApi
+        case .backgroundEvent: return .backgroundEvent
+        }
+    }
+
+    case none
+    case appStart
+    case inactivityTimeout
+    case maxDuration
+    case stopApi
+    case backgroundEvent
 }
 
 @objc
@@ -5111,4 +5131,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f964339c5f07f476dee5fc6a12b6c1214a40c1da
+// Generated from https://github.com/DataDog/rum-events-format/tree/a45fbc913eb36f3bf0cc37aa1bdbee126104972b

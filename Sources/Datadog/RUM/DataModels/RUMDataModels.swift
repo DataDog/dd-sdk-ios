@@ -308,16 +308,12 @@ public struct RUMActionEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
-        /// Whether this session is currently active. Set to false to manually stop a session
-        public let isActive: Bool?
-
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
-            case isActive = "is_active"
             case type = "type"
         }
 
@@ -706,16 +702,12 @@ public struct RUMErrorEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
-        /// Whether this session is currently active. Set to false to manually stop a session
-        public let isActive: Bool?
-
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
-            case isActive = "is_active"
             case type = "type"
         }
 
@@ -971,16 +963,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
-        /// Whether this session is currently active. Set to false to manually stop a session
-        public let isActive: Bool?
-
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
-            case isActive = "is_active"
             case type = "type"
         }
 
@@ -1399,16 +1387,12 @@ public struct RUMResourceEvent: RUMDataModel {
         /// UUID of the session
         public let id: String
 
-        /// Whether this session is currently active. Set to false to manually stop a session
-        public let isActive: Bool?
-
         /// Type of the session
         public let type: SessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
-            case isActive = "is_active"
             case type = "type"
         }
 
@@ -1612,6 +1596,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Whether this session is currently active. Set to false to manually stop a session
         public let isActive: Bool?
 
+        /// The precondition that led to the creation of the session
+        public let startReason: StartReason?
+
         /// Type of the session
         public let type: SessionType
 
@@ -1619,7 +1606,17 @@ public struct RUMViewEvent: RUMDataModel {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
+            case startReason = "start_reason"
             case type = "type"
+        }
+
+        /// The precondition that led to the creation of the session
+        public enum StartReason: String, Codable {
+            case appStart = "app_start"
+            case inactivityTimeout = "inactivity_timeout"
+            case maxDuration = "max_duration"
+            case stopApi = "stop_api"
+            case backgroundEvent = "background_event"
         }
 
         /// Type of the session
@@ -2977,4 +2974,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f964339c5f07f476dee5fc6a12b6c1214a40c1da
+// Generated from https://github.com/DataDog/rum-events-format/tree/a45fbc913eb36f3bf0cc37aa1bdbee126104972b
