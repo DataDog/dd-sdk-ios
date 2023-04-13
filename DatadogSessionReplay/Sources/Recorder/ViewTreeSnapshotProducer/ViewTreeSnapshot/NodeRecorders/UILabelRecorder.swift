@@ -49,7 +49,7 @@ internal class UILabelRecorder: NodeRecorder {
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,
-            textAlignment: nil,
+            textAlignment: .init(textAlignment: label.textAlignment),
             font: label.font,
             fontScalingEnabled: label.adjustsFontSizeToFitWidth,
             textObfuscator: textObfuscator(context),
