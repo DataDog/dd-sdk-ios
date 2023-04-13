@@ -29,7 +29,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(for: view),
-            unsupportedClassName: String(reflecting: type(of: view)).extractGenericClassNameIfNeeded(),
+            unsupportedClassName: String(reflecting: type(of: view)),
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -59,16 +59,5 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
                 cornerRadius: 4
             )
         ]
-    }
-}
-
-fileprivate extension String {
-    func extractGenericClassNameIfNeeded() -> String {
-        let regex = try? NSRegularExpression(pattern: "<([^>]*)>[^<>]*$", options: [])
-        if let match = regex?.firstMatch(in: self, range: NSRange(startIndex..., in: self)),
-            let range = Range(match.range(at: 1), in: self) {
-            return String(self[range])
-        }
-        return self
     }
 }

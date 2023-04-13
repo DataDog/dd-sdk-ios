@@ -210,7 +210,6 @@ final class SRSnapshotTests: SnapshotTestCase {
         let image = try takeSnapshot(configuration: .init(privacy: .allowAll))
         DDAssertSnapshotTest(
             newImage: image,
-
             snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-allowAll-privacy"),
             record: recordingMode
         )

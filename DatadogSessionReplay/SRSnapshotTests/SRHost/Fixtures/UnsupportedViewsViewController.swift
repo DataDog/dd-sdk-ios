@@ -23,7 +23,7 @@ internal class UnsupportedViewsViewController: UIViewController {
 
 import SwiftUI
 
-struct TestView: View {
+fileprivate struct TestView: View {
     var body: some View {
         VStack {
             Text("Title")
