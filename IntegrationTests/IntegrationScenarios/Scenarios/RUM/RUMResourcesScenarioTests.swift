@@ -209,11 +209,10 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         // Assert there were no tracing `Spans` sent
-        // TODO: RUMM-2617 Migrate RUM to v2 instrumentation
-//        _ = try tracingServerSession.pullRecordedRequests(timeout: 1) { requests in
-//            XCTAssertEqual(requests.count, 0, "There should be no tracing `Spans` send")
-//            return true
-//        }
+        _ = try tracingServerSession.pullRecordedRequests(timeout: 1) { requests in
+            XCTAssertEqual(requests.count, 0, "There should be no tracing `Spans` send")
+            return true
+        }
 
         // Assert it adds custom RUM attributes to intercepted RUM Resources:
         session.resourceEventMatchers.forEach { resourceEvent in

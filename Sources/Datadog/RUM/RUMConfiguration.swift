@@ -15,6 +15,8 @@ public typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent
 public typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
 public typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
 
+public typealias URLSessionRUMAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
+
 public struct RUMConfiguration {
     public struct Instrumentation {
         let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
@@ -48,7 +50,11 @@ public struct RUMConfiguration {
     let backgroundEventTrackingEnabled: Bool
     let frustrationTrackingEnabled: Bool
     let onSessionStart: RUMSessionListener?
-    let firstPartyHosts: FirstPartyHosts
+    let firstPartyHosts: FirstPartyHosts?
+    let tracingSampler: Sampler
+    let traceIDGenerator: TraceIDGenerator
+    /// An optional RUM Resource attributes provider.
+    let rumAttributesProvider: URLSessionRUMAttributesProvider?
     let vitalsFrequency: TimeInterval?
     let dateProvider: DateProvider
 
@@ -66,7 +72,10 @@ public struct RUMConfiguration {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts = .init(),
+        firstPartyHosts: FirstPartyHosts? = nil,
+        tracingSampler: Sampler = Sampler(samplingRate: 20),
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         vitalsFrequency: TimeInterval? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         customIntakeURL: URL? = nil
@@ -87,6 +96,9 @@ public struct RUMConfiguration {
         self.frustrationTrackingEnabled = frustrationTrackingEnabled
         self.onSessionStart = onSessionStart
         self.firstPartyHosts = firstPartyHosts
+        self.tracingSampler = tracingSampler
+        self.traceIDGenerator = traceIDGenerator
+        self.rumAttributesProvider = rumAttributesProvider
         self.vitalsFrequency = vitalsFrequency
         self.dateProvider = dateProvider
     }
@@ -106,7 +118,10 @@ public struct RUMConfiguration {
         backgroundEventTrackingEnabled: Bool = false,
         frustrationTrackingEnabled: Bool = true,
         onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts = .init(),
+        firstPartyHosts: FirstPartyHosts? = nil,
+        tracingSampler: Sampler = Sampler(samplingRate: 20),
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
         vitalsFrequency: TimeInterval? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         customIntakeURL: URL? = nil
@@ -127,6 +142,9 @@ public struct RUMConfiguration {
         self.frustrationTrackingEnabled = frustrationTrackingEnabled
         self.onSessionStart = onSessionStart
         self.firstPartyHosts = firstPartyHosts
+        self.tracingSampler = tracingSampler
+        self.traceIDGenerator = traceIDGenerator
+        self.rumAttributesProvider = rumAttributesProvider
         self.vitalsFrequency = vitalsFrequency
         self.dateProvider = dateProvider
     }

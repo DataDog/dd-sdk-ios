@@ -6,6 +6,8 @@
 
 import Foundation
 
+public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
+
 /// An interface for forwarding `URLSessionDelegate` calls to `DDURLSessionDelegate`.
 /// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.
 @objc

@@ -213,6 +213,24 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(core.events.isEmpty)
     }
 
+    func testRUM2APMInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
+        core.expectation = expectation(description: "Do not send span")
+        core.expectation?.isInverted = true
+
+        // Given
+        var request: URLRequest = .mockAny()
+        request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+        let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
+        interception.register(response: .mockAny(), error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: interception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
     func testGivenAnyInterception_itAddsAppStateInformationToSpan() throws {
         core.expectation = expectation(description: "Send span")
 

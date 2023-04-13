@@ -90,6 +90,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
         guard
             interception.isFirstPartyRequest,  // `Span` should be only send for 1st party requests
+            interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
             let resourceMetrics = interception.metrics,
             let resourceCompletion = interception.completion

@@ -110,14 +110,12 @@ extension FeaturesConfiguration {
         logging: Logging? = .mockAny(),
         rum: RUMConfiguration? = .mockAny(),
         crashReporting: CrashReporting = .mockAny(),
-        urlSessionAutoInstrumentation: URLSessionAutoInstrumentation? = .mockAny(),
         tracingEnabled: Bool = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             logging: logging,
             rum: rum,
-            urlSessionAutoInstrumentation: urlSessionAutoInstrumentation,
             crashReporting: crashReporting,
             tracingEnabled: tracingEnabled
         )
@@ -242,30 +240,6 @@ extension FeaturesConfiguration.CrashReporting {
     ) -> Self {
         return .init(
             crashReportingPlugin: crashReportingPlugin
-        )
-    }
-}
-
-extension FeaturesConfiguration.URLSessionAutoInstrumentation {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(
-        userDefinedFirstPartyHosts: FirstPartyHosts = .init(),
-        sdkInternalURLs: Set<String> = [],
-        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
-        instrumentTracing: Bool = true,
-        instrumentRUM: Bool = true,
-        tracingSampler: Sampler = .mockKeepAll(),
-        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
-    ) -> Self {
-        return .init(
-            userDefinedFirstPartyHosts: userDefinedFirstPartyHosts,
-            sdkInternalURLs: sdkInternalURLs,
-            rumAttributesProvider: rumAttributesProvider,
-            instrumentTracing: instrumentTracing,
-            instrumentRUM: instrumentRUM,
-            tracingSampler: tracingSampler,
-            traceIDGenerator: traceIDGenerator
         )
     }
 }

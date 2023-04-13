@@ -27,18 +27,22 @@ public class URLSessionTaskInterception {
         spanID: SpanID,
         parentSpanID: SpanID?
     )?
+    /// The Datadog origin of the Trace.
+    ///
+    /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
+    public private(set) var origin: String?
 
-    /* internal */ public init(request: URLRequest, isFirstParty: Bool) {
+    init(request: URLRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
     }
 
-    /* internal */ public func register(metrics: ResourceMetrics) {
+    func register(metrics: ResourceMetrics) {
         self.metrics = metrics
     }
 
-    /* internal */ public func register(nextData: Data) {
+    func register(nextData: Data) {
         if data != nil {
             self.data?.append(nextData)
         } else {
@@ -46,7 +50,7 @@ public class URLSessionTaskInterception {
         }
     }
 
-    /* internal */ public func register(response: URLResponse?, error: Error?) {
+    func register(response: URLResponse?, error: Error?) {
         self.completion = ResourceCompletion(
             response: response as? HTTPURLResponse,
             error: error
@@ -63,6 +67,10 @@ public class URLSessionTaskInterception {
             spanID: spanID,
             parentSpanID: parentSpanID
         )
+    }
+
+    public func register(origin: String) {
+        self.origin = origin
     }
 
     /// Tells if the interception is done (mean: both metrics and completion were collected).

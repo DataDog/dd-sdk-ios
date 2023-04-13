@@ -44,7 +44,7 @@ internal extension RUMScopeDependencies {
             sessionSampler: configuration.sessionSampler,
             backgroundEventTrackingEnabled: configuration.backgroundEventTrackingEnabled,
             frustrationTrackingEnabled: configuration.frustrationTrackingEnabled,
-            firstPartyHosts: configuration.firstPartyHosts,
+            firstPartyHosts: configuration.firstPartyHosts ?? .init(),
             eventBuilder: RUMEventBuilder(
                 eventsMapper: RUMEventsMapper(
                     viewEventMapper: configuration.viewEventMapper,

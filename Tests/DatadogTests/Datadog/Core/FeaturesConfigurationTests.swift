@@ -424,9 +424,6 @@ class FeaturesConfigurationTests: XCTestCase {
             "example.com": [.datadog],
             "foo.eu": [.datadog]
         ])
-        let expectedSDKInternalURLs: Set<String> = [
-            randomDatadogEndpoint.endpoint.absoluteString,
-        ]
 
         func createConfiguration(
             tracingEnabled: Bool,
@@ -451,10 +448,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
+        XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only Tracing is enabled
         configuration = try createConfiguration(
@@ -462,10 +457,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: false,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertNil(configuration.rum)
+        XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only RUM is enabled
         configuration = try createConfiguration(
@@ -473,10 +466,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
+        XCTAssertFalse(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are not set
         configuration = try createConfiguration(
@@ -485,7 +476,7 @@ class FeaturesConfigurationTests: XCTestCase {
             firstPartyHosts: nil
         )
         XCTAssertNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "When `firstPartyHosts` are not set, the URLSession auto instrumentation config should be `nil`"
         )
 
@@ -496,7 +487,7 @@ class FeaturesConfigurationTests: XCTestCase {
             firstPartyHosts: .init()
         )
         XCTAssertNotNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "When `firstPartyHosts` are set empty and non-nil, the URLSession auto instrumentation config should NOT be nil."
         )
     }
@@ -523,8 +514,8 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNotNil(configurationWithAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
-        XCTAssertNil(configurationWithoutAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
+        XCTAssertNotNil(configurationWithAttributesProvider.rum?.rumAttributesProvider)
+        XCTAssertNil(configurationWithoutAttributesProvider.rum?.rumAttributesProvider)
     }
 
     func testGivenURLSessionAutoinstrumentationDisabled_whenRUMAttributesProviderIsSet_itPrintsConsoleWarning() throws {
@@ -599,7 +590,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "`URLSession` should not be auto instrumented."
         )
 

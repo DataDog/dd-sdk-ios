@@ -8,7 +8,7 @@ import Foundation
 
 /// W3C trace context headers as explained in
 /// https://www.w3.org/TR/trace-context/#traceparent-header
-internal enum W3CHTTPHeaders {
+public enum W3CHTTPHeaders {
     /// The traceparent header represents the incoming request in a tracing system in a common format, understood by all vendors.
     /// It's following a convention of `{version-format}-{trace-id}-{parent-id}-{trace-flags}`.
     ///
@@ -38,12 +38,12 @@ internal enum W3CHTTPHeaders {
     /// The sampled flag can be used to ensure that information about requests that were marked
     /// for recording by the caller will also be recorded by SaaS service downstream so that the caller
     /// can troubleshoot the behavior of every recorded request.
-    static let traceparent = "traceparent"
+    public static let traceparent = "traceparent"
 
-    enum Constants {
-        static let version = "00"
-        static let sampledValue = "01"
-        static let unsampledValue = "00"
-        static let separator = "-"
+    public enum Constants {
+        public static let version = "00"
+        public static let sampledValue = "01"
+        public static let unsampledValue = "00"
+        public static let separator = "-"
     }
 }
