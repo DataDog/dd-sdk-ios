@@ -59,6 +59,7 @@ extension ViewTreeSnapshotBuilder {
 /// An arrays of default node recorders executed for the root view-tree hierarchy.
 internal func createDefaultNodeRecorders() -> [NodeRecorder] {
     return [
+        UnsupportedViewRecorder(),
         UIViewRecorder(),
         UILabelRecorder(),
         UIImageViewRecorder(),
