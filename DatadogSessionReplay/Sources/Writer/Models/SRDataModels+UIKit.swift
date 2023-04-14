@@ -8,6 +8,8 @@
 import UIKit
 
 extension SRTextPosition.Alignment {
+    /// Custom initializer that allows transforming UIKit's `NSTextAlignment` into `SRTextPosition.Alignment`.
+    /// Must be called on the main thread due to `UIApplication.shared.userInterfaceLayoutDirection`.
     init(textAlignment: NSTextAlignment) {
         self.vertical = .center
         switch textAlignment {

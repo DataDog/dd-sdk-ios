@@ -33,6 +33,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             wireframeID: context.ids.nodeID(for: textView),
             attributes: attributes,
             text: textView.text,
+            textAlignment: .init(textAlignment: textView.textAlignment),
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
             textObfuscator: textObfuscator(context, isSensitiveText),
@@ -49,6 +50,8 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     let attributes: ViewAttributes
     /// The text inside text field.
     let text: String
+    /// The alignment of the text.
+    var textAlignment: SRTextPosition.Alignment
     /// The color of the text.
     let textColor: CGColor?
     /// The font used by the text field.
@@ -90,6 +93,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
                 id: wireframeID,
                 frame: relativeIntersectedRect,
                 text: textObfuscator.mask(text: text),
+                textAlignment: textAlignment,
                 clip: clip,
                 textColor: textColor,
                 font: font,

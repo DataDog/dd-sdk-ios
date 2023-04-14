@@ -69,7 +69,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
     /// The color of the text.
     var textColor: CGColor?
     /// The alignment of the text.
-    var textAlignment: SRTextPosition.Alignment?
+    var textAlignment: SRTextPosition.Alignment
     /// The font used by the label.
     let font: UIFont?
     /// Flag that determines if font should be scaled

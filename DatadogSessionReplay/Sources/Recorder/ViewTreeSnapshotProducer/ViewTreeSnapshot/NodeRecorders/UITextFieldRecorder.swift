@@ -91,7 +91,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             wireframeID: context.ids.nodeID(for: textField),
             text: text,
             textColor: textField.textColor?.cgColor,
-            textAlignment: textField.textAlignment,
+            textAlignment: .init(textAlignment: textField.textAlignment),
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
@@ -109,29 +109,20 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
 
     let text: String
     let textColor: CGColor?
-    let textAlignment: NSTextAlignment
+    let textAlignment: SRTextPosition.Alignment
     let isPlaceholderText: Bool
     let font: UIFont?
     let fontScalingEnabled: Bool
     let textObfuscator: TextObfuscating
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        let horizontalAlignment: SRTextPosition.Alignment.Horizontal? = {
-            switch textAlignment {
-            case .left:     return .left
-            case .center:   return .center
-            case .right:    return .right
-            default:        return nil
-            }
-        }()
-
         return [
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
-                textAlignment: .init(horizontal: horizontalAlignment, vertical: .center),
+                textAlignment: textAlignment,
                 textColor: isPlaceholderText ? SystemColors.placeholderText : textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
