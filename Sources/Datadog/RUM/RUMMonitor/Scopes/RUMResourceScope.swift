@@ -109,7 +109,7 @@ internal class RUMResourceScope: RUMScope {
     // MARK: - Sending RUM Events
 
     private func sendResourceEvent(on command: RUMStopResourceCommand, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command.attributes)
+        attributes.mergeWithoutOverwriting(rumCommandAttributes: command.attributes)
 
         let resourceStartTime: Date
         let resourceDuration: TimeInterval

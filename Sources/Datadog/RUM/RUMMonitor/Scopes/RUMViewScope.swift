@@ -421,7 +421,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
-        attributes.merge(rumCommandAttributes: command.attributes)
+
+        // RUMM-3133 Don't override View attributes with UserAction, Resource or LongTask attributes
+        switch command {
+        case is RUMUserActionCommand, is RUMResourceCommand, is RUMAddLongTaskCommand:
+            break
+        default:
+            attributes.merge(rumCommandAttributes: command.attributes)
+        }
 
         let isCrash = (command as? RUMAddCurrentViewErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources

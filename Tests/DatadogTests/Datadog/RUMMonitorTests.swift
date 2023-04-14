@@ -1485,6 +1485,91 @@ class RUMMonitorTests: XCTestCase {
         )
     }
 
+    func testSendingUserActionEvents_whenGlobalAttributesHaveConflict() throws {
+        let rum: RUMFeature = .mockAny()
+        core.register(feature: rum)
+
+        // given
+        let monitor = try createTestableRUMMonitor()
+        monitor.addAttribute(forKey: "abc", value: "123")
+
+        // when
+        monitor.startView(key: "View", name: nil, attributes: [:])
+        monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
+
+        monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
+        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["def": "789"])
+
+        monitor.stopView(key: "View", attributes: [:])
+
+        // then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(viewEvents.count, 4)
+        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[2].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.abc"), "123")
+
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(try actionEvents[0].attribute(forKeyPath: "context.abc"), "456")
+
+        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "456")
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
+    }
+
+    func testSendingUserActionEvents_whenViewAttributesHaveConflict() throws {
+        let rum: RUMFeature = .mockAny()
+        core.register(feature: rum)
+
+        // given
+        let monitor = try createTestableRUMMonitor()
+        monitor.startView(key: "View", name: nil, attributes: ["abc": "123"])
+
+        // when
+        monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
+
+        monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
+        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["def": "789"])
+
+        monitor.stopView(key: "View", attributes: [:])
+
+        // then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(viewEvents.count, 4)
+        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[2].attribute(forKeyPath: "context.abc"), "123")
+        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.abc"), "123")
+
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(actionEvents.count, 1)
+        XCTAssertEqual(try actionEvents[0].attribute(forKeyPath: "context.abc"), "456")
+
+        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self) { event in
+            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+        }
+        XCTAssertEqual(resourceEvents.count, 1)
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "456")
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
+    }
+
     // MARK: - Internal attributes
 
     func testHandlingInternalTimestampAttribute() throws {

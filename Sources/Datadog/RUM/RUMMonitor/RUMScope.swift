@@ -42,4 +42,12 @@ extension Dictionary where Key == AttributeKey, Value == AttributeValue {
         }
         merge(additionalAttributes) { _, new in new }
     }
+
+    /// Merges given `rumCommandAttributes` to current dictionary, by keeping values.
+    mutating func mergeWithoutOverwriting(rumCommandAttributes: [AttributeKey: AttributeValue]?) {
+        guard let additionalAttributes = rumCommandAttributes else {
+            return
+        }
+        merge(additionalAttributes) { old, _ in old }
+    }
 }
