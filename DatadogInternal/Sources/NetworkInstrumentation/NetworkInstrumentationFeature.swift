@@ -187,3 +187,12 @@ extension NetworkInstrumentationFeature {
         return reader.read()
     }
 }
+
+extension NetworkInstrumentationFeature: Flushable {
+    /// Awaits completion of all asynchronous operations.
+    ///
+    /// **blocks the caller thread**
+    func flush() {
+        queue.sync { }
+    }
+}

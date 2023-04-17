@@ -1264,16 +1264,16 @@ class RUMMonitorTests: XCTestCase {
         defer { Global.rum = DDNoopRUMMonitor() }
 
         let monitor = Global.rum.dd
-        monitor.flush()
+        monitor.queue.sync {}
         XCTAssertNil(monitor.debugging)
 
         // when & then
         Datadog.debugRUM = true
-        monitor.flush()
+        monitor.queue.sync {}
         XCTAssertNotNil(monitor.debugging)
 
         Datadog.debugRUM = false
-        monitor.flush()
+        monitor.queue.sync {}
         XCTAssertNil(monitor.debugging)
     }
 

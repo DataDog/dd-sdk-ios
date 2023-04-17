@@ -74,3 +74,12 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
         instrumentation.deinitialize()
     }
 }
+
+extension DatadogRUMFeature: Flushable {
+    /// Awaits completion of all asynchronous operations.
+    ///
+    /// **blocks the caller thread**
+    func flush() {
+        monitor.queue.sync { }
+    }
+}
