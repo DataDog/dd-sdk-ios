@@ -423,10 +423,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         version += 1
 
         // RUMM-3133 Don't override View attributes with UserAction, Resource or LongTask attributes
-        switch command {
-        case is RUMUserActionCommand, is RUMResourceCommand, is RUMAddLongTaskCommand:
-            break
-        default:
+        if command is RUMViewScopePropagatableAttributes {
             attributes.merge(rumCommandAttributes: command.attributes)
         }
 
@@ -697,4 +694,8 @@ private extension VitalInfo {
             min: maxValue.map { $0.inverted } ?? 0
         )
     }
+}
+
+/// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
+internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
 }

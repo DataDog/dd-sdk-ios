@@ -39,7 +39,7 @@ internal struct RUMStopSessionCommand: RUMCommand {
 
 // MARK: - RUM View related commands
 
-internal struct RUMStartViewCommand: RUMCommand {
+internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it should start its own view, not the "Background"
@@ -69,7 +69,7 @@ internal struct RUMStartViewCommand: RUMCommand {
     }
 }
 
-internal struct RUMStopViewCommand: RUMCommand {
+internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view
@@ -79,7 +79,7 @@ internal struct RUMStopViewCommand: RUMCommand {
     let identity: RUMViewIdentifiable
 }
 
-internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
+internal struct RUMAddCurrentViewErrorCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
@@ -137,7 +137,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     }
 }
 
-internal struct RUMAddViewTimingCommand: RUMCommand {
+internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = false // no, it doesn't make sense to start "Background" view on receiving custom timing, as it will be `0ns` timing

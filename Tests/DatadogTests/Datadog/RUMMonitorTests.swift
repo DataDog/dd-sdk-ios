@@ -1498,7 +1498,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
         monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
-        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["def": "789"])
+        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
 
         monitor.stopView(key: "View", attributes: [:])
 
@@ -1524,7 +1524,7 @@ class RUMMonitorTests: XCTestCase {
             return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
         }
         XCTAssertEqual(resourceEvents.count, 1)
-        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "456")
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "789")
         XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
     }
 
@@ -1540,7 +1540,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
         monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
-        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["def": "789"])
+        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
 
         monitor.stopView(key: "View", attributes: [:])
 
@@ -1566,7 +1566,7 @@ class RUMMonitorTests: XCTestCase {
             return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
         }
         XCTAssertEqual(resourceEvents.count, 1)
-        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "456")
+        XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.abc"), "789")
         XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
     }
 
