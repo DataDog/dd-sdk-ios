@@ -104,7 +104,7 @@ extension ViewAttributes {
         self.layerBorderColor = view.layer.borderColor
         self.layerBorderWidth = view.layer.borderWidth
         self.layerCornerRadius = view.layer.cornerRadius
-        self.alpha = view.alpha
+        self.alpha = ((view.backgroundColor?.cgColor.alpha ?? view.alpha) + view.alpha) / 2
         self.isHidden = view.isHidden
         self.intrinsicContentSize = view.intrinsicContentSize
     }

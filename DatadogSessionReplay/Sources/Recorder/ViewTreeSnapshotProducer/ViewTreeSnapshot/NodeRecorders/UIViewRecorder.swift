@@ -17,14 +17,30 @@ internal class UIViewRecorder: NodeRecorder {
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard attributes.isVisible else {
+        let attributesOverride: ViewAttributes
+        if String(reflecting: type(of: view)) == "_UIAlertControllerPhoneTVMacView" {
+            attributesOverride = ViewAttributes(
+                frame: attributes.frame,
+                backgroundColor: SystemColors.systemBackground,
+                layerBorderColor: nil,
+                layerBorderWidth: 0,
+                layerCornerRadius: 16,
+                alpha: 1,
+                isHidden: false,
+                intrinsicContentSize: attributes.intrinsicContentSize
+            )
+        } else {
+            attributesOverride = attributes
+        }
+
+        guard attributesOverride.isVisible else {
             return InvisibleElement.constant
         }
-        if let semantics = semanticsOverride(view, attributes) {
+        if let semantics = semanticsOverride(view, attributesOverride) {
             return semantics
         }
 
-        guard attributes.hasAnyAppearance else {
+        guard attributesOverride.hasAnyAppearance else {
             // The view has no appearance, but it may contain subviews that bring visual elements, so
             // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
             return InvisibleElement(subtreeStrategy: .record)
@@ -32,8 +48,7 @@ internal class UIViewRecorder: NodeRecorder {
 
         let builder = UIViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: view),
-            attributes: attributes,
-            wireframeRect: attributes.frame
+            attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return AmbiguousElement(nodes: [node])
@@ -45,7 +60,9 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
     /// Attributes of the `UIView`.
     let attributes: ViewAttributes
 
-    let wireframeRect: CGRect
+    var wireframeRect: CGRect {
+        attributes.frame
+    }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
