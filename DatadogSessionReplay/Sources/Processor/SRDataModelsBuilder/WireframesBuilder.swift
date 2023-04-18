@@ -101,8 +101,6 @@ internal class WireframesBuilder {
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
     ) -> SRWireframe {
-
-
         let textFrame = textFrame ?? frame
         let textPosition = SRTextPosition(
             alignment: textAlignment,
