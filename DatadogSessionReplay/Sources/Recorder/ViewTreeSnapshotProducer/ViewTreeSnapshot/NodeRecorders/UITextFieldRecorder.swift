@@ -91,7 +91,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             wireframeID: context.ids.nodeID(for: textField),
             text: text,
             textColor: textField.textColor?.cgColor,
-            textAlignment: .init(textAlignment: textField.textAlignment),
+            textAlignment: textField.textAlignment,
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
@@ -109,7 +109,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
 
     let text: String
     let textColor: CGColor?
-    let textAlignment: SRTextPosition.Alignment
+    let textAlignment: NSTextAlignment
     let isPlaceholderText: Bool
     let font: UIFont?
     let fontScalingEnabled: Bool
@@ -122,7 +122,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
                 frame: wireframeRect,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
-                textAlignment: textAlignment,
+                textAlignment: .init(systemTextAlignment: textAlignment),
                 textColor: isPlaceholderText ? SystemColors.placeholderText : textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,

@@ -1,18 +1,19 @@
-//
-//  File.swift
-//  
-//
-//  Created by Maciej Burda on 13/04/2023.
-//
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
 import UIKit
 
 extension SRTextPosition.Alignment {
     /// Custom initializer that allows transforming UIKit's `NSTextAlignment` into `SRTextPosition.Alignment`.
-    /// Must be called on the main thread due to `UIApplication.shared.userInterfaceLayoutDirection`.
-    init(textAlignment: NSTextAlignment) {
-        self.vertical = .center
-        switch textAlignment {
+    init(
+        systemTextAlignment: NSTextAlignment,
+        vertical: SRTextPosition.Alignment.Vertical = .center
+    ) {
+        self.vertical = vertical
+        switch systemTextAlignment {
         case .left:
             self.horizontal = .left
         case .center:
@@ -21,12 +22,10 @@ extension SRTextPosition.Alignment {
             self.horizontal = .right
         case .justified:
             self.horizontal = .left
-        default:
-            if UIApplication.shared.userInterfaceLayoutDirection == .leftToRight {
-                self.horizontal = .left
-            } else {
-                self.horizontal = .right
-            }
+        case .natural:
+            self.horizontal = .left
+        @unknown default:
+            self.horizontal = .left
         }
     }
 }
