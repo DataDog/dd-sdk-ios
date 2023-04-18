@@ -422,7 +422,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
 
-        // RUMM-3133 Don't override View attributes with UserAction, Resource or LongTask attributes
+        // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
             attributes.merge(rumCommandAttributes: command.attributes)
         }
