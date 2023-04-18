@@ -161,7 +161,7 @@ extension NetworkInstrumentationFeature {
 
     private func firstPartyHosts(for session: URLSession) -> FirstPartyHosts {
         handlers.reduce(.init()) { $0 + $1.firstPartyHosts } +
-            (session.delegate as? DatadogURLSessionDelegate)?.firstPartyHosts
+            (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate.firstPartyHosts
     }
 
     private func finish(_ session: URLSession, task: URLSessionTask, interception: URLSessionTaskInterception) {

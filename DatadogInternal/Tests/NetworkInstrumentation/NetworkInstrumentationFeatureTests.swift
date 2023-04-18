@@ -335,6 +335,99 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(interception?.trace?.spanID, .mock(2))
     }
 
+    // MARK: - First Party Hosts
+
+    func testGivenHandler_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        // Given
+        handler.firstPartyHosts = FirstPartyHosts(hostsWithTracingHeaderTypes: ["test.com": [.datadog]])
+
+        let session = URLSession(
+            configuration: .default,
+            delegate: DatadogURLSessionDelegate(),
+            delegateQueue: nil
+        )
+
+        let task: URLSessionTask = .mockWith(
+            request: .mockWith(url: "https://test.com"),
+            response: .mockAny()
+        )
+
+        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+
+        // When
+        feature?.urlSession(session, didCreateTask: task)
+
+        // Then
+        feature?.flush()
+        let interception = handler.interceptions.first?.value
+        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
+    }
+
+    func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        // Given
+        class SubclassDelegate: DatadogURLSessionDelegate {}
+        let session = URLSession(
+            configuration: .default,
+            delegate: SubclassDelegate(
+                in: core,
+                additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
+            ),
+            delegateQueue: nil
+        )
+
+        let task: URLSessionTask = .mockWith(
+            request: .mockWith(url: "https://test.com"),
+            response: .mockAny()
+        )
+
+        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+
+        // When
+        feature?.urlSession(session, didCreateTask: task)
+
+        // Then
+        feature?.flush()
+        let interception = handler.interceptions.first?.value
+        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
+    }
+
+    func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        // Given
+        class SubclassDelegate: NSObject, URLSessionDataDelegate, __URLSessionDelegateProviding {
+            let ddURLSessionDelegate: DatadogURLSessionDelegate
+
+            required init(in core: DatadogCoreProtocol) {
+                ddURLSessionDelegate = DatadogURLSessionDelegate(
+                    in: core,
+                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
+                )
+
+                super.init()
+            }
+        }
+
+        let session = URLSession(
+            configuration: .default,
+            delegate: SubclassDelegate(in: core),
+            delegateQueue: nil
+        )
+
+        let task: URLSessionTask = .mockWith(
+            request: .mockWith(url: "https://test.com"),
+            response: .mockAny()
+        )
+
+        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+
+        // When
+        feature?.urlSession(session, didCreateTask: task)
+
+        // Then
+        feature?.flush()
+        let interception = handler.interceptions.first?.value
+        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
+    }
+
     // MARK: - Thread Safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
