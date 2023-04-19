@@ -17,30 +17,26 @@ internal class UIViewRecorder: NodeRecorder {
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        let attributesOverride: ViewAttributes
-        if String(reflecting: type(of: view)) == "_UIAlertControllerPhoneTVMacView" {
-            attributesOverride = ViewAttributes(
-                frame: attributes.frame,
-                backgroundColor: SystemColors.systemBackground,
-                layerBorderColor: nil,
-                layerBorderWidth: 0,
-                layerCornerRadius: 16,
-                alpha: 1,
-                isHidden: false,
-                intrinsicContentSize: attributes.intrinsicContentSize
-            )
-        } else {
-            attributesOverride = attributes
+        var attributes = attributes
+        if context.viewControllerContext.isRootView(of: .alert) {
+            attributes = attributes.copy {
+                $0.backgroundColor = SystemColors.systemBackground
+                $0.layerBorderColor = nil
+                $0.layerBorderWidth = 0
+                $0.layerCornerRadius = 16
+                $0.alpha = 1
+                $0.isHidden = false
+            }
         }
 
-        guard attributesOverride.isVisible else {
+        guard attributes.isVisible else {
             return InvisibleElement.constant
         }
-        if let semantics = semanticsOverride(view, attributesOverride) {
+        if let semantics = semanticsOverride(view, attributes) {
             return semantics
         }
 
-        guard attributesOverride.hasAnyAppearance else {
+        guard attributes.hasAnyAppearance else {
             // The view has no appearance, but it may contain subviews that bring visual elements, so
             // we use `InvisibleElement` semantics (to drop it) with `.record` strategy for its subview.
             return InvisibleElement(subtreeStrategy: .record)

@@ -33,6 +33,11 @@ internal class MenuViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        show(Fixture.allCases[indexPath.item].instantiateViewController(), sender: self)
+        let fixture = Fixture.allCases[indexPath.item]
+        if fixture.presentationStyle == .push {
+            show(fixture.instantiateViewController(), sender: self)
+        } else if fixture.presentationStyle == .modal {
+            present(fixture.instantiateViewController(), animated: true)
+        }
     }
 }
