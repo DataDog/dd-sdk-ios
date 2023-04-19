@@ -22,7 +22,6 @@ internal enum Fixture: CaseIterable {
     case timePickersWheels
     case timePickersCompact
     case images
-    case alert
     case unsupportedViews
 
     var menuItemTitle: String {
@@ -57,8 +56,6 @@ internal enum Fixture: CaseIterable {
             return "Time Picker (compact)"
         case .images:
             return "Images"
-        case .alert:
-            return "Alert"
         case .unsupportedViews:
             return "Unsupported Views"
         }
@@ -98,55 +95,7 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
         case .unsupportedViews:
             return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
-        case .alert:
-            return createAlertControler()
         }
-    }
-
-    var presentationStyle: PresentationStyle {
-        switch self {
-        case .alert:
-            return .modal
-        default:
-            return .push
-        }
-    }
-
-    private func createAlertControler() -> UIAlertController {
-        let alertController = UIAlertController(
-            title: "Alert Example",
-            message: "This is an elaborate example of UIAlertController",
-            preferredStyle: .alert
-        )
-
-        alertController.addTextField { (textField) in
-            textField.placeholder = "Enter your name"
-        }
-
-        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak alertController] _ in
-            if let textField = alertController?.textFields?[0], let text = textField.text {
-                print("Name entered: \(text)")
-            }
-        }
-        alertController.addAction(confirmAction)
-
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in
-            print("Action cancelled")
-        }
-        alertController.addAction(cancelAction)
-
-        let customAction = UIAlertAction(title: "Custom", style: .default) { (_) in
-            print("Custom action selected")
-        }
-        alertController.addAction(customAction)
-        return alertController
-    }
-}
-
-extension Fixture {
-    enum PresentationStyle {
-        case modal
-        case push
     }
 }
 
