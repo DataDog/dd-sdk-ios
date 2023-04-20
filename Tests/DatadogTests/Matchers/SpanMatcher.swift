@@ -8,6 +8,8 @@ import Foundation
 
 /// Implemented by types allowed to represent span attribute `.*` value in JSON.
 protocol AllowedSpanAttributeValue {}
+/// Implemented by types allowed to represent span attribute `_dd.*` value in JSON.
+protocol AllowedSpanDdValue {}
 /// Implemented by types allowed to represent span `metrics.*` value in JSON.
 protocol AllowedSpanMetricValue {}
 /// Implemented by types allowed to represent span `meta.*` value in JSON.
@@ -17,6 +19,9 @@ protocol AllowedSpanMetaValue {}
 extension String: AllowedSpanAttributeValue {}
 extension UInt64: AllowedSpanAttributeValue {}
 extension Int: AllowedSpanAttributeValue {}
+
+// Only numeric values are allowed for `span._dd.*`.
+extension Float: AllowedSpanDdValue {}
 
 // Only numeric values are allowed for `span.metrics.*`.
 extension Int: AllowedSpanMetricValue {}
@@ -88,6 +93,16 @@ internal class SpanMatcher {
     func isError()          throws -> Int { try attribute(forKeyPath: "error") }
     func environment()      throws -> String { try envelope.value(forKeyPath: "env") }
 
+    // MARK: - _dd matching
+
+    var dd: Dd { Dd(matcher: self) }
+
+    struct Dd {
+        fileprivate let matcher: SpanMatcher
+
+        func samplingRate() throws -> Float { try matcher.dd(forKeyPath: "_dd.agent_psr") }
+    }
+
     // MARK: - Metrics matching
 
     var metrics: Metrics { Metrics(matcher: self) }
@@ -139,6 +154,11 @@ internal class SpanMatcher {
     private func attribute<T: AllowedSpanAttributeValue & Equatable>(forKeyPath keyPath: String) throws -> T {
         precondition(!keyPath.hasPrefix("metrics."), "use specialized `metric(forKeyPath:)`")
         precondition(!keyPath.hasPrefix("meta."), "use specialized `meta(forKeyPath:)`")
+        return try span.value(forKeyPath: keyPath)
+    }
+
+    private func dd<T: AllowedSpanDdValue & Equatable>(forKeyPath keyPath: String) throws -> T {
+        precondition(keyPath.hasPrefix("_dd."))
         return try span.value(forKeyPath: keyPath)
     }
 

@@ -55,6 +55,10 @@ public struct SpanEvent: Encodable {
     internal let source: String
     /// The origin for the Span, it is used to label the spans used created under testing
     internal let origin: String?
+    /// The sampling rate for the span (between 0 and 100)
+    internal let samplingRate: Float
+    /// If the span is kept according to sampling rules
+    internal let isKept: Bool
 
     // MARK: - Meta
 
@@ -111,6 +115,7 @@ internal struct SpanEventEncoder {
 
         case isRootSpan = "metrics._top_level"
         case samplingPriority = "metrics._sampling_priority_v1"
+        case samplingRate = "_dd.agent_psr"
 
         // MARK: - Meta
 
@@ -177,8 +182,9 @@ internal struct SpanEventEncoder {
         // NOTE: RUMM-299 only numeric values are supported for `metrics.*` attributes
         if span.parentID == nil {
             try container.encode(1, forKey: .isRootSpan)
+            try container.encode(span.samplingRate, forKey: .samplingRate)
+            try container.encode((span.isKept ? 1 : 0), forKey: .samplingPriority)
         }
-        try container.encode(1, forKey: .samplingPriority)
     }
 
     /// Encodes default `meta.*` attributes
