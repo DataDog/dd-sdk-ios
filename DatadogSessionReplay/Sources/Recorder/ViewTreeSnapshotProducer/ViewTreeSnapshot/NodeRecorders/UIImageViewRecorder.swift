@@ -6,17 +6,33 @@
 
 import UIKit
 
-internal class UIImageViewRecorder: NodeRecorder {
+internal struct UIImageViewRecorder: NodeRecorder {
+    private let tintColorProvider: (UIImageView) -> UIColor?
+    private let shouldRecordImagePredicate: (UIImageView) -> Bool
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIImageView, ViewAttributes) -> NodeSemantics? = { imageView, _ in
-        let className = "\(type(of: imageView))"
-        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
-        // Here we explicitly ignore the "shadow" effect applied to popover.
-        let isSystemShadow = className == "_UICutoutShadowView"
-        return isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
+        return imageView.isSystemShadow ? IgnoredElement(subtreeStrategy: .ignore) : nil
     }
 
-    private let imageDataProvider = ImageDataProvider()
+    internal init(
+        tintColorProvider: @escaping (UIImageView) -> UIColor? = { imageView in
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isTinted ? imageView.tintColor : nil
+            } else {
+                return nil
+            }
+        },
+        shouldRecordImagePredicate: @escaping (UIImageView) -> Bool = { imageView in
+            if #available(iOS 13.0, *), let image = imageView.image {
+                return image.isContextual || imageView.isSystemControlBackground
+            } else {
+                return false
+            }
+        }
+    ) {
+        self.tintColorProvider = tintColorProvider
+        self.shouldRecordImagePredicate = shouldRecordImagePredicate
+    }
 
     func semantics(
         of view: UIView,
@@ -50,8 +66,9 @@ internal class UIImageViewRecorder: NodeRecorder {
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
-            imageTintColor: imageView.tintColor,
-            imageDataProvider: imageDataProvider
+            imageDataProvider: context.imageDataProvider,
+            tintColor: tintColorProvider(imageView),
+            shouldRecordImage: shouldRecordImagePredicate(imageView)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .record, nodes: [node])
@@ -75,9 +92,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let image: UIImage?
 
-    let imageTintColor: UIColor?
+    let imageDataProvider: ImageDataProviding
 
-    let imageDataProvider: ImageDataProvider
+    let tintColor: UIColor?
+
+    let shouldRecordImage: Bool
 
     private var clip: SRContentClip? {
         guard let contentFrame = contentFrame else {
@@ -114,13 +133,17 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
+        var base64: String = ""
+        if shouldRecordImage {
+            base64 = imageDataProvider.contentBase64String(
+                of: image,
+                tintColor: tintColor
+            )
+        }
         if let contentFrame = contentFrame {
             wireframes.append(
                 builder.createImageWireframe(
-                    base64: imageDataProvider.contentBase64String(
-                        of: image,
-                        tintColor: imageTintColor
-                    ),
+                    base64: base64,
                     id: imageWireframeID,
                     frame: contentFrame,
                     clip: clipsToBounds ? clip : nil
@@ -128,5 +151,53 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             )
         }
         return wireframes
+    }
+}
+
+fileprivate extension UIImage {
+    @available(iOS 13.0, *)
+    var isContextual: Bool {
+        return isSymbolImage || isBundled || isAlwaysTemplate
+    }
+
+    @available(iOS 13.0, *)
+    var isTinted: Bool {
+        return isSymbolImage || isAlwaysTemplate
+    }
+
+    private var isBundled: Bool {
+        return description.contains("named(")
+    }
+
+    private var isAlwaysTemplate: Bool {
+        return renderingMode == .alwaysTemplate
+    }
+}
+
+fileprivate extension UIImageView {
+    var isSystemControlBackground: Bool {
+        return isButtonBackground || isBarBackground
+    }
+
+    var isSystemShadow: Bool {
+        let className = "\(type(of: self))"
+        // This gets effective on iOS 15.0+ which is the earliest version that displays some elements in popover views.
+        // Here we explicitly ignore the "shadow" effect applied to popover.
+        return className == "_UICutoutShadowView"
+    }
+
+    var isButtonBackground: Bool {
+        if let button = superview as? UIButton, button.buttonType == .custom {
+            return button.backgroundImage(for: button.state) == image
+        }
+        return false
+    }
+
+    var isBarBackground: Bool {
+        guard let superview = superview else {
+            return false
+        }
+        let superViewType = "\(type(of: superview))"
+        return superViewType == "_UIBarBackground"
     }
 }

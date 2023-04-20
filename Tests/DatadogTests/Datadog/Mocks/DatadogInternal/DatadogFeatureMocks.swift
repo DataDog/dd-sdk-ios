@@ -13,4 +13,5 @@ internal struct DatadogFeatureMock: DatadogFeature {
     var name: String = DatadogFeatureMock.featureName
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
+    var performanceOverride: PerformancePresetOverride? = nil
 }

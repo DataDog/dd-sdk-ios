@@ -26,7 +26,18 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      codeCoverageEnabled = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <CodeCoverageTargets>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "DatadogSessionReplay"
+            BuildableName = "DatadogSessionReplay"
+            BlueprintName = "DatadogSessionReplay"
+            ReferencedContainer = "container:..">
+         </BuildableReference>
+      </CodeCoverageTargets>
       <Testables>
          <TestableReference
             skipped = "NO">
@@ -36,6 +47,16 @@
                BuildableName = "SRSnapshotTests.xctest"
                BlueprintName = "SRSnapshotTests"
                ReferencedContainer = "container:SRSnapshotTests.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DatadogSessionReplayTests"
+               BuildableName = "DatadogSessionReplayTests"
+               BlueprintName = "DatadogSessionReplayTests"
+               ReferencedContainer = "container:..">
             </BuildableReference>
          </TestableReference>
       </Testables>

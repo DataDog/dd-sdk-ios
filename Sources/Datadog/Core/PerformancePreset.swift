@@ -113,16 +113,32 @@ internal extension PerformancePreset {
         minUploadDelay: TimeInterval,
         uploadDelayFactors: (initial: Double, default: Double, min: Double, max: Double, changeRate: Double)
     ) {
-        self.maxFileSize = 4 * 1_024 * 1_024 // 4MB
-        self.maxDirectorySize = 512 * 1_024 * 1_024 // 512 MB
+        self.maxFileSize = UInt64(4).MB
+        self.maxDirectorySize = UInt64(512).MB
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
-        self.maxFileAgeForRead = 18 * 60 * 60 // 18h
+        self.maxFileAgeForRead = 18.hours
         self.maxObjectsInFile = 500
-        self.maxObjectSize = 512 * 1_024 // 512KB
+        self.maxObjectSize = UInt64(512).KB
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
+    }
+
+    func updated(with: PerformancePresetOverride) -> PerformancePreset {
+        return PerformancePreset(
+            maxFileSize: with.maxFileSize ?? maxFileSize,
+            maxDirectorySize: maxDirectorySize,
+            maxFileAgeForWrite: maxFileAgeForWrite,
+            minFileAgeForRead: minFileAgeForRead,
+            maxFileAgeForRead: maxFileAgeForRead,
+            maxObjectsInFile: maxObjectsInFile,
+            maxObjectSize: with.maxObjectSize ?? maxObjectSize,
+            initialUploadDelay: initialUploadDelay,
+            minUploadDelay: minUploadDelay,
+            maxUploadDelay: maxUploadDelay,
+            uploadDelayChangeRate: uploadDelayChangeRate
+        )
     }
 }

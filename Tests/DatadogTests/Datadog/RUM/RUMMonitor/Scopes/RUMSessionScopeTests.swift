@@ -21,6 +21,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         XCTAssertEqual(scope.context.rumApplicationID, "rum-123")
         XCTAssertNotEqual(scope.context.sessionID, .nullUUID)
+        XCTAssertTrue(scope.context.isSessionActive)
         XCTAssertNil(scope.context.activeViewID)
         XCTAssertNil(scope.context.activeViewPath)
         XCTAssertNil(scope.context.activeUserActionID)
@@ -147,7 +148,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
-        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: .mockRandom())
+        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true)
         XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
@@ -183,7 +184,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // When
         commandTime = commandTime.addingTimeInterval(1)
-        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true, canStartApplicationLaunchView: .mockRandom())
+        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: true)
         XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
@@ -212,7 +213,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
-        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: false, canStartApplicationLaunchView: .mockRandom())
+        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: false)
         XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
@@ -238,7 +239,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
-        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: false)
+        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom())
         XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
@@ -266,7 +267,7 @@ class RUMSessionScopeTests: XCTestCase {
 
         // When
         let commandTime = sessionStartTime.addingTimeInterval(1)
-        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom(), canStartApplicationLaunchView: true)
+        let command = RUMCommandMock(time: commandTime, canStartBackgroundView: .mockRandom())
         XCTAssertTrue(scope.process(command: command, context: context, writer: writer))
 
         // Then
@@ -409,6 +410,201 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertNil(viewEvent, "Crash context must not include rum view event, because there is no active view")
     }
 
+    // MARK: - Stopping Sessions
+
+    func testGivenActiveSession_whenStopSessionEvent_itSetsSessionActiveFalse() {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+
+        // When
+        let command = RUMStopSessionCommand.mockWith(time: Date())
+
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertFalse(scope.isActive)
+        XCTAssertFalse(result)
+    }
+
+    func testGivenStoppedSession_itUpdatesContext() {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // When
+        let context = scope.context
+
+        XCTAssertFalse(context.isSessionActive)
+    }
+
+    func testGivenActiveSessionWithActiveView_whenStopSessionEvent_itStopsTheActiveView() throws {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer)
+        let view = try XCTUnwrap(scope.viewScopes.first)
+
+        // When
+        let command = RUMStopSessionCommand.mockWith(time: Date())
+
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertFalse(view.isActiveView)
+        XCTAssertFalse(result)
+    }
+
+    func testWhenSessionScopeHasViewsWithPendingResources_whenStopSetssion_itReturnsTrueFromProcess() throws {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer)
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(time: Date()), context: context, writer: writer)
+        let view = try XCTUnwrap(scope.viewScopes.first)
+
+        // When
+        let command = RUMStopSessionCommand(time: Date())
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertFalse(scope.isActive)
+        XCTAssertFalse(view.isActiveView)
+        // This still needs to return true because we have pending events
+        XCTAssertTrue(result)
+    }
+
+    func testWhenSessionScopeHasViewsWithPendingResources_itReturnsTrueFromProcessWhenResourcesFinish() throws {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer)
+        let startResourceCommand = RUMStartResourceCommand.mockWith(time: Date())
+        _ = scope.process(command: startResourceCommand, context: context, writer: writer)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // When
+        let command = RUMStopResourceCommand.mockWith(resourceKey: startResourceCommand.resourceKey, time: Date())
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertFalse(scope.isActive)
+        XCTAssertFalse(result)
+    }
+
+    func testWhenScopeEnded_itDoesNotStartNewViews() throws {
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // When
+        let command = RUMStartViewCommand.mockWith(time: Date())
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertTrue(scope.viewScopes.isEmpty)
+        XCTAssertFalse(result)
+    }
+
+    func testWhenScopeEnded_itDoesNotCreateAnApplicationLaunchView() {
+        // Note - This should happen because the application context should prevent against
+        // it, but just in case
+        // Given
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date()
+        )
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // When
+        let command = RUMApplicationStartCommand(time: Date(), attributes: [:])
+        let result = scope.process(command: command, context: context, writer: writer)
+
+        // Then
+        XCTAssertTrue(scope.viewScopes.isEmpty)
+        XCTAssertFalse(result)
+    }
+
+    func testWhenScopeEnded_itUpdatesContext() {
+        // Given
+        var viewEvent: RUMViewEvent? = nil
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message, let event = baggage[RUMBaggageKeys.viewEvent, type: RUMViewEvent.self] {
+                viewEvent = event
+            } else if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+                viewEvent = nil
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            context: context,
+            messageReceiver: messageReciever
+        )
+
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(core: core)
+        )
+
+        let command = RUMStartViewCommand.mockWith(time: Date(), identity: mockView)
+        _ = scope.process(command: command, context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+
+        // Then
+        XCTAssertNil(viewEvent)
+    }
+
+    func testWhenScopeEnded_itDoesNotResetContextNextUpdate() {
+        // Given
+        var viewResetCallCount = 0
+        let messageReciever = FeatureMessageReceiverMock { message in
+            if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+                viewResetCallCount += 1
+            }
+        }
+
+        let core = PassthroughCoreMock(
+            context: context,
+            messageReceiver: messageReciever
+        )
+
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: Date(),
+            dependencies: .mockWith(core: core)
+        )
+
+        let startViewCommand = RUMStartViewCommand.mockWith(time: Date(), identity: mockView)
+        _ = scope.process(command: startViewCommand, context: context, writer: writer)
+        let startResourceCommand = RUMStartResourceCommand.mockWith(time: Date())
+        _ = scope.process(command: startResourceCommand, context: context, writer: writer)
+
+        // When
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+        let stopResourceCommand = RUMStopResourceCommand.mockWith(resourceKey: startResourceCommand.resourceKey, time: Date())
+        _ = scope.process(command: stopResourceCommand, context: context, writer: writer)
+
+        // Then
+        XCTAssertEqual(viewResetCallCount, 1)
+    }
+
     // MARK: - Usage
 
     func testGivenSessionWithNoActiveScope_whenReceivingRUMCommandOtherThanKeepSessionAliveCommand_itLogsWarning() throws {
@@ -431,7 +627,7 @@ class RUMSessionScopeTests: XCTestCase {
             return dd.logger.warnLog?.message
         }
 
-        let randomCommand = RUMCommandMock(time: Date(), canStartBackgroundView: false, canStartApplicationLaunchView: false)
+        let randomCommand = RUMCommandMock(time: Date(), canStartBackgroundView: false)
         let randomCommandLog = try XCTUnwrap(recordWarningOnReceiving(command: randomCommand))
         XCTAssertEqual(
             randomCommandLog,

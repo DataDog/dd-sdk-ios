@@ -469,6 +469,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             session: .init(
                 hasReplay: hasReplay,
                 id: sessionUUID.toRUMDataFormat,
+                isActive: true,
+                startReason: nil,
                 type: CITestIntegration.active != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

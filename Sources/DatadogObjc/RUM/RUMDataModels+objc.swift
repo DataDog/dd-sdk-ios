@@ -3735,9 +3735,49 @@ public class DDRUMViewEventSession: NSObject {
         root.swiftModel.session.id
     }
 
+    @objc public var isActive: NSNumber? {
+        root.swiftModel.session.isActive as NSNumber?
+    }
+
+    @objc public var startReason: DDRUMViewEventSessionStartReason {
+        .init(swift: root.swiftModel.session.startReason)
+    }
+
     @objc public var type: DDRUMViewEventSessionSessionType {
         .init(swift: root.swiftModel.session.type)
     }
+}
+
+@objc
+public enum DDRUMViewEventSessionStartReason: Int {
+    internal init(swift: RUMViewEvent.Session.StartReason?) {
+        switch swift {
+        case nil: self = .none
+        case .appStart?: self = .appStart
+        case .inactivityTimeout?: self = .inactivityTimeout
+        case .maxDuration?: self = .maxDuration
+        case .stopApi?: self = .stopApi
+        case .backgroundEvent?: self = .backgroundEvent
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Session.StartReason? {
+        switch self {
+        case .none: return nil
+        case .appStart: return .appStart
+        case .inactivityTimeout: return .inactivityTimeout
+        case .maxDuration: return .maxDuration
+        case .stopApi: return .stopApi
+        case .backgroundEvent: return .backgroundEvent
+        }
+    }
+
+    case none
+    case appStart
+    case inactivityTimeout
+    case maxDuration
+    case stopApi
+    case backgroundEvent
 }
 
 @objc
@@ -5091,4 +5131,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/581880e6d9e9bb51f6c81ecd87bae2923865a2a5
+// Generated from https://github.com/DataDog/rum-events-format/tree/a45fbc913eb36f3bf0cc37aa1bdbee126104972b

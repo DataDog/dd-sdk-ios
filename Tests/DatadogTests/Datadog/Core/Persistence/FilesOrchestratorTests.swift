@@ -120,7 +120,7 @@ class FilesOrchestratorTests: XCTestCase {
     }
 
     func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
-        let oneMB: UInt64 = 1_024 * 1_024
+        let oneMB = UInt64(1).MB
 
         let orchestrator = FilesOrchestrator(
             directory: temporaryDirectory,

@@ -137,4 +137,11 @@ class PerformancePresetTests: XCTestCase {
             )
         }
     }
+
+    func testPresetsUpdate() {
+        let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
+        let updatedPreset = preset.updated(with: PerformancePresetOverride(maxFileSize: .mockRandom(), maxObjectSize: .mockRandom()))
+        XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
+        XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
+    }
 }
