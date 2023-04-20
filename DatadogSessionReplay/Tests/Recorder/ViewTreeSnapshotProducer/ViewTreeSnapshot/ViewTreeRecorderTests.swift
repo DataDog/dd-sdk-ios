@@ -216,4 +216,15 @@ class ViewTreeRecorderTests: XCTestCase {
             XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some appearance")
         }
     }
+
+    func testItOverridesContextForUIAlertController() {
+        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let view = UIAlertController(title: "", message: "", preferredStyle: .alert).view!
+        // When
+        let context = ViewTreeRecordingContext.mockRandom()
+        let nodes = recorder.recordNodes(for: view, in: context)
+
+        // Then
+        XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some")
+    }
 }
