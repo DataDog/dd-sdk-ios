@@ -449,19 +449,3 @@ extension BatteryStatus.State {
         return cases.randomElement()!
     }
 }
-
-class MockHostsSanitizer: HostsSanitizing {
-    private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
-    func sanitized(hosts: Set<String>, warningMessage: String) -> Set<String> {
-        sanitizations.append((hosts: hosts, warningMessage: warningMessage))
-        return hosts
-    }
-
-    func sanitized(
-        hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
-        warningMessage: String
-    ) -> [String: Set<TracingHeaderType>] {
-        sanitizations.append((hosts: Set(hostsWithTracingHeaderTypes.keys), warningMessage: warningMessage))
-        return hostsWithTracingHeaderTypes
-    }
-}

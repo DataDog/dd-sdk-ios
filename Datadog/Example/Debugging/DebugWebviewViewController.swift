@@ -7,6 +7,7 @@
 import UIKit
 import WebKit
 import Datadog
+import DatadogWebViewTracking
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!

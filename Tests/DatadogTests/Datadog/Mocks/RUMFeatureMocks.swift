@@ -63,22 +63,6 @@ extension RUMConfiguration {
     }
 }
 
-extension WebViewEventReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
-    }
-
-    static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
-        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            commandSubscriber: commandSubscriber
-        )
-    }
-}
-
 extension CrashReportReceiver: AnyMockable {
     public static func mockAny() -> Self {
         .mockWith()
