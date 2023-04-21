@@ -26,17 +26,18 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
 open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
-    var feature: NetworkInstrumentationFeature? {
+    var interceptor: URLSessionInterceptor? {
         let core = self.core ?? defaultDatadogCore
-        return core.get(feature: NetworkInstrumentationFeature.self)
+        return URLSessionInterceptor.shared(in: core)
     }
 
     /* private */ public let firstPartyHosts: FirstPartyHosts
 
     /// The instance of the SDK core notified by this delegate.
+    /// 
     /// It must be a weak reference, because `URLSessionDelegate` can last longer than core instance.
     /// Any `URLSession` will retain its delegate until `.invalidateAndCancel()` is called.
-    /* private */ public weak var core: DatadogCoreProtocol?
+    private weak var core: DatadogCoreProtocol?
 
     @objc
     override public init() {
@@ -92,17 +93,17 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        feature?.urlSession(session, task: task, didFinishCollecting: metrics)
+        interceptor?.task(task, didFinishCollecting: metrics)
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-        feature?.urlSession(session, dataTask: dataTask, didReceive: data)
+        interceptor?.task(dataTask, didReceive: data)
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-        feature?.urlSession(session, task: task, didCompleteWithError: error)
+        interceptor?.task(task, didCompleteWithError: error)
     }
 }
 

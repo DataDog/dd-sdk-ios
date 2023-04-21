@@ -95,8 +95,8 @@ internal class URLSessionSwizzler {
             swizzle(method) { previousImplementation -> Signature in
                 return { session, request, completionHandler -> URLSessionDataTask in
                     guard
-                        let delegate = session.delegate as? __URLSessionDelegateProviding,
-                        let feature = delegate.ddURLSessionDelegate.feature
+                        let delegate = (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate,
+                        let interceptor = delegate.interceptor
                     else {
                         return previousImplementation(session, Self.selector, request, completionHandler)
                     }
@@ -108,23 +108,23 @@ internal class URLSessionSwizzler {
                         // - when `[session dataTaskWithURL:completionHandler:]` is called in Objective-C with explicitly passing
                         //   `nil` as the `completionHandler` (it produces a warning, but compiles).
                         let task = previousImplementation(session, Self.selector, request, completionHandler)
-                        feature.urlSession(session, didCreateTask: task)
+                        interceptor.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                         return task
                     }
 
                     var _task: URLSessionDataTask?
-                    let request = feature.urlSession(session, intercept: request)
+                    let request = interceptor.intercept(request: request, additionalFirstPartyHosts: delegate.firstPartyHosts)
                     let task = previousImplementation(session, Self.selector, request) { data, response, error in
                         completionHandler(data, response, error)
 
                         if let task = _task { // sanity check, should always succeed
-                            data.map { feature.urlSession(session, dataTask: task, didReceive: $0) }
-                            feature.urlSession(session, task: task, didCompleteWithError: error)
+                            data.map { interceptor.task(task, didReceive: $0) }
+                            interceptor.task(task, didCompleteWithError: error)
                         }
                     }
 
                     _task = task
-                    feature.urlSession(session, didCreateTask: task)
+                    interceptor.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                     return task
                 }
             }
@@ -159,15 +159,15 @@ internal class URLSessionSwizzler {
             swizzle(method) { previousImplementation -> Signature in
                 return { session, url, completionHandler -> URLSessionDataTask in
                     guard
-                        let delegate = session.delegate as? __URLSessionDelegateProviding,
-                        let feature = delegate.ddURLSessionDelegate.feature
+                        let delegate = (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate,
+                        let interceptor = delegate.interceptor
                     else {
                         return previousImplementation(session, Self.selector, url, completionHandler)
                     }
 
                     guard let completionHandler = completionHandler else {
                         let task = previousImplementation(session, Self.selector, url, completionHandler)
-                        feature.urlSession(session, didCreateTask: task)
+                        interceptor.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                         return task
                     }
 
@@ -176,13 +176,13 @@ internal class URLSessionSwizzler {
                         completionHandler(data, response, error)
 
                         if let task = _task { // sanity check, should always succeed
-                            data.map { feature.urlSession(session, dataTask: task, didReceive: $0) }
-                            feature.urlSession(session, task: task, didCompleteWithError: error)
+                            data.map { interceptor.task(task, didReceive: $0) }
+                            interceptor.task(task, didCompleteWithError: error)
                         }
                     }
 
                     _task = task
-                    feature.urlSession(session, didCreateTask: task)
+                    interceptor.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                     return task
                 }
             }
@@ -216,17 +216,17 @@ internal class URLSessionSwizzler {
             typealias Signature = @convention(block) (URLSession, URLRequest) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
                 return { session, request -> URLSessionDataTask in
-                    guard let delegate = session.delegate as? __URLSessionDelegateProviding else {
+                    guard let delegate = (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate else {
                         return previousImplementation(session, Self.selector, request)
                     }
 
-                    let request = delegate.ddURLSessionDelegate.feature?.urlSession(session, intercept: request) ?? request
+                    let request = delegate.interceptor?.intercept(request: request, additionalFirstPartyHosts: delegate.firstPartyHosts) ?? request
                     let task = previousImplementation(session, Self.selector, request)
                     if #available(iOS 13.0, *) {
                         // Prior to iOS 13.0, `dataTask(with:)` (for `URLRequest`) calls the
                         // the `dataTask(with:completionHandler:)` (for `URLRequest`) internally,
                         // so the task creation will be notified from `dataTaskWithURLRequestAndCompletion` swizzling.
-                        delegate.ddURLSessionDelegate.feature?.urlSession(session, didCreateTask: task)
+                        delegate.interceptor?.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                     }
                     return task
                 }
@@ -262,8 +262,8 @@ internal class URLSessionSwizzler {
             swizzle(method) { previousImplementation -> Signature in
                 return { session, url -> URLSessionDataTask in
                     let task = previousImplementation(session, Self.selector, url)
-                    if let delegate = session.delegate as? __URLSessionDelegateProviding {
-                        delegate.ddURLSessionDelegate.feature?.urlSession(session, didCreateTask: task)
+                    if let delegate = (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate {
+                        delegate.interceptor?.intercept(task: task, additionalFirstPartyHosts: delegate.firstPartyHosts)
                     }
                     return task
                 }

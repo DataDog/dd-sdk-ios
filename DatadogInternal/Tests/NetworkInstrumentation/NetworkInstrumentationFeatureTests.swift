@@ -9,13 +9,17 @@ import TestUtilities
 @testable import DatadogInternal
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let handler = URLSessionHandlerMock()
+    private var handler: URLSessionHandlerMock!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         super.setUp()
 
         core = SingleFeatureCoreMock()
+        handler = URLSessionHandlerMock()
+
         try core.register(urlSessionHandler: handler)
     }
 
@@ -122,7 +126,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 1, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
@@ -198,9 +202,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         defer { defaultDatadogCore = NOPDatadogCore() }
 
         // Then
-        XCTAssertNotNil(delegate1.feature)
-        XCTAssertNotNil(delegate2.feature)
-        XCTAssertNotNil(delegate3.feature)
+        XCTAssertNotNil(delegate1.interceptor)
+        XCTAssertNotNil(delegate2.interceptor)
+        XCTAssertNotNil(delegate3.interceptor)
     }
 
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
@@ -214,9 +218,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let delegate3 = DatadogURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
 
         // Then
-        XCTAssertNotNil(delegate1.feature)
-        XCTAssertNotNil(delegate2.feature)
-        XCTAssertNotNil(delegate3.feature)
+        XCTAssertNotNil(delegate1.interceptor)
+        XCTAssertNotNil(delegate2.interceptor)
+        XCTAssertNotNil(delegate3.interceptor)
     }
 
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
@@ -227,12 +231,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // When
         let delegate = DatadogURLSessionDelegate(in: core)
         // Then
-        XCTAssertNotNil(delegate.feature)
+        XCTAssertNotNil(delegate.interceptor)
 
         // When (deinitialize core)
         core = nil
         // Then
-        XCTAssertNil(delegate.feature)
+        XCTAssertNil(delegate.interceptor)
     }
 
     // MARK: - URLRequest Interception
@@ -252,7 +256,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.urlSession(.mockAny(), didCreateTask: task)
+        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -277,7 +281,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.urlSession(.mockAny(), didCreateTask: task)
+        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -303,7 +307,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.urlSession(.mockAny(), didCreateTask: task)
+        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -329,7 +333,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.urlSession(.mockAny(), didCreateTask: task)
+        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -342,62 +346,69 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     // MARK: - First Party Hosts
 
     func testGivenHandler_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        let notifyInterceptionStart = expectation(description: "Notify interception did start")
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
         // Given
-        handler.firstPartyHosts = FirstPartyHosts(hostsWithTracingHeaderTypes: ["test.com": [.datadog]])
-
-        let session = URLSession(
-            configuration: .default,
-            delegate: DatadogURLSessionDelegate(),
-            delegateQueue: nil
+        let delegate = DatadogURLSessionDelegate(
+            in: core,
+            additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
         )
-
-        let task: URLSessionTask = .mockWith(
-            request: .mockWith(url: "https://test.com"),
-            response: .mockAny()
-        )
-
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+        let request: URLRequest = .mockWith(url: "https://test.com")
 
         // When
-        feature?.urlSession(session, didCreateTask: task)
+        session
+            .dataTask(with: request)
+            .resume()
 
         // Then
-        feature?.flush()
+        waitForExpectations(timeout: 1, handler: nil)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
         let interception = handler.interceptions.first?.value
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
         XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
 
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        let notifyInterceptionStart = expectation(description: "Notify interception did start")
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
         // Given
         class SubclassDelegate: DatadogURLSessionDelegate {}
-        let session = URLSession(
-            configuration: .default,
-            delegate: SubclassDelegate(
-                in: core,
-                additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
-            ),
-            delegateQueue: nil
-        )
 
-        let task: URLSessionTask = .mockWith(
-            request: .mockWith(url: "https://test.com"),
-            response: .mockAny()
+        let delegate = SubclassDelegate(
+            in: core,
+            additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
         )
-
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+        let request: URLRequest = .mockWith(url: "https://test.com")
 
         // When
-        feature?.urlSession(session, didCreateTask: task)
+        session
+            .dataTask(with: request)
+            .resume()
 
         // Then
-        feature?.flush()
+        waitForExpectations(timeout: 1, handler: nil)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
         let interception = handler.interceptions.first?.value
         XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
 
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        let notifyInterceptionStart = expectation(description: "Notify interception did start")
+        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
         // Given
-        class SubclassDelegate: NSObject, URLSessionDataDelegate, __URLSessionDelegateProviding {
+        class CompositeDelegate: NSObject, URLSessionDataDelegate, __URLSessionDelegateProviding {
             let ddURLSessionDelegate: DatadogURLSessionDelegate
 
             required init(in core: DatadogCoreProtocol) {
@@ -410,24 +421,20 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             }
         }
 
-        let session = URLSession(
-            configuration: .default,
-            delegate: SubclassDelegate(in: core),
-            delegateQueue: nil
-        )
-
-        let task: URLSessionTask = .mockWith(
-            request: .mockWith(url: "https://test.com"),
-            response: .mockAny()
-        )
-
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
+        let delegate = CompositeDelegate(in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+        let request: URLRequest = .mockWith(url: "https://test.com")
 
         // When
-        feature?.urlSession(session, didCreateTask: task)
+        session
+            .dataTask(with: request)
+            .resume()
 
         // Then
-        feature?.flush()
+        waitForExpectations(timeout: 0.5, handler: nil)
+        _ = server.waitAndReturnRequests(count: 1)
+
+        // Then
         let interception = handler.interceptions.first?.value
         XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
@@ -437,7 +444,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
 
-        let session = URLSession(configuration: .default, delegate: DatadogURLSessionDelegate(), delegateQueue: nil)
         let requests = [
             URLRequest(url: URL(string: "https://api.first-party.com/v1/endpoint")!),
             URLRequest(url: URL(string: "https://api.third-party.com/v1/endpoint")!),
@@ -449,11 +455,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         callConcurrently(
             closures: [
                 { feature.handlers = [self.handler] },
-                { _ = feature.urlSession(session, intercept: requests.randomElement()!) },
-                { feature.urlSession(session, didCreateTask: tasks.randomElement()!) },
-                { feature.urlSession(session, dataTask: tasks.randomElement()!, didReceive: .mockRandom()) },
-                { feature.urlSession(session, task: tasks.randomElement()!, didFinishCollecting: .mockAny()) },
-                { feature.urlSession(session, task: tasks.randomElement()!, didCompleteWithError: nil) }
+                { _ = feature.intercept(request: requests.randomElement()!, additionalFirstPartyHosts: nil) },
+                { feature.intercept(task: tasks.randomElement()!, additionalFirstPartyHosts: nil) },
+                { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
+                { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
+                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) }
             ],
             iterations: 50
         )

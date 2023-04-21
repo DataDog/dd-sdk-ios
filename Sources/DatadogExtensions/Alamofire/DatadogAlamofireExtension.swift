@@ -4,36 +4,56 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import class Datadog.URLSessionInterceptor
+import DatadogInternal
 import Alamofire
 
 /// An `Alamofire.EventMonitor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
 public class DDEventMonitor: EventMonitor {
-    public init() {}
+    /// The instance of the SDK core notified by this monitor.
+    private weak var core: DatadogCoreProtocol?
+
+    private var interceptor: URLSessionInterceptor? {
+        let core = self.core ?? defaultDatadogCore
+        return URLSessionInterceptor.shared(in: core)
+    }
+
+    public required init(core: DatadogCoreProtocol? = nil ) {
+        self.core = core
+    }
 
     public func request(_ request: Request, didCreateTask task: URLSessionTask) {
-        URLSessionInterceptor.shared?.taskCreated(task: task)
+        interceptor?.intercept(task: task)
     }
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        URLSessionInterceptor.shared?.taskMetricsCollected(task: task, metrics: metrics)
+        interceptor?.task(task, didFinishCollecting: metrics)
     }
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        URLSessionInterceptor.shared?.taskCompleted(task: task, error: error)
+        interceptor?.task(task, didCompleteWithError: error)
     }
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        URLSessionInterceptor.shared?.taskReceivedData(task: dataTask, data: data)
+        interceptor?.task(dataTask, didReceive: data)
     }
 }
 
 /// An `Alamofire.RequestInterceptor` which instruments `Alamofire.Session` with Datadog RUM and Tracing.
 public class DDRequestInterceptor: RequestInterceptor {
-    public init() {}
+/// The instance of the SDK core notified by this monitor.
+    private weak var core: DatadogCoreProtocol?
+
+    private var interceptor: URLSessionInterceptor? {
+        let core = self.core ?? defaultDatadogCore
+        return URLSessionInterceptor.shared(in: core)
+    }
+
+    public required init(core: DatadogCoreProtocol? = nil ) {
+        self.core = core
+    }
 
     public func adapt(_ urlRequest: URLRequest, for session: Session, completion: @escaping (Result<URLRequest, Error>) -> Void) {
-        let instrumentedRequest = URLSessionInterceptor.shared?.modify(request: urlRequest)
-        completion(.success(instrumentedRequest ?? urlRequest))
+        let instrumentedRequest = interceptor?.intercept(request: urlRequest) ?? urlRequest
+        completion(.success(instrumentedRequest))
     }
 }

@@ -9,18 +9,23 @@ import TestUtilities
 @testable import DatadogInternal
 
 class URLSessionSwizzlerTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let handler = URLSessionHandlerMock()
+    private var handler: URLSessionHandlerMock!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         super.setUp()
 
         core = SingleFeatureCoreMock()
+        handler = URLSessionHandlerMock()
+
         try core.register(urlSessionHandler: handler)
     }
 
     override func tearDown() {
         core = nil
+        handler = nil
         super.tearDown()
     }
 
