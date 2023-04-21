@@ -40,7 +40,7 @@ internal class ViewController: UIViewController {
 
         DatadogTracer.initialize()
 
-        Global.rum = RUMMonitor.initialize()
+        Global.rum = RUMMonitor.shared()
 
         logger.info("It works")
         _ = DatadogTracer.shared().startSpan(operationName: "This too")
