@@ -5,9 +5,9 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
-@testable import Datadog
+
+@testable import DatadogInternal
 
 private struct CodableObject: Codable, Equatable {
     let id: UUID
