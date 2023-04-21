@@ -6,10 +6,10 @@
 
 import Foundation
 
-internal typealias JSON = [String: Any]
+public typealias JSON = [String: Any]
 
 /// Intermediate type to parse WebView messages and send them to the message bus
-internal enum WebViewTrackingMessage {
+public enum WebViewTrackingMessage {
     /// A log message with a JSON payload
     case log(JSON)
 

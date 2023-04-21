@@ -7,7 +7,7 @@
 import DatadogInternal
 
 /// Defines methods to send WebView related information
-internal protocol WebViewTracking {
+public protocol WebViewTracking {
     /// Sends a bag of data
     /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
     func send(body: Any) throws
@@ -21,7 +21,7 @@ internal protocol WebViewTracking {
 /// - Note:
 /// Cross platform SDKs should instantiate this type with a `DatadogCoreProtocol` implementation
 /// and pass WebView related messages using the message bus of the core.
-internal struct WebViewTrackingCore: WebViewTracking {
+public struct WebViewTrackingCore: WebViewTracking {
     enum MessageKeys {
         static let browserLog = "browser-log"
         static let browserRUMEvent = "browser-rum-event"
@@ -35,14 +35,14 @@ internal struct WebViewTrackingCore: WebViewTracking {
 
     /// Sends a bag of data to the message bus
     /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
-    func send(body: Any) throws {
+    public func send(body: Any) throws {
         let message = try WebViewTrackingMessage(body: body)
         try send(message: message)
     }
 
     /// Sends a message to the message bus
     /// - Parameter message: The message to send
-    func send(message: WebViewTrackingMessage) throws {
+    public func send(message: WebViewTrackingMessage) throws {
         switch message {
         case let .log(event):
             core.send(message: .custom(key: MessageKeys.browserLog, baggage: .init(event)), else: {
