@@ -88,14 +88,14 @@ class URLSessionSwizzlerTests: XCTestCase {
         }.resume()
 
         // Then
+        wait(for: [completionHandlerCalled], timeout: 1)
         wait(
             for: [
                 notifyRequestMutation,
                 notifyInterceptionStart,
-                completionHandlerCalled,
                 notifyInterceptionComplete
             ],
-            timeout: 2,
+            timeout: 1,
             enforceOrder: true
         )
 

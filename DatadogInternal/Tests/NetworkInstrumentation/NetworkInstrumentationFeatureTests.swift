@@ -347,7 +347,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testGivenHandler_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         // Given
@@ -358,6 +357,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
 
+        handler.onInterceptionStart = {
+            // Then
+            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            notifyInterceptionStart.fulfill()
+        }
+
         // When
         session
             .dataTask(with: request)
@@ -366,11 +371,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 1, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
-        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
 
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
@@ -388,6 +388,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
 
+        handler.onInterceptionStart = {
+            // Then
+            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            notifyInterceptionStart.fulfill()
+        }
+
         // When
         session
             .dataTask(with: request)
@@ -396,10 +402,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 1, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
 
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
@@ -425,6 +427,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
 
+        handler.onInterceptionStart = {
+            // Then
+            XCTAssertTrue($0.isFirstPartyRequest ?? false)
+            notifyInterceptionStart.fulfill()
+        }
+
         // When
         session
             .dataTask(with: request)
@@ -433,10 +441,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertTrue(interception?.isFirstPartyRequest ?? false)
     }
 
     // MARK: - Thread Safety
