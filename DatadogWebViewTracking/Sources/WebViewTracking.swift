@@ -29,7 +29,7 @@ public struct WebViewTrackingCore: WebViewTracking {
 
     private let core: DatadogCoreProtocol
 
-    internal init(core: DatadogCoreProtocol) {
+    public init(core: DatadogCoreProtocol) {
         self.core = core
     }
 
