@@ -50,7 +50,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
                 UILabelRecorder(
                     builderOverride: { builder in
                         var builder = builder
-                        builder.textAlignment = .init(horizontal: .center, vertical: .center)
+                        builder.textAlignment = .center
                         builder.fontScalingEnabled = true
                         return builder
                     },

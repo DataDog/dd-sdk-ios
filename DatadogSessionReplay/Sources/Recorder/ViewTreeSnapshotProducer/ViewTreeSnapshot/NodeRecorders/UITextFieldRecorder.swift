@@ -116,22 +116,13 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     let textObfuscator: TextObfuscating
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        let horizontalAlignment: SRTextPosition.Alignment.Horizontal? = {
-            switch textAlignment {
-            case .left:     return .left
-            case .center:   return .center
-            case .right:    return .right
-            default:        return nil
-            }
-        }()
-
         return [
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
-                textAlignment: .init(horizontal: horizontalAlignment, vertical: .center),
+                textAlignment: .init(systemTextAlignment: textAlignment),
                 textColor: isPlaceholderText ? SystemColors.placeholderText : textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
