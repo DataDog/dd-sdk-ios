@@ -70,11 +70,15 @@ class URLSessionSwizzlerTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockRandom()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        session.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
+        session.dataTask(with: URLRequest(url: url)) { _, _, _ in
             completionHandlerCalled.fulfill()
         }.resume()
 
@@ -151,11 +155,15 @@ class URLSessionSwizzlerTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockAny()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        let task = session.dataTask(with: URLRequest(url: .mockAny()))
+        let task = session.dataTask(with: URLRequest(url: url))
         task.resume()
 
         // Then

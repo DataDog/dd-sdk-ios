@@ -65,12 +65,16 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockAny()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         session
-            .dataTask(with: URLRequest.mockAny())
+            .dataTask(with: URLRequest(url: url))
             .resume()
 
         // Then
