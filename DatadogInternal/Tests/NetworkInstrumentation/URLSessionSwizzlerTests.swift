@@ -9,18 +9,23 @@ import TestUtilities
 @testable import DatadogInternal
 
 class URLSessionSwizzlerTests: XCTestCase {
+    // swiftlint:disable implicitly_unwrapped_optional
     private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
-    private let handler = URLSessionHandlerMock()
+    private var handler: URLSessionHandlerMock!
+    // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         super.setUp()
 
         core = SingleFeatureCoreMock()
+        handler = URLSessionHandlerMock()
+
         try core.register(urlSessionHandler: handler)
     }
 
     override func tearDown() {
         core = nil
+        handler = nil
         super.tearDown()
     }
 
@@ -70,23 +75,27 @@ class URLSessionSwizzlerTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockRandom()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        session.dataTask(with: URLRequest(url: .mockRandom())) { _, _, _ in
+        session.dataTask(with: URLRequest(url: url)) { _, _, _ in
             completionHandlerCalled.fulfill()
         }.resume()
 
         // Then
+        wait(for: [completionHandlerCalled], timeout: 1)
         wait(
             for: [
                 notifyRequestMutation,
                 notifyInterceptionStart,
-                completionHandlerCalled,
                 notifyInterceptionComplete
             ],
-            timeout: 2,
+            timeout: 1,
             enforceOrder: true
         )
 
@@ -151,11 +160,15 @@ class URLSessionSwizzlerTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockAny()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        let task = session.dataTask(with: URLRequest(url: .mockAny()))
+        let task = session.dataTask(with: URLRequest(url: url))
         task.resume()
 
         // Then

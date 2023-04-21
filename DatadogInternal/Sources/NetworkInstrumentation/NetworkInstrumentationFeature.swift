@@ -7,14 +7,14 @@
 import Foundation
 
 /// The Network Instrumentation Feature that can be registered into a core if
-/// any interceptor is provided.
+/// any hander is provided.
 ///
 /// Usage:
 ///
 ///     let core: DatadogCoreProtocol
 ///
-///     let interceptor: DatadogURLSessionInterceptor = CustomDatadogTraceInterceptor()
-///     core.register(urlSessionInterceptor: interceptor)
+///     let handler: DatadogURLSessionHandler = CustomURLSessionHandler()
+///     core.register(urlSessionInterceptor: handler)
 ///
 /// Registering multiple interceptor will aggregate instrumentation.
 internal final class NetworkInstrumentationFeature: DatadogFeature {
@@ -56,11 +56,12 @@ extension NetworkInstrumentationFeature {
     /// Tells the interceptors to modify a URL request.
     ///
     /// - Parameters:
-    ///   - session: The session [processing the request.
     ///   - request: The request to intercept.
+    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception
     /// - Returns: The modified request.
-    func urlSession(_ session: URLSession, intercept request: URLRequest) -> URLRequest {
-        let headerTypes = firstPartyHosts(for: session).tracingHeaderTypes(for: request.url)
+    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> URLRequest {
+        let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
+            .tracingHeaderTypes(for: request.url)
 
         guard !headerTypes.isEmpty else {
             return request
@@ -71,18 +72,18 @@ extension NetworkInstrumentationFeature {
         }
     }
 
-    /// Tells the interceptors that the session did create a task.
+    /// Tells the interceptors that a task was created.
     ///
     /// - Parameters:
-    ///   - session: The session creating the task.
     ///   - task: The created task.
-    func urlSession(_ session: URLSession, didCreateTask task: URLSessionTask) {
+    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
+    func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
         guard let request = task.originalRequest else {
             return
         }
 
         queue.async {
-            let firstPartyHosts = self.firstPartyHosts(for: session)
+            let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
             
             let interception = URLSessionTaskInterception(
                 request: request,
@@ -102,13 +103,12 @@ extension NetworkInstrumentationFeature {
         }
     }
 
-    /// Tells the interceptors that the session finished collecting metrics for the task.
+    /// Tells the interceptors that metrics were collected for the given task.
     ///
     /// - Parameters:
-    ///   - session: The session collecting the metrics.
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
-    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+    func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         queue.async {
             guard let interception = self.interceptions[task] else {
                 return
@@ -119,30 +119,26 @@ extension NetworkInstrumentationFeature {
             )
 
             if interception.isDone {
-                self.finish(session, task: task, interception: interception)
+                self.finish(task: task, interception: interception)
             }
         }
     }
 
-    /// Tells the interceptors that the data task has received some of the expected data.
+    /// Tells the interceptors that the task has received some of the expected data.
     ///
     /// - Parameters:
-    ///   - session: The session containing the data task that provided data.
-    ///   - dataTask: The data task that provided data.
+    ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
-    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        queue.async {
-            self.interceptions[dataTask]?.register(nextData: data)
-        }
+    func task(_ task: URLSessionTask, didReceive data: Data) {
+        queue.async { self.interceptions[task]?.register(nextData: data) }
     }
 
-    /// Tells the interceptors that the session did complete.
+    /// Tells the interceptors that the task did complete.
     ///
     /// - Parameters:
-    ///   - session: The session containing the task that has finished transferring data.
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
-    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+    func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         queue.async {
             guard let interception = self.interceptions[task] else {
                 return
@@ -154,17 +150,16 @@ extension NetworkInstrumentationFeature {
             )
 
             if interception.isDone {
-                self.finish(session, task: task, interception: interception)
+                self.finish(task: task, interception: interception)
             }
         }
     }
 
-    private func firstPartyHosts(for session: URLSession) -> FirstPartyHosts {
-        handlers.reduce(.init()) { $0 + $1.firstPartyHosts } +
-            (session.delegate as? __URLSessionDelegateProviding)?.ddURLSessionDelegate.firstPartyHosts
+    private func firstPartyHosts(with additionalFirstPartyHosts: FirstPartyHosts?) -> FirstPartyHosts {
+        handlers.reduce(.init()) { $0 + $1.firstPartyHosts } + additionalFirstPartyHosts
     }
 
-    private func finish(_ session: URLSession, task: URLSessionTask, interception: URLSessionTaskInterception) {
+    private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
         interceptions[task] = nil
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
     }

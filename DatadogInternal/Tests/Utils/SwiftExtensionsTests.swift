@@ -5,9 +5,8 @@
  */
 
 import XCTest
-import DatadogInternal
 
-@testable import Datadog
+@testable import DatadogInternal
 
 class TimeIntervalExtensionTests: XCTestCase {
     func testTimeIntervalFromMilliseconds() {

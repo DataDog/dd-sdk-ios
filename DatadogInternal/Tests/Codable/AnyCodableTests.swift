@@ -24,9 +24,9 @@
  */
 
 import XCTest
-import DatadogInternal
 import TestUtilities
-@testable import Datadog
+
+@testable import DatadogInternal
 
 class AnyCodableTests: XCTestCase {
     struct SomeCodable: Codable {

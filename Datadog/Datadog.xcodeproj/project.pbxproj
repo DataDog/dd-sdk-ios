@@ -623,6 +623,8 @@
 		D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */; };
 		D29294E3291D652C00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
 		D29294E4291D652D00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
+		D295A16529F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */; };
+		D295A16629F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */; };
 		D2966C2029CA177000FC6B3C /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		D29889C9273413ED00A4D1A9 /* RUMViewsHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */; };
 		D29CDD3228211A2200F7DAA5 /* DataBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29CDD3128211A2200F7DAA5 /* DataBlock.swift */; };
@@ -1872,8 +1874,6 @@
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A736BA3029D1B6AF00C00966 /* TimeInterval+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Convinience.swift"; sourceTree = "<group>"; };
 		A736BA3329D1B6E000C00966 /* FixedWidthInteger+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+Convinience.swift"; sourceTree = "<group>"; };
-		A736BA3729D1B7B600C00966 /* TimeInterval+ConvinienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ConvinienceTests.swift"; sourceTree = "<group>"; };
-		A736BA3A29D1B7BA00C00966 /* FixedWidthInteger+ConvinienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+ConvinienceTests.swift"; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTelHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* OTelHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
@@ -2030,6 +2030,7 @@
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisher.swift; sourceTree = "<group>"; };
 		D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisherTests.swift; sourceTree = "<group>"; };
+		D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptor.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29CDD3128211A2200F7DAA5 /* DataBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataBlock.swift; sourceTree = "<group>"; };
 		D29D5A4C273BF8B400A687C1 /* SwiftUIActionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIActionModifier.swift; sourceTree = "<group>"; };
@@ -3834,15 +3835,6 @@
 			path = W3C;
 			sourceTree = "<group>";
 		};
-		A736BA3629D1B7AC00C00966 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				A736BA3729D1B7B600C00966 /* TimeInterval+ConvinienceTests.swift */,
-				A736BA3A29D1B7BA00C00966 /* FixedWidthInteger+ConvinienceTests.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
 		A7F773D929253F5900AC1A62 /* OpenTracing */ = {
 			isa = PBXGroup;
 			children = (
@@ -3934,6 +3926,7 @@
 		D2160CC029C0DED100FAA9A5 /* URLSession */ = {
 			isa = PBXGroup;
 			children = (
+				D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */,
 				D2160CC129C0DED100FAA9A5 /* URLSessionTaskInterception.swift */,
 				D2160CC329C0DED100FAA9A5 /* DatadogURLSessionDelegate.swift */,
 				D2160CC429C0DED100FAA9A5 /* URLSessionSwizzler.swift */,
@@ -4334,7 +4327,6 @@
 		D2A783D329A53049003B03BB /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				A736BA3629D1B7AC00C00966 /* Extensions */,
 				D23039D9298D5235001A1FA3 /* DateFormatting.swift */,
 				613C6B8F2768FDDE00870CBF /* Sampler.swift */,
 				D23039DC298D5235001A1FA3 /* DDError.swift */,
@@ -6325,6 +6317,7 @@
 				D23039EF298D5236001A1FA3 /* FeatureMessage.swift in Sources */,
 				D2160CA029C0DE5700FAA9A5 /* HostsSanitizer.swift in Sources */,
 				D22F06D729DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */,
+				D295A16529F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */,
 				D23039E5298D5236001A1FA3 /* DateProvider.swift in Sources */,
 				D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */,
 				D23039FD298D5236001A1FA3 /* DataCompression.swift in Sources */,
@@ -6942,6 +6935,7 @@
 				D2DA237A298D57AA00C6C7E6 /* FeatureMessage.swift in Sources */,
 				D2160CA129C0DE5700FAA9A5 /* HostsSanitizer.swift in Sources */,
 				D22F06D829DAFD500026CC3C /* FixedWidthInteger+Convenience.swift in Sources */,
+				D295A16629F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */,
 				D2DA237B298D57AA00C6C7E6 /* DateProvider.swift in Sources */,
 				D2DA237C298D57AA00C6C7E6 /* DatadogCoreProtocol.swift in Sources */,
 				D2DA237D298D57AA00C6C7E6 /* DataCompression.swift in Sources */,
