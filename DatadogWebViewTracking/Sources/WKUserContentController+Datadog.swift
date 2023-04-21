@@ -70,7 +70,7 @@ public extension WKUserContentController {
         let bridgeName = DatadogMessageHandler.name
 
         let messageHandler = DatadogMessageHandler(
-            eventBridge: WebEventBridge(core: core)
+            eventBridge: WebViewTrackingCore(core: core)
         )
 
         add(messageHandler, name: bridgeName)
@@ -112,13 +112,13 @@ public extension WKUserContentController {
 
 internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
-    private let eventBridge: WebEventBridge
+    private let eventBridge: WebViewTracking
     let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
         target: .global(qos: .userInteractive)
     )
 
-    init(eventBridge: WebEventBridge) {
+    init(eventBridge: WebViewTracking) {
         self.eventBridge = eventBridge
     }
 
@@ -130,7 +130,7 @@ internal class DatadogMessageHandler: NSObject, WKScriptMessageHandler {
         let messageBody = message.body
         queue.async {
             do {
-                try self.eventBridge.consume(messageBody)
+                try self.eventBridge.send(body: messageBody)
             } catch {
                 DD.logger.error("Encountered an error when receiving web view event", error: error)
             }

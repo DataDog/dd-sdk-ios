@@ -15,15 +15,17 @@
 		3C0D29FA29F0315000CDB1D3 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
 		3C0D29FD29F1617C00CDB1D3 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D29FC29F1617C00CDB1D3 /* HostsSanitizerMock.swift */; };
 		3C0D29FE29F1617C00CDB1D3 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D29FC29F1617C00CDB1D3 /* HostsSanitizerMock.swift */; };
+		3C8F1ABC29F2763700CA78A6 /* WebViewTrackingMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C8F1ABB29F2763700CA78A6 /* WebViewTrackingMessage.swift */; };
+		3C8F1ABD29F2763700CA78A6 /* WebViewTrackingMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C8F1ABB29F2763700CA78A6 /* WebViewTrackingMessage.swift */; };
+		3C8F1ABF29F2767200CA78A6 /* WebViewTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C8F1ABE29F2767200CA78A6 /* WebViewTracking.swift */; };
+		3C8F1AC029F2767200CA78A6 /* WebViewTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C8F1ABE29F2767200CA78A6 /* WebViewTracking.swift */; };
 		3C8FC32F29EFFD2F006F2A23 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE585A229EEFC11007D6A47 /* DatadogWebViewTracking.framework */; };
-		3C8FC34029F00DED006F2A23 /* WebEventBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B867275103E40041CD03 /* WebEventBridge.swift */; };
-		3C8FC34129F00DED006F2A23 /* WebEventBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B867275103E40041CD03 /* WebEventBridge.swift */; };
 		3C8FC34229F00DED006F2A23 /* WKUserContentController+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */; };
 		3C8FC34329F00DED006F2A23 /* WKUserContentController+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */; };
 		3C8FC34429F00E05006F2A23 /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */; };
 		3C8FC34529F00E05006F2A23 /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */; };
-		3C8FC34629F00E05006F2A23 /* WebEventBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B86B27510AF90041CD03 /* WebEventBridgeTests.swift */; };
-		3C8FC34729F00E05006F2A23 /* WebEventBridgeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B86B27510AF90041CD03 /* WebEventBridgeTests.swift */; };
+		3C8FC34629F00E05006F2A23 /* WebViewTrackingCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B86B27510AF90041CD03 /* WebViewTrackingCoreTests.swift */; };
+		3C8FC34729F00E05006F2A23 /* WebViewTrackingCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EB4B86B27510AF90041CD03 /* WebViewTrackingCoreTests.swift */; };
 		3CE585AA29EEFC12007D6A47 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE585A229EEFC11007D6A47 /* DatadogWebViewTracking.framework */; };
 		3CE585B529EEFC13007D6A47 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE585A229EEFC11007D6A47 /* DatadogWebViewTracking.framework */; };
 		3CE585B629EEFC13007D6A47 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE585A229EEFC11007D6A47 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -1717,6 +1719,8 @@
 
 /* Begin PBXFileReference section */
 		3C0D29FC29F1617C00CDB1D3 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
+		3C8F1ABB29F2763700CA78A6 /* WebViewTrackingMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTrackingMessage.swift; sourceTree = "<group>"; };
+		3C8F1ABE29F2767200CA78A6 /* WebViewTracking.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
 		3C8FC32729EFFD28006F2A23 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3C8FC33529EFFD2F006F2A23 /* DatadogWebViewTrackingTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogWebViewTrackingTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CE585A229EEFC11007D6A47 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2084,8 +2088,7 @@
 		9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReader.swift; sourceTree = "<group>"; };
 		9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+DatadogTests.swift"; sourceTree = "<group>"; };
 		9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+Datadog.swift"; sourceTree = "<group>"; };
-		9EB4B867275103E40041CD03 /* WebEventBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEventBridge.swift; sourceTree = "<group>"; };
-		9EB4B86B27510AF90041CD03 /* WebEventBridgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebEventBridgeTests.swift; sourceTree = "<group>"; };
+		9EB4B86B27510AF90041CD03 /* WebViewTrackingCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTrackingCoreTests.swift; sourceTree = "<group>"; };
 		9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReader.swift; sourceTree = "<group>"; };
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
@@ -2711,8 +2714,9 @@
 		3CE585A329EEFC11007D6A47 /* DatadogWebViewTracking */ = {
 			isa = PBXGroup;
 			children = (
+				3C8F1ABE29F2767200CA78A6 /* WebViewTracking.swift */,
 				9EB4B861274E79D50041CD03 /* WKUserContentController+Datadog.swift */,
-				9EB4B867275103E40041CD03 /* WebEventBridge.swift */,
+				3C8F1ABB29F2763700CA78A6 /* WebViewTrackingMessage.swift */,
 			);
 			name = DatadogWebViewTracking;
 			path = ../DatadogWebViewTracking/Sources;
@@ -2721,7 +2725,7 @@
 		3CE585AF29EEFC12007D6A47 /* DatadogWebViewTrackingTests */ = {
 			isa = PBXGroup;
 			children = (
-				9EB4B86B27510AF90041CD03 /* WebEventBridgeTests.swift */,
+				9EB4B86B27510AF90041CD03 /* WebViewTrackingCoreTests.swift */,
 				9EAF0CF5275A21100044E8CA /* WKUserContentController+DatadogTests.swift */,
 			);
 			name = DatadogWebViewTrackingTests;
@@ -6373,8 +6377,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C8FC34129F00DED006F2A23 /* WebEventBridge.swift in Sources */,
+				3C8F1ABD29F2763700CA78A6 /* WebViewTrackingMessage.swift in Sources */,
 				3C8FC34329F00DED006F2A23 /* WKUserContentController+Datadog.swift in Sources */,
+				3C8F1AC029F2767200CA78A6 /* WebViewTracking.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6382,7 +6387,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C8FC34629F00E05006F2A23 /* WebEventBridgeTests.swift in Sources */,
+				3C8FC34629F00E05006F2A23 /* WebViewTrackingCoreTests.swift in Sources */,
 				3C8FC34429F00E05006F2A23 /* WKUserContentController+DatadogTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6391,8 +6396,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C8FC34029F00DED006F2A23 /* WebEventBridge.swift in Sources */,
+				3C8F1ABC29F2763700CA78A6 /* WebViewTrackingMessage.swift in Sources */,
 				3C8FC34229F00DED006F2A23 /* WKUserContentController+Datadog.swift in Sources */,
+				3C8F1ABF29F2767200CA78A6 /* WebViewTracking.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6400,7 +6406,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C8FC34729F00E05006F2A23 /* WebEventBridgeTests.swift in Sources */,
+				3C8FC34729F00E05006F2A23 /* WebViewTrackingCoreTests.swift in Sources */,
 				3C8FC34529F00E05006F2A23 /* WKUserContentController+DatadogTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

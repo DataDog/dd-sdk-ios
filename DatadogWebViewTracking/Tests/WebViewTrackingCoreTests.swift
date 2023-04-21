@@ -10,18 +10,18 @@ import DatadogInternal
 
 @testable import DatadogWebViewTracking
 
-class WebEventBridgeTests: XCTestCase {
+class WebViewTrackingCoreTests: XCTestCase {
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itFailsParsing() {
-        let bridge = WebEventBridge(core: PassthroughCoreMock())
+        let bridge = WebViewTrackingCore(core: PassthroughCoreMock())
 
         let messageInvalidJSON = """
         { 123: foobar }
         """
 
         XCTAssertThrowsError(
-            try bridge.consume(messageInvalidJSON),
+            try bridge.send(body: messageInvalidJSON),
             "Non-string keys (123) should throw"
         )
     }
@@ -29,7 +29,7 @@ class WebEventBridgeTests: XCTestCase {
     // MARK: - Routing
 
     func testWhenEventTypeIsMissing_itThrows() {
-        let bridge = WebEventBridge(core: PassthroughCoreMock())
+        let bridge = WebViewTrackingCore(core: PassthroughCoreMock())
 
         let messageMissingEventType = """
         {
@@ -42,12 +42,12 @@ class WebEventBridgeTests: XCTestCase {
         }
         """
         XCTAssertThrowsError(
-            try bridge.consume(messageMissingEventType),
+            try bridge.send(body: messageMissingEventType),
             "Missing eventType should throw"
         ) { error in
             XCTAssertEqual(
-                error as? WebEventError,
-                WebEventError.missingKey(key: WebEventBridge.Constants.eventTypeKey)
+                error as? WebViewTrackingMessageError,
+                .missingKey(key: WebViewTrackingMessage.Keys.eventType)
             )
         }
     }
@@ -80,7 +80,7 @@ class WebEventBridgeTests: XCTestCase {
             }
         )
 
-        let bridge = WebEventBridge(core: core)
+        let bridge = WebViewTrackingCore(core: core)
 
         let messageLog = """
         {
@@ -103,7 +103,7 @@ class WebEventBridgeTests: XCTestCase {
           ]
         }
         """
-        try bridge.consume(messageLog)
+        try bridge.send(body: messageLog)
         wait(for: [expectation], timeout: 1)
     }
 
@@ -127,7 +127,7 @@ class WebEventBridgeTests: XCTestCase {
             }
         )
 
-        let bridge = WebEventBridge(core: core)
+        let bridge = WebViewTrackingCore(core: core)
 
         let messageRUM = """
         {
@@ -186,7 +186,7 @@ class WebEventBridgeTests: XCTestCase {
           ]
         }
         """
-        try bridge.consume(messageRUM)
+        try bridge.send(body: messageRUM)
 
         wait(for: [expectation], timeout: 1)
     }
