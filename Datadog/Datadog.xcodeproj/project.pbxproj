@@ -1874,8 +1874,6 @@
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A736BA3029D1B6AF00C00966 /* TimeInterval+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Convinience.swift"; sourceTree = "<group>"; };
 		A736BA3329D1B6E000C00966 /* FixedWidthInteger+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+Convinience.swift"; sourceTree = "<group>"; };
-		A736BA3729D1B7B600C00966 /* TimeInterval+ConvinienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+ConvinienceTests.swift"; sourceTree = "<group>"; };
-		A736BA3A29D1B7BA00C00966 /* FixedWidthInteger+ConvinienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+ConvinienceTests.swift"; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTelHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* OTelHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
@@ -3837,15 +3835,6 @@
 			path = W3C;
 			sourceTree = "<group>";
 		};
-		A736BA3629D1B7AC00C00966 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				A736BA3729D1B7B600C00966 /* TimeInterval+ConvinienceTests.swift */,
-				A736BA3A29D1B7BA00C00966 /* FixedWidthInteger+ConvinienceTests.swift */,
-			);
-			path = Extensions;
-			sourceTree = "<group>";
-		};
 		A7F773D929253F5900AC1A62 /* OpenTracing */ = {
 			isa = PBXGroup;
 			children = (
@@ -4338,7 +4327,6 @@
 		D2A783D329A53049003B03BB /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				A736BA3629D1B7AC00C00966 /* Extensions */,
 				D23039D9298D5235001A1FA3 /* DateFormatting.swift */,
 				613C6B8F2768FDDE00870CBF /* Sampler.swift */,
 				D23039DC298D5235001A1FA3 /* DDError.swift */,
