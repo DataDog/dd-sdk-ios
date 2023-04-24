@@ -200,6 +200,16 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
+               BuildableName = "DatadogRUMTests iOS.xctest"
+               BlueprintName = "DatadogRUMTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
