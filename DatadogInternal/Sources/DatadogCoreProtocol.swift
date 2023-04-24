@@ -83,7 +83,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - message: The message.
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void)
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
 extension DatadogCoreProtocol {
@@ -92,7 +92,7 @@ extension DatadogCoreProtocol {
     /// - Parameters:
     ///   - message: The message.
     public func send(message: FeatureMessage) {
-        send(message: message, sender: self, else: {})
+        send(message: message, else: {})
     }
 
     /// Sends a message on the bus shared by features registered in this core.
@@ -100,7 +100,7 @@ extension DatadogCoreProtocol {
     /// - Parameters:
     ///   - message: The message.
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        send(message: message, sender: self, else: fallback)
+        send(message: message, else: fallback)
     }
 }
 

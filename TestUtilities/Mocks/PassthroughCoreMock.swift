@@ -88,7 +88,6 @@ open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         PassthroughCoreMock.referenceCount -= 1
     }
 
-
     /// no-op
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
@@ -111,8 +110,8 @@ open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         context.featuresAttributes[feature] = attributes()
     }
 
-    public func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: () -> Void) {
-        if !messageReceiver.receive(message: message, from: sender) {
+    public func send(message: FeatureMessage, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: self) {
             fallback()
         }
     }

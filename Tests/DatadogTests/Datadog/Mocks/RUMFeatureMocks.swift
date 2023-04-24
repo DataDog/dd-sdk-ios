@@ -64,24 +64,18 @@ extension RUMResourceType {
     static func mockAny() -> RUMResourceType { .image }
 }
 
-// MARK: - RUMTelemetry Mocks
+// MARK: - Telemetry Mocks
 
-extension RUMTelemetry {
-    static func mockAny(in core: DatadogCoreProtocol) -> Self { .mockWith(core: core) }
+extension TelemetryReceiver: AnyMockable {
+    public static func mockAny() -> Self { .mockWith() }
 
     static func mockWith(
-        core: DatadogCoreProtocol,
         dateProvider: DateProvider = SystemDateProvider(),
-        configurationEventMapper: RUMTelemetryConfiguratoinMapper? = nil,
-        delayedDispatcher: RUMTelemetryDelayedDispatcher? = nil,
-        sampler: Sampler = .init(samplingRate: 100),
-        configurationExtraSampler: Sampler = .init(samplingRate: 100)
+        sampler: Sampler = .mockKeepAll(),
+        configurationExtraSampler: Sampler = .mockKeepAll()
     ) -> Self {
         .init(
-            in: core,
             dateProvider: dateProvider,
-            configurationEventMapper: configurationEventMapper,
-            delayedDispatcher: delayedDispatcher,
             sampler: sampler,
             configurationExtraSampler: configurationExtraSampler
         )

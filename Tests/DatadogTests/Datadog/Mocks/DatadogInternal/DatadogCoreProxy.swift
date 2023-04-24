@@ -47,6 +47,9 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version
         )
+
+        // override the message-bus's core instance
+        core.bus.connect(core: self)
         DatadogCoreProxy.referenceCount += 1
     }
 
@@ -79,8 +82,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(feature: feature, attributes: attributes)
     }
 
-    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        core.send(message: message, sender: self, else: fallback)
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        core.send(message: message, else: fallback)
     }
 }
 

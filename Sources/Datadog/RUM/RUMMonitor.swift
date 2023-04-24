@@ -193,6 +193,22 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 urlSessionHandler.publish(to: feature.monitor)
                 try core.register(urlSessionHandler: urlSessionHandler)
             }
+
+            TelemetryCore(core: core)
+                .configuration(
+                    mobileVitalsUpdatePeriod: configuration.vitalsFrequency?.toInt64Milliseconds,
+                    sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampler.samplingRate),
+                    telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampler.samplingRate),
+                    traceSampleRate: Int64(withNoOverflow: configuration.tracingSampler.samplingRate),
+                    trackBackgroundEvents: configuration.backgroundEventTrackingEnabled,
+                    trackFrustrations: configuration.frustrationTrackingEnabled,
+                    trackInteractions: configuration.instrumentation.uiKitRUMUserActionsPredicate != nil,
+                    trackLongTask: configuration.instrumentation.longTaskThreshold != nil,
+                    trackNativeLongTasks: configuration.instrumentation.longTaskThreshold != nil,
+                    trackNativeViews: configuration.instrumentation.uiKitRUMViewsPredicate != nil,
+                    trackNetworkRequests: configuration.firstPartyHosts != nil,
+                    useFirstPartyHosts: configuration.firstPartyHosts.map { !$0.hosts.isEmpty }
+                )
         } catch {
             consolePrint("\(error)")
             throw error

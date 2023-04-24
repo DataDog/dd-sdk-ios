@@ -22,8 +22,17 @@ class _InternalProxyTests: XCTestCase {
         Datadog._internal.telemetry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
 
         // Then
-        XCTAssertEqual(dd.telemetry.debugs.first, randomDebugMessage)
-        XCTAssertEqual(dd.telemetry.errors.first?.message, randomErrorMessage)
+        XCTAssertEqual(dd.telemetry.messages.count, 2)
+
+        guard case .debug(_, let receivedMessage) = dd.telemetry.messages.first else {
+            return XCTFail("A debug should be send to `DD.telemetry`.")
+        }
+        XCTAssertEqual(receivedMessage, randomDebugMessage)
+
+        guard case .error(_, let receivedMessage, _, _) = dd.telemetry.messages.last else {
+            return XCTFail("An error should be send to `DD.telemetry`.")
+        }
+        XCTAssertEqual(receivedMessage, randomErrorMessage)
     }
 
     func testWhenNewVersionIsSetInConfigurationProxy_thenItChangesAppVersionInCore() throws {

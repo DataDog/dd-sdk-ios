@@ -29,12 +29,6 @@ internal final class DatadogCore {
         target: .global(qos: .utility)
     )
 
-    /// The message bus GDC queue.
-    let messageBusQueue = DispatchQueue(
-        label: "com.datadoghq.ios-sdk-message-bus",
-        target: .global(qos: .utility)
-    )
-
     /// The system date provider.
     let dateProvider: DateProvider
 
@@ -57,8 +51,8 @@ internal final class DatadogCore {
     /// The application version publisher.
     let applicationVersionPublisher: ApplicationVersionPublisher
 
-    /// The message bus used to dispatch messages to registered features.
-    private var messageBus: [String: FeatureMessageReceiver] = [:]
+    /// The message-bus instance.
+    let bus = MessageBus()
 
     /// Registry for Features.
     @ReadWriteLock
@@ -111,6 +105,10 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
+
+        // connect the core to the message bus.
+        // the bus will keep a weak ref to the core.
+        bus.connect(core: self)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -176,9 +174,9 @@ internal final class DatadogCore {
     ///   - messageReceiver: The new message receiver.
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
-        messageBusQueue.async { self.messageBus[key] = messageReceiver }
+        bus.connect(messageReceiver, forKey: key)
         contextProvider.read { context in
-            self.messageBusQueue.async { messageReceiver.receive(message: .context(context), from: self) }
+            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
         }
     }
 
@@ -238,7 +236,7 @@ extension DatadogCore: DatadogCoreProtocol {
             performancePreset = performance
         }
 
-        if let product = feature as? DatadogRemoteFeature {
+        if let feature = feature as? DatadogRemoteFeature {
             let storage = FeatureStorage(
                 featureName: T.name,
                 queue: readWriteQueue,
@@ -252,7 +250,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 featureName: T.name,
                 contextProvider: contextProvider,
                 fileReader: storage.reader,
-                requestBuilder: product.requestBuilder,
+                requestBuilder: feature.requestBuilder,
                 httpClient: httpClient,
                 performance: performancePreset
             )
@@ -301,16 +299,8 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 
-    /* public */ func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        messageBusQueue.async {
-            let receivers = self.messageBus.values.filter {
-                $0.receive(message: message, from: sender)
-            }
-
-            if receivers.isEmpty {
-                fallback()
-            }
-        }
+    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        bus.send(message: message, else: fallback)
     }
 }
 
@@ -466,7 +456,7 @@ extension DatadogCore: Flushable {
         for _ in 0..<5 {
             // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
             // context & performing write) in other Features:
-            messageBusQueue.sync { }
+            bus.flush()
 
             // Next, flush flushable Features - finish current data collection to open "event write contexts":
             features.forEach { $0.flush() }

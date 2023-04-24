@@ -202,23 +202,33 @@ public class Datadog {
             applicationVersion: configuration.common.applicationVersion
         )
 
+        let telemetry = TelemetryCore(core: core)
+
+        telemetry.configuration(
+            batchSize: Int64(exactly: configuration.common.performance.maxFileSize),
+            batchUploadFrequency: configuration.common.performance.minUploadDelay.toInt64Milliseconds,
+            useLocalEncryption: configuration.common.encryption != nil,
+            useProxy: configuration.common.proxyConfiguration != nil
+        )
+
         // First, initialize features:
-        var telemetry: RUMTelemetry?
-
         if let rumConfiguration = configuration.rum {
-            telemetry = RUMTelemetry(
-                in: core,
-                dateProvider: rumConfiguration.dateProvider,
-                configurationEventMapper: nil,
-                delayedDispatcher: nil,
-                sampler: rumConfiguration.telemetrySampler
-            )
-
-            if let configurationSampler = configuration.rum?.configurationTelemetrySampler {
-                telemetry?.configurationExtraSampler = configurationSampler
-            }
-
             try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
+
+            telemetry.configuration(
+                mobileVitalsUpdatePeriod: rumConfiguration.vitalsFrequency?.toInt64Milliseconds,
+                sessionSampleRate: Int64(withNoOverflow: rumConfiguration.sessionSampler.samplingRate),
+                telemetrySampleRate: Int64(withNoOverflow: rumConfiguration.telemetrySampler.samplingRate),
+                traceSampleRate: Int64(withNoOverflow: rumConfiguration.tracingSampler.samplingRate),
+                trackBackgroundEvents: rumConfiguration.backgroundEventTrackingEnabled,
+                trackFrustrations: rumConfiguration.frustrationTrackingEnabled,
+                trackInteractions: rumConfiguration.instrumentation.uiKitRUMUserActionsPredicate != nil,
+                trackLongTask: rumConfiguration.instrumentation.longTaskThreshold != nil,
+                trackNativeLongTasks: rumConfiguration.instrumentation.longTaskThreshold != nil,
+                trackNativeViews: rumConfiguration.instrumentation.uiKitRUMViewsPredicate != nil,
+                trackNetworkRequests: rumConfiguration.firstPartyHosts != nil,
+                useFirstPartyHosts: rumConfiguration.firstPartyHosts.map { !$0.hosts.isEmpty }
+            )
         }
 
         if let loggingConfiguration = configuration.logging {
@@ -242,6 +252,8 @@ public class Datadog {
         {
             try core.register(feature: reporter)
             reporter.sendCrashReportIfFound()
+
+            telemetry.configuration(trackErrors: true)
         }
 
         deleteV1Folders(in: core)
@@ -253,8 +265,7 @@ public class Datadog {
             verbosityLevel: { Datadog.verbosityLevel }
         )
 
-        telemetry?.configuration(configuration: configuration)
-        DD.telemetry = telemetry ?? NOPTelemetry()
+        DD.telemetry = telemetry
     }
 
     public init() {

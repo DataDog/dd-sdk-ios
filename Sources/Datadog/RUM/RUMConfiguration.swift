@@ -38,7 +38,7 @@ public struct RUMConfiguration {
     let applicationID: String
     let sessionSampler: Sampler
     let telemetrySampler: Sampler
-    let configurationTelemetrySampler: Sampler?
+    let configurationTelemetrySampler: Sampler
     let uuidGenerator: RUMUUIDGenerator
     let viewEventMapper: RUMViewEventMapper?
     let resourceEventMapper: RUMResourceEventMapper?
@@ -62,7 +62,7 @@ public struct RUMConfiguration {
         applicationID: String,
         sessionSampler: Sampler = Sampler(samplingRate: 100),
         telemetrySampler: Sampler = Sampler(samplingRate: 20),
-        configurationTelemetrySampler: Sampler? = nil,
+        configurationTelemetrySampler: Sampler = Sampler(samplingRate: 20),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
@@ -108,7 +108,7 @@ public struct RUMConfiguration {
         uuidGenerator: RUMUUIDGenerator,
         sessionSampler: Sampler = Sampler(samplingRate: 100),
         telemetrySampler: Sampler = Sampler(samplingRate: 20),
-        configurationTelemetrySampler: Sampler? = nil,
+        configurationTelemetrySampler: Sampler = Sampler(samplingRate: 20),
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
