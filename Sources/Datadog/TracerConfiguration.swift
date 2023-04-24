@@ -27,6 +27,9 @@ extension Tracer {
         /// - Parameter enabled: `true` by default
         public var bundleWithRUM: Bool
 
+        /// TRhe sampling rate for Traces, as a Float between 0 and 100.
+        public var samplingRate: Float
+
         /// Initializes the Datadog Tracer configuration.
         /// - Parameter serviceName: the service name that will appear in traces (if not provided or `nil`, the SDK default `serviceName` will be used).
         /// - Parameter sendNetworkInfo: adds network connection info to every span and span logs (`false` by default).
@@ -37,11 +40,13 @@ extension Tracer {
             serviceName: String? = nil,
             sendNetworkInfo: Bool = false,
             bundleWithRUM: Bool = true,
+            samplingRate: Float = 100,
             globalTags: [String: Encodable]? = nil
         ) {
             self.serviceName = serviceName
             self.sendNetworkInfo = sendNetworkInfo
             self.bundleWithRUM = bundleWithRUM
+            self.samplingRate = samplingRate
             self.globalTags = globalTags
         }
     }
