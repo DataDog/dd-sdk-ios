@@ -8,6 +8,7 @@ import UIKit
 import Datadog
 import DatadogLogs
 import DatadogTrace
+import DatadogRUM
 import DatadogObjc
 import DatadogCrashReporting
 
