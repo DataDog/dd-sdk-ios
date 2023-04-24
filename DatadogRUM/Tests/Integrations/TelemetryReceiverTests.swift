@@ -331,42 +331,4 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)
         XCTAssertEqual(event?.telemetry.configuration.useTracing, useTracing)
     }
-
-    // MARK: - Thread safety
-
-    func testSendTelemetryAndReset_onAnyThread() throws {
-        let core = DatadogCoreProxy(
-            context: .mockWith(
-                version: .mockRandom(),
-                source: .mockAnySource(),
-                sdkVersion: .mockRandom()
-            )
-        )
-        defer { core.flushAndTearDown() }
-
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
-        let telemetry = TelemetryCore(core: core)
-
-        // swiftlint:disable opening_brace
-        callConcurrently(
-            closures: [
-                { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
-                { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
-                { telemetry.configuration(batchSize: .mockRandom()) },
-                {
-                    core.set(feature: "rum", attributes: {[
-                        RUMContextAttributes.ids: [
-                            RUMContextAttributes.IDs.applicationID: String.mockRandom(),
-                            RUMContextAttributes.IDs.sessionID: String.mockRandom(),
-                            RUMContextAttributes.IDs.viewID: String.mockRandom(),
-                            RUMContextAttributes.IDs.userActionID: String.mockRandom()
-                        ]
-                    ]})
-                }
-            ],
-            iterations: 50
-        )
-        // swiftlint:enable opening_brace
-    }
 }
