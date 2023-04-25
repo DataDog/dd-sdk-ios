@@ -1367,26 +1367,26 @@
 			remoteGlobalIDString = D207317B29A5226A00ECBF94;
 			remoteInfo = DatadogLogs;
 		};
+		D22A031A29F7DAA9002C02C6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D20731A429A5279D00ECBF94;
+			remoteInfo = "DatadogLogs tvOS";
+		};
+		D22A031C29F7DABE002C02C6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23F8E4D29DDCD28001CFAE8;
+			remoteInfo = "DatadogRUM tvOS";
+		};
 		D2303A06298D5317001A1FA3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D23039A4298D513C001A1FA3;
 			remoteInfo = "DatadogInternal iOS";
-		};
-		D23F8E9C29DDCD38001CFAE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61133B79242393DE00786299 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D29A9F3329DD84AA005C54A4;
-			remoteInfo = DatadogRUM;
-		};
-		D23F8E9E29DDCD38001CFAE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61133B79242393DE00786299 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
-			remoteInfo = "Example iOS";
 		};
 		D23F8ECF29DDCD5C001CFAE8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1527,13 +1527,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = D2DA2355298D57AA00C6C7E6;
 			remoteInfo = "DatadogInternal tvOS";
-		};
-		D2A783F029A534F9003B03BB /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61133B79242393DE00786299 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = D207317B29A5226A00ECBF94;
-			remoteInfo = DatadogLogs;
 		};
 		D2C1A51029C4C4EF00946C31 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -5363,8 +5356,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				D23F8E9B29DDCD38001CFAE8 /* PBXTargetDependency */,
-				D23F8E9D29DDCD38001CFAE8 /* PBXTargetDependency */,
+				D22A031D29F7DABE002C02C6 /* PBXTargetDependency */,
 				D23F8ED729DDCE30001CFAE8 /* PBXTargetDependency */,
 			);
 			name = "DatadogRUMTests tvOS";
@@ -5522,7 +5514,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				D2A783EF29A534F9003B03BB /* PBXTargetDependency */,
+				D22A031B29F7DAA9002C02C6 /* PBXTargetDependency */,
 			);
 			name = "DatadogLogsTests tvOS";
 			productName = DatadogLogsTests;
@@ -7808,20 +7800,20 @@
 			target = D207317B29A5226A00ECBF94 /* DatadogLogs iOS */;
 			targetProxy = D20731A129A5271900ECBF94 /* PBXContainerItemProxy */;
 		};
+		D22A031B29F7DAA9002C02C6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D20731A429A5279D00ECBF94 /* DatadogLogs tvOS */;
+			targetProxy = D22A031A29F7DAA9002C02C6 /* PBXContainerItemProxy */;
+		};
+		D22A031D29F7DABE002C02C6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23F8E4D29DDCD28001CFAE8 /* DatadogRUM tvOS */;
+			targetProxy = D22A031C29F7DABE002C02C6 /* PBXContainerItemProxy */;
+		};
 		D2303A07298D5317001A1FA3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
 			targetProxy = D2303A06298D5317001A1FA3 /* PBXContainerItemProxy */;
-		};
-		D23F8E9B29DDCD38001CFAE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D29A9F3329DD84AA005C54A4 /* DatadogRUM iOS */;
-			targetProxy = D23F8E9C29DDCD38001CFAE8 /* PBXContainerItemProxy */;
-		};
-		D23F8E9D29DDCD38001CFAE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
-			targetProxy = D23F8E9E29DDCD38001CFAE8 /* PBXContainerItemProxy */;
 		};
 		D23F8ED029DDCD5C001CFAE8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -7923,11 +7915,6 @@
 			isa = PBXTargetDependency;
 			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
 			targetProxy = D2A783E229A53414003B03BB /* PBXContainerItemProxy */;
-		};
-		D2A783EF29A534F9003B03BB /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D207317B29A5226A00ECBF94 /* DatadogLogs iOS */;
-			targetProxy = D2A783F029A534F9003B03BB /* PBXContainerItemProxy */;
 		};
 		D2C1A51129C4C4EF00946C31 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
