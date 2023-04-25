@@ -91,7 +91,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         XCTAssertEqual(
             dd.logger.warnLogs.map({ $0.message }),
-            Array(repeating: "`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1)
+            Array(repeating: "`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.", count: multipleTimes - 1)
         )
     }
 

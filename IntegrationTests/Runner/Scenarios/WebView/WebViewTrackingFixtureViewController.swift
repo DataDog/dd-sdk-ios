@@ -33,7 +33,7 @@ class ShopistWebviewViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        webView.configuration.userContentController.trackDatadogEvents(in: ["shopist.io"])
+        webView.configuration.userContentController.startTrackingDatadogEvents(core: defaultDatadogCore, hosts: ["shopist.io"])
     }
 
     override func viewWillDisappear(_ animated: Bool) {

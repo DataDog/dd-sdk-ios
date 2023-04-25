@@ -64,7 +64,7 @@ public extension WKUserContentController {
         hostsSanitizer: HostsSanitizing
     ) {
         guard !isTracking else {
-            DD.logger.warn("`trackDatadogEvents(in:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
+            DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
               return
            }
 
