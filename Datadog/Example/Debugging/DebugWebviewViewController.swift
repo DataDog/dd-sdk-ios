@@ -7,6 +7,8 @@
 import UIKit
 import WebKit
 import Datadog
+import DatadogInternal
+import DatadogWebViewTracking
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
@@ -84,7 +86,7 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.trackDatadogEvents(in: [request.url!.host!])
+        controller.startTrackingDatadogEvents(core: defaultDatadogCore)
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 
