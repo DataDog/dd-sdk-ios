@@ -13,7 +13,7 @@ endif
 
 test:
 		@echo "⚙️  Configuring CTProject with remote branch: '${GIT_REFERENCE}'..."
-		
+
 		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src | \
 		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
@@ -27,4 +27,5 @@ test:
 		@[ -e "Carthage/Build/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
+		@[ -e "Carthage/Build/DatadogWebViewTracking.xcframework" ] && echo "DatadogWebViewTracking.xcframework - OK" || { echo "DatadogWebViewTracking.xcframework - missing"; false; }
 		@echo "🧪 SUCCEEDED"
