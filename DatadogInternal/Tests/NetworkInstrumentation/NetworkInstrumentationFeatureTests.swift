@@ -227,10 +227,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
-        var core: DatadogCoreProtocol? = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
-        try core?.register(urlSessionHandler: handler)
-
-        // When
         let delegate = DatadogURLSessionDelegate(in: core)
         // Then
         XCTAssertNotNil(delegate.interceptor)
