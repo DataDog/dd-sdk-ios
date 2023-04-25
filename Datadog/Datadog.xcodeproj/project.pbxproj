@@ -7570,6 +7570,7 @@
 /* Begin XCBuildConfiguration section */
 		3CE11A1329F7BE0B00202522 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -7604,6 +7605,7 @@
 		};
 		3CE11A1429F7BE0B00202522 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -7638,6 +7640,7 @@
 		};
 		3CE11A1529F7BE0B00202522 /* Integration */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -7760,6 +7763,7 @@
 		};
 		3CE11A3029F7BE2100202522 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -7795,6 +7799,7 @@
 		};
 		3CE11A3129F7BE2100202522 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
@@ -7830,6 +7835,7 @@
 		};
 		3CE11A3229F7BE2100202522 /* Integration */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 61569894256D0E9A00C6AADA /* Base.xcconfig */;
 			buildSettings = {
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
 				CLANG_ENABLE_MODULES = YES;
