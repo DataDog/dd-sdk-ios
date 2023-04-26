@@ -61,12 +61,12 @@ class WebViewTrackingCoreTests: XCTestCase {
                     switch key {
                     case "browser-log":
                         let event = baggage.attributes as JSON
-                        XCTAssertEqual(event["date"] as! Int64, 1_635_932_927_012)
-                        XCTAssertEqual(event["message"] as! String, "console error: error")
-                        XCTAssertEqual(event["status"] as! String, "error")
-                        XCTAssertEqual(event["view"] as! [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                        XCTAssertEqual(event["error"] as! [String : String], ["origin": "console"])
-                        XCTAssertEqual(event["session_id"] as! String, "0110cab4-7471-480e-aa4e-7ce039ced355")
+                        XCTAssertEqual(event["date"] as? Int64, 1_635_932_927_012)
+                        XCTAssertEqual(event["message"] as? String, "console error: error")
+                        XCTAssertEqual(event["status"] as? String, "error")
+                        XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+                        XCTAssertEqual(event["error"] as? [String : String], ["origin": "console"])
+                        XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                         expectation.fulfill()
                     default:
                         XCTFail("Unexpected custom message received: key: \(key), baggage: \(baggage)")

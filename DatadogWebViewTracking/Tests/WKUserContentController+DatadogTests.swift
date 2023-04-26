@@ -151,16 +151,16 @@ class WKUserContentController_DatadogTests: XCTestCase {
                     switch key {
                     case "browser-log":
                         let event = baggage.attributes as JSON
-                        XCTAssertEqual(event["date"] as! Int64, 1_635_932_927_012)
-                        XCTAssertEqual(event["message"] as! String, "console error: error")
-                        XCTAssertEqual(event["status"] as! String, "error")
-                        XCTAssertEqual(event["view"] as! [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                        XCTAssertEqual(event["error"] as! [String : String], ["origin": "console"])
-                        XCTAssertEqual(event["session_id"] as! String, "0110cab4-7471-480e-aa4e-7ce039ced355")
+                        XCTAssertEqual(event["date"] as? Int64, 1_635_932_927_012)
+                        XCTAssertEqual(event["message"] as? String, "console error: error")
+                        XCTAssertEqual(event["status"] as? String, "error")
+                        XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+                        XCTAssertEqual(event["error"] as? [String : String], ["origin": "console"])
+                        XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                         logMessageExpectation.fulfill()
                     case "browser-rum-event":
                         let event = baggage.attributes as JSON
-                        XCTAssertEqual((event["view"] as! JSON)["id"] as! String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                        XCTAssertEqual((event["view"] as? JSON)?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                         rumMessageExpectation.fulfill()
                     default:
                         XCTFail("Unexpected custom message received: key: \(key), baggage: \(baggage)")
