@@ -217,7 +217,7 @@ class ViewTreeRecorderTests: XCTestCase {
         }
     }
 
-    func testItOverridesContextForUIAlertController() {
+    func testItOverridesViewControllerContextForUIAlertController() {
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let recorder = ViewTreeRecorder(
             nodeRecorders: [
@@ -236,5 +236,47 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(contextOverride?.viewControllerContext.isRootView, true)
         XCTAssertEqual(contextOverride?.viewControllerContext.parentType, .alert)
         XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it's UIAlertController's view.")
+    }
+
+    func testItOverridesViewControllerContextForUIViewController() {
+        let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIViewRecorder(),
+                nodeRecorder
+            ]
+        )
+        let view = UIViewController().view!
+        let context = ViewTreeRecordingContext.mockRandom()
+
+        // When
+        let nodes = recorder.recordNodes(for: view, in: context)
+
+        // Then
+        let contextOverride = nodeRecorder.queryContexts.first
+        XCTAssertEqual(contextOverride?.viewControllerContext.isRootView, true)
+        XCTAssertEqual(contextOverride?.viewControllerContext.parentType, .other)
+        XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for \(type(of: view)) when it's empty UIViewController's view.")
+    }
+
+    func testItOverridesViewControllerContextForUIView() {
+        let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIViewRecorder(),
+                nodeRecorder
+            ]
+        )
+        let view: UIView = .mock(withFixture: .visible(.someAppearance))
+        let context = ViewTreeRecordingContext.mockRandom()
+
+        // When
+        let nodes = recorder.recordNodes(for: view, in: context)
+
+        // Then
+        let contextOverride = nodeRecorder.queryContexts.first
+        XCTAssertEqual(contextOverride?.viewControllerContext.isRootView, false)
+        XCTAssertNil(contextOverride?.viewControllerContext.parentType)
+        XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some appearance")
     }
 }
