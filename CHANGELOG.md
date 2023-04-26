@@ -1,5 +1,6 @@
 # Unreleased
 
+# 1.19.0 / 26-04-2023
 - [BUGFIX] Fix view attributes override by action attributes. See [#1250][]
 - [IMPROVEMENT] Add Tracer sampling rate. See [#1259][]
 - [BUGFIX] Fix RUM context not being attached to log when no user action exists. See [#1264][]
