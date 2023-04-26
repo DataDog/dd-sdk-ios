@@ -133,6 +133,32 @@ class ViewAttributesTests: XCTestCase {
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
         XCTAssertFalse(attributes.isTranslucent)
     }
+
+    func testWhenCopy() {
+        let view: UIView = .mockRandom()
+        let rect: CGRect = .mockRandom()
+        let color: CGColor = .mockRandom()
+        let float: CGFloat = .mockRandom()
+        let boolean: Bool = .mockRandom()
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view).copy {
+            $0.frame = rect
+            $0.backgroundColor = color
+            $0.layerBorderColor = color
+            $0.layerBorderWidth = float
+            $0.layerCornerRadius = float
+            $0.alpha = float
+            $0.isHidden = boolean
+            $0.intrinsicContentSize = rect.size
+        }
+        XCTAssertEqual(attributes.frame, rect)
+        XCTAssertEqual(attributes.backgroundColor, color)
+        XCTAssertEqual(attributes.layerBorderColor, color)
+        XCTAssertEqual(attributes.layerBorderWidth, float)
+        XCTAssertEqual(attributes.layerCornerRadius, float)
+        XCTAssertEqual(attributes.alpha, float)
+        XCTAssertEqual(attributes.isHidden, boolean)
+        XCTAssertEqual(attributes.intrinsicContentSize, rect.size)
+    }
 }
 // swiftlint:enable opening_brace
 
