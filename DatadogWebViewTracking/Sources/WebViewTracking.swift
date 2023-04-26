@@ -32,7 +32,9 @@ public struct WebViewTrackingCore: WebViewTracking {
     /// Sends a message to the message bus
     /// - Parameter message: The message to send
     public func send(message: WebViewTrackingMessage) throws {
-        assert(core != nil, "Core must not be nil when using WebViewTracking")
+        if core == nil {
+            DD.logger.debug("Core must not be nil when using WebViewTracking")
+        }
         switch message {
         case let .log(event):
             core?.send(message: .custom(key: MessageKeys.browserLog, baggage: .init(event)), else: {
