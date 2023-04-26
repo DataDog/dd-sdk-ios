@@ -71,15 +71,19 @@ internal struct UIDatePickerRecorder: NodeRecorder {
 private struct WheelsStyleDatePickerRecorder {
     let pickerTreeRecorder = ViewTreeRecorder(
         nodeRecorders: [
-            UIPickerViewRecorder()
+            UIPickerViewRecorder(
+                textObfuscator: { context in
+                    switch context.recorder.privacy {
+                    case .allowAll:         return context.textObfuscators.nop
+                    case .maskAll:          return context.textObfuscators.spacePreservingMask
+                    case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+                    }
+                }
+            )
         ]
     )
 
     func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
-        var context = context
-        // Do not elevate text obfuscation for selected options in the context of date picker.
-        // Meaning: do not replace dates with fixed-width `"xxx"` mask - instead, replace each character individually.
-        context.selectionTextObfuscator = context.textObfuscator
         return pickerTreeRecorder.recordNodes(for: view, in: context)
     }
 }
@@ -91,7 +95,15 @@ private struct InlineStyleDatePickerRecorder {
 
     init() {
         self.viewRecorder = UIViewRecorder()
-        self.labelRecorder = UILabelRecorder()
+        self.labelRecorder = UILabelRecorder(
+            textObfuscator: { context in
+                switch context.recorder.privacy {
+                case .allowAll:         return context.textObfuscators.nop
+                case .maskAll:          return context.textObfuscators.spacePreservingMask
+                case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+                }
+            }
+        )
         self.subtreeRecorder = ViewTreeRecorder(
             nodeRecorders: [
                 viewRecorder,
@@ -104,7 +116,7 @@ private struct InlineStyleDatePickerRecorder {
 
     func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
         viewRecorder.semanticsOverride = { _, viewAttributes in
-            if context.recorder.privacy == .maskAll {
+            if context.recorder.privacy.shouldMaskInputElements {
                 let isSquare = viewAttributes.frame.width == viewAttributes.frame.height
                 let isCircle = isSquare && viewAttributes.layerCornerRadius == viewAttributes.frame.width * 0.5
                 if isCircle {
@@ -114,7 +126,7 @@ private struct InlineStyleDatePickerRecorder {
             return nil
         }
 
-        if context.recorder.privacy == .maskAll {
+        if context.recorder.privacy.shouldMaskInputElements {
             labelRecorder.builderOverride = { builder in
                 var builder = builder
                 builder.textColor = SystemColors.label
@@ -130,7 +142,15 @@ private struct CompactStyleDatePickerRecorder {
     let subtreeRecorder = ViewTreeRecorder(
         nodeRecorders: [
             UIViewRecorder(),
-            UILabelRecorder()
+            UILabelRecorder(
+                textObfuscator: { context in
+                    switch context.recorder.privacy {
+                    case .allowAll:         return context.textObfuscators.nop
+                    case .maskAll:          return context.textObfuscators.spacePreservingMask
+                    case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+                    }
+                }
+            )
         ]
     )
 

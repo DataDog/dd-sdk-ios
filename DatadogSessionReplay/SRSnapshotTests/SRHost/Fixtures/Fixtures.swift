@@ -22,6 +22,7 @@ internal enum Fixture: CaseIterable {
     case timePickersWheels
     case timePickersCompact
     case images
+    case unsupportedViews
 
     var menuItemTitle: String {
         switch self {
@@ -55,6 +56,8 @@ internal enum Fixture: CaseIterable {
             return "Time Picker (compact)"
         case .images:
             return "Images"
+        case .unsupportedViews:
+            return "Unsupported Views"
         }
     }
 
@@ -90,6 +93,8 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.datePickers.instantiateViewController(withIdentifier: "DatePickersCompact") // sharing the same VC with `datePickersCompact`
         case .images:
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
+        case .unsupportedViews:
+            return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
         }
     }
 }
@@ -99,4 +104,5 @@ internal extension UIStoryboard {
     static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: nil) }
     static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: nil) }
     static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: nil) }
+    static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: nil) }
 }

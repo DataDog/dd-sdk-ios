@@ -8,8 +8,8 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-class TestObfuscatorTests: XCTestCase {
-    let obfuscator = TextObfuscator()
+class SpacePreservingMaskObfuscatorTests: XCTestCase {
+    let obfuscator = SpacePreservingMaskObfuscator()
 
     func testWhenMaskingEmptyText() {
         XCTAssertEqual(obfuscator.mask(text: ""), "")
@@ -50,8 +50,8 @@ class TestObfuscatorTests: XCTestCase {
     }
 }
 
-class InputTextObfuscatorTests: XCTestCase {
-    let obfuscator = SensitiveTextObfuscator()
+class FixLegthMaskObfuscatorTests: XCTestCase {
+    let obfuscator = FixLegthMaskObfuscator()
 
     func testWhenObfuscatingItAlwaysReplacesTextItWithConstantMask() {
         let expectedMask = "xxx"
@@ -59,5 +59,14 @@ class InputTextObfuscatorTests: XCTestCase {
         XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .alphanumericsAndWhitespace)), expectedMask)
         XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .allUnicodes)), expectedMask)
         XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .alphanumerics)), expectedMask)
+    }
+}
+
+class NOPTextObfuscatorTests: XCTestCase {
+    let obfuscator = NOPTextObfuscator()
+
+    func testWhenObfuscatingItReturnsOriginalText() {
+        let text: String = .mockRandom()
+        XCTAssertEqual(obfuscator.mask(text: text), text)
     }
 }

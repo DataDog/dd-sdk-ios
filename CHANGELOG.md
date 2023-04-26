@@ -1,5 +1,11 @@
 # Unreleased
 
+- [BUGFIX] Fix RUM context not being attached to log when no user action exists. See [#1264][]
+
+# 1.18.0 / 19-04-2023
+- [IMPROVEMENT] Add start reason to the session. See [#1247][]
+- [IMPROVEMENT] Add ability to stop the session. See [#1219][]
+
 # 1.17.0 / 23-03-2023
 - [BUGFIX] Fix crash in `VitalInfoSampler`. See [#1216][] (Thanks [@cltnschlosser][])
 - [IMPROVEMENT] Fix Xcode analysis warning. See [#1220][]
@@ -445,7 +451,10 @@
 [#1188]: https://github.com/DataDog/dd-sdk-ios/pull/1188
 [#1209]: https://github.com/DataDog/dd-sdk-ios/pull/1209
 [#1216]: https://github.com/DataDog/dd-sdk-ios/pull/1216
+[#1219]: https://github.com/DataDog/dd-sdk-ios/pull/1219
 [#1220]: https://github.com/DataDog/dd-sdk-ios/pull/1220
+[#1247]: https://github.com/DataDog/dd-sdk-ios/pull/1247
+[#1264]: https://github.com/DataDog/dd-sdk-ios/pull/1264
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

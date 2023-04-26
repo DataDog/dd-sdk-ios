@@ -62,7 +62,10 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
   - vertical_whitespace_opening_braces
   - void_return
   - xct_specific_matcher
-
+attributes:
+  always_on_line_above:
+    - "@ReadWriteLock"
+    
 custom_rules:
   todo_without_jira: # enforces that all TODO comments must be followed by JIRA reference
     name: "TODO without JIRA"

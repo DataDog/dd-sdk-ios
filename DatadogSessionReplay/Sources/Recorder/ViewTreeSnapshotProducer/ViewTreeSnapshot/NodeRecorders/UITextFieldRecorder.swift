@@ -13,6 +13,18 @@ internal struct UITextFieldRecorder: NodeRecorder {
     private let iconsRecorder: UIImageViewRecorder
     private let subtreeRecorder: ViewTreeRecorder
 
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
+        if isSensitiveText {
+            return context.textObfuscators.fixLegthMask
+        }
+
+        switch context.recorder.privacy {
+        case .allowAll:         return context.textObfuscators.nop
+        case .maskAll:          return context.textObfuscators.spacePreservingMask
+        case .maskUserInput:    return context.textObfuscators.fixLegthMask
+        }
+    }
+
     init() {
         self.backgroundViewRecorder = UIViewRecorder()
         self.iconsRecorder = UIImageViewRecorder()
@@ -71,6 +83,8 @@ internal struct UITextFieldRecorder: NodeRecorder {
         let textFrame = attributes.frame
             .insetBy(dx: 5, dy: 5) // 5 points padding
 
+        let isSensitiveText = textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber
+
         let builder = UITextFieldWireframesBuilder(
             wireframeRect: textFrame,
             attributes: attributes,
@@ -81,17 +95,9 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(for: textField, in: context)
+            textObfuscator: textObfuscator(context, isSensitiveText)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
-    }
-
-    private func textObfuscator(for textField: UITextField, in context: ViewTreeRecordingContext) -> TextObfuscating {
-        if textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber {
-            return context.sensitiveTextObfuscator
-        }
-
-        return context.textObfuscator
     }
 }
 
@@ -110,22 +116,13 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     let textObfuscator: TextObfuscating
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
-        let horizontalAlignment: SRTextPosition.Alignment.Horizontal? = {
-            switch textAlignment {
-            case .left:     return .left
-            case .center:   return .center
-            case .right:    return .right
-            default:        return nil
-            }
-        }()
-
         return [
             builder.createTextWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
                 text: textObfuscator.mask(text: text),
                 textFrame: wireframeRect,
-                textAlignment: .init(horizontal: horizontalAlignment, vertical: .center),
+                textAlignment: .init(systemTextAlignment: textAlignment),
                 textColor: isPlaceholderText ? SystemColors.placeholderText : textColor,
                 font: font,
                 fontScalingEnabled: fontScalingEnabled,
