@@ -218,13 +218,23 @@ class ViewTreeRecorderTests: XCTestCase {
     }
 
     func testItOverridesContextForUIAlertController() {
-        let recorder = ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders())
+        let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
+        let recorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIViewRecorder(),
+                nodeRecorder
+            ]
+        )
         let view = UIAlertController(title: "", message: "", preferredStyle: .alert).view!
-        // When
         let context = ViewTreeRecordingContext.mockRandom()
+
+        // When
         let nodes = recorder.recordNodes(for: view, in: context)
 
         // Then
-        XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some")
+        let contextOverride = nodeRecorder.queryContexts.first
+        XCTAssertEqual(contextOverride?.viewControllerContext.isRootView, true)
+        XCTAssertEqual(contextOverride?.viewControllerContext.parentType, .alert)
+        XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it's UIAlertController's view.")
     }
 }
