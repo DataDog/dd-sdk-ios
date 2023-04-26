@@ -247,16 +247,20 @@ class ViewTreeRecorderTests: XCTestCase {
             ]
         )
         let view = UIViewController().view!
+        view.addSubview(.mock(withFixture: .visible(.someAppearance)))
         let context = ViewTreeRecordingContext.mockRandom()
 
         // When
         let nodes = recorder.recordNodes(for: view, in: context)
 
         // Then
-        let contextOverride = nodeRecorder.queryContexts.first
-        XCTAssertEqual(contextOverride?.viewControllerContext.isRootView, true)
-        XCTAssertEqual(contextOverride?.viewControllerContext.parentType, .other)
-        XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for \(type(of: view)) when it's empty UIViewController's view.")
+        let rootViewContext = nodeRecorder.queryContexts.first
+        let childViewContext = nodeRecorder.queryContexts.last
+        XCTAssertEqual(rootViewContext?.viewControllerContext.isRootView, true)
+        XCTAssertEqual(rootViewContext?.viewControllerContext.parentType, .other)
+        XCTAssertEqual(childViewContext?.viewControllerContext.isRootView, false)
+        XCTAssertEqual(childViewContext?.viewControllerContext.parentType, .other)
+        XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for view when it has some appearance")
     }
 
     func testItOverridesViewControllerContextForUIView() {
