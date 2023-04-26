@@ -38,7 +38,7 @@ public struct WebViewTrackingCore: WebViewTracking {
             core?.send(message: .custom(key: MessageKeys.browserLog, baggage: .init(event)), else: {
                 DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
             })
-        case let .rumEvent(event):
+        case let .rum(event):
             core?.send(message: .custom(key: MessageKeys.browserRUMEvent, baggage: .init(event)), else: {
                 DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
             })

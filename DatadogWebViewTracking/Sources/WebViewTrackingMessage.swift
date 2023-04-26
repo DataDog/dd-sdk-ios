@@ -14,7 +14,7 @@ public enum WebViewTrackingMessage {
     case log(JSON)
 
     /// A RUM event with a JSON payload
-    case rumEvent(JSON)
+    case rum(JSON)
 }
 
 /// Errors that can be thrown when parsing a WebView message
@@ -56,7 +56,7 @@ extension WebViewTrackingMessage {
         case EventTypes.log:
             self = .log(event)
         default:
-            self = .rumEvent(event)
+            self = .rum(event)
         }
     }
 
