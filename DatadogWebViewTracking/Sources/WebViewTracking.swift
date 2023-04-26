@@ -8,10 +8,6 @@ import DatadogInternal
 
 /// Defines methods to send WebView related information
 public protocol WebViewTracking {
-    /// Sends a bag of data
-    /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
-    func send(body: Any) throws
-
     /// Sends a message
     /// - Parameter message: The message to send
     func send(message: WebViewTrackingMessage) throws
@@ -33,13 +29,6 @@ public struct WebViewTrackingCore: WebViewTracking {
         self.core = core
     }
 
-    /// Sends a bag of data to the message bus
-    /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
-    public func send(body: Any) throws {
-        let message = try WebViewTrackingMessage(body: body)
-        try send(message: message)
-    }
-
     /// Sends a message to the message bus
     /// - Parameter message: The message to send
     public func send(message: WebViewTrackingMessage) throws {
@@ -53,5 +42,14 @@ public struct WebViewTrackingCore: WebViewTracking {
                 DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
             })
         }
+    }
+}
+
+extension WebViewTracking {
+    /// Sends a bag of data to the message bus
+    /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
+    public func send(body: Any) throws {
+        let message = try WebViewTrackingMessage(body: body)
+        try send(message: message)
     }
 }
