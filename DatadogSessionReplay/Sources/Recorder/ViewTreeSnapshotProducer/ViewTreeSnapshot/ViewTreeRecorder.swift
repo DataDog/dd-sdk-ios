@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SafariServices
 
 /// The context of recording subtree hierarchy.
 ///
@@ -28,12 +29,18 @@ internal extension ViewTreeRecordingContext {
     struct ViewControllerContext {
         enum ViewControllerType {
             case alert
+            case safari
+            case activity
             case other
 
             internal init(_ viewController: UIViewController?) {
                 switch viewController {
                 case is UIAlertController:
                     self = .alert
+                case is UIActivityViewController:
+                    self = .activity
+                case is SFSafariViewController:
+                    self = .safari
                 default:
                     self = .other
                 }
@@ -45,6 +52,23 @@ internal extension ViewTreeRecordingContext {
 
         func isRootView(of: ViewControllerType) -> Bool {
             parentType == of && isRootView == true
+        }
+
+        var name: String? {
+            guard isRootView == true else {
+                return nil
+            }
+            switch parentType {
+            case .alert:
+                return "Alert"
+            case .activity:
+                return "Activity"
+            case .safari:
+                return "Safari"
+            case .other,
+                 .none:
+                return nil
+            }
         }
     }
 }

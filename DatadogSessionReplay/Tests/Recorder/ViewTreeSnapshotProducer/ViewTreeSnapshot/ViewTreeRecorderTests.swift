@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import SafariServices
+
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
