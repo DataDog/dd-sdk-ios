@@ -1564,11 +1564,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WebViewTracking.swift; path = ../../DatadogWebViewTracking/Sources/WebViewTracking.swift; sourceTree = "<group>"; };
-		3C85D41529F7C59C00AFF894 /* WebViewTrackingMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WebViewTrackingMessage.swift; path = ../../DatadogWebViewTracking/Sources/WebViewTrackingMessage.swift; sourceTree = "<group>"; };
-		3C85D41629F7C59C00AFF894 /* WKUserContentController+Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = "WKUserContentController+Datadog.swift"; path = "../../DatadogWebViewTracking/Sources/WKUserContentController+Datadog.swift"; sourceTree = "<group>"; };
-		3C85D41729F7C5BE00AFF894 /* WebViewTrackingCoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WebViewTrackingCoreTests.swift; path = ../../DatadogWebViewTracking/Tests/WebViewTrackingCoreTests.swift; sourceTree = "<group>"; };
-		3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "WKUserContentController+DatadogTests.swift"; path = "../../DatadogWebViewTracking/Tests/WKUserContentController+DatadogTests.swift"; sourceTree = "<group>"; };
+		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
+		3C85D41529F7C59C00AFF894 /* WebViewTrackingMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTrackingMessage.swift; sourceTree = "<group>"; };
+		3C85D41629F7C59C00AFF894 /* WKUserContentController+Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+Datadog.swift"; sourceTree = "<group>"; };
+		3C85D41729F7C5BE00AFF894 /* WebViewTrackingCoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebViewTrackingCoreTests.swift; sourceTree = "<group>"; };
+		3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WKUserContentController+DatadogTests.swift"; sourceTree = "<group>"; };
 		3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
 		3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogWebViewTrackingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2520,7 +2520,7 @@
 				3C85D41629F7C59C00AFF894 /* WKUserContentController+Datadog.swift */,
 			);
 			name = DatadogWebViewTracking;
-			path = Sources;
+			path = ../DatadogWebViewTracking/Sources;
 			sourceTree = "<group>";
 		};
 		3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */ = {
@@ -2530,7 +2530,7 @@
 				3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */,
 			);
 			name = DatadogWebViewTrackingTests;
-			path = Tests;
+			path = ../DatadogWebViewTracking/Tests;
 			sourceTree = "<group>";
 		};
 		61020C272757AD63005EEAEA /* BackgroundEvents */ = {
