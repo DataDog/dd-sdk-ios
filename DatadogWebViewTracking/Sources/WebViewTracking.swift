@@ -23,7 +23,7 @@ public struct WebViewTrackingCore: WebViewTracking {
         static let browserRUMEvent = "browser-rum-event"
     }
 
-    private let core: DatadogCoreProtocol
+    private weak var core: DatadogCoreProtocol?
 
     public init(core: DatadogCoreProtocol) {
         self.core = core
@@ -32,13 +32,14 @@ public struct WebViewTrackingCore: WebViewTracking {
     /// Sends a message to the message bus
     /// - Parameter message: The message to send
     public func send(message: WebViewTrackingMessage) throws {
+        assert(core != nil, "Core must not be nil when using WebViewTracking")
         switch message {
         case let .log(event):
-            core.send(message: .custom(key: MessageKeys.browserLog, baggage: .init(event)), else: {
+            core?.send(message: .custom(key: MessageKeys.browserLog, baggage: .init(event)), else: {
                 DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
             })
         case let .rumEvent(event):
-            core.send(message: .custom(key: MessageKeys.browserRUMEvent, baggage: .init(event)), else: {
+            core?.send(message: .custom(key: MessageKeys.browserRUMEvent, baggage: .init(event)), else: {
                 DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
             })
         }
