@@ -8,7 +8,7 @@
 
 import XCTest
 import WebKit
-@testable import TestUtilities
+import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogWebViewTracking
 
