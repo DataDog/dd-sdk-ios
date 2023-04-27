@@ -11,7 +11,9 @@ internal class URLSessionSwizzler {
     ///
     /// This value will increment for each call to the `bind()` method.
     /// Calling `unbind()` will decrement the count, when reaching zero, the swizzler is disabled.
-    internal private(set) static var bindingsCount: Int = 0
+    internal private(set) static var bindingsCount: UInt = 0
+    /// The binding lock.
+    private static var lock = NSLock()
     /// `URLSession.dataTask(with:completionHandler:)` (for `URLRequest`) swizzling.
     internal private(set) static var dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion?
     /// `URLSession.dataTask(with:)` (for `URLRequest`) swizzling.
@@ -22,6 +24,9 @@ internal class URLSessionSwizzler {
     internal private(set) static var dataTaskWithURL: DataTaskWithURL?
 
     static func bind() throws {
+        lock.lock()
+        defer { lock.unlock() }
+
         guard bindingsCount == 0 else {
             return bindingsCount += 1
         }
@@ -46,11 +51,16 @@ internal class URLSessionSwizzler {
     }
 
     static func unbind() {
-        guard bindingsCount > 0 else {
+        lock.lock()
+        defer { lock.unlock() }
+
+        if bindingsCount == 0 {
             return
         }
 
-        bindingsCount -= 1
+        if bindingsCount > 1 {
+            return bindingsCount -= 1
+        }
 
         dataTaskWithURLRequestAndCompletion?.unswizzle()
         dataTaskWithURLRequest?.unswizzle()
@@ -61,6 +71,8 @@ internal class URLSessionSwizzler {
         dataTaskWithURLRequest = nil
         dataTaskWithURLAndCompletion = nil
         dataTaskWithURL = nil
+
+        bindingsCount -= 1
     }
 
     // MARK: - Swizzlings
