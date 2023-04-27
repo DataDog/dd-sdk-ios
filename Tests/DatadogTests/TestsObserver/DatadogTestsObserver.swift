@@ -62,6 +62,15 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
+            assert: { URLSessionSwizzler.bindingsCount == 0 },
+            problem: "No `URLSessionSwizzler` must be bonded.",
+            solution: """
+            Make sure all applied `URLSessionSwizzler.bind()` are reset by the end of test with `URLSessionSwizzler.unbind()`.
+
+            `DatadogTestsObserver` found \(URLSessionSwizzler.bindingsCount) bindings left.
+            """
+        ),
+        .init(
             assert: { DD.logger is InternalLogger },
             problem: "`DD.logger` must use `InternalLogger` implementation.",
             solution: """
