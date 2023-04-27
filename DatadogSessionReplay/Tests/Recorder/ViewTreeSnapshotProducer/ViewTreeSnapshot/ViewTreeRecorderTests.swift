@@ -227,7 +227,10 @@ class ViewTreeRecorderTests: XCTestCase {
             UIView(),
             UIViewController().view,
             UIView(),
-            UIAlertController(title: "", message: "", preferredStyle: .alert).view
+            SFSafariViewController(url: .mockRandom()).view,
+            UIView(),
+            UIActivityViewController(activityItems: [], applicationActivities: nil).view,
+            UIView()
         ].compactMap { $0 }
 
         zip(views, views.dropFirst()).forEach {
@@ -256,6 +259,18 @@ class ViewTreeRecorderTests: XCTestCase {
 
         context = nodeRecorder.queryContextsByView[views[4]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
-        XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .safari)
+
+        context = nodeRecorder.queryContextsByView[views[5]]
+        XCTAssertEqual(context?.viewControllerContext.isRootView, false)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .safari)
+
+        context = nodeRecorder.queryContextsByView[views[6]]
+        XCTAssertEqual(context?.viewControllerContext.isRootView, true)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
+
+        context = nodeRecorder.queryContextsByView[views[7]]
+        XCTAssertEqual(context?.viewControllerContext.isRootView, false)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
     }
 }
