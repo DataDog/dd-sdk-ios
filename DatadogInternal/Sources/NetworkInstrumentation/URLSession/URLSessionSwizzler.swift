@@ -11,7 +11,7 @@ internal class URLSessionSwizzler {
     ///
     /// This value will increment for each call to the `bind()` method.
     /// Calling `unbind()` will decrement the count, when reaching zero, the swizzler is disabled.
-    internal private(set) static var bindingsCount: Int = 0
+    internal private(set) static var bindingsCount: UInt = 0
     /// The binding lock.
     private static var lock = NSLock()
     /// `URLSession.dataTask(with:completionHandler:)` (for `URLRequest`) swizzling.
