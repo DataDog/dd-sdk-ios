@@ -113,7 +113,7 @@ class ViewAttributesTests: XCTestCase {
             { view.isHidden = true },
             { view.alpha = .mockRandom(min: 0, max: 0.99) },
             { view.frame = .zero },
-            { view.backgroundColor = .mockRandomWith(alpha: .mockRandom(min: 0, max: 0.99))}
+            { view.backgroundColor = .mockRandomWith(alpha: .mockRandom(min: 0, max: 0.99)) }
         ])
 
         // Then
