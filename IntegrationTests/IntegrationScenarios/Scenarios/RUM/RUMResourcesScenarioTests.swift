@@ -110,7 +110,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         // Get RUM Sessions with expected number of View visits and Resources
-        let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+        //
+        // RUMM-3151: Timeout of 30s makes the test flaky, increasing to over 30s
+        // allow the session to end. I suspect the view event debounce mechanism
+        // to postpone the end of the session when a resource completes after the
+        // stop of its parent view.
+        let rumRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout * 2) { requests in
             try RUMSessionMatcher.singleSession(from: requests)?.hasEnded() ?? false
         }
 
