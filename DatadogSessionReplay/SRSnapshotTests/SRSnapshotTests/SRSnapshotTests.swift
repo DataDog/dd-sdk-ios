@@ -214,4 +214,19 @@ final class SRSnapshotTests: SnapshotTestCase {
             record: recordingMode
         )
     }
+
+    func testAlert() throws {
+        (show(fixture: .alert) as! PopupsViewController).showAlert()
+
+        wait(seconds: 0.5)
+
+        try forEachPrivacyMode { privacyMode in
+            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+    }
 }

@@ -15,3 +15,17 @@ internal class ShapesViewController: UIViewController {
         yellowView?.layer.borderColor = UIColor.yellow.cgColor
     }
 }
+
+internal class PopupsViewController: UIViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(showAlert))
+        view.addGestureRecognizer(tap)
+    }
+
+    @objc func showAlert() {
+        let alert = UIAlertController(title: "Test", message: "Test", preferredStyle: .alert)
+        alert.addAction(.init(title: "Accept", style: .destructive))
+        present(alert, animated: false)
+    }
+}
