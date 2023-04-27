@@ -32,32 +32,41 @@ class URLSessionSwizzlerTests: XCTestCase {
     // MARK: - Binding
 
     func testBindings() throws {
+        func AssertSwizzlingEnable() {
+            XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion)
+            XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequest)
+            if #available(iOS 13.0, *) {
+                XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLAndCompletion)
+                XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURL)
+            }
+        }
+
+        func AssertSwizzlingDisable() {
+            XCTAssertEqual(URLSessionSwizzler.bindingsCount, 0)
+            XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion)
+            XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequest)
+            XCTAssertNil(URLSessionSwizzler.dataTaskWithURLAndCompletion)
+            XCTAssertNil(URLSessionSwizzler.dataTaskWithURL)
+        }
+
         // binding from `core`
         XCTAssertEqual(URLSessionSwizzler.bindingsCount, 1)
-
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion)
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequest)
-
-        if #available(iOS 13.0, *) {
-            XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLAndCompletion)
-            XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURL)
-        }
+        AssertSwizzlingEnable()
 
         try URLSessionSwizzler.bind()
         XCTAssertEqual(URLSessionSwizzler.bindingsCount, 2)
+        AssertSwizzlingEnable()
 
         URLSessionSwizzler.unbind()
         XCTAssertEqual(URLSessionSwizzler.bindingsCount, 1)
+        AssertSwizzlingEnable()
+
+        URLSessionSwizzler.unbind()
+        AssertSwizzlingDisable()
 
         URLSessionSwizzler.unbind()
         XCTAssertEqual(URLSessionSwizzler.bindingsCount, 0)
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion)
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequest)
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLAndCompletion)
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURL)
-
-        URLSessionSwizzler.unbind()
-        XCTAssertEqual(URLSessionSwizzler.bindingsCount, 0)
+        AssertSwizzlingDisable()
     }
 
     // MARK: - Interception Flow
@@ -357,5 +366,21 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertNil(interception.data, "Data should not be recorded for \(url)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
+    }
+
+    // MARK: - Thread Safety
+
+    func testConcurrentBinding() throws {
+        // swiftlint:disable opening_brace trailing_closure
+        callConcurrently(
+            closures: [
+                { try? URLSessionSwizzler.bind() },
+                { URLSessionSwizzler.unbind() },
+                { try? URLSessionSwizzler.bind() },
+                { URLSessionSwizzler.unbind() }
+            ],
+            iterations: 50
+        )
+        // swiftlint:enable opening_brace trailing_closure
     }
 }

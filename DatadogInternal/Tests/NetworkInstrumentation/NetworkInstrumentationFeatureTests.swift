@@ -134,9 +134,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
-            let interception = try handler.interception(for: url).unwrapOrThrow()
-            XCTAssertGreaterThan(interception.metrics!.fetch.start, dateBeforeAnyRequests)
-            XCTAssertLessThan(interception.metrics!.fetch.end, dateAfterAllRequests)
+            let interception = try XCTUnwrap(handler.interception(for: url))
+            let metrics = try XCTUnwrap(interception.metrics)
+            XCTAssertGreaterThan(metrics.fetch.start, dateBeforeAnyRequests)
+            XCTAssertLessThan(metrics.fetch.end, dateAfterAllRequests)
             XCTAssertNil(interception.data, "Data should not be recorded for \(url)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
@@ -180,9 +181,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
-            let interception = try handler.interception(for: url).unwrapOrThrow()
-            XCTAssertGreaterThan(interception.metrics!.fetch.start, dateBeforeAnyRequests)
-            XCTAssertLessThan(interception.metrics!.fetch.end, dateAfterAllRequests)
+            let interception = try XCTUnwrap(handler.interception(for: url))
+            let metrics = try XCTUnwrap(interception.metrics)
+            XCTAssertGreaterThan(metrics.fetch.start, dateBeforeAnyRequests)
+            XCTAssertLessThan(metrics.fetch.end, dateAfterAllRequests)
             XCTAssertEqual(interception.data, randomData)
             XCTAssertNotNil(interception.completion)
             XCTAssertNil(interception.completion?.error)
