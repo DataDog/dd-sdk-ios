@@ -23,7 +23,7 @@ internal enum Fixture: CaseIterable {
     case timePickersCompact
     case images
     case unsupportedViews
-    case alert
+    case popups
 
     var menuItemTitle: String {
         switch self {
@@ -59,8 +59,8 @@ internal enum Fixture: CaseIterable {
             return "Images"
         case .unsupportedViews:
             return "Unsupported Views"
-        case .alert:
-            return "Alert"
+        case .popups:
+            return "Popups"
         }
     }
 
@@ -98,7 +98,7 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
         case .unsupportedViews:
             return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
-        case .alert:
+        case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
         }
     }

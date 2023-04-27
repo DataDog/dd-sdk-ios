@@ -57,7 +57,7 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
                 textColor: UIColor.red.cgColor,
                 borderColor: UIColor.lightGray.cgColor,
                 borderWidth: 1,
-                backgroundColor: UIColor(white: 0, alpha: 0.05).cgColor,
+                backgroundColor: UIColor(white: 0.95, alpha: 1).cgColor,
                 cornerRadius: 4
             )
         ]
