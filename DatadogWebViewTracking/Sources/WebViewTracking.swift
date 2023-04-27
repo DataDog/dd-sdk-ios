@@ -51,7 +51,7 @@ public struct WebViewTrackingCore: WebViewTracking {
 extension WebViewTracking {
     /// Sends a bag of data to the message bus
     /// - Parameter body: The data to send, it must be parsable to `WebViewTrackingMessage`
-    public func send(body: Any) throws {
+    internal func send(body: Any) throws {
         let message = try WebViewTrackingMessage(body: body)
         try send(message: message)
     }
