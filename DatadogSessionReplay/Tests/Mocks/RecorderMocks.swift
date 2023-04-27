@@ -150,14 +150,9 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             isHidden = false
             alpha = 1
             frame = .mockRandom(minWidth: 10, minHeight: 10)
-            // some appearance:
-            oneOrMoreOf([
-                {
-                    layerBorderWidth = .mockRandom(min: 1, max: 5)
-                    layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
-                },
-                { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
-            ])
+            backgroundColor = UIColor.mockRandomWith(alpha: 1).cgColor
+            layerBorderWidth = .mockRandom(min: 1, max: 5)
+            layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
         }
         // swiftlint:enable opening_brace
 

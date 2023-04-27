@@ -24,8 +24,32 @@ internal class PopupsViewController: UIViewController {
     }
 
     @objc func showAlert() {
-        let alert = UIAlertController(title: "Test", message: "Test", preferredStyle: .alert)
-        alert.addAction(.init(title: "Accept", style: .destructive))
-        present(alert, animated: false)
+        let alertController = UIAlertController(
+            title: "Alert Example",
+            message: "This is an elaborate example of UIAlertController",
+            preferredStyle: .alert
+        )
+
+        alertController.addTextField { (textField) in
+            textField.placeholder = "Enter your name"
+        }
+
+        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak alertController] _ in
+            if let textField = alertController?.textFields?[0], let text = textField.text {
+                print("Name entered: \(text)")
+            }
+        }
+        alertController.addAction(confirmAction)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in
+            print("Action cancelled")
+        }
+        alertController.addAction(cancelAction)
+
+        let customAction = UIAlertAction(title: "Custom", style: .destructive) { (_) in
+            print("Custom action selected")
+        }
+        alertController.addAction(customAction)
+        present(alertController, animated: false)
     }
 }

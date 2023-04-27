@@ -94,7 +94,7 @@ internal struct ViewAttributes: Equatable {
     /// If the view is translucent, meaining if any content underneath it can be seen.
     ///
     /// Example: A view with with blue background of alpha `0.5` is considered "translucent".
-    var isTranslucent: Bool { !isVisible || alpha < 1 }
+    var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
 
 extension ViewAttributes {

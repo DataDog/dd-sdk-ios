@@ -113,6 +113,7 @@ class ViewAttributesTests: XCTestCase {
             { view.isHidden = true },
             { view.alpha = .mockRandom(min: 0, max: 0.99) },
             { view.frame = .zero },
+            { view.backgroundColor = .mockRandomWith(alpha: .mockRandom(min: 0, max: 0.99))}
         ])
 
         // Then
@@ -128,6 +129,7 @@ class ViewAttributesTests: XCTestCase {
         view.alpha = 1
         view.isHidden = false
         view.frame = .mockRandom(minWidth: 10, minHeight: 10)
+        view.backgroundColor = .mockRandomWith(alpha: 1)
 
         // Then
         let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
