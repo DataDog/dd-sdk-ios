@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C74305C29FBC0480053B80F /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		3C85D41B29F7C5C300AFF894 /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */; };
 		3C85D41C29F7C5C400AFF894 /* WebViewTrackingCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41729F7C5BE00AFF894 /* WebViewTrackingCoreTests.swift */; };
 		3C85D41D29F7C5C400AFF894 /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */; };
@@ -569,7 +570,6 @@
 		D24C9C6529A7CB7D002057CF /* CrashLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */; };
 		D24C9C6929A7CE06002057CF /* DDErrorMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C6629A7CBF0002057CF /* DDErrorMocks.swift */; };
 		D24C9C6A29A7CE06002057CF /* DDErrorMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C6629A7CBF0002057CF /* DDErrorMocks.swift */; };
-		D24C9C6B29A7D1D3002057CF /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		D24C9C7129A7D57A002057CF /* DirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C7029A7D57A002057CF /* DirectoriesMock.swift */; };
 		D24C9C7229A7D57A002057CF /* DirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C7029A7D57A002057CF /* DirectoriesMock.swift */; };
 		D25085102976E30000E931C3 /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250850F2976E30000E931C3 /* DatadogRemoteFeatureMock.swift */; };
@@ -674,7 +674,6 @@
 		D2A783D929A530EF003B03BB /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		D2A783DA29A530EF003B03BB /* SwiftExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E36D92124373EA700BFBDB7 /* SwiftExtensionsTests.swift */; };
 		D2A783DB29A533F9003B03BB /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */; };
-		D2A783E029A53413003B03BB /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		D2A783E729A53468003B03BB /* LogEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C3B2423990D00786299 /* LogEventBuilderTests.swift */; };
 		D2A783E829A53468003B03BB /* ConsoleLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194D51B287ECDC00091547D /* ConsoleLoggerTests.swift */; };
 		D2A783E929A53468003B03BB /* LogFileOutputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133C402423990D00786299 /* LogFileOutputTests.swift */; };
@@ -2347,8 +2346,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D24C9C6B29A7D1D3002057CF /* DatadogInternal.framework in Frameworks */,
-				D2A783E029A53413003B03BB /* DatadogInternal.framework in Frameworks */,
+				3C74305C29FBC0480053B80F /* DatadogInternal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
