@@ -9,7 +9,7 @@
 import XCTest
 import WebKit
 import TestUtilities
-@testable import DatadogInternal
+import DatadogInternal
 @testable import DatadogWebViewTracking
 
 final class DDUserContentController: WKUserContentController {

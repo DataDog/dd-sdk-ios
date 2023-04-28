@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
+		3C41694729FBF8CC0042B9D2 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
+		3C41694829FBF8CC0042B9D2 /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C74305C29FBC0480053B80F /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		3C85D41B29F7C5C300AFF894 /* WKUserContentController+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41829F7C5BE00AFF894 /* WKUserContentController+DatadogTests.swift */; };
 		3C85D41C29F7C5C400AFF894 /* WebViewTrackingCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41729F7C5BE00AFF894 /* WebViewTrackingCoreTests.swift */; };
@@ -24,9 +27,6 @@
 		3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		3C9C6BB529F7C0C000581C43 /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		3C9C6BB929F7C0C700581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
-		3C9C6BBA29F7C0C700581C43 /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		3CE11A0629F7BE0500202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CE11A2829F7BE1E00202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE11A2029F7BE1800202522 /* DatadogWebViewTracking.framework */; };
@@ -1171,19 +1171,54 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3C9C6BB629F7C0C000581C43 /* PBXContainerItemProxy */ = {
+		3C41693D29FBF5BB0042B9D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D257953D298ABA65008A1BE5;
+			remoteInfo = "TestUtilities iOS";
+		};
+		3C41693F29FBF5F20042B9D2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D23039A4298D513C001A1FA3;
 			remoteInfo = "DatadogInternal iOS";
 		};
-		3C9C6BBB29F7C0C800581C43 /* PBXContainerItemProxy */ = {
+		3C41694129FBF6100042B9D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23039A4298D513C001A1FA3;
+			remoteInfo = "DatadogInternal iOS";
+		};
+		3C41694329FBF7EE0042B9D2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = D2DA2355298D57AA00C6C7E6;
 			remoteInfo = "DatadogInternal tvOS";
+		};
+		3C41694529FBF7F50042B9D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2579571298ABB83008A1BE5;
+			remoteInfo = "TestUtilities tvOS";
+		};
+		3C41694929FBF8CC0042B9D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D2DA2355298D57AA00C6C7E6;
+			remoteInfo = "DatadogInternal tvOS";
+		};
+		3C9C6BB629F7C0C000581C43 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23039A4298D513C001A1FA3;
+			remoteInfo = "DatadogInternal iOS";
 		};
 		3CE11A0729F7BE0500202522 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1475,6 +1510,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		3C41694B29FBF8CC0042B9D2 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				3C41694829FBF8CC0042B9D2 /* DatadogInternal.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3C9C6BB829F7C0C000581C43 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1482,17 +1528,6 @@
 			dstSubfolderSpec = 10;
 			files = (
 				3C9C6BB529F7C0C000581C43 /* DatadogInternal.framework in Embed Frameworks */,
-			);
-			name = "Embed Frameworks";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		3C9C6BBD29F7C0C800581C43 /* Embed Frameworks */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				3C9C6BBA29F7C0C700581C43 /* DatadogInternal.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2202,7 +2237,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C85D42A29F7C70300AFF894 /* TestUtilities.framework in Frameworks */,
-				3CE11A0629F7BE0500202522 /* DatadogWebViewTracking.framework in Frameworks */,
+				3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2210,7 +2245,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3C9C6BB929F7C0C700581C43 /* DatadogInternal.framework in Frameworks */,
+				3C41694729FBF8CC0042B9D2 /* DatadogInternal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4807,6 +4842,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				3C41694029FBF5F20042B9D2 /* PBXTargetDependency */,
+				3C41693E29FBF5BB0042B9D2 /* PBXTargetDependency */,
 				3CE11A0829F7BE0500202522 /* PBXTargetDependency */,
 			);
 			name = "DatadogWebViewTrackingTests iOS";
@@ -4822,12 +4859,12 @@
 				3CE11A1C29F7BE1800202522 /* Sources */,
 				3CE11A1D29F7BE1800202522 /* Frameworks */,
 				3CE11A1E29F7BE1800202522 /* Resources */,
-				3C9C6BBD29F7C0C800581C43 /* Embed Frameworks */,
+				3C41694B29FBF8CC0042B9D2 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				3C9C6BBC29F7C0C800581C43 /* PBXTargetDependency */,
+				3C41694A29FBF8CC0042B9D2 /* PBXTargetDependency */,
 			);
 			name = "DatadogWebViewTracking tvOS";
 			productName = "DatadogWebViewTracking tvOS";
@@ -4845,6 +4882,8 @@
 			buildRules = (
 			);
 			dependencies = (
+				3C41694629FBF7F50042B9D2 /* PBXTargetDependency */,
+				3C41694429FBF7EE0042B9D2 /* PBXTargetDependency */,
 				3CE11A2A29F7BE1E00202522 /* PBXTargetDependency */,
 			);
 			name = "DatadogWebViewTrackingTests tvOS";
@@ -5163,7 +5202,8 @@
 			buildRules = (
 			);
 			dependencies = (
-				D2F969FD29FBEC20006C9CBE /* PBXTargetDependency */,
+				3C41694229FBF6100042B9D2 /* PBXTargetDependency */,
+				D257956F298ABB7F008A1BE5 /* PBXTargetDependency */,
 			);
 			name = "TestUtilities iOS";
 			productName = TestUtilities;
@@ -7318,15 +7358,40 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		3C41693E29FBF5BB0042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D257953D298ABA65008A1BE5 /* TestUtilities iOS */;
+			targetProxy = 3C41693D29FBF5BB0042B9D2 /* PBXContainerItemProxy */;
+		};
+		3C41694029FBF5F20042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
+			targetProxy = 3C41693F29FBF5F20042B9D2 /* PBXContainerItemProxy */;
+		};
+		3C41694229FBF6100042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
+			targetProxy = 3C41694129FBF6100042B9D2 /* PBXContainerItemProxy */;
+		};
+		3C41694429FBF7EE0042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
+			targetProxy = 3C41694329FBF7EE0042B9D2 /* PBXContainerItemProxy */;
+		};
+		3C41694629FBF7F50042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2579571298ABB83008A1BE5 /* TestUtilities tvOS */;
+			targetProxy = 3C41694529FBF7F50042B9D2 /* PBXContainerItemProxy */;
+		};
+		3C41694A29FBF8CC0042B9D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
+			targetProxy = 3C41694929FBF8CC0042B9D2 /* PBXContainerItemProxy */;
+		};
 		3C9C6BB729F7C0C000581C43 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
 			targetProxy = 3C9C6BB629F7C0C000581C43 /* PBXContainerItemProxy */;
-		};
-		3C9C6BBC29F7C0C800581C43 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = D2DA2355298D57AA00C6C7E6 /* DatadogInternal tvOS */;
-			targetProxy = 3C9C6BBB29F7C0C800581C43 /* PBXContainerItemProxy */;
 		};
 		3CE11A0829F7BE0500202522 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
