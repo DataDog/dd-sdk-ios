@@ -20,6 +20,33 @@ internal struct ViewTreeRecordingContext {
     let imageDataProvider: ImageDataProviding
     /// Available text obfuscators to use accordingly to current privacy mode.
     let textObfuscators: TextObfuscators
+    /// Variable view controller related context
+    var viewControllerContext: ViewControllerContext = .init()
+}
+
+internal extension ViewTreeRecordingContext {
+    struct ViewControllerContext {
+        enum ViewControllerType {
+            case alert
+            case other
+
+            internal init(_ viewController: UIViewController?) {
+                switch viewController {
+                case is UIAlertController:
+                    self = .alert
+                default:
+                    self = .other
+                }
+            }
+        }
+
+        var parentType: ViewControllerType?
+        var isRootView: Bool?
+
+        func isRootView(of: ViewControllerType) -> Bool {
+            parentType == of && isRootView == true
+        }
+    }
 }
 
 internal struct ViewTreeRecorder {
@@ -39,6 +66,14 @@ internal struct ViewTreeRecorder {
     // MARK: - Private
 
     private func recordRecursively(nodes: inout [Node], view: UIView, context: ViewTreeRecordingContext) {
+        var context = context
+        if let viewController = view.next as? UIViewController {
+            context.viewControllerContext.parentType = .init(viewController)
+            context.viewControllerContext.isRootView = view == viewController.view
+        } else {
+            context.viewControllerContext.isRootView = false
+        }
+
         let semantics = nodeSemantics(for: view, in: context)
 
         if !semantics.nodes.isEmpty {

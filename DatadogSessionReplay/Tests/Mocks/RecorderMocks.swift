@@ -150,14 +150,9 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             isHidden = false
             alpha = 1
             frame = .mockRandom(minWidth: 10, minHeight: 10)
-            // some appearance:
-            oneOrMoreOf([
-                {
-                    layerBorderWidth = .mockRandom(min: 1, max: 5)
-                    layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
-                },
-                { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
-            ])
+            backgroundColor = UIColor.mockRandomWith(alpha: 1).cgColor
+            layerBorderWidth = .mockRandom(min: 1, max: 5)
+            layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
         }
         // swiftlint:enable opening_brace
 
@@ -315,6 +310,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 class NodeRecorderMock: NodeRecorder {
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []
+    var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
     var resultForView: (UIView) -> NodeSemantics?
 
     init(resultForView: @escaping (UIView) -> NodeSemantics?) {
@@ -324,6 +320,7 @@ class NodeRecorderMock: NodeRecorder {
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         queriedViews.insert(view)
         queryContexts.append(context)
+        queryContextsByView[view] = context
         return resultForView(view)
     }
 }

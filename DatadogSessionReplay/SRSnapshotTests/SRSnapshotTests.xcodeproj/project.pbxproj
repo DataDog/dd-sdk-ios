@@ -138,9 +138,9 @@
 		61B3BC632993BEAF0032C78A /* SRSnapshotTests */ = {
 			isa = PBXGroup;
 			children = (
-				619C49B8299551F5006B66A6 /* _snapshots_ */,
-				619C49B529955106006B66A6 /* Utils */,
 				61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */,
+				619C49B529955106006B66A6 /* Utils */,
+				619C49B8299551F5006B66A6 /* _snapshots_ */,
 			);
 			path = SRSnapshotTests;
 			sourceTree = "<group>";

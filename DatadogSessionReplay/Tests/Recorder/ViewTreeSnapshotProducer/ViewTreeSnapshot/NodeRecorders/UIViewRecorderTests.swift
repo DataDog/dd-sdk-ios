@@ -42,4 +42,17 @@ class UIViewRecorderTests: XCTestCase {
         XCTAssertTrue(semantics is InvisibleElement)
         XCTAssertEqual(semantics.subtreeStrategy, .record)
     }
+
+    func testWhenViewIsFromUIAlertController() throws {
+        // When
+        viewAttributes = .mockRandom()
+
+        // Then
+        var context = ViewTreeRecordingContext.mockRandom()
+        context.viewControllerContext.isRootView = true
+        context.viewControllerContext.parentType = .alert
+        let semantics = try XCTUnwrap(recorder.semantics(of: view, with: viewAttributes, in: context))
+        XCTAssertTrue(semantics is AmbiguousElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .record)
+    }
 }
