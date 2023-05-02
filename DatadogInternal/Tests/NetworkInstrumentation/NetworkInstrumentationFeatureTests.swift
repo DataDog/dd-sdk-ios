@@ -15,7 +15,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
-        super.setUp()
+        try super.setUpWithError()
 
         core = SingleFeatureCoreMock()
         handler = URLSessionHandlerMock()
@@ -227,10 +227,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
-        var core: DatadogCoreProtocol? = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
-        try core?.register(urlSessionHandler: handler)
-
-        // When
         let delegate = DatadogURLSessionDelegate(in: core)
         // Then
         XCTAssertNotNil(delegate.interceptor)
@@ -244,23 +240,20 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     // MARK: - URLRequest Interception
 
     func testGivenOpenTracing_whenInterceptingRequests_itInjectsTrace() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
         let writer = HTTPHeadersWriter(sampler: .mockKeepAll())
         handler.firstPartyHosts = .init(["test.com": [.datadog]])
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
 
         // When
         writer.write(traceID: .mock(1), spanID: .mock(2))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.intercept(task: task, additionalFirstPartyHosts: nil)
+        feature.flush()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -269,23 +262,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenOpenTelemetry_b3single_whenInterceptingRequests_itInjectsTrace() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
         let writer = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         handler.firstPartyHosts = .init(["test.com": [.b3]])
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
 
         // When
         writer.write(traceID: .mock(1), spanID: .mock(2), parentSpanID: .mock(3))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
-
-        waitForExpectations(timeout: 0.5, handler: nil)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.intercept(task: task, additionalFirstPartyHosts: nil)
+        feature.flush()
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -295,23 +284,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenOpenTelemetry_b3multi_whenInterceptingRequests_itInjectsTrace() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
         let writer = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         handler.firstPartyHosts = .init(["test.com": [.b3multi]])
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
 
         // When
         writer.write(traceID: .mock(1), spanID: .mock(2), parentSpanID: .mock(3))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
-
-        waitForExpectations(timeout: 0.5, handler: nil)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.intercept(task: task, additionalFirstPartyHosts: nil)
+        feature.flush()
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -321,23 +306,19 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenW3C_whenInterceptingRequests_itInjectsTrace() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
         let writer = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
         handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
 
         // When
         writer.write(traceID: .mock(1), spanID: .mock(2))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = core.get(feature: NetworkInstrumentationFeature.self)
-        feature?.intercept(task: task, additionalFirstPartyHosts: nil)
-
-        waitForExpectations(timeout: 0.5, handler: nil)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        feature.intercept(task: task, additionalFirstPartyHosts: nil)
+        feature.flush()
 
         // Then
         let interception = handler.interceptions.first?.value

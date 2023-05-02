@@ -15,7 +15,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
-        super.setUp()
+        try super.setUpWithError()
 
         core = SingleFeatureCoreMock()
         handler = URLSessionHandlerMock()
