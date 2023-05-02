@@ -20,6 +20,20 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
+               BuildableName = "DatadogCrashReportingTests.xctest"
+               BlueprintName = "DatadogCrashReportingTests tvOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
