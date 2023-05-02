@@ -301,7 +301,7 @@ public struct DDURLRequestBuilder
  public init(url: URL,queryItems: [QueryItem],headers: [HTTPHeader])
  public func uploadRequest(with body: Data, compress: Bool = true) -> URLRequest
 public extension WKUserContentController
- func trackDatadogEvents(in hosts: Set<String>, sdk core: DatadogCoreProtocol = defaultDatadogCore)
+ func startTrackingDatadogEvents(core: DatadogCoreProtocol, hosts: Set<String> = [])
  func stopTrackingDatadogEvents()
 public typealias DDGlobal = Global
 public struct Global
