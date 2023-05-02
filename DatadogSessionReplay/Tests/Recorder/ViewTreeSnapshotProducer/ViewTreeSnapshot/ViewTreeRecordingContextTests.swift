@@ -9,8 +9,6 @@ import SafariServices
 @testable import DatadogSessionReplay
 
 class ViewTreeRecordingContextTests: XCTestCase {
-    var viewControllerContext: ViewTreeRecordingContext.ViewControllerContext!
-
     func testViewControllerTypeInit() {
         let alertVC = UIAlertController()
         let activityVC = UIActivityViewController(activityItems: [], applicationActivities: nil)
@@ -29,7 +27,7 @@ class ViewTreeRecordingContextTests: XCTestCase {
     }
 
     func testIsRootView() {
-        viewControllerContext = ViewTreeRecordingContext.ViewControllerContext()
+        var viewControllerContext = ViewTreeRecordingContext.ViewControllerContext()
         viewControllerContext.parentType = .alert
         viewControllerContext.isRootView = true
 
@@ -40,7 +38,7 @@ class ViewTreeRecordingContextTests: XCTestCase {
     }
 
     func testName() {
-        viewControllerContext = ViewTreeRecordingContext.ViewControllerContext()
+        var viewControllerContext = ViewTreeRecordingContext.ViewControllerContext()
         viewControllerContext.parentType = .alert
         viewControllerContext.isRootView = true
 
