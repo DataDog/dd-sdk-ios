@@ -5,9 +5,9 @@
  */
 
 import Foundation
-import Datadog
 import CoreLocation
 import UIKit.UIApplication
+import DatadogRUM
 
 internal var backgroundLocationMonitor: BackgroundLocationMonitor?
 
@@ -49,6 +49,10 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
         return UIApplication.shared.applicationState == .background
     }
 
+    private var rum: DDRUMMonitor {
+        RUMMonitor.shared()
+    }
+
     /// Current authorization status for location monitoring.
     var currentAuthorizationStatus: String { authorizationStatusDescription(for: locationManager) }
 
@@ -82,7 +86,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
             locationManager.startMonitoringSignificantLocationChanges()
             isStarted = true
         } else {
-            Global.rum.addError(message: "Significant location changes monitoring is not available")
+            rum.addError(message: "Significant location changes monitoring is not available")
         }
     }
 
@@ -109,7 +113,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let recentLocation = locations.last else {
-            Global.rum.addError(message: "Received update with no locations")
+            rum.addError(message: "Received update with no locations")
             return
         }
 
@@ -122,7 +126,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
             ]
         )
 
-        Global.rum.addUserAction(
+        rum.addUserAction(
             type: .custom,
             name: "Location changed at \(recentLocation.timestamp)",
             attributes: [
@@ -146,10 +150,10 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
                 manager.stopMonitoringSignificantLocationChanges()
             }
             logger.error("Location manager failed with CLError (error.code: \(error.code)", error: error)
-            Global.rum.addError(message: "Location manager failed with CLError (error.code: \(error.code)")
+            rum.addError(message: "Location manager failed with CLError (error.code: \(error.code)")
         } else {
             logger.error("Location manager failed", error: error)
-            Global.rum.addError(error: error)
+            rum.addError(error: error)
         }
     }
 

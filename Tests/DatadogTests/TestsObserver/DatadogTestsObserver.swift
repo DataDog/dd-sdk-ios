@@ -7,8 +7,6 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
-@testable import DatadogTrace
-@testable import DatadogRUM
 @testable import Datadog
 
 /// Observes unit tests execution and performs integrity checks after each test to ensure that the global state is unaltered.
@@ -29,18 +27,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             problem: "`Datadog` must not be initialized.",
             solution: """
             Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.
-            """
-        ),
-        .init(
-            assert: {
-                Global.rum is DDNoopRUMMonitor
-            },
-            problem: "All Global components must use no-op implementations.",
-            solution: """
-            Make sure each Global component is reset to its default implementation before the end of test that mocks it:
-            ```
-            Global.rum = DDNoopRUMMonitor()
-            ```
             """
         ),
         .init(

@@ -17,7 +17,7 @@ let serviceName = "ios-sdk-example-app"
 
 var logger: Logger!
 var tracer: OTTracer { DatadogTracer.shared() }
-var rumMonitor: DDRUMMonitor { Global.rum }
+var rumMonitor: DDRUMMonitor { RUMMonitor.shared() }
 
 @UIApplicationMain
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {

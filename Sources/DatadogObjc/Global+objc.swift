@@ -7,7 +7,6 @@
 import Foundation
 import DatadogTrace
 import DatadogRUM
-import struct Datadog.Global
 
 @objc
 public class DDGlobal: NSObject {

@@ -6,8 +6,8 @@
 
 import UIKit
 import WebKit
-import Datadog
 import DatadogInternal
+import DatadogRUM
 import DatadogWebViewTracking
 
 class DebugWebviewViewController: UIViewController {
@@ -25,13 +25,15 @@ class DebugWebviewViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if useNativeRUMSession {
-            Global.rum.startView(viewController: self)
+            RUMMonitor.shared()
+                .startView(viewController: self)
         }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         if useNativeRUMSession {
-            Global.rum.stopView(viewController: self)
+            RUMMonitor.shared()
+                .stopView(viewController: self)
         }
     }
 
@@ -39,7 +41,8 @@ class DebugWebviewViewController: UIViewController {
 
     @IBAction func didTapStartNativeRUMSession(_ sender: Any) {
         useNativeRUMSession = true
-        Global.rum.startView(viewController: self)
+        RUMMonitor.shared()
+            .startView(viewController: self)
     }
 
     // MARK: - Starting webview
@@ -102,13 +105,15 @@ class WebviewViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if useNativeRUMSession {
-            Global.rum.startView(viewController: self)
+            RUMMonitor.shared()
+                .startView(viewController: self)
         }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         if useNativeRUMSession {
-            Global.rum.stopView(viewController: self)
+            RUMMonitor.shared()
+                .stopView(viewController: self)
         }
     }
 }

@@ -44,7 +44,6 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenRUMMonitorIsNotSet_itReturnsNoOpImplementation() {
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is DDNoopRUMMonitor)
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
 
     func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() throws {
