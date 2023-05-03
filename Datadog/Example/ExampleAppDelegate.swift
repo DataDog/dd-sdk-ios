@@ -103,7 +103,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Instantiate location monitor if the Example app is run in interactive mode. This will
         // enable background location tracking if it was started in previous session.
         if Environment.isRunningInteractive() {
-            backgroundLocationMonitor = BackgroundLocationMonitor()
+            backgroundLocationMonitor = BackgroundLocationMonitor(rum: rumMonitor)
         }
         #endif
 

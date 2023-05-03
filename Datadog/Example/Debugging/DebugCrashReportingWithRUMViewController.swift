@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogRUM
 
 class DebugCrashReportingWithRUMViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!

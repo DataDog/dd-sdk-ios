@@ -49,9 +49,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
         return UIApplication.shared.applicationState == .background
     }
 
-    private var rum: DDRUMMonitor {
-        RUMMonitor.shared()
-    }
+    private let rum: DDRUMMonitor
 
     /// Current authorization status for location monitoring.
     var currentAuthorizationStatus: String { authorizationStatusDescription(for: locationManager) }
@@ -59,8 +57,11 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     /// Notifies change of authorization status for location monitoring.
     var onAuthorizationStatusChange: ((String) -> Void)? = nil
 
-    override init() {
+    required init(rum: DDRUMMonitor) {
+        self.rum = rum
+
         super.init()
+
         if isStarted {
             // If location monitoring was enabled in previous app session, here we start it for current session.
             // This will keep location tracking when the app is woken up in background due to significant location change.
