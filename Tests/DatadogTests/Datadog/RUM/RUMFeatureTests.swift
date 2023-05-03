@@ -7,9 +7,9 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-import DatadogRUM
 
 @testable import Datadog
+@testable import DatadogRUM
 
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
@@ -198,7 +198,7 @@ class RUMFeatureTests: XCTestCase {
         // Given
         try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
-        core.scope(for: "rum")?.eventWriteContext { _, writer in
+        core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { _, writer in
             writer.write(value: RUMDataModelMock(attribute: "1st event"))
             writer.write(value: RUMDataModelMock(attribute: "2nd event"))
             writer.write(value: RUMDataModelMock(attribute: "3rd event"))

@@ -12,7 +12,7 @@ import DatadogRUM
 
 var logger: DatadogLogger!
 var tracer: OTTracer { DatadogTracer.shared() }
-var rumMonitor: DDRUMMonitor { Global.rum }
+var rumMonitor: DDRUMMonitor { RUMMonitor.shared() }
 
 var serviceName = "integration-scenarios-service-name"
 var appConfiguration: AppConfiguration!

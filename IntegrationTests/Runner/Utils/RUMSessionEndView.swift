@@ -15,8 +15,8 @@ import Datadog
 /// could be still awaiting their resources completion (ref.: _RUMM-1779 Keep view active as long as we have ongoing resources_).
 /// In result of this call, such views will be marked "eventually inactive" right away and will receive the "inactive" flag upon their last resource completion.
 internal func markRUMSessionAsEnded() {
-    Global.rum.startView(key: Environment.Constants.rumSessionEndViewName)
-    Global.rum.stopView(key: Environment.Constants.rumSessionEndViewName)
+    rumMonitor.startView(key: Environment.Constants.rumSessionEndViewName)
+    rumMonitor.stopView(key: Environment.Constants.rumSessionEndViewName)
 
     if #available(iOS 13, tvOS 13, *) {
         // Show utility view to indicate  in UI that current RUM session
