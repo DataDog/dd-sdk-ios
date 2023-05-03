@@ -97,4 +97,132 @@ class VitalRefreshRateReaderTests: XCTestCase {
         waitForExpectations(timeout: 1.0) { _ in }
         XCTAssertGreaterThan(registrar.currentValue.sampleCount, 0)
     }
+
+    /* Rate representation
+     *
+     * 0-------------------16ms------------------32ms----------------48ms
+     * |        16ms        |        16ms        |        16ms        |
+     *                                        Skipped
+    */
+    func testFramesPerSecond_given60HzFixedRateDisplay() {
+        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
+        var frameTimestampProvider = FrameTimestampProviderMock()
+
+        // first frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0
+        frameTimestampProvider.nextFrameTimestamp = 0.016
+        let firstFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertNil(firstFps)
+
+        // second frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.016
+        frameTimestampProvider.nextFrameTimestamp = 0.032
+        let secondFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(secondFps, 60)
+
+        // third frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.048
+        let thirdFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(thirdFps, 30)
+    }
+
+    /* Rate representation
+     *
+     * 0----------8ms---------16ms--------24ms--------32ms
+     * |    8ms    |    8ms    |    8ms    |    8ms    |
+     *                                  Skipped
+    */
+    func testFramesPerSecond_given120HzFixedRateDisplay_normalizesTo60Hz() {
+        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
+        var frameTimestampProvider = FrameTimestampProviderMock()
+
+        // first frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0
+        frameTimestampProvider.nextFrameTimestamp = 0.008
+        let firstFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertNil(firstFps)
+
+        // second frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.008
+        frameTimestampProvider.nextFrameTimestamp = 0.016
+        let secondFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(secondFps, 60)
+
+        // third frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.016
+        frameTimestampProvider.nextFrameTimestamp = 0.024
+        let thirdFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(thirdFps, 60)
+
+        // fourth frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.032
+        let fourthFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(fourthFps, 30)
+    }
+
+    /* Rate representation
+     *
+     * 0----------8ms----------------------------33ms---------43ms
+     * |    8ms    |             25ms             |    10ms    |
+    */
+    func testFramesPerSecond_givenAdaptiveSyncDisplay() {
+        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
+        var frameTimestampProvider = FrameTimestampProviderMock()
+
+        // first frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0
+        frameTimestampProvider.nextFrameTimestamp = 0.008
+        let firstFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertNil(firstFps)
+
+        // second frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.008
+        frameTimestampProvider.nextFrameTimestamp = 0.033
+        let secondFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(secondFps, 60)
+
+        // third frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.033
+        frameTimestampProvider.nextFrameTimestamp = 0.043
+        let thirdFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(thirdFps, 60)
+
+        // fourth frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.043
+        let fourthFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(fourthFps, 60)
+    }
+
+    /* Rate representation
+     *
+     * 0----------8ms----------------------------33ms---------43ms
+     * |    8ms    |             25ms             |    10ms    |
+     *                                         skipped
+    */
+    func testFramesPerSecond_givenAdaptiveSyncDisplayWithFreezingFrames() {
+        let reader = VitalRefreshRateReader(notificationCenter: mockNotificationCenter)
+        var frameTimestampProvider = FrameTimestampProviderMock()
+
+        // first frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0
+        frameTimestampProvider.nextFrameTimestamp = 0.008
+        let firstFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertNil(firstFps)
+
+        // second frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.008
+        frameTimestampProvider.nextFrameTimestamp = 0.033
+        let secondFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(secondFps, 60)
+
+        // third frame recorded
+        frameTimestampProvider.currentFrameTimestamp = 0.043
+        let thirdFps = reader.framesPerSecond(provider: frameTimestampProvider)
+        XCTAssertEqual(thirdFps, 42.85714285714286)
+    }
+}
+
+struct FrameTimestampProviderMock: FrameTimestampProvider {
+    var currentFrameTimestamp: CFTimeInterval = 0
+    var nextFrameTimestamp: CFTimeInterval = 0
 }

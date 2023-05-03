@@ -13,6 +13,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
 
     private var displayLink: CADisplayLink?
     private var lastFrameTimestamp: CFTimeInterval?
+    private var nextFrameDuration: CFTimeInterval?
 
     init(notificationCenter: NotificationCenter = .default) {
         notificationCenter.addObserver(
@@ -53,25 +54,42 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
         }
     }
 
-    // MARK: - Private
+    // MARK: - Internal
 
     @objc
-    private func displayTick(link: CADisplayLink) {
-        if let lastTimestamp = self.lastFrameTimestamp {
-            let frameDuration = link.timestamp - lastTimestamp
-            let currentFPS = 1.0 / frameDuration
+    internal func displayTick(link: CADisplayLink) {
+        guard let fps = framesPerSecond(provider: link) else {
+            return
+        }
 
-            for publisher in valuePublishers {
-                publisher.mutateAsync { currentInfo in
-                    currentInfo.addSample(currentFPS)
-                }
+        for publisher in valuePublishers {
+            publisher.mutateAsync { currentInfo in
+                currentInfo.addSample(fps)
             }
         }
-        lastFrameTimestamp = link.timestamp
     }
 
+    internal func framesPerSecond(provider: FrameTimestampProvider) -> Double? {
+        var fps: Double? = nil
+
+        if let lastFrameTimestamp = self.lastFrameTimestamp,
+           let expectedCurrentFrameDuration = self.nextFrameDuration {
+            let currentFrameDuration = provider.currentFrameTimestamp - lastFrameTimestamp
+            let currentFPS = 1.0 / currentFrameDuration
+            let expectedFPS = 1.0 / expectedCurrentFrameDuration
+            fps = currentFPS * (60.0 / expectedFPS)
+        }
+
+        self.lastFrameTimestamp = provider.currentFrameTimestamp
+        self.nextFrameDuration = provider.nextFrameTimestamp - provider.currentFrameTimestamp
+
+        return fps
+    }
+
+    // MARK: - Private
+
     private func start() {
-        if displayLink != nil {
+        guard displayLink == nil else {
             return
         }
 
@@ -94,5 +112,26 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     @objc
     private func appDidBecomeActive() {
         start()
+    }
+}
+
+/// Facade for `CADisplayLink` to provide frame timestamps
+/// and decouple FPS calculation from `CADisplayLink` implementation.
+/// - Note: It allows to mock `CADisplayLink` in tests
+internal protocol FrameTimestampProvider {
+    /// Timestamp of the current frame in seconds
+    var currentFrameTimestamp: CFTimeInterval { get }
+
+    /// Expected timestamp of the next frame in seconds
+    var nextFrameTimestamp: CFTimeInterval { get }
+}
+
+extension CADisplayLink: FrameTimestampProvider {
+    var currentFrameTimestamp: CFTimeInterval {
+        timestamp
+    }
+
+    var nextFrameTimestamp: CFTimeInterval {
+        targetTimestamp
     }
 }
