@@ -70,7 +70,7 @@ extension WebViewEventReceiver: AnyMockable {
 
     static func mockWith(
         dateProvider: DateProvider = SystemDateProvider(),
-        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+        commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock()
     ) -> Self {
         .init(
             dateProvider: dateProvider,

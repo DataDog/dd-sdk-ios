@@ -30,7 +30,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     init(
         dateProvider: DateProvider,
-        commandSubscriber: RUMCommandSubscriber = GlobalRUMCommandSubscriber()
+        commandSubscriber: RUMCommandSubscriber
     ) {
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider

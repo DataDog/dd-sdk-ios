@@ -62,7 +62,8 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
                 ),
                 ErrorMessageReceiver(monitor: monitor),
                 WebViewEventReceiver(
-                    dateProvider: configuration.dateProvider
+                    dateProvider: configuration.dateProvider,
+                    commandSubscriber: monitor
                 ),
                 CrashReportReceiver(
                     applicationID: configuration.applicationID,
