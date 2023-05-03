@@ -8,8 +8,8 @@ import TestUtilities
 
 @testable import DatadogRUM
 
-extension RUMUser {
-    static func mockRandom() -> RUMUser {
+extension RUMUser: RandomMockable {
+    public static func mockRandom() -> RUMUser {
         return RUMUser(
             email: .mockRandom(),
             id: .mockRandom(),
@@ -19,8 +19,8 @@ extension RUMUser {
     }
 }
 
-extension RUMConnectivity {
-    static func mockRandom() -> RUMConnectivity {
+extension RUMConnectivity: RandomMockable {
+    public static func mockRandom() -> RUMConnectivity {
         return RUMConnectivity(
             cellular: .init(
                 carrierName: .mockRandom(),

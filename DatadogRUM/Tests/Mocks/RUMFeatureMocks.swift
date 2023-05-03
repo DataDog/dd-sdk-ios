@@ -70,12 +70,12 @@ extension TelemetryReceiver: AnyMockable {
 
 // MARK: - Public API Mocks
 
-extension RUMMethod {
-    static func mockAny() -> RUMMethod { .get }
+extension RUMMethod: AnyMockable {
+    public static func mockAny() -> RUMMethod { .get }
 }
 
-extension RUMResourceType {
-    static func mockAny() -> RUMResourceType { .image }
+extension RUMResourceType: AnyMockable {
+    public static func mockAny() -> RUMResourceType { .image }
 }
 
 // MARK: - RUMDataModel Mocks
