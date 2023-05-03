@@ -69,15 +69,20 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
         }
     }
 
-    internal func framesPerSecond(provider: FrameTimestampProvider) -> Double? {
+    internal func framesPerSecond(provider: FrameInfoProvider) -> Double? {
         var fps: Double? = nil
 
-        if let lastFrameTimestamp = self.lastFrameTimestamp,
-           let expectedCurrentFrameDuration = self.nextFrameDuration {
+        if let lastFrameTimestamp = self.lastFrameTimestamp {
             let currentFrameDuration = provider.currentFrameTimestamp - lastFrameTimestamp
             let currentFPS = 1.0 / currentFrameDuration
-            let expectedFPS = 1.0 / expectedCurrentFrameDuration
-            fps = currentFPS * (60.0 / expectedFPS)
+
+            // ProMotion displays (e.g. iPad Pro and newer iPhone Pro) can have refresh rate higher than 60 FPS.
+            if let expectedCurrentFrameDuration = self.nextFrameDuration, provider.maximumDeviceFramesPerSecond > 60 {
+                let expectedFPS = 1.0 / expectedCurrentFrameDuration
+                fps = currentFPS * (60.0 / expectedFPS)
+            } else {
+                fps = currentFPS
+            }
         }
 
         self.lastFrameTimestamp = provider.currentFrameTimestamp
@@ -115,18 +120,25 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     }
 }
 
-/// Facade for `CADisplayLink` to provide frame timestamps
-/// and decouple FPS calculation from `CADisplayLink` implementation.
+/// Facade for `CADisplayLink` to provide frame timestamps & device information
+/// It decouple FPS calculation from `CADisplayLink` implementation.
 /// - Note: It allows to mock `CADisplayLink` in tests
-internal protocol FrameTimestampProvider {
+internal protocol FrameInfoProvider {
     /// Timestamp of the current frame in seconds
     var currentFrameTimestamp: CFTimeInterval { get }
 
     /// Expected timestamp of the next frame in seconds
     var nextFrameTimestamp: CFTimeInterval { get }
+
+    /// Maximum number of frames per second supported by the device
+    var maximumDeviceFramesPerSecond: Int { get }
 }
 
-extension CADisplayLink: FrameTimestampProvider {
+extension CADisplayLink: FrameInfoProvider {
+    var maximumDeviceFramesPerSecond: Int {
+        UIScreen.main.maximumFramesPerSecond
+    }
+
     var currentFrameTimestamp: CFTimeInterval {
         timestamp
     }
