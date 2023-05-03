@@ -71,8 +71,17 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         let crashRUMError = try XCTUnwrap(crashedSession.viewVisits[0].errorEvents.last)
+#if arch(arm64)
+        // On ARM, the crash is caused by `fatalError()`, translates to `SIGTRAP` signal.
+        XCTAssertEqual(crashRUMError.error.message, "Application crash: SIGTRAP (Trace/BPT trap)")
+        XCTAssertEqual(crashRUMError.error.type, "SIGTRAP (#0)")
+#elseif arch(x86_64)
+        // On x86, the crash is caused by `fatalError()`, translates to `SIGILL` signal.
         XCTAssertEqual(crashRUMError.error.message, "Application crash: SIGILL (Illegal instruction)")
         XCTAssertEqual(crashRUMError.error.type, "SIGILL (ILL_ILLOPC)")
+#else
+        XCTFail("Unsupported architecture")
+#endif
         XCTAssertNotNil(crashRUMError.error.stack)
 
         // Assert superficial properties of sending crash information:
