@@ -57,19 +57,6 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
 
     // MARK: - Internal
 
-    @objc
-    internal func displayTick(link: CADisplayLink) {
-        guard let fps = framesPerSecond(provider: link) else {
-            return
-        }
-
-        for publisher in valuePublishers {
-            publisher.mutateAsync { currentInfo in
-                currentInfo.addSample(fps)
-            }
-        }
-    }
-
     internal func framesPerSecond(provider: FrameInfoProvider) -> Double? {
         var fps: Double? = nil
 
@@ -99,6 +86,19 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     }
 
     // MARK: - Private
+
+    @objc
+    private func displayTick(link: CADisplayLink) {
+        guard let fps = framesPerSecond(provider: link) else {
+            return
+        }
+
+        for publisher in valuePublishers {
+            publisher.mutateAsync { currentInfo in
+                currentInfo.addSample(fps)
+            }
+        }
+    }
 
     private func start() {
         guard displayLink == nil else {
