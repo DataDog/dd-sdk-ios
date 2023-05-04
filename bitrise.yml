@@ -5,6 +5,11 @@ project_type: other
 # To customize how workflows are run on different triggers,
 # go to Workflow Editor on Bitrise.io.
 
+meta:
+  bitrise.io:
+    stack: osx-xcode-14.2.x
+    machine_type_id: g2-m1.8core
+
 workflows:
   push_to_pull_request:
     description: |-
@@ -550,7 +555,7 @@ workflows:
         - environment_key_list: |-
             DD_RELEASE_GIT_TAG
             DD_RELEASE_DRY_RUN
-        
+
   publish_github_asset:
     before_run:
     - _make_dependencies  # install tooling
