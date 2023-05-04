@@ -75,10 +75,16 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
 
         if let lastFrameTimestamp = self.lastFrameTimestamp {
             let currentFrameDuration = provider.currentFrameTimestamp - lastFrameTimestamp
+            guard currentFrameDuration > 0 else {
+                return nil
+            }
             let currentFPS = 1.0 / currentFrameDuration
 
             // ProMotion displays (e.g. iPad Pro and newer iPhone Pro) can have refresh rate higher than 60 FPS.
             if let expectedCurrentFrameDuration = self.nextFrameDuration, provider.maximumDeviceFramesPerSecond > 60 {
+                guard expectedCurrentFrameDuration > 0 else {
+                    return nil
+                }
                 let expectedFPS = 1.0 / expectedCurrentFrameDuration
                 fps = currentFPS * (Self.backendSupportedFrameRate / expectedFPS)
             } else {
