@@ -14,6 +14,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
     private var displayLink: CADisplayLink?
     private var lastFrameTimestamp: CFTimeInterval?
     private var nextFrameDuration: CFTimeInterval?
+    private static var backendSupportedFrameRate = 60.0
 
     init(notificationCenter: NotificationCenter = .default) {
         notificationCenter.addObserver(
@@ -79,7 +80,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
             // ProMotion displays (e.g. iPad Pro and newer iPhone Pro) can have refresh rate higher than 60 FPS.
             if let expectedCurrentFrameDuration = self.nextFrameDuration, provider.maximumDeviceFramesPerSecond > 60 {
                 let expectedFPS = 1.0 / expectedCurrentFrameDuration
-                fps = currentFPS * (60.0 / expectedFPS)
+                fps = currentFPS * (Self.backendSupportedFrameRate / expectedFPS)
             } else {
                 fps = currentFPS
             }
