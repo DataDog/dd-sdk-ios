@@ -6,6 +6,7 @@
 
 import Foundation
 import SafariServices
+import SwiftUI
 
 /// The context of recording subtree hierarchy.
 ///
@@ -33,6 +34,7 @@ internal extension ViewTreeRecordingContext {
             case alert
             case safari
             case activity
+            case swiftUI
             case other
 
             /// An initializer that takes a `UIViewController` and determines its corresponding `ViewControllerType`.
@@ -46,6 +48,8 @@ internal extension ViewTreeRecordingContext {
                     self = .activity
                 case is SFSafariViewController:
                     self = .safari
+                case is AnyUIHostingViewController:
+                    self = .swiftUI
                 default:
                     self = .other
                 }
@@ -56,7 +60,7 @@ internal extension ViewTreeRecordingContext {
         var parentType: ViewControllerType?
 
         /// A boolean flag indicating whether the current view is the root view or not.
-        var isRootView: Bool?
+        var isRootView: Bool = false
 
         /// A function that checks if the current view is the root view of the specified view controller type.
         ///
@@ -80,6 +84,8 @@ internal extension ViewTreeRecordingContext {
                 return "Activity"
             case .safari:
                 return "Safari"
+            case .swiftUI:
+                return "SwiftUI"
             case .other,
                  .none:
                 return nil
@@ -87,3 +93,7 @@ internal extension ViewTreeRecordingContext {
         }
     }
 }
+
+private protocol AnyUIHostingViewController: AnyObject {}
+@available(iOS 13.0, *)
+extension UIHostingController: AnyUIHostingViewController {}

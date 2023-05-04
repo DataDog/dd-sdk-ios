@@ -15,10 +15,10 @@ class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
     private let unsupportedViews: [UIView] = [
-        UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView(), UIHostingController(rootView: Text("Test")).view
+        UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView()
     ].compactMap { $0 }
     private let expectedUnsupportedViewsClassNames = [
-        "UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView", "SwiftUI._UIHostingView<SwiftUI.Text>"
+        "UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView"
     ]
     private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
 
@@ -59,7 +59,7 @@ class UnsupportedViewRecorderTests: XCTestCase {
     func testWhenViewIsUnsupportedViewControllersRootView() throws {
         var context = ViewTreeRecordingContext.mockRandom()
         context.viewControllerContext.isRootView = true
-        context.viewControllerContext.parentType = [.safari, .activity].randomElement()
+        context.viewControllerContext.parentType = [.safari, .activity, .swiftUI].randomElement()
 
         let semantics = try XCTUnwrap(recorder.semantics(of: UIView(), with: .mock(fixture: .visible(.someAppearance)), in: context))
         XCTAssertTrue(semantics is SpecificElement)

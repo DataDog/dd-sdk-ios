@@ -255,4 +255,17 @@ final class SRSnapshotTests: SnapshotTestCase {
             record: recordingMode
         )
     }
+
+    func testSwiftUI() throws {
+        show(fixture: .swiftUI)
+
+        wait(seconds: 0.5)
+
+        let image = try takeSnapshot()
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName),
+            record: recordingMode
+        )
+    }
 }

@@ -20,7 +20,7 @@ internal class ShapesViewController: UIViewController {
 internal class PopupsViewController: UIViewController {
 
     @IBAction func showSafari() {
-        present(SFSafariViewController(url: URL(string: "https://datadoqhq.com")!), animated: false)
+        present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
     }
 
     @IBAction func showAlert() {
@@ -54,8 +54,7 @@ internal class PopupsViewController: UIViewController {
     }
 
     @IBAction func showActivity() {
-        let url = URL(string: "https://www.datadoghq.com")!
-        let activityViewController = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+        let activityViewController = UIActivityViewController(activityItems: [], applicationActivities: nil)
         present(activityViewController, animated: true, completion: nil)
     }
 }
