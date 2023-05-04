@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SwiftUI
 
 internal enum Fixture: CaseIterable {
     case basicShapes
@@ -23,7 +24,8 @@ internal enum Fixture: CaseIterable {
     case timePickersCompact
     case images
     case unsupportedViews
-    case alert
+    case popups
+    case swiftUI
 
     var menuItemTitle: String {
         switch self {
@@ -59,8 +61,10 @@ internal enum Fixture: CaseIterable {
             return "Images"
         case .unsupportedViews:
             return "Unsupported Views"
-        case .alert:
-            return "Alert"
+        case .popups:
+            return "Popups"
+        case .swiftUI:
+            return "SwiftUI"
         }
     }
 
@@ -98,8 +102,10 @@ internal enum Fixture: CaseIterable {
             return UIStoryboard.images.instantiateViewController(withIdentifier: "Images")
         case .unsupportedViews:
             return UIStoryboard.unsupportedViews.instantiateViewController(withIdentifier: "UnsupportedViews")
-        case .alert:
+        case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
+        case .swiftUI:
+            return UIHostingController(rootView: Text("Hello SwiftUI"))
         }
     }
 }

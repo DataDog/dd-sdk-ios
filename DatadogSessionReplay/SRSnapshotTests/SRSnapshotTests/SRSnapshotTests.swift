@@ -216,7 +216,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     }
 
     func testAlert() throws {
-        (show(fixture: .alert) as! PopupsViewController).showAlert()
+        (show(fixture: .popups) as! PopupsViewController).showAlert()
 
         wait(seconds: 0.5)
 
@@ -228,5 +228,44 @@ final class SRSnapshotTests: SnapshotTestCase {
                 record: recordingMode
             )
         }
+    }
+
+    func testSafari() throws {
+        (show(fixture: .popups) as! PopupsViewController).showSafari()
+
+        wait(seconds: 0.2)
+
+        let image = try takeSnapshot()
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName),
+            record: recordingMode
+        )
+    }
+
+    func testActivity() throws {
+        (show(fixture: .popups) as! PopupsViewController).showActivity()
+
+        wait(seconds: 0.5)
+
+        let image = try takeSnapshot()
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName),
+            record: recordingMode
+        )
+    }
+
+    func testSwiftUI() throws {
+        show(fixture: .swiftUI)
+
+        wait(seconds: 0.5)
+
+        let image = try takeSnapshot()
+        DDAssertSnapshotTest(
+            newImage: image,
+            snapshotLocation: .folder(named: snapshotsFolderName),
+            record: recordingMode
+        )
     }
 }

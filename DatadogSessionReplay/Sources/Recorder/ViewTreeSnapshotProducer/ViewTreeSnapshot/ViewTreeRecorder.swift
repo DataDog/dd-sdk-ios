@@ -6,49 +6,6 @@
 
 import UIKit
 
-/// The context of recording subtree hierarchy.
-///
-/// Some fields are mutable, so `NodeRecorders` can specialise it for their subtree traversal.
-internal struct ViewTreeRecordingContext {
-    /// The context of the Recorder.
-    let recorder: Recorder.Context
-    /// The coordinate space to convert node positions to.
-    let coordinateSpace: UICoordinateSpace
-    /// Generates stable IDs for traversed views.
-    let ids: NodeIDGenerator
-    /// Provides base64 image data with a built in caching mechanism.
-    let imageDataProvider: ImageDataProviding
-    /// Available text obfuscators to use accordingly to current privacy mode.
-    let textObfuscators: TextObfuscators
-    /// Variable view controller related context
-    var viewControllerContext: ViewControllerContext = .init()
-}
-
-internal extension ViewTreeRecordingContext {
-    struct ViewControllerContext {
-        enum ViewControllerType {
-            case alert
-            case other
-
-            internal init(_ viewController: UIViewController?) {
-                switch viewController {
-                case is UIAlertController:
-                    self = .alert
-                default:
-                    self = .other
-                }
-            }
-        }
-
-        var parentType: ViewControllerType?
-        var isRootView: Bool?
-
-        func isRootView(of: ViewControllerType) -> Bool {
-            parentType == of && isRootView == true
-        }
-    }
-}
-
 internal struct ViewTreeRecorder {
     /// An array of enabled node recorders.
     ///

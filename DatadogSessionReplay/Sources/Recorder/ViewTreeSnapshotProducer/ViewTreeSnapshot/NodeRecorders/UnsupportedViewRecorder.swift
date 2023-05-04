@@ -10,17 +10,19 @@ import SwiftUI
 
 internal struct UnsupportedViewRecorder: NodeRecorder {
     // swiftlint:disable opening_brace
-    private let unsupportedViewsPredicates: [(UIView) -> Bool] = [
-        { $0 is UIProgressView },
-        { $0 is UIWebView },
-        { $0 is WKWebView },
-        { $0 is UIActivityIndicatorView },
-        { String(reflecting: type(of: $0)).contains("SwiftUI") }
+    private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
+        { _, context in context.viewControllerContext.isRootView(of: .safari) },
+        { _, context in context.viewControllerContext.isRootView(of: .activity) },
+        { _, context in context.viewControllerContext.isRootView(of: .swiftUI) },
+        { view, _ in view is UIProgressView },
+        { view, _ in view is UIWebView },
+        { view, _ in view is WKWebView },
+        { view, _ in view is UIActivityIndicatorView }
     ]
     // swiftlint:enable opening_brace
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard unsupportedViewsPredicates.contains(where: { $0(view) }) else {
+        guard unsupportedViewsPredicates.contains(where: { $0(view, context) }) else {
             return nil
         }
         guard attributes.isVisible else {
@@ -29,7 +31,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(for: view),
-            unsupportedClassName: String(reflecting: type(of: view)),
+            unsupportedClassName: context.viewControllerContext.name ?? String(reflecting: type(of: view)),
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -55,7 +57,7 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
                 textColor: UIColor.red.cgColor,
                 borderColor: UIColor.lightGray.cgColor,
                 borderWidth: 1,
-                backgroundColor: UIColor(white: 0, alpha: 0.05).cgColor,
+                backgroundColor: UIColor(white: 0.95, alpha: 1).cgColor,
                 cornerRadius: 4
             )
         ]

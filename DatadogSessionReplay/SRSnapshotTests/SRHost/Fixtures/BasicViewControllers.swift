@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SafariServices
 
 internal class ShapesViewController: UIViewController {
     @IBOutlet weak var yellowView: UIView?
@@ -17,13 +18,12 @@ internal class ShapesViewController: UIViewController {
 }
 
 internal class PopupsViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        let tap = UITapGestureRecognizer(target: self, action: #selector(showAlert))
-        view.addGestureRecognizer(tap)
+
+    @IBAction func showSafari() {
+        present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
     }
 
-    @objc func showAlert() {
+    @IBAction func showAlert() {
         let alertController = UIAlertController(
             title: "Alert Example",
             message: "This is an elaborate example of UIAlertController",
@@ -51,5 +51,10 @@ internal class PopupsViewController: UIViewController {
         }
         alertController.addAction(customAction)
         present(alertController, animated: false)
+    }
+
+    @IBAction func showActivity() {
+        let activityViewController = UIActivityViewController(activityItems: [], applicationActivities: nil)
+        present(activityViewController, animated: true, completion: nil)
     }
 }
