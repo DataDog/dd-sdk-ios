@@ -60,7 +60,7 @@ internal extension ViewTreeRecordingContext {
         var parentType: ViewControllerType?
 
         /// A boolean flag indicating whether the current view is the root view or not.
-        var isRootView: Bool = false
+        var isRootView = false
 
         /// A function that checks if the current view is the root view of the specified view controller type.
         ///
