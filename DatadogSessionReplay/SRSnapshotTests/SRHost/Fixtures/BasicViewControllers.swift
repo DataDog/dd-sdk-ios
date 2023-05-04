@@ -17,6 +17,15 @@ internal class ShapesViewController: UIViewController {
     }
 }
 
+internal class TextsViewController: UIViewController {
+    @IBOutlet weak var textView: UITextView?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        textView?.becomeFirstResponder()
+    }
+}
+
 internal class PopupsViewController: UIViewController {
 
     @IBAction func showSafari() {
