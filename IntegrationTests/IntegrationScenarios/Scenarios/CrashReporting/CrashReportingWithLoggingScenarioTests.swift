@@ -54,6 +54,17 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
 
         // Assert crash report info
         crashLog.assertStatus(equals: "emergency")
+#if arch(arm64)
+        // On ARM, the crash is caused by `fatalError()`, translates to `SIGTRAP` signal.
+        crashLog.assertMessage(equals: "Application crash: SIGTRAP (Trace/BPT trap)")
+        crashLog.assertAttributes(
+            equal: [
+                LogMatcher.JSONKey.errorKind: "SIGTRAP (#0)",
+                LogMatcher.JSONKey.errorMessage: "Application crash: SIGTRAP (Trace/BPT trap)",
+            ]
+        )
+#elseif arch(x86_64)
+        // On x86, the crash is caused by `fatalError()`, translates to `SIGILL` signal.
         crashLog.assertMessage(equals: "Application crash: SIGILL (Illegal instruction)")
         crashLog.assertAttributes(
             equal: [
@@ -61,6 +72,10 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
                 LogMatcher.JSONKey.errorMessage: "Application crash: SIGILL (Illegal instruction)",
             ]
         )
+#else
+        XCTFail("Unsupported architecture")
+#endif
+
         crashLog.assertValue(
             forKeyPath: LogMatcher.JSONKey.errorStack,
             isTypeOf: String.self
