@@ -462,6 +462,7 @@
 [#1250]: https://github.com/DataDog/dd-sdk-ios/pull/1250
 [#1259]: https://github.com/DataDog/dd-sdk-ios/pull/1259
 [#1264]: https://github.com/DataDog/dd-sdk-ios/pull/1264
+[#1272]: https://github.com/DataDog/dd-sdk-ios/pull/1272
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
