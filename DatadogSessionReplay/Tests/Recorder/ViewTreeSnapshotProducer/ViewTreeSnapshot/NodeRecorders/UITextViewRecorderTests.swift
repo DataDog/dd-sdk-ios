@@ -40,7 +40,7 @@ class UITextViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertEqual(semantics.subtreeStrategy, .record)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
 
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextViewWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)

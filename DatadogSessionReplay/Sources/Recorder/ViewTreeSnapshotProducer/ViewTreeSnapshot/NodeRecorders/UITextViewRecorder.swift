@@ -40,7 +40,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .record, nodes: [node])
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
@@ -79,11 +79,13 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     private var relativeIntersectedRect: CGRect {
-        CGRect(
-            x: attributes.frame.origin.x - contentRect.origin.x,
-            y: attributes.frame.origin.y - contentRect.origin.y,
-            width: max(contentRect.width, attributes.frame.width),
-            height: max(contentRect.height, attributes.frame.height)
+        // UITextView adds additional padding for presented content.
+        let padding: CGFloat = 8
+        return CGRect(
+            x: attributes.frame.origin.x - contentRect.origin.x + padding,
+            y: attributes.frame.origin.y - contentRect.origin.y + padding,
+            width: max(contentRect.width, attributes.frame.width) - padding,
+            height: max(contentRect.height, attributes.frame.height) - padding
         )
     }
 
