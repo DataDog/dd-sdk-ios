@@ -19,7 +19,7 @@ internal struct TextObfuscators {
     let nop = NOPTextObfuscator()
     /// Text obfuscator that replaces each character with `"x"` mask.
     let spacePreservingMask = SpacePreservingMaskObfuscator()
-    /// Text obfuscator that replaces whole text with fixed-length `"xxx"` mask (three asterics).
+    /// Text obfuscator that replaces whole text with fixed-length `"***"` mask (three asterics).
     let fixLegthMask = FixLegthMaskObfuscator()
 }
 
@@ -49,9 +49,9 @@ internal struct SpacePreservingMaskObfuscator: TextObfuscating {
     }
 }
 
-/// Text obfuscator which replaces entire text with fix-length `"xxx"` mask value.
+/// Text obfuscator which replaces entire text with fix-length `"***"` mask value.
 internal struct FixLegthMaskObfuscator: TextObfuscating {
-    private static let maskedString = "xxx"
+    private static let maskedString = "***"
 
     func mask(text: String) -> String { Self.maskedString }
 }
