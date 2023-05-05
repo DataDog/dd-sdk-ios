@@ -74,9 +74,9 @@ class UITextViewRecorderTests: XCTestCase {
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is SpacePreservingMaskObfuscator)
 
         // When
-        oneOf([
+        oneOrMoreOf([
             { self.textView.isSecureTextEntry = true },
-            { self.textView.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+            { self.textView.textContentType = sensitiveContentTypes.randomElement() },
         ])
 
         // Then

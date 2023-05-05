@@ -84,9 +84,9 @@ class UITextFieldRecorderTests: XCTestCase {
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
 
         // When
-        oneOf([
+        oneOrMoreOf([
             { self.textField.isSecureTextEntry = true },
-            { self.textField.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+            { self.textField.textContentType = sensitiveContentTypes.randomElement() },
         ])
 
         // Then

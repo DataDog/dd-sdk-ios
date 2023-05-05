@@ -27,8 +27,6 @@ internal struct UITextViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let isSensitiveText = textView.isSecureTextEntry || textView.textContentType == .emailAddress || textView.textContentType == .telephoneNumber
-
         let builder = UITextViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: textView),
             attributes: attributes,
@@ -36,7 +34,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, isSensitiveText),
+            textObfuscator: textObfuscator(context, textView.isSensitiveText),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

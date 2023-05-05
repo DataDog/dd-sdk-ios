@@ -83,8 +83,6 @@ internal struct UITextFieldRecorder: NodeRecorder {
         let textFrame = attributes.frame
             .insetBy(dx: 5, dy: 5) // 5 points padding
 
-        let isSensitiveText = textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber
-
         let builder = UITextFieldWireframesBuilder(
             wireframeRect: textFrame,
             attributes: attributes,
@@ -95,7 +93,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context, isSensitiveText)
+            textObfuscator: textObfuscator(context, textField.isSensitiveText)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
     }
