@@ -10,8 +10,8 @@ internal struct UISegmentRecorder: NodeRecorder {
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
         switch context.recorder.privacy {
         case .allowAll:         return context.textObfuscators.nop
-        case .maskAll:          return context.textObfuscators.spacePreservingMask
-        case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+        case .maskAll:          return context.textObfuscators.fixLegthMask
+        case .maskUserInput:    return context.textObfuscators.fixLegthMask
         }
     }
 

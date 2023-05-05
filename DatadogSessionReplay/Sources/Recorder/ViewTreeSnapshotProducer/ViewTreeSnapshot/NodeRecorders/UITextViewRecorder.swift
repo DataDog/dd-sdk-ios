@@ -7,15 +7,23 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
-        if isSensitiveText {
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
+        if isSensitive {
             return context.textObfuscators.fixLegthMask
         }
 
-        switch context.recorder.privacy {
-        case .allowAll:         return context.textObfuscators.nop
-        case .maskAll:          return context.textObfuscators.spacePreservingMask
-        case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+        if isEditable {
+            switch context.recorder.privacy {
+            case .allowAll:         return context.textObfuscators.nop
+            case .maskAll:          return context.textObfuscators.fixLegthMask
+            case .maskUserInput:    return context.textObfuscators.fixLegthMask
+            }
+        } else {
+            switch context.recorder.privacy {
+            case .allowAll:         return context.textObfuscators.nop
+            case .maskAll:          return context.textObfuscators.spacePreservingMask
+            case .maskUserInput:    return context.textObfuscators.nop
+            }
         }
     }
 
@@ -34,7 +42,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, textView.isSensitiveText),
+            textObfuscator: textObfuscator(context, textView.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

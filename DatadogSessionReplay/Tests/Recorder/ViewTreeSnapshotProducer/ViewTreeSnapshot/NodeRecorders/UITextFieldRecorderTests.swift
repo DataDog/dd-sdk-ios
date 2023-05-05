@@ -80,7 +80,7 @@ class UITextFieldRecorderTests: XCTestCase {
         }
 
         XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLegthMaskObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
 
         // When
@@ -91,6 +91,15 @@ class UITextFieldRecorderTests: XCTestCase {
 
         // Then
         XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+
+        // When
+        textField.text = nil
+        textField.placeholder = .mockRandom()
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace

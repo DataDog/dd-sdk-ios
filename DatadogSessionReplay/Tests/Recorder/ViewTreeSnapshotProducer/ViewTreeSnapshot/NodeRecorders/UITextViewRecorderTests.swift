@@ -70,17 +70,28 @@ class UITextViewRecorderTests: XCTestCase {
         }
 
         XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
 
         // When
         oneOrMoreOf([
             { self.textView.isSecureTextEntry = true },
             { self.textView.textContentType = sensitiveContentTypes.randomElement() },
+            { self.textView.isEditable = .mockRandom() } // no matter if editable or not
         ])
 
         // Then
         XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+
+        // When
+        textView.isEditable = false
+        textView.isSecureTextEntry = false // non-sensitive
+        textView.textContentType = nil // non-sensitive
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace

@@ -13,15 +13,21 @@ internal struct UITextFieldRecorder: NodeRecorder {
     private let iconsRecorder: UIImageViewRecorder
     private let subtreeRecorder: ViewTreeRecorder
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
-        if isSensitiveText {
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, isSensitive, isPlaceholder in
+        if isPlaceholder {
+            switch context.recorder.privacy {
+            case .allowAll:         return context.textObfuscators.nop
+            case .maskAll:          return context.textObfuscators.fixLegthMask
+            case .maskUserInput:    return context.textObfuscators.nop
+            }
+        } else if isSensitive {
             return context.textObfuscators.fixLegthMask
-        }
-
-        switch context.recorder.privacy {
-        case .allowAll:         return context.textObfuscators.nop
-        case .maskAll:          return context.textObfuscators.spacePreservingMask
-        case .maskUserInput:    return context.textObfuscators.fixLegthMask
+        } else {
+            switch context.recorder.privacy {
+            case .allowAll:         return context.textObfuscators.nop
+            case .maskAll:          return context.textObfuscators.fixLegthMask
+            case .maskUserInput:    return context.textObfuscators.fixLegthMask
+            }
         }
     }
 
@@ -93,7 +99,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context, textField.isSensitiveText)
+            textObfuscator: textObfuscator(context, textField.isSensitiveText, isPlaceholder)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
     }
