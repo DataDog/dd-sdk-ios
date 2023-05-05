@@ -79,6 +79,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     private var relativeIntersectedRect: CGRect {
+        // UITextView adds additional padding for presented content.
         let padding: CGFloat = 8
         return CGRect(
             x: attributes.frame.origin.x - contentRect.origin.x + padding,
