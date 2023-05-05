@@ -68,7 +68,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
             let currentFPS = 1.0 / currentFrameDuration
 
             // ProMotion displays (e.g. iPad Pro and newer iPhone Pro) can have refresh rate higher than 60 FPS.
-            if let expectedCurrentFrameDuration = self.nextFrameDuration, provider.maximumDeviceFramesPerSecond > 60 {
+            if let expectedCurrentFrameDuration = self.nextFrameDuration, provider.adaptiveFrameRateSupported {
                 guard expectedCurrentFrameDuration > 0 else {
                     return nil
                 }
@@ -139,6 +139,14 @@ internal protocol FrameInfoProvider {
 
     /// Maximum number of frames per second supported by the device
     var maximumDeviceFramesPerSecond: Int { get }
+}
+
+private let adaptiveFrameRateThreshold = 60
+extension FrameInfoProvider {
+    /// `true` if the device supports adaptive frame rate
+    var adaptiveFrameRateSupported: Bool {
+        maximumDeviceFramesPerSecond > adaptiveFrameRateThreshold
+    }
 }
 
 extension CADisplayLink: FrameInfoProvider {
