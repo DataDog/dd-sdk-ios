@@ -1005,6 +1005,29 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
+    // MARK: - Launching SDKInit Command
+    func testWhenInitializing_itSendsSDKInitCommand_thenSetsTheSessionId() throws {
+        //Given
+        let expectation = self.expectation(description: "sessionId is called")
+
+        let rum: RUMFeature = .mockWith(
+            configuration: .mockWith(
+                onSessionStart: { sessionId, isDiscarded in
+                    XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+                    expectation.fulfill()
+                }
+            )
+        )
+
+        core.register(feature: rum)
+
+        //When
+        let monitor = try createTestableRUMMonitor()
+
+        //Then
+        waitForExpectations(timeout: 0.5)
+    }
+
     // MARK: - Tracking App Launch Events
 
     func testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime() throws {
@@ -1601,8 +1624,9 @@ class RUMMonitorTests: XCTestCase {
 
     private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {
         for matcher in matchers {
-            // Application Start happens too early to have attributes set.
-            if (try? matcher.attribute(forKeyPath: "action.type")) == "application_start" {
+            // Application Start/Launch happens too early to have attributes set.
+            if (try? matcher.attribute(forKeyPath: "action.type")) == "application_start" ||
+               (try? matcher.attribute(forKeyPath: "view.name")) == "ApplicationLaunch"{
                 continue
             }
             expectedAttributes.forEach { attrKey, attrValue in
