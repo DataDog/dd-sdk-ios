@@ -73,11 +73,7 @@ private struct WheelsStyleDatePickerRecorder {
         nodeRecorders: [
             UIPickerViewRecorder(
                 textObfuscator: { context in
-                    switch context.recorder.privacy {
-                    case .allowAll:         return context.textObfuscators.nop
-                    case .maskAll:          return context.textObfuscators.spacePreservingMask
-                    case .maskUserInput:    return context.textObfuscators.spacePreservingMask
-                    }
+                    return context.textObfuscation.staticTextObfuscator(for: context.recorder.privacy)
                 }
             )
         ]
@@ -97,11 +93,7 @@ private struct InlineStyleDatePickerRecorder {
         self.viewRecorder = UIViewRecorder()
         self.labelRecorder = UILabelRecorder(
             textObfuscator: { context in
-                switch context.recorder.privacy {
-                case .allowAll:         return context.textObfuscators.nop
-                case .maskAll:          return context.textObfuscators.spacePreservingMask
-                case .maskUserInput:    return context.textObfuscators.spacePreservingMask
-                }
+                return context.textObfuscation.staticTextObfuscator(for: context.recorder.privacy)
             }
         )
         self.subtreeRecorder = ViewTreeRecorder(
@@ -144,11 +136,7 @@ private struct CompactStyleDatePickerRecorder {
             UIViewRecorder(),
             UILabelRecorder(
                 textObfuscator: { context in
-                    switch context.recorder.privacy {
-                    case .allowAll:         return context.textObfuscators.nop
-                    case .maskAll:          return context.textObfuscators.spacePreservingMask
-                    case .maskUserInput:    return context.textObfuscators.spacePreservingMask
-                    }
+                    return context.textObfuscation.staticTextObfuscator(for: context.recorder.privacy)
                 }
             )
         ]

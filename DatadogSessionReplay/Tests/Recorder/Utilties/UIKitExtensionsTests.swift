@@ -7,7 +7,6 @@
 import XCTest
 import UIKit
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 class UIKitExtensionsTests: XCTestCase {
     func testUsesDarkMode() {

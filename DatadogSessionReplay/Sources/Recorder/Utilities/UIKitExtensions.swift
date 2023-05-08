@@ -34,11 +34,11 @@ internal let sensitiveContentTypes: Set<UITextContentType> = {
 }()
 
 internal extension UITextInputTraits {
-    /// Whether or not these input traits describe a "sensitive text" as we define it in Session Replay.
+    /// Whether or not these input traits describe a "Sensitive Text".
     ///
-    /// Sensitive texts include:
-    /// - passwords, e-mails, phone numbers, address information, credit card numbers and one-time codes;
-    /// - all texts marked explicitly as secure entry.
+    /// In Session Replay, "Sensitive Text" is:
+    /// - passwords, e-mails and phone numbers marked in a platform-specific way
+    /// - AND other forms of sensitivity in text available to each platform
     var isSensitiveText: Bool {
         if isSecureTextEntry == true {
             return true

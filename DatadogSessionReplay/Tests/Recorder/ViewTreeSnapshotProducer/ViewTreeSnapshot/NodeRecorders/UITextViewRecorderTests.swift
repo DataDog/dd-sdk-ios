@@ -74,10 +74,10 @@ class UITextViewRecorderTests: XCTestCase {
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
 
         // When
+        textView.isEditable = .mockRandom()
         oneOrMoreOf([
             { self.textView.isSecureTextEntry = true },
             { self.textView.textContentType = sensitiveContentTypes.randomElement() },
-            { self.textView.isEditable = .mockRandom() } // no matter if editable or not
         ])
 
         // Then

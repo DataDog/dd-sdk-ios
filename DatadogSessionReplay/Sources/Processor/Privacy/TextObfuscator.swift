@@ -13,14 +13,58 @@ internal protocol TextObfuscating {
     func mask(text: String) -> String
 }
 
-/// Available text obfuscators.
-internal struct TextObfuscators {
+/// Text obfuscation strategies for different text types.
+internal struct TextObfuscation {
     /// Text obfuscator that returns original text (no obfuscation).
-    let nop = NOPTextObfuscator()
+    private let nop = NOPTextObfuscator()
     /// Text obfuscator that replaces each character with `"x"` mask.
-    let spacePreservingMask = SpacePreservingMaskObfuscator()
+    private let spacePreservingMask = SpacePreservingMaskObfuscator()
     /// Text obfuscator that replaces whole text with fixed-length `"***"` mask (three asterics).
-    let fixLegthMask = FixLegthMaskObfuscator()
+    private let fixLegthMask = FixLegthMaskObfuscator()
+
+    /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
+    ///
+    /// In Session Replay, "Sensitive Text" is:
+    /// - passwords, e-mails and phone numbers marked in a platform-specific way
+    /// - AND other forms of sensitivity in text available to each platform
+    func sensitiveTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
+        return fixLegthMask
+    }
+
+    /// Returns "Input & Option Text" obfuscator for given `privacyLevel`.
+    ///
+    /// In Session Replay, "Input & Option Text" is:
+    /// - a text entered by the user with a keyboard or other text-input device
+    /// - OR a custom (non-generic) value in selection elements
+    func inputAndOptionTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
+        switch privacyLevel {
+        case .allowAll:         return nop
+        case .maskAll:          return fixLegthMask
+        case .maskUserInput:    return fixLegthMask
+        }
+    }
+
+    /// Returns "Static Text" obfuscator for given `privacyLevel`.
+    ///
+    /// In Session Replay, "Static Text" is a text not directly entered by the user.
+    func staticTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
+        switch privacyLevel {
+        case .allowAll:         return nop
+        case .maskAll:          return spacePreservingMask
+        case .maskUserInput:    return nop
+        }
+    }
+
+    /// Returns "Hint Text" obfuscator for given `privacyLevel`.
+    ///
+    /// In Session Replay, "Hint Text" is a static text in editable text elements or option selectors, displayed when there isn't any value set.
+    func hintTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
+        switch privacyLevel {
+        case .allowAll:         return nop
+        case .maskAll:          return fixLegthMask
+        case .maskUserInput:    return nop
+        }
+    }
 }
 
 /// Text obfuscator which replaces all readable characters with space-preserving `"x"` characters.
