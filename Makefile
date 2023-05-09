@@ -1,4 +1,4 @@
-all: dependencies xcodeproj-httpservermock templates
+all: dependencies templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
 DD_SDK_SWIFT_TESTING_VERSION = 2.2.4
@@ -66,11 +66,6 @@ ifeq (${ci}, true)
 		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 endif
-
-xcodeproj-httpservermock:
-		@echo "⚙️  Generating 'HTTPServerMock.xcodeproj'..."
-		@cd instrumented-tests/http-server-mock/ && swift package generate-xcodeproj
-		@echo "OK 👌"
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
