@@ -25,11 +25,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
 
     init(
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            switch context.recorder.privacy {
-            case .allowAll:         return context.textObfuscators.nop
-            case .maskAll:          return context.textObfuscators.fixLegthMask
-            case .maskUserInput:    return context.textObfuscators.fixLegthMask
-            }
+            return context.recorder.privacy.inputAndOptionTextObfuscator
         }
     ) {
         self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])

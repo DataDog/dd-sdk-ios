@@ -272,7 +272,7 @@ internal class TextObfuscatorMock: TextObfuscating {
 }
 
 internal func mockRandomTextObfuscator() -> TextObfuscating {
-    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLegthMaskObfuscator()].randomElement()!
+    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLengthMaskObfuscator()].randomElement()!
 }
 
 extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
@@ -285,8 +285,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            imageDataProvider: mockRandomImageDataProvider(),
-            textObfuscators: TextObfuscators()
+            imageDataProvider: mockRandomImageDataProvider()
         )
     }
 
@@ -294,15 +293,13 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        imageDataProvider: ImageDataProviding = MockImageDataProvider(),
-        textObfuscators: TextObfuscators = TextObfuscators()
+        imageDataProvider: ImageDataProviding = MockImageDataProvider()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            imageDataProvider: imageDataProvider,
-            textObfuscators: textObfuscators
+            imageDataProvider: imageDataProvider
         )
     }
 }

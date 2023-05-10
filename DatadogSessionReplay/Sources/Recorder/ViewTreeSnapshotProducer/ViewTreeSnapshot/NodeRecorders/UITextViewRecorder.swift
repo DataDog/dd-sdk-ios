@@ -7,15 +7,15 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
-        if isSensitiveText {
-            return context.textObfuscators.fixLegthMask
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
+        if isSensitive {
+            return context.recorder.privacy.sensitiveTextObfuscator
         }
 
-        switch context.recorder.privacy {
-        case .allowAll:         return context.textObfuscators.nop
-        case .maskAll:          return context.textObfuscators.spacePreservingMask
-        case .maskUserInput:    return context.textObfuscators.spacePreservingMask
+        if isEditable {
+            return context.recorder.privacy.inputAndOptionTextObfuscator
+        } else {
+            return context.recorder.privacy.staticTextObfuscator
         }
     }
 
@@ -27,8 +27,6 @@ internal struct UITextViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let isSensitiveText = textView.isSecureTextEntry || textView.textContentType == .emailAddress || textView.textContentType == .telephoneNumber
-
         let builder = UITextViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: textView),
             attributes: attributes,
@@ -36,7 +34,7 @@ internal struct UITextViewRecorder: NodeRecorder {
             textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: textObfuscator(context, isSensitiveText),
+            textObfuscator: textObfuscator(context, textView.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)

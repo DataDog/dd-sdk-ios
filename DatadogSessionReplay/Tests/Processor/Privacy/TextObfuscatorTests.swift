@@ -50,11 +50,11 @@ class SpacePreservingMaskObfuscatorTests: XCTestCase {
     }
 }
 
-class FixLegthMaskObfuscatorTests: XCTestCase {
-    let obfuscator = FixLegthMaskObfuscator()
+class FixLengthMaskObfuscatorTests: XCTestCase {
+    let obfuscator = FixLengthMaskObfuscator()
 
     func testWhenObfuscatingItAlwaysReplacesTextItWithConstantMask() {
-        let expectedMask = "xxx"
+        let expectedMask = "***"
 
         XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .alphanumericsAndWhitespace)), expectedMask)
         XCTAssertEqual(obfuscator.mask(text: .mockRandom(among: .allUnicodes)), expectedMask)
