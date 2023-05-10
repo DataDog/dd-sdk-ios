@@ -5,7 +5,7 @@
  */
 
 import SwiftUI
-import Datadog
+import DatadogRUM
 
 @available(iOS 13, *)
 internal class DebugRUMSessionViewController: UIHostingController<DebugRUMSessionView> {
@@ -54,13 +54,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
                     self?.modifySessionItem(type: .view, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopView(key: key)
+                        RUMMonitor.shared().stopView(key: key)
                     }
                 }
             )
         )
 
-        Global.rum.startView(key: key)
+        RUMMonitor.shared().startView(key: key)
         self.viewKey = ""
     }
 
@@ -73,7 +73,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
             SessionItem(label: actionName, type: .action, isPending: false, stopAction: nil)
         )
 
-        Global.rum.addUserAction(type: .custom, name: actionName)
+        RUMMonitor.shared().addUserAction(type: .custom, name: actionName)
         self.actionName = ""
     }
 
@@ -86,7 +86,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
             SessionItem(label: errorMessage, type: .error, isPending: false, stopAction: nil)
         )
 
-        Global.rum.addError(message: errorMessage)
+        RUMMonitor.shared().addError(message: errorMessage)
         self.errorMessage = ""
     }
 
@@ -105,13 +105,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
                     self?.modifySessionItem(type: .resource, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopResourceLoading(resourceKey: key, statusCode: nil, kind: .other)
+                        RUMMonitor.shared().stopResourceLoading(resourceKey: key, statusCode: nil, kind: .other)
                     }
                 }
             )
         )
 
-        Global.rum.startResourceLoading(resourceKey: key, url: mockURL())
+        RUMMonitor.shared().startResourceLoading(resourceKey: key, url: mockURL())
         self.resourceKey = ""
     }
 

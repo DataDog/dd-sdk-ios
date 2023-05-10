@@ -7,7 +7,7 @@
 import DatadogInternal
 
 public class HostsSanitizerMock: HostsSanitizing {
-    internal private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
+    public private(set) var sanitizations = [(hosts: Set<String>, warningMessage: String)]()
     
     public init() {
         

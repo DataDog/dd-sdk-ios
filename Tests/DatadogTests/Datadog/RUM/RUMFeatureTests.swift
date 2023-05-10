@@ -7,7 +7,9 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
 @testable import Datadog
+@testable import DatadogRUM
 
 class RUMFeatureTests: XCTestCase {
     override func setUp() {

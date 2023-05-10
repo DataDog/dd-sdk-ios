@@ -3,6 +3,7 @@
 // Copyright 2023-Present Datadog, Inc.
 
 import UIKit
+import DatadogRUM
 
 internal class KioskSendInterruptedEventsViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {

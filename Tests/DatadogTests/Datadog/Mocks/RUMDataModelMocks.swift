@@ -5,7 +5,8 @@
  */
 
 import TestUtilities
-@testable import Datadog
+
+@testable import DatadogRUM
 
 extension RUMUser {
     static func mockRandom() -> RUMUser {

@@ -8,6 +8,7 @@ import UIKit
 import Datadog
 import DatadogLogs
 import DatadogTrace
+import DatadogRUM
 import DatadogCrashReporting
 
 @_exported import enum DatadogInternal.TrackingConsent
@@ -16,7 +17,7 @@ let serviceName = "ios-sdk-example-app"
 
 var logger: Logger!
 var tracer: OTTracer { DatadogTracer.shared() }
-var rumMonitor: DDRUMMonitor { Global.rum }
+var rumMonitor: DDRUMMonitor { RUMMonitor.shared() }
 
 @UIApplicationMain
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
@@ -86,9 +87,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
-        // Register RUMMonitor
-        Global.rum = RUMMonitor.shared()
-
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug
 
@@ -105,7 +103,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Instantiate location monitor if the Example app is run in interactive mode. This will
         // enable background location tracking if it was started in previous session.
         if Environment.isRunningInteractive() {
-            backgroundLocationMonitor = BackgroundLocationMonitor()
+            backgroundLocationMonitor = BackgroundLocationMonitor(rum: rumMonitor)
         }
         #endif
 

@@ -12,7 +12,7 @@ internal final class ApplicationStatePublisher: ContextValuePublisher {
     typealias Snapshot = AppStateHistory.Snapshot
 
     private static var currentApplicationState: UIApplication.State {
-        UIApplication.managedShared?.applicationState ?? .active // fallback to most expected state
+        UIApplication.dd.managedShared?.applicationState ?? .active // fallback to most expected state
     }
 
     /// The default publisher queue.

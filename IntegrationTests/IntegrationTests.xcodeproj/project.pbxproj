@@ -652,7 +652,7 @@
 				D218664F29967CBC006F5B23 /* RUMDataModelsMapping.swift */,
 			);
 			name = DataModels;
-			path = ../../Sources/Datadog/RUM/DataModels;
+			path = ../../DatadogRUM/Sources/DataModels;
 			sourceTree = "<group>";
 		};
 		D22F06CA29DAE5360026CC3C /* StopSessionScenario */ = {

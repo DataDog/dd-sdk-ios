@@ -15,21 +15,21 @@ internal class RUMScrubbingViewController: UIViewController {
     }
 
     private func simulateRUMView() {
-        Global.rum.startView(viewController: self, name: "ViewName (sensitive detail)")
+        rumMonitor.startView(viewController: self, name: "ViewName (sensitive detail)")
 
         simulateRUMUserAction()
         simulateRUMError()
         simulateRUMResources {
-            Global.rum.stopView(viewController: self)
+            rumMonitor.stopView(viewController: self)
         }
     }
 
     private func simulateRUMUserAction() {
-        Global.rum.addUserAction(type: .tap, name: "Purchase (sensitive detail)")
+        rumMonitor.addUserAction(type: .tap, name: "Purchase (sensitive detail)")
     }
 
     private func simulateRUMError() {
-        Global.rum.addError(message: "Error message (sensitive detail).", source: .source)
+        rumMonitor.addError(message: "Error message (sensitive detail).", source: .source)
     }
 
     private func simulateRUMResources(completion: @escaping () -> Void) {
@@ -39,18 +39,18 @@ internal class RUMScrubbingViewController: UIViewController {
         let simulatedResourceRequest2 = URLRequest(url: URL(string: "https://foo.com/resource/2?q=sensitive-detail")!)
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        Global.rum.startResourceLoading(
+        rumMonitor.startResourceLoading(
             resourceKey: simulatedResourceKey1,
             request: simulatedResourceRequest1
         )
 
-        Global.rum.startResourceLoading(
+        rumMonitor.startResourceLoading(
             resourceKey: simulatedResourceKey2,
             request: simulatedResourceRequest2
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
-            Global.rum.stopResourceLoading(
+            rumMonitor.stopResourceLoading(
                 resourceKey: simulatedResourceKey1,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest1.url!,
@@ -60,7 +60,7 @@ internal class RUMScrubbingViewController: UIViewController {
                 )!
             )
 
-            Global.rum.stopResourceLoadingWithError(
+            rumMonitor.stopResourceLoadingWithError(
                 resourceKey: simulatedResourceKey2,
                 error: NSError(
                     domain: NSURLErrorDomain,

@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@testable import DatadogRUM
 @testable import Datadog
 @testable import DatadogObjc
 

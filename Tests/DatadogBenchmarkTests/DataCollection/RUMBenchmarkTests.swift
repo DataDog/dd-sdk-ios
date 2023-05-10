@@ -4,23 +4,25 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
-import Datadog
 import XCTest
+import DatadogInternal
+import DatadogRUM
 
 class RUMBenchmarkTests: BenchmarkTests {
+    var rum: DDRUMMonitor { RUMMonitor.shared() }
+
     func testCreatingOneRUMEvent() {
         let viewController = UIViewController()
-        Global.rum.startView(viewController: viewController)
+        rum.startView(viewController: viewController)
 
         measure {
-            Global.rum.addUserAction(type: .tap, name: "tap")
+            rum.addUserAction(type: .tap, name: "tap")
         }
     }
 
     func testCreatingOneRUMEventWithAttributes() {
         let viewController = UIViewController()
-        Global.rum.startView(viewController: viewController)
+        rum.startView(viewController: viewController)
 
         var attributes: [AttributeKey: AttributeValue] = [:]
         (0..<16).forEach { index in
@@ -28,7 +30,7 @@ class RUMBenchmarkTests: BenchmarkTests {
         }
 
         measure {
-            Global.rum.addUserAction(type: .tap, name: "tap", attributes: attributes)
+            rum.addUserAction(type: .tap, name: "tap", attributes: attributes)
         }
     }
 }

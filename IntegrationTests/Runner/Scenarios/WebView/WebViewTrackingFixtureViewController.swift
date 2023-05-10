@@ -15,7 +15,7 @@ class WebViewTrackingFixtureViewController: UIViewController, WKNavigationDelega
         super.viewDidAppear(animated)
 
         // An action sent from native iOS SDK.
-        Global.rum.addUserAction(type: .custom, name: "Native action")
+        rumMonitor.addUserAction(type: .custom, name: "Native action")
 
         // Opens a webview configured to pass all its Browser SDK events to native iOS SDK.
         show(ShopistWebviewViewController(), sender: nil)

@@ -46,6 +46,10 @@ let package = Package(
             targets: ["DatadogTrace"]
         ),
         .library(
+            name: "DatadogRUM",
+            targets: ["DatadogRUM"]
+        ),
+        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),
@@ -64,6 +68,7 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
+                .target(name: "DatadogRUM"),
                 .target(name: "_Datadog_Private"),
             ],
             swiftSettings: [.define("SPM_BUILD")]
@@ -74,6 +79,7 @@ let package = Package(
                 .target(name: "Datadog"),
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
+                .target(name: "DatadogRUM"),
             ]
         ),
         .target(
@@ -130,6 +136,22 @@ let package = Package(
                 .target(name: "TestUtilities"),
             ],
             path: "DatadogTrace/Tests"
+        ),
+
+        .target(
+            name: "DatadogRUM",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "DatadogRUM/Sources"
+        ),
+        .testTarget(
+            name: "DatadogRUMTests",
+            dependencies: [
+                .target(name: "DatadogRUM"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogRUM/Tests"
         ),
 
         .target(

@@ -17,7 +17,7 @@ internal class CITestIntegration {
     /// `nil` if the integration is not enabled.
     static let active: CITestIntegration? = CITestIntegration()
     /// RUMCITest model to be attached to events, it contains the CI context
-    let rumCITest: RUMCITest
+    let testExecutionId: String
     /// Tag that must be added to spans and headers when running inside a CIApp test
     let origin = "ciapp-test"
 
@@ -25,7 +25,7 @@ internal class CITestIntegration {
         guard let testID = processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"] else {
             return nil
         }
-        self.rumCITest = RUMCITest(testExecutionId: testID)
+        self.testExecutionId = testID
     }
 
     /// Entry point for running all the tasks needed for CIApp integration

@@ -6,6 +6,8 @@
 
 import XCTest
 import DatadogInternal
+import DatadogRUM
+
 @testable import Datadog
 
 class RUMStorageBenchmarkTests: XCTestCase {

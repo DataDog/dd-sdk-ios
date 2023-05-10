@@ -7,6 +7,7 @@
 import Foundation
 import DatadogInternal
 import DatadogLogs
+import DatadogRUM
 
 /// Describes the configuration of all features.
 ///
@@ -135,7 +136,6 @@ extension FeaturesConfiguration {
             if let rumApplicationID = configuration.rumApplicationID {
                 rum = RUMConfiguration(
                     applicationID: rumApplicationID,
-                    uuidGenerator: DefaultRUMUUIDGenerator(),
                     sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
                     telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
                     configurationTelemetrySampler: configurationSampler,
@@ -154,7 +154,8 @@ extension FeaturesConfiguration {
                     rumAttributesProvider: configuration.rumResourceAttributesProvider,
                     vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
                     dateProvider: dateProvider,
-                    customIntakeURL: configuration.customRUMEndpoint
+                    customIntakeURL: configuration.customRUMEndpoint,
+                    testExecutionId: CITestIntegration.active?.testExecutionId
                 )
             } else {
                 let error = ProgrammerError(

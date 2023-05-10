@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogRUM
 
 final class RUMMobileVitalsViewController: UIViewController {
 
@@ -29,8 +29,8 @@ final class RUMMobileVitalsViewController: UIViewController {
     @IBAction func startNewViewButtonTapped(_ sender: Any){
         print("Start New View button tapped... Starting new view...")
 
-        Global.rum.startView(key: "sample view")
-        Global.rum.stopView(key: "sample view")
+        rumMonitor.startView(key: "sample view")
+        rumMonitor.stopView(key: "sample view")
     }
 
 }

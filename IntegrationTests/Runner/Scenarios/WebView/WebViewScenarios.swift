@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogRUM
 import Datadog
 
 private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {

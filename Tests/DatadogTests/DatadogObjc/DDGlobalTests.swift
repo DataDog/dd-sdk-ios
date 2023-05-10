@@ -7,6 +7,7 @@
 import XCTest
 import DatadogInternal
 @testable import DatadogTrace
+@testable import DatadogRUM
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -41,27 +42,14 @@ class DDGlobalTests: XCTestCase {
 
     // MARK: - Test Global RUMMonitor
 
-    func testWhenRUMMonitorIsNotSet_itReturnsNoOpImplementation() {
+    func testWhenDDRUMMonitorIsNotInitailized_itReturnsNoOpImplementation() {
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is DDNoopRUMMonitor)
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
 
-    func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() throws {
-        let previousGlobal = (
-            objc: DatadogObjc.DDGlobal.rum,
-            swift: Global.rum
-        )
-        defer {
-            DatadogObjc.DDGlobal.rum = previousGlobal.objc
-            Global.rum = previousGlobal.swift
-        }
-
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
+    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
         // When
-        DatadogObjc.DDGlobal.rum = DatadogObjc.DDRUMMonitor()
-
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
         // Then
-        XCTAssertTrue(Global.rum is RUMMonitor)
+        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is RUMMonitor)
     }
 }
