@@ -20,8 +20,6 @@ internal struct ViewTreeRecordingContext {
     let ids: NodeIDGenerator
     /// Provides base64 image data with a built in caching mechanism.
     let imageDataProvider: ImageDataProviding
-    /// Available text obfuscators to use accordingly to current privacy mode.
-    let textObfuscation: TextObfuscation
     /// Variable view controller related context
     var viewControllerContext: ViewControllerContext = .init()
 }

@@ -8,7 +8,7 @@ import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
-        return context.textObfuscation.inputAndOptionTextObfuscator(for: context.recorder.privacy)
+        return context.recorder.privacy.inputAndOptionTextObfuscator
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {

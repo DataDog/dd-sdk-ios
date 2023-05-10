@@ -8,31 +8,6 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-class TextObfuscationTests: XCTestCase {
-    let obfuscation = TextObfuscation()
-
-    func testSensitiveTextObfuscation() {
-        XCTAssertTrue(obfuscation.sensitiveTextObfuscator(for: .mockRandom()) is FixLengthMaskObfuscator)
-    }
-
-    func testInputAndOptionTextObfuscation() {
-        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskAll) is FixLengthMaskObfuscator)
-        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskUserInput) is FixLengthMaskObfuscator)
-    }
-
-    func testStaticTextObfuscation() {
-        XCTAssertTrue(obfuscation.staticTextObfuscator(for: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(obfuscation.staticTextObfuscator(for: .maskAll) is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(obfuscation.staticTextObfuscator(for: .maskUserInput) is NOPTextObfuscator)    }
-
-    func testHintTextObfuscation() {
-        XCTAssertTrue(obfuscation.hintTextObfuscator(for: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(obfuscation.hintTextObfuscator(for: .maskAll) is FixLengthMaskObfuscator)
-        XCTAssertTrue(obfuscation.hintTextObfuscator(for: .maskUserInput) is NOPTextObfuscator)
-    }
-}
-
 class SpacePreservingMaskObfuscatorTests: XCTestCase {
     let obfuscator = SpacePreservingMaskObfuscator()
 

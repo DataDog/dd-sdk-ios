@@ -9,13 +9,13 @@ import UIKit
 internal struct UITextViewRecorder: NodeRecorder {
     var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
         if isSensitive {
-            return context.textObfuscation.sensitiveTextObfuscator(for: context.recorder.privacy)
+            return context.recorder.privacy.sensitiveTextObfuscator
         }
 
         if isEditable {
-            return context.textObfuscation.inputAndOptionTextObfuscator(for: context.recorder.privacy)
+            return context.recorder.privacy.inputAndOptionTextObfuscator
         } else {
-            return context.textObfuscation.staticTextObfuscator(for: context.recorder.privacy)
+            return context.recorder.privacy.staticTextObfuscator
         }
     }
 
