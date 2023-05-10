@@ -272,7 +272,7 @@ internal class TextObfuscatorMock: TextObfuscating {
 }
 
 internal func mockRandomTextObfuscator() -> TextObfuscating {
-    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLegthMaskObfuscator()].randomElement()!
+    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLengthMaskObfuscator()].randomElement()!
 }
 
 extension ViewTreeRecordingContext: AnyMockable, RandomMockable {

@@ -80,8 +80,8 @@ class UITextFieldRecorderTests: XCTestCase {
         }
 
         XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLegthMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
 
         // When
         oneOrMoreOf([
@@ -90,7 +90,7 @@ class UITextFieldRecorderTests: XCTestCase {
         ])
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
 
         // When
         textField.text = nil
@@ -98,7 +98,7 @@ class UITextFieldRecorderTests: XCTestCase {
 
         // Then
         XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }

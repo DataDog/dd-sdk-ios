@@ -20,7 +20,7 @@ internal struct TextObfuscation {
     /// Text obfuscator that replaces each character with `"x"` mask.
     private let spacePreservingMask = SpacePreservingMaskObfuscator()
     /// Text obfuscator that replaces whole text with fixed-length `"***"` mask (three asterics).
-    private let fixLegthMask = FixLegthMaskObfuscator()
+    private let fixLengthMask = FixLengthMaskObfuscator()
 
     /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
     ///
@@ -28,7 +28,7 @@ internal struct TextObfuscation {
     /// - passwords, e-mails and phone numbers marked in a platform-specific way
     /// - AND other forms of sensitivity in text available to each platform
     func sensitiveTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
-        return fixLegthMask
+        return fixLengthMask
     }
 
     /// Returns "Input & Option Text" obfuscator for given `privacyLevel`.
@@ -39,8 +39,8 @@ internal struct TextObfuscation {
     func inputAndOptionTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
         switch privacyLevel {
         case .allowAll:         return nop
-        case .maskAll:          return fixLegthMask
-        case .maskUserInput:    return fixLegthMask
+        case .maskAll:          return fixLengthMask
+        case .maskUserInput:    return fixLengthMask
         }
     }
 
@@ -61,7 +61,7 @@ internal struct TextObfuscation {
     func hintTextObfuscator(for privacyLevel: SessionReplayPrivacy) -> TextObfuscating {
         switch privacyLevel {
         case .allowAll:         return nop
-        case .maskAll:          return fixLegthMask
+        case .maskAll:          return fixLengthMask
         case .maskUserInput:    return nop
         }
     }
@@ -94,7 +94,7 @@ internal struct SpacePreservingMaskObfuscator: TextObfuscating {
 }
 
 /// Text obfuscator which replaces entire text with fix-length `"***"` mask value.
-internal struct FixLegthMaskObfuscator: TextObfuscating {
+internal struct FixLengthMaskObfuscator: TextObfuscating {
     private static let maskedString = "***"
 
     func mask(text: String) -> String { Self.maskedString }

@@ -12,13 +12,13 @@ class TextObfuscationTests: XCTestCase {
     let obfuscation = TextObfuscation()
 
     func testSensitiveTextObfuscation() {
-        XCTAssertTrue(obfuscation.sensitiveTextObfuscator(for: .mockRandom()) is FixLegthMaskObfuscator)
+        XCTAssertTrue(obfuscation.sensitiveTextObfuscator(for: .mockRandom()) is FixLengthMaskObfuscator)
     }
 
     func testInputAndOptionTextObfuscation() {
         XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskAll) is FixLegthMaskObfuscator)
-        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskUserInput) is FixLegthMaskObfuscator)
+        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskAll) is FixLengthMaskObfuscator)
+        XCTAssertTrue(obfuscation.inputAndOptionTextObfuscator(for: .maskUserInput) is FixLengthMaskObfuscator)
     }
 
     func testStaticTextObfuscation() {
@@ -28,7 +28,7 @@ class TextObfuscationTests: XCTestCase {
 
     func testHintTextObfuscation() {
         XCTAssertTrue(obfuscation.hintTextObfuscator(for: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(obfuscation.hintTextObfuscator(for: .maskAll) is FixLegthMaskObfuscator)
+        XCTAssertTrue(obfuscation.hintTextObfuscator(for: .maskAll) is FixLengthMaskObfuscator)
         XCTAssertTrue(obfuscation.hintTextObfuscator(for: .maskUserInput) is NOPTextObfuscator)
     }
 }
@@ -75,8 +75,8 @@ class SpacePreservingMaskObfuscatorTests: XCTestCase {
     }
 }
 
-class FixLegthMaskObfuscatorTests: XCTestCase {
-    let obfuscator = FixLegthMaskObfuscator()
+class FixLengthMaskObfuscatorTests: XCTestCase {
+    let obfuscator = FixLengthMaskObfuscator()
 
     func testWhenObfuscatingItAlwaysReplacesTextItWithConstantMask() {
         let expectedMask = "***"
