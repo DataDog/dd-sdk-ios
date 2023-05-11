@@ -123,4 +123,10 @@ internal struct CrossPlatformAttributes {
     /// configured at the SDK level. This gets displayed on APM's traffic ingestion control page.
     /// Expects `Double` value between `0.0` and `1.0`.
     static let rulePSR = "_dd.rule_psr"
+
+    /// Custom attribute of the log passed from CP SDK. Used in error logs reported by cross platform SDK.
+    /// It flags the error has being fatal for the host application, so we can prevent creating a duplicate RUM error.
+    /// The goal of RUMM-3289 is to create an RFC to get rid of this mechanism.
+    /// Expects `Bool` value.
+    static let errorLogIsCrash = "_dd.error_log.is_crash"
 }
