@@ -99,6 +99,7 @@ included:
   - ../../tools/api-surface/Fixtures/Sources
   - ../../tools/rum-models-generator/Sources
   - ../../tools/rum-models-generator/Tests/rum-models-generator-coreTests/Fixtures/Output # lint generation fixture
+  - ../../tools/sr-snapshots/Sources
   - ../../dependency-manager-tests/carthage/CTProject
   - ../../dependency-manager-tests/cocoapods/CPProject
   - ../../dependency-manager-tests/spm/SPMProject
