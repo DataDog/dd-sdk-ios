@@ -10,14 +10,14 @@ import DatadogInternal
 
 @testable import DatadogCrashReporting
 
-class DDCrashReportingPluginTests: XCTestCase {
+class CrashReportingPluginTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertNil(DDCrashReportingPlugin.thirdPartyCrashReporter)
+        XCTAssertNil(PLCrashReporterPlugin.thirdPartyCrashReporter)
     }
 
     override func tearDown() {
-        XCTAssertNil(DDCrashReportingPlugin.thirdPartyCrashReporter)
+        XCTAssertNil(PLCrashReporterPlugin.thirdPartyCrashReporter)
         super.tearDown()
     }
 
@@ -26,8 +26,8 @@ class DDCrashReportingPluginTests: XCTestCase {
     func testGivenPendingCrashReport_whenCallerSucceedsWithItsProcessing_itIsPurged() throws {
         let expectation = self.expectation(description: "Crash Report was delivered to the caller.")
         let crashReporter = try ThirdPartyCrashReporterMock()
-        let plugin = DDCrashReportingPlugin { crashReporter }
-        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+        let plugin = PLCrashReporterPlugin { crashReporter }
+        defer { PLCrashReporterPlugin.thirdPartyCrashReporter = nil }
 
         // Given
         crashReporter.pendingCrashReport = .mockAny()
@@ -47,8 +47,8 @@ class DDCrashReportingPluginTests: XCTestCase {
     func testGivenPendingCrashReport_whenCallerSucceedsInItsProcessing_itIsPurged() throws {
         let expectation = self.expectation(description: "Crash Report was delivered to the caller.")
         let crashReporter = try ThirdPartyCrashReporterMock()
-        let plugin = DDCrashReportingPlugin { crashReporter }
-        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+        let plugin = PLCrashReporterPlugin { crashReporter }
+        defer { PLCrashReporterPlugin.thirdPartyCrashReporter = nil }
 
         // Given
         crashReporter.pendingCrashReport = .mockAny()
@@ -68,8 +68,8 @@ class DDCrashReportingPluginTests: XCTestCase {
     func testGivenNoPendingCrashReport_whenCallerRequestIsMade_itReceivesNil() throws {
         let expectation = self.expectation(description: "No Crash Report was delivered to the caller.")
         let crashReporter = try ThirdPartyCrashReporterMock()
-        let plugin = DDCrashReportingPlugin { crashReporter }
-        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+        let plugin = PLCrashReporterPlugin { crashReporter }
+        defer { PLCrashReporterPlugin.thirdPartyCrashReporter = nil }
 
         // Given
         crashReporter.pendingCrashReport = nil
@@ -89,8 +89,8 @@ class DDCrashReportingPluginTests: XCTestCase {
 
     func testItForwardsCrashContextToCrashReporter() throws {
         let crashReporter = try ThirdPartyCrashReporterMock()
-        let plugin = DDCrashReportingPlugin { crashReporter }
-        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+        let plugin = PLCrashReporterPlugin { crashReporter }
+        defer { PLCrashReporterPlugin.thirdPartyCrashReporter = nil }
 
         let context = "some context".data(using: .utf8)!
         plugin.inject(context: context)
@@ -108,8 +108,8 @@ class DDCrashReportingPluginTests: XCTestCase {
         defer { consolePrint = { print($0) } }
 
         let crashReporter = try ThirdPartyCrashReporterMock()
-        let plugin = DDCrashReportingPlugin { crashReporter }
-        defer { DDCrashReportingPlugin.thirdPartyCrashReporter = nil }
+        let plugin = PLCrashReporterPlugin { crashReporter }
+        defer { PLCrashReporterPlugin.thirdPartyCrashReporter = nil }
 
         // Given
         crashReporter.pendingCrashReport = .mockAny()
@@ -142,7 +142,7 @@ class DDCrashReportingPluginTests: XCTestCase {
         defer { ThirdPartyCrashReporterMock.initializationError = nil }
 
         // Then
-        _ = DDCrashReportingPlugin { try ThirdPartyCrashReporterMock() }
+        _ = PLCrashReporterPlugin { try ThirdPartyCrashReporterMock() }
 
         XCTAssertEqual(
             errorPrinted,

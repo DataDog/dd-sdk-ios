@@ -25,7 +25,7 @@ class CrashContextProviderTests: XCTestCase {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
-        let crashContextProvider = CrashContextProvider()
+        let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
         let context: DatadogContext = .mockRandom()
 
@@ -58,7 +58,7 @@ class CrashContextProviderTests: XCTestCase {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
-        let crashContextProvider = CrashContextProvider()
+        let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
         let viewEvent = AnyCodable(mockRandomAttributes())
@@ -80,7 +80,7 @@ class CrashContextProviderTests: XCTestCase {
         expectation.expectedFulfillmentCount = 2
 
         // Given
-        let crashContextProvider = CrashContextProvider()
+        let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
         var viewEvent: AnyCodable? = AnyCodable(mockRandomAttributes())
@@ -105,7 +105,7 @@ class CrashContextProviderTests: XCTestCase {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
-        let crashContextProvider = CrashContextProvider()
+        let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
         let sessionState: AnyCodable? = AnyCodable(mockRandomAttributes())
@@ -125,7 +125,7 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
-        let provider = CrashContextProvider()
+        let provider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: provider)
         let viewEvent: RUMViewEvent = .mockRandom()
         let sessionState: RUMSessionState = .mockRandom()

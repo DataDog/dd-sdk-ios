@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// An interface for writing and reading  the `CrashContext`
-internal protocol CrashContextProviderType: AnyObject {
+internal protocol CrashContextProvider: AnyObject {
     /// Returns current `CrashContext` value.
     var currentCrashContext: CrashContext? { get }
     /// Notifies on `CrashContext` change.
@@ -16,7 +16,7 @@ internal protocol CrashContextProviderType: AnyObject {
 }
 
 /// Manages the `CrashContext` reads and writes in a thread-safe manner.
-internal class CrashContextProvider: CrashContextProviderType {
+internal class CrashContextCoreProvider: CrashContextProvider {
     /// Queue for synchronizing `unsafeCrashContext` updates.
     private let queue = DispatchQueue(
         label: "com.datadoghq.crash-context",
@@ -51,7 +51,7 @@ internal class CrashContextProvider: CrashContextProviderType {
     }
 }
 
-extension CrashContextProvider: FeatureMessageReceiver {
+extension CrashContextCoreProvider: FeatureMessageReceiver {
     /// Defines keys referencing RUM baggage in `DatadogContext.featuresAttributes`.
     internal enum RUMBaggageKeys {
         /// The key references RUM view event.

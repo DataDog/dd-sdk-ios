@@ -15,16 +15,16 @@ internal final class CrashReportingFeature: DatadogFeature {
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
 
-    let crashContextProvider: CrashContextProviderType
+    let crashContextProvider: CrashContextProvider
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
-    let plugin: DDCrashReportingPluginType
+    let plugin: CrashReportingPlugin
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let sender: CrashReportSender
 
     init(
-        crashReportingPlugin: DDCrashReportingPluginType,
-        crashContextProvider: CrashContextProviderType,
+        crashReportingPlugin: CrashReportingPlugin,
+        crashContextProvider: CrashContextProvider,
         sender: CrashReportSender,
         messageReceiver: FeatureMessageReceiver
     ) {

@@ -16,7 +16,7 @@ extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp(
             core: DatadogCoreProtocol = NOPDatadogCore(),
-            crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
+            crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin()
     ) -> Self {
         return .mockWith(
             integration: MessageBusSender(core: core),
@@ -26,8 +26,8 @@ extension CrashReportingFeature {
 
     static func mockWith(
         integration: CrashReportSender,
-        crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
-        crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
+        crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin(),
+        crashContextProvider: CrashContextProvider = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) -> Self {
         .init(
@@ -39,7 +39,7 @@ extension CrashReportingFeature {
     }
 }
 
-internal class CrashReportingPluginMock: DDCrashReportingPluginType {
+internal class CrashReportingPluginMock: CrashReportingPlugin {
     /// The crash report loaded by this plugin.
     var pendingCrashReport: DDCrashReport?
     /// If the plugin was asked to delete the crash report.
@@ -64,12 +64,12 @@ internal class CrashReportingPluginMock: DDCrashReportingPluginType {
     var didInjectContext: (() -> Void)?
 }
 
-internal class NoopCrashReportingPlugin: DDCrashReportingPluginType {
+internal class NOPCrashReportingPlugin: CrashReportingPlugin {
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
     func inject(context: Data) {}
 }
 
-internal class CrashContextProviderMock: CrashContextProviderType {
+internal class CrashContextProviderMock: CrashContextProvider {
     private(set) var currentCrashContext: CrashContext?
     var onCrashContextChange: (CrashContext) -> Void
 

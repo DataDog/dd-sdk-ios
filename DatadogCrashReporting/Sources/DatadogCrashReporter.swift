@@ -11,10 +11,10 @@ public final class DatadogCrashReporter {
     /// Initializes the Datadog Crash Reporter.
     public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) {
         do {
-            let contextProvider = CrashContextProvider()
+            let contextProvider = CrashContextCoreProvider()
 
             let reporter = CrashReportingFeature(
-                crashReportingPlugin: DDCrashReportingPlugin(),
+                crashReportingPlugin: PLCrashReporterPlugin(),
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
                 messageReceiver: contextProvider
