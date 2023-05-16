@@ -122,8 +122,10 @@ internal final class CrashReportingFeature: DatadogFeature {
             return nil
         }
     }
+}
 
-    internal func deinitialize() {
+extension CrashReportingFeature: Flushable {
+    func flush() {
         // Await asynchronous operations completion to safely sink all pending tasks.
         queue.sync {}
     }
