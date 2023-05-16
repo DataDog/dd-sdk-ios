@@ -12,7 +12,7 @@ import DatadogInternal
 @testable import DatadogCrashReporting
 @testable import Datadog
 
-extension DatadogCrashReporter {
+extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp(
             core: DatadogCoreProtocol = NOPDatadogCore(),

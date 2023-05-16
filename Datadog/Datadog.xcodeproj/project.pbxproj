@@ -656,6 +656,8 @@
 		D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */; };
 		D29294E3291D652C00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
 		D29294E4291D652D00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
+		D293302C2A137DAD0029C9EA /* CrashReportingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */; };
+		D293302D2A137DAD0029C9EA /* CrashReportingFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */; };
 		D295A16529F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */; };
 		D295A16629F299C9007C0E9A /* URLSessionInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */; };
 		D2966C2029CA177000FC6B3C /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
@@ -2143,6 +2145,7 @@
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
 		D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisher.swift; sourceTree = "<group>"; };
 		D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisherTests.swift; sourceTree = "<group>"; };
+		D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingFeature.swift; sourceTree = "<group>"; };
 		D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInterceptor.swift; sourceTree = "<group>"; };
 		D29889C72734136200A4D1A9 /* RUMViewsHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandlerTests.swift; sourceTree = "<group>"; };
 		D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogRUM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3420,6 +3423,7 @@
 			children = (
 				6161247825CA9CA6009901BE /* DatadogCrashReporter.swift */,
 				61DE333525C8278A008E3EC2 /* DDCrashReportingPluginType.swift */,
+				D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */,
 				61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */,
 				616124AF25CAC26B009901BE /* CrashContext */,
 				D24CA32F28B3BF0C007B26BF /* Integrations */,
@@ -6590,6 +6594,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D214DA8929DF2D6A004D0AE8 /* CrashReportSender.swift in Sources */,
+				D293302C2A137DAD0029C9EA /* CrashReportingFeature.swift in Sources */,
 				617247B825DAB0E2007085B3 /* DDCrashReportBuilder.swift in Sources */,
 				612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */,
 				61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */,
@@ -7386,6 +7391,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D214DA8C29DF2D6B004D0AE8 /* CrashReportSender.swift in Sources */,
+				D293302D2A137DAD0029C9EA /* CrashReportingFeature.swift in Sources */,
 				D2CB6FC027C5348200A62B57 /* DDCrashReportBuilder.swift in Sources */,
 				D2CB6FC127C5348200A62B57 /* DDCrashReportExporter.swift in Sources */,
 				D2CB6FC227C5348200A62B57 /* CrashReportMinifier.swift in Sources */,

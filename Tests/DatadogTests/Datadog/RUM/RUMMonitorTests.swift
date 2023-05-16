@@ -1181,7 +1181,7 @@ class RUMMonitorTests: XCTestCase {
 
         // Given
         DatadogCrashReporter.initialize(in: core)
-        let crashReporter = try XCTUnwrap(core.get(feature: DatadogCrashReporter.self))
+        let crashReporter = try XCTUnwrap(core.get(feature: CrashReportingFeature.self))
 
         try core.register(feature: crashReporter)
 
