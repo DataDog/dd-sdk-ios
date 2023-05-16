@@ -135,6 +135,10 @@
     [builder build];
 }
 
+- (void)testDatadogCrashReporterAPI {
+    [DatadogCrashReporter enable];
+}
+
 #pragma clang diagnostic pop
 
 @end

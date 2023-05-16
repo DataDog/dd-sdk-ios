@@ -9,15 +9,12 @@ import DatadogInternal
 
 public final class DatadogCrashReporter {
     /// Initializes the Datadog Crash Reporter.
-    public static func initialize(
-        plugin: DDCrashReportingPluginType = DDCrashReportingPlugin(),
-        in core: DatadogCoreProtocol = defaultDatadogCore
-    ) {
+    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) {
         do {
             let contextProvider = CrashContextProvider()
 
             let reporter = CrashReportingFeature(
-                crashReportingPlugin: plugin,
+                crashReportingPlugin: DDCrashReportingPlugin(),
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
                 messageReceiver: contextProvider
@@ -32,5 +29,14 @@ public final class DatadogCrashReporter {
         } catch {
             consolePrint("\(error)")
         }
+    }
+}
+
+@available(swift, obsoleted: 1) @objc(DatadogCrashReporter)
+public final class objc_DatadogCrashReporter: NSObject {
+
+    @objc
+    public static func enable() {
+        DatadogCrashReporter.initialize()
     }
 }
