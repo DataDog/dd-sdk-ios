@@ -65,9 +65,6 @@ internal final class DatadogCore {
     @ReadWriteLock
     private var features: [String: DatadogFeature] = [:]
 
-    /// Registry for v1 features.
-    private var v1Features: [String: Any] = [:]
-
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
 
@@ -182,9 +179,7 @@ internal final class DatadogCore {
 
     /// A list of storage units of currently registered Features.
     private var allStorages: [FeatureStorage] {
-        let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
-        let v2Storages = stores.values.map { $0.storage }
-        return v1Storages + v2Storages
+        stores.values.map { $0.storage }
     }
 
     /// A list of upload units of currently registered Features.
@@ -207,7 +202,6 @@ internal final class DatadogCore {
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
         // Deallocate all Features and their storage & upload units:
-        v1Features = [:]
         stores = [:]
         features = [:]
     }
@@ -299,49 +293,6 @@ extension DatadogCore: DatadogCoreProtocol {
     /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
-}
-
-extension DatadogCore: DatadogV1CoreProtocol {
-    // MARK: - V1 interface
-
-    func register<T>(feature instance: T?) {
-        let key = String(describing: T.self)
-        v1Features[key] = instance
-
-        if let feature = instance as? V1Feature {
-            add(messageReceiver: feature.messageReceiver, forKey: key)
-        }
-    }
-
-    func feature<T>(_ type: T.Type) -> T? {
-        let key = String(describing: T.self)
-        return v1Features[key] as? T
-    }
-
-    func scope<T>(for featureType: T.Type) -> FeatureScope? {
-        let key = String(describing: T.self)
-
-        guard let feature = v1Features[key] as? V1Feature else {
-            return nil
-        }
-
-        return DatadogCoreFeatureScope(
-            contextProvider: contextProvider,
-            storage: feature.storage
-        )
-    }
-}
-
-/// A v1 Feature with an associated stroage.
-internal protocol V1Feature {
-    /// The feature's storage.
-    var storage: FeatureStorage { get }
-
-    /// The message receiver.
-    ///
-    /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
-    /// from a bus that is shared between Features registered in a core.
-    var messageReceiver: FeatureMessageReceiver { get }
 }
 
 internal struct DatadogCoreFeatureScope: FeatureScope {

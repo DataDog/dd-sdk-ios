@@ -87,26 +87,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     }
 }
 
-extension DatadogCoreProxy: DatadogV1CoreProtocol {
-    func feature<T>(_ type: T.Type) -> T? {
-        return core.feature(type)
-    }
-
-    func register<T>(feature instance: T?) {
-        let key = String(describing: T.self)
-        featureScopeInterceptors[key] = FeatureScopeInterceptor()
-
-        core.register(feature: instance)
-    }
-
-    func scope<T>(for featureType: T.Type) -> FeatureScope? {
-        return core.scope(for: featureType).map { scope in
-            let key = String(describing: T.self)
-            return FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[key]!)
-        }
-    }
-}
-
 extension DatadogCoreProxy {
     func flush() {
         core.flush()
@@ -175,19 +155,6 @@ private class FeatureScopeInterceptor {
 
 extension DatadogCoreProxy {
     /// Returns all events of given type for certain Feature.
-    ///
-    /// - Parameter feature: The Feature to retrieve events from
-    /// - Parameter type: The type of events to filter out
-    /// - Returns: A list of events.
-    func waitAndReturnEvents<F, T>(of feature: F.Type, ofType type: T.Type) -> [T] where F: V1Feature, T: Encodable {
-        flush()
-
-        let key = String(describing: F.self)
-        let interceptor = self.featureScopeInterceptors[key]!
-        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
-    }
-
-    /// Returns all events of given type for certain Feature.
     /// - Parameters:
     ///   - name: The Feature to retrieve events from
     ///   - type: The type of events to filter out
@@ -206,13 +173,5 @@ extension DatadogCoreProxy {
         flush()
         let interceptor = self.featureScopeInterceptors[name]!
         return interceptor.waitAndReturnEvents().map { $0.data }
-    }
-
-    /// Returns serialized events of given Feature.
-    ///
-    /// - Parameter feature: The Feature to retrieve events from
-    /// - Returns: A list of serialized events.
-    func waitAndReturnEventsData<F>(of feature: F.Type) -> [Data] where F: V1Feature {
-        return waitAndReturnEventsData(ofFeature: String(describing: F.self))
     }
 }

@@ -391,7 +391,6 @@
 		D230399E298D50F1001A1FA3 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2579593298ABCF5008A1BE5 /* XCTest.framework */; };
 		D23039DD298D5235001A1FA3 /* DD.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039AD298D5234001A1FA3 /* DD.swift */; };
 		D23039DE298D5235001A1FA3 /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039AF298D5235001A1FA3 /* Writer.swift */; };
-		D23039DF298D5235001A1FA3 /* DatadogV1CoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B0298D5235001A1FA3 /* DatadogV1CoreProtocol.swift */; };
 		D23039E0298D5235001A1FA3 /* DatadogCoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B1298D5235001A1FA3 /* DatadogCoreProtocol.swift */; };
 		D23039E1298D5236001A1FA3 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B3298D5235001A1FA3 /* AppState.swift */; };
 		D23039E2298D5236001A1FA3 /* UserInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B4298D5235001A1FA3 /* UserInfo.swift */; };
@@ -1079,7 +1078,6 @@
 		D2DA236E298D57AA00C6C7E6 /* InternalLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CE298D5235001A1FA3 /* InternalLogger.swift */; };
 		D2DA236F298D57AA00C6C7E6 /* DateFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039D9298D5235001A1FA3 /* DateFormatting.swift */; };
 		D2DA2370298D57AA00C6C7E6 /* AnyDecodable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039C5298D5235001A1FA3 /* AnyDecodable.swift */; };
-		D2DA2371298D57AA00C6C7E6 /* DatadogV1CoreProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B0298D5235001A1FA3 /* DatadogV1CoreProtocol.swift */; };
 		D2DA2372298D57AA00C6C7E6 /* DD.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039AD298D5234001A1FA3 /* DD.swift */; };
 		D2DA2373298D57AA00C6C7E6 /* ReadWriteLock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */; };
 		D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039BA298D5235001A1FA3 /* DatadogContext.swift */; };
@@ -2041,7 +2039,6 @@
 		D23039A5298D513C001A1FA3 /* DatadogInternal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogInternal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23039AD298D5234001A1FA3 /* DD.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DD.swift; sourceTree = "<group>"; };
 		D23039AF298D5235001A1FA3 /* Writer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Writer.swift; sourceTree = "<group>"; };
-		D23039B0298D5235001A1FA3 /* DatadogV1CoreProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogV1CoreProtocol.swift; sourceTree = "<group>"; };
 		D23039B1298D5235001A1FA3 /* DatadogCoreProtocol.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocol.swift; sourceTree = "<group>"; };
 		D23039B3298D5235001A1FA3 /* AppState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		D23039B4298D5235001A1FA3 /* UserInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserInfo.swift; sourceTree = "<group>"; };
@@ -4145,7 +4142,6 @@
 				D23039B2298D5235001A1FA3 /* Context */,
 				D23039B1298D5235001A1FA3 /* DatadogCoreProtocol.swift */,
 				D23039BD298D5235001A1FA3 /* DatadogFeature.swift */,
-				D23039B0298D5235001A1FA3 /* DatadogV1CoreProtocol.swift */,
 				D23039AD298D5234001A1FA3 /* DD.swift */,
 				D23039D6298D5235001A1FA3 /* Extensions */,
 				D23039BF298D5235001A1FA3 /* MessageBus */,
@@ -6726,7 +6722,6 @@
 				D23039F8298D5236001A1FA3 /* InternalLogger.swift in Sources */,
 				D2303A01298D5236001A1FA3 /* DateFormatting.swift in Sources */,
 				D23039F1298D5236001A1FA3 /* AnyDecodable.swift in Sources */,
-				D23039DF298D5235001A1FA3 /* DatadogV1CoreProtocol.swift in Sources */,
 				D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D23039DD298D5235001A1FA3 /* DD.swift in Sources */,
 				D2160C9A29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
@@ -7468,7 +7463,6 @@
 				D2DA236E298D57AA00C6C7E6 /* InternalLogger.swift in Sources */,
 				D2DA236F298D57AA00C6C7E6 /* DateFormatting.swift in Sources */,
 				D2DA2370298D57AA00C6C7E6 /* AnyDecodable.swift in Sources */,
-				D2DA2371298D57AA00C6C7E6 /* DatadogV1CoreProtocol.swift in Sources */,
 				D2160CC629C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D2DA2372298D57AA00C6C7E6 /* DD.swift in Sources */,
 				D2160C9B29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
