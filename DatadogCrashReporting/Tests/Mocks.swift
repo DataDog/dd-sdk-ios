@@ -4,9 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-@testable import DatadogCrashReporting
-@testable import Datadog
 import CrashReporter
+
+@testable import DatadogCrashReporting
 
 internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
     static var initializationError: Error?

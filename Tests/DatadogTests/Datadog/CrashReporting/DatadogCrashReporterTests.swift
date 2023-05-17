@@ -10,8 +10,9 @@ import DatadogInternal
 import DatadogLogs
 
 @testable import Datadog
+@testable import DatadogCrashReporting
 
-class CrashReporterTests: XCTestCase {
+class DatadogCrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
     func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
@@ -26,7 +27,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -35,7 +36,7 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         sender.didSendCrashReport = { expectation.fulfill() }
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
@@ -64,7 +65,7 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = crashContext.data
 
         // When
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -73,7 +74,7 @@ class CrashReporterTests: XCTestCase {
 
         //Then
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -95,7 +96,7 @@ class CrashReporterTests: XCTestCase {
         plugin.injectedContextData = crashContext.data
 
         // When
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -104,7 +105,7 @@ class CrashReporterTests: XCTestCase {
 
         //Then
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
@@ -121,7 +122,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -130,7 +131,7 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertNil(sender.sentCrashReport, "It should not send the crash report")
@@ -149,7 +150,7 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let sender = CrashReportSenderMock()
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
@@ -158,7 +159,7 @@ class CrashReporterTests: XCTestCase {
 
         // Then
         sender.didSendCrashReport = { expectation.fulfill() }
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertTrue(
@@ -176,14 +177,14 @@ class CrashReporterTests: XCTestCase {
 
         // When
         let initialCrashContext: CrashContext = .mockRandom()
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
             sender: CrashReportSenderMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
-        try withExtendedLifetime(crashReporter) {
+        try withExtendedLifetime(feature) {
             // Then
             waitForExpectations(timeout: 0.5, handler: nil)
             DDAssertDictionariesEqual(
@@ -200,14 +201,14 @@ class CrashReporterTests: XCTestCase {
         plugin.didInjectContext = { expectation.fulfill() }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
             messageReceiver: NOPFeatureMessageReceiver()
         )
 
-        try withExtendedLifetime(crashReporter) {
+        try withExtendedLifetime(feature) {
             // When
             let updatedCrashContext: CrashContext = .mockRandom()
             crashContextProvider.onCrashContextChange(updatedCrashContext)
@@ -240,7 +241,7 @@ class CrashReporterTests: XCTestCase {
         plugin.pendingCrashReport = crashReport
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -248,7 +249,7 @@ class CrashReporterTests: XCTestCase {
         )
 
         // When
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -262,7 +263,7 @@ class CrashReporterTests: XCTestCase {
         expectation.expectedFulfillmentCount = 100
         expectation.assertForOverFulfill = false // to mitigate the call for initial context injection
 
-        // State mutated by the mock plugin implementation - `CrashReporter` ensures its thread safety
+        // State mutated by the mock plugin implementation - `DatadogCrashReporter` ensures its thread safety
         var mutableState: Bool = .random()
 
         let plugin = CrashReportingPluginMock()
@@ -276,7 +277,7 @@ class CrashReporterTests: XCTestCase {
         }
 
         let crashContextProvider = CrashContextProviderMock(initialCrashContext: .mockRandom())
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
@@ -287,7 +288,7 @@ class CrashReporterTests: XCTestCase {
         callConcurrently(
             closures: [
                 { crashContextProvider.onCrashContextChange(.mockRandom()) },
-                { crashReporter.sendCrashReportIfFound() }
+                { feature.sendCrashReportIfFound() }
             ],
             iterations: 50 // each closure is called 50 times
         )
@@ -313,7 +314,7 @@ class CrashReporterTests: XCTestCase {
         plugin.didReadPendingCrashReport = { expectation.fulfill() }
 
         // When
-        let crashReporter = CrashReporter(
+        let feature = CrashReportingFeature(
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
@@ -321,7 +322,7 @@ class CrashReporterTests: XCTestCase {
         )
 
         // When
-        crashReporter.sendCrashReportIfFound()
+        feature.sendCrashReportIfFound()
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)

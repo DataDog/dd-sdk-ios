@@ -6,10 +6,12 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 class JSONEncoderTests: XCTestCase {
-    private let jsonEncoder = JSONEncoder.default()
+    private let jsonEncoder = JSONEncoder.dd.default()
 
     func testDateEncoding() throws {
         let encodedDate = try jsonEncoder.encode(

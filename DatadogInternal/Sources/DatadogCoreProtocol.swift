@@ -94,14 +94,6 @@ extension DatadogCoreProtocol {
     public func send(message: FeatureMessage) {
         send(message: message, else: {})
     }
-
-    /// Sends a message on the bus shared by features registered in this core.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
-        send(message: message, else: fallback)
-    }
 }
 
 /// Feature scope provides a context and a writer to build a record event.
@@ -160,5 +152,5 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
     /// no-op
-    public func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) { }
+    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }

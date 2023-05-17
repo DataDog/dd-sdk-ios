@@ -233,19 +233,6 @@ public class Datadog {
         }
 
         defaultDatadogCore = core
-
-        // After everything is set up, if the Crash Reporting feature was enabled,
-        // register crash reporter and send crash report if available:
-        if
-            let configuration = configuration.crashReporting,
-            let reporter = CrashReporter(core: core, configuration: configuration)
-        {
-            try core.register(feature: reporter)
-            reporter.sendCrashReportIfFound()
-
-            telemetry.configuration(trackErrors: true)
-        }
-
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(

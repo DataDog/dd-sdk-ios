@@ -30,9 +30,10 @@ internal class ViewController: UIViewController {
             trackingConsent: .pending,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "abc", environment: "tests")
-                .enableCrashReporting(using: DDCrashReportingPlugin())
                 .build()
         )
+
+        DatadogCrashReporter.initialize()
 
         self.logger = DatadogLogger.builder
             .sendLogsToDatadog(false)

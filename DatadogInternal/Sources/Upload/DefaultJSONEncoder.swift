@@ -5,10 +5,11 @@
  */
 
 import Foundation
-import DatadogInternal
 
-extension JSONEncoder {
-    static func `default`() -> JSONEncoder {
+extension JSONEncoder: DatadogExtended { }
+
+extension DatadogExtension where ExtendedType == JSONEncoder {
+    public static func `default`() -> JSONEncoder {
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .custom { date, encoder in
             var container = encoder.singleValueContainer()

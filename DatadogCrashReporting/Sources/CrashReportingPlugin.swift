@@ -8,18 +8,18 @@ import Foundation
 
 /// Crash Report format supported by Datadog SDK.
 @objc
-public class DDCrashReport: NSObject, Codable {
-    public struct Thread: Codable {
+internal class DDCrashReport: NSObject, Codable {
+    struct Thread: Codable {
         /// The name of the thread, e.g. `"Thread 0"`
-        internal let name: String
+        let name: String
         /// Unsymbolicated stack trace of the crash.
-        internal let stack: String
+        let stack: String
         /// If the thread was halted.
-        internal let crashed: Bool
+        let crashed: Bool
         /// Thread state (CPU registers dump), only available for halted thread.
-        internal let state: String?
+        let state: String?
 
-        public init(
+        init(
             name: String,
             stack: String,
             crashed: Bool,
@@ -41,15 +41,15 @@ public class DDCrashReport: NSObject, Codable {
         }
     }
 
-    public struct BinaryImage: Codable {
-        internal let libraryName: String
-        internal let uuid: String
-        internal let architecture: String
-        internal let isSystemLibrary: Bool
-        internal let loadAddress: String
-        internal let maxAddress: String
+    struct BinaryImage: Codable {
+        let libraryName: String
+        let uuid: String
+        let architecture: String
+        let isSystemLibrary: Bool
+        let loadAddress: String
+        let maxAddress: String
 
-        public init(
+        init(
             libraryName: String,
             uuid: String,
             architecture: String,
@@ -79,23 +79,23 @@ public class DDCrashReport: NSObject, Codable {
 
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
-    public struct Meta: Codable {
+    struct Meta: Codable {
         /// A client-generated 16-byte UUID of the incident.
-        internal let incidentIdentifier: String?
+        let incidentIdentifier: String?
         /// The name of the crashed process.
-        internal let processName: String?
+        let processName: String?
         /// Parent process information.
-        internal let parentProcess: String?
+        let parentProcess: String?
         /// The location of the executable on disk.
-        internal let path: String?
+        let path: String?
         /// The CPU architecture of the process that crashed.
-        internal let codeType: String?
+        let codeType: String?
         /// The name of the corresponding BSD termination signal.
-        internal let exceptionType: String?
+        let exceptionType: String?
         /// CPU specific information about the exception encoded into 64-bit hexadecimal number preceded by the signal code.
-        internal let exceptionCodes: String?
+        let exceptionCodes: String?
 
-        public init(
+        init(
             incidentIdentifier: String?,
             processName: String?,
             parentProcess: String?,
@@ -125,28 +125,28 @@ public class DDCrashReport: NSObject, Codable {
     }
 
     /// The date of the crash occurrence.
-    internal let date: Date?
+    let date: Date?
     /// Crash report type - used to group similar crash reports.
     /// In Datadog Error Tracking this corresponds to `error.type`.
-    internal let type: String
+    let type: String
     /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
     /// In Datadog Error Tracking this corresponds to `error.message`.
-    internal let message: String
+    let message: String
     /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
     /// In Datadog Error Tracking this corresponds to `error.stack`.
-    internal let stack: String
+    let stack: String
     /// All threads running in the process.
-    internal let threads: [Thread]
+    let threads: [Thread]
     /// List of binary images referenced from all stack traces.
-    internal let binaryImages: [BinaryImage]
+    let binaryImages: [BinaryImage]
     /// Meta information about the crash and process.
-    internal let meta: Meta
+    let meta: Meta
     /// If any stack trace information was truncated due to crash report minimization.
-    internal let wasTruncated: Bool
+    let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
-    internal let context: Data?
+    let context: Data?
 
-    public init(
+    init(
         date: Date?,
         type: String,
         message: String,
@@ -170,11 +170,10 @@ public class DDCrashReport: NSObject, Codable {
 }
 
 /// An interface for enabling crash reporting feature in Datadog SDK.
-/// It is implemented by `DDCrashReportingPlugin` from `DatadogCrashReporting` framework.
 ///
 /// The SDK calls each API on a background thread and succeeding calls are synchronized.
 @objc
-public protocol DDCrashReportingPluginType: AnyObject {
+internal protocol CrashReportingPlugin: AnyObject {
     /// Reads unprocessed crash report if available.
     /// - Parameter completion: the completion block called with the value of `DDCrashReport` if a crash report is available
     /// or with `nil` otherwise. The value returned by the receiver should indicate if the crash report was processed correctly (`true`)

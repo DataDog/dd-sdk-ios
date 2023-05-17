@@ -27,7 +27,7 @@ import DatadogInternal
 ///     try core.register(feature: feature)
 ///     core.get(feature: MyCustomFeature.self) // returns nil
 ///
-open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
+open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public static var referenceCount = 0
@@ -92,14 +92,6 @@ open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
     public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
-    /// no-op
-    public func register<T>(feature instance: T?) { }
-    /// no-op
-    public func feature<T>(_ type: T.Type) -> T? { nil }
-    /// Always returns a feature-scope.
-    public func scope<T>(for featureType: T.Type) -> FeatureScope? {
-        self
-    }
 
     /// Always returns a feature-scope.
     public func scope(for feature: String) -> FeatureScope? {

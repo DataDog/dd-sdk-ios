@@ -94,7 +94,6 @@
     [builder enableLogging:YES];
     [builder enableTracing:YES];
     [builder enableRUM:YES];
-    [builder enableCrashReportingUsing:[DDCrashReportingPlugin new]];
     [builder setWithEndpoint:[DDEndpoint us]];
     [builder setWithCustomLogsEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];
@@ -134,6 +133,10 @@
     [builder setWithEncryption:[CustomDDDataEncryption new]];
 
     [builder build];
+}
+
+- (void)testDatadogCrashReporterAPI {
+    [DDCrashReporter enable];
 }
 
 #pragma clang diagnostic pop

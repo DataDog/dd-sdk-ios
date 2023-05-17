@@ -6,8 +6,8 @@
 
 import XCTest
 import CrashReporter
+
 @testable import DatadogCrashReporting
-@testable import Datadog
 
 class DDCrashReportBuilderTests: XCTestCase {
     func testItBuildsDDCrashReportFromPLCrashReport() throws {

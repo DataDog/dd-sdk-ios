@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
+@testable import DatadogCrashReporting
 @testable import Datadog
 
 class CrashReportReceiverTests: XCTestCase {

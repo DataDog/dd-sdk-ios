@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// JSON encoder used to encode data.
-private let jsonEncoder: JSONEncoder = .default()
+private let jsonEncoder: JSONEncoder = .dd.default()
 
 /// Writes data to files.
 internal struct FileWriter: Writer {

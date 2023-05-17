@@ -30,7 +30,6 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
-            XCTAssertNil(configuration.crashReportingPlugin)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
@@ -66,15 +65,6 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.enableRUM(false)
         XCTAssertFalse(objcBuilder.build().sdkConfiguration.rumEnabled)
-
-        class CrashReportingPluginMock: NSObject, DDCrashReportingPluginType {
-            func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
-            func inject(context: Data) {}
-        }
-
-        let crashReportingPlugin = CrashReportingPluginMock()
-        objcBuilder.enableCrashReporting(using: crashReportingPlugin)
-        XCTAssertTrue(objcBuilder.build().sdkConfiguration.crashReportingPlugin === crashReportingPlugin)
 
         objcBuilder.set(endpoint: .eu1())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)

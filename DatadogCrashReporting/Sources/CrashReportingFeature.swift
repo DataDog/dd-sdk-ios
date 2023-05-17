@@ -7,38 +7,24 @@
 import Foundation
 import DatadogInternal
 
-/* public */ internal class CrashReporter: DatadogFeature {
-    /* public */ static let name = "crash-reporter"
+internal final class CrashReportingFeature: DatadogFeature {
+    static let name = "crash-reporter"
 
-    /* public */ let messageReceiver: FeatureMessageReceiver
+    let messageReceiver: FeatureMessageReceiver
 
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue
 
-    let crashContextProvider: CrashContextProviderType
+    let crashContextProvider: CrashContextProvider
 
     /// An interface for accessing the `DDCrashReportingPlugin` from `DatadogCrashReporting`.
-    let plugin: DDCrashReportingPluginType
+    let plugin: CrashReportingPlugin
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let sender: CrashReportSender
 
-    convenience init?(
-        core: DatadogCoreProtocol,
-        configuration: FeaturesConfiguration.CrashReporting
-    ) {
-        let contextProvider = CrashContextProvider()
-
-        self.init(
-            crashReportingPlugin: configuration.crashReportingPlugin,
-            crashContextProvider: contextProvider,
-            sender: MessageBusSender(core: core),
-            messageReceiver: contextProvider
-        )
-    }
-
     init(
-        crashReportingPlugin: DDCrashReportingPluginType,
-        crashContextProvider: CrashContextProviderType,
+        crashReportingPlugin: CrashReportingPlugin,
+        crashContextProvider: CrashContextProvider,
         sender: CrashReportSender,
         messageReceiver: FeatureMessageReceiver
     ) {
@@ -100,8 +86,8 @@ import DatadogInternal
     /// Note: this `JSONEncoder` must have the same configuration as the `JSONEncoder` used later for writing payloads to uploadable files.
     /// Otherwise the format of data read and uploaded from crash report context will be different than the format of data retrieved from the user
     /// and written directly to uploadable file.
-    private let crashContextEncoder: JSONEncoder = .default()
-    /// JSON decoder used for reading `CrashContext` from JSON `Data` injected to crash report. 
+    private let crashContextEncoder: JSONEncoder = .dd.default()
+    /// JSON decoder used for reading `CrashContext` from JSON `Data` injected to crash report.
     private let crashContextDecoder = JSONDecoder()
 
     private func encode(crashContext: CrashContext) -> Data? {
@@ -136,8 +122,10 @@ import DatadogInternal
             return nil
         }
     }
+}
 
-    internal func deinitialize() {
+extension CrashReportingFeature: Flushable {
+    func flush() {
         // Await asynchronous operations completion to safely sink all pending tasks.
         queue.sync {}
     }

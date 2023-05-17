@@ -4,13 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
 import Foundation
+import DatadogInternal
 
 /// The implementation of `Datadog.DDCrashReportingPluginType`.
 /// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
 @objc
-public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
+class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
     static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
     // MARK: - Initialization
@@ -20,7 +20,7 @@ public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
     }
 
     internal init(thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
-        DDCrashReportingPlugin.enableOnce(using: thirdPartyCrashReporterFactory)
+        PLCrashReporterPlugin.enableOnce(using: thirdPartyCrashReporterFactory)
     }
 
     private static func enableOnce(using thirdPartyCrashReporterFactory: () throws -> ThirdPartyCrashReporter) {
@@ -35,8 +35,8 @@ public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
 
     // MARK: - DDCrashReportingPluginType
 
-    public func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
-        guard let crashReporter = DDCrashReportingPlugin.thirdPartyCrashReporter,
+    func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {
+        guard let crashReporter = PLCrashReporterPlugin.thirdPartyCrashReporter,
               crashReporter.hasPendingCrashReport() else {
             _ = completion(nil)
             return
@@ -55,14 +55,7 @@ public class DDCrashReportingPlugin: NSObject, DDCrashReportingPluginType {
         }
     }
 
-    public func inject(context: Data) {
-        DDCrashReportingPlugin.thirdPartyCrashReporter?.inject(context: context)
+    func inject(context: Data) {
+        PLCrashReporterPlugin.thirdPartyCrashReporter?.inject(context: context)
     }
-}
-
-// MARK: - Utils
-
-/// Function printing `String` content to console.
-internal var consolePrint: (String) -> Void = { content in
-    print(content)
 }

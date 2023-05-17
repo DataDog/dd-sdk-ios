@@ -9,14 +9,15 @@ import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
+@testable import DatadogCrashReporting
 @testable import Datadog
 
-extension CrashReporter {
+extension CrashReportingFeature {
     /// Mocks the Crash Reporting feature instance which doesn't load crash reports.
     static func mockNoOp(
             core: DatadogCoreProtocol = NOPDatadogCore(),
-            crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin()
-    ) -> CrashReporter {
+            crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin()
+    ) -> Self {
         return .mockWith(
             integration: MessageBusSender(core: core),
             crashReportingPlugin: crashReportingPlugin
@@ -25,10 +26,10 @@ extension CrashReporter {
 
     static func mockWith(
         integration: CrashReportSender,
-        crashReportingPlugin: DDCrashReportingPluginType = NoopCrashReportingPlugin(),
-        crashContextProvider: CrashContextProviderType = CrashContextProviderMock(),
+        crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin(),
+        crashContextProvider: CrashContextProvider = CrashContextProviderMock(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-    ) -> CrashReporter {
+    ) -> Self {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
@@ -38,7 +39,7 @@ extension CrashReporter {
     }
 }
 
-internal class CrashReportingPluginMock: DDCrashReportingPluginType {
+internal class CrashReportingPluginMock: CrashReportingPlugin {
     /// The crash report loaded by this plugin.
     var pendingCrashReport: DDCrashReport?
     /// If the plugin was asked to delete the crash report.
@@ -63,12 +64,12 @@ internal class CrashReportingPluginMock: DDCrashReportingPluginType {
     var didInjectContext: (() -> Void)?
 }
 
-internal class NoopCrashReportingPlugin: DDCrashReportingPluginType {
+internal class NOPCrashReportingPlugin: CrashReportingPlugin {
     func readPendingCrashReport(completion: (DDCrashReport?) -> Bool) {}
     func inject(context: Data) {}
 }
 
-internal class CrashContextProviderMock: CrashContextProviderType {
+internal class CrashContextProviderMock: CrashContextProvider {
     private(set) var currentCrashContext: CrashContext?
     var onCrashContextChange: (CrashContext) -> Void
 
@@ -177,7 +178,7 @@ extension CrashContext {
         )
     }
 
-    var data: Data { try! JSONEncoder.default().encode(self) }
+    var data: Data { try! JSONEncoder.dd.default().encode(self) }
 }
 
 internal extension DDCrashReport {
