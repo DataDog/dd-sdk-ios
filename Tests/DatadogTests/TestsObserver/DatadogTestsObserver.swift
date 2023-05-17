@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@testable import DatadogInternal
 @testable import Datadog
 
 /// Observes unit tests execution and performs integrity checks after each test to ensure that the global state is unaltered.
@@ -30,20 +31,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                Global.sharedTracer is DDNoopTracer
-                    && Global.rum is DDNoopRUMMonitor
-            },
-            problem: "All Global components must use no-op implementations.",
-            solution: """
-            Make sure each Global component is reset to its default implementation before the end of test that mocks it:
-            ```
-            Global.sharedTracer = DDNoopGlobals.tracer
-            Global.rum = DDNoopRUMMonitor()
-            ```
-            """
-        ),
-        .init(
-            assert: {
                 defaultDatadogCore is NOPDatadogCore
             },
             problem: "`defaultDatadogCore` must be reset after each test.",
@@ -59,6 +46,15 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             `DatadogTestsObserver` found \(activeSwizzlingNames.count) leaked swizzlings:
             \(activeSwizzlingNames.joined(separator: ", "))
+            """
+        ),
+        .init(
+            assert: { URLSessionSwizzler.bindingsCount == 0 },
+            problem: "No `URLSessionSwizzler` must be bonded.",
+            solution: """
+            Make sure all applied `URLSessionSwizzler.bind()` are reset by the end of test with `URLSessionSwizzler.unbind()`.
+
+            `DatadogTestsObserver` found \(URLSessionSwizzler.bindingsCount) bindings left.
             """
         ),
         .init(
@@ -101,11 +97,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { !temporaryDirectory.exists() },
+            assert: { !FileManager.default.fileExists(atPath: temporaryDirectory.path) },
             problem: "`temporaryDirectory` must not exist.",
             solution: """
-            Make sure `temporaryDirectory.delete()` is called consistently
-            with `temporaryDirectory.create()`.
+            Make sure `DeleteTemporaryDirectory()` is called consistently
+            with `CreateTemporaryDirectory()`.
             """
         ),
         .init(

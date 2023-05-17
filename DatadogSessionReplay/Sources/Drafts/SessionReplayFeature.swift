@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 /// A draft of the main SR component (TODO: RUMM-2268 Design convenient public API).
@@ -13,10 +14,10 @@ import Datadog
 ///
 /// An instance of `SessionReplayFeature` is kept by `DatadogCore` but can be also
 /// retained by the user.
-internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
+internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayController {
     // MARK: - DatadogFeature
 
-    let name: String = "session-replay"
+    static let name: String = "session-replay"
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?

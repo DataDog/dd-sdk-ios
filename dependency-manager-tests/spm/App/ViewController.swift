@@ -6,10 +6,12 @@
 
 import UIKit
 import Datadog
+import DatadogLogs
+import DatadogTrace
 import DatadogCrashReporting
 
 internal class ViewController: UIViewController {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var logger: DatadogLogger! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,17 +25,17 @@ internal class ViewController: UIViewController {
                 .build()
         )
 
-        self.logger = Logger.builder
+        self.logger = DatadogLogger.builder
             .sendLogsToDatadog(false)
             .printLogsToConsole(true)
             .build()
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize()
 
         logger.info("It works")
 
         // Start span, but never finish it (no upload)
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        _ = DatadogTracer.shared().startSpan(operationName: "This too")
 
         addLabel()
     }

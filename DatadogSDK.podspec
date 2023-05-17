@@ -26,4 +26,9 @@ Pod::Spec.new do |s|
   s.public_header_files = ["Datadog/TargetSupport/Datadog/Datadog.h", 
                            "Sources/_Datadog_Private/include/*.h"]
 
+  s.dependency 'DatadogInternal', s.version.to_s
+  s.dependency 'DatadogLogs', s.version.to_s
+  s.dependency 'DatadogTrace', s.version.to_s
+  s.dependency 'DatadogRUM', s.version.to_s
+
 end

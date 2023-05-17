@@ -5,6 +5,9 @@
  */
 
 import Foundation
+import DatadogInternal
+import DatadogLogs
+import DatadogRUM
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -103,16 +106,14 @@ public class Datadog {
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
-    public static var verbosityLevel: LogLevel? = nil
+    public static var verbosityLevel: CoreLoggerLevel? = nil
 
     /// Utility setting to inspect the active RUM View.
     /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
     /// May be used to debug issues with RUM instrumentation in your app.
     /// Default is `false`.
     public static var debugRUM = false {
-        didSet {
-            (Global.rum as? RUMMonitor)?.enableRUMDebugging(debugRUM)
-        }
+        didSet { RUMMonitor.enableRUMDebugging(debugRUM) }
     }
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
@@ -182,16 +183,13 @@ public class Datadog {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let userInfoProvider = UserInfoProvider()
         let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
-        let appStateListener = AppStateListener(dateProvider: configuration.common.dateProvider)
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
             dateProvider: configuration.common.dateProvider,
             initialConsent: initialTrackingConsent,
-            userInfoProvider: userInfoProvider,
             performance: configuration.common.performance,
             httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
             encryption: configuration.common.encryption,
@@ -203,80 +201,36 @@ public class Datadog {
             applicationVersion: configuration.common.applicationVersion
         )
 
+        let telemetry = TelemetryCore(core: core)
+
+        telemetry.configuration(
+            batchSize: Int64(exactly: configuration.common.performance.maxFileSize),
+            batchUploadFrequency: configuration.common.performance.minUploadDelay.toInt64Milliseconds,
+            useLocalEncryption: configuration.common.encryption != nil,
+            useProxy: configuration.common.proxyConfiguration != nil
+        )
+
         // First, initialize features:
-        var logging: LoggingFeature?
-        var tracing: TracingFeature?
-        var rum: RUMFeature?
-
-        var urlSessionAutoInstrumentation: URLSessionAutoInstrumentation?
-        var rumInstrumentation: RUMInstrumentation?
-
         if let rumConfiguration = configuration.rum {
-            let rumTelemetry = RUMTelemetry(
-                in: core,
-                dateProvider: rumConfiguration.dateProvider,
-                configurationEventMapper: nil,
-                delayedDispatcher: nil,
-                sampler: rumConfiguration.telemetrySampler
-            )
+            try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
 
-            if let configurationSampler = configuration.rum?.configurationTelemetrySampler {
-                rumTelemetry.configurationExtraSampler = configurationSampler
+            if Datadog.debugRUM {
+                RUMMonitor.enableRUMDebugging(debugRUM, in: core)
             }
 
-            DD.telemetry = rumTelemetry
-
-            rum = try core.create(
-                configuration: createRUMConfiguration(configuration: rumConfiguration),
-                featureSpecificConfiguration: rumConfiguration
-            )
-
-            core.register(feature: rum)
-
-            if let instrumentationConfiguration = rumConfiguration.instrumentation {
-                rumInstrumentation = RUMInstrumentation(
-                    configuration: instrumentationConfiguration,
-                    dateProvider: rumConfiguration.dateProvider
-                )
-
-                core.register(feature: rumInstrumentation)
-            }
+            CITestIntegration.active?.startIntegration()
         }
 
         if let loggingConfiguration = configuration.logging {
-            logging = try core.create(
-                configuration: createLoggingConfiguration(
-                    intake: loggingConfiguration.uploadURL,
-                    dateProvider: loggingConfiguration.dateProvider,
-                    logEventMapper: loggingConfiguration.logEventMapper
-                ),
-                featureSpecificConfiguration: loggingConfiguration
+            try DatadogLogger.initialise(
+                in: core,
+                applicationBundleIdentifier: loggingConfiguration.applicationBundleIdentifier,
+                eventMapper: loggingConfiguration.logEventMapper,
+                dateProvider: loggingConfiguration.dateProvider,
+                sampler: loggingConfiguration.remoteLoggingSampler,
+                customIntakeURL: loggingConfiguration.customURL
             )
-
-            core.register(feature: logging)
         }
-
-        if let tracingConfiguration = configuration.tracing {
-            tracing = try core.create(
-                configuration: createTracingConfiguration(intake: tracingConfiguration.uploadURL),
-                featureSpecificConfiguration: tracingConfiguration
-            )
-
-            core.register(feature: tracing)
-        }
-
-        if let urlSessionAutoInstrumentationConfiguration = configuration.urlSessionAutoInstrumentation {
-            urlSessionAutoInstrumentation = URLSessionAutoInstrumentation(
-                configuration: urlSessionAutoInstrumentationConfiguration,
-                dateProvider: configuration.common.dateProvider,
-                appStateListener: appStateListener
-            )
-
-            core.register(feature: urlSessionAutoInstrumentation)
-        }
-
-        core.v1.feature(RUMInstrumentation.self)?.enable()
-        core.v1.feature(URLSessionAutoInstrumentation.self)?.enable()
 
         defaultDatadogCore = core
 
@@ -286,16 +240,25 @@ public class Datadog {
             let configuration = configuration.crashReporting,
             let reporter = CrashReporter(core: core, configuration: configuration)
         {
-            try core.register(integration: reporter)
+            try core.register(feature: reporter)
             reporter.sendCrashReportIfFound()
+
+            telemetry.configuration(trackErrors: true)
         }
 
         deleteV1Folders(in: core)
 
-        DD.telemetry.configuration(configuration: configuration)
+        DD.logger = InternalLogger(
+            dateProvider: SystemDateProvider(),
+            timeZone: .current,
+            printFunction: consolePrint,
+            verbosityLevel: { Datadog.verbosityLevel }
+        )
+
+        DD.telemetry = telemetry
     }
 
-    internal init() {
+    public init() {
     }
 
     private static func deleteV1Folders(in core: DatadogCore) {
@@ -327,8 +290,6 @@ public class Datadog {
         (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
-        Global.sharedTracer = DDNoopGlobals.tracer
-        Global.rum = DDNoopRUMMonitor()
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
@@ -338,20 +299,3 @@ public class Datadog {
 
 /// Convenience typealias.
 internal typealias AppContext = Datadog.AppContext
-
-/// An exception thrown due to programmer error when calling SDK public API.
-/// It makes the SDK non-functional and print the error to developer in debugger console..
-/// When thrown, check if configuration passed to `Datadog.initialize(...)` is correct
-/// and if you do not call any other SDK methods before it returns.
-internal struct ProgrammerError: Error, CustomStringConvertible {
-    init(description: String) { self.description = "🔥 Datadog SDK usage error: \(description)" }
-    let description: String
-}
-
-/// An exception thrown internally by SDK.
-/// It is always handled by SDK (keeps it functional) and never passed to the user until `Datadog.verbosity` is set (then it might be printed in debugger console).
-/// `InternalError` might be thrown due to programmer error (API misuse) or SDK internal inconsistency or external issues (e.g.  I/O errors). The SDK
-/// should always recover from that failures.
-internal struct InternalError: Error, CustomStringConvertible {
-    let description: String
-}

@@ -6,38 +6,10 @@
 
 import XCTest
 import TestUtilities
+import DatadogRUM
+
 @testable import Datadog
 @testable import DatadogObjc
-
-extension Datadog.Configuration.LogsEndpoint: Equatable {
-    public static func == (_ lhs: Datadog.Configuration.LogsEndpoint, _ rhs: Datadog.Configuration.LogsEndpoint) -> Bool {
-        switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
-        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
-        default: return false
-        }
-    }
-}
-
-extension Datadog.Configuration.TracesEndpoint: Equatable {
-    public static func == (_ lhs: Datadog.Configuration.TracesEndpoint, _ rhs: Datadog.Configuration.TracesEndpoint) -> Bool {
-        switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
-        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
-        default: return false
-        }
-    }
-}
-
-extension Datadog.Configuration.RUMEndpoint: Equatable {
-    public static func == (_ lhs: Datadog.Configuration.RUMEndpoint, _ rhs: Datadog.Configuration.RUMEndpoint) -> Bool {
-        switch (lhs, rhs) {
-        case (.us, .us), (.eu, .eu), (.gov, .gov), (.us1, .us1), (.us3, .us3), (.us5, .us5), (.eu1, .eu1), (.ap1, .ap1), (.us1_fed, .us1_fed): return true
-        case let (.custom(lhsURL), .custom(rhsURL)): return lhsURL == rhsURL
-        default: return false
-        }
-    }
-}
 
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
@@ -59,9 +31,6 @@ class DDConfigurationTests: XCTestCase {
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertNil(configuration.crashReportingPlugin)
-            XCTAssertEqual(configuration.logsEndpoint, .us1)
-            XCTAssertEqual(configuration.tracesEndpoint, .us1)
-            XCTAssertEqual(configuration.rumEndpoint, .us1)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
@@ -137,10 +106,6 @@ class DDConfigurationTests: XCTestCase {
         let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
         objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.customLogsEndpoint, customLogsEndpoint)
-
-        let customTracesEndpoint = URL(string: "https://api.example.com/v1/traces")!
-        objcBuilder.set(customTracesEndpoint: customTracesEndpoint)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.customTracesEndpoint, customTracesEndpoint)
 
         let customRUMEndpoint = URL(string: "https://api.example.com/v1/rum")!
         objcBuilder.set(customRUMEndpoint: customRUMEndpoint)

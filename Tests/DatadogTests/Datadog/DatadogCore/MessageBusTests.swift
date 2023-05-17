@@ -6,29 +6,19 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 class MessageBusTests: XCTestCase {
-    func testV1MessageBus() throws {
-        let expectation = expectation(description: "message received from the bus")
+    func testMessageBus() throws {
+        let expectation = XCTestExpectation(description: "dispatch message")
         expectation.expectedFulfillmentCount = 2
 
         // Given
-        let core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: SystemDateProvider(),
-            initialConsent: .mockRandom(),
-            userInfoProvider: .mockAny(),
-            performance: .mockAny(),
-            httpClient: .mockAny(),
-            encryption: nil,
-            contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
-        )
+        let core = PassthroughCoreMock()
 
-        defer { temporaryCoreDirectory.delete() }
-
-        let receiver = FeatureMessageReceiverMock { message in
+        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
             // Then
             switch message {
             case .custom(let key, let attributes):
@@ -42,30 +32,51 @@ class MessageBusTests: XCTestCase {
             }
         }
 
-        let logging: LoggingFeature = try core.create(
-            configuration: .init(
-                name: "logs",
-                requestBuilder: FeatureRequestBuilderMock(),
-                messageReceiver: receiver
-            ),
-            featureSpecificConfiguration: .mockAny()
-        )
+        let bus = MessageBus()
+        bus.connect(core: core)
 
-        let rum: RUMFeature = try core.create(
-            configuration: .init(
-                name: "rum",
-                requestBuilder: FeatureRequestBuilderMock(),
-                messageReceiver: receiver
-            ),
-            featureSpecificConfiguration: .mockAny()
-        )
-
-        core.register(feature: logging)
-        core.register(feature: rum)
+        bus.connect(receiver, forKey: "receiver 1")
+        bus.connect(receiver, forKey: "receiver 2")
 
         // When
-        core.send(message: .custom(key: "test", baggage: ["key": "value"]))
+        bus.send(message: .custom(key: "test", baggage: ["key": "value"]))
+
         // Then
-        waitForExpectations(timeout: 0.5)
+        wait(for: [expectation], timeout: 0.5)
+    }
+
+    func testItForwardConfigurationAfterDispatch() throws {
+        let expectation = XCTestExpectation(description: "dispatch configuration")
+        let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
+            guard
+                case .telemetry(let telemetry) = message,
+                case .configuration(let configuration) = telemetry
+            else {
+                return XCTFail("Message bus should send configuration telemetry")
+            }
+
+            XCTAssertEqual(configuration.batchSize, 1)
+            XCTAssertTrue(configuration.trackErrors ?? false)
+            expectation.fulfill()
+        }
+
+        // Given
+        let core = PassthroughCoreMock()
+        let bus = MessageBus(configurationDispatchTime: .milliseconds(90))
+        bus.connect(core: core)
+        bus.connect(receiver, forKey: "test")
+
+        // When
+        bus.configuration(batchSize: 1)
+        bus.configuration(trackErrors: true)
+
+        // Then
+        wait(for: [expectation], timeout: 0.1)
+    }
+}
+
+extension MessageBus: Telemetry {
+    public func send(telemetry: DatadogInternal.TelemetryMessage) {
+        send(message: .telemetry(telemetry))
     }
 }

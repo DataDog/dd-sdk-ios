@@ -6,7 +6,7 @@
 
 import XCTest
 import UIKit
-@testable import Datadog
+@testable import DatadogRUM
 
 class VitalRefreshRateReaderTests: XCTestCase {
     private let mockNotificationCenter = NotificationCenter()

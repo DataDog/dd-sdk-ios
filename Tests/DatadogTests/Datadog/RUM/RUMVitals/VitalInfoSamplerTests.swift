@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import Datadog
+@testable import DatadogRUM
 
 class VitalInfoSamplerTests: XCTestCase {
     func testItDoesSamplePeriodically() {

@@ -5,15 +5,13 @@
  */
 
 import Foundation
-import struct Datadog.DDAnyEncodable
-import class Datadog.Logger
+import DatadogInternal
+import DatadogLogs
 
 @objc
 public enum DDSDKVerbosityLevel: Int {
     case none
     case debug
-    case info
-    case notice
     case warn
     case error
     case critical
@@ -131,7 +129,7 @@ public class DDLogger: NSObject {
 
     @objc
     public func addAttribute(forKey key: String, value: Any) {
-        sdkLogger.addAttribute(forKey: key, value: DDAnyEncodable(value))
+        sdkLogger.addAttribute(forKey: key, value: AnyEncodable(value))
     }
 
     @objc
@@ -161,15 +159,15 @@ public class DDLogger: NSObject {
 
     @objc
     public static func builder() -> DDLoggerBuilder {
-        return DDLoggerBuilder(sdkBuilder: Logger.builder)
+        return DDLoggerBuilder(sdkBuilder: DatadogLogger.builder)
     }
 }
 
 @objc
 public class DDLoggerBuilder: NSObject {
-    internal let sdkBuilder: Logger.Builder
+    internal let sdkBuilder: DatadogLogs.Builder
 
-    internal init(sdkBuilder: Logger.Builder) {
+    internal init(sdkBuilder: DatadogLogs.Builder) {
         self.sdkBuilder = sdkBuilder
     }
 

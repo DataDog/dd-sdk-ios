@@ -34,7 +34,7 @@ class TracingConfigurationE2ETests: E2ETests {
             )
         }
 
-        let span = Global.sharedTracer.startRootSpan(operationName: "trace_config_feature_enabled_observed_span")
+        let span = DatadogTracer.shared().startRootSpan(operationName: "trace_config_feature_enabled_observed_span")
         span.finish()
     }
 
@@ -60,7 +60,7 @@ class TracingConfigurationE2ETests: E2ETests {
             )
         }
 
-        let span = Global.sharedTracer.startRootSpan(operationName: "test_trace_config_feature_disabled_observed_span")
+        let span = DatadogTracer.shared().startRootSpan(operationName: "test_trace_config_feature_disabled_observed_span")
         span.finish()
     }
 }

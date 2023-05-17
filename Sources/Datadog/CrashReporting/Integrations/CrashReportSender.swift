@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
+
 /// An object for sending crash reports.
 internal protocol CrashReportSender {
     /// Send the crash report and context to integrations.

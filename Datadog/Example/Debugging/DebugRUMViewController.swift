@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogRUM
 import Datadog
 
 class DebugRUMViewController: UIViewController {
@@ -15,7 +16,7 @@ class DebugRUMViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
+        rumServiceNameTextField.text = serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
 

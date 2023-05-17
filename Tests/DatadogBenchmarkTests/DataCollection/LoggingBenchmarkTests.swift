@@ -4,14 +4,15 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
 import XCTest
+import DatadogLogs
+import Datadog
 
 class LoggingBenchmarkTests: BenchmarkTests {
     private let message = "foobar-message"
 
     func testCreatingOneLog() {
-        let logger = Logger.builder.build()
+        let logger = DatadogLogger.builder.build()
 
         measure {
             logger.info(message)
@@ -19,7 +20,7 @@ class LoggingBenchmarkTests: BenchmarkTests {
     }
 
     func testCreatingOneLogWithAttributes() {
-        let logger = Logger.builder.build()
+        let logger = DatadogLogger.builder.build()
         (0..<16).forEach { index in
             logger.addAttribute(forKey: "a\(index)", value: "v\(index)")
         }
@@ -30,7 +31,7 @@ class LoggingBenchmarkTests: BenchmarkTests {
     }
 
     func testCreatingOneLogWithTags() {
-        let logger = Logger.builder.build()
+        let logger = DatadogLogger.builder.build()
         (0..<8).forEach { index in
             logger.addTag(withKey: "t\(index)", value: "v\(index)")
         }

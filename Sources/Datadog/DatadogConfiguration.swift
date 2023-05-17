@@ -5,6 +5,9 @@
  */
 
 import Foundation
+import DatadogInternal
+import DatadogLogs
+import DatadogRUM
 
 extension Datadog {
     internal struct Constants {
@@ -48,210 +51,6 @@ extension Datadog {
             case never
         }
 
-        public enum DatadogEndpoint: String {
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends data to [app.datadoghq.com](https://app.datadoghq.com/).
-            @available(*, deprecated, message: "Renamed to us1")
-            public static let us: DatadogEndpoint = .us1
-            /// Europe based servers.
-            /// Sends data to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            @available(*, deprecated, message: "Renamed to eu1")
-            public static let eu: DatadogEndpoint = .eu1
-            /// Gov servers.
-            /// Sends data to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            @available(*, deprecated, message: "Renamed to us1_fed")
-            public static let gov: DatadogEndpoint = .us1_fed
-
-            internal var logsEndpoint: LogsEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
-
-            internal var tracesEndpoint: TracesEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
-
-            internal var rumEndpoint: RUMEndpoint {
-                switch self {
-                case .us1: return .us1
-                case .us3: return .us3
-                case .us5: return .us5
-                case .eu1: return .eu1
-                case .ap1: return .ap1
-                case .us1_fed: return .us1_fed
-                }
-            }
-        }
-
-        /// Determines the server for uploading logs.
-        public enum LogsEndpoint {
-            /// US based servers.
-            /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends logs to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends logs to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends logs to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us
-            /// Europe based servers.
-            /// Sends logs to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu
-            /// Gov servers.
-            /// Sends logs to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case gov
-            /// User-defined server.
-            case custom(url: String)
-
-            internal var url: String {
-                let endpoint = "api/v2/logs"
-                switch self {
-                case .us1, .us: return "https://browser-intake-datadoghq.com/" + endpoint
-                case .us3: return "https://browser-intake-us3-datadoghq.com/" + endpoint
-                case .us5: return "https://browser-intake-us5-datadoghq.com/" + endpoint
-                case .eu1, .eu: return "https://browser-intake-datadoghq.eu/" + endpoint
-                case .ap1: return "https://browser-intake-ap1-datadoghq.com/" + endpoint
-                case .us1_fed, .gov: return "https://browser-intake-ddog-gov.com/" + endpoint
-                case let .custom(url: url): return url
-                }
-            }
-        }
-
-        /// Determines the server for uploading traces.
-        public enum TracesEndpoint {
-            /// US based servers.
-            /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends traces to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends traces to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends traces to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us
-            /// Europe based servers.
-            /// Sends traces to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu
-            /// Gov servers.
-            /// Sends traces to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case gov
-            /// User-defined server.
-            case custom(url: String)
-
-            internal var url: String {
-                let endpoint = "api/v2/spans"
-                switch self {
-                case .us1, .us: return "https://browser-intake-datadoghq.com/" + endpoint
-                case .us3: return "https://browser-intake-us3-datadoghq.com/" + endpoint
-                case .us5: return "https://browser-intake-us5-datadoghq.com/" + endpoint
-                case .eu1, .eu: return "https://browser-intake-datadoghq.eu/" + endpoint
-                case .ap1: return "https://browser-intake-ap1-datadoghq.com/" + endpoint
-                case .us1_fed, .gov: return "https://browser-intake-ddog-gov.com/" + endpoint
-                case let .custom(url: url): return url
-                }
-            }
-        }
-
-        /// Determines the server for uploading RUM events.
-        public enum RUMEndpoint {
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us1
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://us3.datadoghq.com/).
-            case us3
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://us5.datadoghq.com/).
-            case us5
-            /// Europe based servers.
-            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu1
-            /// Asia based servers.
-            /// Sends data to [ap1.datadoghq.com](https://ap1.datadoghq.com/).
-            case ap1
-            /// US based servers, FedRAMP compatible.
-            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case us1_fed
-            /// US based servers.
-            /// Sends RUM events to [app.datadoghq.com](https://app.datadoghq.com/).
-            case us
-            /// Europe based servers.
-            /// Sends RUM events to [app.datadoghq.eu](https://app.datadoghq.eu/).
-            case eu
-            /// Gov servers.
-            /// Sends RUM events to [app.ddog-gov.com](https://app.ddog-gov.com/).
-            case gov
-            /// User-defined server.
-            case custom(url: String)
-
-            internal var url: String {
-                let endpoint = "api/v2/rum"
-                switch self {
-                case .us1, .us: return "https://browser-intake-datadoghq.com/" + endpoint
-                case .us3: return "https://browser-intake-us3-datadoghq.com/" + endpoint
-                case .us5: return "https://browser-intake-us5-datadoghq.com/" + endpoint
-                case .eu1, .eu: return "https://browser-intake-datadoghq.eu/" + endpoint
-                case .ap1: return "https://browser-intake-ap1-datadoghq.com/" + endpoint
-                case .us1_fed, .gov: return "https://browser-intake-ddog-gov.com/" + endpoint
-                case let .custom(url: url): return url
-                }
-            }
-        }
-
         /// The RUM Application ID.
         private(set) var rumApplicationID: String?
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
@@ -263,26 +62,16 @@ extension Datadog {
         private(set) var serverDateProvider: ServerDateProvider?
         private(set) var crashReportingPlugin: DDCrashReportingPluginType?
 
-        /// If `DatadogEndpoint` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
-        private(set) var datadogEndpoint: DatadogEndpoint?
-        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogEndpoint`.
+        /// If `DatadogSite` is set, it will override `logsEndpoint`, `tracesEndpoint` and `rumEndpoint` values.
+        private(set) var datadogEndpoint: DatadogSite
+        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogSite`.
         private(set) var customLogsEndpoint: URL?
-        /// If `customTracesEndpoint` is set, it will override traces endpoint value configured with `tracesEndpoint` and `DatadogEndpoint`.
-        private(set) var customTracesEndpoint: URL?
-        /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogEndpoint`.
+        /// If `customRUMEndpoint` is set, it will override rum endpoint value configured with `rumEndpoint` and `DatadogSite`.
         private(set) var customRUMEndpoint: URL?
-
-        /// Deprecated value
-        private(set) var logsEndpoint: LogsEndpoint
-        /// Deprecated value
-        private(set) var tracesEndpoint: TracesEndpoint
-        /// Deprecated value
-        private(set) var rumEndpoint: RUMEndpoint
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: FirstPartyHosts?
         var logEventMapper: LogEventMapper?
-        private(set) var spanEventMapper: SpanEventMapper?
         private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
         private(set) var rumSessionsSamplingRate: Float
@@ -352,16 +141,11 @@ extension Datadog {
                     crashReportingPlugin: nil,
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
-                    datadogEndpoint: nil,
+                    datadogEndpoint: .us1,
                     customLogsEndpoint: nil,
-                    customTracesEndpoint: nil,
                     customRUMEndpoint: nil,
-                    logsEndpoint: .us1,
-                    tracesEndpoint: .us1,
-                    rumEndpoint: .us1,
                     serviceName: nil,
                     firstPartyHosts: nil,
-                    spanEventMapper: nil,
                     loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
                     rumSessionsSamplingRate: 100.0,
@@ -392,7 +176,7 @@ extension Datadog {
             /// * `set(rumEndpoint:)`
             ///
             /// - Parameter endpoint: server endpoint (default value is `.us`)
-            public func set(endpoint: DatadogEndpoint) -> Builder {
+            public func set(endpoint: DatadogSite) -> Builder {
                 configuration.datadogEndpoint = endpoint
                 return self
             }
@@ -402,14 +186,6 @@ extension Datadog {
             /// - Parameter endpoint: server endpoint (not set by default)
             public func set(customLogsEndpoint: URL) -> Builder {
                 configuration.customLogsEndpoint = customLogsEndpoint
-                return self
-            }
-
-            /// Sets the custom server endpoint where Spans are sent.
-            ///
-            /// - Parameter customTracesEndpoint: server endpoint (not set by default)
-            public func set(customTracesEndpoint: URL) -> Builder {
-                configuration.customTracesEndpoint = customTracesEndpoint
                 return self
             }
 
@@ -464,14 +240,6 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the server endpoint to which logs are sent.
-            /// - Parameter logsEndpoint: server endpoint (default value is `LogsEndpoint.us`)
-            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
-            public func set(logsEndpoint: LogsEndpoint) -> Builder {
-                configuration.logsEndpoint = logsEndpoint
-                return self
-            }
-
             /// Sets the sampling rate for logging.
             ///
             /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
@@ -487,8 +255,7 @@ extension Datadog {
             /// Enables or disables the tracing feature.
             ///
             /// This option is meant to opt-out from using Datadog Tracing entirely, no matter of your environment or build configuration. If you need to
-            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not set `Global.sharedTracer` to `Tracer`,
-            /// and your app will be using the no-op tracer instance.
+            /// disable tracing only for certain scenarios (e.g. in `DEBUG` build configuration), do not initialize the tracer `DatadogTracer.initialize`.
             ///
             /// If `enableTracing(false)` is set, the SDK won't instantiate underlying resources required for
             /// running the tracing feature. This will give you additional performance optimization if you only use RUM or logging.
@@ -496,14 +263,6 @@ extension Datadog {
             /// - Parameter enabled: `true` by default
             public func enableTracing(_ enabled: Bool) -> Builder {
                 configuration.tracingEnabled = enabled
-                return self
-            }
-
-            /// Sets the server endpoint to which traces are sent.
-            /// - Parameter tracesEndpoint: server endpoint (default value is `TracesEndpoint.us` )
-            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
-            public func set(tracesEndpoint: TracesEndpoint) -> Builder {
-                configuration.tracesEndpoint = tracesEndpoint
                 return self
             }
 
@@ -593,18 +352,6 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the custom mapper for `SpanEvent`. This can be used to modify spans before they are send to Datadog.
-            /// - Parameter mapper: the closure taking `SpanEvent` as input and expecting `SpanEvent` as output.
-            /// The implementation should obtain a mutable version of the `SpanEvent`, modify it and return it.
-            ///
-            /// **NOTE** The mapper intentionally prevents from returning a `nil` to drop the `SpanEvent` entirely, this ensures that all spans are sent to Datadog.
-            ///
-            /// Use the `trackURLSession(firstPartyHosts:)` API to configure tracing only the hosts that you are interested in.
-            public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder {
-                configuration.spanEventMapper = mapper
-                return self
-            }
-
             /// Sets the sampling rate for APM traces created for auto-instrumented `URLSession` requests.
             ///
             /// - Parameter tracingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
@@ -632,14 +379,6 @@ extension Datadog {
             /// `false` otherwise.
             public func enableRUM(_ enabled: Bool) -> Builder {
                 configuration.rumEnabled = enabled
-                return self
-            }
-
-            /// Sets the server endpoint to which RUM events are sent.
-            /// - Parameter rumEndpoint: server endpoint (default value is `RUMEndpoint.us` )
-            @available(*, deprecated, message: "This option is replaced by `set(endpoint:)`. Refer to the new API comment for details.")
-            public func set(rumEndpoint: RUMEndpoint) -> Builder {
-                configuration.rumEndpoint = rumEndpoint
                 return self
             }
 

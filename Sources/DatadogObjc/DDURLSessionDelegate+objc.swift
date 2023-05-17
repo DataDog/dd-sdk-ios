@@ -6,11 +6,12 @@
 
 import Foundation
 import Datadog
+import DatadogInternal
 
 @objc
 open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     var swiftDelegate: DDURLSessionDelegate
-    public var ddURLSessionDelegate: DDURLSessionDelegate {
+    public var ddURLSessionDelegate: DatadogURLSessionDelegate {
         return swiftDelegate
     }
 

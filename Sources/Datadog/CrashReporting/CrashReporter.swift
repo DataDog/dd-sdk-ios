@@ -5,9 +5,10 @@
  */
 
 import Foundation
+import DatadogInternal
 
-/* public */ internal class CrashReporter: DatadogFeatureIntegration {
-    /* public */ let name = "crash-reporter"
+/* public */ internal class CrashReporter: DatadogFeature {
+    /* public */ static let name = "crash-reporter"
 
     /* public */ let messageReceiver: FeatureMessageReceiver
 

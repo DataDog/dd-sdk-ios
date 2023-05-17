@@ -7,6 +7,8 @@
 import XCTest
 import HTTPServerMock
 import Datadog
+import DatadogTrace
+import DatadogRUM
 
 struct ServerConnectionError: Error {
     let description: String
@@ -46,13 +48,13 @@ class BenchmarkTests: XCTestCase {
             configuration: Datadog.Configuration
                 .builderUsing(rumApplicationID: "rum-123", clientToken: "rum-abc", environment: "benchmarks")
                 .set(customLogsEndpoint: anyURL)
-                .set(customTracesEndpoint: anyURL)
                 .set(customRUMEndpoint: anyURL)
                 .build()
         )
 
-        Global.rum = RUMMonitor.initialize()
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize(
+            configuration: .init(customIntakeURL: anyURL)
+        )
     }
 
     // MARK: - `HTTPServerMock` connection

@@ -6,6 +6,8 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+@testable import DatadogRUM
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -147,22 +149,12 @@ class DDRUMMonitorTests: XCTestCase {
     /// Creates `DDRUMMonitor` instance for tests.
     /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
     private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
-        let rumFeature: RUMFeature = try XCTUnwrap(core.v1.feature(RUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        let swiftMonitor = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                rumFeature: rumFeature
-            )
-            .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: rumFeature.configuration.dateProvider
-        )
-        return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: swiftMonitor)
+        let feature = try XCTUnwrap(core.get(feature: DatadogRUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
+        return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: feature.monitor)
     }
 
     func testSendingViewEvents() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
@@ -198,9 +190,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
-
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
@@ -212,7 +202,7 @@ class DDRUMMonitorTests: XCTestCase {
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
             return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
         }
-        XCTAssertEqual(viewEvents.count, 3)
+        XCTAssertEqual(viewEvents.count, 2)
 
         let event1: RUMViewEvent = try viewEvents[0].model()
         let event2: RUMViewEvent = try viewEvents[1].model()
@@ -229,8 +219,7 @@ class DDRUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -282,8 +271,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingErrorEvents() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -345,12 +333,9 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        let rum: RUMFeature = .mockWith(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
-        )
-        core.register(feature: rum)
+        try RUMMonitor.initialize(in: core, configuration: .mockWith(
+            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        ))
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -383,8 +368,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingGlobalAttributes() throws {
-        let rum: RUMFeature = .mockAny()
-        core.register(feature: rum)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")

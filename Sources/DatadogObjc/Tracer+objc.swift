@@ -5,37 +5,30 @@
  */
 
 import Foundation
-import struct Datadog.DDAnyEncodable
-import class Datadog.Tracer
-import protocol Datadog.OTTracer
-import struct Datadog.OTReference
-import class Datadog.HTTPHeadersWriter
+import DatadogInternal
+import DatadogTrace
 
 @objc
 public class DDTracer: NSObject, DatadogObjc.OTTracer {
-    @available(*, deprecated, message: "Use `DDTracer(configuration:)`.")
-    @objc
-    public static func initialize(configuration: DDTracerConfiguration) -> DatadogObjc.OTTracer {
-        return DDTracer(configuration: configuration)
-    }
-
     // MARK: - Internal
 
-    internal let swiftTracer: Datadog.OTTracer
+    internal let swiftTracer: DatadogTrace.OTTracer
 
-    internal init(swiftTracer: Datadog.OTTracer) {
+    internal init(swiftTracer: DatadogTrace.OTTracer) {
         self.swiftTracer = swiftTracer
     }
 
     // MARK: - Public
 
     @objc
-    public convenience init(configuration: DDTracerConfiguration) {
-        self.init(
-            swiftTracer: Datadog.Tracer.initialize(
-                configuration: configuration.swiftConfiguration
-            )
+    public static func initialize(configuration: DDTracerConfiguration) {
+        DatadogTracer.initialize(
+            configuration: configuration.swiftConfiguration
         )
+    }
+
+    @objc public static var shared: DDTracer {
+        DDTracer(swiftTracer: DatadogTracer.shared())
     }
 
     @objc
@@ -162,7 +155,7 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                     } else if let urlValue = tagValue as? URL {
                         return urlValue
                     } else {
-                        return DDAnyEncodable(tagValue)
+                        return AnyEncodable(tagValue)
                     }
                 }()
 

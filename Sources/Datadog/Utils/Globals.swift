@@ -10,8 +10,5 @@ import Foundation
 import _Datadog_Private
 #endif
 
-/// Function printing `String` content to console.
-public var consolePrint: (String) -> Void = { print($0) }
-
 /// Exception handler rethrowing `NSExceptions` to Swift `NSError`.
 internal var objcExceptionHandler = __dd_private_ObjcExceptionHandler()

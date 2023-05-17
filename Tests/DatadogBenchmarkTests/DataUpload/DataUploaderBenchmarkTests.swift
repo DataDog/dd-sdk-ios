@@ -5,18 +5,20 @@
  */
 
 import XCTest
+import TestUtilities
 import HTTPServerMock
+import DatadogInternal
 @testable import Datadog
 
 @available(iOS 13.0, *)
 class DataUploaderBenchmarkTests: BenchmarkTests {
     override func setUpWithError() throws {
         try super.setUpWithError()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDownWithError() throws {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         try super.tearDownWithError()
     }
 

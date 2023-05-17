@@ -5,9 +5,12 @@
  */
 
 import Foundation
+import DatadogInternal
+import DatadogLogs
+import DatadogRUM
 
-extension Datadog: DatadogInternal {}
-extension Datadog.Configuration.Builder: DatadogInternal {}
+extension Datadog: DatadogInternalInterface {}
+extension Datadog.Configuration.Builder: DatadogInternalInterface {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.
@@ -20,9 +23,6 @@ extension Datadog.Configuration.Builder: DatadogInternal {}
 extension DatadogExtension where ExtendedType: Datadog {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy { .init() }
-    public static var webEventBridge: _WebEventBridgeProxy {
-        .init(core: defaultDatadogCore)
-    }
 
     /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public static func set(customVersion: String) {
@@ -35,11 +35,6 @@ extension DatadogExtension where ExtendedType: Datadog {
 }
 
 public struct _TelemetryProxy {
-    public func setConfigurationMapper(mapper: @escaping (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent) {
-        if let rumTelemetry = DD.telemetry as? RUMTelemetry {
-            rumTelemetry.configurationEventMapper = mapper
-        }
-    }
     /// See Telementry.debug
     public func debug(id: String, message: String) {
         DD.telemetry.debug(id: id, message: message)
@@ -48,18 +43,6 @@ public struct _TelemetryProxy {
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
-    }
-}
-
-public struct _WebEventBridgeProxy {
-    let bridge: WebEventBridge
-
-    init(core: DatadogCoreProtocol) {
-        bridge = .init(core: core)
-    }
-
-    public func send(_ anyMessage: Any) throws {
-        try bridge.consume(anyMessage)
     }
 }
 

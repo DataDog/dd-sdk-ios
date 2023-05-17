@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+
 @testable import Datadog
 
 class DataBlockTests: XCTestCase {
@@ -121,13 +123,14 @@ class DataBlockTests: XCTestCase {
     }
 
     func testDataBlockReader_whenIOErrorHappens_itThrowsWhenReading() throws {
-        temporaryDirectory.create()
-        defer { temporaryDirectory.delete() }
+        CreateTemporaryDirectory()
+        defer { DeleteTemporaryDirectory() }
 
-        let file = try temporaryDirectory.createFile(named: "file")
-        try file.delete()
+        let url = temporaryDirectory.appendingPathComponent("file", isDirectory: false)
+        FileManager.default.createFile(atPath: url.path, contents: nil, attributes: nil)
+        try FileManager.default.removeItem(at: url)
 
-        let stream = try file.stream()
+        let stream = InputStream(url: url)!
         let reader = DataBlockReader(input: stream)
 
         do {

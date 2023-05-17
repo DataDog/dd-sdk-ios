@@ -5,6 +5,10 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
+
+@testable import DatadogRUM
 @testable import Datadog
 
 class FeaturesConfigurationTests: XCTestCase {
@@ -178,150 +182,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.common.clientToken, clientToken)
     }
 
-    func testEndpoint() throws {
-        let randomLogsEndpoint: Datadog.Configuration.LogsEndpoint = .mockRandom()
-        let randomTracesEndpoint: Datadog.Configuration.TracesEndpoint = .mockRandom()
-        let randomRUMEndpoint: Datadog.Configuration.RUMEndpoint = .mockRandom()
-
-        func configuration(datadogEndpoint: Datadog.Configuration.DatadogEndpoint?) throws -> FeaturesConfiguration {
-            try createConfiguration(
-                datadogEndpoint: datadogEndpoint,
-                logsEndpoint: randomLogsEndpoint,
-                tracesEndpoint: randomTracesEndpoint,
-                rumEndpoint: randomRUMEndpoint
-            )
-        }
-
-        typealias DeprecatedEndpoints = Deprecated<Datadog.Configuration.DatadogEndpoint>
-
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).logging?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).logging?.uploadURL.absoluteString,
-            "https://browser-intake-us3-datadoghq.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us5).logging?.uploadURL.absoluteString,
-            "https://browser-intake-us5-datadoghq.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).logging?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .ap1).logging?.uploadURL.absoluteString,
-            "https://browser-intake-ap1-datadoghq.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).logging?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.us).logging?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).logging?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/logs"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).logging?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/logs"
-        )
-
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-us3-datadoghq.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us5).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-us5-datadoghq.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .ap1).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-ap1-datadoghq.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.us).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/spans"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).tracing?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/spans"
-        )
-
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1).rum?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us3).rum?.uploadURL.absoluteString,
-            "https://browser-intake-us3-datadoghq.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us5).rum?.uploadURL.absoluteString,
-            "https://browser-intake-us5-datadoghq.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .eu1).rum?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .ap1).rum?.uploadURL.absoluteString,
-            "https://browser-intake-ap1-datadoghq.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: .us1_fed).rum?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.us).rum?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.com/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.eu).rum?.uploadURL.absoluteString,
-            "https://browser-intake-datadoghq.eu/api/v2/rum"
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: DeprecatedEndpoints.gov).rum?.uploadURL.absoluteString,
-            "https://browser-intake-ddog-gov.com/api/v2/rum"
-        )
-
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).logging?.uploadURL.absoluteString,
-            randomLogsEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `LogsEndpoint` value."
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).tracing?.uploadURL.absoluteString,
-            randomTracesEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `TracesEndpoint` value."
-        )
-        XCTAssertEqual(
-            try configuration(datadogEndpoint: nil).rum?.uploadURL.absoluteString,
-            randomRUMEndpoint.url,
-            "When `DatadogEndpoint` is not set, it should default to `RUMEndpoint` value."
-        )
-    }
-
     func testCustomProxy() throws {
         let proxyConfiguration: [AnyHashable: Any] = [
             kCFNetworkProxiesHTTPEnable: true,
@@ -349,7 +209,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomLogsEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -358,34 +218,18 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            configuration.logging?.uploadURL,
+            configuration.logging?.customURL,
             randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogSite`"
         )
     }
 
     // MARK: - Tracing Configuration Tests
 
     func testWhenTracingIsDisabled() throws {
-        XCTAssertNil(
-            try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracing,
+        XCTAssertFalse(
+            try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracingEnabled,
             "Feature configuration should not be available if the feature is disabled"
-        )
-    }
-
-    func testCustomTracesEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
-        let randomCustomEndpoint: URL = .mockRandom()
-
-        let configuration = try createConfiguration(
-            datadogEndpoint: randomDatadogEndpoint,
-            customTracesEndpoint: randomCustomEndpoint
-        )
-
-        XCTAssertEqual(
-            configuration.tracing?.uploadURL,
-            randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
         )
     }
 
@@ -399,7 +243,7 @@ class FeaturesConfigurationTests: XCTestCase {
     }
 
     func testCustomRUMEndpoint() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomEndpoint: URL = .mockRandom()
 
         let configuration = try createConfiguration(
@@ -408,9 +252,9 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertEqual(
-            configuration.rum?.uploadURL,
+            configuration.rum?.customIntakeURL,
             randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogEndpoint`"
+            "When custom endpoint is set it should override `DatadogSite`"
         )
     }
 
@@ -437,9 +281,9 @@ class FeaturesConfigurationTests: XCTestCase {
             ),
             appContext: .mockAny()
         )
-        XCTAssertNotNil(viewsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation!.longTaskThreshold)
+        XCTAssertNotNil(viewsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(viewsConfigured.rum!.instrumentation.longTaskThreshold)
 
         let actionsConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
@@ -451,9 +295,9 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
 
-        XCTAssertNotNil(actionsConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation!.longTaskThreshold)
+        XCTAssertNotNil(actionsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(actionsConfigured.rum!.instrumentation.longTaskThreshold)
 
         let longTaskConfigured = try FeaturesConfiguration(
             configuration: .mockWith(
@@ -465,9 +309,9 @@ class FeaturesConfigurationTests: XCTestCase {
             appContext: .mockAny()
         )
 
-        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation!.longTaskThreshold)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMViewsPredicate)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation!.uiKitRUMUserActionsPredicate)
+        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation.longTaskThreshold)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
+        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
     }
 
     func testMobileVitalsFrequency() throws {
@@ -575,20 +419,13 @@ class FeaturesConfigurationTests: XCTestCase {
     // MARK: - URLSession Auto Instrumentation Configuration Tests
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
-        let randomDatadogEndpoint: Datadog.Configuration.DatadogEndpoint = .mockRandom()
-        let randomCustomLogsEndpoint: URL? = Bool.random() ? .mockRandom() : nil
-        let randomCustomTracesEndpoint: URL? = Bool.random() ? .mockRandom() : nil
+        let randomDatadogEndpoint: DatadogSite = .mockRandom()
         let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
         let firstPartyHosts: FirstPartyHosts = .init([
             "example.com": [.datadog],
             "foo.eu": [.datadog]
         ])
-        let expectedSDKInternalURLs: Set<String> = [
-            randomCustomLogsEndpoint?.absoluteString ?? randomDatadogEndpoint.logsEndpoint.url,
-            randomCustomTracesEndpoint?.absoluteString ?? randomDatadogEndpoint.tracesEndpoint.url,
-            randomCustomRUMEndpoint?.absoluteString ?? randomDatadogEndpoint.rumEndpoint.url
-        ]
 
         func createConfiguration(
             tracingEnabled: Bool,
@@ -600,8 +437,6 @@ class FeaturesConfigurationTests: XCTestCase {
                     tracingEnabled: tracingEnabled,
                     rumEnabled: rumEnabled,
                     datadogEndpoint: randomDatadogEndpoint,
-                    customLogsEndpoint: randomCustomLogsEndpoint,
-                    customTracesEndpoint: randomCustomTracesEndpoint,
                     customRUMEndpoint: randomCustomRUMEndpoint,
                     firstPartyHosts: firstPartyHosts
                 ),
@@ -615,10 +450,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
+        XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only Tracing is enabled
         configuration = try createConfiguration(
@@ -626,10 +459,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: false,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertNil(configuration.rum)
+        XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only RUM is enabled
         configuration = try createConfiguration(
@@ -637,10 +468,8 @@ class FeaturesConfigurationTests: XCTestCase {
             rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.userDefinedFirstPartyHosts, firstPartyHosts)
-        XCTAssertEqual(configuration.urlSessionAutoInstrumentation?.sdkInternalURLs, expectedSDKInternalURLs)
-        XCTAssertFalse(configuration.urlSessionAutoInstrumentation!.instrumentTracing)
-        XCTAssertTrue(configuration.urlSessionAutoInstrumentation!.instrumentRUM)
+        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
+        XCTAssertFalse(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are not set
         configuration = try createConfiguration(
@@ -649,7 +478,7 @@ class FeaturesConfigurationTests: XCTestCase {
             firstPartyHosts: nil
         )
         XCTAssertNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "When `firstPartyHosts` are not set, the URLSession auto instrumentation config should be `nil`"
         )
 
@@ -660,7 +489,7 @@ class FeaturesConfigurationTests: XCTestCase {
             firstPartyHosts: .init()
         )
         XCTAssertNotNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "When `firstPartyHosts` are set empty and non-nil, the URLSession auto instrumentation config should NOT be nil."
         )
     }
@@ -687,8 +516,8 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         // Then
-        XCTAssertNotNil(configurationWithAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
-        XCTAssertNil(configurationWithoutAttributesProvider.urlSessionAutoInstrumentation?.rumAttributesProvider)
+        XCTAssertNotNil(configurationWithAttributesProvider.rum?.rumAttributesProvider)
+        XCTAssertNil(configurationWithoutAttributesProvider.rum?.rumAttributesProvider)
     }
 
     func testGivenURLSessionAutoinstrumentationDisabled_whenRUMAttributesProviderIsSet_itPrintsConsoleWarning() throws {
@@ -718,15 +547,6 @@ class FeaturesConfigurationTests: XCTestCase {
     func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
         XCTAssertThrowsError(try createConfiguration(clientToken: "")) { error in
             XCTAssertEqual((error as? ProgrammerError)?.description, "🔥 Datadog SDK usage error: `clientToken` cannot be empty.")
-        }
-    }
-
-    func testWhenCustomEndpointIsInvalid_itThrowsProgrammerError() {
-        XCTAssertThrowsError(try createConfiguration(logsEndpoint: .custom(url: "not a valid url string"))) { error in
-            XCTAssertEqual(
-                (error as? ProgrammerError)?.description,
-                "🔥 Datadog SDK usage error: The `url` in `.custom(url:)` must be a valid URL string."
-            )
         }
     }
 
@@ -772,7 +592,7 @@ class FeaturesConfigurationTests: XCTestCase {
         )
 
         XCTAssertNil(
-            configuration.urlSessionAutoInstrumentation,
+            configuration.rum?.firstPartyHosts,
             "`URLSession` should not be auto instrumented."
         )
 
@@ -813,13 +633,9 @@ class FeaturesConfigurationTests: XCTestCase {
 
     private func createConfiguration(
         clientToken: String = "abc",
-        datadogEndpoint: Datadog.Configuration.DatadogEndpoint? = nil,
+        datadogEndpoint: DatadogSite = .us1,
         customLogsEndpoint: URL? = nil,
-        customTracesEndpoint: URL? = nil,
         customRUMEndpoint: URL? = nil,
-        logsEndpoint: Datadog.Configuration.LogsEndpoint = .us1,
-        tracesEndpoint: Datadog.Configuration.TracesEndpoint = .us1,
-        rumEndpoint: Datadog.Configuration.RUMEndpoint = .us1,
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
@@ -830,31 +646,10 @@ class FeaturesConfigurationTests: XCTestCase {
                 rumEnabled: true,
                 datadogEndpoint: datadogEndpoint,
                 customLogsEndpoint: customLogsEndpoint,
-                customTracesEndpoint: customTracesEndpoint,
                 customRUMEndpoint: customRUMEndpoint,
-                logsEndpoint: logsEndpoint,
-                tracesEndpoint: tracesEndpoint,
-                rumEndpoint: rumEndpoint,
                 proxyConfiguration: proxyConfiguration
             ),
             appContext: .mockAny()
         )
     }
-}
-
-// MARK: - Deprecation Helpers
-
-/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
-private protocol DeprecatedDatadogEndpoints {
-    static var us: Self { get }
-    static var eu: Self { get }
-    static var gov: Self { get }
-}
-extension Datadog.Configuration.DatadogEndpoint: DeprecatedDatadogEndpoints {}
-
-/// An assistant shim to access `Datadog.Configuration.DatadogEndpoint` deprecated APIs with no warning.
-private struct Deprecated<T: DeprecatedDatadogEndpoints> {
-    static var us: T { T.us }
-    static var eu: T { T.eu }
-    static var gov: T { T.gov }
 }

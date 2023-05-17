@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Feature-agnostic SDK configuration.
 internal typealias CoreConfiguration = FeaturesConfiguration.Common
@@ -28,21 +29,11 @@ internal final class DatadogCore {
         target: .global(qos: .utility)
     )
 
-    /// The message bus GDC queue.
-    let messageBusQueue = DispatchQueue(
-        label: "com.datadoghq.ios-sdk-message-bus",
-        target: .global(qos: .utility)
-    )
-
     /// The system date provider.
     let dateProvider: DateProvider
 
     /// The user consent publisher.
     let consentPublisher: TrackingConsentPublisher
-
-    /// The user info provider that provide values to the
-    /// `v1Context`.
-    let userInfoProvider: UserInfoProvider
 
     /// The core SDK performance presets.
     let performance: PerformancePreset
@@ -60,19 +51,19 @@ internal final class DatadogCore {
     /// The application version publisher.
     let applicationVersionPublisher: ApplicationVersionPublisher
 
-    /// The message bus used to dispatch messages to registered features.
-    private var messageBus: [String: FeatureMessageReceiver] = [:]
+    /// The message-bus instance.
+    let bus = MessageBus()
 
     /// Registry for Features.
     @ReadWriteLock
-    private(set) var v2Features: [String: (
-        feature: DatadogFeature,
+    private(set) var stores: [String: (
         storage: FeatureStorage,
         upload: FeatureUpload
     )] = [:]
 
-    /// Registry for Feature Integrations.
-    private var integrations: [String: DatadogFeatureIntegration] = [:]
+    /// Registry for Features.
+    @ReadWriteLock
+    private var features: [String: DatadogFeature] = [:]
 
     /// Registry for v1 features.
     private var v1Features: [String: Any] = [:]
@@ -96,7 +87,6 @@ internal final class DatadogCore {
         directory: CoreDirectory,
         dateProvider: DateProvider,
         initialConsent: TrackingConsent,
-        userInfoProvider: UserInfoProvider,
     	performance: PerformancePreset,
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
@@ -105,7 +95,6 @@ internal final class DatadogCore {
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
-        self.userInfoProvider = userInfoProvider
         self.performance = performance
         self.httpClient = httpClient
         self.encryption = encryption
@@ -116,6 +105,10 @@ internal final class DatadogCore {
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
+
+        // connect the core to the message bus.
+        // the bus will keep a weak ref to the core.
+        bus.connect(core: self)
 
         // forward any context change on the message-bus
         self.contextProvider.publish { [weak self] context in
@@ -146,7 +139,6 @@ internal final class DatadogCore {
         )
 
         userInfoPublisher.current = userInfo
-        userInfoProvider.value = userInfo
     }
 
     /// Add or override the extra info of the current user
@@ -157,7 +149,6 @@ internal final class DatadogCore {
         var extraInfo = userInfoPublisher.current.extraInfo
         newExtraInfo.forEach { extraInfo[$0.key] = $0.value }
         userInfoPublisher.current.extraInfo = extraInfo
-        userInfoProvider.value.extraInfo = extraInfo
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
@@ -183,57 +174,22 @@ internal final class DatadogCore {
     ///   - messageReceiver: The new message receiver.
     ///   - key: The key associated with the receiver.
     private func add(messageReceiver: FeatureMessageReceiver, forKey key: String) {
-        messageBusQueue.async { self.messageBus[key] = messageReceiver }
+        bus.connect(messageReceiver, forKey: key)
         contextProvider.read { context in
-            self.messageBusQueue.async { messageReceiver.receive(message: .context(context), from: self) }
+            self.bus.queue.async { messageReceiver.receive(message: .context(context), from: self) }
         }
     }
 
     /// A list of storage units of currently registered Features.
     private var allStorages: [FeatureStorage] {
         let v1Storages = v1Features.values.compactMap { $0 as? V1Feature }.map { $0.storage }
-        let v2Storages = v2Features.values.map { $0.storage }
+        let v2Storages = stores.values.map { $0.storage }
         return v1Storages + v2Storages
     }
 
     /// A list of upload units of currently registered Features.
     private var allUploads: [FeatureUpload] {
-        let v1Uploads = [
-            feature(LoggingFeature.self)?.upload,
-            feature(TracingFeature.self)?.upload,
-            feature(RUMFeature.self)?.upload,
-        ].compactMap { $0 }
-        let v2Uploads = v2Features.values.map { $0.upload }
-        return v1Uploads + v2Uploads
-    }
-
-    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
-    /// with **blocking the caller thread** till their completion.
-    ///
-    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
-    /// use `flushAndTearDown()` instead.
-    func flush() {
-        // The order of flushing below must be considered cautiously and
-        // follow our design choices around SDK core's threading.
-
-        // The flushing is repeated few times, to make sure that operations spawned from other operations
-        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
-        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
-        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
-        for _ in 0..<5 {
-            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
-            // context & performing write) in other Features:
-            messageBusQueue.sync { }
-
-            // Next, flush context queue - because it indicates the entry point to "event write context" and
-            // actual writes dispatched from it:
-            contextProvider.queue.sync { }
-
-            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
-            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
-            // in other Feature:
-            readWriteQueue.sync { }
-        }
+        stores.values.map { $0.upload }
     }
 
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
@@ -250,17 +206,13 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
-        // Deinitialize arbitrary V1 Features:
-        feature(RUMInstrumentation.self)?.deinitialize()
-        feature(URLSessionAutoInstrumentation.self)?.deinitialize()
-
         // Deinitialize V2 Integrations (arbitrarily for now, until we make it into `DatadogFeatureIntegration`):
-        integration(named: "crash-reporter", type: CrashReporter.self)?.deinitialize()
+        get(feature: CrashReporter.self)?.deinitialize()
 
         // Deallocate all Features and their storage & upload units:
         v1Features = [:]
-        v2Features = [:]
-        integrations = [:]
+        stores = [:]
+        features = [:]
     }
 }
 
@@ -274,8 +226,8 @@ extension DatadogCore: DatadogCoreProtocol {
     /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
     ///
     /// - Parameter feature: The Feature instance.
-    /* public */ func register(feature: DatadogFeature) throws {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: feature.name)
+    /* public */ func register<T>(feature: T) throws where T: DatadogFeature {
+        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
         let performancePreset: PerformancePreset
         if let override = feature.performanceOverride {
@@ -284,35 +236,37 @@ extension DatadogCore: DatadogCoreProtocol {
             performancePreset = performance
         }
 
-        let storage = FeatureStorage(
-            featureName: feature.name,
-            queue: readWriteQueue,
-            directories: featureDirectories,
-            dateProvider: dateProvider,
-            performance: performancePreset,
-            encryption: encryption
-        )
+        if let feature = feature as? DatadogRemoteFeature {
+            let storage = FeatureStorage(
+                featureName: T.name,
+                queue: readWriteQueue,
+                directories: featureDirectories,
+                dateProvider: dateProvider,
+                performance: performancePreset,
+                encryption: encryption
+            )
 
-        let upload = FeatureUpload(
-            featureName: feature.name,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: feature.requestBuilder,
-            httpClient: httpClient,
-            performance: performancePreset
-        )
+            let upload = FeatureUpload(
+                featureName: T.name,
+                contextProvider: contextProvider,
+                fileReader: storage.reader,
+                requestBuilder: feature.requestBuilder,
+                httpClient: httpClient,
+                performance: performancePreset
+            )
 
-        v2Features[feature.name] = (
-            feature: feature,
-            storage: storage,
-            upload: upload
-        )
+            stores[T.name] = (
+                storage: storage,
+                upload: upload
+            )
 
-        // If there is any persisted data recorded with `.pending` consent,
-        // it should be deleted on Feature startup:
-        storage.clearUnauthorizedData()
+            // If there is any persisted data recorded with `.pending` consent,
+            // it should be deleted on Feature startup:
+            storage.clearUnauthorizedData()
+        }
 
-        add(messageReceiver: feature.messageReceiver, forKey: feature.name)
+        features[T.name] = feature
+        add(messageReceiver: feature.messageReceiver, forKey: T.name)
     }
 
     /// Retrieves a Feature by its name and type.
@@ -326,40 +280,12 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    /* public */ func feature<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeature {
-        v2Features[name]?.feature as? T
-    }
-
-    /// Registers a Feature Integration instance.
-    ///
-    /// A Feature Integration collect and transfer data to a local Datadog Feature. An Integration will not store nor upload,
-    /// it will collect data for other Features to consume.
-    ///
-    /// An Integration can commicate to Features via dependency or a communication channel such as the message-bus.
-    ///
-    /// - Parameter integration: The Feature Integration instance.
-    /* public */ func register(integration: DatadogFeatureIntegration) throws {
-        integrations[integration.name] = integration
-        add(messageReceiver: integration.messageReceiver, forKey: integration.name)
-    }
-
-    /// Retrieves a Feature Integration by its name and type.
-    ///
-    /// A Feature Integration type can be specified as parameter or inferred from the return type:
-    ///
-    ///     let integration = core.integration(named: "foo", type: Foo.self)
-    ///     let integration: Foo? = core.integration(named: "foo")
-    ///
-    /// - Parameters:
-    ///   - name: The Feature Integration's name.
-    ///   - type: The Feature Integration instance type.
-    /// - Returns: The Feature Integration if any.
-    /* public */ func integration<T>(named name: String, type: T.Type = T.self) -> T? where T: DatadogFeatureIntegration {
-        integrations[name] as? T
+    /* public */ func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+        features[T.name] as? T
     }
 
     /* public */ func scope(for feature: String) -> FeatureScope? {
-        guard let storage = v2Features[feature]?.storage else {
+        guard let storage = stores[feature]?.storage else {
             return nil
         }
 
@@ -373,16 +299,8 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 
-    /* public */ func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        messageBusQueue.async {
-            let receivers = self.messageBus.values.filter {
-                $0.receive(message: message, from: sender)
-            }
-
-            if receivers.isEmpty {
-                fallback()
-            }
-        }
+    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        bus.send(message: message, else: fallback)
     }
 }
 
@@ -413,51 +331,6 @@ extension DatadogCore: DatadogV1CoreProtocol {
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
             storage: feature.storage
-        )
-    }
-
-    /// Creates V1 Feature using its V2 configuration.
-    ///
-    /// `DatadogCore` uses its core `configuration` to inject feature-agnostic parts of V1 setup.
-    /// Feature-specific part is provided explicitly with `featureSpecificConfiguration`.
-    ///
-    /// - Parameters:
-    ///   - configuration: The generic feature configuration.
-    ///   - featureSpecificConfiguration: The feature-specific configuration.
-    /// - Returns: an instance of V1 feature
-    func create<Feature: V1FeatureInitializable>(
-        configuration: DatadogFeatureConfiguration,
-        featureSpecificConfiguration: Feature.Configuration
-    ) throws -> Feature {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: configuration.name)
-
-        let storage = FeatureStorage(
-            featureName: configuration.name,
-            queue: readWriteQueue,
-            directories: featureDirectories,
-            dateProvider: dateProvider,
-            performance: performance,
-            encryption: encryption
-        )
-
-        let upload = FeatureUpload(
-            featureName: configuration.name,
-            contextProvider: contextProvider,
-            fileReader: storage.reader,
-            requestBuilder: configuration.requestBuilder,
-            httpClient: httpClient,
-            performance: performance
-        )
-
-        // If there is any persisted data recorded with `.pending` consent,
-        // it should be deleted on Feature startup:
-        storage.clearUnauthorizedData()
-
-        return Feature(
-            storage: storage,
-            upload: upload,
-            configuration: featureSpecificConfiguration,
-            messageReceiver: configuration.messageReceiver
         )
     }
 }
@@ -564,16 +437,38 @@ extension DatadogContextProvider {
     }
 }
 
-/// A shim interface for allowing V1 Features generic initialization in `DatadogCore`.
-internal protocol V1FeatureInitializable {
-    /// The configuration specific to this Feature.
-    /// In V2 this will likely become a part of the public interface for the Feature module.
-    associatedtype Configuration
+extension DatadogCore: Flushable {
+    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
+    /// with **blocking the caller thread** till their completion.
+    ///
+    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
+    /// use `flushAndTearDown()` instead.
+    func flush() {
+        // The order of flushing below must be considered cautiously and
+        // follow our design choices around SDK core's threading.
 
-    init(
-        storage: FeatureStorage,
-        upload: FeatureUpload,
-        configuration: Configuration,
-        messageReceiver: FeatureMessageReceiver
-    )
+        let features = features.values.compactMap { $0 as? Flushable }
+
+        // The flushing is repeated few times, to make sure that operations spawned from other operations
+        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
+        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
+        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
+        for _ in 0..<5 {
+            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
+            // context & performing write) in other Features:
+            bus.flush()
+
+            // Next, flush flushable Features - finish current data collection to open "event write contexts":
+            features.forEach { $0.flush() }
+
+            // Next, flush context queue - because it indicates the entry point to "event write context" and
+            // actual writes dispatched from it:
+            contextProvider.flush()
+
+            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
+            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+            // in other Feature:
+            readWriteQueue.sync { }
+        }
+    }
 }

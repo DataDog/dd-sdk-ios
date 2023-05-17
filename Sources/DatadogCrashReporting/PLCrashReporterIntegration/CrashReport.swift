@@ -263,7 +263,7 @@ extension BinaryImageInfo {
     }
 
     static func isPathSystemImageInDevice(_ path: String) -> Bool {
-        // in device, example user image path: .../containers/Bundle/Application/0000/Example.app/Frameworks/...
+        // in device, example user image path: .../containers/Bundle/Application/0000/Runner.app/Frameworks/...
         let isUserImage = path.contains("/Bundle/Application/")
         return !isUserImage
     }

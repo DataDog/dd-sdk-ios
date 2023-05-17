@@ -5,8 +5,9 @@
  */
 
 import Foundation
-
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class InternalTelemetryTests: XCTestCase {
@@ -22,8 +23,13 @@ class InternalTelemetryTests: XCTestCase {
         Datadog._internal.telemetry.debug(id: id, message: message)
 
         // Then
-        XCTAssertEqual(dd.telemetry.debugs.count, 1)
-        XCTAssertEqual(dd.telemetry.debugs.first, message)
+        XCTAssertEqual(dd.telemetry.messages.count, 1)
+        guard case .debug(let receivedId, let receivedMessage) = dd.telemetry.messages.first else {
+            return XCTFail("A debug should be send to `DD.telemetry`.")
+        }
+
+        XCTAssertEqual(receivedId, id)
+        XCTAssertEqual(receivedMessage, message)
     }
 
     func testProxyErrorCallsTelemetryError() {
@@ -40,10 +46,15 @@ class InternalTelemetryTests: XCTestCase {
         Datadog._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
 
         // Then
-        XCTAssertEqual(dd.telemetry.errors.count, 1)
-        let error = dd.telemetry.errors.first
-        XCTAssertEqual(error?.message, message)
-        XCTAssertEqual(error?.kind, kind)
-        XCTAssertEqual(error?.stack, stack)
+        XCTAssertEqual(dd.telemetry.messages.count, 1)
+
+        guard case .error(let receivedId, let receivedMessage, let receivedKind, let receivedStack) = dd.telemetry.messages.first else {
+            return XCTFail("An error should be send to `DD.telemetry`.")
+        }
+
+        XCTAssertEqual(receivedId, id)
+        XCTAssertEqual(receivedMessage, message)
+        XCTAssertEqual(receivedKind, kind)
+        XCTAssertEqual(receivedStack, stack)
     }
 }

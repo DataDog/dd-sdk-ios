@@ -5,11 +5,11 @@
  */
 
 import Foundation
-import Datadog
+import DatadogTrace
 
 @objc
 public class DDTracerConfiguration: NSObject {
-    internal var swiftConfiguration = Tracer.Configuration()
+    internal var swiftConfiguration = DatadogTracer.Configuration()
 
     @objc
     override public init() {}

@@ -6,6 +6,7 @@
 
 import Foundation
 import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 extension DatadogContextProvider: AnyMockable {

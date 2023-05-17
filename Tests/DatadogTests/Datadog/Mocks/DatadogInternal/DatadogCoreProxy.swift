@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 @testable import Datadog
 
 /// A `DatadogCoreProtocol` which proxies all calls to the real `DatadogCore` implementation. It intercepts
@@ -40,13 +41,15 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,
-            userInfoProvider: .mockWith(userInfo: context.userInfo ?? .empty),
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version
         )
+
+        // override the message-bus's core instance
+        core.bus.connect(core: self)
         DatadogCoreProxy.referenceCount += 1
     }
 
@@ -60,21 +63,13 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
-    func register(feature: DatadogFeature) throws {
-        featureScopeInterceptors[feature.name] = FeatureScopeInterceptor()
+    func register<T>(feature: T) throws where T: DatadogFeature {
+        featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
         try core.register(feature: feature)
     }
 
-    func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature {
-        return core.feature(named: name, type: type)
-    }
-
-    func register(integration: DatadogFeatureIntegration) throws {
-        try core.register(integration: integration)
-    }
-
-    func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration {
-        return core.integration(named: name, type: type)
+    func get<T>(feature type: T.Type) -> T? where T: DatadogFeature {
+        return core.get(feature: type)
     }
 
     func scope(for feature: String) -> FeatureScope? {
@@ -87,8 +82,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(feature: feature, attributes: attributes)
     }
 
-    func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
-        core.send(message: message, sender: self, else: fallback)
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        core.send(message: message, else: fallback)
     }
 }
 
@@ -192,15 +187,32 @@ extension DatadogCoreProxy {
         return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
     }
 
+    /// Returns all events of given type for certain Feature.
+    /// - Parameters:
+    ///   - name: The Feature to retrieve events from
+    ///   - type: The type of events to filter out
+    /// - Returns: A list of events.
+    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type) -> [T] where T: Encodable {
+        flush()
+        let interceptor = self.featureScopeInterceptors[name]!
+        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
+    }
+
+    /// Returns serialized events of given Feature.
+    ///
+    /// - Parameter feature: The Feature to retrieve events from
+    /// - Returns: A list of serialized events.
+    func waitAndReturnEventsData(ofFeature name: String) -> [Data] {
+        flush()
+        let interceptor = self.featureScopeInterceptors[name]!
+        return interceptor.waitAndReturnEvents().map { $0.data }
+    }
+
     /// Returns serialized events of given Feature.
     ///
     /// - Parameter feature: The Feature to retrieve events from
     /// - Returns: A list of serialized events.
     func waitAndReturnEventsData<F>(of feature: F.Type) -> [Data] where F: V1Feature {
-        flush()
-
-        let key = String(describing: F.self)
-        let interceptor = self.featureScopeInterceptors[key]!
-        return interceptor.waitAndReturnEvents().map { $0.data }
+        return waitAndReturnEventsData(ofFeature: String(describing: F.self))
     }
 }

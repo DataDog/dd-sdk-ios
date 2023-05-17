@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Provides thread-safe access to Datadog Context.
 ///
@@ -158,4 +159,13 @@ internal final class DatadogContextProvider {
         }
     }
 #endif
+}
+
+extension DatadogContextProvider: Flushable {
+    /// Awaits completion of all asynchronous operations.
+    ///
+    /// **blocks the caller thread**
+    func flush() {
+        queue.sync { }
+    }
 }

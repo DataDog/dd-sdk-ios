@@ -6,8 +6,10 @@
 
 import XCTest
 import Datadog
+import TestUtilities
+import DatadogInternal
+
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 private class WriterMock: Writing {
     var records: [EnrichedRecord] = []

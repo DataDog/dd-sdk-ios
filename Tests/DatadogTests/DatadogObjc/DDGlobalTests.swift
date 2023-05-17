@@ -5,7 +5,10 @@
 */
 
 import XCTest
-@testable import  Datadog
+import DatadogInternal
+@testable import DatadogTrace
+@testable import DatadogRUM
+@testable import Datadog
 @testable import DatadogObjc
 
 class DDGlobalTests: XCTestCase {
@@ -27,53 +30,26 @@ class DDGlobalTests: XCTestCase {
 
     func testWhenTracerIsNotSet_itReturnsNoOpImplementation() {
         XCTAssertTrue(DatadogObjc.DDGlobal.sharedTracer.swiftTracer is DDNoopTracer)
-        XCTAssertTrue(Global.sharedTracer is DDNoopTracer)
     }
 
     func testWhenTracerIsSet_itSetsSwiftImplementation() {
-        let tracing: TracingFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: tracing)
-
-        let previousGlobal = (
-            objc: DatadogObjc.DDGlobal.sharedTracer,
-            swift: Global.sharedTracer
-        )
-        defer {
-            DatadogObjc.DDGlobal.sharedTracer = previousGlobal.objc
-            Global.sharedTracer = previousGlobal.swift
-        }
-
         // When
-        DatadogObjc.DDGlobal.sharedTracer = DatadogObjc.DDTracer(configuration: DDTracerConfiguration())
+        DatadogObjc.DDTracer.initialize(configuration: .init())
 
         // Then
-        XCTAssertTrue(Global.sharedTracer is Tracer)
+        XCTAssertTrue(DatadogObjc.DDTracer.shared.swiftTracer is DatadogTracer)
     }
 
     // MARK: - Test Global RUMMonitor
 
-    func testWhenRUMMonitorIsNotSet_itReturnsNoOpImplementation() {
+    func testWhenDDRUMMonitorIsNotInitailized_itReturnsNoOpImplementation() {
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is DDNoopRUMMonitor)
-        XCTAssertTrue(Global.rum is DDNoopRUMMonitor)
     }
 
-    func testWhenRUMMonitorIsSet_itSetsSwiftImplementation() {
-        let rum: RUMFeature = .mockAny()
-        defaultDatadogCore.v1.register(feature: rum)
-
-        let previousGlobal = (
-            objc: DatadogObjc.DDGlobal.rum,
-            swift: Global.rum
-        )
-        defer {
-            DatadogObjc.DDGlobal.rum = previousGlobal.objc
-            Global.rum = previousGlobal.swift
-        }
-
+    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
         // When
-        DatadogObjc.DDGlobal.rum = DatadogObjc.DDRUMMonitor()
-
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
         // Then
-        XCTAssertTrue(Global.rum is RUMMonitor)
+        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is RUMMonitor)
     }
 }

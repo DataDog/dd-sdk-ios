@@ -8,6 +8,8 @@
 
 import XCTest
 import SwiftUI
+
+@testable import DatadogRUM
 @testable import Datadog
 
 @available(iOS 13, tvOS 13, *)

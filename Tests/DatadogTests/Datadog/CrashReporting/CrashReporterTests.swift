@@ -6,6 +6,9 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+import DatadogLogs
+
 @testable import Datadog
 
 class CrashReporterTests: XCTestCase {

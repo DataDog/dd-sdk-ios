@@ -5,14 +5,17 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
-private struct FeatureMock: DatadogFeature {
+private struct FeatureMock: DatadogRemoteFeature {
+    static let name: String = "mock"
+
     struct Event: Encodable {
         let event: String
     }
 
-    var name: String
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
     var performanceOverride: PerformancePresetOverride? = nil
@@ -37,7 +40,6 @@ class DatadogCoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
-            userInfoProvider: .mockAny(),
             performance: .mockRandom(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             encryption: nil,
@@ -47,8 +49,8 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: "mock"))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -86,7 +88,6 @@ class DatadogCoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
-            userInfoProvider: .mockAny(),
             performance: .mockRandom(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             encryption: nil,
@@ -96,8 +97,8 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: "mock"))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -143,7 +144,6 @@ class DatadogCoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .mockRandom(),
             httpClient: HTTPClient(session: server.getInterceptedURLSession()),
             encryption: nil,
@@ -153,7 +153,7 @@ class DatadogCoreTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(name: "mock", requestBuilder: requestBuilderSpy))
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
         let scope = try XCTUnwrap(core.scope(for: "mock"))
 
         // When
@@ -194,31 +194,25 @@ class DatadogCoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .mockRandom(),
             httpClient: .mockAny(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
-        let name = "mock"
         try core.register(
-            feature: FeatureMock(
-                name: name,
-                performanceOverride: nil
-            )
+            feature: FeatureMock(performanceOverride: nil)
         )
-        var feature = core.v2Features.values.first
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+        var store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
         try core.register(
             feature: FeatureMock(
-                name: name,
                 performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
             )
         )
-        feature = core.v2Features.values.first
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        store = core.stores.values.first
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
     }
 }

@@ -5,6 +5,9 @@
  */
 
 import XCTest
+import DatadogInternal
+
+@testable import DatadogLogs
 @testable import Datadog
 
 class LoggingStorageBenchmarkTests: XCTestCase {
@@ -39,7 +42,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
     }
 
     override func tearDown() {
-        self.directory.delete()
+        try? FileManager.default.removeItem(at: directory.url)
         queue = nil
         directory = nil
         writer = nil

@@ -5,6 +5,9 @@
  */
 
 import XCTest
+import DatadogInternal
+
+@testable import DatadogTrace
 @testable import Datadog
 
 class TracingStorageBenchmarkTests: XCTestCase {
@@ -39,7 +42,7 @@ class TracingStorageBenchmarkTests: XCTestCase {
     }
 
     override func tearDown() {
-        self.directory.delete()
+        try? FileManager.default.removeItem(at: directory.url)
         queue = nil
         directory = nil
         writer = nil
@@ -81,10 +84,10 @@ class TracingStorageBenchmarkTests: XCTestCase {
     // MARK: - Helpers
 
     private func createRandomizedSpan() -> SpanEvent {
-        let tracingUUIDGenerator = DefaultTracingUUIDGenerator()
+        let tracingUUIDGenerator = DefaultTraceIDGenerator()
         return SpanEvent(
-            traceID: tracingUUIDGenerator.generateUnique(),
-            spanID: tracingUUIDGenerator.generateUnique(),
+            traceID: tracingUUIDGenerator.generate(),
+            spanID: tracingUUIDGenerator.generate(),
             parentID: nil,
             operationName: "span \(Int.random(in: 0..<100))",
             serviceName: "service-name",

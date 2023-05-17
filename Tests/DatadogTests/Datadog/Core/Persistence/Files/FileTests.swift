@@ -5,23 +5,26 @@
  */
 
 import XCTest
+import TestUtilities
+
 @testable import Datadog
 
 class FileTests: XCTestCase {
     private let fileManager = FileManager.default
+    lazy var directory = Directory(url: temporaryDirectory)
 
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
     func testItAppendsDataToFile() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
+        let file = try directory.createFile(named: "file")
 
         try file.append(data: Data([0x41, 0x41, 0x41, 0x41, 0x41])) // 5 bytes
 
@@ -46,7 +49,7 @@ class FileTests: XCTestCase {
     }
 
     func testItReadsDataFromFile() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
+        let file = try directory.createFile(named: "file")
         let data = "Hello 👋".utf8Data
         try file.append(data: data)
 
@@ -56,21 +59,19 @@ class FileTests: XCTestCase {
 
         var bytes = [UInt8](repeating: 0, count: data.count)
         XCTAssertEqual(stream.read(&bytes, maxLength: data.count), data.count)
-
         XCTAssertEqual(String(bytes: bytes, encoding: .utf8), "Hello 👋")
     }
 
     func testItDeletesFile() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
+        let file = try directory.createFile(named: "file")
         XCTAssertTrue(fileManager.fileExists(atPath: file.url.path))
 
         try file.delete()
-
         XCTAssertFalse(fileManager.fileExists(atPath: file.url.path))
     }
 
     func testItReturnsFileSize() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
+        let file = try directory.createFile(named: "file")
 
         try file.append(data: .mock(ofSize: 5))
         XCTAssertEqual(try file.size(), 5)
@@ -80,7 +81,7 @@ class FileTests: XCTestCase {
     }
 
     func testWhenIOExceptionHappens_itThrowsWhenWriting() throws {
-        let file = try temporaryDirectory.createFile(named: "file")
+        let file = try directory.createFile(named: "file")
         try file.delete()
 
         XCTAssertThrowsError(try file.append(data: .mock(ofSize: 5))) { error in

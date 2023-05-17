@@ -5,32 +5,36 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class FileReaderTests: XCTestCase {
+    lazy var directory = Directory(url: temporaryDirectory)
+
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
     func testItReadsSingleBatch() throws {
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider()
             )
         )
-        _ = try temporaryDirectory
+        _ = try directory
             .createFile(named: Date.mockAny().toFileName)
             .append(data: DataBlock(type: .event, data: "ABCD".utf8Data).serialize())
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try directory.files().count, 1)
         let batch = reader.readNextBatch()
         XCTAssertEqual(batch?.events, ["ABCD".utf8Data])
     }
@@ -41,13 +45,13 @@ class FileReaderTests: XCTestCase {
             .map { try DataBlock(type: .event, data: $0).serialize() }
             .reduce(.init(), +)
 
-        _ = try temporaryDirectory
+        _ = try directory
             .createFile(named: Date.mockAny().toFileName)
             .append(data: data)
 
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider()
             ),
@@ -67,18 +71,18 @@ class FileReaderTests: XCTestCase {
         let dateProvider = RelativeDateProvider(advancingBySeconds: 60)
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider
             )
         )
-        let file1 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
+        let file1 = try directory.createFile(named: dateProvider.now.toFileName)
         try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
 
-        let file2 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
+        let file2 = try directory.createFile(named: dateProvider.now.toFileName)
         try file2.append(data: DataBlock(type: .event, data: "2".utf8Data).serialize())
 
-        let file3 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
+        let file3 = try directory.createFile(named: dateProvider.now.toFileName)
         try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
 
         var batch: Batch
@@ -95,6 +99,6 @@ class FileReaderTests: XCTestCase {
         reader.markBatchAsRead(batch)
 
         XCTAssertNil(reader.readNextBatch())
-        XCTAssertEqual(try temporaryDirectory.files().count, 0)
+        XCTAssertEqual(try directory.files().count, 0)
     }
 }

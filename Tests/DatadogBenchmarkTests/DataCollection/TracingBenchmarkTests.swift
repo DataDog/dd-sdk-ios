@@ -7,19 +7,21 @@
 import Datadog
 import XCTest
 
+import DatadogTrace
+
 class TracingBenchmarkTests: BenchmarkTests {
     private let operationName = "foobar-span"
 
     func testCreatingAndEndingOneSpan() {
         measure {
-            let testSpan = Global.sharedTracer.startSpan(operationName: operationName)
+            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
             testSpan.finish()
         }
     }
 
     func testCreatingOneSpanWithBaggageItems() {
         measure {
-            let testSpan = Global.sharedTracer.startSpan(operationName: operationName)
+            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
             (0..<16).forEach { index in
                 testSpan.setBaggageItem(key: "a\(index)", value: "v\(index)")
             }
@@ -29,7 +31,7 @@ class TracingBenchmarkTests: BenchmarkTests {
 
     func testCreatingOneSpanWithTags() {
         measure {
-            let testSpan = Global.sharedTracer.startSpan(operationName: operationName)
+            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
             (0..<8).forEach { index in
                 testSpan.setTag(key: "t\(index)", value: "v\(index)")
             }

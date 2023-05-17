@@ -1,8 +1,0 @@
-// Add common settings from Datadog.xcconfig
-#include "../xcconfigs/Datadog.xcconfig"
-
-// Add server mock instrumentation settings (generated from pre-action)
-#include "../xcconfigs/MockServerAddress.local.xcconfig"
-
-// Add DatadogSDKTesting instrumentation (if available in current environment)
-#include? "../xcconfigs/DatadogSDKTesting.local.xcconfig"

@@ -5,13 +5,13 @@
  */
 
 import Foundation
-import struct Datadog.DDAnyEncodable
-import protocol Datadog.OTSpan
+import DatadogInternal
+import DatadogTrace
 
 internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
-    let swiftSpan: Datadog.OTSpan
+    let swiftSpan: DatadogTrace.OTSpan
 
-    init(objcTracer: DatadogObjc.OTTracer, swiftSpan: Datadog.OTSpan) {
+    init(objcTracer: DatadogObjc.OTTracer, swiftSpan: DatadogTrace.OTSpan) {
         self.tracer = objcTracer
         self.context = DDSpanContextObjc(swiftSpanContext: swiftSpan.context)
         self.swiftSpan = swiftSpan
@@ -32,7 +32,7 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
     }
 
     func setTag(_ key: String, numberValue: NSNumber) {
-        swiftSpan.setTag(key: key, value: DDAnyEncodable(numberValue))
+        swiftSpan.setTag(key: key, value: AnyEncodable(numberValue))
     }
 
     func setTag(_ key: String, boolValue: Bool) {
@@ -46,12 +46,12 @@ internal class DDSpanObjc: NSObject, DatadogObjc.OTSpan {
     func log(_ fields: [String: NSObject], timestamp: Date?) {
         if let timestamp = timestamp {
             swiftSpan.log(
-                fields: fields.mapValues { DDAnyEncodable($0) },
+                fields: fields.mapValues { AnyEncodable($0) },
                 timestamp: timestamp
             )
         } else {
             swiftSpan.log(
-                fields: fields.mapValues { DDAnyEncodable($0) }
+                fields: fields.mapValues { AnyEncodable($0) }
             )
         }
     }

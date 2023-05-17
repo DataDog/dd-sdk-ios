@@ -6,6 +6,9 @@
 
 import XCTest
 import TestUtilities
+
+@testable import DatadogInternal
+@testable import DatadogLogs
 @testable import Datadog
 @testable import DatadogObjc
 
@@ -35,17 +38,14 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertTrue(Datadog.isInitialized)
 
-        let urlSessionInstrumentation = defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self)
         let context = try XCTUnwrap(defaultDatadogCore as? DatadogCore).contextProvider.read()
         XCTAssertEqual(context.applicationName, "app-name")
         XCTAssertEqual(context.env, "tests")
-        XCTAssertNotNil(urlSessionInstrumentation)
 
-        urlSessionInstrumentation?.swizzler.unswizzle()
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.v1.feature(LoggingFeature.self))
-        XCTAssertNil(defaultDatadogCore.v1.feature(URLSessionAutoInstrumentation.self))
+        XCTAssertNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
+        XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
     }
 
     // MARK: - Changing Tracking Consent
@@ -80,7 +80,7 @@ class DDDatadogTests: XCTestCase {
         )
 
         let core = defaultDatadogCore as? DatadogCore
-        let userInfo = try XCTUnwrap(core?.userInfoProvider)
+        let userInfo = try XCTUnwrap(core?.userInfoPublisher)
 
         DDDatadog.setUserInfo(
             id: "id",
@@ -92,30 +92,30 @@ class DDDatadogTests: XCTestCase {
                 "attribute-string": "string value"
             ]
         )
-        XCTAssertEqual(userInfo.value.id, "id")
-        XCTAssertEqual(userInfo.value.name, "name")
-        XCTAssertEqual(userInfo.value.email, "email")
-        let extraInfo = try XCTUnwrap(userInfo.value.extraInfo as? [String: AnyEncodable])
+        XCTAssertEqual(userInfo.current.id, "id")
+        XCTAssertEqual(userInfo.current.name, "name")
+        XCTAssertEqual(userInfo.current.email, "email")
+        let extraInfo = try XCTUnwrap(userInfo.current.extraInfo as? [String: AnyEncodable])
         XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")
 
         DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
-        XCTAssertNil(userInfo.value.id)
-        XCTAssertNil(userInfo.value.name)
-        XCTAssertNil(userInfo.value.email)
-        XCTAssertTrue(userInfo.value.extraInfo.isEmpty)
+        XCTAssertNil(userInfo.current.id)
+        XCTAssertNil(userInfo.current.name)
+        XCTAssertNil(userInfo.current.email)
+        XCTAssertTrue(userInfo.current.extraInfo.isEmpty)
 
         Datadog.flushAndDeinitialize()
     }
 
     // MARK: - Changing SDK verbosity level
 
-    private let swiftVerbosityLevels: [LogLevel?] = [
-        .debug, .info, .notice, .warn, .error, .critical, nil
+    private let swiftVerbosityLevels: [CoreLoggerLevel?] = [
+        .debug, .warn, .error, .critical, nil
     ]
     private let objcVerbosityLevels: [DDSDKVerbosityLevel] = [
-        .debug, .info, .notice, .warn, .error, .critical, .none
+        .debug, .warn, .error, .critical, .none
     ]
 
     func testItForwardsSettingVerbosityLevelToSwift() {

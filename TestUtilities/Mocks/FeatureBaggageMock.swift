@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 extension FeatureBaggage: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {

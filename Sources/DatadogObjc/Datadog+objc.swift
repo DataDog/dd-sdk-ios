@@ -6,6 +6,7 @@
 
 import Foundation
 import Datadog
+import DatadogInternal
 
 @objc
 public class DDTrackingConsent: NSObject {
@@ -79,8 +80,6 @@ public class DDDatadog: NSObject {
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
         switch verbosityLevel {
         case .debug: Datadog.verbosityLevel = .debug
-        case .info: Datadog.verbosityLevel = .info
-        case .notice: Datadog.verbosityLevel = .notice
         case .warn: Datadog.verbosityLevel = .warn
         case .error: Datadog.verbosityLevel = .error
         case .critical: Datadog.verbosityLevel = .critical
@@ -92,8 +91,6 @@ public class DDDatadog: NSObject {
     public static func verbosityLevel() -> DDSDKVerbosityLevel {
         switch Datadog.verbosityLevel {
         case .debug: return .debug
-        case .info: return .info
-        case .notice: return .notice
         case .warn: return .warn
         case .error: return .error
         case .critical: return .critical

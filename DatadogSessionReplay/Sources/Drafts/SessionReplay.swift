@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import Datadog
 
 /// A draft interface for SR Feature initialization.
@@ -22,8 +23,8 @@ public struct SessionReplay {
             )
             try datadogInstance.register(feature: feature)
 
-            guard let scope = datadogInstance.scope(for: feature.name) else {
-                throw FatalError(description: "Failed to obtain `FeatureScope` for \(feature.name)")
+            guard let scope = datadogInstance.scope(for: SessionReplayFeature.name) else {
+                throw FatalError(description: "Failed to obtain `FeatureScope` for \(SessionReplayFeature.name)")
             }
 
             feature.register(sessionReplayScope: scope)

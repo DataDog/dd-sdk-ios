@@ -5,7 +5,11 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
+@testable import DatadogRUM
 
 class RUMFeatureTests: XCTestCase {
     override func setUp() {
@@ -42,7 +46,6 @@ class RUMFeatureTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
                 uploadPerformance: .veryQuick
@@ -71,15 +74,13 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let featureConfiguration: RUMFeature.Configuration = .mockWith(uploadURL: randomUploadURL)
-        let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(configuration: featureConfiguration),
-            featureSpecificConfiguration: featureConfiguration
+        try RUMMonitor.initialize(
+            in: core,
+            configuration: .mockWith(customIntakeURL: randomUploadURL)
         )
-        core.register(feature: feature)
 
         // When
-        let monitor = RUMMonitor.initialize(in: core)
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
 
         // Then
@@ -119,7 +120,6 @@ class RUMFeatureTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: StoragePerformanceMock(
                     maxFileSize: .max,
@@ -147,15 +147,10 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let featureConfiguration: RUMFeature.Configuration = .mockAny()
-        let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(configuration: featureConfiguration),
-            featureSpecificConfiguration: featureConfiguration
-        )
-        core.register(feature: feature)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         // When
-        let monitor = RUMMonitor.initialize(in: core)
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
 
         // Then
@@ -176,7 +171,6 @@ class RUMFeatureTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .combining(
                 storagePerformance: StoragePerformanceMock(
                     maxFileSize: .max,
@@ -202,17 +196,13 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let featureConfiguration: RUMFeature.Configuration = .mockAny()
-        let feature: RUMFeature = try core.create(
-            configuration: createRUMConfiguration(configuration: featureConfiguration),
-            featureSpecificConfiguration: featureConfiguration
-        )
-        core.register(feature: feature)
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
-        let writer = feature.storage.writer(for: .granted, forceNewBatch: false)
-        writer.write(value: RUMDataModelMock(attribute: "1st event"))
-        writer.write(value: RUMDataModelMock(attribute: "2nd event"))
-        writer.write(value: RUMDataModelMock(attribute: "3rd event"))
+        core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { _, writer in
+            writer.write(value: RUMDataModelMock(attribute: "1st event"))
+            writer.write(value: RUMDataModelMock(attribute: "2nd event"))
+            writer.write(value: RUMDataModelMock(attribute: "3rd event"))
+        }
 
         let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 

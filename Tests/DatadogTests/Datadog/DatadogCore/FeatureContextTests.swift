@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 @testable import Datadog
 
@@ -15,7 +16,6 @@ class FeatureContextTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
-            userInfoProvider: .mockAny(),
             performance: .mockAny(),
             httpClient: .mockAny(),
             encryption: nil,

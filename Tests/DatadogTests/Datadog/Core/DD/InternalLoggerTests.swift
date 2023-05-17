@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
 @testable import Datadog
 
 class InternalLoggerTests: XCTestCase {
@@ -76,7 +78,7 @@ class InternalLoggerTests: XCTestCase {
     }
 
     func testItPrintsMessagesAboveGivenVerbosityLevel() {
-        var verbosityLevel: LogLevel? = nil
+        var verbosityLevel: CoreLoggerLevel? = nil
 
         // Given
         let logger = InternalLogger(
@@ -105,16 +107,6 @@ class InternalLoggerTests: XCTestCase {
         logMessageUsingAllLevels()
         XCTAssertEqual(mock.printedMessages.count, 4)
 
-        verbosityLevel = .info
-        mock.reset()
-        logMessageUsingAllLevels()
-        XCTAssertEqual(mock.printedMessages.count, 3)
-
-        verbosityLevel = .notice
-        mock.reset()
-        logMessageUsingAllLevels()
-        XCTAssertEqual(mock.printedMessages.count, 3)
-
         verbosityLevel = .warn
         mock.reset()
         logMessageUsingAllLevels()
@@ -132,7 +124,7 @@ class InternalLoggerTests: XCTestCase {
     }
 
     func testItEvaluatesMessageOnlyWhenItWillBePrinted() {
-        var verbosityLevel: LogLevel? = nil
+        var verbosityLevel: CoreLoggerLevel? = nil
 
         // Given
         let logger = InternalLogger(

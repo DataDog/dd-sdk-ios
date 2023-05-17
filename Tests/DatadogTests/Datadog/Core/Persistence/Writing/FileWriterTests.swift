@@ -6,23 +6,27 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+
 @testable import Datadog
 
 class FileWriterTests: XCTestCase {
+    lazy var directory = Directory(url: temporaryDirectory)
+
     override func setUp() {
         super.setUp()
-        temporaryDirectory.create()
+        CreateTemporaryDirectory()
     }
 
     override func tearDown() {
-        temporaryDirectory.delete()
+        DeleteTemporaryDirectory()
         super.tearDown()
     }
 
     func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -34,8 +38,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key2": "value2"])
         writer.write(value: ["key3": "value3"])
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let stream = try temporaryDirectory.files()[0].stream()
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()
@@ -52,7 +56,7 @@ class FileWriterTests: XCTestCase {
     func testWhenForceNewBatchIsSet_itWritesDataToSeparateFilesInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: RelativeDateProvider(advancingBySeconds: 1)
             ),
@@ -64,9 +68,9 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key2": "value2"])
         writer.write(value: ["key3": "value3"])
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 3)
+        XCTAssertEqual(try directory.files().count, 3)
 
-        let dataBlocks = try temporaryDirectory.files()
+        let dataBlocks = try directory.files()
             .sorted { $0.name < $1.name } // read files in their creation order
             .map { try DataBlockReader(input: $0.stream()).all() }
 
@@ -89,7 +93,7 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: StoragePerformanceMock(
                     maxFileSize: .max,
                     maxDirectorySize: .max,
@@ -107,15 +111,15 @@ class FileWriterTests: XCTestCase {
 
         writer.write(value: ["key1": "value1"]) // will be written
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        var reader = try DataBlockReader(input: temporaryDirectory.files()[0].stream())
+        XCTAssertEqual(try directory.files().count, 1)
+        var reader = try DataBlockReader(input: directory.files()[0].stream())
         var blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1)
         XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
         writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
-        reader = try DataBlockReader(input: temporaryDirectory.files()[0].stream())
+        reader = try DataBlockReader(input: directory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
@@ -128,7 +132,7 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -148,7 +152,7 @@ class FileWriterTests: XCTestCase {
 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -157,9 +161,9 @@ class FileWriterTests: XCTestCase {
         )
 
         writer.write(value: ["ok"]) // will create the file
-        try? temporaryDirectory.files()[0].makeReadonly()
+        try? directory.files()[0].makeReadonly()
         writer.write(value: ["won't be written"])
-        try? temporaryDirectory.files()[0].makeReadWrite()
+        try? directory.files()[0].makeReadWrite()
 
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
         XCTAssertTrue(dd.logger.errorLog!.error!.message.contains("You don’t have permission"))
@@ -169,7 +173,7 @@ class FileWriterTests: XCTestCase {
     func testWhenIOExceptionsHappenRandomly_theFileIsNeverMalformed() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: StoragePerformanceMock(
                     maxFileSize: .max,
                     maxDirectorySize: .max,
@@ -199,14 +203,14 @@ class FileWriterTests: XCTestCase {
         // Write 300 of `Foo`s and interrupt writes randomly
         (0..<300).forEach { _ in
             writer.write(value: Foo())
-            randomlyInterruptIO(for: try? temporaryDirectory.files().first)
+            randomlyInterruptIO(for: try? directory.files().first)
         }
 
         ioInterruptionQueue.sync { }
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        XCTAssertEqual(try directory.files().count, 1)
 
-        let stream = try temporaryDirectory.files()[0].stream()
+        let stream = try directory.files()[0].stream()
         let blocks = try DataBlockReader(input: stream).all()
 
         // Assert that data written is not malformed
@@ -222,7 +226,7 @@ class FileWriterTests: XCTestCase {
         // Given 
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -238,8 +242,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key3": "value3"])
 
         // Then
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let stream = try temporaryDirectory.files()[0].stream()
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()

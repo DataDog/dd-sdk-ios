@@ -5,7 +5,11 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
+
+@testable import DatadogLogs
+@testable import DatadogTrace
 @testable import Datadog
 
 class TracingWithLoggingIntegrationTests: XCTestCase {
@@ -52,8 +56,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                Tracer.Attributes.spanID: "2",
-                Tracer.Attributes.traceID: "1"
+                DatadogTracer.Attributes.spanID: "2",
+                DatadogTracer.Attributes.traceID: "1"
             ])
         )
     }
@@ -126,8 +130,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                Tracer.Attributes.spanID: "2",
-                Tracer.Attributes.traceID: "1"
+                DatadogTracer.Attributes.spanID: "2",
+                DatadogTracer.Attributes.traceID: "1"
             ])
         )
     }

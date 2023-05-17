@@ -6,14 +6,28 @@
 
 import Foundation
 import XCTest
-import Datadog
+import DatadogInternal
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
 ///
 /// The `DatadogCoreProtocol` implementation does not require any feature registration,
 /// it will always provide a `FeatureScope` with the current context and a `writer` that will
 /// store all events in the `events` property.
-public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
+///
+/// Usage:
+///
+///     let core = PassthroughCoreMock()
+///     core.scope(for: "any-feature-name")?.eventWriteContext { context, writer in
+///         // will always open a scope
+///     }
+///
+/// The Passthrough core does not allow registering or retrieving a Feature instance.
+///
+///     let feature = MyCustomFeature()
+///     try core.register(feature: feature)
+///     core.get(feature: MyCustomFeature.self) // returns nil
+///
+open class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     /// Counts references to `PassthroughCoreMock` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
     public static var referenceCount = 0
@@ -27,7 +41,7 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     let writer = FileWriterMock()
 
     /// The message receiver.
-    private let messageReceiver: FeatureMessageReceiver
+    public var messageReceiver: FeatureMessageReceiver
 
     /// Test expectation that will be fullfilled when the `eventWriteContext` closure
     /// is executed.
@@ -52,7 +66,7 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `forceNewBatch` parameter set to `true`.
 
-    public init(
+    public required init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
@@ -75,18 +89,13 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
     }
 
     /// no-op
-    public func register(feature: DatadogFeature) throws { }
+    public func register<T>(feature: T) throws where T: DatadogFeature { }
     /// no-op
-    public func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature { nil }
-    /// no-op
-    public func register(integration: DatadogFeatureIntegration) throws { }
-    /// no-op
-    public func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration { nil }
+    public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
     public func register<T>(feature instance: T?) { }
-    /// Returns `nil`
+    /// no-op
     public func feature<T>(_ type: T.Type) -> T? { nil }
-
     /// Always returns a feature-scope.
     public func scope<T>(for featureType: T.Type) -> FeatureScope? {
         self
@@ -101,8 +110,8 @@ public final class PassthroughCoreMock: DatadogV1CoreProtocol, FeatureScope {
         context.featuresAttributes[feature] = attributes()
     }
 
-    public func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: () -> Void) {
-        if !messageReceiver.receive(message: message, from: sender) {
+    public func send(message: FeatureMessage, else fallback: () -> Void) {
+        if !messageReceiver.receive(message: message, from: self) {
             fallback()
         }
     }

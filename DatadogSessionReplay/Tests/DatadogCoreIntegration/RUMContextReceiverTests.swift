@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-import Datadog
+import DatadogInternal
+
 @testable import DatadogSessionReplay
 
 class RUMContextReceiverTests: XCTestCase {
@@ -32,7 +33,7 @@ class RUMContextReceiverTests: XCTestCase {
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
-        core.send(message: message, sender: core, else: {
+        core.send(message: message, else: {
             XCTFail("Fallback shouldn't be called")
         })
 
@@ -55,7 +56,7 @@ class RUMContextReceiverTests: XCTestCase {
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
-        core.send(message: message, sender: core, else: {
+        core.send(message: message, else: {
             XCTFail("Fallback shouldn't be called")
         })
 
@@ -94,10 +95,10 @@ class RUMContextReceiverTests: XCTestCase {
         receiver.observe(on: NoQueue()) { context in
             context.flatMap { rumContexts.append($0) }
         }
-        core.send(message: message1, sender: core, else: {
+        core.send(message: message1, else: {
             XCTFail("Fallback shouldn't be called")
         })
-        core.send(message: message2, sender: core, else: {
+        core.send(message: message2, else: {
             XCTFail("Fallback shouldn't be called")
         })
 
@@ -120,7 +121,7 @@ class RUMContextReceiverTests: XCTestCase {
 
         // When
         var fallbackCalled = false
-        core.send(message: message, sender: core, else: {
+        core.send(message: message, else: {
             fallbackCalled = true
         })
 
