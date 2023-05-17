@@ -25,6 +25,8 @@ internal struct SpanEventBuilder {
         operationName: String,
         startTime: Date,
         finishTime: Date,
+        samplingRate: Float,
+        isKept: Bool,
         tags: [String: Encodable],
         baggageItems: [String: String],
         logFields: [[String: Encodable]]
@@ -60,6 +62,8 @@ internal struct SpanEventBuilder {
             isError: tagsReducer.extractedIsError ?? false,
             source: context.source,
             origin: context.ciAppOrigin,
+            samplingRate: samplingRate,
+            isKept: isKept,
             tracerVersion: context.sdkVersion,
             applicationVersion: context.version,
             networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,

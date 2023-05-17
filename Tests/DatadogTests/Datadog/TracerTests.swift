@@ -54,6 +54,7 @@ class TracerTests: XCTestCase {
         {
           "spans": [
             {
+              "_dd.agent_psr": 1,
               "trace_id": "1",
               "span_id": "2",
               "parent_id": "0",
@@ -130,6 +131,27 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.serviceName(), "custom-service-name")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag1"), "globalValue1")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
+    }
+
+    // MARK: - Tracer with sampling rate
+
+    func testUsingSamplingRate() throws {
+        let feature: TracingFeature = .mockAny()
+        core.register(feature: feature)
+
+        let tracer = Tracer.initialize(configuration: .init(samplingRate: 42), in: core).dd
+
+        let span = tracer.startSpan(
+            operationName: "operation",
+            startTime: .mockDecember15th2019At10AMUTC()
+        )
+        span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
+
+        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
+        XCTAssertEqual(try spanMatcher.operationName(), "operation")
+        XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
+        XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
+        XCTAssertEqual(try spanMatcher.dd.samplingRate(), 0.42)
     }
 
     // MARK: - Sending Customized Spans

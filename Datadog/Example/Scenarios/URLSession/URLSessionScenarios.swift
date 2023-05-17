@@ -179,7 +179,7 @@ class URLSessionBaseScenario: NSObject {
         }
 
         return URLSession(
-            configuration: .default,
+            configuration: .ephemeral,
             delegate: delegate,
             delegateQueue: nil
         )

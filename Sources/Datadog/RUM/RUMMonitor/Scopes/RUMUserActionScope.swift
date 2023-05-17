@@ -129,9 +129,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - Sending RUM Events
 
     private func sendActionEvent(completionTime: Date, on command: RUMCommand?, context: DatadogContext, writer: Writer) {
-        if let commandAttributes = command?.attributes {
-            attributes.merge(rumCommandAttributes: commandAttributes)
-        }
+        attributes.merge(rumCommandAttributes: command?.attributes)
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
         if dependencies.frustrationTrackingEnabled, errorsCount > 0, actionType == .tap {
@@ -167,7 +165,6 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

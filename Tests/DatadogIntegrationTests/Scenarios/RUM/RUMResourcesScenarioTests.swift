@@ -61,9 +61,9 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
 
         // Requesting this third party by the app should create the RUM Resource.
-        let thirdPartyGETResourceURL = URL(string: "https://httpbin.org/get")!
+        let thirdPartyGETResourceURL = URL(string: "https://shopist.io/categories.json")!
         // Requesting this third party by the app should create the RUM Resource.
-        let thirdPartyPOSTResourceURL = URL(string: "https://httpbin.org/post")!
+        let thirdPartyPOSTResourceURL = URL(string: "https://api.shopist.io/checkout.json")!
 
         let app = ExampleApplication()
         app.launchWith(

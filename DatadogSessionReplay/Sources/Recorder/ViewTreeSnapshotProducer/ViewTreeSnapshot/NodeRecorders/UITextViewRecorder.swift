@@ -7,6 +7,18 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
+        if isSensitive {
+            return context.recorder.privacy.sensitiveTextObfuscator
+        }
+
+        if isEditable {
+            return context.recorder.privacy.inputAndOptionTextObfuscator
+        } else {
+            return context.recorder.privacy.staticTextObfuscator
+        }
+    }
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let textView = view as? UITextView else {
             return nil
@@ -14,17 +26,19 @@ internal struct UITextViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
+
         let builder = UITextViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: textView),
             attributes: attributes,
             text: textView.text,
+            textAlignment: textView.textAlignment,
             textColor: textView.textColor?.cgColor ?? UIColor.black.cgColor,
             font: textView.font,
-            textObfuscator: context.textObfuscator,
+            textObfuscator: textObfuscator(context, textView.isSensitiveText, textView.isEditable),
             contentRect: CGRect(origin: textView.contentOffset, size: textView.contentSize)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .record, nodes: [node])
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
@@ -34,6 +48,8 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     let attributes: ViewAttributes
     /// The text inside text field.
     let text: String
+    /// The alignment of the text.
+    var textAlignment: NSTextAlignment
     /// The color of the text.
     let textColor: CGColor?
     /// The font used by the text field.
@@ -61,11 +77,13 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
     }
 
     private var relativeIntersectedRect: CGRect {
-        CGRect(
-            x: attributes.frame.origin.x - contentRect.origin.x,
-            y: attributes.frame.origin.y - contentRect.origin.y,
-            width: max(contentRect.width, attributes.frame.width),
-            height: max(contentRect.height, attributes.frame.height)
+        // UITextView adds additional padding for presented content.
+        let padding: CGFloat = 8
+        return CGRect(
+            x: attributes.frame.origin.x - contentRect.origin.x + padding,
+            y: attributes.frame.origin.y - contentRect.origin.y + padding,
+            width: max(contentRect.width, attributes.frame.width) - padding,
+            height: max(contentRect.height, attributes.frame.height) - padding
         )
     }
 
@@ -75,6 +93,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
                 id: wireframeID,
                 frame: relativeIntersectedRect,
                 text: textObfuscator.mask(text: text),
+                textAlignment: .init(systemTextAlignment: textAlignment, vertical: .top),
                 clip: clip,
                 textColor: textColor,
                 font: font,

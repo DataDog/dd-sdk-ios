@@ -15,7 +15,7 @@ workflows:
             - DD_OVERRIDE_RUN_SR_UNIT_TESTS='1' to run unit tests phase for Session Replay product
             - DD_OVERRIDE_RUN_INTEGRATION_TESTS='1' to run integration tests phase
             - DD_OVERRIDE_RUN_SMOKE_TESTS='1' to run smoke tests phase
-            - DD_OVERRIDE_TOOLS_TESTS='1' to run tools tests phase
+            - DD_OVERRIDE_RUN_TOOLS_TESTS='1' to run tools tests phase
         - a phase is selected on the checklist in the PR description,
         - the PR changes a file which matches phase filter (e.g. changing a file in `Sources/*` will trigger unit tests phase)
     envs:
@@ -479,20 +479,13 @@ workflows:
         Only ran if 'DD_RUN_TOOLS_TESTS' is '1'.
     steps:
     - script:
-        title: Generate HTTPServerMock.xcodeproj
+        title: Run unit tests for http-server-mock
         run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            make xcodeproj-httpservermock
-    - xcode-test-mac:
-        title: Run unit tests for HTTPServerMock.xcodeproj - macOS
-        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
-        inputs:
-        - scheme: HTTPServerMock-Package
-        - destination: platform=OS X,arch=x86_64
-        - project_path: instrumented-tests/http-server-mock/HTTPServerMock.xcodeproj
+            swift test --package-path instrumented-tests/http-server-mock
     - script:
         title: Run unit tests for rum-models-generator
         run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
