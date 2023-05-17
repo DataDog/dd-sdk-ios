@@ -21,6 +21,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),
             finishTime: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 "foo": "bar",
                 "bizz": 123
@@ -60,6 +62,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: "original operation name",
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -81,6 +85,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [OTTags.error: true],
             baggageItems: [:],
             logFields: []
@@ -99,6 +105,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [OTTags.error: false],
             baggageItems: [:],
             logFields: []
@@ -121,6 +129,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -141,6 +151,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -173,6 +185,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: [
@@ -199,6 +213,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 "error": true
             ],
@@ -220,6 +236,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 "error": false
             ],
@@ -245,6 +263,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 DDTags.resource: "custom resource name"
             ],
@@ -269,6 +289,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 "tag-name": "tag value"
             ],
@@ -285,6 +307,66 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags["item-1"], "value 1")
         XCTAssertEqual(span.tags["item-2"], "value 2")
         XCTAssertEqual(span.tags["tag-name"], "tag value", "It should prefer tags over baggage items if their names duplicate")
+    }
+
+    func testBuildingKeptRootSpanWithSamplingRateSet() {
+        let builder: SpanEventBuilder = .mockAny()
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: nil,
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: 0.42,
+            isKept: true,
+            tags: [
+                "tag-name": "tag value"
+            ],
+            baggageItems: [
+                "item-1": "value 1",
+                "item-2": "value 2",
+                "tag-name": "baggage item value"
+            ],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.samplingRate, 0.42)
+        XCTAssertTrue(span.isKept)
+    }
+
+    func testBuildingDiscardedRootSpanWithSamplingRateSet() {
+        let builder: SpanEventBuilder = .mockAny()
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: nil,
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: 0.13,
+            isKept: false,
+            tags: [
+                "tag-name": "tag value"
+            ],
+            baggageItems: [
+                "item-1": "value 1",
+                "item-2": "value 2",
+                "tag-name": "baggage item value"
+            ],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.samplingRate, 0.13)
+        XCTAssertFalse(span.isKept)
     }
 
     // MARK: - Attributes Conversion
@@ -336,6 +418,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: createMockAttributes(),
             baggageItems: [:],
             logFields: []
@@ -366,6 +450,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [:],
             baggageItems: [:],
             logFields: []
@@ -392,6 +478,8 @@ class SpanEventBuilderTests: XCTestCase {
             operationName: .mockAny(),
             startTime: .mockAny(),
             finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
             tags: [
                 "failing-tag": FailingEncodableMock(errorMessage: "Value cannot be encoded.")
             ],

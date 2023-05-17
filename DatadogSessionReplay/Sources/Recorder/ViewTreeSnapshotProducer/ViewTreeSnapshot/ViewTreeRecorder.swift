@@ -6,27 +6,6 @@
 
 import UIKit
 
-/// The context of recording subtree hierarchy.
-///
-/// Some fields are mutable, so `NodeRecorders` can specialise it for their subtree traversal.
-internal struct ViewTreeRecordingContext {
-    /// The context of the Recorder.
-    let recorder: Recorder.Context
-    /// The coordinate space to convert node positions to.
-    let coordinateSpace: UICoordinateSpace
-    /// Generates stable IDs for traversed views.
-    let ids: NodeIDGenerator
-    /// Text obfuscator applied to all non-sensitive texts. No-op if privacy mode is disabled.
-    /// Can be overwriten in by `NodeRecorder` if their subtree recording requires different masking.
-    var textObfuscator: TextObfuscating
-    /// Text obfuscator applied to user selection texts (such as labels in picker control).
-    var selectionTextObfuscator: TextObfuscating
-    /// Text obfuscator applied to all sensitive texts (such as passwords or e-mail address).
-    let sensitiveTextObfuscator: TextObfuscating
-    /// Provides base64 image data with a built in caching mechanism.
-    let imageDataProvider: ImageDataProviding
-}
-
 internal struct ViewTreeRecorder {
     /// An array of enabled node recorders.
     ///
@@ -44,6 +23,14 @@ internal struct ViewTreeRecorder {
     // MARK: - Private
 
     private func recordRecursively(nodes: inout [Node], view: UIView, context: ViewTreeRecordingContext) {
+        var context = context
+        if let viewController = view.next as? UIViewController {
+            context.viewControllerContext.parentType = .init(viewController)
+            context.viewControllerContext.isRootView = view == viewController.view
+        } else {
+            context.viewControllerContext.isRootView = false
+        }
+
         let semantics = nodeSemantics(for: view, in: context)
 
         if !semantics.nodes.isEmpty {

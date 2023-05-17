@@ -23,29 +23,37 @@ internal struct UIPickerViewRecorder: NodeRecorder {
     /// It is used to capture titles for displayed options.
     private let labelsRecorder: ViewTreeRecorder
 
-    init() {
-        let viewRecorder = UIViewRecorder()
-        viewRecorder.semanticsOverride = { view, attributes in
-            if #available(iOS 13.0, *) {
-                if attributes.isTranslucent || !CATransform3DIsIdentity(view.transform3D) {
-                    // If this view has any 3D effect applied, do not enter its subtree:
-                    return IgnoredElement(subtreeStrategy: .ignore)
-                }
-            }
-            // Otherwise, enter the subtree of this element, but do not consider it significant (`InvisibleElement`):
-            return InvisibleElement(subtreeStrategy: .record)
+    init(
+        textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
+            return context.recorder.privacy.inputAndOptionTextObfuscator
         }
-
-        let labelRecorder = UILabelRecorder()
-        labelRecorder.builderOverride = { builder in
-            var builder = builder
-            builder.textAlignment = .init(horizontal: .center, vertical: .center)
-            builder.fontScalingEnabled = true
-            return builder
-        }
-
-        self.labelsRecorder = ViewTreeRecorder(nodeRecorders: [viewRecorder, labelRecorder])
+    ) {
         self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
+        self.labelsRecorder = ViewTreeRecorder(
+            nodeRecorders: [
+                UIViewRecorder(
+                    semanticsOverride: { view, attributes in
+                        if #available(iOS 13.0, *) {
+                            if !attributes.isVisible || attributes.alpha < 1 || !CATransform3DIsIdentity(view.transform3D) {
+                                // If this view has any 3D effect applied, do not enter its subtree:
+                                return IgnoredElement(subtreeStrategy: .ignore)
+                            }
+                        }
+                        // Otherwise, enter the subtree of this element, but do not consider it significant (`InvisibleElement`):
+                        return InvisibleElement(subtreeStrategy: .record)
+                    }
+                ),
+                UILabelRecorder(
+                    builderOverride: { builder in
+                        var builder = builder
+                        builder.textAlignment = .center
+                        builder.fontScalingEnabled = true
+                        return builder
+                    },
+                    textObfuscator: textObfuscator // inherit label's obfuscation strategy from picker
+                )
+            ]
+        )
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
@@ -61,8 +69,8 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         // in the actual `UIPickerView's` tree their order is opposite (blending is used to make the label
         // pass through the shape). For that reason, we record both kinds of nodes separately and then reorder
         // them in returned semantics:
-        let backgroundNodes = recordBackgroundOfSelectedOption(in: picker, using: context)
-        let titleNodes = recordTitlesOfSelectedOption(in: picker, pickerAttributes: attributes, using: context)
+        let backgroundNodes = selectionRecorder.recordNodes(for: picker, in: context)
+        let titleNodes = labelsRecorder.recordNodes(for: picker, in: context)
 
         guard attributes.hasAnyAppearance else {
             // If the root view of `UIPickerView` defines no other appearance (e.g. no custom `.background`), we can
@@ -78,18 +86,6 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node] + backgroundNodes + titleNodes)
-    }
-
-    /// Records `UIView` nodes that define background of selected option.
-    private func recordBackgroundOfSelectedOption(in picker: UIPickerView, using context: ViewTreeRecordingContext) -> [Node] {
-        return selectionRecorder.recordNodes(for: picker, in: context)
-    }
-
-    /// Records `UILabel` nodes that hold titles of **selected** options.
-    private func recordTitlesOfSelectedOption(in picker: UIPickerView, pickerAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
-        var context = context
-        context.textObfuscator = context.selectionTextObfuscator
-        return labelsRecorder.recordNodes(for: picker, in: context)
     }
 }
 

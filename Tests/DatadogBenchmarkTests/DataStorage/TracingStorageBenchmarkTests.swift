@@ -94,6 +94,8 @@ class TracingStorageBenchmarkTests: XCTestCase {
             isError: false,
             source: "ios",
             origin: nil,
+            samplingRate: 100,
+            isKept: true,
             tracerVersion: "0.0.0",
             applicationVersion: "0.0.0",
             networkConnectionInfo: NetworkConnectionInfo(
