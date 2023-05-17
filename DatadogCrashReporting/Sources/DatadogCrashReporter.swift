@@ -32,7 +32,7 @@ public final class DatadogCrashReporter {
     }
 }
 
-@available(swift, obsoleted: 1) @objc(DatadogCrashReporter)
+@available(swift, obsoleted: 1) @objc(DDCrashReporter)
 public final class objc_DatadogCrashReporter: NSObject {
 
     @objc

@@ -136,7 +136,7 @@
 }
 
 - (void)testDatadogCrashReporterAPI {
-    [DatadogCrashReporter enable];
+    [DDCrashReporter enable];
 }
 
 #pragma clang diagnostic pop
