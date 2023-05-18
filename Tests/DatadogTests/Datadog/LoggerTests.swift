@@ -539,6 +539,35 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With RUM Feature
 
+    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
+        core.context = .mockAny()
+
+        let logging: LoggingFeature = .mockAny()
+        core.register(feature: logging)
+
+        let rum: RUMFeature = .mockAny()
+        core.register(feature: rum)
+
+        // given
+        let logger = Logger.builder.build(in: core)
+        Global.rum = RUMMonitor.initialize(in: core)
+        defer { Global.rum = DDNoopRUMMonitor() }
+
+        // when
+        logger.info("message 0")
+
+        // then
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        XCTAssertEqual(logMatchers.count, 1)
+
+        logMatchers.forEach {
+            $0.assertValue(
+                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                isTypeOf: String.self
+            )
+        }
+    }
+
     func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.context = .mockAny()
 

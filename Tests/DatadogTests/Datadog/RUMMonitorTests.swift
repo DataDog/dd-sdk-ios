@@ -1022,7 +1022,7 @@ class RUMMonitorTests: XCTestCase {
         core.register(feature: rum)
 
         //When
-        let monitor = try createTestableRUMMonitor()
+        _ = try createTestableRUMMonitor()
 
         //Then
         waitForExpectations(timeout: 0.5)
