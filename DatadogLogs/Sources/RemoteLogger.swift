@@ -117,8 +117,10 @@ internal final class RemoteLogger: Logger {
 
         // capture current tags and attributes before opening the write event context
         let tags = self.tags
+        var logAttributes = attributes
+        let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
         let userAttributes = self.attributes
-            .merging(attributes ?? [:]) { $1 } // prefer message attributes
+            .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
@@ -126,8 +128,8 @@ internal final class RemoteLogger: Logger {
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 
-            if self.rumContextIntegration, let attributes: [String: String] = contextAttributes["rum"]?.ids {
-                let attributes = attributes.compactMapValues(AnyEncodable.init)
+            if self.rumContextIntegration, let attributes: [String: AnyCodable?] = contextAttributes["rum"]?.ids {
+                let attributes = attributes.compactMapValues { $0 }
                 internalAttributes.merge(attributes) { $1 }
             }
 
@@ -158,7 +160,7 @@ internal final class RemoteLogger: Logger {
             ) { log in
                 writer.write(value: log)
 
-                guard log.status == .error || log.status == .critical else {
+                guard (log.status == .error || log.status == .critical) && !isCrash else {
                     return
                 }
 

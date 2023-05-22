@@ -62,6 +62,8 @@ public class DatadogTracer: OTTracer {
 
     internal let activeSpansPool = ActiveSpansPool()
 
+    internal let sampler: Sampler
+
     /// Tracer Attributes shared with other Feature registered in core.
     internal struct Attributes {
         internal static let traceID = "dd.trace_id"
@@ -177,6 +179,7 @@ public class DatadogTracer: OTTracer {
         self.dateProvider = dateProvider
         self.contextReceiver = contextReceiver
         self.loggingIntegration = loggingIntegration
+        self.sampler = Sampler(samplingRate: configuration.samplingRate)
     }
 
     // MARK: - Open Tracing interface

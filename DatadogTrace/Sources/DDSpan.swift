@@ -124,14 +124,14 @@ internal class DDSpan: OTSpan {
             if let activity = activityReference {
                 ddTracer.removeSpan(activityReference: activity)
             }
-            sendSpan(finishTime: time)
+            sendSpan(finishTime: time, sampler: ddTracer.sampler)
         }
     }
 
     // MARK: - Writing SpanEvent
 
     /// Sends span event for given `DDSpan`.
-    private func sendSpan(finishTime: Date) {
+    private func sendSpan(finishTime: Date, sampler: Sampler) {
         guard let scope = ddTracer.core?.scope(for: DatadogTraceFeature.name) else {
             return
         }
@@ -161,6 +161,8 @@ internal class DDSpan: OTSpan {
                     operationName: self.unsafeOperationName,
                     startTime: self.startTime,
                     finishTime: finishTime,
+                    samplingRate: sampler.samplingRate / 100.0,
+                    isKept: sampler.sample(),
                     tags: self.unsafeTags,
                     baggageItems: baggageItems,
                     logFields: self.unsafeLogFields

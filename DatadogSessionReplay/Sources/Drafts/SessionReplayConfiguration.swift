@@ -26,19 +26,3 @@ public struct SessionReplayConfiguration {
         self.customUploadURL = customUploadURL
     }
 }
-
-/// Session Replay content recording policy.
-/// It describes the way in which sensitive content (e.g. text or images) should be captured.
-public enum SessionReplayPrivacy {
-    /// Record all content as it is.
-    /// When using this option: all text, images and other information will be recorded and presented in the player.
-    case allowAll
-
-    /// Mask all content.
-    /// When using this option: all characters in texts will be replaced with "x", images will be
-    /// replaced with placeholders and other content will be masked accordingly, so the original
-    /// information will not be presented in the player.
-    ///
-    /// This is the default content policy.
-    case maskAll
-}

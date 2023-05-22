@@ -8,9 +8,27 @@ import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
     /// An option for overriding default semantics from parent recorder.
-    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+    var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
+
+    init(
+        semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil }
+    ) {
+        self.semanticsOverride = semanticsOverride
+    }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        var attributes = attributes
+        if context.viewControllerContext.isRootView(of: .alert) {
+            attributes = attributes.copy {
+                $0.backgroundColor = SystemColors.systemBackground
+                $0.layerBorderColor = nil
+                $0.layerBorderWidth = 0
+                $0.layerCornerRadius = 16
+                $0.alpha = 1
+                $0.isHidden = false
+            }
+        }
+
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
@@ -26,8 +44,7 @@ internal class UIViewRecorder: NodeRecorder {
 
         let builder = UIViewWireframesBuilder(
             wireframeID: context.ids.nodeID(for: view),
-            attributes: attributes,
-            wireframeRect: attributes.frame
+            attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return AmbiguousElement(nodes: [node])
@@ -39,7 +56,9 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
     /// Attributes of the `UIView`.
     let attributes: ViewAttributes
 
-    let wireframeRect: CGRect
+    var wireframeRect: CGRect {
+        attributes.frame
+    }
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [

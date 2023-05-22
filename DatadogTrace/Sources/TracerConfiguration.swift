@@ -31,6 +31,9 @@ extension DatadogTracer {
         /// - Parameter enabled: `true` by default
         public var bundleWithRUM: Bool
 
+        /// The sampling rate for Traces, as a Float between 0 and 100.
+        public var samplingRate: Float
+
         /// Span events mapper configured by the user, `nil` if not set.
         public var spanEventMapper: SpanEventMapper?
 
@@ -40,10 +43,12 @@ extension DatadogTracer {
         /// - Parameter bundleWithRUM: enables the tracing integration with RUM. If enabled all the Spans will be enriched with the current RUM View information and
         /// it will be possible to see all the Spans sent during a specific View lifespan in the RUM Explorer (`true` by default).
         /// - Parameter globalTags: sets global tags for all Spans (`nil` by default).
+        /// - Parameter samplingRate: sets sampling rate for Traces, as a Float between 0 and 100. (`100` by default).
         public init(
             serviceName: String? = nil,
             sendNetworkInfo: Bool = false,
             bundleWithRUM: Bool = true,
+            samplingRate: Float = 100,
             globalTags: [String: Encodable]? = nil,
             customIntakeURL: URL? = nil,
             spanEventMapper: SpanEventMapper? = nil
@@ -51,6 +56,7 @@ extension DatadogTracer {
             self.serviceName = serviceName
             self.sendNetworkInfo = sendNetworkInfo
             self.bundleWithRUM = bundleWithRUM
+            self.samplingRate = samplingRate
             self.globalTags = globalTags
             self.customIntakeURL = customIntakeURL
             self.spanEventMapper = spanEventMapper

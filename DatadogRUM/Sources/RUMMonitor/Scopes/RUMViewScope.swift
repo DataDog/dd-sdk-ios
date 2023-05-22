@@ -397,7 +397,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -423,7 +422,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendViewUpdateEvent(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         version += 1
-        attributes.merge(rumCommandAttributes: command.attributes)
+
+        // RUMM-3133 Don't override View attributes with commands that are not view related.
+        if command is RUMViewScopePropagatableAttributes {
+            attributes.merge(rumCommandAttributes: command.attributes)
+        }
 
         let isCrash = (command as? RUMAddCurrentViewErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
@@ -455,6 +458,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
+                startReason: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -562,7 +566,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -614,7 +617,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: self.context.isSessionActive,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -693,4 +695,8 @@ private extension VitalInfo {
             min: maxValue.map { $0.inverted } ?? 0
         )
     }
+}
+
+/// A protocol for `RUMCommand`s that can propagate their attributes to the `RUMViewScope``.
+internal protocol RUMViewScopePropagatableAttributes where Self: RUMCommand {
 }

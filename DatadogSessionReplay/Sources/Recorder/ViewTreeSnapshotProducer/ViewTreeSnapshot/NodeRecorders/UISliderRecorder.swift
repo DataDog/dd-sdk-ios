@@ -27,6 +27,7 @@ internal struct UISliderRecorder: NodeRecorder {
             thumbWireframeID: ids[3],
             value: (min: slider.minimumValue, max: slider.maximumValue, current: slider.value),
             isEnabled: slider.isEnabled,
+            isMasked: context.recorder.privacy.shouldMaskInputElements,
             minTrackTintColor: slider.minimumTrackTintColor?.cgColor ?? slider.tintColor?.cgColor,
             maxTrackTintColor: slider.maximumTrackTintColor?.cgColor,
             thumbTintColor: slider.thumbTintColor?.cgColor
@@ -46,11 +47,45 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
     let thumbWireframeID: WireframeID
     let value: (min: Float, max: Float, current: Float)
     let isEnabled: Bool
+    let isMasked: Bool
     let minTrackTintColor: CGColor?
     let maxTrackTintColor: CGColor?
     let thumbTintColor: CGColor?
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+        if isMasked {
+            return createMasked(with: builder)
+        } else {
+            return createNotMasked(with: builder)
+        }
+    }
+
+    private func createMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+        let trackFrame = wireframeRect.divided(atDistance: 3, from: .minYEdge)
+            .slice
+            .putInside(wireframeRect, horizontalAlignment: .left, verticalAlignment: .middle)
+
+        let track = builder.createShapeWireframe(
+            id: minTrackWireframeID,
+            frame: trackFrame,
+            borderColor: nil,
+            borderWidth: nil,
+            backgroundColor: SystemColors.tertiarySystemFill,
+            cornerRadius: wireframeRect.height * 0.5,
+            opacity: isEnabled ? attributes.alpha : 0.5
+        )
+
+        // Create background wireframe if the underlying `UIView` has any appearance:
+        if attributes.hasAnyAppearance {
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: attributes.frame, attributes: attributes)
+
+            return [background, track]
+        } else {
+            return [track]
+        }
+    }
+
+    private func createNotMasked(with builder: WireframesBuilder) -> [SRWireframe] {
         guard value.max > value.min else {
             return [] // illegal, should not happen
         }
@@ -106,9 +141,9 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
 
         if attributes.hasAnyAppearance {
             // Create background wireframe only if view declares visible background
-            let backgorund = builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
+            let background = builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
 
-            return [backgorund, leftTrack, rightTrack, thumb]
+            return [background, leftTrack, rightTrack, thumb]
         } else {
             return [leftTrack, rightTrack, thumb]
         }

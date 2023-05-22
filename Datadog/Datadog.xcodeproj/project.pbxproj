@@ -266,13 +266,11 @@
 		D20605CA2875A83D0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605C62875A77D0047275C /* ContextValueReader.swift */; };
 		D207318429A5226B00ECBF94 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; platformFilter = ios; };
-		D207319429A522F600ECBF94 /* RemoteLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4B828785BFD00EB6307 /* RemoteLogger.swift */; };
 		D207319529A522F600ECBF94 /* DatadogLogsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAF283E227100651A3A /* DatadogLogsFeature.swift */; };
 		D207319629A522F600ECBF94 /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4BB2878AF7600EB6307 /* ConsoleLogger.swift */; };
 		D207319729A5232A00ECBF94 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		D207319F29A5271900ECBF94 /* DatadogLogs.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D207317C29A5226A00ECBF94 /* DatadogLogs.framework */; };
 		D20731A929A5279D00ECBF94 /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4BB2878AF7600EB6307 /* ConsoleLogger.swift */; };
-		D20731AA29A5279D00ECBF94 /* RemoteLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4B828785BFD00EB6307 /* RemoteLogger.swift */; };
 		D20731AB29A5279D00ECBF94 /* DatadogLogsFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F1FAF283E227100651A3A /* DatadogLogsFeature.swift */; };
 		D20731B529A528DA00ECBF94 /* LogEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogEventBuilder.swift */; };
 		D20731B629A528DA00ECBF94 /* LogEventBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BC32423979B00786299 /* LogEventBuilder.swift */; };
@@ -546,6 +544,10 @@
 		D240687F27CF982F00C04F44 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		D240688027CF982F00C04F44 /* DatadogObjc.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D240688427CFA64A00C04F44 /* LaunchScreen.storyboard */; };
+		D242C29E2A14D6A6004B4980 /* RemoteLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4B828785BFD00EB6307 /* RemoteLogger.swift */; };
+		D242C29F2A14D6A7004B4980 /* RemoteLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4B828785BFD00EB6307 /* RemoteLogger.swift */; };
+		D242C2A12A14D747004B4980 /* RemoteLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */; };
+		D242C2A22A14D747004B4980 /* RemoteLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */; };
 		D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2432CF829EDB22C00D93657 /* Flushable.swift */; };
 		D2432CFA29EDB22C00D93657 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2432CF829EDB22C00D93657 /* Flushable.swift */; };
 		D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */; };
@@ -1979,8 +1981,6 @@
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
-		A736BA3029D1B6AF00C00966 /* TimeInterval+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Convinience.swift"; sourceTree = "<group>"; };
-		A736BA3329D1B6E000C00966 /* FixedWidthInteger+Convinience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FixedWidthInteger+Convinience.swift"; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* OTelHTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTelHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* OTelHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OTelHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
@@ -2083,6 +2083,7 @@
 		D23F8ECD29DDCD38001CFAE8 /* DatadogRUMTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogRUMTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteLoggerTests.swift; sourceTree = "<group>"; };
 		D2432CF829EDB22C00D93657 /* Flushable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flushable.swift; sourceTree = "<group>"; };
 		D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReporterIntegrationTests.swift; sourceTree = "<group>"; };
 		D243BBEB29A614CE000B9CEC /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
@@ -2224,6 +2225,7 @@
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
+		E19BC10D2A0D14EB00540A0F /* RemoteLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLoggerTests.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
@@ -2666,6 +2668,7 @@
 				3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
+				D242C29D2A14D04F004B4980 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -4072,10 +4075,9 @@
 				D2A783EC29A534DB003B03BB /* Mocks */,
 				6194D51B287ECDC00091547D /* ConsoleLoggerTests.swift */,
 				D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */,
+				D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */,
 				61133C3A2423990D00786299 /* Log */,
 				61133C3D2423990D00786299 /* LogOutputs */,
-				A736BA3029D1B6AF00C00966 /* TimeInterval+Convinience.swift */,
-				A736BA3329D1B6E000C00966 /* FixedWidthInteger+Convinience.swift */,
 			);
 			name = DatadogLogsTests;
 			path = ../DatadogLogs/Tests;
@@ -4268,6 +4270,14 @@
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 			);
 			path = Integrations;
+			sourceTree = "<group>";
+		};
+		D242C29D2A14D04F004B4980 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				E19BC10D2A0D14EB00540A0F /* RemoteLoggerTests.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		D249859B2727FF1D00B4F72D /* UIKit */ = {
@@ -6633,8 +6643,8 @@
 				D207319629A522F600ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731C529A528EC00ECBF94 /* LogEventSanitizer.swift in Sources */,
 				D20731C429A528EC00ECBF94 /* LogFileOutput.swift in Sources */,
-				D207319429A522F600ECBF94 /* RemoteLogger.swift in Sources */,
 				D207319529A522F600ECBF94 /* DatadogLogsFeature.swift in Sources */,
+				D242C29E2A14D6A6004B4980 /* RemoteLogger.swift in Sources */,
 				D20731B529A528DA00ECBF94 /* LogEventBuilder.swift in Sources */,
 				D20731C129A528EB00ECBF94 /* LogOutput.swift in Sources */,
 				D243BBEF29A61721000B9CEC /* Builder.swift in Sources */,
@@ -6649,6 +6659,7 @@
 				D2A783E829A53468003B03BB /* ConsoleLoggerTests.swift in Sources */,
 				D2A783EB29A53468003B03BB /* LogSanitizerTests.swift in Sources */,
 				D2A783E729A53468003B03BB /* LogEventBuilderTests.swift in Sources */,
+				D242C2A12A14D747004B4980 /* RemoteLoggerTests.swift in Sources */,
 				D2A783ED29A534F2003B03BB /* LoggingFeatureMocks.swift in Sources */,
 				D2A783EA29A53468003B03BB /* LogMessageReceiverTests.swift in Sources */,
 				D2A783E929A53468003B03BB /* LogFileOutputTests.swift in Sources */,
@@ -6667,8 +6678,8 @@
 				D20731A929A5279D00ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731CA29A528ED00ECBF94 /* LogEventSanitizer.swift in Sources */,
 				D20731C929A528ED00ECBF94 /* LogFileOutput.swift in Sources */,
-				D20731AA29A5279D00ECBF94 /* RemoteLogger.swift in Sources */,
 				D20731AB29A5279D00ECBF94 /* DatadogLogsFeature.swift in Sources */,
+				D242C29F2A14D6A7004B4980 /* RemoteLogger.swift in Sources */,
 				D20731B629A528DA00ECBF94 /* LogEventBuilder.swift in Sources */,
 				D20731C629A528ED00ECBF94 /* LogOutput.swift in Sources */,
 				D243BBF029A61721000B9CEC /* Builder.swift in Sources */,
@@ -7100,6 +7111,7 @@
 				D2A783F329A534F9003B03BB /* ConsoleLoggerTests.swift in Sources */,
 				D2A783F429A534F9003B03BB /* LogSanitizerTests.swift in Sources */,
 				D2A783F529A534F9003B03BB /* LogEventBuilderTests.swift in Sources */,
+				D242C2A22A14D747004B4980 /* RemoteLoggerTests.swift in Sources */,
 				D2A783F629A534F9003B03BB /* LoggingFeatureMocks.swift in Sources */,
 				D2A783F729A534F9003B03BB /* LogMessageReceiverTests.swift in Sources */,
 				D2A783F829A534F9003B03BB /* LogFileOutputTests.swift in Sources */,

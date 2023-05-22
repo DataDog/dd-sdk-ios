@@ -203,7 +203,6 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -264,7 +263,6 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
-                isActive: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

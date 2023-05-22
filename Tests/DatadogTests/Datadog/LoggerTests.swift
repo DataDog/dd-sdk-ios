@@ -585,27 +585,37 @@ class LoggerTests: XCTestCase {
         // given
         let logger = DatadogLogger.builder.build(in: core)
         let rum = RUMMonitor.shared(in: core)
-        rum.startView(viewController: mockView)
-        rum.startUserAction(type: .tap, name: .mockAny())
 
         // when
-        logger.info("info message")
+        rum.startView(viewController: mockView)
+        logger.info("message 0")
+        rum.startUserAction(type: .tap, name: .mockAny())
+        logger.info("message 1")
 
         // then
-        let logMatcher = try core.waitAndReturnLogMatchers()[0]
-        logMatcher.assertValue(
-            forKeyPath: RUMContextAttributes.IDs.applicationID,
-            equals: applicationID
-        )
-        logMatcher.assertValue(
-            forKeyPath: RUMContextAttributes.IDs.sessionID,
-            isTypeOf: String.self
-        )
-        logMatcher.assertValue(
-            forKeyPath: RUMContextAttributes.IDs.viewID,
-            isTypeOf: String.self
-        )
-        logMatcher.assertValue(
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        XCTAssertEqual(logMatchers.count, 2)
+
+        logMatchers.forEach {
+            $0.assertValue(
+                forKeyPath: RUMContextAttributes.IDs.applicationID,
+                equals: applicationID
+            )
+
+            $0.assertValue(
+                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                isTypeOf: String.self
+            )
+
+            $0.assertValue(
+                forKeyPath: RUMContextAttributes.IDs.viewID,
+                isTypeOf: String.self
+            )
+        }
+
+        logMatchers.first?.assertNoValue(forKeyPath: RUMContextAttributes.IDs.userActionID)
+
+        logMatchers.last?.assertValue(
             forKeyPath: RUMContextAttributes.IDs.userActionID,
             isTypeOf: String.self
         )

@@ -123,6 +123,7 @@ extension RUMViewEvent: RandomMockable {
                 hasReplay: nil,
                 id: .mockRandom(),
                 isActive: true,
+                startReason: .appStart,
                 type: .user
             ),
             source: .ios,
@@ -221,7 +222,6 @@ extension RUMResourceEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
-                isActive: true,
                 type: .user
             ),
             source: .ios,
@@ -275,7 +275,6 @@ extension RUMActionEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
-                isActive: nil,
                 type: .user
             ),
             source: .ios,
@@ -339,7 +338,6 @@ extension RUMErrorEvent: RandomMockable {
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
-                isActive: nil,
                 type: .user
             ),
             source: .ios,
@@ -391,7 +389,6 @@ extension RUMLongTaskEvent: RandomMockable {
             session: .init(
                 hasReplay: false,
                 id: .mockRandom(),
-                isActive: true,
                 type: .user
             ),
             source: .ios,

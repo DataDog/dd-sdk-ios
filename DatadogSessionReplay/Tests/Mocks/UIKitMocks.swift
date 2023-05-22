@@ -81,3 +81,27 @@ extension UIView.ContentMode {
         UIView.ContentMode(rawValue: Int.random(in: 0...12)) ?? .scaleToFill
     }
 }
+
+extension UITextContentType: RandomMockable {
+    static var allCases: Set<UITextContentType> {
+        var all: Set<UITextContentType> = [
+            .name, .namePrefix, .givenName, .middleName, .familyName, .nameSuffix, .nickname,
+            .jobTitle, .organizationName, .location, .fullStreetAddress, .streetAddressLine1,
+            .streetAddressLine2, .addressCity, .addressState, .addressCityAndState, .sublocality,
+            .countryName, .postalCode, .telephoneNumber, .emailAddress, .URL, .creditCardNumber,
+            .username, .password
+        ]
+
+        if #available(iOS 15.0, *) {
+            all.formUnion([.shipmentTrackingNumber, .flightNumber, .dateTime])
+        }
+
+        if #available(iOS 12.0, *) {
+            all.formUnion([.newPassword, .oneTimeCode])
+        }
+
+        return all
+    }
+
+    public static func mockRandom() -> UITextContentType { allCases.randomElement()! }
+}
