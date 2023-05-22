@@ -198,8 +198,8 @@ class WKUserContentController_DatadogTests: XCTestCase {
             forKey: "error",
             equals: ["origin": "console"]
         )
-        // 00000000-0000-0000-0000-000000000000 is session_id of mock RUM context
-        logMatcher.assertValue(forKey: "session_id", equals: "00000000-0000-0000-0000-000000000000")
+
+        logMatcher.assertValue(forKeyPath: "session_id", equals: Global.rum.dd.applicationScope.activeSession?.sessionUUID.toRUMDataFormat.lowercased())
 
         let webRUMMessage = MockScriptMessage(body: #"{"eventType":"view","event":{"application":{"id":"xxx"},"date":1635933113708,"service":"super","session":{"id":"0110cab4-7471-480e-aa4e-7ce039ced355","type":"user"},"type":"view","view":{"action":{"count":0},"cumulative_layout_shift":0,"dom_complete":152800000,"dom_content_loaded":118300000,"dom_interactive":116400000,"error":{"count":0},"first_contentful_paint":121300000,"id":"64308fd4-83f9-48cb-b3e1-1e91f6721230","in_foreground_periods":[],"is_active":true,"largest_contentful_paint":121299000,"load_event":152800000,"loading_time":152800000,"loading_type":"initial_load","long_task":{"count":0},"referrer":"","resource":{"count":3},"time_spent":3120000000,"url":"http://localhost:8080/test.html"},"_dd":{"document_version":2,"drift":0,"format_version":2,"session":{"plan":2}}},"tags":["browser_sdk_version:3.6.13"]}"#)
         messageHandler?.userContentController(controller, didReceive: webRUMMessage)

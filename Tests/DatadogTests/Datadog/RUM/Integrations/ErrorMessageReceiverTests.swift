@@ -32,15 +32,20 @@ class ErrorMessageReceiverTests: XCTestCase {
             else: { expectation.fulfill() }
         )
 
+        let errorEvents = core.events(ofType: RUMErrorEvent.self)
+
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(errorEvents.isEmpty)
     }
 
     func testReceivePartialError() throws {
         // Given
+        let expec = expectation(description: "Send Error")
+        expec.expectedFulfillmentCount = 2 // Account for Application start events
+
         let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Error"),
+            expectation: expec,
             messageReceiver: messageReceiver
         )
 
@@ -67,8 +72,11 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     func testReceiveCompleteError() throws {
         // Given
+        let expec = expectation(description: "Send Error")
+        expec.expectedFulfillmentCount = 2 // Account for Application start events
+
         let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Error"),
+            expectation: expec,
             messageReceiver: messageReceiver
         )
 
