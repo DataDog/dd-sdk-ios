@@ -12,7 +12,6 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
     // swiftlint:disable opening_brace
     private let unsupportedViewsPredicates: [(UIView) -> Bool] = [
         { $0 is UIProgressView },
-        { $0 is UIWebView },
         { $0 is WKWebView },
         { $0 is UIActivityIndicatorView },
         { String(reflecting: type(of: $0)).contains("SwiftUI") }
