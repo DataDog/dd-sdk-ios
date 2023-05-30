@@ -42,8 +42,7 @@ internal final class VitalInfoSampler {
     private let maximumRefreshRate: Double
 
     var refreshRate: VitalInfo {
-        let info = refreshRatePublisher.currentValue
-        return info.scaledDown(by: maximumRefreshRate / Constants.normalizedRefreshRate)
+        return refreshRatePublisher.currentValue
     }
 
     private var timer: Timer?
