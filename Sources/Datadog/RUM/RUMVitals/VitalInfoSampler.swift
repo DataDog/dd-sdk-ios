@@ -17,12 +17,6 @@ internal protocol ContinuousVitalReader {
 }
 
 internal final class VitalInfoSampler {
-    struct Constants {
-        // We use normalized 0...60 range for refresh rate in Mobile Vitals,
-        // assuming 60 is the industry standard.
-        static let normalizedRefreshRate = 60.0
-    }
-
     let cpuReader: SamplingBasedVitalReader
     private let cpuPublisher = VitalPublisher(initialValue: VitalInfo())
 
