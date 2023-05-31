@@ -13,30 +13,30 @@ let package = Package(
             name: "Datadog",
             targets: ["Datadog"]
         ),
-        .library(
-            name: "DatadogObjc",
-            targets: ["DatadogObjc"]
-        ),
+//        .library(
+//            name: "DatadogObjc",
+//            targets: ["DatadogObjc"]
+//        ),
         .library(
             name: "DatadogDynamic",
             type: .dynamic,
             targets: ["Datadog"]
         ),
-        .library(
-            name: "DatadogDynamicObjc",
-            type: .dynamic,
-            targets: ["DatadogObjc"]
-        ),
+//        .library(
+//            name: "DatadogDynamicObjc",
+//            type: .dynamic,
+//            targets: ["DatadogObjc"]
+//        ),
         .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
             name: "DatadogStatic",
             type: .static,
             targets: ["Datadog"]
         ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStaticObjc",
-            type: .static,
-            targets: ["DatadogObjc"]
-        ),
+//        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
+//            name: "DatadogStaticObjc",
+//            type: .static,
+//            targets: ["DatadogObjc"]
+//        ),
         .library(
             name: "DatadogLogs",
             targets: ["DatadogLogs"]
@@ -60,6 +60,7 @@ let package = Package(
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
+        .package(name: "opentelemetry-swift", url: "https://github.com/open-telemetry/opentelemetry-swift", from: "1.5.0")
     ],
     targets: [
         .target(
@@ -73,15 +74,15 @@ let package = Package(
             ],
             swiftSettings: [.define("SPM_BUILD")]
         ),
-        .target(
-            name: "DatadogObjc",
-            dependencies: [
-                .target(name: "Datadog"),
-                .target(name: "DatadogLogs"),
-                .target(name: "DatadogTrace"),
-                .target(name: "DatadogRUM"),
-            ]
-        ),
+//        .target(
+//            name: "DatadogObjc",
+//            dependencies: [
+//                .target(name: "Datadog"),
+//                .target(name: "DatadogLogs"),
+//                .target(name: "DatadogTrace"),
+//                .target(name: "DatadogRUM"),
+//            ]
+//        ),
         .target(
             name: "_Datadog_Private"
         ),
@@ -119,6 +120,9 @@ let package = Package(
             name: "DatadogTrace",
             dependencies: [
                 .target(name: "DatadogInternal"),
+                .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
+                .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
+                .product(name: "InMemoryExporter", package: "opentelemetry-swift"),
             ],
             path: "DatadogTrace/Sources"
         ),

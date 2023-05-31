@@ -62,6 +62,10 @@ extension TimeInterval {
         let nanoseconds = self * 1_000_000_000
         return UInt64(withNoOverflow: nanoseconds)
     }
+    public var toNanos: UInt64 {
+        let nanoseconds = self * 1_000_000_000
+        return UInt64(withNoOverflow: nanoseconds)
+    }
 
     /// `TimeInterval` represented in nanoseconds (capped to `.min` or `.max` respectively to its sign).
     /// Note: as `TimeInterval` yields sub-millisecond precision the nanoseconds precission will be lost.

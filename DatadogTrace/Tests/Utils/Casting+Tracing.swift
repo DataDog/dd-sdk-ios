@@ -18,9 +18,9 @@ internal extension OTTracer {
     var dd: DatadogTracer { self as! DatadogTracer }
 }
 
-internal extension OTSpan {
-    var dd: DDSpan { self as! DDSpan }
-}
+//internal extension OTSpan {
+//    var dd: DDSpan { self as! DDSpan }
+//}
 
 internal extension OTSpanContext {
     var dd: DDSpanContext { self as! DDSpanContext }

@@ -6,6 +6,9 @@
 
 import Foundation
 import DatadogInternal
+import InMemoryExporter
+import OpenTelemetryApi
+import OpenTelemetrySdk
 
 /// Datadog - specific span `tags` to be used with `tracer.startSpan(operationName:references:tags:startTime:)`
 /// and `span.setTag(key:value:)`.
@@ -43,7 +46,9 @@ public enum DatadogSpanTag {
 ///     // instantiate Datadog tracer
 ///     tracer = DDTracer.initialize(...)
 ///
-public class DatadogTracer: OTTracer {
+public class DatadogTracer {
+    let otelTracer: Tracer
+
     internal weak var core: DatadogCoreProtocol?
 
     /// The Tracer configuration
@@ -60,12 +65,10 @@ public class DatadogTracer: OTTracer {
     /// Date provider for traces.
     private let dateProvider: DateProvider
 
-    internal let activeSpansPool = ActiveSpansPool()
-
-    internal let sampler: Sampler
+    internal let sampler: DatadogInternal.Sampler
 
     /// Tracer Attributes shared with other Feature registered in core.
-    internal struct Attributes {
+    internal enum Attributes {
         internal static let traceID = "dd.trace_id"
         internal static let spanID = "dd.span_id"
     }
@@ -139,7 +142,7 @@ public class DatadogTracer: OTTracer {
         }
     }
 
-    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
+    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> DatadogTracer {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(
@@ -156,7 +159,7 @@ public class DatadogTracer: OTTracer {
             return feature.tracer
         } catch {
             consolePrint("\(error)")
-            return DDNoopTracer()
+            return DDNoopTracer() as! DatadogTracer
         }
     }
 
@@ -180,26 +183,33 @@ public class DatadogTracer: OTTracer {
         self.contextReceiver = contextReceiver
         self.loggingIntegration = loggingIntegration
         self.sampler = Sampler(samplingRate: configuration.samplingRate)
+
+        let spanProcessor = SimpleSpanProcessor(spanExporter: InMemoryExporter())
+        let tracerProviderSdk = TracerProviderBuilder().with(sampler: Samplers.alwaysOn)
+            .add(spanProcessor: spanProcessor)
+            .build()
+
+        OpenTelemetry.registerTracerProvider(tracerProvider: tracerProviderSdk)
+        otelTracer = tracerProviderSdk.get(instrumentationName: "com.datadoghq.DatadogTracer", instrumentationVersion: "0.1") as! TracerSdk
     }
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
+    public func startSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> Span {
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: parentSpanContext),
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            isRoot: false
         )
     }
 
-    public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+    public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> Span {
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: nil),
             operationName: operationName,
             tags: tags,
-            startTime: startTime
+            startTime: startTime,
+            isRoot: true
         )
     }
 
@@ -212,22 +222,13 @@ public class DatadogTracer: OTTracer {
         reader.extract()
     }
 
-    public var activeSpan: OTSpan? {
-        return activeSpansPool.getActiveSpan()
+    public var activeSpan: Span? {
+        return OpenTelemetry.instance.contextProvider.activeSpan
     }
 
     // MARK: - Internal
 
-    internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
-        return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generate(),
-            spanID: tracingUUIDGenerator.generate(),
-            parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
-        )
-    }
-
-    internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+    internal func startSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, isRoot: Bool) -> Span {
         var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
             combinedTags.merge(userTags) { $1 }
@@ -237,32 +238,52 @@ public class DatadogTracer: OTTracer {
             combinedTags.merge(rumTags) { $1 }
         }
 
-        let span = DDSpan(
-            tracer: self,
-            context: spanContext,
-            operationName: operationName,
-            startTime: startTime ?? dateProvider.now,
-            tags: combinedTags
-        )
+        let spanBuilder = otelTracer.spanBuilder(spanName: operationName)
+        if let tags = tags {
+            let attributes = DatadogTracer.convertToAttributes(tags: tags)
+            attributes.forEach {
+                spanBuilder.setAttribute(key: $0.key, value: $0.value)
+            }
+        }
+        if let startTime = startTime {
+            spanBuilder.setStartTime(time: startTime)
+        }
+        if isRoot {
+            spanBuilder.setNoParent()
+        }
+        spanBuilder.setActive(true)
+        let span = spanBuilder.startSpan()
         return span
-    }
-
-    internal func addSpan(span: DDSpan, activityReference: ActivityReference) {
-        activeSpansPool.addSpan(span: span, activityReference: activityReference)
-        updateCoreAttributes()
-    }
-
-    internal func removeSpan(activityReference: ActivityReference) {
-        activeSpansPool.removeSpan(activityReference: activityReference)
-        updateCoreAttributes()
     }
 
     private func updateCoreAttributes() {
         let context = activeSpan?.context as? DDSpanContext
 
-        core?.set(feature: DatadogTraceFeature.name, attributes: {[
+        core?.set(feature: DatadogTraceFeature.name, attributes: { [
             Attributes.traceID: context.map { String($0.traceID) },
             Attributes.spanID: context.map { String($0.spanID) }
-        ]})
+        ] })
+    }
+
+    static func convertToAttributes(tags: [String: Encodable]) -> [String: OpenTelemetryApi.AttributeValue] {
+        let attributes: [String: OpenTelemetryApi.AttributeValue] = tags.mapValues { value in
+            convertToAttributeValue(tag: value)
+        }
+        return attributes
+    }
+
+    static func convertToAttributeValue(tag: Encodable) -> OpenTelemetryApi.AttributeValue {
+        switch tag {
+        case let string as String:
+            return OpenTelemetryApi.AttributeValue.string(string)
+        case let int as Int:
+            return OpenTelemetryApi.AttributeValue.int(int)
+        case let double as Double:
+            return OpenTelemetryApi.AttributeValue.double(double)
+        case let bool as Bool:
+            return OpenTelemetryApi.AttributeValue.bool(bool)
+        default:
+            return OpenTelemetryApi.AttributeValue.string("")
+        }
     }
 }

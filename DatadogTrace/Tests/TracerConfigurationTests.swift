@@ -23,7 +23,7 @@ class TracerConfigurationTests: XCTestCase {
 
     func testDefaultTracer() throws {
         DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core).dd
+        let tracer = DatadogTracer.shared(in: core)
 
         XCTAssertNotNil(tracer.core)
         XCTAssertNil(tracer.configuration.serviceName)
@@ -33,7 +33,7 @@ class TracerConfigurationTests: XCTestCase {
 
     func testDefaultTracerWithRUMDisabled() {
         DatadogTracer.initialize(in: core, configuration: .init(bundleWithRUM: false))
-        let tracer = DatadogTracer.shared(in: core).dd
+        let tracer = DatadogTracer.shared(in: core)
         XCTAssertFalse(tracer.contextReceiver.bundleWithRUM)
     }
 
@@ -47,7 +47,7 @@ class TracerConfigurationTests: XCTestCase {
             )
         )
 
-        let tracer = DatadogTracer.shared(in: core).dd
+        let tracer = DatadogTracer.shared(in: core)
 
         XCTAssertNotNil(tracer.core)
         XCTAssertEqual(tracer.configuration.serviceName, "custom-service-name")

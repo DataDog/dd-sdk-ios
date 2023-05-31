@@ -38,43 +38,43 @@ extension BaggageItems {
     }
 }
 
-extension DDSpan {
-    static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
-        return mockWith(core: core)
-    }
-
-    static func mockWith(
-        tracer: DatadogTracer,
-        context: DDSpanContext = .mockAny(),
-        operationName: String = .mockAny(),
-        startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:]
-    ) -> DDSpan {
-        return DDSpan(
-            tracer: tracer,
-            context: context,
-            operationName: operationName,
-            startTime: startTime,
-            tags: tags
-        )
-    }
-
-    static func mockWith(
-        core: DatadogCoreProtocol,
-        context: DDSpanContext = .mockAny(),
-        operationName: String = .mockAny(),
-        startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:]
-    ) -> DDSpan {
-        return DDSpan(
-            tracer: .mockAny(in: core),
-            context: context,
-            operationName: operationName,
-            startTime: startTime,
-            tags: tags
-        )
-    }
-}
+//extension DDSpan {
+//    static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
+//        return mockWith(core: core)
+//    }
+//
+//    static func mockWith(
+//        tracer: DatadogTracer,
+//        context: DDSpanContext = .mockAny(),
+//        operationName: String = .mockAny(),
+//        startTime: Date = .mockAny(),
+//        tags: [String: Encodable] = [:]
+//    ) -> DDSpan {
+//        return DDSpan(
+//            tracer: tracer,
+//            context: context,
+//            operationName: operationName,
+//            startTime: startTime,
+//            tags: tags
+//        )
+//    }
+//
+//    static func mockWith(
+//        core: DatadogCoreProtocol,
+//        context: DDSpanContext = .mockAny(),
+//        operationName: String = .mockAny(),
+//        startTime: Date = .mockAny(),
+//        tags: [String: Encodable] = [:]
+//    ) -> DDSpan {
+//        return DDSpan(
+//            tracer: .mockAny(in: core),
+//            context: context,
+//            operationName: operationName,
+//            startTime: startTime,
+//            tags: tags
+//        )
+//    }
+//}
 
 extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(
