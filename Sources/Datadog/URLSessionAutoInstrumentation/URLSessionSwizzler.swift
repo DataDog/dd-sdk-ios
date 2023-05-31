@@ -6,6 +6,56 @@
 
 import Foundation
 
+internal class URLSessionTaskSwizzler {
+    let resume: Resume?
+    
+    init() throws {
+        self.resume = try Resume.build()
+    }
+    
+    func swizzle() {
+        resume?.swizzle()
+    }
+
+    internal func unswizzle() {
+        resume?.unswizzle()
+    }
+    
+    class Resume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
+        private static let selector = #selector(URLSessionTask.resume)
+
+        private let method: FoundMethod
+
+        static func build() throws -> Resume {
+            return try Resume(selector: self.selector, klass: URLSessionTask.self)
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            self.method = try Self.findMethod(with: selector, in: klass)
+            super.init()
+        }
+
+        func swizzle() {
+            typealias Signature = @convention(block) (URLSessionTask) -> Void
+            swizzle(method) { previousImplementation -> Signature in
+                return { task in
+                    // If not inside a Task basePriority is nil
+                    if #available(iOS 15.0, *) {
+                        if task.delegate == nil {
+                            let delegate = DDURLSessionDelegate()
+                            delegate.instrumentation?.interceptor.taskResumed(task: task)
+                            task.delegate = delegate
+                        }
+                    } else {
+                        // Fallback on earlier versions
+                    }
+                    previousImplementation(task, Self.selector)
+                }
+            }
+        }
+    }
+}
+
 internal class URLSessionSwizzler {
     /// `URLSession.dataTask(with:completionHandler:)` (for `URLRequest`) swizzling.
     let dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion

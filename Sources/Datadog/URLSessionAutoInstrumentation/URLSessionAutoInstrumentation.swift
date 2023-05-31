@@ -9,6 +9,7 @@ import Foundation
 /// `URLSession` Auto Instrumentation feature.
 internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
     let swizzler: URLSessionSwizzler
+    let taskSwizzler: URLSessionTaskSwizzler
     let interceptor: URLSessionInterceptorType
 
     convenience init?(
@@ -19,6 +20,7 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
         do {
             self.init(
                 swizzler: try URLSessionSwizzler(),
+                taskSwizzler: try URLSessionTaskSwizzler(),
                 interceptor: URLSessionInterceptor(
                     configuration: configuration,
                     dateProvider: dateProvider,
@@ -33,13 +35,15 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
         }
     }
 
-    init(swizzler: URLSessionSwizzler, interceptor: URLSessionInterceptorType) {
+    init(swizzler: URLSessionSwizzler, taskSwizzler: URLSessionTaskSwizzler, interceptor: URLSessionInterceptorType) {
         self.swizzler = swizzler
+        self.taskSwizzler = taskSwizzler
         self.interceptor = interceptor
     }
 
     func enable() {
         swizzler.swizzle()
+        taskSwizzler.swizzle()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
@@ -50,5 +54,6 @@ internal final class URLSessionAutoInstrumentation: RUMCommandPublisher {
     /// Removes `URLSession` swizzling and deinitializes this component.
     internal func deinitialize() {
         swizzler.unswizzle()
+        taskSwizzler.unswizzle()
     }
 }

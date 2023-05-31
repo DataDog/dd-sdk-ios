@@ -21,7 +21,8 @@ internal protocol URLSessionInterceptorType: AnyObject {
     func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
     func taskReceivedData(task: URLSessionTask, data: Data)
     func taskCompleted(task: URLSessionTask, error: Error?)
-
+    func taskResumed(task: URLSessionTask)
+    
     var handler: URLSessionInterceptionHandler { get }
 }
 
@@ -146,6 +147,27 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
         }
     }
 
+    public func taskResumed(task: URLSessionTask) {
+        guard let request = task.originalRequest,
+              !internalURLsFilter.isInternal(url: request.url) else {
+            return
+        }
+        queue.async {
+            let isFirstPartyRequest = self.isFirstParty(request: request, for: nil)
+            let interception = TaskInterception(
+                request: request,
+                isFirstParty: isFirstPartyRequest
+            )
+            self.interceptionByTask[task] = interception
+
+            if let spanContext = self.extractSpanContext(from: request, session: nil) {
+                interception.register(spanContext: spanContext)
+            }
+
+            self.handler.notify_taskInterceptionStarted(interception: interception)
+        }
+    }
+
     /// Notifies the `URLSessionTask` metrics collection.
     /// This method should be called as soon as the task metrics were received by `URLSessionTaskDelegate`.
     /// - Parameters:
@@ -163,6 +185,10 @@ public class URLSessionInterceptor: URLSessionInterceptorType {
 
             interception.register(
                 metrics: ResourceMetrics(taskMetrics: metrics)
+            )
+            
+            interception.register(
+                completion: ResourceCompletion(response: task.response, error: nil)
             )
 
             if interception.isDone {

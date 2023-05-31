@@ -25,12 +25,24 @@ internal class SendThirdPartyRequestsViewController: UIViewController {
     }
 
     private func callThirdPartyURL() {
-        let task = session.dataTask(with: testScenario.thirdPartyURL)
-        task.resume()
+        if #available(iOS 13.0, *) {
+            Task {
+                let data = try await session.data(from: testScenario.thirdPartyURL)
+                print(data)
+            }
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     private func callThirdPartyURLRequest() {
-        let task = session.dataTask(with: testScenario.thirdPartyRequest)
-        task.resume()
+        if #available(iOS 13.0, *) {
+            Task {
+                let data = try await session.data(for: testScenario.thirdPartyRequest)
+                print(data)
+            }
+        } else {
+            // Fallback on earlier versions
+        }
     }
 }
