@@ -27,4 +27,33 @@ class UIKitExtensionsTests: XCTestCase {
             XCTAssertFalse(darkView.usesDarkMode)
         }
     }
+
+    // swiftlint:disable opening_brace
+    func testIsSensitiveText() {
+       class Mock: NSObject, UITextInputTraits {
+            var isSecureTextEntry = false
+            var textContentType: UITextContentType! = nil // swiftlint:disable:this implicitly_unwrapped_optional
+        }
+
+        // Given
+        let sensitiveTextMock = Mock()
+        let nonSensitiveTextMock = Mock()
+        let nonSensitiveContentTypes = UITextContentType.allCases.subtracting(sensitiveContentTypes)
+
+        // When
+        oneOrMoreOf([
+            { sensitiveTextMock.isSecureTextEntry = true },
+            { sensitiveTextMock.textContentType = sensitiveContentTypes.randomElement() },
+        ])
+        oneOrMoreOf([
+            { nonSensitiveTextMock.isSecureTextEntry = false },
+            { nonSensitiveTextMock.textContentType = nil },
+            { nonSensitiveTextMock.textContentType = nonSensitiveContentTypes.randomElement() },
+        ])
+
+        // Then
+        XCTAssertTrue(sensitiveTextMock.isSensitiveText)
+        XCTAssertFalse(nonSensitiveTextMock.isSensitiveText)
+    }
+    // swiftlint:enable opening_brace
 }

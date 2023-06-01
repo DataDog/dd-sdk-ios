@@ -1,5 +1,7 @@
 # Unreleased
 
+- [BUGFIX] Use targetTimestamp as reference to calculate FPS for variable refresh rate displays. See [#1272][]
+
 # 1.19.0 / 26-04-2023
 - [BUGFIX] Fix view attributes override by action attributes. See [#1250][]
 - [IMPROVEMENT] Add Tracer sampling rate. See [#1259][]
@@ -22,7 +24,7 @@
 # 1.15.0 / 23-01-2023
 
 - [BUGFIX] Fix 'Could not allocate memory' after corrupted TLV. See [#1089][] (Thanks [@cltnschlosser][])
-- [BUGFIX] Fix error count on the view update event following a crash. See [#1145][] 
+- [BUGFIX] Fix error count on the view update event following a crash. See [#1145][]
 
 # 1.14.0 / 20-12-2022
 
@@ -460,6 +462,7 @@
 [#1250]: https://github.com/DataDog/dd-sdk-ios/pull/1250
 [#1259]: https://github.com/DataDog/dd-sdk-ios/pull/1259
 [#1264]: https://github.com/DataDog/dd-sdk-ios/pull/1264
+[#1272]: https://github.com/DataDog/dd-sdk-ios/pull/1272
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

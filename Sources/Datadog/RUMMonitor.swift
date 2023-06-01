@@ -214,6 +214,12 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
 
         CITestIntegration.active?.startIntegration()
+
+        process(
+            command: RUMSDKInitCommand(
+                time: dateProvider.now
+            )
+        )
     }
 
     // MARK: - Public DDRUMMonitor conformance

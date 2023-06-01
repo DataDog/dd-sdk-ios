@@ -14,11 +14,7 @@ internal class UILabelRecorder: NodeRecorder {
     init(
         builderOverride: @escaping (UILabelWireframesBuilder) -> UILabelWireframesBuilder = { $0 },
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            switch context.recorder.privacy {
-            case .allowAll:         return context.textObfuscators.nop
-            case .maskAll:          return context.textObfuscators.spacePreservingMask
-            case .maskUserInput:    return context.textObfuscators.nop
-            }
+            return context.recorder.privacy.staticTextObfuscator
         }
     ) {
         self.builderOverride = builderOverride

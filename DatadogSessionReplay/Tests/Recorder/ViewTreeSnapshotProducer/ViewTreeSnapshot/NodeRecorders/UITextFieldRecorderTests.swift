@@ -80,17 +80,26 @@ class UITextFieldRecorderTests: XCTestCase {
         }
 
         XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
 
         // When
-        oneOf([
+        oneOrMoreOf([
             { self.textField.isSecureTextEntry = true },
-            { self.textField.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+            { self.textField.textContentType = sensitiveContentTypes.randomElement() },
         ])
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
+
+        // When
+        textField.text = nil
+        textField.placeholder = .mockRandom()
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace

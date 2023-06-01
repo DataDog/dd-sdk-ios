@@ -25,11 +25,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
 
     init(
         textObfuscator: @escaping (ViewTreeRecordingContext) -> TextObfuscating = { context in
-            switch context.recorder.privacy {
-            case .allowAll:         return context.textObfuscators.nop
-            case .maskAll:          return context.textObfuscators.fixLegthMask
-            case .maskUserInput:    return context.textObfuscators.fixLegthMask
-            }
+            return context.recorder.privacy.inputAndOptionTextObfuscator
         }
     ) {
         self.selectionRecorder = ViewTreeRecorder(nodeRecorders: [UIViewRecorder()])
@@ -38,7 +34,7 @@ internal struct UIPickerViewRecorder: NodeRecorder {
                 UIViewRecorder(
                     semanticsOverride: { view, attributes in
                         if #available(iOS 13.0, *) {
-                            if attributes.isTranslucent || !CATransform3DIsIdentity(view.transform3D) {
+                            if !attributes.isVisible || attributes.alpha < 1 || !CATransform3DIsIdentity(view.transform3D) {
                                 // If this view has any 3D effect applied, do not enter its subtree:
                                 return IgnoredElement(subtreeStrategy: .ignore)
                             }
