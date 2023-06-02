@@ -4,9 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
 import DatadogInternal
-import InMemoryExporter
+import Foundation
 import OpenTelemetryApi
 import OpenTelemetrySdk
 
@@ -28,9 +27,9 @@ public enum DatadogSpanTag {
 
     /// Those keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields.
     /// Supported by Datadog platform.
-    internal static let errorType    = "error.type"
+    internal static let errorType = "error.type"
     internal static let errorMessage = "error.msg"
-    internal static let errorStack   = "error.stack"
+    internal static let errorStack = "error.stack"
 }
 
 /// Because `Tracer` is a common name widely used across different projects, the `Datadog.Tracer` may conflict when
@@ -48,6 +47,8 @@ public enum DatadogSpanTag {
 ///
 public class DatadogTracer {
     let otelTracer: Tracer
+
+    let otelExporter: OtelExporter
 
     internal weak var core: DatadogCoreProtocol?
 
@@ -184,13 +185,14 @@ public class DatadogTracer {
         self.loggingIntegration = loggingIntegration
         self.sampler = Sampler(samplingRate: configuration.samplingRate)
 
-        let spanProcessor = SimpleSpanProcessor(spanExporter: InMemoryExporter())
+        self.otelExporter = OtelExporter(tracerConfig: configuration, sampler: sampler, core: core)
+        let spanProcessor = SimpleSpanProcessor(spanExporter: otelExporter)
         let tracerProviderSdk = TracerProviderBuilder().with(sampler: Samplers.alwaysOn)
             .add(spanProcessor: spanProcessor)
             .build()
 
         OpenTelemetry.registerTracerProvider(tracerProvider: tracerProviderSdk)
-        otelTracer = tracerProviderSdk.get(instrumentationName: "com.datadoghq.DatadogTracer", instrumentationVersion: "0.1") as! TracerSdk
+        self.otelTracer = tracerProviderSdk.get(instrumentationName: "com.datadoghq.DatadogTracer", instrumentationVersion: "0.1") as! TracerSdk
     }
 
     // MARK: - Open Tracing interface
@@ -286,4 +288,59 @@ public class DatadogTracer {
             return OpenTelemetryApi.AttributeValue.string("")
         }
     }
+}
+
+internal class OtelExporter: SpanExporter {
+    let tracerConfig: DatadogTracer.Configuration
+    let sampler: DatadogInternal.Sampler
+    var core: DatadogCoreProtocol?
+
+    public init(tracerConfig: DatadogTracer.Configuration, sampler: DatadogInternal.Sampler, core: DatadogCoreProtocol) {
+        self.tracerConfig = tracerConfig
+        self.sampler = sampler
+        self.core = core
+    }
+
+    public func export(spans: [SpanData]) -> SpanExporterResultCode {
+        guard let scope = core?.scope(for: DatadogTraceFeature.name) else {
+            return .success
+        }
+
+        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
+        let baggageItems: [String: String] = [:] // ddContext.baggageItems.all
+
+        spans.forEach { span in
+            scope.eventWriteContext { [self] context, writer in
+                let builder = SpanEventBuilder(
+                    serviceName: tracerConfig.serviceName,
+                    sendNetworkInfo: tracerConfig.sendNetworkInfo,
+                    eventsMapper: tracerConfig.spanEventMapper
+                )
+
+                let event = builder.createSpanEvent(
+                    context: context,
+                    traceID: TraceID(rawValue: span.traceId.rawLowerLong),
+                    spanID: SpanID(rawValue: span.spanId.rawValue),
+                    parentSpanID: SpanID(rawValue: span.parentSpanId?.rawValue ?? 0),
+                    operationName: span.name,
+                    startTime: span.startTime,
+                    finishTime: span.endTime,
+                    samplingRate: sampler.samplingRate / 100.0,
+                    isKept: sampler.sample(),
+                    tags: span.attributes,
+                    baggageItems: baggageItems,
+                    logFields: span.events.map { $0.attributes }
+                )
+                let envelope = SpanEventsEnvelope(span: event, environment: context.env)
+                writer.write(value: envelope)
+            }
+        }
+        return .success
+    }
+
+    public func flush() -> SpanExporterResultCode {
+        return .success
+    }
+
+    public func shutdown() {}
 }
