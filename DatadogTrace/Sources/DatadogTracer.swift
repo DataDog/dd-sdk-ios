@@ -46,8 +46,8 @@ public enum DatadogSpanTag {
 ///     tracer = DDTracer.initialize(...)
 ///
 public class DatadogTracer {
-    let otelTracer: Tracer
-
+    let otelTracer: TracerSdk
+    let otelTracerProvider: TracerProviderSdk
     let otelExporter: OtelExporter
 
     internal weak var core: DatadogCoreProtocol?
@@ -187,12 +187,12 @@ public class DatadogTracer {
 
         self.otelExporter = OtelExporter(tracerConfig: configuration, sampler: sampler, core: core)
         let spanProcessor = SimpleSpanProcessor(spanExporter: otelExporter)
-        let tracerProviderSdk = TracerProviderBuilder().with(sampler: Samplers.alwaysOn)
+        otelTracerProvider = TracerProviderBuilder().with(sampler: Samplers.alwaysOn)
             .add(spanProcessor: spanProcessor)
             .build()
 
-        OpenTelemetry.registerTracerProvider(tracerProvider: tracerProviderSdk)
-        self.otelTracer = tracerProviderSdk.get(instrumentationName: "com.datadoghq.DatadogTracer", instrumentationVersion: "0.1") as! TracerSdk
+        OpenTelemetry.registerTracerProvider(tracerProvider: otelTracerProvider)
+        self.otelTracer = otelTracerProvider.get(instrumentationName: "com.datadoghq.DatadogTracer", instrumentationVersion: "0.1") as! TracerSdk
     }
 
     // MARK: - Open Tracing interface
@@ -230,6 +230,46 @@ public class DatadogTracer {
 
     // MARK: - Internal
 
+    internal func startSpanWithCustomInfo(name: String, customTraceId: TraceId? = nil, customSpanId: SpanId? = nil, customParentSpan: SpanId? = nil, customStartTime: Date? = nil) -> Span {
+        let traceId = customTraceId ?? TraceId.random()
+        let spanId = customSpanId ?? SpanId.random()
+        let parentContext = SpanContext.create(traceId: traceId,
+                                               spanId: customParentSpan ?? SpanId.random(),
+                                               traceFlags: TraceFlags().settingIsSampled(true),
+                                               traceState: TraceState())
+        let startTime = customStartTime ?? Date()
+
+        let spanContext = SpanContext.create(traceId: traceId,
+                                             spanId: spanId,
+                                             traceFlags: TraceFlags().settingIsSampled(true),
+                                             traceState: TraceState())
+        let spanProcessor = MultiSpanProcessor(spanProcessors: otelTracerProvider.getActiveSpanProcessors())
+        let span = RecordEventsReadableSpan.startSpan(context: spanContext,
+                                                      name: name,
+                                                      instrumentationScopeInfo: otelTracer.instrumentationScopeInfo,
+                                                      kind: .internal,
+                                                      parentContext: parentContext,
+                                                      hasRemoteParent: false,
+                                                      spanLimits: otelTracerProvider.getActiveSpanLimits(),
+                                                      spanProcessor: spanProcessor,
+                                                      clock: otelTracerProvider.getActiveClock(),
+                                                      resource: Resource(),
+                                                      attributes: AttributesDictionary(capacity: 0),
+                                                      links: [SpanData.Link](),
+                                                      totalRecordedLinks: 0,
+                                                      startTime: startTime)
+        return span
+    }
+
+    internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+        return DDSpanContext(
+            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generate(),
+            spanID: tracingUUIDGenerator.generate(),
+            parentSpanID: parentSpanContext?.spanID,
+            baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
+        )
+    }
+
     internal func startSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil, isRoot: Bool) -> Span {
         var combinedTags = configuration.globalTags ?? [:]
         if let userTags = tags {
@@ -265,6 +305,8 @@ public class DatadogTracer {
             Attributes.traceID: context.map { String($0.traceID) },
             Attributes.spanID: context.map { String($0.spanID) }
         ] })
+
+        otelExporter.core = self.core
     }
 
     static func convertToAttributes(tags: [String: Encodable]) -> [String: OpenTelemetryApi.AttributeValue] {
@@ -286,6 +328,27 @@ public class DatadogTracer {
             return OpenTelemetryApi.AttributeValue.bool(bool)
         default:
             return OpenTelemetryApi.AttributeValue.string("")
+        }
+    }
+
+    static func convertToTagValue(attrib: OpenTelemetryApi.AttributeValue) -> Encodable {
+        switch attrib {
+        case let .string(value):
+            return value
+        case let .bool(value):
+            return value
+        case let .int(value):
+            return value
+        case let .double(value):
+            return value
+        case let .stringArray(value):
+            return value
+        case let .boolArray(value):
+            return value
+        case let .intArray(value):
+            return value
+        case let .doubleArray(value):
+            return value
         }
     }
 }
@@ -327,7 +390,7 @@ internal class OtelExporter: SpanExporter {
                     finishTime: span.endTime,
                     samplingRate: sampler.samplingRate / 100.0,
                     isKept: sampler.sample(),
-                    tags: span.attributes,
+                    tags: span.attributes.mapValues { DatadogTracer.convertToTagValue(attrib: $0) },
                     baggageItems: baggageItems,
                     logFields: span.events.map { $0.attributes }
                 )

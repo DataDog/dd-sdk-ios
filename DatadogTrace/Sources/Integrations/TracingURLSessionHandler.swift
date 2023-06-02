@@ -45,9 +45,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> URLRequest {
-        guard let span = OpenTelemetry.instance.contextProvider.activeSpan as? RecordEventsReadableSpan else {
+        guard let tracer = tracer else {
             return request
         }
+
+        let spanContext = tracer.createSpanContext()
 
         var request = request
         headerTypes.forEach {
@@ -70,9 +72,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             }
 
             writer.write(
-                traceID: TraceID(rawValue: span.context.traceId.rawLowerLong),
-                spanID: SpanID(rawValue: span.context.spanId.rawValue),
-                parentSpanID: SpanID(rawValue: span.parentContext?.spanId.rawValue ?? 0)
+                traceID: spanContext.traceID,
+                spanID: spanContext.spanID,
+                parentSpanID: spanContext.parentSpanID
             )
 
             writer.traceHeaderFields.forEach { field, value in
@@ -101,17 +103,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let span: Span
 
         if let trace = interception.trace {
-            let context = DDSpanContext(
-                traceID: trace.traceID,
-                spanID: trace.spanID,
-                parentSpanID: trace.parentSpanID,
-                baggageItems: .init()
-            )
-
-            span = tracer.startSpan(
-                operationName: "urlsession.request",
-                startTime: resourceMetrics.fetch.start
-            )
+            span = tracer.startSpanWithCustomInfo(name: "urlsession.request",
+                                                  customTraceId: TraceId(idHi: 0, idLo: trace.traceID.rawValue),
+                                                  customSpanId: SpanId(id: trace.spanID.rawValue),
+                                                  customParentSpan: SpanId(id: trace.parentSpanID?.rawValue ?? 0),
+                                                  customStartTime: resourceMetrics.fetch.start)
         } else if tracingSampler.sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
             // was used to create the session task.
