@@ -1,5 +1,6 @@
 # Unreleased
 
+# 1.20.0 / 01-06-2023
 - [BUGFIX] Use targetTimestamp as reference to calculate FPS for variable refresh rate displays. See [#1272][]
 
 # 1.19.0 / 26-04-2023
