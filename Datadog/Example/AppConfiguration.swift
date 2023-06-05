@@ -63,6 +63,8 @@ struct ExampleAppConfiguration: AppConfiguration {
                 .enableRUM(true)
                 .enableCrashReporting(using: DDCrashReportingPlugin())
                 .trackBackgroundEvents()
+                .trackURLSession()
+                .set(tracingSamplingRate: 100)
         }
 
         return configuration.build()
