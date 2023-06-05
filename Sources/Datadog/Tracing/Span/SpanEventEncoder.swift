@@ -243,8 +243,10 @@ internal struct SpanEventEncoder {
         }
 
         try span.tags.forEach {
-            let metaKey = "meta.\($0.key)"
-            try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+            if $0.value != "null" {
+                let metaKey = "meta.\($0.key)"
+                try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
+            }
         }
     }
 }

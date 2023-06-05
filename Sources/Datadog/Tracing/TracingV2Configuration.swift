@@ -72,7 +72,7 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
-        if let attributes: [String: String] = context.featuresAttributes["rum"]?.ids {
+        if let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids {
             rum.attributes = attributes
             return true
         }
