@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Local repository manages two types of files:
 /// - "pointer files" that reference "remote files" from `RemoteRepo`;
-/// - "local files" that are violatile (git-ignored) copies of "remote files".
+/// - "local files" that are volatile (git-ignored) copies of "remote files".
 ///
 /// "Pointer files" and "local files" are stored in distinct folders.
 /// The structure of pointers folder mirrors the tree structure of files folder.
@@ -30,7 +30,7 @@ internal struct LocalRepo {
     private let jsonEncoder = JSONEncoder()
     private let jsonDecoder = JSONDecoder()
 
-    /// Creates pointers from "local files".
+    /// Creates pointers from "local files" (stored in `localFilesDirectory`).
     func createPointers() throws -> [Pointer] {
         return try localFilesDirectory.findAllFiles()
             .map { path in
@@ -39,7 +39,7 @@ internal struct LocalRepo {
             }
     }
 
-    /// Reads pointers from "pointer files".
+    /// Reads pointers from "pointer files" (stored in `pointersDirectory`).
     func readPointers() throws -> [Pointer] {
         return try pointersDirectory.findAllFiles()
             .map { path in
@@ -65,6 +65,7 @@ internal struct LocalRepo {
         return FileLocation(directory: localFilesDirectory, path: pointer.localFilePath)
     }
 
+    /// Deletes all files in `localFilesDirectory`.
     func deleteLocalFiles() throws {
         try localFilesDirectory.deleteAllFiles()
     }

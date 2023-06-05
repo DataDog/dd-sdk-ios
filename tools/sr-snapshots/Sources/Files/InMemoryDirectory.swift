@@ -6,7 +6,8 @@
 
 import Foundation
 
-/// An in-memory version of directory.
+/// A directory that stores files in memory.
+/// It has no dependency on the actual file system.
 public class InMemoryDirectory: DirectoryProtocol {
     private var files: [String: String]
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-/// Enables operations on real directory in file system.
+/// A directory that stores files in file system.
 public struct Directory: DirectoryProtocol {
     private let fileManager = FileManager.default
     public let url: URL

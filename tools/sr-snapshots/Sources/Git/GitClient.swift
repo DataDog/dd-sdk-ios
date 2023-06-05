@@ -12,10 +12,20 @@ public struct GitClientError: Error, CustomStringConvertible {
     public var description: String
 }
 
+/// An abstraction over git client.
 public protocol GitClient {
+    /// Clones git repository to given location or skips if it is already present.
+    /// - Parameter directory: directory url for cloning the repo
     func cloneIfNeeded(to directory: URL) throws
+
+    /// Pulls new commits from current branch.
     func pull() throws
+
+    /// Adds new commit on current branch.
+    /// - Parameter message: the commit message
     func commit(message: String) throws
+
+    /// Pushes recent commits to remote.
     func push() throws
 }
 
@@ -29,7 +39,7 @@ public struct NOPGitClient: GitClient {
 
 /// Naive implementation of basic git client.
 ///
-/// It executes git commands directly in shell and requires `gh`CLI to be preinstalled on host (https://cli.github.com/)
+/// It executes git commands directly in shell and requires `gh` CLI to be preinstalled on host (https://cli.github.com/)
 /// and authorised for cloning private repositories.
 public class BasicGitClient: GitClient {
     /// Repo's SSH for git clone.

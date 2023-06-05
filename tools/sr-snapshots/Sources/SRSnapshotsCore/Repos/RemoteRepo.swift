@@ -10,7 +10,7 @@ import Foundation
 
 /// Abstracts the remote repository.
 ///
-/// Snapshots repository stores the actual snapshot files in git. We call them "remote files".
+/// Remote repo stores the actual files in git. We call them "remote files".
 /// Remote files are referenced by pointers from `LocalRepo`.
 internal struct RemoteRepo {
     /// Git client operating in this repository.
@@ -18,6 +18,9 @@ internal struct RemoteRepo {
     /// Directory with "remote files".
     let remoteFilesDirectory: DirectoryProtocol
 
+    /// Determines location of "remote file" for given pointer.
+    /// - Parameter pointer: pointer created from "local file".
+    /// - Returns: the location of "remote file" in remote repo
     func remoteFileLocation(for pointer: Pointer) -> FileLocation {
         let fileExtension = pointer.localFileExtension.map { "." + $0 } ?? ""
         let fileName = pointer.contentHash
@@ -26,7 +29,13 @@ internal struct RemoteRepo {
         return FileLocation(directory: remoteFilesDirectory, path: path)
     }
 
+    /// Pulls the repo.
     func pull() throws { try git.pull() }
+
+    /// Adds new commit to the repo.
+    /// - Parameter message: commit message
     func commit(message: String) throws { try git.commit(message: message) }
+
+    /// Pushes recent changes to remote.
     func push() throws { try git.push() }
 }

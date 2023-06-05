@@ -7,12 +7,16 @@
 import Foundation
 
 /// A "link"  between volatile files from`LocalRepo` and persistent files in `RemoteRepo`.
+///
+/// Pointers are created from "local files" and must contain enough information to determine the
+/// location of "remote file".
 internal struct Pointer: Equatable, Hashable {
-    /// The path to the local file this pointer was creted for.
-    /// This path is relative to the local files directory and it includes the file extension.
+    /// The path to the "local file" this pointer was created for.
+    /// This path is relative to the local directory and it includes the file extension.
     let localFilePath: String
+    /// The extension of the "local file".
     var localFileExtension: String? { extensionOfFile(at: localFilePath) }
-    /// The hash of file's content that this pointer was created for.
+    /// The hash of the "local file's" content.
     let contentHash: String
 }
 
