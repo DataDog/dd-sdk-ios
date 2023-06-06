@@ -2270,7 +2270,7 @@
 				61133B9C2423979B00786299 /* Datadog */,
 				61133C082423983800786299 /* DatadogObjc */,
 				6170DC1325C1864B003AED5C /* DatadogCrashReporting */,
-				9E68FB52244707FD0013A8AA /* _Datadog_Private */,
+				9E68FB52244707FD0013A8AA /* DatadogPrivate */,
 				61133C122423990D00786299 /* DatadogTests */,
 				6170DC1425C18663003AED5C /* DatadogCrashReportingTests */,
 				61441C772461A204003D8BB8 /* DatadogBenchmarkTests */,
@@ -4125,15 +4125,15 @@
 			path = RUM;
 			sourceTree = "<group>";
 		};
-		9E68FB52244707FD0013A8AA /* _Datadog_Private */ = {
+		9E68FB52244707FD0013A8AA /* DatadogPrivate */ = {
 			isa = PBXGroup;
 			children = (
 				9E47010324471027000073A4 /* include */,
 				6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */,
 				9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */,
 			);
-			name = _Datadog_Private;
-			path = ../Sources/_Datadog_Private;
+			name = DatadogPrivate;
+			path = ../Sources/DatadogPrivate;
 			sourceTree = "<group>";
 		};
 		9EA95C182791C9BE00F6C1F3 /* WebView */ = {

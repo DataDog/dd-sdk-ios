@@ -21,9 +21,9 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
   s.source_files = ["Sources/Datadog/**/*.swift",
-                    "Sources/_Datadog_Private/**/*.{h,m}",
+                    "Sources/DatadogPrivate/**/*.{h,m}",
                     "Datadog/TargetSupport/Datadog/Datadog.h"]
   s.public_header_files = ["Datadog/TargetSupport/Datadog/Datadog.h", 
-                           "Sources/_Datadog_Private/include/*.h"]
+                           "Sources/DatadogPrivate/include/*.h"]
 
 end

@@ -7,7 +7,7 @@
 import Foundation
 
 #if SPM_BUILD
-import _Datadog_Private
+import DatadogPrivate
 #endif
 
 /// Function printing `String` content to console.
