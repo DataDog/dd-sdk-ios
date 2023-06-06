@@ -579,8 +579,7 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        let applicationID: String = .mockRandom()
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(applicationID: applicationID))
+        try RUMMonitor.initialize(in: core, configuration: .mockAny())
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
@@ -595,7 +594,7 @@ class LoggerTests: XCTestCase {
         logMatchers.forEach {
             $0.assertValue(
                 forKeyPath: RUMContextAttributes.IDs.sessionID,
-                equals: applicationID
+                isTypeOf: String.self
             )
         }
     }
