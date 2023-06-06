@@ -194,6 +194,12 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                 try core.register(urlSessionHandler: urlSessionHandler)
             }
 
+            feature.monitor.process(
+                command: RUMSDKInitCommand(
+                    time: configuration.dateProvider.now
+                )
+            )
+
             TelemetryCore(core: core)
                 .configuration(
                     mobileVitalsUpdatePeriod: configuration.vitalsFrequency?.toInt64Milliseconds,

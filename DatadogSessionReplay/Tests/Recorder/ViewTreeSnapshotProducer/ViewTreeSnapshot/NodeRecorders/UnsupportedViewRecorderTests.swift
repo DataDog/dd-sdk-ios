@@ -15,10 +15,10 @@ class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
     private let unsupportedViews: [UIView] = [
-        UIProgressView(), UIActivityIndicatorView(), UIWebView(), WKWebView()
+        UIProgressView(), UIActivityIndicatorView(), WKWebView()
     ].compactMap { $0 }
     private let expectedUnsupportedViewsClassNames = [
-        "UIProgressView", "UIActivityIndicatorView", "UIWebView", "WKWebView"
+        "UIProgressView", "UIActivityIndicatorView", "WKWebView"
     ]
     private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
 

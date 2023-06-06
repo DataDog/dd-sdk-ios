@@ -43,9 +43,11 @@ class ErrorMessageReceiverTests: XCTestCase {
             else: { expectation.fulfill() }
         )
 
+        let errorEvents = core.events(ofType: RUMErrorEvent.self)
+
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(errorEvents.isEmpty)
     }
 
     func testReceivePartialError() throws {
