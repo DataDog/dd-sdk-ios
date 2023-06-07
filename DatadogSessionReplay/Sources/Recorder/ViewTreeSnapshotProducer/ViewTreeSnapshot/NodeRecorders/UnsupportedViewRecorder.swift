@@ -15,7 +15,6 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         { _, context in context.viewControllerContext.isRootView(of: .activity) },
         { _, context in context.viewControllerContext.isRootView(of: .swiftUI) },
         { view, _ in view is UIProgressView },
-        { view, _ in view is UIWebView },
         { view, _ in view is WKWebView },
         { view, _ in view is UIActivityIndicatorView }
     ]

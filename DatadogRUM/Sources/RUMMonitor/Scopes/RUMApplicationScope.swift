@@ -49,8 +49,21 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        // `RUMSDKInitCommand` forces the creation of the initial session
+        if command is RUMSDKInitCommand {
+            createInitialSession(on: command, context: context, writer: writer)
+            return true
+        }
+
+        // If the application has not been yet activated and no sessions exist
+        // -> create the initial session
         if sessionScopes.isEmpty && !applicationActive {
-            startInitialSession(on: command, context: context, writer: writer)
+            createInitialSession(on: command, context: context, writer: writer)
+        }
+
+        // Create the application launch view on any command
+        if !applicationActive {
+            applicationStart(on: command, context: context, writer: writer)
         }
 
         if activeSession == nil && command.isUserInteraction {
@@ -99,8 +112,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         return refreshedSession
     }
 
-    private func startInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        applicationActive = true
+    private func createInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
@@ -111,17 +123,24 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         sessionScopes.append(initialSession)
         sessionScopeDidUpdate(initialSession)
-        if context.applicationStateHistory.currentSnapshot.state != .background {
-            // Immediately start the ApplicationLaunchView for the new session
-            _ = initialSession.process(
-                command: RUMApplicationStartCommand(
-                    time: command.time,
-                    attributes: command.attributes
-                ),
-                context: context,
-                writer: writer
-            )
+    }
+
+    private func applicationStart(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+        applicationActive = true
+
+        guard context.applicationStateHistory.currentSnapshot.state != .background else {
+            return
         }
+
+        // Immediately start the ApplicationLaunchView for the new session
+        _ = process(
+            command: RUMApplicationStartCommand(
+                time: command.time,
+                attributes: command.attributes
+            ),
+            context: context,
+            writer: writer
+        )
     }
 
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {

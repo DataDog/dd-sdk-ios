@@ -20,6 +20,13 @@ internal protocol RUMCommand {
     var isUserInteraction: Bool { get }
 }
 
+internal struct RUMSDKInitCommand: RUMCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue] = [:]
+    var canStartBackgroundView = false
+    var isUserInteraction = false
+}
+
 internal struct RUMApplicationStartCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]

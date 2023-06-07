@@ -670,6 +670,28 @@ class TracerTests: XCTestCase {
     }
 
     // MARK: - Integration With RUM Feature
+//    // TODO: RUMM-2843 [V2 regression] RUM context is not associated with span started on caller thread
+//    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpanBeforeAnyUserActivity_itContainsSessionId() throws {
+//        let tracing: TracingFeature = .mockAny()
+//        core.register(feature: tracing)
+//
+//        let rum: RUMFeature = .mockAny()
+//        core.register(feature: rum)
+//
+//        // given
+//        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core).dd
+//        defer { Global.sharedTracer = DDNoopTracer() }
+//        Global.rum = RUMMonitor.initialize(in: core)
+//        defer { Global.rum = DDNoopRUMMonitor() }
+//
+//        // when
+//        let span = Global.sharedTracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
+//        span.finish()
+//
+//        // then
+//        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
+//    }
 
     // TODO: RUMM-2843 [V2 regression] RUM context is not associated with span started on caller thread
 //    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
@@ -693,11 +715,11 @@ class TracerTests: XCTestCase {
 //        // then
 //        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
 //        XCTAssertEqual(
-//            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.applicationID)"),
+//            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.applicationID)"),
 //            rum.configuration.applicationID
 //        )
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.sessionID)"))
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.viewID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.viewID)"))
 //    }
 
     // MARK: - Injecting span context into carrier
