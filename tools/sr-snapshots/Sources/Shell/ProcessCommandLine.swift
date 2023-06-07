@@ -52,7 +52,8 @@ public class ProcessCommandLine: CommandLine {
         )
     }
 
-    @objc private func readOutput(notification: Notification) {
+    @objc
+    private func readOutput(notification: Notification) {
         guard let handle = notification.object as? FileHandle else {
             return
         }
@@ -68,7 +69,8 @@ public class ProcessCommandLine: CommandLine {
         handle.waitForDataInBackgroundAndNotify()
     }
 
-    @objc private func readError(notification: Notification) {
+    @objc
+    private func readError(notification: Notification) {
         guard let handle = notification.object as? FileHandle else {
             return
         }

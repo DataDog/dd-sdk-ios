@@ -11,7 +11,6 @@ class ShellCommandTests: XCTestCase {
     private let cli = ProcessCommandLine()
 
     func testWhenCommandExitsWithCode0_itReturnsOutput() throws {
-        
         let output = try cli.shell("echo 'foo bar' && exit 0")
         XCTAssertEqual(output, "foo bar")
     }
