@@ -14,7 +14,7 @@ public struct SessionReplay {
     @discardableResult
     public static func initialize(
         with configuration: SessionReplayConfiguration,
-        in datadogInstance: DatadogCoreProtocol = defaultDatadogCore
+        in datadogInstance: DatadogCoreProtocol = CoreRegistry.default
     ) -> SessionReplayController {
         do {
             let feature = try SessionReplayFeature(

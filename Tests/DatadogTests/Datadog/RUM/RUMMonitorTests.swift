@@ -1275,8 +1275,8 @@ class RUMMonitorTests: XCTestCase {
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
         // given
         try RUMMonitor.initialize(in: core, configuration: .mockAny())
-        defaultDatadogCore = core
-        defer { defaultDatadogCore = NOPDatadogCore() }
+        CoreRegistry.register(default: core)
+        defer { CoreRegistry.unregisterDefault() }
 
         let monitor = RUMMonitor.shared(in: core).dd
 

@@ -69,14 +69,17 @@ public class Datadog {
     }
 
     /// Initializes the Datadog SDK.
+    ///
     /// - Parameters:
     ///   - appContext: context passing information about the app.
     ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
     ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(...)`.
+    ///   - instanceName: The core instance name.
     public static func initialize(
         appContext: AppContext,
         trackingConsent: TrackingConsent,
-        configuration: Configuration
+        configuration: Configuration,
+        instanceName: String = CoreRegistry.defaultInstanceName
     ) {
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
@@ -89,7 +92,8 @@ public class Datadog {
                 configuration: try FeaturesConfiguration(
                     configuration: configuration,
                     appContext: appContext
-                )
+                ),
+                instanceName: instanceName
             )
 
             // Now that RUM is potentially initialized, override the debugRUM value
@@ -118,7 +122,7 @@ public class Datadog {
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
-        return defaultDatadogCore is DatadogCore
+        return CoreRegistry.default is DatadogCore
     }
 
     /// Sets current user information.
@@ -134,7 +138,7 @@ public class Datadog {
         email: String? = nil,
         extraInfo: [AttributeKey: AttributeValue] = [:]
     ) {
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         core?.setUserInfo(
             id: id,
             name: name,
@@ -152,20 +156,20 @@ public class Datadog {
     public static func addUserExtraInfo(
         _ extraInfo: [AttributeKey: AttributeValue?]
     ) {
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         core?.addUserExtraInfo(extraInfo)
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent) {
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         core?.set(trackingConsent: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData() {
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         core?.clearAllData()
     }
 
@@ -177,7 +181,8 @@ public class Datadog {
 
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
-        configuration: FeaturesConfiguration
+        configuration: FeaturesConfiguration,
+        instanceName: String
     ) throws {
         if Datadog.isInitialized {
             throw ProgrammerError(description: "SDK is already initialized.")
@@ -232,7 +237,7 @@ public class Datadog {
             )
         }
 
-        defaultDatadogCore = core
+        CoreRegistry.register(core, named: instanceName)
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
@@ -274,13 +279,13 @@ public class Datadog {
         assert(Datadog.isInitialized, "SDK must be first initialized.")
 
         // Flush and tear down SDK core:
-        (defaultDatadogCore as? DatadogCore)?.flushAndTearDown()
+        (CoreRegistry.default as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
-        defaultDatadogCore = NOPDatadogCore()
+        CoreRegistry.unregisterDefault()
     }
 }
 

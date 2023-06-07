@@ -38,14 +38,14 @@ class DDDatadogTests: XCTestCase {
 
         XCTAssertTrue(Datadog.isInitialized)
 
-        let context = try XCTUnwrap(defaultDatadogCore as? DatadogCore).contextProvider.read()
+        let context = try XCTUnwrap(CoreRegistry.default as? DatadogCore).contextProvider.read()
         XCTAssertEqual(context.applicationName, "app-name")
         XCTAssertEqual(context.env, "tests")
 
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(defaultDatadogCore.get(feature: DatadogLogsFeature.self))
-        XCTAssertNil(defaultDatadogCore.get(feature: NetworkInstrumentationFeature.self))
+        XCTAssertNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
+        XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
     }
 
     // MARK: - Changing Tracking Consent
@@ -60,7 +60,7 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         XCTAssertEqual(core?.consentPublisher.consent, initialConsent.swift)
 
         DDDatadog.setTrackingConsent(consent: nextConsent.objc)
@@ -79,7 +79,7 @@ class DDDatadogTests: XCTestCase {
             configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
         )
 
-        let core = defaultDatadogCore as? DatadogCore
+        let core = CoreRegistry.default as? DatadogCore
         let userInfo = try XCTUnwrap(core?.userInfoPublisher)
 
         DDDatadog.setUserInfo(

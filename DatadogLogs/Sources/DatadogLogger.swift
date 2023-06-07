@@ -65,7 +65,7 @@ public class DatadogLogger: Logger {
     // MARK: - Registration
 
     public static func initialise(
-        in core: DatadogCoreProtocol = defaultDatadogCore,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
         applicationBundleIdentifier: String,
         eventMapper: LogEventMapper? = nil,
         dateProvider: DateProvider = SystemDateProvider(),

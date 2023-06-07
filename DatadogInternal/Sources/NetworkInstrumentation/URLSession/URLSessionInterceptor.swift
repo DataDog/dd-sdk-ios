@@ -19,7 +19,7 @@ public struct URLSessionInterceptor {
     ///
     /// This method will return an interceptor if any `DatadogURLSessionHandler` have been
     /// registered in the given core.
-    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> URLSessionInterceptor? {
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> URLSessionInterceptor? {
         guard let feature = core.get(feature: NetworkInstrumentationFeature.self) else {
             return nil
         }

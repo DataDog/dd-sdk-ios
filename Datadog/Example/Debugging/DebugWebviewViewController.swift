@@ -89,7 +89,7 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.startTrackingDatadogEvents(core: defaultDatadogCore)
+        controller.startTrackingDatadogEvents(core: CoreRegistry.default)
         let config = WKWebViewConfiguration()
         config.userContentController = controller
 

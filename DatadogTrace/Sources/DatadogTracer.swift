@@ -85,7 +85,7 @@ public class DatadogTracer: OTTracer {
     ///   - dateProvider: The date provider.
     ///   - traceIDGenerator: The trace ID generator.
     public static func initialize(
-        in core: DatadogCoreProtocol = defaultDatadogCore,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
         configuration: Configuration = .init(),
         distributedTracingConfiguration: DistributedTracingConfiguration? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
@@ -139,7 +139,7 @@ public class DatadogTracer: OTTracer {
         }
     }
 
-    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer {
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(

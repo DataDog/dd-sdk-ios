@@ -27,7 +27,7 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 @objc
 open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     var interceptor: URLSessionInterceptor? {
-        let core = self.core ?? defaultDatadogCore
+        let core = self.core ?? CoreRegistry.default
         return URLSessionInterceptor.shared(in: core)
     }
 
