@@ -76,7 +76,7 @@ extension LocalRepo {
         self.init(
             localFilesDirectory: try Directory(url: filesDirectoryURL),
             pointersDirectory: try Directory(url: pointersDirectoryURL),
-            pointersHashing: SHA256Hashing()
+            pointersHashing: SHA1Hashing()
         )
     }
 }

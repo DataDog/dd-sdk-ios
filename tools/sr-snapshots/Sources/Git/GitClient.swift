@@ -37,17 +37,19 @@ public struct NOPGitClient: GitClient {
     public func push() throws {}
 }
 
-/// Naive implementation of basic git client.
+/// Naive implementation of basic git client that uses GitHub CLI under the hood.
 ///
 /// It executes git commands directly in shell and requires `gh` CLI to be preinstalled on host (https://cli.github.com/)
 /// and authorised for cloning private repositories.
-public class BasicGitClient: GitClient {
+public class GitHubGitClient: GitClient {
     /// Repo's SSH for git clone.
     private let ssh: String
     /// The name of git branch that this client will operate on.
     private let branch: String
     /// Repo directory URL if cloned successfully.
     private var repoDirectory: URL? = nil
+    /// An interface for calling shell commands.
+    private let cli = ProcessCommandLine()
 
     public init(ssh: String, branch: String) {
         self.ssh = ssh
@@ -59,8 +61,8 @@ public class BasicGitClient: GitClient {
         let repoDirectory = directory.url.resolvingSymlinksInPath()
 
         if directory.fileExists(at: ".git") {
-            let repoBranch = try shell("cd \(repoDirectory.path()) && git rev-parse --abbrev-ref HEAD")
-            let isRepoClean = try shell("cd \(repoDirectory.path()) && git status --porcelain") == ""
+            let repoBranch = try cli.shell("cd \(repoDirectory.path()) && git rev-parse --abbrev-ref HEAD")
+            let isRepoClean = try cli.shell("cd \(repoDirectory.path()) && git status --porcelain") == ""
 
             if repoBranch == branch && isRepoClean {
                 print("ℹ️   Repo exists and uses '\(branch)' branch - skipping `git clone`.")
@@ -78,21 +80,21 @@ public class BasicGitClient: GitClient {
         }
 
         print("ℹ️   Checking if `gh` CLI is installed")
-        guard try shellResult("which gh").status == 0 else {
+        guard try cli.shellResult("which gh").status == 0 else {
             throw GitClientError(
                 description: """
-                `BasicGitClient` requires `gh` CLI to be preinstalled and authorised on host.
+                `GitHubGitClient` requires `gh` CLI to be preinstalled and authorised on host.
                 Download it from https://cli.github.com/
                 """
             )
         }
-        print("   OK")
+        print("ℹ️   OK")
 
         print("ℹ️   Checking if `gh` CLI is authorised:")
-        print(try shell("gh auth status"))
+        try cli.shell("gh auth status")
 
         print("ℹ️   Cloning repo (branch: '\(branch)'):")
-        print(try shell("gh repo clone \(ssh) '\(repoDirectory.path())' -- --branch \(branch) --single-branch"))
+        try cli.shell("gh repo clone \(ssh) '\(repoDirectory.path())' -- --branch \(branch) --single-branch")
         self.repoDirectory = repoDirectory
     }
 
@@ -101,7 +103,7 @@ public class BasicGitClient: GitClient {
             fatalError("no repo directory")
         }
         print("ℹ️   Pulling the repo:")
-        print(try shell("cd \(repoDirectory.path()) && git pull"))
+        try cli.shell("cd \(repoDirectory.path()) && git pull")
     }
 
     public func commit(message: String) throws {
@@ -109,8 +111,8 @@ public class BasicGitClient: GitClient {
             fatalError("no repo directory")
         }
         print("ℹ️   Adding a commit:")
-        print(try shell("cd \(repoDirectory.path()) && git add -A"))
-        print(try shell("cd \(repoDirectory.path()) && git commit -m '\(message)'"))
+        try cli.shell("cd \(repoDirectory.path()) && git add -A")
+        try cli.shell("cd \(repoDirectory.path()) && git commit -m '\(message)'")
     }
 
     public func push() throws {
@@ -118,6 +120,6 @@ public class BasicGitClient: GitClient {
             fatalError("no repo directory")
         }
         print("ℹ️   Pushing changes:")
-        print(try shell("cd \(repoDirectory.path()) && git push"))
+        try cli.shell("cd \(repoDirectory.path()) && git push")
     }
 }
