@@ -10,6 +10,14 @@ import TestUtilities
 @testable import DatadogInternal
 
 class CoreRegistryTest: XCTestCase {
+    override func tearDown() {
+        // make sure to clean the registry:
+        // conccurency test can leve the registry unclean
+        CoreRegistry.unregisterDefault()
+        CoreRegistry.unregisterInstance(named: "test")
+        super.tearDown()
+    }
+
     func testRegistration() {
         let core = PassthroughCoreMock()
         CoreRegistry.register(default: core)
