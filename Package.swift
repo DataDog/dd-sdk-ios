@@ -122,7 +122,6 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .product(name: "OpenTelemetryApi", package: "opentelemetry-swift"),
                 .product(name: "OpenTelemetrySdk", package: "opentelemetry-swift"),
-                .product(name: "InMemoryExporter", package: "opentelemetry-swift"),
             ],
             path: "DatadogTrace/Sources"
         ),

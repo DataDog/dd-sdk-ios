@@ -229,6 +229,10 @@
 		61FDBA15269722B4001D9D43 /* CrashReportMinifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA14269722B4001D9D43 /* CrashReportMinifierTests.swift */; };
 		61FDBA1726974CA9001D9D43 /* DDCrashReportBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FDBA1626974CA9001D9D43 /* DDCrashReportBuilderTests.swift */; };
 		61FF282824B8A31E000B3D9B /* RUMEventMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */; };
+		8112883E2A31D58500081A65 /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 8112883D2A31D58500081A65 /* OpenTelemetryApi */; };
+		811288402A31D58500081A65 /* OpenTelemetrySdk in Frameworks */ = {isa = PBXBuildFile; productRef = 8112883F2A31D58500081A65 /* OpenTelemetrySdk */; };
+		811288422A31D59900081A65 /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 811288412A31D59900081A65 /* OpenTelemetryApi */; };
+		811288442A31D59E00081A65 /* OpenTelemetrySdk in Frameworks */ = {isa = PBXBuildFile; productRef = 811288432A31D59E00081A65 /* OpenTelemetrySdk */; };
 		9E55407C25812D1C00F6E3AD /* RUMMonitor+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E55407B25812D1C00F6E3AD /* RUMMonitor+objc.swift */; };
 		9E58E8E324615EDA008E5063 /* JSONEncoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E58E8E224615EDA008E5063 /* JSONEncoderTests.swift */; };
 		9E5B6D2E270C84B4002499B8 /* RUMMonitorE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5B6D2D270C84B4002499B8 /* RUMMonitorE2ETests.swift */; };
@@ -2459,7 +2463,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				811288402A31D58500081A65 /* OpenTelemetrySdk in Frameworks */,
 				D2C1A50E29C4C4EF00946C31 /* DatadogInternal.framework in Frameworks */,
+				8112883E2A31D58500081A65 /* OpenTelemetryApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2502,7 +2508,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				811288442A31D59E00081A65 /* OpenTelemetrySdk in Frameworks */,
 				D2C1A57429C4F30000946C31 /* DatadogInternal.framework in Frameworks */,
+				811288422A31D59900081A65 /* OpenTelemetryApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5239,6 +5247,8 @@
 			dependencies = (
 			);
 			name = "DatadogInternal iOS";
+			packageProductDependencies = (
+			);
 			productName = DatadogInternal;
 			productReference = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */;
 			productType = "com.apple.product-type.framework";
@@ -5355,6 +5365,10 @@
 				D2C1A51129C4C4EF00946C31 /* PBXTargetDependency */,
 			);
 			name = "DatadogTrace iOS";
+			packageProductDependencies = (
+				8112883D2A31D58500081A65 /* OpenTelemetryApi */,
+				8112883F2A31D58500081A65 /* OpenTelemetrySdk */,
+			);
 			productName = DatadogTrace;
 			productReference = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */;
 			productType = "com.apple.product-type.framework";
@@ -5449,6 +5463,10 @@
 				D2C1A57729C4F30000946C31 /* PBXTargetDependency */,
 			);
 			name = "DatadogTrace tvOS";
+			packageProductDependencies = (
+				811288412A31D59900081A65 /* OpenTelemetryApi */,
+				811288432A31D59E00081A65 /* OpenTelemetrySdk */,
+			);
 			productName = DatadogTrace;
 			productReference = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */;
 			productType = "com.apple.product-type.framework";
@@ -5729,6 +5747,9 @@
 				Base,
 			);
 			mainGroup = 61133B78242393DE00786299;
+			packageReferences = (
+				8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */,
+			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -11719,10 +11740,41 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/open-telemetry/opentelemetry-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		6152C83D24BE1C91006A1679 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;
+		};
+		8112883D2A31D58500081A65 /* OpenTelemetryApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetryApi;
+		};
+		8112883F2A31D58500081A65 /* OpenTelemetrySdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetrySdk;
+		};
+		811288412A31D59900081A65 /* OpenTelemetryApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetryApi;
+		};
+		811288432A31D59E00081A65 /* OpenTelemetrySdk */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8112883C2A31D58500081A65 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetrySdk;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
