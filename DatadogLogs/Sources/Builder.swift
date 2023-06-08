@@ -123,7 +123,7 @@ public class Builder {
     }
 
     /// Builds `DatadogLogger` object.
-    public func build(in core: DatadogCoreProtocol = defaultDatadogCore) -> DatadogLogger {
+    public func build(in core: DatadogCoreProtocol = CoreRegistry.default) -> DatadogLogger {
         do {
             let logger = try buildOrThrow(in: core)
             return DatadogLogger(logger)

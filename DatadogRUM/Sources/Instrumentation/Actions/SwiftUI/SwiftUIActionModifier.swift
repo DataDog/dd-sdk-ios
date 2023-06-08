@@ -51,7 +51,7 @@ public extension SwiftUI.View {
         name: String,
         attributes: [String: Encodable] = [:],
         count: Int = 1,
-        in core: DatadogCoreProtocol = defaultDatadogCore
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> some View {
         return modifier(
             RUMTapActionModifier(

@@ -17,13 +17,13 @@ class DDGlobalTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
-        defaultDatadogCore = core
+        CoreRegistry.register(default: core)
     }
 
     override func tearDown() {
         core.flushAndTearDown()
         core = nil
-        defaultDatadogCore = NOPDatadogCore()
+        CoreRegistry.unregisterDefault()
         super.tearDown()
     }
     // MARK: - Test Global Tracer

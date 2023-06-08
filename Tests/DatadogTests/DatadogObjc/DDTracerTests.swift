@@ -18,11 +18,11 @@ class DDTracerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
-        defaultDatadogCore = core
+        CoreRegistry.register(default: core)
     }
 
     override func tearDown() {
-        defaultDatadogCore = NOPDatadogCore()
+        CoreRegistry.unregisterDefault()
         core.flushAndTearDown()
         core = nil
         super.tearDown()

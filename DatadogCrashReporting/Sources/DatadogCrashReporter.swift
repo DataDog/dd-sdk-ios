@@ -9,7 +9,7 @@ import DatadogInternal
 
 public final class DatadogCrashReporter {
     /// Initializes the Datadog Crash Reporter.
-    public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) {
+    public static func initialize(in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
             let contextProvider = CrashContextCoreProvider()
 

@@ -19,11 +19,11 @@ class DDLoggerTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
-        defaultDatadogCore = core
+        CoreRegistry.register(default: core)
     }
 
     override func tearDown() {
-        defaultDatadogCore = NOPDatadogCore()
+        CoreRegistry.unregisterDefault()
         core.flushAndTearDown()
         core = nil
         super.tearDown()
@@ -31,7 +31,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLogsWithDifferentLevels() throws {
         let feature: DatadogLogsFeature = .mockAny()
-        try defaultDatadogCore.register(feature: feature)
+        try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -53,7 +53,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingNSError() throws {
         let feature: DatadogLogsFeature = .mockAny()
-        try defaultDatadogCore.register(feature: feature)
+        try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -85,7 +85,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingMessageAttributes() throws {
         let feature: DatadogLogsFeature = .mockAny()
-        try defaultDatadogCore.register(feature: feature)
+        try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -110,7 +110,7 @@ class DDLoggerTests: XCTestCase {
 
     func testSendingLoggerAttributes() throws {
         let feature: DatadogLogsFeature = .mockAny()
-        try defaultDatadogCore.register(feature: feature)
+        try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 
@@ -152,7 +152,7 @@ class DDLoggerTests: XCTestCase {
         )
 
         let feature: DatadogLogsFeature = .mockAny()
-        try defaultDatadogCore.register(feature: feature)
+        try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
 

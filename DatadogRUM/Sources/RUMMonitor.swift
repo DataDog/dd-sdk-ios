@@ -166,7 +166,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
     /// Initializes the Datadog RUM Monitor.
     // swiftlint:disable:next function_default_parameter_at_end
     public static func initialize(
-        in core: DatadogCoreProtocol = defaultDatadogCore,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
         configuration: RUMConfiguration
     ) throws {
         do {
@@ -221,7 +221,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
         }
     }
 
-    public static func shared(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor {
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> DDRUMMonitor {
         do {
             if core is NOPDatadogCore {
                 throw ProgrammerError(
@@ -643,7 +643,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     // MARK: - Debugging
 
-    public static func enableRUMDebugging(_ enabled: Bool, in core: DatadogCoreProtocol = defaultDatadogCore) {
+    public static func enableRUMDebugging(_ enabled: Bool, in core: DatadogCoreProtocol = CoreRegistry.default) {
         core.get(feature: DatadogRUMFeature.self)?
             .monitor.enableRUMDebugging(enabled)
     }

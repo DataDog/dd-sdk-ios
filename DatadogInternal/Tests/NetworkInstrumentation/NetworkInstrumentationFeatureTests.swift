@@ -200,8 +200,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let delegate3 = DatadogURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
 
         // When
-        defaultDatadogCore = core
-        defer { defaultDatadogCore = NOPDatadogCore() }
+        CoreRegistry.register(default: core)
+        defer { CoreRegistry.unregisterDefault() }
 
         // Then
         XCTAssertNotNil(delegate1.interceptor)
@@ -211,8 +211,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
         // Given
-        defaultDatadogCore = core
-        defer { defaultDatadogCore = NOPDatadogCore() }
+        CoreRegistry.register(default: core)
+        defer { CoreRegistry.unregisterDefault() }
 
         // When
         let delegate1 = DatadogURLSessionDelegate()

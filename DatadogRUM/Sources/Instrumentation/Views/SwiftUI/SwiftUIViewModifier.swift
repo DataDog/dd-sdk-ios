@@ -58,7 +58,7 @@ public extension SwiftUI.View {
     func trackRUMView(
         name: String,
         attributes: [AttributeKey: AttributeValue] = [:],
-        in core: DatadogCoreProtocol = defaultDatadogCore
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> some View {
         let path = "\(name)/\(typeDescription.hashValue)"
         let instrumentation = core.get(feature: DatadogRUMFeature.self)?.instrumentation

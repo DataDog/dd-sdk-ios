@@ -31,11 +31,11 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         ),
         .init(
             assert: {
-                defaultDatadogCore is NOPDatadogCore
+                CoreRegistry.default is NOPDatadogCore
             },
-            problem: "`defaultDatadogCore` must be reset after each test.",
+            problem: "`CoreRegistry.default` must be reset after each test.",
             solution: """
-            Make sure `defaultDatadogCore` is set to `NOOPDatadogCore` before and after each test.
+            Make sure `CoreRegistry.unregisterDefault()` is called after the end of test that register a default core.
             """
         ),
         .init(

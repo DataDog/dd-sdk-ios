@@ -6,8 +6,6 @@
 
 import Foundation
 
-public var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
-
 /// A Datadog Core holds a set of Features and is responsible for managing their storage
 /// and upload mechanism. It also provides a thread-safe scope for writing events.
 ///
