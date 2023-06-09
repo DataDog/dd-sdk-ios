@@ -236,29 +236,6 @@ class DatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
     }
 
-    func testSupplyingRumDebugLaunchArgument_itSetsRumDebug() {
-        let mockProcessInfo = ProcessInfoMock(
-            arguments: [Datadog.LaunchArguments.DebugRUM]
-        )
-
-        let configuration = rumBuilder
-            .build()
-
-        Datadog.initialize(
-            appContext: .mockWith(
-                processInfo: mockProcessInfo
-            ),
-            trackingConsent: .pending,
-            configuration: configuration
-        )
-
-        XCTAssertTrue(Datadog.debugRUM)
-
-        // Clear debug after test
-        Datadog.debugRUM = false
-        Datadog.flushAndDeinitialize()
-    }
-
     // MARK: - Public APIs
 
     func testTrackingConsent() {
@@ -393,10 +370,6 @@ class DatadogTests: XCTestCase {
 
     func testDefaultVerbosityLevel() {
         XCTAssertNil(Datadog.verbosityLevel)
-    }
-
-    func testDefaultDebugRUM() {
-        XCTAssertFalse(Datadog.debugRUM)
     }
 
     func testDeprecatedAPIs() {

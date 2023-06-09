@@ -92,7 +92,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.verbosityLevel = .debug
 
         // Enable RUM Views debugging
-        Datadog.debugRUM = true
+        RUMMonitor.shared().enableRUMDebugging(true)
 
         // Launch initial screen depending on the launch configuration
         #if os(iOS)
