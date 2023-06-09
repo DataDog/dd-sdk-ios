@@ -31,7 +31,7 @@ public final class CoreRegistry {
         register(instance, named: defaultInstanceName)
     }
 
-    /// Register an instance of core instance with the given key.
+    /// Register an instance of core instance with the given name.
     ///
     /// - Parameters:
     ///   - instance: The core instance
@@ -44,7 +44,7 @@ public final class CoreRegistry {
         }
     }
 
-    /// Unregisters the instance for the given key.
+    /// Unregisters the instance for the given name.
     ///
     /// - Parameter name: The name of the instance to unregister.
     /// - Returns: The instance that was removed, or nil if the key was not present in the registry.
@@ -61,7 +61,7 @@ public final class CoreRegistry {
         unregisterInstance(named: defaultInstanceName)
     }
 
-    /// Returns the instance for the given key.
+    /// Returns the instance for the given name.
     ///
     /// - Parameter name: The name of the instance to get.
     /// - Returns: The core instance if it exists, `NOPDatadogCore` instance otherwise.
