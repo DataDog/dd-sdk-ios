@@ -57,6 +57,7 @@ public struct RUMConfiguration {
     /* internal */ public let vitalsFrequency: TimeInterval?
     /* internal */ public let dateProvider: DateProvider
     /* internal */ public let testExecutionId: String?
+    /* internal */ public let processInfo: ProcessInfo
 
     let uuidGenerator: RUMUUIDGenerator
 
@@ -81,7 +82,8 @@ public struct RUMConfiguration {
         vitalsFrequency: TimeInterval? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         customIntakeURL: URL? = nil,
-        testExecutionId: String? = nil
+        testExecutionId: String? = nil,
+        processInfo: ProcessInfo = .processInfo
     ) {
         self.customIntakeURL = customIntakeURL
         self.applicationID = applicationID
@@ -105,6 +107,7 @@ public struct RUMConfiguration {
         self.vitalsFrequency = vitalsFrequency
         self.dateProvider = dateProvider
         self.testExecutionId = testExecutionId
+        self.processInfo = processInfo
     }
 
     init(
@@ -129,7 +132,8 @@ public struct RUMConfiguration {
         vitalsFrequency: TimeInterval? = nil,
         dateProvider: DateProvider = SystemDateProvider(),
         customIntakeURL: URL? = nil,
-        testExecutionId: String? = nil
+        testExecutionId: String? = nil,
+        processInfo: ProcessInfo = .processInfo
     ) {
         self.customIntakeURL = customIntakeURL
         self.applicationID = applicationID
@@ -153,5 +157,6 @@ public struct RUMConfiguration {
         self.vitalsFrequency = vitalsFrequency
         self.dateProvider = dateProvider
         self.testExecutionId = testExecutionId
+        self.processInfo = processInfo
     }
 }

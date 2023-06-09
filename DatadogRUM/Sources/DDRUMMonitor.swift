@@ -14,6 +14,12 @@ import DatadogInternal
 public class DDRUMMonitor {
     // MARK: - Public methods
 
+    /// Utility setting to inspect the active RUM View.
+    /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
+    /// May be used to debug issues with RUM instrumentation in your app.
+    /// Default is `false`.
+    public func enableRUMDebugging(_ enabled: Bool) { }
+
     /// Notifies that the View starts being presented to the user.
     /// - Parameters:
     ///   - viewController: the instance of `UIViewController` representing this View.

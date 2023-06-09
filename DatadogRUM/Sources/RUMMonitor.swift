@@ -163,6 +163,11 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
 
     // MARK: - Initialization
 
+    // MARK: - Internal
+    internal struct LaunchArguments {
+        static let DebugRUM = "DD_DEBUG_RUM"
+    }
+
     /// Initializes the Datadog RUM Monitor.
     // swiftlint:disable:next function_default_parameter_at_end
     public static func initialize(
@@ -199,6 +204,13 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
                     time: configuration.dateProvider.now
                 )
             )
+
+            // Now that RUM is initialized, override the debugRUM value
+            let debugRumOverride = configuration.processInfo.arguments.contains(LaunchArguments.DebugRUM)
+            if debugRumOverride {
+                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
+                feature.monitor.enableRUMDebugging(true)
+            }
 
             TelemetryCore(core: core)
                 .configuration(
@@ -648,7 +660,7 @@ public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber {
             .monitor.enableRUMDebugging(enabled)
     }
 
-    public func enableRUMDebugging(_ enabled: Bool) {
+    public override func enableRUMDebugging(_ enabled: Bool) {
         queue.async {
             self.debugging = enabled ? RUMDebugging() : nil
             self.debugging?.debug(applicationScope: self.applicationScope)

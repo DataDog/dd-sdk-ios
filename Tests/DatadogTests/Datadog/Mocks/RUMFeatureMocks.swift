@@ -38,7 +38,8 @@ extension RUMConfiguration {
         firstPartyHosts: FirstPartyHosts = .init(),
         vitalsFrequency: TimeInterval? = 0.5,
         dateProvider: DateProvider = SystemDateProvider(),
-        customIntakeURL: URL? = nil
+        customIntakeURL: URL? = nil,
+        processInfo: ProcessInfo = .processInfo
     ) -> Self {
         return .init(
             applicationID: applicationID,
@@ -58,7 +59,8 @@ extension RUMConfiguration {
             firstPartyHosts: firstPartyHosts,
             vitalsFrequency: vitalsFrequency,
             dateProvider: dateProvider,
-            customIntakeURL: customIntakeURL
+            customIntakeURL: customIntakeURL,
+            processInfo: processInfo
         )
     }
 }

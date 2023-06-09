@@ -95,13 +95,6 @@ public class Datadog {
                 ),
                 instanceName: instanceName
             )
-
-            // Now that RUM is potentially initialized, override the debugRUM value
-            let debugRumOverride = appContext.processInfo.arguments.contains(LaunchArguments.DebugRUM)
-            if debugRumOverride {
-                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
-                Datadog.debugRUM = true
-            }
         } catch {
             consolePrint("\(error)")
         }
@@ -111,14 +104,6 @@ public class Datadog {
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
     public static var verbosityLevel: CoreLoggerLevel? = nil
-
-    /// Utility setting to inspect the active RUM View.
-    /// If set, a debugging outline will be displayed on top of the application, describing the name of the active RUM View.
-    /// May be used to debug issues with RUM instrumentation in your app.
-    /// Default is `false`.
-    public static var debugRUM = false {
-        didSet { RUMMonitor.enableRUMDebugging(debugRUM) }
-    }
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
@@ -176,7 +161,6 @@ public class Datadog {
     // MARK: - Internal
     internal struct LaunchArguments {
         static let Debug = "DD_DEBUG"
-        static let DebugRUM = "DD_DEBUG_RUM"
     }
 
     private static func initializeOrThrow(
@@ -218,10 +202,6 @@ public class Datadog {
         // First, initialize features:
         if let rumConfiguration = configuration.rum {
             try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
-
-            if Datadog.debugRUM {
-                RUMMonitor.enableRUMDebugging(debugRUM, in: core)
-            }
 
             CITestIntegration.active?.startIntegration()
         }

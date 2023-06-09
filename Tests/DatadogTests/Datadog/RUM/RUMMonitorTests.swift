@@ -1274,23 +1274,30 @@ class RUMMonitorTests: XCTestCase {
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
         // given
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-        CoreRegistry.register(default: core)
-        defer { CoreRegistry.unregisterDefault() }
-
-        let monitor = RUMMonitor.shared(in: core).dd
+        let monitor = try createTestableRUMMonitor().dd
 
         monitor.queue.sync { }
         XCTAssertNil(monitor.debugging)
 
         // when & then
-        Datadog.debugRUM = true
+        monitor.enableRUMDebugging(true)
         monitor.queue.sync { }
         XCTAssertNotNil(monitor.debugging)
 
-        Datadog.debugRUM = false
+        monitor.enableRUMDebugging(false)
         monitor.queue.sync { }
         XCTAssertNil(monitor.debugging)
+    }
+
+    func testSupplyingRumDebugLaunchArgument_itSetsRumDebug() throws {
+        let mockProcessInfo = ProcessInfoMock(
+            arguments: [RUMMonitor.LaunchArguments.DebugRUM]
+        )
+
+        try RUMMonitor.initialize(in: core, configuration: .mockWith(processInfo: mockProcessInfo))
+        let monitor = RUMMonitor.shared(in: core).dd
+        monitor.dd.queue.sync { }
+        XCTAssertNotNil(monitor.dd.debugging)
     }
 
     func testSendingUserActionEvents_whenGlobalAttributesHaveConflict() throws {
