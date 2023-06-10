@@ -9,8 +9,8 @@ import Foundation
 /// Block size binary type
 internal typealias BlockSize = UInt32
 
-/// Default max data lenght in block (safety check) - 10 MB
-private let MAX_DATA_LENGHT: UInt64 = 10 * 1_024 * 1_024
+/// Default max data length in block (safety check) - 10 MB
+private let MAX_DATA_LENGTH: UInt64 = 10 * 1_024 * 1_024
 
 /// Block type supported in data stream
 internal enum BlockType: UInt16 {
@@ -37,22 +37,22 @@ internal struct DataBlock {
     /// The data.
     var data: Data
 
-    /// Returns a Data block in Type-Lenght-Value format.
+    /// Returns a Data block in Type-Length-Value format.
     ///
     /// A block follow TLV with bytes aligned such as:
     ///
     ///     +-  2 bytes -+-   4 bytes   -+- n bytes -|
     ///     | block type | data size (n) |    data   |
     ///     +------------+---------------+-----------+
-    /// - Parameter maxLenght: Maximum data lenght of a block.
+    /// - Parameter maxLength: Maximum data length of a block.
     /// - Returns: a data block in TLV.
-    func serialize(maxLenght: UInt64 = MAX_DATA_LENGHT) throws -> Data {
+    func serialize(maxLength: UInt64 = MAX_DATA_LENGTH) throws -> Data {
         var buffer = Data()
         // T
         withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
         // L
-        guard let length = BlockSize(exactly: data.count), length <= maxLenght else {
-            throw DataBlockError.bytesLengthExceedsLimit(limit: maxLenght)
+        guard let length = BlockSize(exactly: data.count), length <= maxLength else {
+            throw DataBlockError.bytesLengthExceedsLimit(limit: maxLength)
         }
         withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
         // V
@@ -69,8 +69,8 @@ internal final class DataBlockReader {
     /// The input data stream.
     private let stream: InputStream
 
-    /// Maximum data lenght of a block.
-    private let maxBlockLenght: UInt64
+    /// Maximum data length of a block.
+    private let maxBlockLength: UInt64
 
     /// Reads block from an input stream.
     ///
@@ -80,9 +80,9 @@ internal final class DataBlockReader {
     /// - Parameter stream: The input stream
     init(
         input stream: InputStream,
-        maxBlockLenght: UInt64 = MAX_DATA_LENGHT
+        maxBlockLength: UInt64 = MAX_DATA_LENGTH
     ) {
-        self.maxBlockLenght = maxBlockLenght
+        self.maxBlockLength = maxBlockLength
         self.stream = stream
         stream.open()
     }
@@ -118,7 +118,7 @@ internal final class DataBlockReader {
     ///
     /// - Throws: `DataBlockError` while reading the input stream.
     /// - Returns: The block sequence found in the input
-    func all(maxDataLenght: UInt64 = MAX_DATA_LENGHT) throws -> [DataBlock] {
+    func all(maxDataLength: UInt64 = MAX_DATA_LENGTH) throws -> [DataBlock] {
         var blocks: [DataBlock] = []
 
         while let block = try next() {
@@ -196,8 +196,8 @@ internal final class DataBlockReader {
         // length.
         // Additionally check that length hasn't been corrupted and
         // we don't try to generate a huge buffer.
-        guard let length = Int(exactly: size), length <= maxBlockLenght else {
-            throw DataBlockError.bytesLengthExceedsLimit(limit: maxBlockLenght)
+        guard let length = Int(exactly: size), length <= maxBlockLength else {
+            throw DataBlockError.bytesLengthExceedsLimit(limit: maxBlockLength)
         }
 
         return try read(length: length)
@@ -214,7 +214,7 @@ extension DataBlockError: CustomStringConvertible {
         case .invalidByteSequence(let expected, let got):
             return "Invalid bytes sequence in DataBlock: expected \(expected) bytes but got \(got)"
         case .bytesLengthExceedsLimit(let limit):
-            return "DataBlock lenght exceeds limit of \(limit) bytes"
+            return "DataBlock length exceeds limit of \(limit) bytes"
         case .dataAllocationFailure:
             return "Allocation failure while reading stream"
         case .endOfStream:
