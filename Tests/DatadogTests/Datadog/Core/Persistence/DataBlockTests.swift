@@ -98,7 +98,7 @@ class DataBlockTests: XCTestCase {
 
     func testDataBlockReader_readsBytesUnderLengthLimit() throws {
         let data = Data([0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0xFF, 0xFF])
-        let reader = DataBlockReader(data: data, maxBlockLenght: 2)
+        let reader = DataBlockReader(data: data, maxBlockLength: 2)
 
         let block = try reader.next()
         XCTAssertEqual(block?.type, .event)
@@ -108,7 +108,7 @@ class DataBlockTests: XCTestCase {
 
     func testDataBlockReader_skipsExceedingBytesLengthLimit() throws {
         let data = Data([0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0xFF, 0xFF])
-        let reader = DataBlockReader(data: data, maxBlockLenght: 1)
+        let reader = DataBlockReader(data: data, maxBlockLength: 1)
 
         do {
             _ = try reader.next()
@@ -145,11 +145,11 @@ class DataBlockTests: XCTestCase {
 }
 
 private extension DataBlockReader {
-    convenience init(data: Data, maxBlockLenght: UInt64? = nil) {
+    convenience init(data: Data, maxBlockLength: UInt64? = nil) {
         let stream = InputStream(data: data)
 
-        if let maxBlockLenght = maxBlockLenght {
-            self.init(input: stream, maxBlockLenght: maxBlockLenght)
+        if let maxBlockLength = maxBlockLength {
+            self.init(input: stream, maxBlockLength: maxBlockLength)
         } else {
             self.init(input: stream)
         }
