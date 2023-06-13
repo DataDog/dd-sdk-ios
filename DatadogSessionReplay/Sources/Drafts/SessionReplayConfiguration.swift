@@ -18,11 +18,19 @@ public struct SessionReplayConfiguration {
     /// the target instance of Datadog SDK.
     public var customUploadURL: URL?
 
+    /// Defines the percentage of sessions that should be tracked by Session Replay.
+    ///
+    /// It should be a number between 0.0 and 100.0, where 0.0 indicates that no sessions should be tracked and 100.0 indicates that all sessions should be tracked.
+    /// By default, it is set to 0.0. Adjust the `samplingRate` based on the needs of your application and any resource constraints.
+    public var samplingRate: Float = 0.0
+
     public init(
         privacy: SessionReplayPrivacy = .maskAll,
-        customUploadURL: URL? = nil
+        customUploadURL: URL? = nil,
+        samplingRate: Float = 0.0
     ) {
         self.privacy = privacy
         self.customUploadURL = customUploadURL
+        self.samplingRate = samplingRate
     }
 }

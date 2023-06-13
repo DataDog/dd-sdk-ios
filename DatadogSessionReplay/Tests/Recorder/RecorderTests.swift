@@ -36,6 +36,7 @@ class RecorderTests: XCTestCase {
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: numberOfSnapshots),
+            recordingCoordinator: RecordingCoordinationMock(isSampled: true),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
             snapshotProcessor: processor
@@ -61,6 +62,7 @@ class RecorderTests: XCTestCase {
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
+            recordingCoordinator: RecordingCoordinationMock(isSampled: .mockRandom(), currentRUMContext: nil),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             snapshotProcessor: processor
@@ -87,6 +89,7 @@ class RecorderTests: XCTestCase {
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
+            recordingCoordinator: RecordingCoordinationMock(isSampled: true),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
@@ -113,6 +116,7 @@ class RecorderTests: XCTestCase {
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: TestScheduler(numberOfRepeats: 1),
+            recordingCoordinator: RecordingCoordinationMock(isSampled: true),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()

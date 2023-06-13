@@ -28,6 +28,16 @@ internal class Recorder: Recording {
         let privacy: SessionReplayPrivacy
         /// The RUM context from the moment of requesting snapshot.
         let rumContext: RUMContext
+
+        internal init(
+            date: Date = Date(),
+            privacy: SessionReplayPrivacy,
+            rumContext: RUMContext
+        ) {
+            self.date = date
+            self.privacy = privacy
+            self.rumContext = rumContext
+        }
     }
 
     /// Swizzles `UIApplication` for recording touch events.
@@ -35,24 +45,21 @@ internal class Recorder: Recording {
 
     /// Schedules view tree captures.
     private let scheduler: Scheduler
+    /// Coordinates recording schedule
+    private let recordingCoordinator: RecordingCoordination
     /// Captures view tree snapshot (an intermediate representation of the view tree).
     private let viewTreeSnapshotProducer: ViewTreeSnapshotProducer
     /// Captures touch snapshot.
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
-
-    /// Notifies on RUM context changes through integration with `DatadogCore`.
-    private let rumContextObserver: RUMContextObserver
-    /// Last received RUM context (or `nil` if RUM session is not sampled).
-    /// It's synchronized through `scheduler.queue` (main thread).
-    private var currentRUMContext: RUMContext?
     /// Current content recording policy for creating snapshots.
     private var currentPrivacy: SessionReplayPrivacy
 
     convenience init(
         configuration: SessionReplayConfiguration,
         rumContextObserver: RUMContextObserver,
+        contextPublisher: SRContextPublisher,
         processor: Processing,
         scheduler: Scheduler = MainThreadScheduler(interval: 0.1)
     ) throws {
@@ -65,11 +72,19 @@ internal class Recorder: Recording {
             windowObserver: windowObserver
         )
 
+        let recordingCoordinator = RecordingCoordinator(
+            scheduler: scheduler,
+            rumContextObserver: rumContextObserver,
+            contextPublisher: contextPublisher,
+            sampler: Sampler(samplingRate: configuration.samplingRate)
+        )
+
         self.init(
             configuration: configuration,
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             scheduler: scheduler,
+            recordingCoordinator: recordingCoordinator,
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: processor
@@ -81,26 +96,22 @@ internal class Recorder: Recording {
         rumContextObserver: RUMContextObserver,
         uiApplicationSwizzler: UIApplicationSwizzler,
         scheduler: Scheduler,
+        recordingCoordinator: RecordingCoordination,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: Processing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.scheduler = scheduler
+        self.recordingCoordinator = recordingCoordinator
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
-        self.rumContextObserver = rumContextObserver
         self.currentPrivacy = configuration.privacy
 
         scheduler.schedule { [weak self] in
             self?.captureNextRecord()
         }
-
-        rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
-            self?.currentRUMContext = rumContext
-        }
-
         uiApplicationSwizzler.swizzle()
     }
 
@@ -128,13 +139,13 @@ internal class Recorder: Recording {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
-            guard let rumContext = currentRUMContext else {
-                // The RUM context was not yet received or current RUM session is not sampled.
+            guard recordingCoordinator.isSampled else {
                 return
             }
-
+            guard let rumContext = recordingCoordinator.currentRUMContext else {
+                return
+            }
             let recorderContext = Context(
-                date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
                 privacy: currentPrivacy,
                 rumContext: rumContext
             )

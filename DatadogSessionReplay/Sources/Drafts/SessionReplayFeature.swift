@@ -21,11 +21,6 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
 
-    // MARK: - Integrations with other features
-
-    /// Updates other Features with SR context.
-    private let contextPublisher: SRContextPublisher
-
     // MARK: - Main Components
 
     private let recorder: Recording
@@ -49,6 +44,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         let recorder = try Recorder(
             configuration: configuration,
             rumContextObserver: messageReceiver,
+            contextPublisher: SRContextPublisher(core: core),
             processor: processor
         )
 
@@ -57,13 +53,10 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.processor = processor
         self.writer = writer
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
-        self.contextPublisher = SRContextPublisher(core: core)
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: UInt64(10).MB,
             maxObjectSize: UInt64(10).MB
         )
-        // Set initial SR context (it is configured, but not yet started):
-        contextPublisher.setRecordingIsPending(false)
     }
 
     func register(sessionReplayScope: FeatureScope) {
@@ -73,12 +66,10 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     // MARK: - SessionReplayController
 
     func start() {
-        contextPublisher.setRecordingIsPending(true)
         recorder.start()
     }
 
     func stop() {
-        contextPublisher.setRecordingIsPending(false)
         recorder.stop()
     }
 
