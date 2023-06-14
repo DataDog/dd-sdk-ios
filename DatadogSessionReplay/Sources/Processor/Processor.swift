@@ -75,8 +75,8 @@ internal class Processor: Processing {
 
         var records: [SRRecord] = []
         // Create records for describing UI:
-        if viewTreeSnapshot.rumContext != lastSnapshot?.rumContext {
-            // If RUM context has changed, new segment should be started.
+        if viewTreeSnapshot.rumContext.ids != lastSnapshot?.rumContext.ids {
+            // If RUM context ids have changed, new segment should be started.
             // Segment must always start with "meta" → "focus" → "full snapshot" records.
             records.append(recordsBuilder.createMetaRecord(from: viewTreeSnapshot))
             records.append(recordsBuilder.createFocusRecord(from: viewTreeSnapshot))

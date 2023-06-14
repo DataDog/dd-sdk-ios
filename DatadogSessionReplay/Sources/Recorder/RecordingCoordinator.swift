@@ -28,6 +28,11 @@ internal class RecordingCoordinator: RecordingCoordination {
     private(set) var isSampled = false {
         didSet {
             contextPublisher.setRecordingIsPending(isSampled)
+            if isSampled {
+                scheduler.start()
+            } else {
+                scheduler.stop()
+            }
         }
     }
 
@@ -49,7 +54,7 @@ internal class RecordingCoordinator: RecordingCoordination {
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
             if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID {
-                self?.isSampled = sampler.sample()
+                self?.isSampled = sampler.sample() && self?.currentRUMContext != nil
             }
             self?.currentRUMContext = rumContext
         }
