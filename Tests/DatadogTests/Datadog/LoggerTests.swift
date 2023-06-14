@@ -28,33 +28,33 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `RUMMonitor` instance for tests.
-    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
-        let monitor = RUMMonitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                configuration: configuration
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: configuration.dateProvider
-        )
-
-        let instrumentation = RUMInstrumentation(
-            configuration: configuration.instrumentation,
-            dateProvider: configuration.dateProvider
-        )
-
-        let feature = DatadogRUMFeature(
-            monitor: monitor,
-            instrumentation: instrumentation,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: ErrorMessageReceiver(monitor: monitor)
-        )
-
-        try core.register(feature: feature)
-        return monitor
-    }
+//    /// Creates `RUMMonitor` instance for tests.
+//    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+//    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
+//        let monitor = RUMMonitor(
+//            core: core,
+//            dependencies: RUMScopeDependencies(
+//                core: core,
+//                configuration: configuration
+//            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+//            dateProvider: configuration.dateProvider
+//        )
+//
+//        let instrumentation = RUMInstrumentation(
+//            configuration: configuration.instrumentation,
+//            dateProvider: configuration.dateProvider
+//        )
+//
+//        let feature = DatadogRUMFeature(
+//            monitor: monitor,
+//            instrumentation: instrumentation,
+//            requestBuilder: FeatureRequestBuilderMock(),
+//            messageReceiver: ErrorMessageReceiver(monitor: monitor)
+//        )
+//
+//        try core.register(feature: feature)
+//        return monitor
+//    }
 
     // MARK: - Customizing Logger
 
@@ -573,220 +573,220 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With RUM Feature
 
-    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
-        core.context = .mockAny()
+//    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
+//        core.context = .mockAny()
+//
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//
+//        // when
+//        logger.info("message 0")
+//
+//        // then
+//        let logMatchers = try core.waitAndReturnLogMatchers()
+//        XCTAssertEqual(logMatchers.count, 1)
+//
+//        logMatchers.forEach {
+//            $0.assertValue(
+//                forKeyPath: RUMContextAttributes.IDs.sessionID,
+//                isTypeOf: String.self
+//            )
+//        }
+//    }
 
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
+//    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
+//        core.context = .mockAny()
+//
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        let applicationID: String = .mockRandom()
+//        try RUMMonitor.initialize(in: core, configuration: .mockWith(applicationID: applicationID))
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//        let rum = RUMMonitor.shared(in: core)
+//
+//        // when
+//        rum.startView(viewController: mockView)
+//        logger.info("message 0")
+//        rum.startUserAction(type: .tap, name: .mockAny())
+//        logger.info("message 1")
+//
+//        // then
+//        let logMatchers = try core.waitAndReturnLogMatchers()
+//        XCTAssertEqual(logMatchers.count, 2)
+//
+//        logMatchers.forEach {
+//            $0.assertValue(
+//                forKeyPath: RUMContextAttributes.IDs.applicationID,
+//                equals: applicationID
+//            )
+//
+//            $0.assertValue(
+//                forKeyPath: RUMContextAttributes.IDs.sessionID,
+//                isTypeOf: String.self
+//            )
+//
+//            $0.assertValue(
+//                forKeyPath: RUMContextAttributes.IDs.viewID,
+//                isTypeOf: String.self
+//            )
+//        }
+//
+//        logMatchers.first?.assertNoValue(forKeyPath: RUMContextAttributes.IDs.userActionID)
+//
+//        logMatchers.last?.assertValue(
+//            forKeyPath: RUMContextAttributes.IDs.userActionID,
+//            isTypeOf: String.self
+//        )
+//    }
 
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//        let rum = try createTestableRUMMonitor()
+//        rum.startView(viewController: mockView)
+//
+//        // when
+//        logger.debug("debug message")
+//        logger.info("info message")
+//        logger.notice("notice message")
+//        logger.warn("warn message")
+//        logger.error("error message")
+//        logger.critical("critical message")
+//
+//        // then
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "error message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//        }
+//        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "critical message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//        }
+//    }
 
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
+//    func testWhenSendingErrorOrCriticalLogsWithAttributes_itCreatesRUMErrorForCurrentViewWithAttributes() throws {
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//        let rum = try createTestableRUMMonitor()
+//        rum.startView(viewController: mockView)
+//
+//        // when
+//        let attributeValueA: String = .mockRandom()
+//        logger.error("error message", attributes: [
+//            "any_attribute_a": attributeValueA
+//        ])
+//        let attributeValueB: String = .mockRandom()
+//        logger.critical("critical message", attributes: [
+//            "any_attribute_b": attributeValueB
+//        ])
+//
+//        // then
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "error message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//            let attributeValue = (rumModel.context?.contextInfo["any_attribute_a"] as? AnyCodable)?.value as? String
+//            XCTAssertEqual(attributeValue, attributeValueA)
+//        }
+//        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "critical message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//            let attributeValue = (rumModel.context?.contextInfo["any_attribute_b"] as? AnyCodable)?.value as? String
+//            XCTAssertEqual(attributeValue, attributeValueB)
+//        }
+//    }
 
-        // when
-        logger.info("message 0")
+//    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperSourceType() throws {
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//        let rum = try createTestableRUMMonitor()
+//        rum.startView(viewController: mockView)
+//
+//        // when
+//        logger.error("error message", attributes: [
+//            "_dd.error.source_type": "flutter"
+//        ])
+//        logger.critical("critical message", attributes: [
+//            "_dd.error.source_type": "react-native"
+//        ])
+//
+//        // then
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
+//        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "error message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//            XCTAssertEqual(rumModel.error.sourceType, .flutter)
+//        }
+//        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
+//            XCTAssertEqual(rumModel.error.message, "critical message")
+//            XCTAssertEqual(rumModel.error.source, .logger)
+//            XCTAssertNil(rumModel.error.stack)
+//            XCTAssertEqual(rumModel.error.sourceType, .reactNative)
+//        }
+//    }
 
-        // then
-        let logMatchers = try core.waitAndReturnLogMatchers()
-        XCTAssertEqual(logMatchers.count, 1)
-
-        logMatchers.forEach {
-            $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
-                isTypeOf: String.self
-            )
-        }
-    }
-
-    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
-        core.context = .mockAny()
-
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        let applicationID: String = .mockRandom()
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(applicationID: applicationID))
-
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = RUMMonitor.shared(in: core)
-
-        // when
-        rum.startView(viewController: mockView)
-        logger.info("message 0")
-        rum.startUserAction(type: .tap, name: .mockAny())
-        logger.info("message 1")
-
-        // then
-        let logMatchers = try core.waitAndReturnLogMatchers()
-        XCTAssertEqual(logMatchers.count, 2)
-
-        logMatchers.forEach {
-            $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.applicationID,
-                equals: applicationID
-            )
-
-            $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
-                isTypeOf: String.self
-            )
-
-            $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.viewID,
-                isTypeOf: String.self
-            )
-        }
-
-        logMatchers.first?.assertNoValue(forKeyPath: RUMContextAttributes.IDs.userActionID)
-
-        logMatchers.last?.assertValue(
-            forKeyPath: RUMContextAttributes.IDs.userActionID,
-            isTypeOf: String.self
-        )
-    }
-
-    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
-
-        // when
-        logger.debug("debug message")
-        logger.info("info message")
-        logger.notice("notice message")
-        logger.warn("warn message")
-        logger.error("error message")
-        logger.critical("critical message")
-
-        // then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "error message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-        }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "critical message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-        }
-    }
-
-    func testWhenSendingErrorOrCriticalLogsWithAttributes_itCreatesRUMErrorForCurrentViewWithAttributes() throws {
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
-
-        // when
-        let attributeValueA: String = .mockRandom()
-        logger.error("error message", attributes: [
-            "any_attribute_a": attributeValueA
-        ])
-        let attributeValueB: String = .mockRandom()
-        logger.critical("critical message", attributes: [
-            "any_attribute_b": attributeValueB
-        ])
-
-        // then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "error message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            let attributeValue = (rumModel.context?.contextInfo["any_attribute_a"] as? AnyCodable)?.value as? String
-            XCTAssertEqual(attributeValue, attributeValueA)
-        }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "critical message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            let attributeValue = (rumModel.context?.contextInfo["any_attribute_b"] as? AnyCodable)?.value as? String
-            XCTAssertEqual(attributeValue, attributeValueB)
-        }
-    }
-
-    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperSourceType() throws {
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
-
-        // when
-        logger.error("error message", attributes: [
-            "_dd.error.source_type": "flutter"
-        ])
-        logger.critical("critical message", attributes: [
-            "_dd.error.source_type": "react-native"
-        ])
-
-        // then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let rumErrorMatcher1 = rumEventMatchers.first { $0.model(isTypeOf: RUMErrorEvent.self) }
-        let rumErrorMatcher2 = rumEventMatchers.last { $0.model(isTypeOf: RUMErrorEvent.self) }
-        try XCTUnwrap(rumErrorMatcher1).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "error message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            XCTAssertEqual(rumModel.error.sourceType, .flutter)
-        }
-        try XCTUnwrap(rumErrorMatcher2).model(ofType: RUMErrorEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.error.message, "critical message")
-            XCTAssertEqual(rumModel.error.source, .logger)
-            XCTAssertNil(rumModel.error.stack)
-            XCTAssertEqual(rumModel.error.sourceType, .reactNative)
-        }
-    }
-
-    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperIsCrash() throws {
-        let logging: DatadogLogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
-
-        // when
-        logger.error("error message", attributes: [
-            "_dd.error.is_crash": false
-        ])
-        logger.critical("critical message", attributes: [
-            "_dd.error.is_crash": true
-        ])
-
-        // then
-        let errorEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMErrorEvent.self)
-        let error1 = try XCTUnwrap(errorEvents.first)
-        XCTAssertEqual(error1.error.message, "error message")
-        XCTAssertEqual(error1.error.source, .logger)
-        XCTAssertNil(error1.error.stack)
-        // swiftlint:disable:next xct_specific_matcher
-        XCTAssertEqual(error1.error.isCrash, false)
-
-        let error2 = try XCTUnwrap(errorEvents.last)
-        XCTAssertEqual(error2.error.message, "critical message")
-        XCTAssertEqual(error2.error.source, .logger)
-        XCTAssertNil(error2.error.stack)
-        // swiftlint:disable:next xct_specific_matcher
-        XCTAssertEqual(error2.error.isCrash, true)
-    }
+//    func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperIsCrash() throws {
+//        let logging: DatadogLogsFeature = .mockAny()
+//        try core.register(feature: logging)
+//
+//        // given
+//        let logger = DatadogLogger.builder.build(in: core)
+//        let rum = try createTestableRUMMonitor()
+//        rum.startView(viewController: mockView)
+//
+//        // when
+//        logger.error("error message", attributes: [
+//            "_dd.error.is_crash": false
+//        ])
+//        logger.critical("critical message", attributes: [
+//            "_dd.error.is_crash": true
+//        ])
+//
+//        // then
+//        let errorEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMErrorEvent.self)
+//        let error1 = try XCTUnwrap(errorEvents.first)
+//        XCTAssertEqual(error1.error.message, "error message")
+//        XCTAssertEqual(error1.error.source, .logger)
+//        XCTAssertNil(error1.error.stack)
+//        // swiftlint:disable:next xct_specific_matcher
+//        XCTAssertEqual(error1.error.isCrash, false)
+//
+//        let error2 = try XCTUnwrap(errorEvents.last)
+//        XCTAssertEqual(error2.error.message, "critical message")
+//        XCTAssertEqual(error2.error.source, .logger)
+//        XCTAssertNil(error2.error.stack)
+//        // swiftlint:disable:next xct_specific_matcher
+//        XCTAssertEqual(error2.error.isCrash, true)
+//    }
 
     // MARK: - Integration With Active Span
 

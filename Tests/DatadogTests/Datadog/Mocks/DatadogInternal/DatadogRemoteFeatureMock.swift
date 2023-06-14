@@ -7,10 +7,9 @@
 import Foundation
 import TestUtilities
 import DatadogInternal
-import Datadog
 
-internal struct DatadogRemoteFeatureMock: DatadogRemoteFeature {
-    static let name = "mock"
+internal class DatadogRemoteFeatureMock: DatadogRemoteFeature {
+    class var name: String { "mock" }
     var requestBuilder: FeatureRequestBuilder = FeatureRequestBuilderMock()
     var messageReceiver: FeatureMessageReceiver = FeatureMessageReceiverMock()
     var performanceOverride: PerformancePresetOverride? = nil

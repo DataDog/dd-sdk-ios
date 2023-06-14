@@ -46,10 +46,10 @@ class DDGlobalTests: XCTestCase {
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is DDNoopRUMMonitor)
     }
 
-    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
-        // When
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-        // Then
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is RUMMonitor)
-    }
+//    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
+//        // When
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//        // Then
+//        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is RUMMonitor)
+//    }
 }

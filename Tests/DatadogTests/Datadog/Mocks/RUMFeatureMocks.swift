@@ -972,6 +972,7 @@ class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
     }
 }
 
+// TODO: RUMM-2922 Delete from here, it is now available in DatadogRUMTests
 #if os(tvOS)
 typealias UIKitRUMUserActionsPredicateMock = UIPressRUMUserActionsPredicateMock
 #else

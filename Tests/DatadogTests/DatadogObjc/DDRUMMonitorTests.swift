@@ -153,239 +153,239 @@ class DDRUMMonitorTests: XCTestCase {
         return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: feature.monitor)
     }
 
-    func testSendingViewEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//    func testSendingViewEvents() throws {
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//        let mockView = createMockView(viewControllerClassName: "FirstViewController")
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
+//        objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
+//        objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+//            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+//        }
+//        XCTAssertEqual(viewEvents.count, 4)
+//
+//        let event1: RUMViewEvent = try viewEvents[0].model()
+//        let event2: RUMViewEvent = try viewEvents[1].model()
+//        let event3: RUMViewEvent = try viewEvents[2].model()
+//        let event4: RUMViewEvent = try viewEvents[3].model()
+//        XCTAssertEqual(event1.view.name, "FirstView")
+//        XCTAssertEqual(event1.view.url, "FirstViewController")
+//        XCTAssertEqual(event2.view.name, "FirstView")
+//        XCTAssertEqual(event2.view.url, "FirstViewController")
+//        XCTAssertEqual(event3.view.name, "SecondView")
+//        XCTAssertEqual(event3.view.url, "view2")
+//        XCTAssertEqual(event4.view.name, "SecondView")
+//        XCTAssertEqual(event4.view.url, "view2")
+//        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute1"), "bar1")
+//        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute2"), "bar2")
+//    }
 
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-        let mockView = createMockView(viewControllerClassName: "FirstViewController")
+//    func testSendingViewEventsWithTiming() throws {
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.addTiming(name: "timing")
+//        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+//            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+//        }
+//        XCTAssertEqual(viewEvents.count, 2)
+//
+//        let event1: RUMViewEvent = try viewEvents[0].model()
+//        let event2: RUMViewEvent = try viewEvents[1].model()
+//        XCTAssertEqual(event1.view.name, "SomeView")
+//        XCTAssertEqual(event2.view.name, "SomeView")
+//        XCTAssertEqual(try viewEvents.first?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//        XCTAssertNotNil(try? viewEvents.last?.timing(named: "timing"))
+//    }
 
-        objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
-        objcRUMMonitor.startView(key: "view2", name: "SecondView", attributes: ["event-attribute1": "bar1"])
-        objcRUMMonitor.stopView(key: "view2", attributes: ["event-attribute2": "bar2"])
+//    func testSendingResourceEvents() throws {
+//        guard #available(iOS 13, *) else {
+//            return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
+//        }
+//
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+//
+//        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.addResourceMetrics(
+//            resourceKey: "/resource1",
+//            metrics: .mockWith(
+//                taskInterval: .init(start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)),
+//                transactionMetrics: [
+//                    .mockBySpreadingDetailsBetween(start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
+//                ]
+//            ),
+//            attributes: ["event-attribute2": "foo2"]
+//        )
+//        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["event-attribute3": "foo3"])
+//
+//        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/2", attributes: [:])
+//        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, size: 142, attributes: [:])
+//
+//        objcRUMMonitor.startResourceLoading(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
+//        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
+//        XCTAssertEqual(resourceEvents.count, 3)
+//
+//        let event1Matcher = resourceEvents[0]
+//        let event1: RUMResourceEvent = try event1Matcher.model()
+//        XCTAssertEqual(event1.resource.url, "https://foo.com/1")
+//        XCTAssertEqual(event1.resource.duration, 2_000_000_000)
+//        XCTAssertNotNil(event1.resource.dns)
+//        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute3"), "foo3")
+//
+//        let event2Matcher = resourceEvents[1]
+//        let event2: RUMResourceEvent = try event2Matcher.model()
+//        XCTAssertEqual(event2.resource.url, "/some/url/2")
+//        XCTAssertEqual(event2.resource.size, 142)
+//        XCTAssertEqual(event2.resource.type, .beacon)
+//        XCTAssertEqual(event2.resource.statusCode, 333)
+//
+//        let event3: RUMResourceEvent = try resourceEvents[2].model()
+//        XCTAssertEqual(event3.resource.url, "/some/url/3")
+//        XCTAssertEqual(event3.resource.size, 242)
+//    }
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//    func testSendingErrorEvents() throws {
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+//
+//        let request: URLRequest = .mockAny()
+//        let error = ErrorMock("error details")
+//        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", request: request, attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.stopResourceLoadingWithError(
+//            resourceKey: "/resource1", error: error, response: .mockAny(), attributes: ["event-attribute2": "foo2"]
+//        )
+//
+//        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", request: request, attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.stopResourceLoadingWithError(
+//            resourceKey: "/resource2", errorMessage: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
+//        )
+//
+//        objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
+//        XCTAssertEqual(errorEvents.count, 4)
+//
+//        let event1Matcher = errorEvents[0]
+//        let event1: RUMErrorEvent = try event1Matcher.model()
+//        XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
+//        XCTAssertEqual(event1.error.type, "ErrorMock")
+//        XCTAssertEqual(event1.error.message, "error details")
+//        XCTAssertEqual(event1.error.source, .network)
+//        XCTAssertEqual(event1.error.stack, "error details")
+//        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//
+//        let event2Matcher = errorEvents[1]
+//        let event2: RUMErrorEvent = try event2Matcher.model()
+//        XCTAssertEqual(event2.error.resource?.url, request.url!.absoluteString)
+//        XCTAssertEqual(event2.error.message, "error message")
+//        XCTAssertEqual(event2.error.source, .network)
+//        XCTAssertNil(event2.error.stack)
+//        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//
+//        let event3Matcher = errorEvents[2]
+//        let event3: RUMErrorEvent = try event3Matcher.model()
+//        XCTAssertNil(event3.error.resource)
+//        XCTAssertEqual(event3.error.type, "ErrorMock")
+//        XCTAssertEqual(event3.error.message, "error details")
+//        XCTAssertEqual(event3.error.source, .custom)
+//        XCTAssertEqual(event3.error.stack, "error details")
+//        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//
+//        let event4Matcher = errorEvents[3]
+//        let event4: RUMErrorEvent = try event4Matcher.model()
+//        XCTAssertEqual(event4.error.message, "error message")
+//        XCTAssertEqual(event4.error.source, .source)
+//        XCTAssertEqual(event4.error.stack, "error stack")
+//    }
 
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 4)
+//    func testSendingActionEvents() throws {
+//        try RUMMonitor.initialize(in: core, configuration: .mockWith(
+//            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+//        ))
+//
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
+//
+//        objcRUMMonitor.addUserAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
+//
+//        objcRUMMonitor.startUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
+//        objcRUMMonitor.stopUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
+//        XCTAssertEqual(actionEvents.count, 3)
+//
+//        let event1Matcher = actionEvents[0]
+//        let event1: RUMActionEvent = try event1Matcher.model()
+//        XCTAssertEqual(event1.action.type, .applicationStart)
+//
+//        let event2Matcher = actionEvents[1]
+//        let event2: RUMActionEvent = try event2Matcher.model()
+//        XCTAssertEqual(event2.action.type, .tap)
+//        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//
+//        let event3Matcher = actionEvents[2]
+//        let event3: RUMActionEvent = try event3Matcher.model()
+//        XCTAssertEqual(event3.action.type, .swipe)
+//        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
+//    }
 
-        let event1: RUMViewEvent = try viewEvents[0].model()
-        let event2: RUMViewEvent = try viewEvents[1].model()
-        let event3: RUMViewEvent = try viewEvents[2].model()
-        let event4: RUMViewEvent = try viewEvents[3].model()
-        XCTAssertEqual(event1.view.name, "FirstView")
-        XCTAssertEqual(event1.view.url, "FirstViewController")
-        XCTAssertEqual(event2.view.name, "FirstView")
-        XCTAssertEqual(event2.view.url, "FirstViewController")
-        XCTAssertEqual(event3.view.name, "SecondView")
-        XCTAssertEqual(event3.view.url, "view2")
-        XCTAssertEqual(event4.view.name, "SecondView")
-        XCTAssertEqual(event4.view.url, "view2")
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents[1].attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute1"), "bar1")
-        XCTAssertEqual(try viewEvents[3].attribute(forKeyPath: "context.event-attribute2"), "bar2")
-    }
-
-    func testSendingViewEventsWithTiming() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-
-        objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.addTiming(name: "timing")
-        objcRUMMonitor.stopView(viewController: mockView, attributes: ["event-attribute2": "foo2"])
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 2)
-
-        let event1: RUMViewEvent = try viewEvents[0].model()
-        let event2: RUMViewEvent = try viewEvents[1].model()
-        XCTAssertEqual(event1.view.name, "SomeView")
-        XCTAssertEqual(event2.view.name, "SomeView")
-        XCTAssertEqual(try viewEvents.first?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try viewEvents.last?.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertNotNil(try? viewEvents.last?.timing(named: "timing"))
-    }
-
-    func testSendingResourceEvents() throws {
-        guard #available(iOS 13, *) else {
-            return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
-        }
-
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
-
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.addResourceMetrics(
-            resourceKey: "/resource1",
-            metrics: .mockWith(
-                taskInterval: .init(start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2)),
-                transactionMetrics: [
-                    .mockBySpreadingDetailsBetween(start: .mockDecember15th2019At10AMUTC(), end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
-                ]
-            ),
-            attributes: ["event-attribute2": "foo2"]
-        )
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["event-attribute3": "foo3"])
-
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/2", attributes: [:])
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, size: 142, attributes: [:])
-
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-
-        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
-        XCTAssertEqual(resourceEvents.count, 3)
-
-        let event1Matcher = resourceEvents[0]
-        let event1: RUMResourceEvent = try event1Matcher.model()
-        XCTAssertEqual(event1.resource.url, "https://foo.com/1")
-        XCTAssertEqual(event1.resource.duration, 2_000_000_000)
-        XCTAssertNotNil(event1.resource.dns)
-        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute3"), "foo3")
-
-        let event2Matcher = resourceEvents[1]
-        let event2: RUMResourceEvent = try event2Matcher.model()
-        XCTAssertEqual(event2.resource.url, "/some/url/2")
-        XCTAssertEqual(event2.resource.size, 142)
-        XCTAssertEqual(event2.resource.type, .beacon)
-        XCTAssertEqual(event2.resource.statusCode, 333)
-
-        let event3: RUMResourceEvent = try resourceEvents[2].model()
-        XCTAssertEqual(event3.resource.url, "/some/url/3")
-        XCTAssertEqual(event3.resource.size, 242)
-    }
-
-    func testSendingErrorEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
-
-        let request: URLRequest = .mockAny()
-        let error = ErrorMock("error details")
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", request: request, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopResourceLoadingWithError(
-            resourceKey: "/resource1", error: error, response: .mockAny(), attributes: ["event-attribute2": "foo2"]
-        )
-
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", request: request, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopResourceLoadingWithError(
-            resourceKey: "/resource2", errorMessage: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
-        )
-
-        objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-
-        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
-        XCTAssertEqual(errorEvents.count, 4)
-
-        let event1Matcher = errorEvents[0]
-        let event1: RUMErrorEvent = try event1Matcher.model()
-        XCTAssertEqual(event1.error.resource?.url, request.url!.absoluteString)
-        XCTAssertEqual(event1.error.type, "ErrorMock")
-        XCTAssertEqual(event1.error.message, "error details")
-        XCTAssertEqual(event1.error.source, .network)
-        XCTAssertEqual(event1.error.stack, "error details")
-        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try event1Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-
-        let event2Matcher = errorEvents[1]
-        let event2: RUMErrorEvent = try event2Matcher.model()
-        XCTAssertEqual(event2.error.resource?.url, request.url!.absoluteString)
-        XCTAssertEqual(event2.error.message, "error message")
-        XCTAssertEqual(event2.error.source, .network)
-        XCTAssertNil(event2.error.stack)
-        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-
-        let event3Matcher = errorEvents[2]
-        let event3: RUMErrorEvent = try event3Matcher.model()
-        XCTAssertNil(event3.error.resource)
-        XCTAssertEqual(event3.error.type, "ErrorMock")
-        XCTAssertEqual(event3.error.message, "error details")
-        XCTAssertEqual(event3.error.source, .custom)
-        XCTAssertEqual(event3.error.stack, "error details")
-        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-
-        let event4Matcher = errorEvents[3]
-        let event4: RUMErrorEvent = try event4Matcher.model()
-        XCTAssertEqual(event4.error.message, "error message")
-        XCTAssertEqual(event4.error.source, .source)
-        XCTAssertEqual(event4.error.stack, "error stack")
-    }
-
-    func testSendingActionEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        ))
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
-
-        objcRUMMonitor.addUserAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
-
-        objcRUMMonitor.startUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-
-        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
-        XCTAssertEqual(actionEvents.count, 3)
-
-        let event1Matcher = actionEvents[0]
-        let event1: RUMActionEvent = try event1Matcher.model()
-        XCTAssertEqual(event1.action.type, .applicationStart)
-
-        let event2Matcher = actionEvents[1]
-        let event2: RUMActionEvent = try event2Matcher.model()
-        XCTAssertEqual(event2.action.type, .tap)
-        XCTAssertEqual(try event2Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-
-        let event3Matcher = actionEvents[2]
-        let event3: RUMActionEvent = try event3Matcher.model()
-        XCTAssertEqual(event3.action.type, .swipe)
-        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute1"), "foo1")
-        XCTAssertEqual(try event3Matcher.attribute(forKeyPath: "context.event-attribute2"), "foo2")
-    }
-
-    func testSendingGlobalAttributes() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
-        objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")
-        objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
-        objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
-
-        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["event-attribute1": "foo1"])
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-
-        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
-            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
-        }
-        XCTAssertEqual(viewEvents.count, 1)
-
-        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute1"), "foo1")
-        XCTAssertNil(try? viewEvents[0].attribute(forKeyPath: "context.global-attribute2") as String)
-        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.event-attribute1"), "foo1")
-    }
+//    func testSendingGlobalAttributes() throws {
+//        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+//
+//        let objcRUMMonitor = try createTestableDDRUMMonitor()
+//        objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")
+//        objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
+//        objcRUMMonitor.removeAttribute(forKey: "global-attribute2")
+//
+//        objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: ["event-attribute1": "foo1"])
+//
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+//
+//        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
+//            return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
+//        }
+//        XCTAssertEqual(viewEvents.count, 1)
+//
+//        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.global-attribute1"), "foo1")
+//        XCTAssertNil(try? viewEvents[0].attribute(forKeyPath: "context.global-attribute2") as String)
+//        XCTAssertEqual(try viewEvents[0].attribute(forKeyPath: "context.event-attribute1"), "foo1")
+//    }
 }

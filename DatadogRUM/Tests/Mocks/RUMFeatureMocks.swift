@@ -10,6 +10,54 @@ import DatadogInternal
 
 @testable import DatadogRUM
 
+extension RUMConfiguration {
+    static func mockAny() -> Self { mockWith() }
+
+    static func mockWith(
+        applicationID: String = .mockAny(),
+        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        sessionSampler: Sampler = .mockKeepAll(),
+        telemetrySampler: Sampler = .mockKeepAll(),
+        configurationTelemetrySampler: Sampler = .mockKeepAll(),
+        viewEventMapper: RUMViewEventMapper? = nil,
+        resourceEventMapper: RUMResourceEventMapper? = nil,
+        actionEventMapper: RUMActionEventMapper? = nil,
+        errorEventMapper: RUMErrorEventMapper? = nil,
+        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
+        instrumentation: Instrumentation = .init(),
+        backgroundEventTrackingEnabled: Bool = false,
+        frustrationTrackingEnabled: Bool = true,
+        onSessionStart: RUMSessionListener? = nil,
+        firstPartyHosts: FirstPartyHosts = .init(),
+        vitalsFrequency: TimeInterval? = 0.5,
+        dateProvider: DateProvider = SystemDateProvider(),
+        customIntakeURL: URL? = nil,
+        processInfo: ProcessInfo = .processInfo
+    ) -> Self {
+        return .init(
+            applicationID: applicationID,
+            uuidGenerator: uuidGenerator,
+            sessionSampler: sessionSampler,
+            telemetrySampler: telemetrySampler,
+            configurationTelemetrySampler: configurationTelemetrySampler,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            instrumentation: instrumentation,
+            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            frustrationTrackingEnabled: frustrationTrackingEnabled,
+            onSessionStart: onSessionStart,
+            firstPartyHosts: firstPartyHosts,
+            vitalsFrequency: vitalsFrequency,
+            dateProvider: dateProvider,
+            customIntakeURL: customIntakeURL,
+            processInfo: processInfo
+        )
+    }
+}
+
 extension WebViewEventReceiver: AnyMockable {
     public static func mockAny() -> Self {
         .mockWith()
@@ -885,6 +933,38 @@ class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
 
     func rumView(for viewController: UIViewController) -> RUMView? {
         return resultByViewController[viewController] ?? result
+    }
+}
+
+#if os(tvOS)
+typealias UIKitRUMUserActionsPredicateMock = UIPressRUMUserActionsPredicateMock
+#else
+typealias UIKitRUMUserActionsPredicateMock = UITouchRUMUserActionsPredicateMock
+#endif
+
+class UITouchRUMUserActionsPredicateMock: UITouchRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
+    }
+}
+
+class UIPressRUMUserActionsPredicateMock: UIPressRUMUserActionsPredicate {
+    var resultByView: [UIView: RUMAction] = [:]
+    var result: RUMAction?
+
+    init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
+        return resultByView[targetView] ?? result
     }
 }
 

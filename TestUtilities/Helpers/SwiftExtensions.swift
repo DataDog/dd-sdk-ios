@@ -86,6 +86,14 @@ extension InputStream {
     }
 }
 
+public extension URL {
+    var absoluteStringWithoutQuery: String? {
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+        components?.query = nil // drop query params
+        return components?.url?.absoluteString
+    }
+}
+
 extension URLRequest {
     public func removing(httpHeaderField: String) -> URLRequest {
         var request = self
@@ -128,6 +136,8 @@ extension URLRequest {
         """
     }
 }
+
+
 
 extension URLSessionTask.State {
     public func dump() -> String {
