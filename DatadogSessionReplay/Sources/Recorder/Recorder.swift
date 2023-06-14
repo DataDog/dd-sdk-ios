@@ -139,9 +139,6 @@ internal class Recorder: Recording {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
-            guard recordingCoordinator.isSampled else {
-                return
-            }
             guard let rumContext = recordingCoordinator.currentRUMContext else {
                 return
             }

@@ -7,12 +7,7 @@
 import Foundation
 import Datadog
 
-internal protocol RecordingCoordination {
-    var isSampled: Bool { get }
-    var currentRUMContext: RUMContext? { get }
-}
-
-internal class RecordingCoordinator: RecordingCoordination {
+internal class RecordingCoordinator {
     /// Schedules view tree captures.
     private let scheduler: Scheduler
 
@@ -21,20 +16,6 @@ internal class RecordingCoordinator: RecordingCoordination {
 
     /// Updates other Features with SR context.
     private let contextPublisher: SRContextPublisher
-
-    /// A flag that determines if SR will be sampled for the current session.
-    /// Setting its value triggers the Context Publisher, which notifies
-    /// other features whether recording has been triggered for the session.
-    private(set) var isSampled = false {
-        didSet {
-            contextPublisher.setRecordingIsPending(isSampled)
-            if isSampled {
-                scheduler.start()
-            } else {
-                scheduler.stop()
-            }
-        }
-    }
 
     /// Last received RUM context (or `nil` if RUM session is not sampled).
     /// It's synchronized through `scheduler.queue` (main thread).
@@ -54,7 +35,13 @@ internal class RecordingCoordinator: RecordingCoordination {
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
             if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID {
-                self?.isSampled = sampler.sample() && self?.currentRUMContext != nil
+                let isSampled = sampler.sample() && self?.currentRUMContext != nil
+                contextPublisher.setRecordingIsPending(isSampled)
+                if isSampled {
+                    scheduler.start()
+                } else {
+                    scheduler.stop()
+                }
             }
             self?.currentRUMContext = rumContext
         }
