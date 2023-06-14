@@ -24,7 +24,7 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertNil(core.get(feature: RUMFeature.self))
 
         // Then
-        XCTAssertTrue(RUMMonitor.shared(in: core) is DDNoopRUMMonitor)
+        XCTAssertTrue(RUMMonitor.shared(in: core) is NOPRUMMonitor)
     }
 
     func testWhenRegisteredToCore_thenRUMMonitorIsAvailable() throws {
@@ -35,7 +35,7 @@ class RUMFeatureTests: XCTestCase {
         try core.register(feature: rum)
 
         // Then
-        XCTAssertTrue(RUMMonitor.shared(in: core) is RUMMonitor)
+        XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
     }
 
     func testGivenInstrumentationConfigured_whenRegistered_itSubscribesRUMMonitorToInstrumentationHandlers() throws {
@@ -53,15 +53,15 @@ class RUMFeatureTests: XCTestCase {
 
         // When
         try core.register(feature: rum)
-        XCTAssertTrue(RUMMonitor.shared(in: core) is RUMMonitor)
+        XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
 
         // Then
         let viewsSubscriber = rum.instrumentation.viewsHandler.subscriber
         let actionsSubscriber = (rum.instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber
         let longTasksSubscriber = rum.instrumentation.longTasks?.subscriber
-        XCTAssertIdentical(viewsSubscriber, RUMMonitor.shared(in: core))
-        XCTAssertIdentical(actionsSubscriber, RUMMonitor.shared(in: core))
-        XCTAssertIdentical(longTasksSubscriber, RUMMonitor.shared(in: core))
+        XCTAssertIdentical(viewsSubscriber, RUMMonitor.shared(in: core) as? RUMCommandSubscriber)
+        XCTAssertIdentical(actionsSubscriber, RUMMonitor.shared(in: core) as? RUMCommandSubscriber)
+        XCTAssertIdentical(longTasksSubscriber, RUMMonitor.shared(in: core) as? RUMCommandSubscriber)
     }
 
     func testGivenFirstPartyHostsConfigured_whenRegistered_itEnablesURLSessionInstrumentation() throws {
@@ -75,7 +75,7 @@ class RUMFeatureTests: XCTestCase {
 
         // When
         try core.register(feature: rum)
-        XCTAssertTrue(RUMMonitor.shared(in: core) is RUMMonitor)
+        XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
 
         // Then
         // TODO: RUMM-2922

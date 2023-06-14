@@ -9,8 +9,8 @@ import DatadogInternal
 import DatadogLogs
 import DatadogRUM
 
-extension Datadog: DatadogInternalInterface {}
-extension Datadog.Configuration.Builder: DatadogInternalInterface {}
+extension Datadog: DatadogInternal.DatadogInternalInterface {}
+extension Datadog.Configuration.Builder: DatadogInternal.DatadogInternalInterface {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.

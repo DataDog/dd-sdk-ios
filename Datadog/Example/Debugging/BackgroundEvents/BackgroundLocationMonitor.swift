@@ -49,7 +49,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
         return UIApplication.shared.applicationState == .background
     }
 
-    private let rum: DDRUMMonitor
+    private let rum: RUMMonitorProtocol
 
     /// Current authorization status for location monitoring.
     var currentAuthorizationStatus: String { authorizationStatusDescription(for: locationManager) }
@@ -57,7 +57,7 @@ internal class BackgroundLocationMonitor: NSObject, CLLocationManagerDelegate {
     /// Notifies change of authorization status for location monitoring.
     var onAuthorizationStatusChange: ((String) -> Void)? = nil
 
-    required init(rum: DDRUMMonitor) {
+    required init(rum: RUMMonitorProtocol) {
         self.rum = rum
 
         super.init()

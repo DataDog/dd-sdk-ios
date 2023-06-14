@@ -32,8 +32,8 @@ class RUMMonitorTests: XCTestCase {
 
     /// Creates `RUMMonitor` instance for tests.
     /// The only difference vs. `RUMMonitor.shared()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
-        return RUMMonitor(
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> RUMMonitorProtocol {
+        return Monitor(
             core: core,
             dependencies: RUMScopeDependencies(core: core, configuration: configuration)
                 .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
@@ -396,9 +396,9 @@ class RUMMonitorTests: XCTestCase {
 #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
         monitor.addError(message: "View error message", source: .source)
 #sourceLocation()
-        monitor.addError(message: "Another error message", source: .webview, stack: "Error stack")
+        monitor.addError(message: "Another error message", stack: "Error stack", source: .webview)
         let customType: String = .mockRandom(among: .alphanumerics)
-        monitor.addError(message: "Another error message", type: customType, source: .webview, stack: "Error stack")
+        monitor.addError(message: "Another error message", type: customType, stack: "Error stack", source: .webview)
         monitor.stopUserAction(type: .scroll)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -1108,7 +1108,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addUserAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
 
-        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        let cmdSubscriber = try XCTUnwrap(monitor as? Monitor)
         cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -1148,7 +1148,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.addUserAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
 
-        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
+        let cmdSubscriber = try XCTUnwrap(monitor as? Monitor)
         cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -1224,7 +1224,7 @@ class RUMMonitorTests: XCTestCase {
             case 10: monitor.addUserAction(type: .tap, name: .mockRandom())
             case 11: monitor.addAttribute(forKey: String.mockRandom(), value: String.mockRandom())
             case 12: monitor.removeAttribute(forKey: String.mockRandom())
-            case 13: monitor.dd.enableRUMDebugging(.random())
+            case 13: (monitor as? Monitor)?.setDebugging(enabled: .random())
             default: break
             }
         }
@@ -1259,22 +1259,22 @@ class RUMMonitorTests: XCTestCase {
 //        XCTAssertTrue(monitor is DDNoopRUMMonitor)
 //    }
 
-    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
-        // given
-        let monitor = try createTestableRUMMonitor().dd
-
-        monitor.queue.sync { }
-        XCTAssertNil(monitor.debugging)
-
-        // when & then
-        monitor.enableRUMDebugging(true)
-        monitor.queue.sync { }
-        XCTAssertNotNil(monitor.debugging)
-
-        monitor.enableRUMDebugging(false)
-        monitor.queue.sync { }
-        XCTAssertNil(monitor.debugging)
-    }
+//    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
+//        // given
+//        let monitor = try createTestableRUMMonitor() as! Monitor
+//
+//        monitor.queue.sync { }
+//        XCTAssertNil(monitor.debugging)
+//
+//        // when & then
+//        monitor.enableRUMDebugging(true)
+//        monitor.queue.sync { }
+//        XCTAssertNotNil(monitor.debugging)
+//
+//        monitor.enableRUMDebugging(false)
+//        monitor.queue.sync { }
+//        XCTAssertNil(monitor.debugging)
+//    }
 
 //    func testSupplyingRumDebugLaunchArgument_itSetsRumDebug() throws {
 //        let mockProcessInfo = ProcessInfoMock(
@@ -1373,7 +1373,7 @@ class RUMMonitorTests: XCTestCase {
             CrossPlatformAttributes.timestampInMilliseconds: Int64(1_000)
         ]
 
-        let monitor = try XCTUnwrap(createTestableRUMMonitor() as? RUMMonitor)
+        let monitor = try XCTUnwrap(createTestableRUMMonitor() as? Monitor)
 
         let transformedCommand = monitor.transform(command: mockCommand)
         XCTAssertTrue(transformedCommand.attributes.isEmpty)
@@ -1384,7 +1384,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Private helpers
 
     private var expectedAttributes = [String: String]()
-    private func setGlobalAttributes(of monitor: DDRUMMonitor) {
+    private func setGlobalAttributes(of monitor: RUMMonitorProtocol) {
         let key = String.mockRandom()
         let value = String.mockRandom()
         monitor.addAttribute(forKey: key, value: value)

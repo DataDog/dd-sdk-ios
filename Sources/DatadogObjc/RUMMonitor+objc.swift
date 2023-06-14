@@ -10,6 +10,7 @@ import DatadogInternal
 
 import class DatadogRUM.DDRUMMonitor
 import class DatadogRUM.RUMMonitor
+import protocol DatadogRUM.RUMMonitorProtocol
 import enum DatadogRUM.RUMErrorSource
 import enum DatadogRUM.RUMUserActionType
 import typealias DatadogRUM.RUMResourceType
@@ -228,9 +229,9 @@ public enum DDRUMMethod: Int {
 public class DDRUMMonitor: NSObject {
     // MARK: - Internal
 
-    internal let swiftRUMMonitor: DatadogRUM.DDRUMMonitor
+    internal let swiftRUMMonitor: RUMMonitorProtocol
 
-    internal init(swiftRUMMonitor: DatadogRUM.DDRUMMonitor) {
+    internal init(swiftRUMMonitor: RUMMonitorProtocol) {
         self.swiftRUMMonitor = swiftRUMMonitor
     }
 
@@ -287,7 +288,7 @@ public class DDRUMMonitor: NSObject {
         stack: String?,
         attributes: [String: Any]
     ) {
-        swiftRUMMonitor.addError(message: message, source: source.swiftType, stack: stack, attributes: castAttributesToSwift(attributes))
+        swiftRUMMonitor.addError(message: message, stack: stack, source: source.swiftType, attributes: castAttributesToSwift(attributes))
     }
 
     @objc

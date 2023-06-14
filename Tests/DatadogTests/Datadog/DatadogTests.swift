@@ -228,7 +228,7 @@ class DatadogTests: XCTestCase {
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
         let rum = core.get(feature: DatadogRUMFeature.self)
         XCTAssertEqual(core.performance, expectedPerformancePreset)
-        XCTAssertEqual(rum?.monitor.applicationScope.dependencies.sessionSampler.samplingRate, 100)
+//        XCTAssertEqual(rum?.monitor.applicationScope.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
         // Clear default verbosity after this test

@@ -17,7 +17,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
-    let monitor: RUMMonitor
+    let monitor: RUMMonitorProtocol
 
     let instrumentation: RUMInstrumentation
     /// Telemetry target for this instance of RUM feature.
@@ -29,7 +29,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
 
     convenience init(in core: DatadogCoreProtocol, configuration: RUMConfiguration) throws {
         try self.init(
-            with: RUMMonitor(
+            with: Monitor(
                 core: core,
                 dependencies: RUMScopeDependencies(
                     core: core,
@@ -43,7 +43,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
     }
 
     private init(
-        with monitor: RUMMonitor,
+        with monitor: Monitor,
         in core: DatadogCoreProtocol,
         configuration: RUMConfiguration
     ) throws {
@@ -68,13 +68,13 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
             try core.register(urlSessionHandler: urlSessionHandler)
         }
 
-        monitor.start()
+        monitor.notifySDKInit()
 
         // Now that RUM is initialized, override the debugRUM value
         let debugRumOverride = configuration.processInfo.arguments.contains(LaunchArguments.DebugRUM)
         if debugRumOverride {
             consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
-            monitor.enableRUMDebugging(true)
+            monitor.setDebugging(enabled: true)
         }
 
         let telemetry = TelemetryCore(core: core)
@@ -125,6 +125,6 @@ extension DatadogRUMFeature: Flushable {
     ///
     /// **blocks the caller thread**
     func flush() {
-        monitor.queue.sync { }
+        (monitor as? Monitor)?.queue.sync { }
     }
 }

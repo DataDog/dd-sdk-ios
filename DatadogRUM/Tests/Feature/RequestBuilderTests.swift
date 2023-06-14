@@ -89,7 +89,7 @@ class RequestBuilderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(
-            request.url?.query(),
+            request.url?.query,
             """
             ddsource=\(randomSource)&ddtags=service:\(randomService),version:\(randomVersion),sdk_version:\(randomSDKVersion),env:\(randomEnv)
             """
@@ -107,7 +107,7 @@ class RequestBuilderTests: XCTestCase {
         let request = builder.request(for: mockEvents, with: context)
 
         // Then
-        let query = request.url?.query() ?? ""
+        let query = request.url?.query ?? ""
         XCTAssertTrue(query.hasSuffix(",variant:\(randomVariant)"))
     }
 

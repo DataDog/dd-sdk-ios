@@ -363,6 +363,7 @@ internal struct RUMKeepSessionAliveCommand: RUMCommand {
 
 // MARK: - Cross-platform perf metrics
 
+// TODO: RUMM-2922 suffix with *Command
 internal struct RUMUpdatePerformanceMetric: RUMCommand {
     let canStartBackgroundView = false
     let isUserInteraction = false
