@@ -49,7 +49,5 @@ public protocol SessionReplayController {
 }
 
 internal struct NOPSessionReplayController: SessionReplayController {
-    func start() {}
-    func stop() {}
     func change(privacy: SessionReplayPrivacy) {}
 }
