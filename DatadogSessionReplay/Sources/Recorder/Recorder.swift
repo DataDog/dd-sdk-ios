@@ -9,8 +9,6 @@ import Datadog
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
-    func start()
-    func stop()
     func change(privacy: SessionReplayPrivacy)
 }
 
@@ -120,14 +118,6 @@ internal class Recorder: Recording {
     }
 
     // MARK: - Recording
-
-    func start() {
-        scheduler.start()
-    }
-
-    func stop() {
-        scheduler.stop()
-    }
 
     func change(privacy: SessionReplayPrivacy) {
         scheduler.queue.run {

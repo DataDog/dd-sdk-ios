@@ -8,35 +8,24 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-private class RUMContextObserverMock: RUMContextObserver {
-    private var queue: Queue?
-    private var onNew: ((RUMContext?) -> Void)?
-
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
-        self.queue = queue
-        self.onNew = notify
-    }
-
-    func notify(rumContext: RUMContext?) {
-        queue?.run { self.onNew?(rumContext) }
-    }
-}
-
 class RecorderTests: XCTestCase {
+    private var recorder: Recorder!
+
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
         let numberOfSnapshots = 10
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: numberOfSnapshots)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: numberOfSnapshots)
         let rumContextObserver = RUMContextObserverMock()
         let processor = ProcessorSpy()
+        let scheduler = TestScheduler(numberOfRepeats: numberOfSnapshots)
 
         // Given
-        let recorder = Recorder(
+        recorder = Recorder(
             configuration: .mockAny(),
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
-            scheduler: TestScheduler(numberOfRepeats: numberOfSnapshots),
-            recordingCoordinator: RecordingCoordinationMock(isSampled: true, currentRUMContext: .mockRandom()),
+            scheduler: scheduler,
+            recordingCoordinator: RecordingCoordinationMock(currentRUMContext: .mockRandom()),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
             snapshotProcessor: processor
@@ -44,7 +33,7 @@ class RecorderTests: XCTestCase {
         rumContextObserver.notify(rumContext: .mockAny())
 
         // When
-        recorder.start()
+        scheduler.start()
 
         // Then
         DDAssertReflectionEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
@@ -55,14 +44,15 @@ class RecorderTests: XCTestCase {
     func testGivenNoRUMContextAvailable_whenStarted_itDoesNotCaptureAnySnapshots() {
         let rumContextObserver = RUMContextObserverMock()
         let processor = ProcessorSpy()
+        let scheduler = TestScheduler()
 
         // Given
-        let recorder = Recorder(
+        recorder = Recorder(
             configuration: .mockAny(),
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
-            scheduler: TestScheduler(numberOfRepeats: 1),
-            recordingCoordinator: RecordingCoordinationMock(isSampled: .mockRandom(), currentRUMContext: nil),
+            scheduler: scheduler,
+            recordingCoordinator: RecordingCoordinationMock(currentRUMContext: nil),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             snapshotProcessor: processor
@@ -70,7 +60,7 @@ class RecorderTests: XCTestCase {
         rumContextObserver.notify(rumContext: nil)
 
         // When
-        recorder.start()
+        scheduler.start()
 
         // Then
         XCTAssertTrue(processor.processedSnapshots.isEmpty)
@@ -82,14 +72,15 @@ class RecorderTests: XCTestCase {
         let rumContextObserver = RUMContextObserverMock()
         let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
         let touchSnapshotProducer = TouchSnapshotProducerMock()
+        let scheduler = TestScheduler()
 
         // Given
-        let recorder = Recorder(
+        recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: randomPrivacy),
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
-            scheduler: TestScheduler(numberOfRepeats: 1),
-            recordingCoordinator: RecordingCoordinationMock(isSampled: true, currentRUMContext: randomRUMContext),
+            scheduler: scheduler,
+            recordingCoordinator: RecordingCoordinationMock(currentRUMContext: randomRUMContext),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
@@ -97,7 +88,7 @@ class RecorderTests: XCTestCase {
         rumContextObserver.notify(rumContext: randomRUMContext)
 
         // When
-        recorder.start()
+        scheduler.start()
 
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
@@ -110,14 +101,15 @@ class RecorderTests: XCTestCase {
         let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
         let touchSnapshotProducer = TouchSnapshotProducerMock()
         let currentRUMContext: RUMContext = .mockRandom()
+        let scheduler = TestScheduler()
 
         // Given
-        let recorder = Recorder(
+        recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: .mockRandom()),
             rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
-            scheduler: TestScheduler(numberOfRepeats: 1),
-            recordingCoordinator: RecordingCoordinationMock(isSampled: true, currentRUMContext: currentRUMContext),
+            scheduler: scheduler,
+            recordingCoordinator: RecordingCoordinationMock(currentRUMContext: currentRUMContext),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
@@ -130,7 +122,7 @@ class RecorderTests: XCTestCase {
 
         rumContextObserver.notify(rumContext: currentRUMContext)
 
-        recorder.start()
+        scheduler.start()
 
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)

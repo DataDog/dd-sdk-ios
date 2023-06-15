@@ -19,6 +19,8 @@ internal class TestScheduler: Scheduler {
     /// Queue to execute operations on.
     let queue: Queue
 
+    var isRunning = false
+
     init(
         queue: Queue = NoQueue(),
         numberOfRepeats: Int = 1
@@ -34,6 +36,7 @@ internal class TestScheduler: Scheduler {
     }
 
     func start() {
+        isRunning = true
         queue.run {
             (0..<self.numberOfRepeats).forEach { _ in
                 self.operations.forEach { operation in operation() }
@@ -42,6 +45,6 @@ internal class TestScheduler: Scheduler {
     }
 
     func stop() {
-        /* no-op */
+        isRunning = false
     }
 }

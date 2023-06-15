@@ -65,13 +65,5 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
 
     // MARK: - SessionReplayController
 
-    func start() {
-        recorder.start()
-    }
-
-    func stop() {
-        recorder.stop()
-    }
-
     func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
 }

@@ -10,11 +10,9 @@ import Datadog
 import TestUtilities
 
 final class RecordingCoordinationMock: RecordingCoordination {
-    var isSampled: Bool
     var currentRUMContext: RUMContext?
 
-    internal init(isSampled: Bool, currentRUMContext: RUMContext?) {
-        self.isSampled = isSampled
+    internal init(currentRUMContext: RUMContext?) {
         self.currentRUMContext = currentRUMContext
     }
 }

@@ -7,7 +7,11 @@
 import Foundation
 import Datadog
 
-internal class RecordingCoordinator {
+internal protocol RecordingCoordination {
+    var currentRUMContext: RUMContext? { get }
+}
+
+internal class RecordingCoordinator: RecordingCoordination {
     /// Schedules view tree captures.
     private let scheduler: Scheduler
 
@@ -34,8 +38,8 @@ internal class RecordingCoordinator {
         contextPublisher.setRecordingIsPending(false)
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
-            if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID {
-                let isSampled = sampler.sample() && self?.currentRUMContext != nil
+            if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID || self?.currentRUMContext == nil {
+                let isSampled = sampler.sample() && rumContext != nil
                 contextPublisher.setRecordingIsPending(isSampled)
                 if isSampled {
                     scheduler.start()
