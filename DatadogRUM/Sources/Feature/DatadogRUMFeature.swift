@@ -14,12 +14,12 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
-    let monitor: RUMMonitor
+    let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
 
     init(
-        monitor: RUMMonitor,
+        monitor: Monitor,
         instrumentation: RUMInstrumentation,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver
@@ -31,7 +31,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
     }
 
     convenience init(in core: DatadogCoreProtocol, configuration: RUMConfiguration) {
-        let monitor = RUMMonitor(
+        let monitor = Monitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,

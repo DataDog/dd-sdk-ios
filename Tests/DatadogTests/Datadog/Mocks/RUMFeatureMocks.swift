@@ -500,7 +500,7 @@ extension RUMStartUserActionCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .swipe,
+        actionType: RUMActionType = .swipe,
         name: String = .mockAny()
     ) -> RUMStartUserActionCommand {
         return RUMStartUserActionCommand(
@@ -524,7 +524,7 @@ extension RUMStopUserActionCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .swipe,
+        actionType: RUMActionType = .swipe,
         name: String? = nil
     ) -> RUMStopUserActionCommand {
         return RUMStopUserActionCommand(
@@ -548,7 +548,7 @@ extension RUMAddUserActionCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        actionType: RUMUserActionType = .tap,
+        actionType: RUMActionType = .tap,
         name: String = .mockAny()
     ) -> RUMAddUserActionCommand {
         return RUMAddUserActionCommand(
@@ -898,7 +898,7 @@ extension RUMUserActionScope {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies = .mockAny(),
         name: String = .mockAny(),
-        actionType: RUMUserActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
+        actionType: RUMActionType = [.tap, .scroll, .swipe, .custom].randomElement()!,
         attributes: [AttributeKey: AttributeValue] = [:],
         startTime: Date = .mockAny(),
         serverTimeOffset: TimeInterval = .zero,

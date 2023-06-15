@@ -34,8 +34,8 @@
     DDRUMErrorSourceSource; DDRUMErrorSourceNetwork; DDRUMErrorSourceWebview; DDRUMErrorSourceConsole; DDRUMErrorSourceCustom;
 }
 
-- (void)testDDRUMUserActionTypeAPI {
-    DDRUMUserActionTypeTap; DDRUMUserActionTypeScroll; DDRUMUserActionTypeSwipe; DDRUMUserActionTypeCustom;
+- (void)testDDRUMActionTypeAPI {
+    DDRUMActionTypeTap; DDRUMActionTypeScroll; DDRUMActionTypeSwipe; DDRUMActionTypeCustom;
 }
 
 - (void)testDDRUMResourceTypeAPI {
@@ -56,7 +56,7 @@
     [monitor stopViewWithViewController:anyVC attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
-    [monitor addErrorWithMessage:@"" source:DDRUMErrorSourceCustom stack:nil attributes:@{}];
+    [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
     [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                         source:DDRUMErrorSourceNetwork attributes:@{}];
     [monitor startResourceLoadingWithResourceKey:@"" request:[NSURLRequest new] attributes:@{}];
@@ -67,10 +67,10 @@
     [monitor stopResourceLoadingWithResourceKey:@"" statusCode:nil kind:DDRUMResourceTypeOther size:nil attributes:@{}];
     [monitor stopResourceLoadingWithErrorWithResourceKey:@""
                                                    error:[NSError errorWithDomain:NSURLErrorDomain code:-99 userInfo:nil] response:nil attributes:@{}];
-    [monitor stopResourceLoadingWithErrorWithResourceKey:@"" errorMessage:@"" response:nil attributes:@{}];
-    [monitor startUserActionWithType:DDRUMUserActionTypeSwipe name:@"" attributes:@{}];
-    [monitor stopUserActionWithType:DDRUMUserActionTypeSwipe name:nil attributes:@{}];
-    [monitor addUserActionWithType:DDRUMUserActionTypeTap name:@"" attributes:@{}];
+    [monitor stopResourceLoadingWithErrorWithResourceKey:@"" message:@"" response:nil attributes:@{}];
+    [monitor startActionWithType:DDRUMActionTypeSwipe name:@"" attributes:@{}];
+    [monitor stopActionWithType:DDRUMActionTypeSwipe name:nil attributes:@{}];
+    [monitor addActionWithType:DDRUMActionTypeTap name:@"" attributes:@{}];
     [monitor addAttributeForKey:@"" value:@""];
 }
 

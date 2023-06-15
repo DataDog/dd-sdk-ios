@@ -30,7 +30,7 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
         content.simultaneousGesture(
             TapGesture(count: count).onEnded { _ in
                 RUMMonitor.shared(in: core)
-                    .addUserAction(type: .tap, name: name, attributes: attributes)
+                    .addAction(type: .tap, name: name, attributes: attributes)
             }
         )
     }

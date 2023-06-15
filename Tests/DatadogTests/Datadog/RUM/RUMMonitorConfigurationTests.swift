@@ -37,7 +37,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
 
         let monitor = RUMMonitor.shared(in: core).dd
 
-        let dependencies = monitor.applicationScope.dependencies
+        let dependencies = monitor.scopes.dependencies
         monitor.core?.scope(for: DatadogRUMFeature.name)?.eventWriteContext { context, _ in
             DDAssertReflectionEqual(context.userInfo, self.userIno)
             XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
@@ -51,7 +51,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         }
 
         XCTAssertEqual(dependencies.sessionSampler.samplingRate, 42.5)
-        XCTAssertEqual(monitor.applicationScope.context.rumApplicationID, "rum-123")
+        XCTAssertEqual(monitor.scopes.context.rumApplicationID, "rum-123")
         waitForExpectations(timeout: 0.5)
     }
 }

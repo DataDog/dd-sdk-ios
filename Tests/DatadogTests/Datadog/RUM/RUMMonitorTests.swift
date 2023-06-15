@@ -27,10 +27,10 @@ class RUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `RUMMonitor` instance for tests.
+    /// Creates `Monitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
-        let monitor = RUMMonitor(
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
+        let monitor = Monitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,
@@ -166,71 +166,6 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.dns!.duration, 2_000_000_000)
     }
 
-    func testStartingView_thenLoadingNativeResourceWithRequestWithExternalMetrics() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
-
-        monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
-
-        let fetch = (start: Date.mockDecember15th2019At10AMUTC(),
-                     end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 12))
-        let redirection = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1),
-                           end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 2))
-        let dns = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 3),
-                   end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 4))
-        let connect = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 5),
-                       end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 6))
-        let ssl = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 7),
-                   end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 8))
-        let firstByte = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 9),
-                         end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 10))
-        let download = (start: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 11),
-                        end: Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 12))
-
-        monitor.addResourceMetrics(
-            resourceKey: "/resource/1",
-            fetch: fetch,
-            redirection: redirection,
-            dns: dns,
-            connect: connect,
-            ssl: ssl,
-            firstByte: firstByte,
-            download: download,
-            responseSize: 42
-        )
-
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
-
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        verifyGlobalAttributes(in: rumEventMatchers)
-
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
-        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
-
-        XCTAssertEqual(resourceEvent.resource.duration, 12_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.redirect!.start, 1_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.redirect!.duration, 1_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.dns!.start, 3_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.dns!.duration, 1_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.connect!.start, 5_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.connect!.duration, 1_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.ssl!.start, 7_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.ssl!.duration, 1_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.firstByte!.start, 9_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.firstByte!.duration, 1_000_000_000)
-
-        XCTAssertEqual(resourceEvent.resource.download!.start, 11_000_000_000)
-        XCTAssertEqual(resourceEvent.resource.download!.duration, 1_000_000_000)
-    }
-
     func testStartingView_thenLoadingResourceWithURL() throws {
         let monitor = try createTestableRUMMonitor()
         setGlobalAttributes(of: monitor)
@@ -315,7 +250,7 @@ class RUMMonitorTests: XCTestCase {
 
         let actionName = String.mockRandom()
         monitor.startView(viewController: mockView)
-        monitor.addUserAction(type: .tap, name: actionName)
+        monitor.addAction(type: .tap, name: actionName)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -352,12 +287,12 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll, name: .mockAny())
+        monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200))
         monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockWith(httpMethod: "POST"))
         monitor.stopResourceLoading(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
-        monitor.stopUserAction(type: .scroll)
+        monitor.stopAction(type: .scroll)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -406,14 +341,14 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll, name: .mockAny())
+        monitor.startAction(type: .scroll, name: .mockAny())
 #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
         monitor.addError(message: "View error message", source: .source)
 #sourceLocation()
-        monitor.addError(message: "Another error message", source: .webview, stack: "Error stack")
+        monitor.addError(message: "Another error message", stack: "Error stack", source: .webview)
         let customType: String = .mockRandom(among: .alphanumerics)
-        monitor.addError(message: "Another error message", type: customType, source: .webview, stack: "Error stack")
-        monitor.stopUserAction(type: .scroll)
+        monitor.addError(message: "Another error message", type: customType, stack: "Error stack", source: .webview)
+        monitor.stopAction(type: .scroll)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -465,7 +400,7 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: view1)
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
-        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.addAction(type: .tap, name: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopView(viewController: view1)
@@ -521,11 +456,11 @@ class RUMMonitorTests: XCTestCase {
         monitor.startResourceLoading(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
         monitor.startResourceLoading(resourceKey: "/resource/5", request: URLRequest(url: .mockWith(pathComponent: "/resource/5")))
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/3", response: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/4", response: .mockAny())
         let customType: String = .mockRandom(among: .alphanumerics)
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/5", errorMessage: .mockAny(), type: customType)
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType)
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -571,8 +506,8 @@ class RUMMonitorTests: XCTestCase {
         ))
 
         monitor.startView(viewController: mockView)
-        monitor.addUserAction(type: .tap, name: "1st action")
-        monitor.addUserAction(type: .swipe, name: "2nd action")
+        monitor.addAction(type: .tap, name: "1st action")
+        monitor.addAction(type: .swipe, name: "2nd action")
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -609,12 +544,12 @@ class RUMMonitorTests: XCTestCase {
         let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll, name: .mockAny())
+        monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
-        monitor.stopUserAction(type: .scroll)
+        monitor.stopAction(type: .scroll)
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
 
@@ -654,12 +589,12 @@ class RUMMonitorTests: XCTestCase {
         let monitor = try createTestableRUMMonitor()
 
         monitor.startView(viewController: mockView)
-        monitor.startUserAction(type: .scroll, name: .mockAny())
+        monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
-        monitor.stopUserAction(type: .scroll)
+        monitor.stopAction(type: .scroll)
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
 
@@ -892,11 +827,11 @@ class RUMMonitorTests: XCTestCase {
         ))
 
         monitor.startView(viewController: mockView)
-        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.addAction(type: .tap, name: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
         monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", errorMessage: .mockAny())
+        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny())
 
         // Then
@@ -1036,11 +971,11 @@ class RUMMonitorTests: XCTestCase {
         ))
 
         // When
-        monitor.addUserAction(type: .custom, name: "A1")
+        monitor.addAction(type: .custom, name: "A1")
         monitor.addError(message: "E1")
         monitor.startResourceLoading(resourceKey: "R1", url: URL(string: "https://foo.com/R1")!)
         monitor.startView(key: "FirstView")
-        monitor.addUserAction(type: .tap, name: "A2")
+        monitor.addAction(type: .tap, name: "A2")
         monitor.stopResourceLoading(resourceKey: "R1", statusCode: 200, kind: .native)
 
         // Then
@@ -1118,11 +1053,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.addUserAction(type: .tap, name: "Original tap action name")
+        monitor.addAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
 
-        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
-        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
+        monitor.dd.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -1158,11 +1092,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockView)
         monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
         monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.addUserAction(type: .tap, name: .mockAny())
+        monitor.addAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
 
-        let cmdSubscriber = try XCTUnwrap(monitor as? RUMMonitor)
-        cmdSubscriber.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
+        monitor.dd.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -1232,13 +1165,13 @@ class RUMMonitorTests: XCTestCase {
             case 4: monitor.startResourceLoading(resourceKey: .mockAny(), request: .mockAny())
             case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), response: .mockAny())
             case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock())
-            case 7: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), errorMessage: .mockAny())
-            case 8: monitor.startUserAction(type: .scroll, name: .mockRandom())
-            case 9: monitor.stopUserAction(type: .scroll)
-            case 10: monitor.addUserAction(type: .tap, name: .mockRandom())
+            case 7: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), message: .mockAny())
+            case 8: monitor.startAction(type: .scroll, name: .mockRandom())
+            case 9: monitor.stopAction(type: .scroll)
+            case 10: monitor.addAction(type: .tap, name: .mockRandom())
             case 11: monitor.addAttribute(forKey: String.mockRandom(), value: String.mockRandom())
             case 12: monitor.removeAttribute(forKey: String.mockRandom())
-            case 13: monitor.dd.enableRUMDebugging(.random())
+            case 13: monitor.dd.debug = .mockRandom()
             default: break
             }
         }
@@ -1267,9 +1200,9 @@ class RUMMonitorTests: XCTestCase {
         // then
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
+            "🔥 Datadog SDK usage error: Datadog SDK must be initialized and RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."
         )
-        XCTAssertTrue(monitor is DDNoopRUMMonitor)
+        XCTAssertTrue(monitor is NOPRUMMonitor)
     }
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
@@ -1280,11 +1213,11 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNil(monitor.debugging)
 
         // when & then
-        monitor.enableRUMDebugging(true)
+        monitor.debug = true
         monitor.queue.sync { }
         XCTAssertNotNil(monitor.debugging)
 
-        monitor.enableRUMDebugging(false)
+        monitor.debug = false
         monitor.queue.sync { }
         XCTAssertNil(monitor.debugging)
     }
@@ -1300,14 +1233,14 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertNotNil(monitor.dd.debugging)
     }
 
-    func testSendingUserActionEvents_whenGlobalAttributesHaveConflict() throws {
+    func testSendingActionEvents_whenGlobalAttributesHaveConflict() throws {
         // given
         let monitor = try createTestableRUMMonitor()
         monitor.addAttribute(forKey: "abc", value: "123")
 
         // when
         monitor.startView(key: "View", name: nil, attributes: [:])
-        monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
+        monitor.addAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
         monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
         monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
@@ -1340,13 +1273,13 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
     }
 
-    func testSendingUserActionEvents_whenViewAttributesHaveConflict() throws {
+    func testSendingActionEvents_whenViewAttributesHaveConflict() throws {
         // given
         let monitor = try createTestableRUMMonitor()
         monitor.startView(key: "View", name: nil, attributes: ["abc": "123"])
 
         // when
-        monitor.addUserAction(type: .custom, name: "action1", attributes: ["abc": "456"])
+        monitor.addAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
         monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
         monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
@@ -1387,8 +1320,7 @@ class RUMMonitorTests: XCTestCase {
             CrossPlatformAttributes.timestampInMilliseconds: Int64(1_000)
         ]
 
-        let monitor = try XCTUnwrap(createTestableRUMMonitor() as? RUMMonitor)
-
+        let monitor = try createTestableRUMMonitor()
         let transformedCommand = monitor.transform(command: mockCommand)
         XCTAssertTrue(transformedCommand.attributes.isEmpty)
         XCTAssertNotEqual(transformedCommand.time, mockCommand.time)
@@ -1398,7 +1330,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Private helpers
 
     private var expectedAttributes = [String: String]()
-    private func setGlobalAttributes(of monitor: DDRUMMonitor) {
+    private func setGlobalAttributes(of monitor: RUMMonitorProtocol) {
         let key = String.mockRandom()
         let value = String.mockRandom()
         monitor.addAttribute(forKey: key, value: value)

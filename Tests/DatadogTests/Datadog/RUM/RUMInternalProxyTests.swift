@@ -26,12 +26,12 @@ class RUMInternalProxyTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `RUMMonitor` instance for tests.
+    /// Creates `Monitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor() throws -> DDRUMMonitor {
+    private func createTestableRUMMonitor() throws -> Monitor {
         let configuration: RUMConfiguration = .mockAny()
 
-        let monitor = RUMMonitor(
+        let monitor = Monitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,
@@ -65,7 +65,7 @@ class RUMInternalProxyTests: XCTestCase {
 
         // When
         monitor.startView(viewController: mockView)
-        monitor._internal.addLongTask(at: date, duration: duration)
+        monitor._internal?.addLongTask(at: date, duration: duration)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -84,13 +84,13 @@ class RUMInternalProxyTests: XCTestCase {
 
         // When
         monitor.startView(viewController: mockView)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.04)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 32.0)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 52.0)
-        monitor._internal.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.02)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .jsFrameTimeSeconds, value: 0.04)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 32.0)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterBuildTime, value: 52.0)
+        monitor._internal?.updatePerformanceMetric(at: date, metric: .flutterRasterTime, value: 42.0)
         monitor.stopView(viewController: mockView)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -107,5 +107,66 @@ class RUMInternalProxyTests: XCTestCase {
                 XCTAssertEqual(rumModel.view.flutterBuildTime?.average, 42.0)
                 XCTAssertEqual(rumModel.view.flutterRasterTime?.average, 42.0)
             }
+    }
+
+    func testProxyRecordsCustomResourceMetrics() throws {
+        // Given
+        let date: Date = .mockDecember15th2019At10AMUTC()
+        let monitor = try createTestableRUMMonitor()
+
+        // When
+        monitor.startView(viewController: mockView)
+        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+
+        let fetch = (start: date, end: date.addingTimeInterval(12))
+        let redirection = (start: date.addingTimeInterval(1), end: date.addingTimeInterval(2))
+        let dns = (start: date.addingTimeInterval(3), end: date.addingTimeInterval(4))
+        let connect = (start: date.addingTimeInterval(5), end: date.addingTimeInterval(6))
+        let ssl = (start: date.addingTimeInterval(7), end: date.addingTimeInterval(8))
+        let firstByte = (start: date.addingTimeInterval(9), end: date.addingTimeInterval(10))
+        let download = (start: date.addingTimeInterval(11), end: date.addingTimeInterval(12))
+
+        monitor._internal?.addResourceMetrics(
+            at: date.addingTimeInterval(-1),
+            resourceKey: "/resource/1",
+            fetch: fetch,
+            redirection: redirection,
+            dns: dns,
+            connect: connect,
+            ssl: ssl,
+            firstByte: firstByte,
+            download: download,
+            responseSize: 42
+        )
+
+        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+
+        // Then
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+
+        XCTAssertEqual(resourceEvent.resource.duration, 12_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.redirect!.start, 1_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.redirect!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.dns!.start, 3_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.dns!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.connect!.start, 5_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.connect!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.ssl!.start, 7_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.ssl!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.firstByte!.start, 9_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.firstByte!.duration, 1_000_000_000)
+
+        XCTAssertEqual(resourceEvent.resource.download!.start, 11_000_000_000)
+        XCTAssertEqual(resourceEvent.resource.download!.duration, 1_000_000_000)
     }
 }

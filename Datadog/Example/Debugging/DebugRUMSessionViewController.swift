@@ -73,7 +73,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
             SessionItem(label: actionName, type: .action, isPending: false, stopAction: nil)
         )
 
-        RUMMonitor.shared().addUserAction(type: .custom, name: actionName)
+        RUMMonitor.shared().addAction(type: .custom, name: actionName)
         self.actionName = ""
     }
 

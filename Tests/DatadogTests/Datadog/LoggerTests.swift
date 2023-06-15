@@ -28,10 +28,10 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `RUMMonitor` instance for tests.
+    /// Creates `Monitor` instance for tests.
     /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> DDRUMMonitor {
-        let monitor = RUMMonitor(
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
+        let monitor = Monitor(
             core: core,
             dependencies: RUMScopeDependencies(
                 core: core,
@@ -615,7 +615,7 @@ class LoggerTests: XCTestCase {
         // when
         rum.startView(viewController: mockView)
         logger.info("message 0")
-        rum.startUserAction(type: .tap, name: .mockAny())
+        rum.startAction(type: .tap, name: .mockAny())
         logger.info("message 1")
 
         // then

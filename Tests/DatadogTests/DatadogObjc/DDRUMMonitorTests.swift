@@ -87,11 +87,11 @@ class DDRUMActionTests: XCTestCase {
 }
 
 class DDRUMUserActionTypeTests: XCTestCase {
-    func testMappingToSwiftRUMUserActionType() {
-        XCTAssertEqual(DDRUMUserActionType.tap.swiftType, .tap)
-        XCTAssertEqual(DDRUMUserActionType.scroll.swiftType, .scroll)
-        XCTAssertEqual(DDRUMUserActionType.swipe.swiftType, .swipe)
-        XCTAssertEqual(DDRUMUserActionType.custom.swiftType, .custom)
+    func testMappingToSwiftRUMActionType() {
+        XCTAssertEqual(DDRUMActionType.tap.swiftType, .tap)
+        XCTAssertEqual(DDRUMActionType.scroll.swiftType, .scroll)
+        XCTAssertEqual(DDRUMActionType.swipe.swiftType, .swipe)
+        XCTAssertEqual(DDRUMActionType.custom.swiftType, .custom)
     }
 }
 
@@ -286,11 +286,11 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", request: request, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.stopResourceLoadingWithError(
-            resourceKey: "/resource2", errorMessage: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
+            resourceKey: "/resource2", message: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
         )
 
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
+        objcRUMMonitor.addError(message: "error message", stack: "error stack", source: .source, attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -341,10 +341,10 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
-        objcRUMMonitor.addUserAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
 
-        objcRUMMonitor.startUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
+        objcRUMMonitor.startAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 

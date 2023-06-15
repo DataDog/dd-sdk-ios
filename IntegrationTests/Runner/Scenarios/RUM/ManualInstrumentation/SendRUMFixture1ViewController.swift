@@ -41,7 +41,7 @@ internal class SendRUMFixture1ViewController: UIViewController {
         let simulatedResourceRequest2 = URLRequest(url: URL(string: "https://foo.com/resource/2")!)
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        rumMonitor.addUserAction(
+        rumMonitor.addAction(
             type: .tap,
             name: (sender as! UIButton).currentTitle!,
             attributes: ["button.description": String(describing: sender)]

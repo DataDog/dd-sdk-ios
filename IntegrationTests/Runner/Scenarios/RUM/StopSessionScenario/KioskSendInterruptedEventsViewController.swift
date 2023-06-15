@@ -19,7 +19,7 @@ internal class KioskSendInterruptedEventsViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-        rumMonitor.addUserAction(
+        rumMonitor.addAction(
             type: .tap,
             name: (sender as! UIButton).currentTitle!,
             attributes: ["button.description": String(describing: sender)]

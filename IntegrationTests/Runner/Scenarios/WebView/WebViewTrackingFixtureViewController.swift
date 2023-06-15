@@ -15,7 +15,7 @@ class WebViewTrackingFixtureViewController: UIViewController, WKNavigationDelega
         super.viewDidAppear(animated)
 
         // An action sent from native iOS SDK.
-        rumMonitor.addUserAction(type: .custom, name: "Native action")
+        rumMonitor.addAction(type: .custom, name: "Native action")
 
         // Opens a webview configured to pass all its Browser SDK events to native iOS SDK.
         show(ShopistWebviewViewController(), sender: nil)
@@ -35,7 +35,7 @@ class ShopistWebviewViewController: UIViewController {
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        webView.configuration.userContentController.startTrackingDatadogEvents(core: defaultDatadogCore, hosts: ["shopist.io"])
+        webView.configuration.userContentController.startTrackingDatadogEvents(core: CoreRegistry.default, hosts: ["shopist.io"])
     }
 
     override func viewWillDisappear(_ animated: Bool) {

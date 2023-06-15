@@ -43,13 +43,13 @@ class DDGlobalTests: XCTestCase {
     // MARK: - Test Global RUMMonitor
 
     func testWhenDDRUMMonitorIsNotInitailized_itReturnsNoOpImplementation() {
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is DDNoopRUMMonitor)
+        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is NOPRUMMonitor)
     }
 
     func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
         // When
         try RUMMonitor.initialize(in: core, configuration: .mockAny())
         // Then
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is RUMMonitor)
+        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is Monitor)
     }
 }

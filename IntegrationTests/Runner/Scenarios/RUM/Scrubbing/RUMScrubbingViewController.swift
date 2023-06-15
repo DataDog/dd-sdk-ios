@@ -25,7 +25,7 @@ internal class RUMScrubbingViewController: UIViewController {
     }
 
     private func simulateRUMUserAction() {
-        rumMonitor.addUserAction(type: .tap, name: "Purchase (sensitive detail)")
+        rumMonitor.addAction(type: .tap, name: "Purchase (sensitive detail)")
     }
 
     private func simulateRUMError() {

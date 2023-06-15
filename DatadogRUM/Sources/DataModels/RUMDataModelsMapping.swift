@@ -33,7 +33,7 @@ internal extension RUMInternalErrorSource {
     }
 }
 
-internal extension RUMUserActionType {
+internal extension RUMActionType {
     var toRUMDataFormat: RUMActionEvent.Action.ActionType {
         switch self {
         case .tap: return .tap

@@ -287,7 +287,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 
 internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
-    var actionType: RUMUserActionType { get }
+    var actionType: RUMActionType { get }
 }
 
 /// Starts continuous User Action.
@@ -297,7 +297,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
 
-    let actionType: RUMUserActionType
+    let actionType: RUMActionType
     let name: String
 }
 
@@ -308,7 +308,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     let canStartBackgroundView = false // no, we don't expect receiving it without an active view (started earlier on `RUMStartUserActionCommand`)
     let isUserInteraction = true // a user action definitely is a User Interacgion
 
-    let actionType: RUMUserActionType
+    let actionType: RUMActionType
     let name: String?
 }
 
@@ -319,7 +319,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     let canStartBackgroundView = true // yes, we want to track actions in "Background" view (e.g. it makes sense for custom actions)
     let isUserInteraction = true // a user action definitely is a User Interacgion
 
-    let actionType: RUMUserActionType
+    let actionType: RUMActionType
     let name: String
 }
 
