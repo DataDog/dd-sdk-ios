@@ -418,9 +418,9 @@ extension Recorder.Context: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Recorder.Context {
         return Recorder.Context(
-            date: .mockRandom(),
             privacy: .mockRandom(),
-            rumContext: .mockRandom()
+            rumContext: .mockRandom(),
+            date: .mockRandom()
         )
     }
 
@@ -430,9 +430,9 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         rumContext: RUMContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
-            date: date,
             privacy: privacy,
-            rumContext: rumContext
+            rumContext: rumContext,
+            date: date
         )
     }
 }

@@ -222,7 +222,7 @@ class ProcessorTests: XCTestCase {
     private let snapshotBuilder = ViewTreeSnapshotBuilder()
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
-        snapshotBuilder.createSnapshot(of: viewTree, with: .init(date: date, privacy: .allowAll, rumContext: rumContext))
+        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allowAll, rumContext: rumContext, date: date))
     }
 
     private func generateSimpleViewTree() -> UIView {

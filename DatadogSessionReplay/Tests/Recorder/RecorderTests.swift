@@ -9,7 +9,7 @@ import XCTest
 @testable import TestUtilities
 
 class RecorderTests: XCTestCase {
-    private var recorder: Recorder!
+    private var recorder: Recorder?
 
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
         let numberOfSnapshots = 10
@@ -118,7 +118,7 @@ class RecorderTests: XCTestCase {
 
         // When
         let currentPrivacy: SessionReplayPrivacy = .mockRandom()
-        recorder.change(privacy: currentPrivacy)
+        recorder?.change(privacy: currentPrivacy)
 
         rumContextObserver.notify(rumContext: currentRUMContext)
 

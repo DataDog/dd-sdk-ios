@@ -11,16 +11,9 @@ internal protocol RecordingCoordination {
     var currentRUMContext: RUMContext? { get }
 }
 
+/// Object is responsible for getting the RUM context, randomising the sampling rate,
+/// starting/stopping the recording scheduler as needed and propagating `has_replay` to other features.
 internal class RecordingCoordinator: RecordingCoordination {
-    /// Schedules view tree captures.
-    private let scheduler: Scheduler
-
-    /// Notifies on RUM context changes through integration with `DatadogCore`.
-    private let rumContextObserver: RUMContextObserver
-
-    /// Updates other Features with SR context.
-    private let contextPublisher: SRContextPublisher
-
     /// Last received RUM context (or `nil` if RUM session is not sampled).
     /// It's synchronized through `scheduler.queue` (main thread).
     private(set) var currentRUMContext: RUMContext? = nil
@@ -31,10 +24,6 @@ internal class RecordingCoordinator: RecordingCoordination {
         contextPublisher: SRContextPublisher,
         sampler: Sampler
     ) {
-        self.scheduler = scheduler
-        self.rumContextObserver = rumContextObserver
-        self.contextPublisher = contextPublisher
-
         contextPublisher.setRecordingIsPending(false)
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in

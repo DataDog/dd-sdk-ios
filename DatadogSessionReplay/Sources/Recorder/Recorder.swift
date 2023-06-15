@@ -20,17 +20,17 @@ internal protocol Recording {
 internal class Recorder: Recording {
     /// The context of recording next snapshot.
     struct Context: Equatable {
-        /// The time of requesting this snapshot.
-        let date: Date
         /// The content recording policy from the moment of requesting snapshot.
         let privacy: SessionReplayPrivacy
         /// The RUM context from the moment of requesting snapshot.
         let rumContext: RUMContext
+        /// The time of requesting this snapshot.
+        let date: Date
 
         internal init(
-            date: Date = Date(),
             privacy: SessionReplayPrivacy,
-            rumContext: RUMContext
+            rumContext: RUMContext,
+            date: Date = Date()
         ) {
             self.date = date
             self.privacy = privacy
