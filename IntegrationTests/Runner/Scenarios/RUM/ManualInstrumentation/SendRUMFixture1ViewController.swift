@@ -47,18 +47,18 @@ internal class SendRUMFixture1ViewController: UIViewController {
             attributes: ["button.description": String(describing: sender)]
         )
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey1,
             request: simulatedResourceRequest1
         )
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey2,
             request: simulatedResourceRequest2
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
-            rumMonitor.stopResourceLoading(
+            rumMonitor.stopResource(
                 resourceKey: simulatedResourceKey1,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest1.url!,
@@ -68,7 +68,7 @@ internal class SendRUMFixture1ViewController: UIViewController {
                 )!
             )
 
-            rumMonitor.stopResourceLoadingWithError(
+            rumMonitor.stopResourceWithError(
                 resourceKey: simulatedResourceKey2,
                 error: NSError(
                     domain: NSURLErrorDomain,

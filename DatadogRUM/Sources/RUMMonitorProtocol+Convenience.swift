@@ -117,12 +117,12 @@ public extension RUMMonitorProtocol {
     ///   - resourceKey: the key representing the resource. It must be unique among all resources being currently tracked.
     ///   - request: the `URLRequest` of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         request: URLRequest,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        startResourceLoading(resourceKey: resourceKey, request: request, attributes: attributes)
+        startResource(resourceKey: resourceKey, request: request, attributes: attributes)
     }
 
     /// Starts RUM resource.
@@ -130,12 +130,12 @@ public extension RUMMonitorProtocol {
     ///   - resourceKey: the key representing the resource. It must be unique among all resources being currently tracked.
     ///   - url: the `URL` of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         url: URL,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        startResourceLoading(resourceKey: resourceKey, url: url, attributes: attributes)
+        startResource(resourceKey: resourceKey, url: url, attributes: attributes)
     }
 
     /// Starts RUM resource
@@ -144,13 +144,13 @@ public extension RUMMonitorProtocol {
     ///   - httpMethod: HTTP method of this resource
     ///   - urlString: the url string of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         httpMethod: RUMMethod,
         urlString: String,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        startResourceLoading(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
+        startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
     }
 
     /// Adds temporal metrics to given RUM resource.
@@ -174,13 +174,13 @@ public extension RUMMonitorProtocol {
     ///   - response: the `URLResepone` received for the resource.
     ///   - size: an optional size of the data received for the resource (in bytes). If not provided, it will be inferred from the "Content-Length" header of the `response`.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoading(
+    func stopResource(
         resourceKey: String,
         response: URLResponse,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        stopResourceLoading(
+        stopResource(
             resourceKey: resourceKey,
             response: response,
             size: size,
@@ -195,14 +195,14 @@ public extension RUMMonitorProtocol {
     ///   - kind: type of the resource.
     ///   - size: an optional size of the data received for the resource (in bytes).
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoading(
+    func stopResource(
         resourceKey: String,
         statusCode: Int? = nil,
         kind: RUMResourceType,
         size: Int64? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        stopResourceLoading(
+        stopResource(
             resourceKey: resourceKey,
             statusCode: statusCode,
             kind: kind,
@@ -217,13 +217,13 @@ public extension RUMMonitorProtocol {
     ///   - error: the `Error` object received when loading the resource.
     ///   - response: an optional `URLResponse` received for the resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoadingWithError(
+    func stopResourceWithError(
         resourceKey: String,
         error: Error,
         response: URLResponse? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        stopResourceLoadingWithError(
+        stopResourceWithError(
             resourceKey: resourceKey,
             error: error,
             response: response,
@@ -238,14 +238,14 @@ public extension RUMMonitorProtocol {
     ///   - type: the type of the error.
     ///   - response: an optional `URLResponse` received for the resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoadingWithError(
+    func stopResourceWithError(
         resourceKey: String,
         message: String,
         type: String? = nil,
         response: URLResponse? = nil,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
-        stopResourceLoadingWithError(
+        stopResourceWithError(
             resourceKey: resourceKey,
             message: message,
             type: type,

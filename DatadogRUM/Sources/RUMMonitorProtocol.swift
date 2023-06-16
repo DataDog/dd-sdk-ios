@@ -148,7 +148,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - resourceKey: the key representing the resource. It must be unique among all resources being currently tracked.
     ///   - request: the `URLRequest` of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         request: URLRequest,
         attributes: [AttributeKey: AttributeValue]
@@ -159,7 +159,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - resourceKey: the key representing the resource. It must be unique among all resources being currently tracked.
     ///   - url: the `URL` of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         url: URL,
         attributes: [AttributeKey: AttributeValue]
@@ -171,7 +171,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - httpMethod: HTTP method of this resource
     ///   - urlString: the url string of this resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func startResourceLoading(
+    func startResource(
         resourceKey: String,
         httpMethod: RUMMethod,
         urlString: String,
@@ -197,7 +197,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - response: the `URLResepone` received for the resource.
     ///   - size: an optional size of the data received for the resource (in bytes). If not provided, it will be inferred from the "Content-Length" header of the `response`.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoading(
+    func stopResource(
         resourceKey: String,
         response: URLResponse,
         size: Int64?,
@@ -211,7 +211,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - kind: type of the resource.
     ///   - size: an optional size of the data received for the resource (in bytes).
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoading(
+    func stopResource(
         resourceKey: String,
         statusCode: Int?,
         kind: RUMResourceType,
@@ -225,7 +225,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - error: the `Error` object received when loading the resource.
     ///   - response: an optional `URLResponse` received for the resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoadingWithError(
+    func stopResourceWithError(
         resourceKey: String,
         error: Error,
         response: URLResponse?,
@@ -239,7 +239,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   - type: the type of the error.
     ///   - response: an optional `URLResponse` received for the resource.
     ///   - attributes: custom attributes to attach to this resource.
-    func stopResourceLoadingWithError(
+    func stopResourceWithError(
         resourceKey: String,
         message: String,
         type: String?,
@@ -332,14 +332,14 @@ internal class NOPRUMMonitor: RUMMonitorProtocol {
     func addTiming(name: String) { warn() }
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue], file: StaticString?, line: UInt?) { warn() }
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResourceLoading(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResourceLoading(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResourceLoading(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) { warn() }
     func addResourceMetrics(resourceKey: String, metrics: URLSessionTaskMetrics, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceLoading(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceLoading(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceLoadingWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceLoadingWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) { warn() }
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) { warn() }
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey : AttributeValue]) { warn() }

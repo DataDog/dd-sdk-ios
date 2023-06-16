@@ -59,15 +59,15 @@
     [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];
     [monitor addErrorWithError:[NSError errorWithDomain:NSCocoaErrorDomain code:-100 userInfo:nil]
                         source:DDRUMErrorSourceNetwork attributes:@{}];
-    [monitor startResourceLoadingWithResourceKey:@"" request:[NSURLRequest new] attributes:@{}];
-    [monitor startResourceLoadingWithResourceKey:@"" url:[NSURL new] attributes:@{}];
-    [monitor startResourceLoadingWithResourceKey:@"" httpMethod:DDRUMMethodGet urlString:@"" attributes:@{}];
+    [monitor startResourceWithResourceKey:@"" request:[NSURLRequest new] attributes:@{}];
+    [monitor startResourceWithResourceKey:@"" url:[NSURL new] attributes:@{}];
+    [monitor startResourceWithResourceKey:@"" httpMethod:DDRUMMethodGet urlString:@"" attributes:@{}];
     [monitor addResourceMetricsWithResourceKey:@"" metrics:[NSURLSessionTaskMetrics new] attributes:@{}];
-    [monitor stopResourceLoadingWithResourceKey:@"" response:[NSURLResponse new] size:nil attributes:@{}];
-    [monitor stopResourceLoadingWithResourceKey:@"" statusCode:nil kind:DDRUMResourceTypeOther size:nil attributes:@{}];
-    [monitor stopResourceLoadingWithErrorWithResourceKey:@""
+    [monitor stopResourceWithResourceKey:@"" response:[NSURLResponse new] size:nil attributes:@{}];
+    [monitor stopResourceWithResourceKey:@"" statusCode:nil kind:DDRUMResourceTypeOther size:nil attributes:@{}];
+    [monitor stopResourceWithErrorWithResourceKey:@""
                                                    error:[NSError errorWithDomain:NSURLErrorDomain code:-99 userInfo:nil] response:nil attributes:@{}];
-    [monitor stopResourceLoadingWithErrorWithResourceKey:@"" message:@"" response:nil attributes:@{}];
+    [monitor stopResourceWithErrorWithResourceKey:@"" message:@"" response:nil attributes:@{}];
     [monitor startActionWithType:DDRUMActionTypeSwipe name:@"" attributes:@{}];
     [monitor stopActionWithType:DDRUMActionTypeSwipe name:nil attributes:@{}];
     [monitor addActionWithType:DDRUMActionTypeTap name:@"" attributes:@{}];

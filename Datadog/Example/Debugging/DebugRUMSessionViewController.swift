@@ -105,13 +105,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
                     self?.modifySessionItem(type: .resource, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        RUMMonitor.shared().stopResourceLoading(resourceKey: key, statusCode: nil, kind: .other)
+                        RUMMonitor.shared().stopResource(resourceKey: key, statusCode: nil, kind: .other)
                     }
                 }
             )
         )
 
-        RUMMonitor.shared().startResourceLoading(resourceKey: key, url: mockURL())
+        RUMMonitor.shared().startResource(resourceKey: key, url: mockURL())
         self.resourceKey = ""
     }
 

@@ -111,8 +111,8 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+        monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -139,7 +139,7 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+        monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
         monitor.addResourceMetrics(
             resourceKey: "/resource/1",
             metrics: .mockWith(
@@ -152,7 +152,7 @@ class RUMMonitorTests: XCTestCase {
                 ]
             )
         )
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -172,8 +172,8 @@ class RUMMonitorTests: XCTestCase {
 
         let url: URL = .mockRandom()
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: url)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+        monitor.startResource(resourceKey: "/resource/1", url: url)
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -190,8 +190,8 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
-        monitor.stopResourceLoading(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
+        monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
+        monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -214,8 +214,8 @@ class RUMMonitorTests: XCTestCase {
 
         let url: URL = .mockRandom()
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: url)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+        monitor.startResource(resourceKey: "/resource/1", url: url)
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -233,8 +233,8 @@ class RUMMonitorTests: XCTestCase {
         setGlobalAttributes(of: monitor)
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", httpMethod: .post, urlString: "http://www.foo.com/some/url/string", attributes: [:])
-        monitor.stopResourceLoading(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
+        monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "http://www.foo.com/some/url/string", attributes: [:])
+        monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
@@ -288,10 +288,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200))
-        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockWith(httpMethod: "POST"))
-        monitor.stopResourceLoading(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
+        monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200))
+        monitor.startResource(resourceKey: "/resource/2", request: .mockWith(httpMethod: "POST"))
+        monitor.stopResource(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
         monitor.stopAction(type: .scroll)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
@@ -401,8 +401,8 @@ class RUMMonitorTests: XCTestCase {
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
         monitor.addAction(type: .tap, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.stopView(viewController: view1)
         monitor.stopView(viewController: view2)
 
@@ -445,22 +445,22 @@ class RUMMonitorTests: XCTestCase {
 
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: URLRequest(url: .mockWith(pathComponent: "/resource/1")))
-        monitor.startResourceLoading(resourceKey: "/resource/2", request: URLRequest(url: .mockWith(pathComponent: "/resource/2")))
+        monitor.startResource(resourceKey: "/resource/1", request: URLRequest(url: .mockWith(pathComponent: "/resource/1")))
+        monitor.startResource(resourceKey: "/resource/2", request: URLRequest(url: .mockWith(pathComponent: "/resource/2")))
 
         monitor.stopView(viewController: view1)
 
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
         monitor.startView(viewController: view2)
-        monitor.startResourceLoading(resourceKey: "/resource/3", request: URLRequest(url: .mockWith(pathComponent: "/resource/3")))
-        monitor.startResourceLoading(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
-        monitor.startResourceLoading(resourceKey: "/resource/5", request: URLRequest(url: .mockWith(pathComponent: "/resource/5")))
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/3", response: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/4", response: .mockAny())
+        monitor.startResource(resourceKey: "/resource/3", request: URLRequest(url: .mockWith(pathComponent: "/resource/3")))
+        monitor.startResource(resourceKey: "/resource/4", request: URLRequest(url: .mockWith(pathComponent: "/resource/4")))
+        monitor.startResource(resourceKey: "/resource/5", request: URLRequest(url: .mockWith(pathComponent: "/resource/5")))
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/3", response: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/4", response: .mockAny())
         let customType: String = .mockRandom(among: .alphanumerics)
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType)
+        monitor.stopResourceWithError(resourceKey: "/resource/5", message: .mockAny(), type: customType)
         monitor.stopView(viewController: view2)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -545,11 +545,11 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
+        monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
         monitor.stopAction(type: .scroll)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
 
@@ -590,11 +590,11 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", request: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
+        monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
         monitor.stopAction(type: .scroll)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny(), source: .source)
         monitor.stopView(viewController: mockView)
 
@@ -828,10 +828,10 @@ class RUMMonitorTests: XCTestCase {
 
         monitor.startView(viewController: mockView)
         monitor.addAction(type: .tap, name: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
-        monitor.startResourceLoading(resourceKey: "/resource/2", url: .mockAny())
-        monitor.stopResourceLoadingWithError(resourceKey: "/resource/2", message: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
+        monitor.startResource(resourceKey: "/resource/2", url: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
         monitor.addError(message: .mockAny())
 
         // Then
@@ -973,10 +973,10 @@ class RUMMonitorTests: XCTestCase {
         // When
         monitor.addAction(type: .custom, name: "A1")
         monitor.addError(message: "E1")
-        monitor.startResourceLoading(resourceKey: "R1", url: URL(string: "https://foo.com/R1")!)
+        monitor.startResource(resourceKey: "R1", url: URL(string: "https://foo.com/R1")!)
         monitor.startView(key: "FirstView")
         monitor.addAction(type: .tap, name: "A2")
-        monitor.stopResourceLoading(resourceKey: "R1", statusCode: 200, kind: .native)
+        monitor.stopResource(resourceKey: "R1", statusCode: 200, kind: .native)
 
         // Then
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
@@ -1051,8 +1051,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         monitor.startView(viewController: mockView, name: "OriginalViewName")
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
 
@@ -1090,8 +1090,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", url: .mockAny())
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", url: .mockAny())
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
 
@@ -1162,10 +1162,10 @@ class RUMMonitorTests: XCTestCase {
             case 1: monitor.stopView(viewController: view)
             case 2: monitor.addError(error: ErrorMock(), source: .custom)
             case 3: monitor.addError(message: .mockAny(), source: .custom)
-            case 4: monitor.startResourceLoading(resourceKey: .mockAny(), request: .mockAny())
-            case 5: monitor.stopResourceLoading(resourceKey: .mockAny(), response: .mockAny())
-            case 6: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ErrorMock())
-            case 7: monitor.stopResourceLoadingWithError(resourceKey: .mockAny(), message: .mockAny())
+            case 4: monitor.startResource(resourceKey: .mockAny(), request: .mockAny())
+            case 5: monitor.stopResource(resourceKey: .mockAny(), response: .mockAny())
+            case 6: monitor.stopResourceWithError(resourceKey: .mockAny(), error: ErrorMock())
+            case 7: monitor.stopResourceWithError(resourceKey: .mockAny(), message: .mockAny())
             case 8: monitor.startAction(type: .scroll, name: .mockRandom())
             case 9: monitor.stopAction(type: .scroll)
             case 10: monitor.addAction(type: .tap, name: .mockRandom())
@@ -1242,8 +1242,8 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(key: "View", name: nil, attributes: [:])
         monitor.addAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
-        monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
-        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
+        monitor.startResource(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
+        monitor.stopResource(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
 
         monitor.stopView(key: "View", attributes: [:])
 
@@ -1281,8 +1281,8 @@ class RUMMonitorTests: XCTestCase {
         // when
         monitor.addAction(type: .custom, name: "action1", attributes: ["abc": "456"])
 
-        monitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
-        monitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
+        monitor.startResource(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["abc": "456"])
+        monitor.stopResource(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["abc": "789", "def": "789"])
 
         monitor.stopView(key: "View", attributes: [:])
 

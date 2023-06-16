@@ -116,7 +116,7 @@ class RUMInternalProxyTests: XCTestCase {
 
         // When
         monitor.startView(viewController: mockView)
-        monitor.startResourceLoading(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
+        monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
 
         let fetch = (start: date, end: date.addingTimeInterval(12))
         let redirection = (start: date.addingTimeInterval(1), end: date.addingTimeInterval(2))
@@ -139,7 +139,7 @@ class RUMInternalProxyTests: XCTestCase {
             responseSize: 42
         )
 
-        monitor.stopResourceLoading(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         // Then
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()

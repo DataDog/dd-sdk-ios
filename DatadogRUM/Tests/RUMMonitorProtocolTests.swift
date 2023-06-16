@@ -29,14 +29,14 @@ class NOPRUMMonitorTests: XCTestCase {
         noop.addTiming(name: .mockAny())
         noop.addError(message: .mockAny())
         noop.addError(error: ProgrammerError(description: .mockAny()))
-        noop.startResourceLoading(resourceKey: .mockAny(), request: .mockAny())
-        noop.startResourceLoading(resourceKey: .mockAny(), url: .mockRandom())
-        noop.startResourceLoading(resourceKey: .mockAny(), httpMethod: .mockAny(), urlString: .mockAny())
+        noop.startResource(resourceKey: .mockAny(), request: .mockAny())
+        noop.startResource(resourceKey: .mockAny(), url: .mockRandom())
+        noop.startResource(resourceKey: .mockAny(), httpMethod: .mockAny(), urlString: .mockAny())
         noop.addResourceMetrics(resourceKey: .mockAny(), metrics: .mockAny())
-        noop.stopResourceLoading(resourceKey: .mockAny(), response: .mockAny())
-        noop.stopResourceLoading(resourceKey: .mockAny(), statusCode: nil, kind: .mockAny())
-        noop.stopResourceLoadingWithError(resourceKey: .mockAny(), error: ProgrammerError(description: .mockAny()))
-        noop.stopResourceLoadingWithError(resourceKey: .mockAny(), message: .mockAny())
+        noop.stopResource(resourceKey: .mockAny(), response: .mockAny())
+        noop.stopResource(resourceKey: .mockAny(), statusCode: nil, kind: .mockAny())
+        noop.stopResourceWithError(resourceKey: .mockAny(), error: ProgrammerError(description: .mockAny()))
+        noop.stopResourceWithError(resourceKey: .mockAny(), message: .mockAny())
         noop.addAction(type: .click, name: .mockAny())
         noop.startAction(type: .click, name: .mockAny())
         noop.stopAction(type: .click, name: .mockAny())
@@ -58,14 +58,14 @@ class NOPRUMMonitorTests: XCTestCase {
             "addTiming(name:)",
             "addError(message:type:stack:source:attributes:file:line:)",
             "addError(error:source:attributes:)",
-            "startResourceLoading(resourceKey:request:attributes:)",
-            "startResourceLoading(resourceKey:url:attributes:)",
-            "startResourceLoading(resourceKey:httpMethod:urlString:attributes:)",
+            "startResource(resourceKey:request:attributes:)",
+            "startResource(resourceKey:url:attributes:)",
+            "startResource(resourceKey:httpMethod:urlString:attributes:)",
             "addResourceMetrics(resourceKey:metrics:attributes:)",
-            "stopResourceLoading(resourceKey:response:size:attributes:)",
-            "stopResourceLoading(resourceKey:statusCode:kind:size:attributes:)",
-            "stopResourceLoadingWithError(resourceKey:error:response:attributes:)",
-            "stopResourceLoadingWithError(resourceKey:message:type:response:attributes:)",
+            "stopResource(resourceKey:response:size:attributes:)",
+            "stopResource(resourceKey:statusCode:kind:size:attributes:)",
+            "stopResourceWithError(resourceKey:error:response:attributes:)",
+            "stopResourceWithError(resourceKey:message:type:response:attributes:)",
             "addAction(type:name:attributes:)",
             "startAction(type:name:attributes:)",
             "stopAction(type:name:attributes:)",

@@ -309,7 +309,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - resources
 
-    func startResourceLoading(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -323,7 +323,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startResourceLoading(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -337,7 +337,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startResourceLoading(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -362,7 +362,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceLoading(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
         let resourceKind: RUMResourceType
         var statusCode: Int?
 
@@ -385,7 +385,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceLoading(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
@@ -398,7 +398,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceLoadingWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
@@ -411,7 +411,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceLoadingWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
