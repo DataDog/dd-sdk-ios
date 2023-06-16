@@ -194,6 +194,8 @@
 		61C713AE2A3B793E00FA735A /* RUMMonitorProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713AC2A3B793E00FA735A /* RUMMonitorProtocolTests.swift */; };
 		61C713B32A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713B22A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift */; };
 		61C713B42A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713B22A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift */; };
+		61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713B52A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift */; };
+		61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713B52A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift */; };
 		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
 		61D3E0D2277B23F1008BE766 /* KronosInternetAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */; };
 		61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */; };
@@ -1892,6 +1894,7 @@
 		61C713A92A3B790B00FA735A /* Monitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Monitor.swift; sourceTree = "<group>"; };
 		61C713AC2A3B793E00FA735A /* RUMMonitorProtocolTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMMonitorProtocolTests.swift; sourceTree = "<group>"; };
 		61C713B22A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMMonitorProtocol+InternalTests.swift"; sourceTree = "<group>"; };
+		61C713B52A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMMonitorProtocol+ConvenienceTests.swift"; sourceTree = "<group>"; };
 		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
 		61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosInternetAddress.swift; sourceTree = "<group>"; };
 		61D3E0C9277B23F0008BE766 /* KronosDNSResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosDNSResolver.swift; sourceTree = "<group>"; };
@@ -4506,6 +4509,7 @@
 			isa = PBXGroup;
 			children = (
 				61C713AC2A3B793E00FA735A /* RUMMonitorProtocolTests.swift */,
+				61C713B52A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift */,
 				61C713B22A3C3A0B00FA735A /* RUMMonitorProtocol+InternalTests.swift */,
 				D29A9FCB29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift */,
 				D29A9FE129DDC75E005C54A4 /* Mocks */,
@@ -6871,6 +6875,7 @@
 				D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */,
 				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
+				61C713B72A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D23F8EB129DDCD38001CFAE8 /* RUMViewScopeTests.swift in Sources */,
 				D224431029E977A100274EC7 /* TelemetryReceiverTests.swift in Sources */,
 				D23F8EB229DDCD38001CFAE8 /* ValuePublisherTests.swift in Sources */,
@@ -7107,6 +7112,7 @@
 				D29A9FCC29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
+				61C713B62A3C600400FA735A /* RUMMonitorProtocol+ConvenienceTests.swift in Sources */,
 				D29A9FB829DDB483005C54A4 /* RUMViewScopeTests.swift in Sources */,
 				D224430F29E9779F00274EC7 /* TelemetryReceiverTests.swift in Sources */,
 				D29A9F9D29DDB483005C54A4 /* ValuePublisherTests.swift in Sources */,
