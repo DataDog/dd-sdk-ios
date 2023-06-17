@@ -40,9 +40,9 @@ internal struct TracingUUID: Equatable, Hashable {
         case .hexadecimal:
             return String(rawValue, radix: 16)
         case .hexadecimal16Chars:
-            return String(format: "%016x", rawValue)
+            return String(format: "%016llx", rawValue)
         case .hexadecimal32Chars:
-            return String(format: "%032x", rawValue)
+            return String(format: "%032llx", rawValue)
         }
     }
 }
