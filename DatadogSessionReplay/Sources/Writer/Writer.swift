@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 /// A type writing Session Replay records to `DatadogCore`.
 internal protocol Writing {

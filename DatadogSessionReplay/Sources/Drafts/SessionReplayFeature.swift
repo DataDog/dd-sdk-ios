@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 /// A draft of the main SR component (TODO: RUMM-2268 Design convenient public API).
 /// - It conforms to `DatadogFeature` for communicating with `DatadogCore`.

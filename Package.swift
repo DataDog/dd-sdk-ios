@@ -18,26 +18,6 @@ let package = Package(
             targets: ["DatadogObjc"]
         ),
         .library(
-            name: "DatadogDynamic",
-            type: .dynamic,
-            targets: ["Datadog"]
-        ),
-        .library(
-            name: "DatadogDynamicObjc",
-            type: .dynamic,
-            targets: ["DatadogObjc"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStatic",
-            type: .static,
-            targets: ["Datadog"]
-        ),
-        .library( // TODO: RUMM-2387 Consider removing explicit linkage variants
-            name: "DatadogStaticObjc",
-            type: .static,
-            targets: ["DatadogObjc"]
-        ),
-        .library(
             name: "DatadogLogs",
             targets: ["DatadogLogs"]
         ),
@@ -57,6 +37,10 @@ let package = Package(
             name: "DatadogWebViewTracking",
             targets: ["DatadogWebViewTracking"]
         ),
+//        .library(
+//            name: "DatadogSessionReplay",
+//            targets: ["DatadogSessionReplay"]
+//        ),
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
@@ -181,9 +165,23 @@ let package = Package(
         ),
 
         .target(
+            name: "DatadogSessionReplay",
+            dependencies: ["DatadogInternal"],
+            path: "DatadogSessionReplay/Sources"
+        ),
+        .testTarget(
+            name: "DatadogSessionReplayTests",
+            dependencies: [
+                .target(name: "DatadogSessionReplay"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogSessionReplay/Tests"
+        ),
+
+        .target(
             name: "TestUtilities",
             dependencies: [
-                .target(name: "Datadog"),
+                .target(name: "DatadogInternal"),
             ],
             path: "TestUtilities",
             sources: ["Mocks", "Helpers"]
