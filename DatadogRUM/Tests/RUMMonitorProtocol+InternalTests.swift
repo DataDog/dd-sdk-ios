@@ -28,7 +28,7 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
         let monitor: RUMMonitorProtocol
 
         // When
-        monitor = NOPRUMMonitor()
+        monitor = NOPMonitor()
 
         // Then
         XCTAssertNil(monitor._internal)

@@ -103,7 +103,7 @@ public class RUMMonitor {
             return feature.monitor
         } catch {
             consolePrint("\(error)")
-            return NOPRUMMonitor()
+            return NOPMonitor()
         }
     }
 }

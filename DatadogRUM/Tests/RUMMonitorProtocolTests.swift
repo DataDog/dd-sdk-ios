@@ -10,13 +10,13 @@ import DatadogInternal
 
 @testable import DatadogRUM
 
-class NOPRUMMonitorTests: XCTestCase {
-    func testWhenUsingNOPRUMMonitorAPIs_itPrintsWarning() {
+class NOPMonitorTests: XCTestCase {
+    func testWhenUsingNOPMonitorAPIs_itPrintsWarning() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
         // Given
-        let noop = NOPRUMMonitor()
+        let noop = NOPMonitor()
 
         // When
         noop.addAttribute(forKey: .mockAny(), value: String.mockAny())
@@ -74,7 +74,7 @@ class NOPRUMMonitorTests: XCTestCase {
             "debug",
         ].map { method in
             """
-            Calling `\(method)` on NOPRUMMonitor.
+            Calling `\(method)` on NOPMonitor.
             Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
             """
         }

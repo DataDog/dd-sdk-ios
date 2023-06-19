@@ -312,11 +312,11 @@ public protocol RUMMonitorProtocol: AnyObject {
 
 // MARK: - NOP moniotor
 
-internal class NOPRUMMonitor: RUMMonitorProtocol {
+internal class NOPMonitor: RUMMonitorProtocol {
     private func warn(method: StaticString = #function) {
         DD.logger.critical(
             """
-            Calling `\(method)` on NOPRUMMonitor.
+            Calling `\(method)` on NOPMonitor.
             Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
             """
         )

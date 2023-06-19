@@ -1202,7 +1202,7 @@ class RUMMonitorTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: Datadog SDK must be initialized and RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."
         )
-        XCTAssertTrue(monitor is NOPRUMMonitor)
+        XCTAssertTrue(monitor is NOPMonitor)
     }
 
     func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
