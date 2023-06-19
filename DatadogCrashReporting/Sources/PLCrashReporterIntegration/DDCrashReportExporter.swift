@@ -176,14 +176,12 @@ internal struct DDCrashReportExporter {
     // MARK: - Exporting meta information
 
     private func formattedMeta(for crashReport: CrashReport) -> DDCrashReport.Meta {
-        var parentProcessDescription: String? = nil
+        let process = crashReport.processInfo.map { info in
+            info.processName.map { "\($0) [\(info.processID)]" } ?? "[\(info.processID)]"
+        }
 
-        if let processInfo = crashReport.processInfo {
-            if let parentProcessName = processInfo.parentProcessName {
-                parentProcessDescription = "\(parentProcessName) [\(processInfo.parentProcessID)]"
-            } else {
-                parentProcessDescription = "[\(processInfo.parentProcessID)]"
-            }
+        let parentProcess = crashReport.processInfo.map { info in
+            info.parentProcessName.map { "\($0) [\(info.parentProcessID)]" } ?? "[\(info.parentProcessID)]"
         }
 
         let anyBinaryImageWithKnownArchitecture = crashReport.binaryImages.first { $0.codeType?.architectureName != nil }
@@ -191,8 +189,8 @@ internal struct DDCrashReportExporter {
 
         return .init(
             incidentIdentifier: crashReport.incidentIdentifier,
-            processName: crashReport.processInfo?.processName,
-            parentProcess: parentProcessDescription,
+            process: process,
+            parentProcess: parentProcess,
             path: crashReport.processInfo?.processPath,
             codeType: cpuArchitecture,
             exceptionType: crashReport.signalInfo?.name,

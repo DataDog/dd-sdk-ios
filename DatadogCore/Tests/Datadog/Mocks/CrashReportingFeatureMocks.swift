@@ -226,7 +226,7 @@ internal extension DDCrashReport.Meta {
     static func mockAny() -> DDCrashReport.Meta {
         return DDCrashReport.Meta(
             incidentIdentifier: nil,
-            processName: nil,
+            process: nil,
             parentProcess: nil,
             path: nil,
             codeType: nil,

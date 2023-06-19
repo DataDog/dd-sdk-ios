@@ -83,7 +83,7 @@ internal class DDCrashReport: NSObject, Codable {
         /// A client-generated 16-byte UUID of the incident.
         let incidentIdentifier: String?
         /// The name of the crashed process.
-        let processName: String?
+        let process: String?
         /// Parent process information.
         let parentProcess: String?
         /// The location of the executable on disk.
@@ -97,7 +97,7 @@ internal class DDCrashReport: NSObject, Codable {
 
         init(
             incidentIdentifier: String?,
-            processName: String?,
+            process: String?,
             parentProcess: String?,
             path: String?,
             codeType: String?,
@@ -105,7 +105,7 @@ internal class DDCrashReport: NSObject, Codable {
             exceptionCodes: String?
         ) {
             self.incidentIdentifier = incidentIdentifier
-            self.processName = processName
+            self.process = process
             self.parentProcess = parentProcess
             self.path = path
             self.codeType = codeType
@@ -115,7 +115,7 @@ internal class DDCrashReport: NSObject, Codable {
 
         enum CodingKeys: String, CodingKey {
             case incidentIdentifier = "incident_identifier"
-            case processName = "process"
+            case process = "process"
             case parentProcess = "parent_process"
             case path = "path"
             case codeType = "code_type"

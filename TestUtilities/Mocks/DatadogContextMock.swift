@@ -111,6 +111,7 @@ extension DeviceInfo {
         model: String = .mockAny(),
         osName: String = .mockAny(),
         osVersion: String = .mockAny(),
+        osBuildNumber: String = .mockAny(),
         architecture: String = .mockAny()
     ) -> DeviceInfo {
         return .init(
@@ -118,6 +119,7 @@ extension DeviceInfo {
             model: model,
             osName: osName,
             osVersion: osVersion,
+            osBuildNumber: osBuildNumber,
             architecture: architecture
         )
     }
@@ -128,6 +130,7 @@ extension DeviceInfo {
             model: .mockRandom(),
             osName: .mockRandom(),
             osVersion: .mockRandom(),
+            osBuildNumber: .mockRandom(),
             architecture: .mockRandom()
         )
     }

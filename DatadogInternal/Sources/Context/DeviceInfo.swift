@@ -25,6 +25,9 @@ public struct DeviceInfo: Codable, Equatable, DictionaryEncodable {
     /// The version of the operating system, e.g. "15.4.1".
     public let osVersion: String
 
+    /// The build numer of the operating system, e.g.  "15D21" or "13D20".
+    public let osBuildNumber: String?
+
     /// The architecture of the device
     public let architecture: String
 
@@ -33,6 +36,7 @@ public struct DeviceInfo: Codable, Equatable, DictionaryEncodable {
         model: String,
         osName: String,
         osVersion: String,
+        osBuildNumber: String?,
         architecture: String
     ) {
         self.brand = "Apple"
@@ -40,6 +44,7 @@ public struct DeviceInfo: Codable, Equatable, DictionaryEncodable {
         self.model = model
         self.osName = osName
         self.osVersion = osVersion
+        self.osBuildNumber = osBuildNumber
         self.architecture = architecture
     }
 }
@@ -50,25 +55,6 @@ import UIKit
 import MachO
 
 extension DeviceInfo {
-    /// Creates device info based on UIKit description.
-    ///
-    /// - Parameters:
-    ///   - model: The model name.
-    ///   - device: The `UIDevice` description.
-    public init(
-        model: String,
-        device: UIDevice,
-        architecture: String
-    ) {
-        self.init(
-            name: device.model,
-            model: model,
-            osName: device.systemName,
-            osVersion: device.systemVersion,
-            architecture: architecture
-        )
-    }
-
     /// Creates device info based on UIKit description.
     ///
     /// - Parameters:
@@ -83,13 +69,17 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
+        let build = try? Sysctl.osVersion()
+
         #if !targetEnvironment(simulator)
+        let model = try? Sysctl.model()
         // Real iOS device
         self.init(
             name: device.model,
-            model: (try? Sysctl.getModel()) ?? device.model,
+            model: model ?? device.model,
             osName: device.systemName,
             osVersion: device.systemVersion,
+            osBuildNumber: build,
             architecture: architecture
         )
         #else
@@ -100,6 +90,7 @@ extension DeviceInfo {
             model: "\(model) Simulator",
             osName: device.systemName,
             osVersion: device.systemVersion,
+            osBuildNumber: build,
             architecture: architecture
         )
         #endif

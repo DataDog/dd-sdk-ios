@@ -567,16 +567,25 @@ extension URLRequest: AnyMockable {
 
 public class ProcessInfoMock: ProcessInfo {
     private var _isLowPowerModeEnabled: Bool
+    private var _environment: [String: String]
     private var _arguments: [String]
 
-    public init(isLowPowerModeEnabled: Bool = .mockAny(), arguments: [String] = []) {
+    public init(
+        isLowPowerModeEnabled: Bool = .mockAny(),
+        environment: [String: String] = [:],
+        arguments: [String] = []
+    ) {
         _isLowPowerModeEnabled = isLowPowerModeEnabled
+        _environment = environment
         _arguments = arguments
     }
 
     public override var isLowPowerModeEnabled: Bool { _isLowPowerModeEnabled }
 
+    public override var environment: [String : String] { _environment }
+
     public override var arguments: [String] { _arguments }
+
 }
 
 // MARK: - URLSession
