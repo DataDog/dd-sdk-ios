@@ -32,7 +32,7 @@ public struct DatadogInternalInterface {
     ///   - time: the time of this command in cross-platform SDK
     ///   - duration: duration of the long task
     ///   - attributes: attributes to process along with this call
-    func addLongTask(
+    public func addLongTask(
         at time: Date,
         duration: TimeInterval,
         attributes: [AttributeKey: AttributeValue] = [:]
@@ -47,7 +47,7 @@ public struct DatadogInternalInterface {
     ///   - metric: the metric to update
     ///   - value: new value of the metric
     ///   - attributes: attributes to process along with this call
-    func updatePerformanceMetric(
+    public func updatePerformanceMetric(
         at time: Date,
         metric: PerformanceMetric,
         value: Double,
@@ -77,7 +77,7 @@ public struct DatadogInternalInterface {
     ///   - download: properties of the download phase for the resource.
     ///   - responseSize: the size of data delivered to delegate or completion handler.
     ///   - attributes: attributes to process along with this call
-    func addResourceMetrics(
+    public func addResourceMetrics(
         at time: Date,
         resourceKey: String,
         fetch: (start: Date, end: Date),
