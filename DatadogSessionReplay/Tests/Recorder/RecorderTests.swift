@@ -126,4 +126,28 @@ class RecorderTests: XCTestCase {
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, currentRUMContext.ids.viewID)
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, currentRUMContext.viewServerTimeOffset)
     }
+
+    func test_whenShouldNotRecord_itDoesNotRecord() {
+        let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
+        let touchSnapshotProducer = TouchSnapshotProducerMock()
+        let currentRUMContext: RUMContext = .mockRandom()
+        let scheduler = TestScheduler()
+
+        // Given
+        recorder = Recorder(
+            configuration: SessionReplayConfiguration(privacy: .mockRandom()),
+            uiApplicationSwizzler: .mockAny(),
+            scheduler: scheduler,
+            recordingCoordinator: RecordingCoordinationMock(currentRUMContext: currentRUMContext, shouldRecord: false),
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: touchSnapshotProducer,
+            snapshotProcessor: ProcessorSpy()
+        )
+
+        // When
+        scheduler.start()
+
+        // Then
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 0)
+    }
 }
