@@ -35,7 +35,7 @@ public enum RUMErrorSource {
 }
 
 
-/// An interface for manual interaction with RUM feature.
+/// Public interface of RUM monitor for manual interaction with RUM feature.
 public protocol RUMMonitorProtocol: AnyObject {
     // MARK: - attributes
 

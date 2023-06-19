@@ -11,8 +11,8 @@ internal class LongTaskObserver: RUMCommandPublisher {
     private let longTaskDurationThreshold: TimeInterval
     private let dateProvider: DateProvider
 
-    private var observer_begin: CFRunLoopObserver?
-    private var observer_end: CFRunLoopObserver?
+    private(set) var observer_begin: CFRunLoopObserver?
+    private(set) var observer_end: CFRunLoopObserver?
     private var lastActivity: (kind: CFRunLoopActivity, date: Date)?
 
     weak var subscriber: RUMCommandSubscriber?
@@ -65,7 +65,7 @@ internal class LongTaskObserver: RUMCommandPublisher {
         CFRunLoopAddObserver(RunLoop.main.getCFRunLoop(), observer_end, .commonModes)
     }
 
-    deinit {
+    func stop() {
         CFRunLoopRemoveObserver(RunLoop.main.getCFRunLoop(), observer_begin, .commonModes)
         CFRunLoopRemoveObserver(RunLoop.main.getCFRunLoop(), observer_end, .commonModes)
     }

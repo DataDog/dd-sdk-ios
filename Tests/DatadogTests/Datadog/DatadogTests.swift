@@ -176,27 +176,31 @@ class DatadogTests: XCTestCase {
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNotNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNotNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
     }
 
@@ -228,7 +232,7 @@ class DatadogTests: XCTestCase {
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
         let rum = core.get(feature: DatadogRUMFeature.self)
         XCTAssertEqual(core.performance, expectedPerformancePreset)
-        XCTAssertEqual(rum?.monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual((rum?.monitor as! Monitor).scopes.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(Datadog.verbosityLevel, .debug)
 
         // Clear default verbosity after this test

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogSessionReplay
 
 // swiftlint:disable opening_brace

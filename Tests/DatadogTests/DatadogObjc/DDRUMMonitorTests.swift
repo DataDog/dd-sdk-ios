@@ -154,7 +154,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
@@ -190,7 +190,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
         objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
@@ -219,7 +219,7 @@ class DDRUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -271,7 +271,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingErrorEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -333,9 +333,12 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        ))
+        RUM.enable(
+            with: .mockWith(
+                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+            ),
+            in: core
+        )
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
 
@@ -368,7 +371,7 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingGlobalAttributes() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
 
         let objcRUMMonitor = try createTestableDDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")

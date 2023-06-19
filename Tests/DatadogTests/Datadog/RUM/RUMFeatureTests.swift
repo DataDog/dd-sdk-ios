@@ -74,10 +74,7 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        try RUMMonitor.initialize(
-            in: core,
-            configuration: .mockWith(customIntakeURL: randomUploadURL)
-        )
+        RUM.enable(with: .mockWith(customIntakeURL: randomUploadURL), in: core)
 
         // When
         let monitor = RUMMonitor.shared(in: core)
@@ -106,59 +103,6 @@ class RUMFeatureTests: XCTestCase {
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN"], randomOrigin)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-EVP-ORIGIN-VERSION"], randomSDKVersion)
         XCTAssertEqual(request.allHTTPHeaderFields?["DD-REQUEST-ID"]?.matches(regex: .uuidRegex), true)
-    }
-
-    // MARK: - HTTP Message with included variant
-
-    func testItUsesExpectedVariantQueryParaemterInMessage() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
-
-        let randomVariant: String = .mockAny()
-
-        let core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: SystemDateProvider(),
-            initialConsent: .granted,
-            performance: .combining(
-                storagePerformance: StoragePerformanceMock(
-                    maxFileSize: .max,
-                    maxDirectorySize: .max,
-                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
-                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
-                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                    maxObjectsInFile: 3, // write 3 spans to payload,
-                    maxObjectSize: .max
-                ),
-                uploadPerformance: UploadPerformanceMock(
-                    initialUploadDelay: 0.5, // wait enough until events are written,
-                    minUploadDelay: 1,
-                    maxUploadDelay: 1,
-                    uploadDelayChangeRate: 0
-                )
-            ),
-            httpClient: httpClient,
-            encryption: nil,
-            contextProvider: .mockWith(
-                context: .mockWith(variant: randomVariant)
-            ),
-            applicationVersion: .mockAny()
-        )
-        defer { core.flushAndTearDown() }
-
-        // Given
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-
-        // When
-        let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView) // on starting the first view we sends `application_start` action event
-
-        // Then
-        let request = server.waitAndReturnRequests(count: 1)[0]
-        let requestURL = try XCTUnwrap(request.url)
-        let components = URLComponents(url: requestURL, resolvingAgainstBaseURL: false)
-        let tagsItem = components?.queryItems?.first(where: { $0.name == "ddtags" })
-        XCTAssertTrue(tagsItem?.value?.contains("variant:\(randomVariant)") == true)
     }
 
     // MARK: - HTTP Payload
@@ -196,7 +140,7 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
 
         core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { _, writer in
             writer.write(value: RUMDataModelMock(attribute: "1st event"))

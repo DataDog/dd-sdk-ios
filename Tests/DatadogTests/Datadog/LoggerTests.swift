@@ -28,32 +28,23 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `Monitor` instance for tests.
-    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    /// Enables RUM feature and creates RUM monitor for tests.
     private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
-        let monitor = Monitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                configuration: configuration
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: configuration.dateProvider
+        let rum = try RUMFeature(
+            in: core,
+            configuration: configuration,
+            monitorFactory: { core, config in
+                return Monitor(
+                    core: core,
+                    dependencies: RUMScopeDependencies(core: core,configuration: config)
+                        // disable RUM view updates sampling for deterministic test behaviour:
+                        .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+                    dateProvider: config.dateProvider
+                )
+            }
         )
-
-        let instrumentation = RUMInstrumentation(
-            configuration: configuration.instrumentation,
-            dateProvider: configuration.dateProvider
-        )
-
-        let feature = DatadogRUMFeature(
-            monitor: monitor,
-            instrumentation: instrumentation,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: ErrorMessageReceiver(monitor: monitor)
-        )
-
-        try core.register(feature: feature)
-        return monitor
+        try core.register(feature: rum)
+        return rum.monitor as! Monitor
     }
 
     // MARK: - Customizing Logger
@@ -573,16 +564,16 @@ class LoggerTests: XCTestCase {
 
     // MARK: - Integration With RUM Feature
 
-    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
+    func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
         core.context = .mockAny()
 
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockWith(sessionSampler: .mockKeepAll()), in: core)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
 
         // when
         logger.info("message 0")
@@ -599,23 +590,25 @@ class LoggerTests: XCTestCase {
         }
     }
 
-    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingLog_itContainsCurrentRUMContext() throws {
+    func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.context = .mockAny()
 
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
         let applicationID: String = .mockRandom()
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(applicationID: applicationID))
+        RUM.enable(with: .mockWith(
+            applicationID: applicationID,
+            sessionSampler: .mockKeepAll()
+        ), in: core)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
-        let rum = RUMMonitor.shared(in: core)
+        let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
 
         // when
-        rum.startView(viewController: mockView)
+        RUMMonitor.shared(in: core).startView(viewController: mockView)
         logger.info("message 0")
-        rum.startAction(type: .tap, name: .mockAny())
+        RUMMonitor.shared(in: core).startAction(type: .tap, name: .mockAny())
         logger.info("message 1")
 
         // then

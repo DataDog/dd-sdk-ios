@@ -26,34 +26,23 @@ class RUMInternalProxyTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `Monitor` instance for tests.
-    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    /// Enables RUM feature and creates RUM monitor for tests.
     private func createTestableRUMMonitor() throws -> Monitor {
-        let configuration: RUMConfiguration = .mockAny()
-
-        let monitor = Monitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                configuration: configuration
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: configuration.dateProvider
+        let rum = try RUMFeature(
+            in: core,
+            configuration: .mockAny(),
+            monitorFactory: { core, config in
+                return Monitor(
+                    core: core,
+                    dependencies: RUMScopeDependencies(core: core,configuration: config)
+                    // disable RUM view updates sampling for deterministic test behaviour:
+                        .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+                    dateProvider: config.dateProvider
+                )
+            }
         )
-
-        let instrumentation = RUMInstrumentation(
-            configuration: configuration.instrumentation,
-            dateProvider: configuration.dateProvider
-        )
-
-        let feature = DatadogRUMFeature(
-            monitor: monitor,
-            instrumentation: instrumentation,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-
-        try core.register(feature: feature)
-        return monitor
+        try core.register(feature: rum)
+        return rum.monitor as! Monitor
     }
 
     func testProxyAddLongTaskSendsLongTasks() throws {
