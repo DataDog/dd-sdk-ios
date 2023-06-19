@@ -11,18 +11,20 @@ import XCTest
 class RecorderTests: XCTestCase {
     private var recorder: Recorder?
 
+    override func tearDown() {
+        recorder = nil
+    }
+
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
         let numberOfSnapshots = 10
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: numberOfSnapshots)
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: numberOfSnapshots)
-        let rumContextObserver = RUMContextObserverMock()
         let processor = ProcessorSpy()
         let scheduler = TestScheduler(numberOfRepeats: numberOfSnapshots)
 
         // Given
         recorder = Recorder(
             configuration: .mockAny(),
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
             recordingCoordinator: RecordingCoordinationMock(currentRUMContext: .mockRandom()),
@@ -30,7 +32,6 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
             snapshotProcessor: processor
         )
-        rumContextObserver.notify(rumContext: .mockAny())
 
         // When
         scheduler.start()
@@ -42,14 +43,12 @@ class RecorderTests: XCTestCase {
     }
 
     func testGivenNoRUMContextAvailable_whenStarted_itDoesNotCaptureAnySnapshots() {
-        let rumContextObserver = RUMContextObserverMock()
         let processor = ProcessorSpy()
         let scheduler = TestScheduler()
 
         // Given
         recorder = Recorder(
             configuration: .mockAny(),
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
             recordingCoordinator: RecordingCoordinationMock(currentRUMContext: nil),
@@ -57,7 +56,6 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             snapshotProcessor: processor
         )
-        rumContextObserver.notify(rumContext: nil)
 
         // When
         scheduler.start()
@@ -69,7 +67,6 @@ class RecorderTests: XCTestCase {
     func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesDefaultRecorderContext() {
         let randomPrivacy: SessionReplayPrivacy = .mockRandom()
         let randomRUMContext: RUMContext = .mockRandom()
-        let rumContextObserver = RUMContextObserverMock()
         let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
         let touchSnapshotProducer = TouchSnapshotProducerMock()
         let scheduler = TestScheduler()
@@ -77,7 +74,6 @@ class RecorderTests: XCTestCase {
         // Given
         recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: randomPrivacy),
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
             recordingCoordinator: RecordingCoordinationMock(currentRUMContext: randomRUMContext),
@@ -85,7 +81,6 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
-        rumContextObserver.notify(rumContext: randomRUMContext)
 
         // When
         scheduler.start()
@@ -97,7 +92,6 @@ class RecorderTests: XCTestCase {
     }
 
     func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesCurrentRecorderContext() {
-        let rumContextObserver = RUMContextObserverMock()
         let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
         let touchSnapshotProducer = TouchSnapshotProducerMock()
         let currentRUMContext: RUMContext = .mockRandom()
@@ -106,7 +100,6 @@ class RecorderTests: XCTestCase {
         // Given
         recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: .mockRandom()),
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
             recordingCoordinator: RecordingCoordinationMock(currentRUMContext: currentRUMContext),
@@ -114,13 +107,10 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
-        rumContextObserver.notify(rumContext: .mockRandom())
 
         // When
         let currentPrivacy: SessionReplayPrivacy = .mockRandom()
         recorder?.change(privacy: currentPrivacy)
-
-        rumContextObserver.notify(rumContext: currentRUMContext)
 
         scheduler.start()
 

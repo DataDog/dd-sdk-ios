@@ -56,10 +56,9 @@ internal class Recorder: Recording {
 
     convenience init(
         configuration: SessionReplayConfiguration,
-        rumContextObserver: RUMContextObserver,
-        contextPublisher: SRContextPublisher,
+        recordingCoordinator: RecordingCoordination,
         processor: Processing,
-        scheduler: Scheduler = MainThreadScheduler(interval: 0.1)
+        scheduler: Scheduler
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -70,16 +69,8 @@ internal class Recorder: Recording {
             windowObserver: windowObserver
         )
 
-        let recordingCoordinator = RecordingCoordinator(
-            scheduler: scheduler,
-            rumContextObserver: rumContextObserver,
-            contextPublisher: contextPublisher,
-            sampler: Sampler(samplingRate: configuration.samplingRate)
-        )
-
         self.init(
             configuration: configuration,
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             scheduler: scheduler,
             recordingCoordinator: recordingCoordinator,
@@ -91,7 +82,6 @@ internal class Recorder: Recording {
 
     init(
         configuration: SessionReplayConfiguration,
-        rumContextObserver: RUMContextObserver,
         uiApplicationSwizzler: UIApplicationSwizzler,
         scheduler: Scheduler,
         recordingCoordinator: RecordingCoordination,
@@ -129,6 +119,9 @@ internal class Recorder: Recording {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
+            guard recordingCoordinator.isSampled else {
+                return
+            }
             guard let rumContext = recordingCoordinator.currentRUMContext else {
                 return
             }

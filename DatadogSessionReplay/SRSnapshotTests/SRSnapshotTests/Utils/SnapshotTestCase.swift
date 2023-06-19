@@ -37,7 +37,7 @@ internal class SnapshotTestCase: XCTestCase {
         let processor = Processor(queue: NoQueue(), writer: Writer())
         let recorder = try Recorder(
             configuration: configuration,
-            rumContextObserver: RUMContextObserverMock(),
+            recordingCoordinator: RecordingCoordinatorMock(),
             processor: processor,
             scheduler: scheduler
         )
@@ -49,10 +49,7 @@ internal class SnapshotTestCase: XCTestCase {
             wireframes = $0
             expectation.fulfill()
         }
-
-        recorder.start()
         scheduler.triggerOnce()
-        recorder.stop()
 
         waitForExpectations(timeout: 10) // very pessimistic timeout to mitigate CI lags
 
@@ -128,12 +125,13 @@ private struct NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
 }
 
-private struct RUMContextObserverMock: RUMContextObserver {
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
-        queue.run {
-            notify(RUMContext(ids: .init(applicationID: "", sessionID: "", viewID: ""), viewServerTimeOffset: 0))
-        }
-    }
+private struct RecordingCoordinatorMock: RecordingCoordination {
+    var currentRUMContext: DatadogSessionReplay.RUMContext? = RUMContext(
+        ids: .init(applicationID: "", sessionID: "", viewID: ""),
+        viewServerTimeOffset: 0
+    )
+
+    var isSampled: Bool = true
 }
 
 private class TestScheduler: Scheduler {

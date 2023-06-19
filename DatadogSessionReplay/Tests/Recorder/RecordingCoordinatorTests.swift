@@ -14,24 +14,15 @@ class RecordingCoordinatorTests: XCTestCase {
     private var core = PassthroughCoreMock()
     private var scheduler = TestScheduler()
     private var rumContextObserver = RUMContextObserverMock()
-    private lazy var contextPublisher: SRContextPublisher = {
+    private lazy var srContextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
     private var sut: RecordingCoordinator?
 
-    func test_whenNotSampled_itStopsScheduler_andDoesNotSetRecordingIsPending() {
-        // Given
-        scheduler.start()
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: 0))
+    func test_itStartsScheduler_afterInitializing() {
+        prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
 
-        // When
-        let rumContext = RUMContext.mockRandom()
-        rumContextObserver.notify(rumContext: rumContext)
-
-        // Then
-        XCTAssertFalse(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
-        XCTAssertEqual(sut?.currentRUMContext, rumContext)
+        XCTAssertTrue(scheduler.isRunning)
     }
 
     func test_whenSampled_itStartsScheduler_andDoesSetRecordingIsPending() {
@@ -46,20 +37,7 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, true)
         XCTAssertEqual(sut?.currentRUMContext, rumContext)
-    }
-
-    func test_whenEmptyRUMContext_itStopsScheduler_andDoesNotSetRecordingIsPending() {
-        // Given
-        scheduler.start()
-        prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
-
-        // When
-        rumContextObserver.notify(rumContext: nil)
-
-        // Then
-        XCTAssertFalse(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
-        XCTAssertNil(sut?.currentRUMContext)
+        XCTAssertEqual(sut?.isSampled, true)
     }
 
     func test_whenNoRUMContext_itDoesNotSetRecordingIsPending() {
@@ -67,7 +45,7 @@ class RecordingCoordinatorTests: XCTestCase {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
 
         // Then
-        XCTAssertFalse(scheduler.isRunning)
+        XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
         XCTAssertNil(sut?.currentRUMContext)
     }
@@ -76,7 +54,7 @@ class RecordingCoordinatorTests: XCTestCase {
         sut = RecordingCoordinator(
             scheduler: scheduler,
             rumContextObserver: rumContextObserver,
-            contextPublisher: contextPublisher,
+            srContextPublisher: srContextPublisher,
             sampler: sampler
         )
     }

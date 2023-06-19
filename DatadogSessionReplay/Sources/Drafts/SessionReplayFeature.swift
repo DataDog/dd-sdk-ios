@@ -40,12 +40,20 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
             writer: writer
         )
 
+        let scheduler = MainThreadScheduler(interval: 0.1)
         let messageReceiver = RUMContextReceiver()
+
+        let recordingCoordinator = RecordingCoordinator(
+            scheduler: scheduler,
+            rumContextObserver: messageReceiver,
+            srContextPublisher: SRContextPublisher(core: core),
+            sampler: Sampler(samplingRate: configuration.samplingRate)
+        )
         let recorder = try Recorder(
             configuration: configuration,
-            rumContextObserver: messageReceiver,
-            contextPublisher: SRContextPublisher(core: core),
-            processor: processor
+            recordingCoordinator: recordingCoordinator,
+            processor: processor,
+            scheduler: scheduler
         )
 
         self.messageReceiver = messageReceiver
