@@ -39,7 +39,8 @@ internal class Recorder: Recording {
             sessionID: String,
             viewID: String,
             viewServerTimeOffset: TimeInterval?,
-            date: Date = Date()) {
+            date: Date = Date()
+        ) {
             self.privacy = privacy
             self.applicationID = applicationID
             self.sessionID = sessionID

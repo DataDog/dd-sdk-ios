@@ -24,7 +24,7 @@ internal class RecordingCoordinator: RecordingCoordination {
         return isSampled && currentRUMContext?.ids.viewID != nil
     }
 
-    private var isSampled: Bool = false
+    private var isSampled = false
 
     init(
         scheduler: Scheduler,
