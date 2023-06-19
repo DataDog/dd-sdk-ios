@@ -13,6 +13,10 @@ let package = Package(
             name: "DatadogSessionReplay",
             targets: ["DatadogSessionReplay"]
         ),
+        .library(
+            name: "TestUtilities",
+            targets: ["TestUtilities"]
+        ),
     ],
     targets: [
         .target(

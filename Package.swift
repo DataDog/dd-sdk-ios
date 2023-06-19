@@ -37,10 +37,6 @@ let package = Package(
             name: "DatadogWebViewTracking",
             targets: ["DatadogWebViewTracking"]
         ),
-//        .library(
-//            name: "DatadogSessionReplay",
-//            targets: ["DatadogSessionReplay"]
-//        ),
     ],
     dependencies: [
         .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
