@@ -12,7 +12,7 @@ class EnrichedRecordJSONTests: XCTestCase {
     func testWhenDecodingEnrichedRecordData_itHasTheSameInformationAvailable() throws {
         // Given
         let enrichedRecords = EnrichedRecord(
-            rumContext: .mockRandom(),
+            context: .mockRandom(),
             records: .mockRandom()
         )
         let data = try encode(enrichedRecords)

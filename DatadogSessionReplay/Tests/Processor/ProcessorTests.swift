@@ -186,7 +186,7 @@ class ProcessorTests: XCTestCase {
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
-        processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, rumContext: rum), touchSnapshot: touchSnapshot)
+        processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, context: .mockWith(rumContext: rum)), touchSnapshot: touchSnapshot)
 
         // Then
         XCTAssertEqual(writer.records.count, 1)

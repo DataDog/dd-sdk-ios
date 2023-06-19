@@ -13,6 +13,7 @@ class RecorderTests: XCTestCase {
 
     override func tearDown() {
         recorder = nil
+        super.tearDown()
     }
 
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
@@ -88,7 +89,10 @@ class RecorderTests: XCTestCase {
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, randomPrivacy)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].rumContext, randomRUMContext)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, randomRUMContext.ids.applicationID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, randomRUMContext.ids.sessionID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, randomRUMContext.ids.viewID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, randomRUMContext.viewServerTimeOffset)
     }
 
     func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesCurrentRecorderContext() {
@@ -117,6 +121,9 @@ class RecorderTests: XCTestCase {
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, currentPrivacy)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].rumContext, currentRUMContext)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, currentRUMContext.ids.applicationID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, currentRUMContext.ids.sessionID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, currentRUMContext.ids.viewID)
+        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, currentRUMContext.viewServerTimeOffset)
     }
 }

@@ -70,19 +70,23 @@ class SegmentJSONBuilderTests: XCTestCase {
     }
 
     private func generateEnrichedRecordJSONs(for segment: SRSegment) throws -> [EnrichedRecordJSON] {
-        let rum = RUMContext(
-            ids: .init(
-                applicationID: segment.application.id,
-                sessionID: segment.session.id,
-                viewID: segment.view.id
-            ),
-            viewServerTimeOffset: 0
+        let context = Recorder.Context(
+            privacy: .mockRandom(),
+            rumContext: RUMContext(
+                ids: .init(
+                    applicationID: segment.application.id,
+                    sessionID: segment.session.id,
+                    viewID: segment.view.id
+                ),
+                viewServerTimeOffset: 0
+            )
         )
+        Recorder.Context.mockAny()
         return try segment.records
             // To make it more challenging for tested `SegmentJSONBuilder`, we chunk records in
             // expected `segment`, so they are spread among many enriched records:
             .chunkedRandomly(numberOfChunks: .random(in: 1...segment.records.count))
-            .map { EnrichedRecord(rumContext: rum, records: $0) }
+            .map { EnrichedRecord(context: context, records: $0) }
             // Encode `EnrichedRecords` into `Data`, just like it happens in `DatadogCore` when
             // writting them into batches:
             .map { try encode($0) }

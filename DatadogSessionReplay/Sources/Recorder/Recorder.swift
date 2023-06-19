@@ -22,19 +22,30 @@ internal class Recorder: Recording {
     struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
         let privacy: SessionReplayPrivacy
-        /// The RUM context from the moment of requesting snapshot.
-        let rumContext: RUMContext
+        /// Current RUM application ID - standard UUID string, lowecased.
+        let applicationID: String
+        /// Current RUM session ID - standard UUID string, lowecased.
+        let sessionID: String
+        /// Current RUM view ID - standard UUID string, lowecased.
+        let viewID: String
+        /// Current view related server time offset
+        let viewServerTimeOffset: TimeInterval?
         /// The time of requesting this snapshot.
         let date: Date
 
         internal init(
             privacy: SessionReplayPrivacy,
-            rumContext: RUMContext,
-            date: Date = Date()
-        ) {
-            self.date = date
+            applicationID: String,
+            sessionID: String,
+            viewID: String,
+            viewServerTimeOffset: TimeInterval?,
+            date: Date = Date()) {
             self.privacy = privacy
-            self.rumContext = rumContext
+            self.applicationID = applicationID
+            self.sessionID = sessionID
+            self.viewID = viewID
+            self.viewServerTimeOffset = viewServerTimeOffset
+            self.date = date
         }
     }
 
@@ -119,17 +130,20 @@ internal class Recorder: Recording {
     /// **Note**: This is called on the main thread.
     private func captureNextRecord() {
         do {
-            guard recordingCoordinator.isSampled else {
+            guard recordingCoordinator.shouldRecord else {
                 return
             }
-            guard let rumContext = recordingCoordinator.currentRUMContext else {
+            guard let rumContext = recordingCoordinator.currentRUMContext,
+                  let viewID = rumContext.ids.viewID else {
                 return
             }
             let recorderContext = Context(
                 privacy: currentPrivacy,
-                rumContext: rumContext
+                applicationID: rumContext.ids.applicationID,
+                sessionID: rumContext.ids.sessionID,
+                viewID: viewID,
+                viewServerTimeOffset: rumContext.viewServerTimeOffset
             )
-
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
                 return

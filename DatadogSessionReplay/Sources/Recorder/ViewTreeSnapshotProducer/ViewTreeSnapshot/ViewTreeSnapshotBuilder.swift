@@ -33,8 +33,8 @@ internal struct ViewTreeSnapshotBuilder {
             imageDataProvider: imageDataProvider
         )
         let snapshot = ViewTreeSnapshot(
-            date: recorderContext.date.addingTimeInterval(recorderContext.rumContext.viewServerTimeOffset ?? 0),
-            rumContext: recorderContext.rumContext,
+            date: recorderContext.date.addingTimeInterval(recorderContext.viewServerTimeOffset ?? 0),
+            context: recorderContext,
             viewportSize: rootView.bounds.size,
             nodes: viewTreeRecorder.recordNodes(for: rootView, in: context)
         )

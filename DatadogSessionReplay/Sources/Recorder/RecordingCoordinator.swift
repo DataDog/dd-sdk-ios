@@ -9,33 +9,48 @@ import Datadog
 
 internal protocol RecordingCoordination {
     /// Last received RUM context (or `nil` if RUM session is not sampled).
-    /// It's synchronized through `scheduler.queue` (main thread).
     var currentRUMContext: RUMContext? { get }
-    /// Flag that determines if SR should be sampled.
-    var isSampled: Bool { get }
+
+    /// Flag that determines weather SR should capture the next record.
+    var shouldRecord: Bool { get }
 }
 
 /// Object is responsible for getting the RUM context, randomising the sampling rate,
-/// starting the recording scheduler and propagating `has_replay` to other features.
+/// starting/stopping the recording scheduler as needed and propagating `has_replay` to other features.
 internal class RecordingCoordinator: RecordingCoordination {
     private(set) var currentRUMContext: RUMContext? = nil
-    private(set) var isSampled: Bool = false
+
+    var shouldRecord: Bool {
+        return isSampled && currentRUMContext?.ids.viewID != nil
+    }
+
+    private var isSampled: Bool = false
+
     init(
         scheduler: Scheduler,
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
         sampler: Sampler
     ) {
-        scheduler.start()
         srContextPublisher.setRecordingIsPending(false)
+        scheduler.start()
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
             if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID || self?.currentRUMContext == nil {
-                let isSampled = sampler.sample() && rumContext != nil
-                srContextPublisher.setRecordingIsPending(isSampled)
-                self?.isSampled = isSampled && rumContext != nil
+                let isSampled = sampler.sample()
+                self?.isSampled = isSampled
             }
             self?.currentRUMContext = rumContext
+
+            if self?.isSampled == true {
+                scheduler.start()
+            } else {
+                scheduler.stop()
+            }
+
+            if let shouldRecord = self?.shouldRecord {
+                srContextPublisher.setRecordingIsPending(shouldRecord)
+            }
         }
     }
 }

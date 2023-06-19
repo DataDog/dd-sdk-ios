@@ -20,7 +20,7 @@ internal struct RUMContext: Decodable, Equatable {
         /// Current RUM session ID - standard UUID string, lowecased.
         let sessionID: String
         /// Current RUM view ID - standard UUID string, lowecased.
-        let viewID: String
+        let viewID: String?
     }
 
     enum CodingKeys: String, CodingKey {

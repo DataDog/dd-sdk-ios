@@ -12,10 +12,10 @@ import TestUtilities
 final class RecordingCoordinationMock: RecordingCoordination {
     var currentRUMContext: RUMContext?
 
-    var isSampled: Bool
+    var shouldRecord: Bool
 
-    internal init(currentRUMContext: RUMContext?, isSampled: Bool = true) {
+    internal init(currentRUMContext: RUMContext?, shouldRecord: Bool = true) {
         self.currentRUMContext = currentRUMContext
-        self.isSampled = isSampled
+        self.shouldRecord = shouldRecord
     }
 }
