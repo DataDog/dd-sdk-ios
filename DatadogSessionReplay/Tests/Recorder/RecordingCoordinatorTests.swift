@@ -10,14 +10,14 @@ import Datadog
 @testable import TestUtilities
 
 class RecordingCoordinatorTests: XCTestCase {
+    var recordingCoordinator: RecordingCoordinator?
+
     private var core = PassthroughCoreMock()
     private var scheduler = TestScheduler()
     private var rumContextObserver = RUMContextObserverMock()
     private lazy var contextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
-
-    var recordingCoordinator: RecordingCoordinator?
 
     func test_itStartsScheduler_afterInitializing() {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
@@ -84,6 +84,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockWith(viewID: nil))
+        
         // Then
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
