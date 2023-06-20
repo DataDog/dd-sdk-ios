@@ -7,6 +7,7 @@
 import Foundation
 import DatadogInternal
 import DatadogTrace
+import DatadogLogs
 import Datadog
 
 internal class TrackingConsentBaseScenario {
@@ -18,15 +19,18 @@ internal class TrackingConsentBaseScenario {
     }
 
     func configureFeatures() {
-        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
-            return
-        }
-
         // Register Tracer
         DatadogTracer.initialize(
             configuration: .init(
                 sendNetworkInfo: true,
-                customIntakeURL: tracesEndpoint
+                customIntakeURL: Environment.serverMockConfiguration()?.tracesEndpoint
+            )
+        )
+
+        // Enable Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }

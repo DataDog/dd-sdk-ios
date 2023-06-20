@@ -7,6 +7,7 @@
 import UIKit
 
 import Datadog
+import DatadogLogs
 import DatadogRUM
 import DatadogCrashReporting
 
@@ -64,6 +65,13 @@ final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseSc
     }
 
     func configureFeatures() {
+        // Enable Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+            )
+        )
+
         DatadogCrashReporter.initialize()
     }
 }

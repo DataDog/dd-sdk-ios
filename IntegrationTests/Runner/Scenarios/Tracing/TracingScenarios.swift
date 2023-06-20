@@ -6,6 +6,7 @@
 
 import Datadog
 import DatadogTrace
+import DatadogLogs
 
 /// Scenario which starts a view controller that sends bunch of spans using manual API of `Tracer`.
 /// It also uses the `span.log()` to send logs.
@@ -13,15 +14,18 @@ final class TracingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "TracingManualInstrumentationScenario"
 
     func configureFeatures() {
-        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
-            return
-        }
-
         // Register Tracer
         DatadogTracer.initialize(
             configuration: .init(
                 sendNetworkInfo: true,
-                customIntakeURL: tracesEndpoint
+                customIntakeURL: Environment.serverMockConfiguration()?.tracesEndpoint
+            )
+        )
+
+        // Enable Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }
