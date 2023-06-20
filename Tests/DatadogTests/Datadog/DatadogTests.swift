@@ -113,7 +113,6 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
             // verify integrations:
@@ -121,23 +120,6 @@ class DatadogTests: XCTestCase {
         }
         verify(configuration: rumBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
-            // verify integrations:
-            XCTAssertTrue(DD.telemetry is TelemetryCore)
-        }
-
-        verify(configuration: defaultBuilder.enableLogging(false).build()) {
-            // verify features:
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
-            XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
-            // verify integrations:
-            XCTAssertTrue(DD.telemetry is TelemetryCore)
-        }
-        verify(configuration: rumBuilder.enableLogging(false).build()) {
-            // verify features:
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             // verify integrations:
             XCTAssertTrue(DD.telemetry is TelemetryCore)
@@ -145,28 +127,24 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `defaultBuilder` RUM feature should be disabled by default")
             XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
             XCTAssertTrue(DD.telemetry is TelemetryCore)
         }
         verify(configuration: rumBuilder.enableTracing(false).build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `rumBuilder` RUM feature should be enabled by default")
             XCTAssertTrue(DD.telemetry is TelemetryCore)
         }
 
         verify(configuration: defaultBuilder.enableRUM(true).build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self), "When using `defaultBuilder` RUM feature cannot be enabled")
             // verify integrations:
             XCTAssertTrue(DD.telemetry is TelemetryCore)
         }
         verify(configuration: rumBuilder.enableRUM(false).build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
             // verify integrations:
@@ -206,7 +184,7 @@ class DatadogTests: XCTestCase {
 
     func testSupplyingDebugLaunchArgument_itOverridesUserSettings() throws {
         let mockProcessInfo = ProcessInfoMock(
-            arguments: [Datadog.LaunchArguments.Debug]
+            arguments: [LaunchArguments.Debug]
         )
 
         let configuration = rumBuilder
@@ -398,11 +376,12 @@ class DatadogTests: XCTestCase {
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: rumBuilder
-                .enableLogging(true)
                 .enableTracing(true)
                 .enableRUM(true)
                 .build()
         )
+
+        Logs.enable()
 
         DatadogTracer.initialize()
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)

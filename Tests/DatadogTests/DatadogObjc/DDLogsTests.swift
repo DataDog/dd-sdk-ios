@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 
 @testable import DatadogLogs
 @testable import Datadog
@@ -13,7 +14,7 @@ import DatadogInternal
 
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable compiler_protocol_init
-class DDLoggerTests: XCTestCase {
+class DDLogsTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
@@ -29,8 +30,56 @@ class DDLoggerTests: XCTestCase {
         super.tearDown()
     }
 
+    func testDefaultConfiguration() {
+        // Given
+        let config = DDLogsConfiguration()
+
+        // Then
+        XCTAssertEqual(config.configuration.samplingRate, 100)
+        XCTAssertNil(config.configuration.customIntakeURL)
+        XCTAssertTrue(config.configuration.bundle === Bundle.main)
+        XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
+    }
+
+    func testConfigurationOverrides() throws {
+        // Given
+        let samplingRate: Float = .random(in: 0...100)
+        let customIntakeURL: URL = .mockRandom()
+        let bundleIdentifier: String = .mockRandom()
+
+        // When
+        DDLogs.enable(
+            with: DDLogsConfiguration(
+                samplingRate: samplingRate,
+                customIntakeURL: customIntakeURL,
+                bundle: .mockWith(bundleIdentifier: bundleIdentifier)
+            )
+        )
+
+        // Then
+        let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
+        let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
+        XCTAssertEqual(logs.applicationBundleIdentifier, bundleIdentifier)
+        XCTAssertEqual(logs.sampler.samplingRate, samplingRate)
+        XCTAssertEqual(requestBuilder.customIntakeURL, customIntakeURL)
+    }
+
+    func testConfiguration_withDebug_itDisableSampling() throws {
+        // When
+        DDLogs.enable(
+            with: DDLogsConfiguration(
+                samplingRate: 0,
+                processInfo: ProcessInfoMock(arguments: [LaunchArguments.Debug])
+            )
+        )
+
+        // Then
+        let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
+        XCTAssertEqual(logs.sampler.samplingRate, 100)
+    }
+
     func testSendingLogsWithDifferentLevels() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -52,7 +101,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingNSError() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -84,7 +133,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -109,7 +158,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -151,7 +200,7 @@ class DDLoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()

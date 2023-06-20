@@ -28,6 +28,72 @@ public enum DDLogLevel: Int {
 }
 
 @objc
+public class DDLogsConfiguration: NSObject {
+    internal var configuration: Logs.Configuration
+
+    /// Sets the sampling rate for logging.
+    ///
+    /// The sampling rate must be a value between `0` and `100`. A value of `0` means no logs will be processed, `100`
+    /// means all logs will be processed.
+    ///
+    /// By default sampling is disabled, meaning that all logs are being processed).
+    @objc public var samplingRate: Float {
+        get { configuration.samplingRate }
+        set { configuration.samplingRate = newValue }
+    }
+
+    /// Overrides the custom server endpoint where Logs are sent.
+    @objc public var customIntakeURL: URL? {
+        get { configuration.customIntakeURL }
+        set { configuration.customIntakeURL = newValue }
+    }
+
+    /// Overrides the main bundle instance.
+    @objc public var bundle: Bundle {
+        get { configuration.bundle }
+        set { configuration.bundle = newValue }
+    }
+
+    /// Overrides the current process info.
+    @objc public var processInfo: ProcessInfo {
+        get { configuration.processInfo }
+        set { configuration.processInfo = newValue }
+    }
+
+    /// Creates a Logs configuration object.
+    ///
+    /// - Parameters:
+    ///   - samplingRate: The sampling rate for logging.
+    ///   - customIntakeURL: Overrides the custom server endpoint where Logs are sent.
+    ///   - bundle: Overrides the main bundle instance.
+    ///   - processInfo: Overrides the current process info.
+    @objc
+    public init(
+        samplingRate: Float = 100,
+        customIntakeURL: URL? = nil,
+        bundle: Bundle = .main,
+        processInfo: ProcessInfo = .processInfo
+    ) {
+        configuration = .init(
+            samplingRate: samplingRate,
+            customIntakeURL: customIntakeURL,
+            bundle: bundle,
+            processInfo: processInfo
+        )
+    }
+}
+
+@objc
+public class DDLogs: NSObject {
+    @objc
+    public static func enable(
+        with configuration: DDLogsConfiguration = .init()
+    ) {
+        Logs.enable(with: configuration.configuration)
+    }
+}
+
+@objc
 public class DDLogger: NSObject {
     internal let sdkLogger: Logger
 

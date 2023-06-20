@@ -91,15 +91,12 @@
 
 - (void)testDDConfigurationBuilderAPI {
     DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"" environment:@""];
-    [builder enableLogging:YES];
     [builder enableTracing:YES];
     [builder enableRUM:YES];
     [builder setWithEndpoint:[DDEndpoint us]];
-    [builder setWithCustomLogsEndpoint:[NSURL new]];
     [builder setWithCustomRUMEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithTracingSamplingRate:75];
-    [builder setWithLoggingSamplingRate:100];
     [builder setWithServiceName:@""];
     [builder setWithRumSessionsSamplingRate:50];
     [builder setOnRUMSessionStart:^(NSString * _Nonnull sessionId, BOOL isDiscarded) {}];

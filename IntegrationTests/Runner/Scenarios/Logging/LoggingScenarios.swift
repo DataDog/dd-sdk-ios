@@ -4,21 +4,25 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogLogs
 
 /// Scenario which starts a view controller that sends bunch of logs to the server.
 final class LoggingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "LoggingManualInstrumentationScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .setLogEventMapper {
-                var log = $0
-                log.tags?.append("tag3:added")
-                if log.attributes.userAttributes["some-url"] != nil {
-                    log.attributes.userAttributes["some-url"] = "redacted"
-                }
-                return log
-            }
+    func configureFeatures() {
+        Logs.enable(
+            with: Logs.Configuration(
+                eventMapper: {
+                    var log = $0
+                    log.tags?.append("tag3:added")
+                    if log.attributes.userAttributes["some-url"] != nil {
+                        log.attributes.userAttributes["some-url"] = "redacted"
+                    }
+                    return log
+                },
+                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+            )
+        )
     }
 }

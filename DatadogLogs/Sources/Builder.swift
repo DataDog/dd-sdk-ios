@@ -140,7 +140,7 @@ public class Builder {
             )
         }
 
-        guard let feature = core.get(feature: DatadogLogsFeature.self) else {
+        guard let feature = core.get(feature: LogsFeature.self) else {
             throw ProgrammerError(
                 description: "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
             )

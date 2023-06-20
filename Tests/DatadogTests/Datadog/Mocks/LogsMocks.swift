@@ -12,12 +12,12 @@ import DatadogInternal
 
 extension DatadogCoreProxy {
     func waitAndReturnLogMatchers(file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        return try waitAndReturnEventsData(ofFeature: DatadogLogsFeature.name)
+        return try waitAndReturnEventsData(ofFeature: LogsFeature.name)
             .map { data in try LogMatcher.fromJSONObjectData(data) }
     }
 }
 
-extension DatadogLogsFeature {
+extension LogsFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockAny() -> Self { .mockWith() }
 

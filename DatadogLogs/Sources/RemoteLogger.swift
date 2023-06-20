@@ -124,7 +124,7 @@ internal final class RemoteLogger: Logger {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        self.core.scope(for: DatadogLogsFeature.name)?.eventWriteContext { context, writer in
+        self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 

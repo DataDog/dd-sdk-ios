@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 import DatadogRUM
 
 extension Datadog: DatadogInternal.DatadogInternalInterface {}
@@ -43,15 +42,5 @@ public struct _TelemetryProxy {
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
-    }
-}
-
-extension DatadogExtension where ExtendedType: Datadog.Configuration.Builder {
-    /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are sent to Datadog.
-    ///
-    /// - Parameter mapper: the mapper taking `LogEvent` as input and invoke callback closure with modifier `LogEvent`.
-    public func setLogEventMapper(_ mapper: LogEventMapper) -> ExtendedType {
-        type.configuration.logEventMapper = mapper
-        return type
     }
 }

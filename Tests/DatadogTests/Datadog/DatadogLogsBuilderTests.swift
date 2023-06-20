@@ -17,7 +17,7 @@ class DatadogLogsBuilderTests: XCTestCase {
         super.setUp()
         core = DatadogCoreProxy(context: .mockRandom())
 
-        let feature: DatadogLogsFeature = .mockWith(
+        let feature: LogsFeature = .mockWith(
             applicationBundleIdentifier: "com.datadog.unit-tests"
         )
         try! core.register(feature: feature)

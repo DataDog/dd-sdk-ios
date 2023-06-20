@@ -193,11 +193,6 @@ public class DDConfigurationBuilder: NSObject {
     // MARK: - Public
 
     @objc
-    public func enableLogging(_ enabled: Bool) {
-        _ = sdkBuilder.enableLogging(enabled)
-    }
-
-    @objc
     public func enableTracing(_ enabled: Bool) {
         _ = sdkBuilder.enableTracing(enabled)
     }
@@ -210,11 +205,6 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(endpoint: DDEndpoint) {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
-    }
-
-    @objc
-    public func set(customLogsEndpoint: URL) {
-        _ = sdkBuilder.set(customLogsEndpoint: customLogsEndpoint)
     }
 
     @objc
@@ -263,11 +253,6 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
-    }
-
-    @objc
-    public func set(loggingSamplingRate: Float) {
-        _ = sdkBuilder.set(loggingSamplingRate: loggingSamplingRate)
     }
 
     @objc

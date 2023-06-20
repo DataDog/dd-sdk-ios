@@ -130,3 +130,7 @@ public struct CrossPlatformAttributes {
     /// Expects `Bool` value.
     public static let errorLogIsCrash = "_dd.error_log.is_crash"
 }
+
+public struct LaunchArguments {
+    public static let Debug = "DD_DEBUG"
+}

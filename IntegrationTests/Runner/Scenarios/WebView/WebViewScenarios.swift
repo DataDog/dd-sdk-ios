@@ -5,8 +5,9 @@
  */
 
 import UIKit
-import DatadogRUM
 import Datadog
+import DatadogRUM
+import DatadogLogs
 
 private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
     private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
@@ -26,7 +27,14 @@ final class WebViewTrackingScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: WebViewTrackingScenarioPredicate())
-            .enableLogging(true)
             .enableRUM(true)
+    }
+
+    func configureFeatures() {
+        Logs.enable(
+            with: Logs.Configuration(
+                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+            )
+        )
     }
 }
