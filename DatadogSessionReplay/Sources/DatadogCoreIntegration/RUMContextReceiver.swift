@@ -19,7 +19,7 @@ internal struct RUMContext: Decodable, Equatable {
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
         let sessionID: String
-        /// Current RUM view ID - standard UUID string, lowecased.
+        /// Current RUM view ID - standard UUID string, lowecased. It can be empty when view is being loaded.
         let viewID: String?
     }
 
