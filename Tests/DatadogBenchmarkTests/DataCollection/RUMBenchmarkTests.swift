@@ -9,14 +9,14 @@ import DatadogInternal
 import DatadogRUM
 
 class RUMBenchmarkTests: BenchmarkTests {
-    var rum: DDRUMMonitor { RUMMonitor.shared() }
+    var rum: RUMMonitorProtocol { RUMMonitor.shared() }
 
     func testCreatingOneRUMEvent() {
         let viewController = UIViewController()
         rum.startView(viewController: viewController)
 
         measure {
-            rum.addUserAction(type: .tap, name: "tap")
+            rum.addAction(type: .tap, name: "tap")
         }
     }
 
@@ -30,7 +30,7 @@ class RUMBenchmarkTests: BenchmarkTests {
         }
 
         measure {
-            rum.addUserAction(type: .tap, name: "tap", attributes: attributes)
+            rum.addAction(type: .tap, name: "tap", attributes: attributes)
         }
     }
 }

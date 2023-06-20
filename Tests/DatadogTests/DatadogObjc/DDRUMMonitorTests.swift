@@ -87,11 +87,11 @@ class DDRUMActionTests: XCTestCase {
 }
 
 class DDRUMUserActionTypeTests: XCTestCase {
-    func testMappingToSwiftRUMUserActionType() {
-        XCTAssertEqual(DDRUMUserActionType.tap.swiftType, .tap)
-        XCTAssertEqual(DDRUMUserActionType.scroll.swiftType, .scroll)
-        XCTAssertEqual(DDRUMUserActionType.swipe.swiftType, .swipe)
-        XCTAssertEqual(DDRUMUserActionType.custom.swiftType, .custom)
+    func testMappingToSwiftRUMActionType() {
+        XCTAssertEqual(DDRUMActionType.tap.swiftType, .tap)
+        XCTAssertEqual(DDRUMActionType.scroll.swiftType, .scroll)
+        XCTAssertEqual(DDRUMActionType.swipe.swiftType, .swipe)
+        XCTAssertEqual(DDRUMActionType.custom.swiftType, .custom)
     }
 }
 
@@ -225,7 +225,7 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.startResource(resourceKey: "/resource1", url: URL(string: "https://foo.com/1")!, attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addResourceMetrics(
             resourceKey: "/resource1",
             metrics: .mockWith(
@@ -236,13 +236,13 @@ class DDRUMMonitorTests: XCTestCase {
             ),
             attributes: ["event-attribute2": "foo2"]
         )
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["event-attribute3": "foo3"])
+        objcRUMMonitor.stopResource(resourceKey: "/resource1", response: .mockAny(), size: nil, attributes: ["event-attribute3": "foo3"])
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/2", attributes: [:])
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource2", statusCode: 333, kind: .beacon, size: 142, attributes: [:])
+        objcRUMMonitor.startResource(resourceKey: "/resource2", httpMethod: .get, urlString: "/some/url/2", attributes: [:])
+        objcRUMMonitor.stopResource(resourceKey: "/resource2", statusCode: 333, kind: .beacon, size: 142, attributes: [:])
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
-        objcRUMMonitor.stopResourceLoading(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
+        objcRUMMonitor.startResource(resourceKey: "/resource3", httpMethod: .get, urlString: "/some/url/3", attributes: [:])
+        objcRUMMonitor.stopResource(resourceKey: "/resource3", response: .mockAny(), size: 242, attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -279,18 +279,18 @@ class DDRUMMonitorTests: XCTestCase {
 
         let request: URLRequest = .mockAny()
         let error = ErrorMock("error details")
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource1", request: request, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopResourceLoadingWithError(
+        objcRUMMonitor.startResource(resourceKey: "/resource1", request: request, attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopResourceWithError(
             resourceKey: "/resource1", error: error, response: .mockAny(), attributes: ["event-attribute2": "foo2"]
         )
 
-        objcRUMMonitor.startResourceLoading(resourceKey: "/resource2", request: request, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopResourceLoadingWithError(
-            resourceKey: "/resource2", errorMessage: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
+        objcRUMMonitor.startResource(resourceKey: "/resource2", request: request, attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopResourceWithError(
+            resourceKey: "/resource2", message: "error message", response: .mockAny(), attributes: ["event-attribute2": "foo2"]
         )
 
         objcRUMMonitor.addError(error: error, source: .custom, attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.addError(message: "error message", source: .source, stack: "error stack", attributes: [:])
+        objcRUMMonitor.addError(message: "error message", stack: "error stack", source: .source, attributes: [:])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
@@ -341,10 +341,10 @@ class DDRUMMonitorTests: XCTestCase {
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
-        objcRUMMonitor.addUserAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.addAction(type: .tap, name: "tap action", attributes: ["event-attribute1": "foo1"])
 
-        objcRUMMonitor.startUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
-        objcRUMMonitor.stopUserAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
+        objcRUMMonitor.startAction(type: .swipe, name: "swipe action", attributes: ["event-attribute1": "foo1"])
+        objcRUMMonitor.stopAction(type: .swipe, name: "swipe action", attributes: ["event-attribute2": "foo2"])
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 

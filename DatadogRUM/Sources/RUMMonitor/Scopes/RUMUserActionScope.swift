@@ -22,7 +22,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     private let dependencies: RUMScopeDependencies
 
     /// The type of this User Action.
-    internal let actionType: RUMUserActionType
+    internal let actionType: RUMActionType
     /// The name of this User Action.
     private(set) var name: String
     /// User Action attributes.
@@ -63,7 +63,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         name: String,
-        actionType: RUMUserActionType,
+        actionType: RUMActionType,
         attributes: [AttributeKey: AttributeValue],
         startTime: Date,
         serverTimeOffset: TimeInterval,

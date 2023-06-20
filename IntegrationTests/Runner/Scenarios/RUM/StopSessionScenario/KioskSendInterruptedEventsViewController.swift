@@ -19,7 +19,7 @@ internal class KioskSendInterruptedEventsViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: Any) {
-        rumMonitor.addUserAction(
+        rumMonitor.addAction(
             type: .tap,
             name: (sender as! UIButton).currentTitle!,
             attributes: ["button.description": String(describing: sender)]
@@ -30,13 +30,13 @@ internal class KioskSendInterruptedEventsViewController: UIViewController {
         // Much longer wait time
         let simulatedResourceLoadingTime: TimeInterval = 1.0
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey,
             request: simulatedResourceRequest
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
-            rumMonitor.stopResourceLoading(
+            rumMonitor.stopResource(
                 resourceKey: simulatedResourceKey,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest.url!,

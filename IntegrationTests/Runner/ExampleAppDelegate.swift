@@ -12,7 +12,7 @@ import DatadogRUM
 
 var logger: DatadogLogger!
 var tracer: OTTracer { DatadogTracer.shared() }
-var rumMonitor: DDRUMMonitor { RUMMonitor.shared() }
+var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
 var serviceName = "integration-scenarios-service-name"
 var appConfiguration: AppConfiguration!
@@ -59,7 +59,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         Datadog.verbosityLevel = .debug
 
         // Enable RUM Views debugging
-        RUMMonitor.shared().enableRUMDebugging(true)
+        RUMMonitor.shared().debug = true
 
         // Launch initial screen depending on the launch configuration
         if let storyboard = appConfiguration.initialStoryboard() {

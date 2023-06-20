@@ -22,7 +22,7 @@ class DebugRUMViewController: UIViewController {
 
         viewURLTextField.placeholder = viewURL
         actionViewURLTextField.placeholder = actionViewURL
-        actionTypeTextField.placeholder = RUMUserActionType.default.toString
+        actionTypeTextField.placeholder = RUMActionType.default.toString
         resourceViewURLTextField.placeholder = resourceViewURL
         resourceURLTextField.placeholder = resourceURL
         errorViewURLTextField.placeholder = errorViewURL
@@ -58,16 +58,16 @@ class DebugRUMViewController: UIViewController {
         actionViewURLTextField.text!.isEmpty ? "FooViewController" : actionViewURLTextField.text!
     }
 
-    private var actionType: RUMUserActionType {
-        let actionType = actionTypeTextField.text.flatMap { RUMUserActionType(string: $0) }
-        return actionType ?? RUMUserActionType.default
+    private var actionType: RUMActionType {
+        let actionType = actionTypeTextField.text.flatMap { RUMActionType(string: $0) }
+        return actionType ?? RUMActionType.default
     }
 
     @IBAction func didTapSendActionEvent(_ sender: Any) {
         let viewController = createUIViewControllerSubclassInstance(named: actionViewURL)
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            rumMonitor.addUserAction(type: self.actionType, name: (sender as! UIButton).currentTitle!)
+            rumMonitor.addAction(type: self.actionType, name: (sender as! UIButton).currentTitle!)
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             rumMonitor.stopView(viewController: viewController)
@@ -101,12 +101,12 @@ class DebugRUMViewController: UIViewController {
         rumMonitor.startView(viewController: viewController)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             let request = URLRequest(url: URL(string: "https://foo.com" + self.resourceURL)!)
-            rumMonitor.startResourceLoading(
+            rumMonitor.startResource(
                 resourceKey: "/resource/1",
                 request: request
             )
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                rumMonitor.stopResourceLoading(
+                rumMonitor.stopResource(
                     resourceKey: "/resource/1",
                     response: HTTPURLResponse(
                         url: request.url!,
@@ -166,14 +166,14 @@ private func createUIViewControllerSubclassInstance(named viewControllerClassNam
     return theClass.alloc() as! UIViewController
 }
 
-extension RUMUserActionType {
+extension RUMActionType {
     init(string: String) {
         switch string {
         case "tap": self = .tap
         case "scroll": self = .scroll
         case "swipe": self = .swipe
         case "custom": self = .custom
-        default: self = RUMUserActionType.default
+        default: self = RUMActionType.default
         }
     }
 
@@ -187,5 +187,5 @@ extension RUMUserActionType {
         }
     }
 
-    static var `default`: RUMUserActionType = .custom
+    static var `default`: RUMActionType = .custom
 }

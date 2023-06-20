@@ -13,7 +13,7 @@ private protocol RUMDataFormatConvertible {
 }
 
 extension RUMInternalErrorSource: RUMDataFormatConvertible {}
-extension RUMUserActionType: RUMDataFormatConvertible {}
+extension RUMActionType: RUMDataFormatConvertible {}
 
 class RUMDataModelsMappingTests: XCTestCase {
     func testInt() {
@@ -63,10 +63,10 @@ class RUMDataModelsMappingTests: XCTestCase {
     }
 
     func testRUMUserActionType() {
-        verify(value: RUMUserActionType.tap, matches: .tap)
-        verify(value: RUMUserActionType.swipe, matches: .swipe)
-        verify(value: RUMUserActionType.scroll, matches: .scroll)
-        verify(value: RUMUserActionType.custom, matches: .custom)
+        verify(value: RUMActionType.tap, matches: .tap)
+        verify(value: RUMActionType.swipe, matches: .swipe)
+        verify(value: RUMActionType.scroll, matches: .scroll)
+        verify(value: RUMActionType.custom, matches: .custom)
     }
 
     // MARK: - Helpers

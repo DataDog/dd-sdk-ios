@@ -25,7 +25,7 @@ internal class RUMScrubbingViewController: UIViewController {
     }
 
     private func simulateRUMUserAction() {
-        rumMonitor.addUserAction(type: .tap, name: "Purchase (sensitive detail)")
+        rumMonitor.addAction(type: .tap, name: "Purchase (sensitive detail)")
     }
 
     private func simulateRUMError() {
@@ -39,18 +39,18 @@ internal class RUMScrubbingViewController: UIViewController {
         let simulatedResourceRequest2 = URLRequest(url: URL(string: "https://foo.com/resource/2?q=sensitive-detail")!)
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey1,
             request: simulatedResourceRequest1
         )
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey2,
             request: simulatedResourceRequest2
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
-            rumMonitor.stopResourceLoading(
+            rumMonitor.stopResource(
                 resourceKey: simulatedResourceKey1,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest1.url!,
@@ -60,7 +60,7 @@ internal class RUMScrubbingViewController: UIViewController {
                 )!
             )
 
-            rumMonitor.stopResourceLoadingWithError(
+            rumMonitor.stopResourceWithError(
                 resourceKey: simulatedResourceKey2,
                 error: NSError(
                     domain: NSURLErrorDomain,

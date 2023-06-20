@@ -6,6 +6,6 @@
 
 @testable import DatadogRUM
 
-internal extension DDRUMMonitor {
-    var dd: RUMMonitor { self as! RUMMonitor }
+internal extension RUMMonitorProtocol {
+    var dd: Monitor { self as! Monitor }
 }

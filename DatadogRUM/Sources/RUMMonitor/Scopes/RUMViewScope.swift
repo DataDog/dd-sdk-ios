@@ -333,7 +333,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func reportActionDropped(type: RUMUserActionType, name: String) {
+    private func reportActionDropped(type: RUMActionType, name: String) {
         DD.logger.warn(
             """
             RUM Action '\(type)' on '\(name)' was dropped, because another action is still active for the same view.

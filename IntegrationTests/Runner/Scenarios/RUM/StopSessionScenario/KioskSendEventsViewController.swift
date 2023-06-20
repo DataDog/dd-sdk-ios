@@ -28,7 +28,7 @@ internal class KioskSendEventsViewController: UIViewController {
     }
 
     @IBAction func didTapDownloadResourceButton(_ sender: UIButton) {
-        rumMonitor.addUserAction(
+        rumMonitor.addAction(
             type: .tap,
             name: sender.currentTitle!,
             attributes: ["button.description": String(describing: sender)]
@@ -38,13 +38,13 @@ internal class KioskSendEventsViewController: UIViewController {
         let simulatedResourceRequest = URLRequest(url: URL(string: "https://foo.com/resource/1")!)
         let simulatedResourceLoadingTime: TimeInterval = 0.1
 
-        rumMonitor.startResourceLoading(
+        rumMonitor.startResource(
             resourceKey: simulatedResourceKey,
             request: simulatedResourceRequest
         )
 
         DispatchQueue.main.asyncAfter(deadline: .now() + simulatedResourceLoadingTime) {
-            rumMonitor.stopResourceLoading(
+            rumMonitor.stopResource(
                 resourceKey: simulatedResourceKey,
                 response: HTTPURLResponse(
                     url: simulatedResourceRequest.url!,
