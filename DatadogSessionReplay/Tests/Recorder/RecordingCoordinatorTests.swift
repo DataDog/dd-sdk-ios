@@ -84,7 +84,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // When
         rumContextObserver.notify(rumContext: .mockWith(viewID: nil))
-        
+
         // Then
         XCTAssertTrue(scheduler.isRunning)
         XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)

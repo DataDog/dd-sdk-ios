@@ -81,7 +81,6 @@ class SegmentJSONBuilderTests: XCTestCase {
                 viewServerTimeOffset: 0
             )
         )
-        Recorder.Context.mockAny()
         return try segment.records
             // To make it more challenging for tested `SegmentJSONBuilder`, we chunk records in
             // expected `segment`, so they are spread among many enriched records:

@@ -9,13 +9,6 @@ import XCTest
 @testable import TestUtilities
 
 class RecorderTests: XCTestCase {
-    private var recorder: Recorder?
-
-    override func tearDown() {
-        recorder = nil
-        super.tearDown()
-    }
-
     func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
         let numberOfSnapshots = 10
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: numberOfSnapshots)
@@ -24,7 +17,7 @@ class RecorderTests: XCTestCase {
         let scheduler = TestScheduler(numberOfRepeats: numberOfSnapshots)
 
         // Given
-        recorder = Recorder(
+        let recorder = Recorder(
             configuration: .mockAny(),
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
@@ -33,14 +26,15 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
             snapshotProcessor: processor
         )
+        withExtendedLifetime(recorder) {
+            // When
+            scheduler.start()
 
-        // When
-        scheduler.start()
-
-        // Then
-        DDAssertReflectionEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
-        DDAssertReflectionEqual(processor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
-        DDAssertReflectionEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
+            // Then
+            DDAssertReflectionEqual(processor.processedSnapshots.count, numberOfSnapshots, "Processor should receive \(numberOfSnapshots) snapshots")
+            DDAssertReflectionEqual(processor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
+            DDAssertReflectionEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
+        }
     }
 
     func testGivenNoRUMContextAvailable_whenStarted_itDoesNotCaptureAnySnapshots() {
@@ -48,7 +42,7 @@ class RecorderTests: XCTestCase {
         let scheduler = TestScheduler()
 
         // Given
-        recorder = Recorder(
+        let recorder = Recorder(
             configuration: .mockAny(),
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
@@ -57,12 +51,13 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: .mockAny(count: 1)),
             snapshotProcessor: processor
         )
+        withExtendedLifetime(recorder) {
+            // When
+            scheduler.start()
 
-        // When
-        scheduler.start()
-
-        // Then
-        XCTAssertTrue(processor.processedSnapshots.isEmpty)
+            // Then
+            XCTAssertTrue(processor.processedSnapshots.isEmpty)
+        }
     }
 
     func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesDefaultRecorderContext() {
@@ -73,7 +68,7 @@ class RecorderTests: XCTestCase {
         let scheduler = TestScheduler()
 
         // Given
-        recorder = Recorder(
+        let recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: randomPrivacy),
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
@@ -82,17 +77,18 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
+        withExtendedLifetime(recorder) {
+            // When
+            scheduler.start()
 
-        // When
-        scheduler.start()
-
-        // Then
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, randomPrivacy)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, randomRUMContext.ids.applicationID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, randomRUMContext.ids.sessionID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, randomRUMContext.ids.viewID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, randomRUMContext.viewServerTimeOffset)
+            // Then
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, randomPrivacy)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, randomRUMContext.ids.applicationID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, randomRUMContext.ids.sessionID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, randomRUMContext.ids.viewID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, randomRUMContext.viewServerTimeOffset)
+        }
     }
 
     func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesCurrentRecorderContext() {
@@ -102,7 +98,7 @@ class RecorderTests: XCTestCase {
         let scheduler = TestScheduler()
 
         // Given
-        recorder = Recorder(
+        let recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: .mockRandom()),
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
@@ -111,20 +107,21 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
+        withExtendedLifetime(recorder) {
+            // When
+            let currentPrivacy: SessionReplayPrivacy = .mockRandom()
+            recorder.change(privacy: currentPrivacy)
 
-        // When
-        let currentPrivacy: SessionReplayPrivacy = .mockRandom()
-        recorder?.change(privacy: currentPrivacy)
+            scheduler.start()
 
-        scheduler.start()
-
-        // Then
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, currentPrivacy)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, currentRUMContext.ids.applicationID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, currentRUMContext.ids.sessionID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, currentRUMContext.ids.viewID)
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, currentRUMContext.viewServerTimeOffset)
+            // Then
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].privacy, currentPrivacy)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].applicationID, currentRUMContext.ids.applicationID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].sessionID, currentRUMContext.ids.sessionID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewID, currentRUMContext.ids.viewID)
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0].viewServerTimeOffset, currentRUMContext.viewServerTimeOffset)
+        }
     }
 
     func test_whenShouldNotRecord_itDoesNotRecord() {
@@ -134,7 +131,7 @@ class RecorderTests: XCTestCase {
         let scheduler = TestScheduler()
 
         // Given
-        recorder = Recorder(
+        let recorder = Recorder(
             configuration: SessionReplayConfiguration(privacy: .mockRandom()),
             uiApplicationSwizzler: .mockAny(),
             scheduler: scheduler,
@@ -143,11 +140,12 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: ProcessorSpy()
         )
+        withExtendedLifetime(recorder) {
+            // When
+            scheduler.start()
 
-        // When
-        scheduler.start()
-
-        // Then
-        XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 0)
+            // Then
+            XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 0)
+        }
     }
 }

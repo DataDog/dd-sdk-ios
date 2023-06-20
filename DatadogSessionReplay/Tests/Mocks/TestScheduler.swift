@@ -19,7 +19,13 @@ internal class TestScheduler: Scheduler {
     /// Queue to execute operations on.
     let queue: Queue
 
-    var isRunning = false
+    private var _isRunning = false
+    private let isRunningQueue = DispatchQueue(label: "testscheduler.isrunning")
+
+    var isRunning: Bool {
+        get { return isRunningQueue.sync { _isRunning } }
+        set { isRunningQueue.sync { _isRunning = newValue } }
+    }
 
     init(
         queue: Queue = NoQueue(),

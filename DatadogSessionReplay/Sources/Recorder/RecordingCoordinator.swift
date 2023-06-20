@@ -24,7 +24,12 @@ internal class RecordingCoordinator: RecordingCoordination {
         return isSampled && currentRUMContext?.ids.viewID != nil
     }
 
-    private var isSampled = false
+    private var _isSampled = false
+    private let isSampledQueue = DispatchQueue(label: "RecordingCoordinator.isSampled")
+    private var isSampled: Bool {
+        get { return isSampledQueue.sync { _isSampled } }
+        set { isSampledQueue.sync { _isSampled = newValue } }
+    }
 
     init(
         scheduler: Scheduler,

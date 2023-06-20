@@ -131,7 +131,7 @@ private struct RecordingCoordinatorMock: RecordingCoordination {
         viewServerTimeOffset: 0
     )
 
-    var isSampled: Bool = true
+    var shouldRecord: Bool = true
 }
 
 private class TestScheduler: Scheduler {
