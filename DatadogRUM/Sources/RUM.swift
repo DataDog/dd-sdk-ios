@@ -11,7 +11,7 @@ public struct RUM {
     /// Enables Datadog RUM feature.
     /// - Parameters:
     ///   - configuration: configuration of the feature
-    ///   - core: the instance of Datadog SDK to enable the feture in (global instance by default)
+    ///   - core: the instance of Datadog SDK to enable RUM in (global instance by default)
     public static func enable(
         with configuration: RUMConfiguration, in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
