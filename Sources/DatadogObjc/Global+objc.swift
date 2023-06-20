@@ -11,6 +11,4 @@ import DatadogRUM
 @objc
 public class DDGlobal: NSObject {
     @objc public static var sharedTracer: DatadogObjc.DDTracer { .init(swiftTracer: DatadogTracer.shared()) }
-
-    @objc public static var rum: DatadogObjc.DDRUMMonitor { .init(swiftRUMMonitor: RUMMonitor.shared()) }
 }

@@ -9,7 +9,6 @@ import TestUtilities
 import DatadogInternal
 
 @testable import DatadogLogs
-@testable import DatadogRUM
 @testable import Datadog
 
 // MARK: - Configuration Mocks
@@ -18,28 +17,16 @@ extension Datadog.Configuration {
     static func mockAny() -> Datadog.Configuration { .mockWith() }
 
     static func mockWith(
-        rumApplicationID: String? = .mockAny(),
         clientToken: String = .mockAny(),
         environment: String = .mockAny(),
         loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
-        rumEnabled: Bool = false,
         datadogEndpoint: DatadogSite = .us1,
         customLogsEndpoint: URL? = nil,
-        customRUMEndpoint: URL? = nil,
         serviceName: String? = .mockAny(),
         firstPartyHosts: FirstPartyHosts? = nil,
         loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
-        rumSessionsSamplingRate: Float = 100.0,
-        rumUIKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
-        rumLongTaskDurationThreshold: TimeInterval? = nil,
-        rumResourceAttributesProvider: URLSessionRUMAttributesProvider? = nil,
-        rumBackgroundEventTrackingEnabled: Bool = false,
-        rumFrustrationSignalsTrackingEnabled: Bool = true,
-        rumTelemetrySamplingRate: Float = 100.0,
-        mobileVitalsFrequency: VitalsFrequency = .average,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -47,28 +34,16 @@ extension Datadog.Configuration {
         internalMonitoringClientToken: String? = nil
     ) -> Datadog.Configuration {
         return Datadog.Configuration(
-            rumApplicationID: rumApplicationID,
             clientToken: clientToken,
             environment: environment,
             loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
-            rumEnabled: rumEnabled,
             datadogEndpoint: datadogEndpoint,
             customLogsEndpoint: customLogsEndpoint,
-            customRUMEndpoint: customRUMEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
             loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
-            rumSessionsSamplingRate: rumSessionsSamplingRate,
-            rumUIKitViewsPredicate: rumUIKitViewsPredicate,
-            rumUIKitUserActionsPredicate: rumUIKitUserActionsPredicate,
-            rumLongTaskDurationThreshold: rumLongTaskDurationThreshold,
-            rumResourceAttributesProvider: rumResourceAttributesProvider,
-            rumBackgroundEventTrackingEnabled: rumBackgroundEventTrackingEnabled,
-            rumFrustrationSignalsTrackingEnabled: rumFrustrationSignalsTrackingEnabled,
-            rumTelemetrySamplingRate: rumTelemetrySamplingRate,
-            mobileVitalsFrequency: mobileVitalsFrequency,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -107,13 +82,11 @@ extension FeaturesConfiguration {
     static func mockWith(
         common: Common = .mockAny(),
         logging: Logging? = .mockAny(),
-        rum: RUMConfiguration? = .mockAny(),
         tracingEnabled: Bool = .mockAny()
     ) -> Self {
         return .init(
             common: common,
             logging: logging,
-            rum: rum,
             tracingEnabled: tracingEnabled
         )
     }

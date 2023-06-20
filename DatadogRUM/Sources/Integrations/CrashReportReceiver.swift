@@ -89,11 +89,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let realDateNow: Date
     }
 
-    private let applicationID: String
-    private let dateProvider: DateProvider
-    private let sessionSampler: Sampler
-    private let backgroundEventTrackingEnabled: Bool
-    private let uuidGenerator: RUMUUIDGenerator
+    let applicationID: String
+    let dateProvider: DateProvider
+    let sessionSampler: Sampler
+    let backgroundEventTrackingEnabled: Bool
+    let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
 

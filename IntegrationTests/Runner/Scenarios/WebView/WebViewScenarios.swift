@@ -25,8 +25,13 @@ final class WebViewTrackingScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: WebViewTrackingScenarioPredicate())
             .enableLogging(true)
-            .enableRUM(true)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = WebViewTrackingScenarioPredicate()
+        RUM.enable(with: config)
     }
 }

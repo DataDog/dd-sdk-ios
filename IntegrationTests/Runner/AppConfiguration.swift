@@ -6,8 +6,8 @@
 
 import UIKit
 import Datadog
-import DatadogInternal
 import DatadogCrashReporting
+import enum DatadogInternal.TrackingConsent
 
 protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
@@ -48,7 +48,6 @@ struct UITestsAppConfiguration: AppConfiguration {
     func sdkConfiguration() -> Datadog.Configuration {
         let configuration = Datadog.Configuration
             .builderUsing(
-                rumApplicationID: "rum-application-id",
                 clientToken: "ui-tests-client-token",
                 environment: "integration"
             )
@@ -64,13 +63,6 @@ struct UITestsAppConfiguration: AppConfiguration {
             _ = configuration.set(customLogsEndpoint: logsEndpoint)
         } else {
             _ = configuration.enableLogging(false)
-        }
-
-        // If `HTTPServerMock` endpoint is set for RUM, enable the feature and send data to mock server
-        if let rumEndpoint = serverMockConfiguration?.rumEndpoint {
-            _ = configuration.set(customRUMEndpoint: rumEndpoint)
-        } else {
-            _ = configuration.enableRUM(false)
         }
 
         // Apply the scenario configuration

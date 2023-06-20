@@ -81,6 +81,14 @@ class FirstPartyHostsTests: XCTestCase {
         }
     }
 
+    func testGivenValidSet_itAssignsDatadogHeaderType() {
+        let hosts = FirstPartyHosts(Set(otherHosts))
+        otherHosts.forEach {
+            let url = URL(string: $0)
+            XCTAssertEqual(hosts.tracingHeaderTypes(for: url), [.datadog])
+        }
+    }
+
     func testFalsePositiveURL_itReturnsEmptyTracingHeaderTypes() {
         let filter = FirstPartyHosts(
             hostsWithTracingHeaderTypes: ["example.com": [.datadog, .b3multi]]

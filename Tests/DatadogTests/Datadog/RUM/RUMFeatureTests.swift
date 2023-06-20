@@ -74,7 +74,7 @@ class RUMFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        RUM.enable(with: .mockWith(customIntakeURL: randomUploadURL), in: core)
+        RUM.enable(with: .mockWith { $0.customEndpoint = randomUploadURL }, in: core)
 
         // When
         let monitor = RUMMonitor.shared(in: core)

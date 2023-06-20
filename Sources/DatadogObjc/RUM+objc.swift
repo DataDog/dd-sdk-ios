@@ -7,18 +7,7 @@
 import Foundation
 import UIKit
 import DatadogInternal
-
-import protocol DatadogRUM.RUMMonitorProtocol
-import class DatadogRUM.RUMMonitor
-import enum DatadogRUM.RUMErrorSource
-import enum DatadogRUM.RUMActionType
-import typealias DatadogRUM.RUMResourceType
-import enum DatadogRUM.RUMMethod
-import struct DatadogRUM.RUMView
-import protocol DatadogRUM.UIKitRUMViewsPredicate
-import struct DatadogRUM.RUMAction
-import protocol DatadogRUM.UITouchRUMUserActionsPredicate
-import protocol DatadogRUM.UIPressRUMUserActionsPredicate
+import DatadogRUM
 
 internal struct UIKitRUMViewsPredicateBridge: UIKitRUMViewsPredicate {
     let objcPredicate: DDUIKitRUMViewsPredicate
@@ -56,26 +45,26 @@ public protocol DDUIKitRUMViewsPredicate: AnyObject {
     func rumView(for viewController: UIViewController) -> DDRUMView?
 }
 
-internal struct UIKitRUMUserActionsPredicateBridge: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
+internal struct UIKitRUMActionsPredicateBridge: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
     let objcPredicate: AnyObject?
 
-    init(objcPredicate: DDUITouchRUMUserActionsPredicate) {
+    init(objcPredicate: DDUITouchRUMActionsPredicate) {
         self.objcPredicate = objcPredicate
     }
 
-    init(objcPredicate: DDUIPressRUMUserActionsPredicate) {
+    init(objcPredicate: DDUIPressRUMActionsPredicate) {
         self.objcPredicate = objcPredicate
     }
 
     func rumAction(targetView: UIView) -> RUMAction? {
-        guard let objcPredicate = objcPredicate as? DDUITouchRUMUserActionsPredicate else {
+        guard let objcPredicate = objcPredicate as? DDUITouchRUMActionsPredicate else {
             return nil
         }
         return objcPredicate.rumAction(targetView: targetView)?.swiftAction
     }
 
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction? {
-        guard let objcPredicate = objcPredicate as? DDUIPressRUMUserActionsPredicate else {
+        guard let objcPredicate = objcPredicate as? DDUIPressRUMActionsPredicate else {
             return nil
         }
         return objcPredicate.rumAction(press: type, targetView: targetView)?.swiftAction
@@ -104,14 +93,14 @@ public class DDRUMAction: NSObject {
 
 #if os(tvOS)
 @objc
-public protocol DDUIKitRUMUserActionsPredicate: DDUIPressRUMUserActionsPredicate {}
+public protocol DDUIKitRUMActionsPredicate: DDUIPressRUMActionsPredicate {}
 #else
 @objc
-public protocol DDUIKitRUMUserActionsPredicate: DDUITouchRUMUserActionsPredicate {}
+public protocol DDUIKitRUMActionsPredicate: DDUITouchRUMActionsPredicate {}
 #endif
 
 @objc
-public protocol DDUITouchRUMUserActionsPredicate: AnyObject {
+public protocol DDUITouchRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameter targetView: an instance of the `UIView` which received the action.
     /// - Returns: RUM Action if it should be recorded, `nil` otherwise.
@@ -119,7 +108,7 @@ public protocol DDUITouchRUMUserActionsPredicate: AnyObject {
 }
 
 @objc
-public protocol DDUIPressRUMUserActionsPredicate: AnyObject {
+public protocol DDUIPressRUMActionsPredicate: AnyObject {
     /// The predicate deciding if the RUM Action should be recorded.
     /// - Parameters:
     ///   - type: the `UIPress.PressType` which received the action.
@@ -225,6 +214,199 @@ public enum DDRUMMethod: Int {
 }
 
 @objc
+public enum DDRUMVitalsFrequency: Int {
+    case frequent
+    case average
+    case rare
+    case never
+
+    internal init(swiftType: DatadogRUM.RUM.Configuration.VitalsFrequency?) {
+        switch swiftType {
+        case .frequent: self = .frequent
+        case .average: self = .average
+        case .rare: self = .rare
+        case .none: self = .never
+        }
+    }
+
+    internal var swiftType: DatadogRUM.RUM.Configuration.VitalsFrequency? {
+        switch self {
+        case .frequent: return .frequent
+        case .average: return .average
+        case .rare: return .rare
+        case .never: return nil
+        }
+    }
+}
+
+@objc
+public class DDRUMFirstPartyHostsTracing: NSObject {
+    internal var swiftType: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing
+
+    @objc
+    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in Set(headerTypes.map { $0.swiftType }) }
+        swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders)
+    }
+
+    @objc
+    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>], sampleRate: Float) {
+        let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in Set(headerTypes.map { $0.swiftType }) }
+        swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders, sampleRate: sampleRate)
+    }
+
+    @objc
+    public init(hosts: Set<String>) {
+        swiftType = .trace(hosts: hosts)
+    }
+
+    @objc
+    public init(hosts: Set<String>, sampleRate: Float) {
+        swiftType = .trace(hosts: hosts, sampleRate: sampleRate)
+    }
+}
+
+@objc
+public class DDRUMURLSessionTracking: NSObject {
+    internal var swiftConfig: RUM.Configuration.URLSessionTracking
+
+    @objc
+    override public init() {
+        swiftConfig = .init()
+    }
+
+    @objc
+    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDRUMFirstPartyHostsTracing) {
+        swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
+    }
+
+    @objc
+    public func setResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [String: Any]?) {
+        swiftConfig.resourceAttributesProvider = { request, response, data, error in
+            let objcAttributes = provider(request, response, data, error)
+            return objcAttributes.map { castAttributesToSwift($0) }
+        }
+    }
+}
+
+@objc
+public class DDRUMConfiguration: NSObject {
+    internal var swiftConfig: DatadogRUM.RUM.Configuration
+
+    @objc
+    public init(applicationID: String) {
+        swiftConfig = .init(applicationID: applicationID)
+    }
+
+    @objc public var applicationID: String {
+        swiftConfig.applicationID
+    }
+
+    @objc public var sessionSampleRate: Float {
+        set { swiftConfig.sessionSampleRate = newValue }
+        get { swiftConfig.sessionSampleRate }
+    }
+
+    @objc public var telemetrySampleRate: Float {
+        set { swiftConfig.telemetrySampleRate = newValue }
+        get { swiftConfig.telemetrySampleRate }
+    }
+
+    @objc public var uiKitViewsPredicate: DDUIKitRUMViewsPredicate? {
+        set { swiftConfig.uiKitViewsPredicate = newValue.map { UIKitRUMViewsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.uiKitViewsPredicate as? UIKitRUMViewsPredicateBridge)?.objcPredicate  }
+    }
+
+    @objc public var uiKitActionsPredicate: DDUIKitRUMActionsPredicate? {
+        set { swiftConfig.uiKitActionsPredicate = newValue.map { UIKitRUMActionsPredicateBridge(objcPredicate: $0) } }
+        get { (swiftConfig.uiKitActionsPredicate as? UIKitRUMActionsPredicateBridge)?.objcPredicate as? DDUIKitRUMActionsPredicate  }
+    }
+
+    @objc
+    public func setURLSessionTracking(_ tracking: DDRUMURLSessionTracking) {
+        swiftConfig.urlSessionTracking = tracking.swiftConfig
+    }
+
+    @objc public var frustrationsTracking: Bool {
+        set { swiftConfig.frustrationsTracking = newValue }
+        get { swiftConfig.frustrationsTracking }
+    }
+
+    @objc public var backgroundEventsTracking: Bool {
+        set { swiftConfig.backgroundEventsTracking = newValue }
+        get { swiftConfig.backgroundEventsTracking }
+    }
+
+    @objc public var longTaskThreshold: TimeInterval {
+        set { swiftConfig.longTaskThreshold = newValue }
+        get { swiftConfig.longTaskThreshold ?? 0 }
+    }
+
+    @objc public var vitalsUpdateFrequency: DDRUMVitalsFrequency {
+        set { swiftConfig.vitalsUpdateFrequency = newValue.swiftType }
+        get { DDRUMVitalsFrequency(swiftType: swiftConfig.vitalsUpdateFrequency) }
+    }
+
+    @objc
+    public func setViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent) {
+        swiftConfig.viewEventMapper = { swiftEvent in
+            let objcEvent = DDRUMViewEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent).swiftModel
+        }
+    }
+
+    @objc
+    public func setResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?) {
+        swiftConfig.resourceEventMapper = { swiftEvent in
+            let objcEvent = DDRUMResourceEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?) {
+        swiftConfig.actionEventMapper = { swiftEvent in
+            let objcEvent = DDRUMActionEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?) {
+        swiftConfig.errorEventMapper = { swiftEvent in
+            let objcEvent = DDRUMErrorEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc
+    public func setLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?) {
+        swiftConfig.longTaskEventMapper = { swiftEvent in
+            let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
+            return mapper(objcEvent)?.swiftModel
+        }
+    }
+
+    @objc public var onSessionStart: ((String, Bool) -> Void)? {
+        set { swiftConfig.onSessionStart = newValue }
+        get { swiftConfig.onSessionStart }
+    }
+
+    @objc public var customEndpoint: URL? {
+        set { swiftConfig.customEndpoint = newValue }
+        get { swiftConfig.customEndpoint }
+    }
+}
+
+@objc
+public class DDRUM: NSObject {
+    @objc
+    public static func enable(with configuration: DDRUMConfiguration) {
+        RUM.enable(with: configuration.swiftConfig)
+    }
+}
+
+@objc
 public class DDRUMMonitor: NSObject {
     // MARK: - Internal
 
@@ -237,8 +419,8 @@ public class DDRUMMonitor: NSObject {
     // MARK: - Public
 
     @objc
-    override public convenience init() {
-        self.init(swiftRUMMonitor: RUMMonitor.shared())
+    public static func shared() -> DDRUMMonitor {
+        DDRUMMonitor(swiftRUMMonitor: RUMMonitor.shared())
     }
 
     @objc

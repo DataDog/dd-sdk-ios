@@ -7,156 +7,341 @@
 import Foundation
 import DatadogInternal
 
-public typealias RUMSessionListener = (String, Bool) -> Void
+// Export `DDURLSessionDelegate` elements to be available with `import DatadogRUM`:
+@_exported import class DatadogInternal.DatadogURLSessionDelegate
+@_exported import typealias DatadogInternal.DDURLSessionDelegate
+@_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 
+public typealias RUMSessionListener = (String, Bool) -> Void
 public typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
 public typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
 public typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
 public typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
 public typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
+public typealias RUMResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
 
-public typealias URLSessionRUMAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
+extension RUM {
+    /// RUM feature configuration.
+    public struct Configuration {
+        /// An unique identifier of the RUM application in Datadog.
+        public let applicationID: String
 
-public struct RUMConfiguration {
-    public struct Instrumentation {
-        public let uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?
-        public let uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate?
-        public let longTaskThreshold: TimeInterval?
+        /// The sampling rate for RUM sessions.
+        ///
+        /// It must be a number between 0.0 and 100.0, where 0 means no sessions will be sent
+        /// and 100 means all will be uploaded.
+        ///
+        /// Default: `100.0`.
+        public var sessionSampleRate: Float
 
-        public init(
-            uiKitRUMViewsPredicate: UIKitRUMViewsPredicate? = nil,
-            uiKitRUMUserActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
-            longTaskThreshold: TimeInterval? = nil
-        ) {
-            self.uiKitRUMViewsPredicate = uiKitRUMViewsPredicate
-            self.uiKitRUMUserActionsPredicate = uiKitRUMUserActionsPredicate
-            self.longTaskThreshold = longTaskThreshold
+        /// The predicate for automatically tracking `UIViewControllers` as RUM views.
+        ///
+        /// RUM will query this predicate for each `UIViewController` presented in the app. The predicate implementation
+        /// should return RUM view parameters if the given controller should start a view, or `nil` to ignore it.
+        ///
+        /// You can use `DefaultUIKitRUMViewsPredicate` or create your own predicate by implementing `UIKitRUMViewsPredicate`.
+        ///
+        /// Note: Automatic RUM views tracking involves swizzling the `UIViewController` lifecycle methods.
+        ///
+        /// Default: `nil` - which means automatic RUM view tracking is not enabled by default.
+        public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
+
+        /// The predicate for automatically tracking `UITouch` events as RUM actions.
+        ///
+        /// RUM will query this predicate for each `UIView` that the user interacts with. The predicate implementation
+        /// should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
+        /// Touch events on the keyboard are ignored for privacy reasons.
+        ///
+        /// You can use `DefaultUIKitRUMUserActionsPredicate` or create your own predicate by
+        /// implementing `UIKitRUMUserActionsPredicate`.
+        ///
+        /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
+        ///
+        /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
+        public var uiKitActionsPredicate: UIKitRUMUserActionsPredicate?
+
+        /// The configuration for automatic RUM resources tracking.
+        ///
+        /// RUM resources tracking requires using the `DDURLSessionDelegate` in `URLSessions` that you want to track.
+        ///
+        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession` methods and will not work
+        /// without using `DDURLSessionDelegate`.
+        ///
+        /// Default: `nil` - which means automatic RUM resource tracking is not enabled by default.
+        public var urlSessionTracking: URLSessionTracking?
+
+        /// Determines whether automatic tracking of user frustrations should be enabled.
+        ///
+        /// RUM detects "error taps"  when an error follows a RUM tap action.
+        ///
+        /// Default: `true`.
+        public var frustrationsTracking: Bool
+
+        /// Determines whether RUM events should be tracked when no view is active (including when the app is in the background).
+        ///
+        /// If enabled, RUM will attach events to an automatically created "background" view.
+        ///
+        /// Note: Enabling this option may increase the number of sessions tracked and result in higher billing.
+        ///
+        /// Default: `false`.
+        public var backgroundEventsTracking: Bool
+
+        /// Enables RUM long tasks tracking with the given threshold (in seconds).
+        ///
+        /// Any operation on the main thread that exceeds this threshold will be reported as a RUM long task.
+        /// To disable RUM long tasks tracking, set `nil` or `0`.
+        ///
+        /// Default: `0.1`.
+        public var longTaskThreshold: TimeInterval?
+
+        /// Sets the preferred frequency for collecting RUM vitals.
+        ///
+        /// To disable RUM vitals monitoring, set `nil`.
+        ///
+        /// Default: `.average`.
+        public var vitalsUpdateFrequency: VitalsFrequency?
+
+        /// Custom mapper for RUM view events.
+        ///
+        /// It can be used to modify view events before they are sent. The implementation of the mapper should
+        /// obtain a mutable copy of `RUMViewEvent`, modify it, and return it. Keep the implementation fast
+        /// and do not make any assumptions on the thread used to run it.
+        ///
+        /// Note: This mapper ensures that all views are sent by preventing the return of `nil`. To drop certain automatically
+        /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` option).
+        ///
+        /// Default: `nil`.
+        public var viewEventMapper: RUMViewEventMapper?
+
+        /// Custom mapper for RUM resource events.
+        ///
+        /// It can be used to modify resource events before they are sent. The implementation of the mapper should
+        /// obtain a mutable copy of `RUMResourceEvent`, modify it, and return it. Returning `nil` will drop the event.
+        /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        ///
+        /// Default: `nil`.
+        public var resourceEventMapper: RUMResourceEventMapper?
+
+        /// Custom mapper for RUM action events.
+        ///
+        /// It can be used to modify action events before they are sent. The implementation of the mapper should
+        /// obtain a mutable copy of `RUMActionEvent`, modify it, and return it. Returning `nil` will drop the event.
+        /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        ///
+        /// Default: `nil`.
+        public var actionEventMapper: RUMActionEventMapper?
+
+        /// Custom mapper for RUM error events.
+        ///
+        /// It can be used to modify error events before they are sent. The implementation of the mapper should
+        /// obtain a mutable copy of `RUMErrorEvent`, modify it, and return it. Returning `nil` will drop the event.
+        /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        ///
+        /// Default: `nil`.
+        public var errorEventMapper: RUMErrorEventMapper?
+
+        /// Custom mapper for RUM long task events.
+        ///
+        /// It can be used to modify long task events before they are sent. The implementation of the mapper should
+        /// obtain a mutable copy of `RUMLongTaskEvent`, modify it, and return it. Returning `nil` will drop the event.
+        /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+        ///
+        /// Default: `nil`.
+        public var longTaskEventMapper: RUMLongTaskEventMapper?
+
+        /// RUM session start callback.
+        ///
+        /// It takes 2 arguments:
+        /// - Newly started session ID.
+        /// - Flag indicating whether or not the session was discarded due to the sampling rate.
+        /// Keep the implementation fast and do not make any assumptions on the thread that runs this callback.
+        ///
+        /// Default: `nil`.
+        public var onSessionStart: RUMSessionListener?
+
+        /// Custom server url for sending RUM data.
+        ///
+        /// Default: `nil`.
+        public var customEndpoint: URL?
+
+        /// The sampling rate for SDK internal telemetry utilized by Datadog.
+        /// This telemetry is used to monitor the internal workings of the entire Datadog iOS SDK.
+        ///
+        /// It must be a number between 0.0 and 100.0, where 0 means no telemetry will be sent,
+        /// and 100 means all telemetry will be uploaded. The default value is 20.0.
+        public var telemetrySampleRate: Float
+
+        // MARK: - Nested Types
+
+        /// Configuration of automatic RUM resources tracking.
+        public struct URLSessionTracking {
+            /// Determines distributed tracing configuration for particular first-party hosts.
+            ///
+            /// Each request is classified as first-party or third-party based on the first-party hosts configured, i.e.:
+            /// * If "example.com" is defined as a first-party host:
+            ///     - First-party URL examples: https://example.com/ and https://api.example.com/v2/users
+            ///     - Third-party URL example: https://foo.com/
+            /// * If "api.example.com" is defined as a first-party host:
+            ///     - First-party URL examples: https://api.example.com/ and https://api.example.com/v2/users
+            ///     - Third-party URL examples: https://example.com/ and https://foo.com/
+            ///
+            /// RUM will create a trace for each first-party resource by injecting HTTP trace headers and creating an APM span.
+            /// If your backend is also instrumented with Datadog, you will see the full trace (app → backend).
+            ///
+            /// Default: `nil` - which means distributed tracing is not enabled by default.
+            public var firstPartyHostsTracing: FirstPartyHostsTracing?
+
+            /// Custom attributes provider for intercepted RUM resources.
+            ///
+            /// This closure gets called for each network request intercepted by RUM. Use it to return additional
+            /// attributes for RUM resource based on the provided request, response, data, and error.
+            /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
+            ///
+            /// Default: `nil`.
+            public var resourceAttributesProvider: RUMResourceAttributesProvider?
+
+            /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
+            private init() {}
         }
+
+        /// Frequency for collecting RUM vitals.
+        public enum VitalsFrequency: String {
+            /// Every `100ms`.
+            case frequent
+            /// Every `500ms`.
+            case average
+            /// Every `1000ms`.
+            case rare
+        }
+
+        // MARK: - Additional Interface For Datadog Cross-Platform SDKs
+
+        /// Grants access to an internal interface utilized only by Datadog cross-platform SDKs.
+        /// **It is not meant for public use** and it might change without prior notice.
+        public var _internal = InternalConfiguration()
+
+        /// An interface granting access to internal methods exclusively utilized by Datadog cross-platform SDKs.
+        /// **It is not meant for public use.**
+        ///
+        /// Methods, members, and functionality of this interface is subject to change without prior notice,
+        /// as they are not considered part of the public interface of the Datadog SDK.
+        public struct InternalConfiguration {
+            /// The sampling rate for configuration telemetry events. When set, it overwrites the value
+            /// of `configurationTelemetrySampleRate` in `RUM.Configuration`.
+            ///
+            /// It is mostly used to enable or disable telemetry events when running test scenarios.
+            /// Expects value between `0.0` and `100.0`.
+            public var configurationTelemetrySampleRate: Float? = nil
+        }
+
+        // MARK: - Internal
+
+        /// An extra sampling rate for configuration telemetry events.
+        ///
+        /// It is applied on top of the value configured in public `telemetrySampleRate`.
+        /// It can be overwritten by `InternalConfiguration`.
+        internal let defaultConfigurationTelemetrySampleRate: Float = 20.0
+
+        internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
+
+        internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
+
+        internal var dateProvider: DateProvider = SystemDateProvider()
+
+        /// Produces view update events' throttler for each started RUM view scope.
+        internal var viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType = { RUMViewUpdatesThrottler() }
+
+        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG")
+        internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
+        internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
+    }
+}
+
+extension RUM.Configuration.URLSessionTracking {
+    /// Defines configuration for first-party hosts in distributed tracing.
+    public enum FirstPartyHostsTracing {
+        /// Trace the specified hosts using Datadog tracing headers.
+        ///
+        /// - Parameters:
+        ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
+        ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
+        case trace(hosts: Set<String>, sampleRate: Float = 20)
+
+        /// Trace given hosts with using custom tracing headers.
+        ///
+        /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
+        /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
+        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
     }
 
-    /* internal */ public var customIntakeURL: URL?
-    /* internal */ public let applicationID: String
-    /* internal */ public var sessionSampler: Sampler
-    /* internal */ public var telemetrySampler: Sampler
-    /* internal */ public var configurationTelemetrySampler: Sampler
-    /* internal */ public var viewEventMapper: RUMViewEventMapper?
-    /* internal */ public var resourceEventMapper: RUMResourceEventMapper?
-    /* internal */ public var actionEventMapper: RUMActionEventMapper?
-    /* internal */ public var errorEventMapper: RUMErrorEventMapper?
-    /* internal */ public var longTaskEventMapper: RUMLongTaskEventMapper?
-    /// RUM auto instrumentation configuration, `nil` if not enabled.
-    /* internal */ public var instrumentation: Instrumentation
-    /* internal */ public var backgroundEventTrackingEnabled: Bool
-    /* internal */ public var frustrationTrackingEnabled: Bool
-    /* internal */ public var onSessionStart: RUMSessionListener?
-    /* internal */ public var firstPartyHosts: FirstPartyHosts?
-    /* internal */ public var tracingSampler: Sampler
-    /* internal */ public var traceIDGenerator: TraceIDGenerator
-    /// An optional RUM Resource attributes provider.
-    /* internal */ public var rumAttributesProvider: URLSessionRUMAttributesProvider?
-    /* internal */ public var vitalsFrequency: TimeInterval?
-    /* internal */ public var dateProvider: DateProvider
-    /* internal */ public var testExecutionId: String?
-    /* internal */ public var processInfo: ProcessInfo
+    /// Configuration for automatic RUM resources tracking.
+    /// - Parameters:
+    ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
+    ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
+    public init(
+        firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
+        resourceAttributesProvider: RUMResourceAttributesProvider? = nil
+    ) {
+        self.firstPartyHostsTracing = firstPartyHostsTracing
+        self.resourceAttributesProvider = resourceAttributesProvider
+    }
+}
 
-    let uuidGenerator: RUMUUIDGenerator
-
+extension RUM.Configuration {
+    /// Creates RUM configuration.
+    /// - Parameters:
+    ///   - applicationID: The RUM application identifier.
+    ///   - sessionSampleRate: The sampling rate for RUM sessions. Must be a value between `0` and `100`. Default: `100`.
+    ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
+    ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
+    ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
+    ///   - frustrationsTracking: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
+    ///   - backgroundEventsTracking: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+    ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
+    ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
+    ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
+    ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
+    ///   - actionEventMapper: Custom mapper for RUM action events. Default: `nil`.
+    ///   - errorEventMapper: Custom mapper for RUM error events. Default: `nil`.
+    ///   - longTaskEventMapper: Custom mapper for RUM long task events. Default: `nil`.
+    ///   - onSessionStart: RUM session start callback. Default: `nil`.
+    ///   - customEndpoint: Custom server url for sending RUM data. Default: `nil`.
+    ///   - telemetrySampleRate: The sampling rate for SDK internal telemetry utilized by Datadog. Must be a value between `0` and `100`. Default: `20`.
     public init(
         applicationID: String,
-        sessionSampler: Sampler = Sampler(samplingRate: 100),
-        telemetrySampler: Sampler = Sampler(samplingRate: 20),
-        configurationTelemetrySampler: Sampler = Sampler(samplingRate: 20),
+        sessionSampleRate: Float = 100,
+        uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
+        uiKitActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
+        urlSessionTracking: URLSessionTracking? = nil,
+        frustrationsTracking: Bool = true,
+        backgroundEventsTracking: Bool = false,
+        longTaskThreshold: TimeInterval? = 0.1,
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
         viewEventMapper: RUMViewEventMapper? = nil,
         resourceEventMapper: RUMResourceEventMapper? = nil,
         actionEventMapper: RUMActionEventMapper? = nil,
         errorEventMapper: RUMErrorEventMapper? = nil,
         longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        instrumentation: Instrumentation = .init(),
-        backgroundEventTrackingEnabled: Bool = false,
-        frustrationTrackingEnabled: Bool = true,
         onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts? = nil,
-        tracingSampler: Sampler = Sampler(samplingRate: 20),
-        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
-        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
-        vitalsFrequency: TimeInterval? = nil,
-        dateProvider: DateProvider = SystemDateProvider(),
-        customIntakeURL: URL? = nil,
-        testExecutionId: String? = nil,
-        processInfo: ProcessInfo = .processInfo
+        customEndpoint: URL? = nil,
+        telemetrySampleRate: Float = 20
     ) {
-        self.customIntakeURL = customIntakeURL
         self.applicationID = applicationID
-        self.sessionSampler = sessionSampler
-        self.telemetrySampler = telemetrySampler
-        self.configurationTelemetrySampler = configurationTelemetrySampler
-        self.uuidGenerator = DefaultRUMUUIDGenerator()
+        self.sessionSampleRate = sessionSampleRate
+        self.uiKitViewsPredicate = uiKitViewsPredicate
+        self.uiKitActionsPredicate = uiKitActionsPredicate
+        self.urlSessionTracking = urlSessionTracking
+        self.frustrationsTracking = frustrationsTracking
+        self.backgroundEventsTracking = backgroundEventsTracking
+        self.longTaskThreshold = longTaskThreshold
+        self.vitalsUpdateFrequency = vitalsUpdateFrequency
         self.viewEventMapper = viewEventMapper
         self.resourceEventMapper = resourceEventMapper
         self.actionEventMapper = actionEventMapper
         self.errorEventMapper = errorEventMapper
         self.longTaskEventMapper = longTaskEventMapper
-        self.instrumentation = instrumentation
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
-        self.frustrationTrackingEnabled = frustrationTrackingEnabled
         self.onSessionStart = onSessionStart
-        self.firstPartyHosts = firstPartyHosts
-        self.tracingSampler = tracingSampler
-        self.traceIDGenerator = traceIDGenerator
-        self.rumAttributesProvider = rumAttributesProvider
-        self.vitalsFrequency = vitalsFrequency
-        self.dateProvider = dateProvider
-        self.testExecutionId = testExecutionId
-        self.processInfo = processInfo
-    }
-
-    init(
-        applicationID: String,
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        sessionSampler: Sampler = Sampler(samplingRate: 100),
-        telemetrySampler: Sampler = Sampler(samplingRate: 20),
-        configurationTelemetrySampler: Sampler = Sampler(samplingRate: 20),
-        viewEventMapper: RUMViewEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        instrumentation: Instrumentation = .init(),
-        backgroundEventTrackingEnabled: Bool = false,
-        frustrationTrackingEnabled: Bool = true,
-        onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts? = nil,
-        tracingSampler: Sampler = Sampler(samplingRate: 20),
-        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
-        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
-        vitalsFrequency: TimeInterval? = nil,
-        dateProvider: DateProvider = SystemDateProvider(),
-        customIntakeURL: URL? = nil,
-        testExecutionId: String? = nil,
-        processInfo: ProcessInfo = .processInfo
-    ) {
-        self.customIntakeURL = customIntakeURL
-        self.applicationID = applicationID
-        self.sessionSampler = sessionSampler
-        self.telemetrySampler = telemetrySampler
-        self.configurationTelemetrySampler = configurationTelemetrySampler
-        self.uuidGenerator = uuidGenerator
-        self.viewEventMapper = viewEventMapper
-        self.resourceEventMapper = resourceEventMapper
-        self.actionEventMapper = actionEventMapper
-        self.errorEventMapper = errorEventMapper
-        self.longTaskEventMapper = longTaskEventMapper
-        self.instrumentation = instrumentation
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
-        self.frustrationTrackingEnabled = frustrationTrackingEnabled
-        self.onSessionStart = onSessionStart
-        self.firstPartyHosts = firstPartyHosts
-        self.tracingSampler = tracingSampler
-        self.traceIDGenerator = traceIDGenerator
-        self.rumAttributesProvider = rumAttributesProvider
-        self.vitalsFrequency = vitalsFrequency
-        self.dateProvider = dateProvider
-        self.testExecutionId = testExecutionId
-        self.processInfo = processInfo
+        self.customEndpoint = customEndpoint
+        self.telemetrySampleRate = telemetrySampleRate
     }
 }

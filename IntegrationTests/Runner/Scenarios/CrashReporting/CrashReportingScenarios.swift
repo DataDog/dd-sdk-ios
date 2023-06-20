@@ -31,39 +31,36 @@ internal class CrashReportingBaseScenario {
 
 /// A `CrashReportingScenario` which uploads the crash report as RUM Error.
 final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenario, TestScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        class CustomPredicate: UIKitRUMViewsPredicate {
-            private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
+    class CustomPredicate: UIKitRUMViewsPredicate {
+        private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
 
-            func rumView(for viewController: UIViewController) -> RUMView? {
-                return defaultPredicate.rumView(for: viewController).flatMap { defaultRUMView in
-                    return RUMView(
-                        name: defaultRUMView.name,
-                        attributes: [
-                            "custom-attribute": "This attribute will be attached to crash report."
-                        ]
-                    )
-                }
+        func rumView(for viewController: UIViewController) -> RUMView? {
+            return defaultPredicate.rumView(for: viewController).flatMap { defaultRUMView in
+                return RUMView(
+                    name: defaultRUMView.name,
+                    attributes: [
+                        "custom-attribute": "This attribute will be attached to crash report."
+                    ]
+                )
             }
         }
-
-        _ = builder
-            .trackUIKitRUMViews(using: CustomPredicate())
     }
 
     func configureFeatures() {
+        var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
+        rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        rumConfig.uiKitViewsPredicate = CustomPredicate()
+        RUM.enable(with: rumConfig)
+
         DatadogCrashReporter.initialize()
     }
 }
 
 /// A `CrashReportingScenario` which uploads the crash report as "EMERGENCY" Log.
 final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseScenario, TestScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableRUM(false) // disable RUM, so the crash report is sent with Logging
-    }
-
     func configureFeatures() {
+        // No RUM, so the crash report is sent with Logs
+
         DatadogCrashReporter.initialize()
     }
 }

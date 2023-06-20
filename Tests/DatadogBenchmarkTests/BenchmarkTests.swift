@@ -46,11 +46,12 @@ class BenchmarkTests: XCTestCase {
             appContext: .init(),
             trackingConsent: .granted,
             configuration: Datadog.Configuration
-                .builderUsing(rumApplicationID: "rum-123", clientToken: "rum-abc", environment: "benchmarks")
+                .builderUsing(clientToken: "rum-abc", environment: "benchmarks")
                 .set(customLogsEndpoint: anyURL)
-                .set(customRUMEndpoint: anyURL)
                 .build()
         )
+
+        RUM.enable(with: .init(applicationID: "rum-123", customEndpoint: anyURL))
 
         DatadogTracer.initialize(
             configuration: .init(customIntakeURL: anyURL)

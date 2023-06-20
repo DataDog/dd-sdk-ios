@@ -17,11 +17,27 @@ public struct FirstPartyHosts: Equatable {
     /// Creates a `FirstPartyHosts` instance with the given dictionary of host names and tracing header types.
     ///
     /// - Parameter hostsWithTracingHeaderTypes: The dictionary of host names and tracing header types.
-    public init(_ hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>] = [:]) {
+    public init(_ hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]) {
         self.init(hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes)
     }
 
-    public init(
+    /// Creates a `FirstPartyHosts` instance with the given set of host names by assigning `.datadog` header type to each.
+    ///
+    /// - Parameter hosts: The set of host names.
+    public init(_ hosts: Set<String>) {
+        self.init(
+            hostsWithTracingHeaderTypes: hosts.reduce(into: [:], { partialResult, host in
+                partialResult[host] = [.datadog]
+            })
+        )
+    }
+
+    /// Creates empty (no hosts) `FirstPartyHosts`.
+    public init() {
+        self.init(hostsWithTracingHeaderTypes: [:])
+    }
+
+    internal init(
         hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>],
         hostsSanitizer: HostsSanitizing = HostsSanitizer()
     ) {

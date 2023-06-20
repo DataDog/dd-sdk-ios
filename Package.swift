@@ -48,7 +48,6 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
-                .target(name: "DatadogRUM"),
                 .target(name: "_Datadog_Private"),
             ],
             swiftSettings: [.define("SPM_BUILD")]

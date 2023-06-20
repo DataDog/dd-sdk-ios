@@ -17,43 +17,18 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             .builderUsing(clientToken: "abc-123", environment: "tests")
             .build()
 
-        let rumConfiguration = Datadog.Configuration
-            .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
-            .build()
-
-        XCTAssertFalse(configuration.rumEnabled)
-        XCTAssertTrue(rumConfiguration.rumEnabled)
-
-        XCTAssertNil(configuration.rumApplicationID)
-        XCTAssertEqual(rumConfiguration.rumApplicationID, "rum-app-id")
-
-        [configuration, rumConfiguration].forEach { configuration in
+        [configuration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .us1)
             XCTAssertNil(configuration.customLogsEndpoint)
-            XCTAssertNil(configuration.customRUMEndpoint)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertNil(configuration.logEventMapper)
             XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
-            XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
-            XCTAssertNil(configuration.rumSessionsListener)
-            XCTAssertNil(configuration.rumUIKitViewsPredicate)
-            XCTAssertNil(configuration.rumUIKitUserActionsPredicate)
-            XCTAssertNil(configuration.rumLongTaskDurationThreshold)
-            XCTAssertNil(configuration.rumViewEventMapper)
-            XCTAssertNil(configuration.rumResourceEventMapper)
-            XCTAssertNil(configuration.rumActionEventMapper)
-            XCTAssertNil(configuration.rumErrorEventMapper)
-            XCTAssertNil(configuration.rumLongTaskEventMapper)
-            XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
-            XCTAssertTrue(configuration.rumFrustrationSignalsTrackingEnabled)
-            XCTAssertNil(configuration.rumResourceAttributesProvider)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .average)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -64,40 +39,19 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
     func testCustomizedBuilder() {
         let mockLogEvent: LogEvent = .mockAny()
-        let mockRUMViewEvent: RUMViewEvent = .mockRandom()
-        let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
-        let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
-        let mockRUMActionEvent: RUMActionEvent = .mockRandom()
-        let mockRUMLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
             _ = builder
                 .set(serviceName: "service-name")
                 .enableLogging(false)
                 .enableTracing(false)
-                .enableRUM(false)
                 .set(endpoint: .eu1)
                 .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
-                .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
-                .set(rumSessionsSamplingRate: 42.5)
-                .onRUMSessionStart { _, _ in }
                 .setLogEventMapper { _ in mockLogEvent }
                 .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.b3]])
-                .trackUIKitRUMViews(using: UIKitRUMViewsPredicateMock())
-                .trackUIKitRUMActions(using: UIKitRUMUserActionsPredicateMock())
-                .trackRUMLongTasks(threshold: 100.0)
-                .trackBackgroundEvents(false)
-                .trackFrustrations(false)
-                .setRUMViewEventMapper { _ in mockRUMViewEvent }
-                .setRUMErrorEventMapper { _ in mockRUMErrorEvent }
-                .setRUMResourceEventMapper { _ in mockRUMResourceEvent }
-                .setRUMActionEventMapper { _ in mockRUMActionEvent }
-                .setRUMLongTaskEventMapper { _ in mockRUMLongTaskEvent }
-                .setRUMResourceAttributesProvider { _, _, _, _ in ["foo": "bar"] }
-                .set(mobileVitalsFrequency: .frequent)
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
@@ -116,49 +70,20 @@ class DatadogConfigurationBuilderTests: XCTestCase {
 
         let defaultBuilder = Datadog.Configuration
             .builderUsing(clientToken: "abc-123", environment: "tests")
-        let defaultRUMBuilder = Datadog.Configuration
-            .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
-        let rumBuilderWithDefaultValues = Datadog.Configuration
-            .builderUsing(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
-            .trackUIKitRUMViews()
-            .trackUIKitRUMActions()
-            .trackBackgroundEvents()
 
         let configuration = customized(defaultBuilder).build()
-        let rumConfiguration = customized(defaultRUMBuilder).build()
-        let rumConfigurationWithDefaultValues = rumBuilderWithDefaultValues.build()
 
-        XCTAssertNil(configuration.rumApplicationID)
-        XCTAssertEqual(rumConfiguration.rumApplicationID, "rum-app-id")
-
-        [configuration, rumConfiguration].forEach { configuration in
+        [configuration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertEqual(configuration.serviceName, "service-name")
             XCTAssertFalse(configuration.loggingEnabled)
             XCTAssertFalse(configuration.tracingEnabled)
-            XCTAssertFalse(configuration.rumEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .eu1)
             XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
-            XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
             XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
-            XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
-            XCTAssertNotNil(configuration.rumSessionsListener)
-            XCTAssertEqual(configuration.rumTelemetrySamplingRate, 20)
-            XCTAssertTrue(configuration.rumUIKitViewsPredicate is UIKitRUMViewsPredicateMock)
-            XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is UIKitRUMUserActionsPredicateMock)
-            XCTAssertEqual(configuration.rumLongTaskDurationThreshold, 100.0)
-            DDAssertReflectionEqual(configuration.rumViewEventMapper?(.mockRandom()), mockRUMViewEvent)
-            DDAssertReflectionEqual(configuration.rumResourceEventMapper?(.mockRandom()), mockRUMResourceEvent)
-            DDAssertReflectionEqual(configuration.rumActionEventMapper?(.mockRandom()), mockRUMActionEvent)
-            DDAssertReflectionEqual(configuration.rumErrorEventMapper?(.mockRandom()), mockRUMErrorEvent)
-            DDAssertReflectionEqual(configuration.rumLongTaskEventMapper?(.mockRandom()), mockRUMLongTaskEvent)
-            XCTAssertEqual(configuration.rumResourceAttributesProvider?(.mockAny(), nil, nil, nil) as? [String: String], ["foo": "bar"])
-            XCTAssertFalse(configuration.rumBackgroundEventTrackingEnabled)
-            XCTAssertFalse(configuration.rumFrustrationSignalsTrackingEnabled)
-            XCTAssertEqual(configuration.mobileVitalsFrequency, .frequent)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
@@ -176,27 +101,20 @@ class DatadogConfigurationBuilderTests: XCTestCase {
                 DDAssertReflectionEqual(event, mockLogEvent)
             }
         }
-
-        XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)
-        XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
-        XCTAssertTrue(rumConfigurationWithDefaultValues.rumBackgroundEventTrackingEnabled)
     }
 
     func testDeprecatedAPIs() {
         let builder = Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
         _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracedHosts: ["example.com"])
-        _ = (builder as ConfigurationBuilderDeprecatedAPIs).trackUIKitActions(true)
 
         let configuration = builder.build()
 
         XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog]]))
-        XCTAssertTrue(configuration.rumUIKitUserActionsPredicate is DefaultUIKitRUMUserActionsPredicate)
     }
 }
 
 /// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
 private protocol ConfigurationBuilderDeprecatedAPIs {
     func set(tracedHosts: Set<String>) -> Datadog.Configuration.Builder
-    func trackUIKitActions(_ enabled: Bool) -> Datadog.Configuration.Builder
 }
 extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

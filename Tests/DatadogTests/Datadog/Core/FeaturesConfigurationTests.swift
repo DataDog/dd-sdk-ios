@@ -233,125 +233,6 @@ class FeaturesConfigurationTests: XCTestCase {
         )
     }
 
-    // MARK: - RUM Configuration Tests
-
-    func testWhenRUMIsDisabled() throws {
-        XCTAssertNil(
-            try FeaturesConfiguration(configuration: .mockWith(rumEnabled: false), appContext: .mockAny()).rum,
-            "Feature configuration should not be available if the feature is disabled"
-        )
-    }
-
-    func testCustomRUMEndpoint() throws {
-        let randomDatadogEndpoint: DatadogSite = .mockRandom()
-        let randomCustomEndpoint: URL = .mockRandom()
-
-        let configuration = try createConfiguration(
-            datadogEndpoint: randomDatadogEndpoint,
-            customRUMEndpoint: randomCustomEndpoint
-        )
-
-        XCTAssertEqual(
-            configuration.rum?.customIntakeURL,
-            randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogSite`"
-        )
-    }
-
-    func testRUMSamplingRate() throws {
-        let custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumApplicationID: "rum-app-id",
-                rumEnabled: true,
-                rumSessionsSamplingRate: 45.2
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.rum?.applicationID, "rum-app-id")
-        XCTAssertEqual(custom.rum?.sessionSampler.samplingRate, 45.2)
-    }
-
-    func testRUMAutoInstrumentationConfiguration() throws {
-        let viewsConfigured = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                rumUIKitViewsPredicate: UIKitRUMViewsPredicateMock(),
-                rumUIKitUserActionsPredicate: nil,
-                rumLongTaskDurationThreshold: nil
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertNotNil(viewsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(viewsConfigured.rum!.instrumentation.longTaskThreshold)
-
-        let actionsConfigured = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                rumUIKitViewsPredicate: nil,
-                rumUIKitUserActionsPredicate: UIKitRUMUserActionsPredicateMock(),
-                rumLongTaskDurationThreshold: nil
-            ),
-            appContext: .mockAny()
-        )
-
-        XCTAssertNotNil(actionsConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
-        XCTAssertNil(actionsConfigured.rum!.instrumentation.longTaskThreshold)
-
-        let longTaskConfigured = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                rumUIKitViewsPredicate: nil,
-                rumUIKitUserActionsPredicate: nil,
-                rumLongTaskDurationThreshold: 0.25
-            ),
-            appContext: .mockAny()
-        )
-
-        XCTAssertNotNil(longTaskConfigured.rum!.instrumentation.longTaskThreshold)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMViewsPredicate)
-        XCTAssertNil(longTaskConfigured.rum!.instrumentation.uiKitRUMUserActionsPredicate)
-    }
-
-    func testMobileVitalsFrequency() throws {
-        var custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                mobileVitalsFrequency: .average
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.5)
-
-        custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                mobileVitalsFrequency: .frequent
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.rum?.vitalsFrequency, 0.1)
-
-        custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                mobileVitalsFrequency: .rare
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.rum?.vitalsFrequency, 1)
-
-        custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                rumEnabled: true,
-                mobileVitalsFrequency: .never
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertNil(custom.rum?.vitalsFrequency)
-    }
-
     func testLoggingSamplingRate() throws {
         let custom = try FeaturesConfiguration(
             configuration: .mockWith(
@@ -367,7 +248,6 @@ class FeaturesConfigurationTests: XCTestCase {
 
     func testURLSessionAutoInstrumentationConfiguration() throws {
         let randomDatadogEndpoint: DatadogSite = .mockRandom()
-        let randomCustomRUMEndpoint: URL? = Bool.random() ? .mockRandom() : nil
 
         let firstPartyHosts: FirstPartyHosts = .init([
             "example.com": [.datadog],
@@ -376,15 +256,12 @@ class FeaturesConfigurationTests: XCTestCase {
 
         func createConfiguration(
             tracingEnabled: Bool,
-            rumEnabled: Bool,
             firstPartyHosts: FirstPartyHosts?
         ) throws -> FeaturesConfiguration {
             try FeaturesConfiguration(
                 configuration: .mockWith(
                     tracingEnabled: tracingEnabled,
-                    rumEnabled: rumEnabled,
                     datadogEndpoint: randomDatadogEndpoint,
-                    customRUMEndpoint: randomCustomRUMEndpoint,
                     firstPartyHosts: firstPartyHosts
                 ),
                 appContext: .mockAny()
@@ -394,99 +271,23 @@ class FeaturesConfigurationTests: XCTestCase {
         // When `firstPartyHosts` are provided and both Tracing and RUM are enabled
         var configuration = try createConfiguration(
             tracingEnabled: true,
-            rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
         XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only Tracing is enabled
         configuration = try createConfiguration(
             tracingEnabled: true,
-            rumEnabled: false,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertNil(configuration.rum)
         XCTAssertTrue(configuration.tracingEnabled)
 
         // When `firstPartyHosts` are set and only RUM is enabled
         configuration = try createConfiguration(
             tracingEnabled: false,
-            rumEnabled: true,
             firstPartyHosts: firstPartyHosts
         )
-        XCTAssertEqual(configuration.rum?.firstPartyHosts, firstPartyHosts)
         XCTAssertFalse(configuration.tracingEnabled)
-
-        // When `firstPartyHosts` are not set
-        configuration = try createConfiguration(
-            tracingEnabled: true,
-            rumEnabled: true,
-            firstPartyHosts: nil
-        )
-        XCTAssertNil(
-            configuration.rum?.firstPartyHosts,
-            "When `firstPartyHosts` are not set, the URLSession auto instrumentation config should be `nil`"
-        )
-
-        // When `firstPartyHosts` are set empty
-        configuration = try createConfiguration(
-            tracingEnabled: true,
-            rumEnabled: true,
-            firstPartyHosts: .init()
-        )
-        XCTAssertNotNil(
-            configuration.rum?.firstPartyHosts,
-            "When `firstPartyHosts` are set empty and non-nil, the URLSession auto instrumentation config should NOT be nil."
-        )
-    }
-
-    func testWhenURLSessionAutoinstrumentationEnabled_thenRUMAttributesProviderCanBeConfigured() throws {
-        // When
-        let configurationWithAttributesProvider = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: .random(),
-                rumEnabled: true,
-                firstPartyHosts: .init(["foo.com": [.datadog]]),
-                rumResourceAttributesProvider: { _, _, _, _ in [:] }
-            ),
-            appContext: .mockAny()
-        )
-        let configurationWithoutAttributesProvider = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: .random(),
-                rumEnabled: true,
-                firstPartyHosts: .init(["foo.com": [.datadog]]),
-                rumResourceAttributesProvider: nil
-            ),
-            appContext: .mockAny()
-        )
-
-        // Then
-        XCTAssertNotNil(configurationWithAttributesProvider.rum?.rumAttributesProvider)
-        XCTAssertNil(configurationWithoutAttributesProvider.rum?.rumAttributesProvider)
-    }
-
-    func testGivenURLSessionAutoinstrumentationDisabled_whenRUMAttributesProviderIsSet_itPrintsConsoleWarning() throws {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        _ = try FeaturesConfiguration(
-            configuration: .mockWith(
-                firstPartyHosts: nil,
-                rumResourceAttributesProvider: { _, _, _, _ in nil }
-            ),
-            appContext: .mockAny()
-        )
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: To use `.setRUMResourceAttributesProvider(_:)` URLSession tracking must be enabled
-            with `.trackURLSession(firstPartyHosts:)`.
-            """
-        )
     }
 
     // MARK: - Invalid Configurations
@@ -497,92 +298,12 @@ class FeaturesConfigurationTests: XCTestCase {
         }
     }
 
-    func testGivenNoRUMApplicationIDProvided_whenRUMFeatureIsEnabled_itPrintsConsoleWarning() throws {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        _ = try FeaturesConfiguration(
-            configuration: .mockWith(rumApplicationID: nil, rumEnabled: true),
-            appContext: .mockAny()
-        )
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: In order to use the RUM feature, `Datadog.Configuration` must be constructed using:
-            `.builderUsing(rumApplicationID:rumClientToken:environment:)`
-            """
-        )
-    }
-
-    func testGivenFirstPartyHostsDefined_whenRUMAndTracingAreDisabled_itDoesNotInstrumentURLSessionAndPrintsConsoleWarning() throws {
-        let printFunction = PrintFunctionMock()
-        consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
-
-        // Given
-        let firstPartyHosts: FirstPartyHosts = .init(["first-party.com": [.datadog]])
-
-        // When
-        let tracingEnabled = false
-        let rumEnabled = false
-
-        // Then
-        let configuration = try FeaturesConfiguration(
-            configuration: .mockWith(
-                tracingEnabled: tracingEnabled,
-                rumEnabled: rumEnabled,
-                firstPartyHosts: firstPartyHosts
-            ),
-            appContext: .mockAny()
-        )
-
-        XCTAssertNil(
-            configuration.rum?.firstPartyHosts,
-            "`URLSession` should not be auto instrumented."
-        )
-
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            """
-            🔥 Datadog SDK usage error: To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
-            Use: `.enableTracing(true)` or `.enableRUM(true)`.
-            """
-        )
-    }
-
-    func testWhenFirstPartyHostsAreProvided_itPassesThemToSanitizer() throws {
-        // Given
-        let mockHostsSanitizer = MockHostsSanitizer()
-        let firstPartyHosts = FirstPartyHosts(
-            hostsWithTracingHeaderTypes: [
-                "https://first-party.com": [.datadog],
-                "http://api.first-party.com": [.datadog],
-                "https://first-party.com/v2/api": [.datadog]
-            ],
-            hostsSanitizer: mockHostsSanitizer
-        )
-
-        // When
-        _ = try FeaturesConfiguration(
-            configuration: .mockWith(rumEnabled: true, firstPartyHosts: firstPartyHosts),
-            appContext: .mockAny()
-        )
-
-        XCTAssertEqual(mockHostsSanitizer.sanitizations.count, 1)
-        let sanitization = try XCTUnwrap(mockHostsSanitizer.sanitizations.first)
-        XCTAssertEqual(sanitization.hosts, firstPartyHosts.hosts)
-        XCTAssertEqual(sanitization.warningMessage, "The first party host with header types configured for Datadog SDK is not valid")
-    }
-
     // MARK: - Helpers
 
     private func createConfiguration(
         clientToken: String = "abc",
         datadogEndpoint: DatadogSite = .us1,
         customLogsEndpoint: URL? = nil,
-        customRUMEndpoint: URL? = nil,
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
@@ -590,10 +311,8 @@ class FeaturesConfigurationTests: XCTestCase {
                 clientToken: clientToken,
                 loggingEnabled: true,
                 tracingEnabled: true,
-                rumEnabled: true,
                 datadogEndpoint: datadogEndpoint,
                 customLogsEndpoint: customLogsEndpoint,
-                customRUMEndpoint: customRUMEndpoint,
                 proxyConfiguration: proxyConfiguration
             ),
             appContext: .mockAny()

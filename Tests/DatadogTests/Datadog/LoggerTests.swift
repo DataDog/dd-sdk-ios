@@ -28,23 +28,6 @@ class LoggerTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Enables RUM feature and creates RUM monitor for tests.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
-        let rum = try RUMFeature(
-            in: core,
-            configuration: configuration,
-            with: Monitor(
-                core: core,
-                dependencies: RUMScopeDependencies(core: core,configuration: configuration)
-                    // disable RUM view updates sampling for deterministic test behaviour:
-                    .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-                dateProvider: configuration.dateProvider
-            )
-        )
-        try core.register(feature: rum)
-        return rum.monitor
-    }
-
     // MARK: - Customizing Logger
 
     func testSendingLogWithDefaultLogger() throws {
@@ -568,7 +551,10 @@ class LoggerTests: XCTestCase {
         let logging: DatadogLogsFeature = .mockAny()
         try core.register(feature: logging)
 
-        RUM.enable(with: .mockWith(sessionSampler: .mockKeepAll()), in: core)
+        RUM.enable(
+            with: .mockWith { $0.sessionSampleRate = 100 },
+            in: core
+        )
 
         // given
         let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
@@ -595,10 +581,10 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         let applicationID: String = .mockRandom()
-        RUM.enable(with: .mockWith(
-            applicationID: applicationID,
-            sessionSampler: .mockKeepAll()
-        ), in: core)
+        RUM.enable(
+            with: .init(applicationID: applicationID, sessionSampleRate: 100),
+            in: core
+        )
 
         // given
         let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
@@ -644,8 +630,11 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
+        RUM.enable(
+            with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
+            in: core
+        )
+        RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
         logger.debug("debug message")
@@ -677,8 +666,11 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
+        RUM.enable(
+            with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
+            in: core
+        )
+        RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
         let attributeValueA: String = .mockRandom()
@@ -716,8 +708,11 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
+        RUM.enable(
+            with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
+            in: core
+        )
+        RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
         logger.error("error message", attributes: [
@@ -751,8 +746,11 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-        let rum = try createTestableRUMMonitor()
-        rum.startView(viewController: mockView)
+        RUM.enable(
+            with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
+            in: core
+        )
+        RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
         logger.error("error message", attributes: [

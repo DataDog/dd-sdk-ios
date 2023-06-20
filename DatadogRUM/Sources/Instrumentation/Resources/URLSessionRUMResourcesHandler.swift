@@ -18,7 +18,7 @@ internal struct DistributedTracing {
     init(
         sampler: Sampler,
         firstPartyHosts: FirstPartyHosts,
-        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
+        traceIDGenerator: TraceIDGenerator
     ) {
         self.sampler = sampler
         self.traceIDGenerator = traceIDGenerator
@@ -33,7 +33,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
-    let rumAttributesProvider: URLSessionRUMAttributesProvider?
+    let rumAttributesProvider: RUMResourceAttributesProvider?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -43,9 +43,9 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     // MARK: - Initialization
 
     init(
-        dateProvider: DateProvider = SystemDateProvider(),
-        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
-        distributedTracing: DistributedTracing? = nil
+        dateProvider: DateProvider,
+        rumAttributesProvider: RUMResourceAttributesProvider?,
+        distributedTracing: DistributedTracing?
     ) {
         self.dateProvider = dateProvider
         self.rumAttributesProvider = rumAttributesProvider

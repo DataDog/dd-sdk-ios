@@ -7,7 +7,6 @@
 import Foundation
 import DatadogInternal
 import DatadogLogs
-import DatadogRUM
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -209,12 +208,7 @@ public class Datadog {
             useProxy: configuration.common.proxyConfiguration != nil
         )
 
-        // First, initialize features:
-        if let rumConfiguration = configuration.rum {
-            RUM.enable(with: rumConfiguration, in: core)
-
-            CITestIntegration.active?.startIntegration()
-        }
+        CITestIntegration.active?.startIntegration()
 
         if let loggingConfiguration = configuration.logging {
             try DatadogLogger.initialise(

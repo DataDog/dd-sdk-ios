@@ -40,9 +40,9 @@ class DDRUMViewTests: XCTestCase {
     }
 }
 
-class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
+class UIKitRUMActionsPredicateBridgeTests: XCTestCase {
     func testItForwardsCallToObjcTouchPredicate() {
-        class MockPredicate: DDUITouchRUMUserActionsPredicate {
+        class MockPredicate: DDUITouchRUMActionsPredicate {
             var didCallRUMAction = false
             func rumAction(targetView: UIView) -> DDRUMAction? {
                 didCallRUMAction = true
@@ -52,14 +52,14 @@ class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
 
         let objcPredicate = MockPredicate()
 
-        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: objcPredicate)
+        let predicateBridge = UIKitRUMActionsPredicateBridge(objcPredicate: objcPredicate)
         _ = predicateBridge.rumAction(targetView: UIView())
 
         XCTAssertTrue(objcPredicate.didCallRUMAction)
     }
 
     func testItForwardsCallToObjcPressPredicate() {
-        class MockPredicate: DDUIPressRUMUserActionsPredicate {
+        class MockPredicate: DDUIPressRUMActionsPredicate {
             var didCallRUMAction = false
             func rumAction(press: UIPress.PressType, targetView: UIView) -> DDRUMAction? {
                 didCallRUMAction = true
@@ -69,7 +69,7 @@ class UIKitRUMUserActionsPredicateBridgeTests: XCTestCase {
 
         let objcPredicate = MockPredicate()
 
-        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: objcPredicate)
+        let predicateBridge = UIKitRUMActionsPredicateBridge(objcPredicate: objcPredicate)
         _ = predicateBridge.rumAction(press: .select, targetView: UIView())
 
         XCTAssertTrue(objcPredicate.didCallRUMAction)
@@ -134,29 +134,37 @@ class DDRUMMethodTests: XCTestCase {
 
 class DDRUMMonitorTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
+        CoreRegistry.register(default: core)
+        config = RUM.Configuration(applicationID: .mockAny())
+        config.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } // disable view updates sampling for deterministic behaviour
     }
 
     override func tearDown() {
         core.flushAndTearDown()
+        config = nil
+        CoreRegistry.unregisterDefault()
         core = nil
         super.tearDown()
     }
 
-    /// Creates `DDRUMMonitor` instance for tests.
-    /// The only difference vs. `DDRUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
-    private func createTestableDDRUMMonitor() throws -> DatadogObjc.DDRUMMonitor {
-        let feature = try XCTUnwrap(core.get(feature: DatadogRUMFeature.self), "RUM feature must be initialized before creating `RUMMonitor`")
-        return DatadogObjc.DDRUMMonitor(swiftRUMMonitor: feature.monitor)
+    func testWhenSwiftRUMIsNotEnabled_thenObjcMonitorIsNotRegistered() {
+        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is NOPMonitor)
+    }
+
+    func testWhenSwiftRUMIsEnabled_thenObjcMonitorIsRegistered() {
+        RUM.enable(with: config)
+        XCTAssertTrue(DDRUMMonitor.shared().swiftRUMMonitor is Monitor)
     }
 
     func testSendingViewEvents() throws {
-        RUM.enable(with: .mockAny(), in: core)
+        RUM.enable(with: config)
 
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
+        let objcRUMMonitor = DDRUMMonitor.shared()
         let mockView = createMockView(viewControllerClassName: "FirstViewController")
 
         objcRUMMonitor.startView(viewController: mockView, name: "FirstView", attributes: ["event-attribute1": "foo1"])
@@ -190,8 +198,9 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        RUM.enable(with: .mockAny(), in: core)
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
+        config.viewUpdatesThrottlerFactory = { RUMViewUpdatesThrottler() }
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: "SomeView", attributes: ["event-attribute1": "foo1"])
         objcRUMMonitor.addTiming(name: "timing")
@@ -219,9 +228,8 @@ class DDRUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        RUM.enable(with: .mockAny(), in: core)
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -271,9 +279,8 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingErrorEvents() throws {
-        RUM.enable(with: .mockAny(), in: core)
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -333,14 +340,9 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingActionEvents() throws {
-        RUM.enable(
-            with: .mockWith(
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            ),
-            in: core
-        )
-
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
 
         objcRUMMonitor.startView(viewController: mockView, name: .mockAny(), attributes: [:])
 
@@ -371,9 +373,9 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingGlobalAttributes() throws {
-        RUM.enable(with: .mockAny(), in: core)
+        RUM.enable(with: config)
+        let objcRUMMonitor = DDRUMMonitor.shared()
 
-        let objcRUMMonitor = try createTestableDDRUMMonitor()
         objcRUMMonitor.addAttribute(forKey: "global-attribute1", value: "foo1")
         objcRUMMonitor.addAttribute(forKey: "global-attribute2", value: "foo2")
         objcRUMMonitor.removeAttribute(forKey: "global-attribute2")

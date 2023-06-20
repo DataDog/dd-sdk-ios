@@ -31,9 +31,9 @@ class RUMMonitorConfigurationTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         RUM.enable(
-            with: .mockWith(
+            with: .init(
                 applicationID: "rum-123",
-                sessionSampler: Sampler(samplingRate: 42.5)
+                sessionSampleRate: 42.5
             ),
             in: core
         )

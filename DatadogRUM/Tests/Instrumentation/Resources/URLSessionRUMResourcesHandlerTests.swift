@@ -14,7 +14,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(
-        rumAttributesProvider: URLSessionRUMAttributesProvider? = nil,
+        rumAttributesProvider: RUMResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
@@ -233,7 +233,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let handler = createHandler(
             distributedTracing: .init(
                 sampler: Sampler(samplingRate: Float(traceSamplingRate)),
-                firstPartyHosts: .init()
+                firstPartyHosts: .init(),
+                traceIDGenerator: DefaultTraceIDGenerator()
             )
         )
 

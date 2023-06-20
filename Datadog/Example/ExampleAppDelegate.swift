@@ -30,28 +30,28 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
         var configuration = Datadog.Configuration
             .builderUsing(
-                rumApplicationID: Environment.readRUMApplicationID(),
                 clientToken: Environment.readClientToken(),
                 environment: "tests"
             )
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
-            .set(sampleTelemetry: 100)
+
+        var rumConfig = RUM.Configuration(applicationID: Environment.readRUMApplicationID())
+        rumConfig.telemetrySampleRate = 100
+        rumConfig.backgroundEventsTracking = true
 
         if let customLogsURL = Environment.readCustomLogsURL() {
             configuration = configuration.set(customLogsEndpoint: customLogsURL)
         }
         if let customRUMURL = Environment.readCustomRUMURL() {
-            configuration = configuration.set(customRUMEndpoint: customRUMURL)
+            rumConfig.customEndpoint = customRUMURL
         }
 
         // Enable all features so they can be tested with debug menu
         configuration = configuration
             .enableLogging(true)
             .enableTracing(true)
-            .enableRUM(true)
-            .trackBackgroundEvents()
 
         // Initialize Datadog SDK
         Datadog.initialize(
@@ -91,7 +91,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug
 
-        // Enable RUM Views debugging
+        // Enable RUM
+        RUM.enable(with: rumConfig)
         RUMMonitor.shared().debug = true
 
         // Launch initial screen depending on the launch configuration

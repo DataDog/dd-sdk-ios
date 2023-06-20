@@ -15,49 +15,31 @@ import DatadogInternal
 
 class RUMMonitorTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
+        config = RUM.Configuration(applicationID: .mockAny())
+        config.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } // disable view updates sampling for deterministic behaviour
     }
 
     override func tearDown() {
         core.flushAndTearDown()
         core = nil
+        config = nil
         super.tearDown()
-    }
-
-    /// Enables RUM feature and creates RUM monitor for tests.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
-        let rum = try RUMFeature(
-            in: core,
-            configuration: configuration,
-            with: Monitor(
-                core: core,
-                dependencies: RUMScopeDependencies(core: core,configuration: configuration)
-                    // disable RUM view updates sampling for deterministic test behaviour:
-                    .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-                dateProvider: configuration.dateProvider
-            )
-        )
-        try core.register(feature: rum)
-        return rum.monitor
     }
 
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
-        let randomServiceName: String = .mockRandom()
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
 
-        core.context = .mockWith(
-            service: randomServiceName
-        )
+        let monitor = RUMMonitor.shared(in: core)
 
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        ))
         setGlobalAttributes(of: monitor)
-
         monitor.startView(viewController: mockView)
         monitor.stopView(viewController: mockView)
         monitor.startView(viewController: mockView)
@@ -75,11 +57,12 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingViewIdentifiedByStringKey() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        ))
-        setGlobalAttributes(of: monitor)
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(key: "view1-key", name: "View1")
         monitor.stopView(key: "view1")
         monitor.startView(key: "view2-key", name: "View2")
@@ -96,9 +79,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
@@ -124,9 +109,11 @@ class RUMMonitorTests: XCTestCase {
             return // `URLSessionTaskMetrics` mocking doesn't work prior to iOS 13.0
         }
 
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "POST"))
         monitor.addResourceMetrics(
@@ -156,9 +143,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURL() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         let url: URL = .mockRandom()
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", url: url)
@@ -175,9 +164,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResourceWithURLString() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [:])
         monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
@@ -195,12 +186,14 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testLoadingResourceWithURL_thenMarksFirstPartyURLs() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            // .mockRandom always uses foo.com
-            firstPartyHosts: .init(["foo.com": [.datadog]])
-        ))
-        setGlobalAttributes(of: monitor)
+        config.urlSessionTracking = RUM.Configuration.URLSessionTracking(
+            firstPartyHostsTracing: .trace(hosts: ["foo.com"])
+        )
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         let url: URL = .mockRandom()
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", url: url)
@@ -215,12 +208,14 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            // .mockRandom always uses foo.com
-            firstPartyHosts: .init(["foo.com": [.datadog]])
-        ))
-        setGlobalAttributes(of: monitor)
+        config.urlSessionTracking = RUM.Configuration.URLSessionTracking(
+            firstPartyHostsTracing: .trace(hosts: ["foo.com"])
+        )
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "http://www.foo.com/some/url/string", attributes: [:])
         monitor.stopResource(resourceKey: "/resource/1", statusCode: 333, kind: .beacon)
@@ -234,9 +229,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenTappingButton() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         let actionName = String.mockRandom()
         monitor.startView(viewController: mockView)
         monitor.addAction(type: .tap, name: actionName)
@@ -272,9 +269,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenLoadingResources_whileScrolling() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
@@ -324,11 +323,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenIssuingErrors_whileScrolling() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 0.01)
-        ))
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
 #sourceLocation(file: "/user/abc/Foo.swift", line: 100)
@@ -377,14 +376,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: Date(),
-                advancingBySeconds: RUMUserActionScope.Constants.discreteActionTimeoutDuration
-            )
-        ))
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
@@ -429,9 +425,11 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources() throws {
-        let monitor = try createTestableRUMMonitor()
-        setGlobalAttributes(of: monitor)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         monitor.startView(viewController: view1)
         monitor.startResource(resourceKey: "/resource/1", request: URLRequest(url: .mockWith(pathComponent: "/resource/1")))
@@ -490,9 +488,10 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testStartingView_thenTappingButton_thenTappingAnotherButton() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-        ))
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
         monitor.addAction(type: .tap, name: "1st action")
@@ -529,8 +528,9 @@ class RUMMonitorTests: XCTestCase {
                 ]
             )
         )
+        RUM.enable(with: config, in: core)
 
-        let monitor = try createTestableRUMMonitor()
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
@@ -574,8 +574,9 @@ class RUMMonitorTests: XCTestCase {
             networkConnectionInfo: .mockWith(reachability: .yes, availableInterfaces: [.cellular]),
             carrierInfo: .mockWith(carrierName: "Carrier Name", radioAccessTechnology: .GPRS)
         )
+        RUM.enable(with: config, in: core)
 
-        let monitor = try createTestableRUMMonitor()
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
         monitor.startAction(type: .scroll, name: .mockAny())
@@ -613,7 +614,9 @@ class RUMMonitorTests: XCTestCase {
         let view1 = createMockView(viewControllerClassName: "FirstViewController")
         let view2 = createMockView(viewControllerClassName: "SecondViewController")
 
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         // set global attributes:
         monitor.addAttribute(forKey: "attribute1", value: "value 1")
@@ -653,10 +656,9 @@ class RUMMonitorTests: XCTestCase {
 
     // TODO: RUMM-2844 [V2 regression?] RUM monitor `removeAttribute(forKey:)` behaves differently than in V1
 //    func testWhenViewIsStarted_attributesCanBeAddedOrUpdatedButNotRemoved() throws {
-//        let rum: RUMFeature = .mockByRecordingRUMEventMatchers()
-//        core.register(feature: rum)
+//        RUM.enable(with: config, in: core)
 //
-//        let monitor = try createTestableRUMMonitor()
+//        let monitor = RUMMonitor.shared(in: core)
 //
 //        monitor.addAttribute(forKey: "a1", value: "foo1")
 //        monitor.addAttribute(forKey: "a2", value: "foo2")
@@ -683,14 +685,12 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Sending Custom Timings
 
     func testStartingView_thenAddingTiming() throws {
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: Date(),
-                advancingBySeconds: 1
-            )
-        ))
-        setGlobalAttributes(of: monitor)
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
         monitor.addTiming(name: "timing1")
         monitor.addTiming(name: "timing2")
@@ -708,12 +708,9 @@ class RUMMonitorTests: XCTestCase {
 
     func testStartingView_thenAddingFeatureFlags() throws {
         // Given
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: Date(),
-                advancingBySeconds: 1
-            )
-        ))
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
 
@@ -730,12 +727,8 @@ class RUMMonitorTests: XCTestCase {
 
     func testGivenActiveViewWithFlags_thenAddingError_sendsFlags() throws {
         // Given
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: Date(),
-                advancingBySeconds: 1
-            )
-        ))
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
         let flagName: String = .mockRandom()
@@ -754,14 +747,10 @@ class RUMMonitorTests: XCTestCase {
 
     func testGivenAnActiveViewWithFlags_startingANewView_resetsFlags() throws {
         // Given
-        let monitor = try createTestableRUMMonitor(
-            configuration: .mockWith(
-                dateProvider: RelativeDateProvider(
-                    startingFrom: Date(),
-                    advancingBySeconds: 1
-                )
-            )
-        )
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
         monitor.startView(viewController: mockView)
         monitor.addFeatureFlagEvaluation(name: .mockAny(), value: String.mockAny())
 
@@ -782,15 +771,15 @@ class RUMMonitorTests: XCTestCase {
         let keepAllSessions: Bool = .random()
         let expectation = self.expectation(description: "onSessionStart is called")
 
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            sessionSampler: keepAllSessions ? .mockKeepAll() : .mockRejectAll(),
-            onSessionStart: { sessionId, isDiscarded in
-                XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
-                XCTAssertEqual(isDiscarded, !keepAllSessions)
-                expectation.fulfill()
-            }
-        ))
+        config.sessionSampleRate = keepAllSessions ? 100 : 0
+        config.onSessionStart = { sessionID, isDiscarded in
+            XCTAssertTrue(sessionID.matches(regex: .uuidRegex))
+            XCTAssertEqual(isDiscarded, !keepAllSessions)
+            expectation.fulfill()
+        }
+        RUM.enable(with: config, in: core)
 
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView)
         waitForExpectations(timeout: 0.5)
     }
@@ -806,15 +795,14 @@ class RUMMonitorTests: XCTestCase {
         core.context = .mockWith(
             serverTimeOffset: serverTimeOffset
         )
+        config.dateProvider = RelativeDateProvider(
+            startingFrom: deviceTime,
+            advancingBySeconds: 1 // short advancing, so all events will be collected less than a minute after `deviceTime`
+        )
+        RUM.enable(with: config, in: core)
 
         // When
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: deviceTime,
-                advancingBySeconds: 1 // short advancing, so all events will be collected less than a minute after `deviceTime`
-            )
-        ))
-
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView)
         monitor.addAction(type: .tap, name: .mockAny())
         monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
@@ -854,28 +842,6 @@ class RUMMonitorTests: XCTestCase {
         }
     }
 
-    // MARK: - Launching SDKInit Command
-
-    func testWhenNotifyingSDKInit_thenItSetsTheSessionId() throws {
-        // Given
-        let expectation = self.expectation(description: "sessionId is called")
-
-        // When
-        let monitor = try createTestableRUMMonitor(
-            configuration: .mockWith(
-                onSessionStart: { sessionId, isDiscarded in
-                    // Then
-                    XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
-                    expectation.fulfill()
-                }
-            )
-        )
-        monitor.notifySDKInit()
-
-        waitForExpectations(timeout: 0.5)
-        _ = monitor
-    }
-
     // MARK: - Tracking App Launch Events
 
     func testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime() throws {
@@ -893,12 +859,8 @@ class RUMMonitorTests: XCTestCase {
         )
 
         // When
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: sdkInitDate.addingTimeInterval(10),
-                advancingBySeconds: 1
-            )
-        ))
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView)
 
         // Then
@@ -914,7 +876,6 @@ class RUMMonitorTests: XCTestCase {
         // Given
         let launchDate: Date = .mockDecember15th2019At10AMUTC()
         let sdkInitDate = launchDate.addingTimeInterval(10)
-
         core.context = .mockWith(
             sdkInitDate: sdkInitDate,
             launchTime: LaunchTime(
@@ -923,15 +884,15 @@ class RUMMonitorTests: XCTestCase {
                 isActivePrewarm: true
             )
         )
+        config.dateProvider = RelativeDateProvider(
+            startingFrom: sdkInitDate.addingTimeInterval(10),
+            advancingBySeconds: 1
+        )
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         // When
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: sdkInitDate.addingTimeInterval(10),
-                advancingBySeconds: 1
-            )
-        ))
-
         monitor.startView(viewController: mockView)
 
         // Then
@@ -956,13 +917,13 @@ class RUMMonitorTests: XCTestCase {
                 isActivePrewarm: false
             )
         )
+        config.dateProvider = RelativeDateProvider(
+            startingFrom: sdkInitDate.addingTimeInterval(1),
+            advancingBySeconds: 1
+        )
+        RUM.enable(with: config, in: core)
 
-        let monitor = try createTestableRUMMonitor(configuration: .mockWith(
-            dateProvider: RelativeDateProvider(
-                startingFrom: sdkInitDate.addingTimeInterval(1),
-                advancingBySeconds: 1
-            )
-        ))
+        let monitor = RUMMonitor.shared(in: core)
 
         // When
         monitor.addAction(type: .custom, name: "A1")
@@ -1004,53 +965,51 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Data Scrubbing
 
     func testModifyingEventsBeforeTheyGetSend() throws {
-        let monitor = try createTestableRUMMonitor(
-            configuration: .mockWith(
-                viewEventMapper: { viewEvent in
-                    if viewEvent.view.url == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
-                        return viewEvent
-                    }
+        config.viewEventMapper = { viewEvent in
+            if viewEvent.view.url == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+                return viewEvent
+            }
 
-                    var viewEvent = viewEvent
-                    viewEvent.view.url = "ModifiedViewURL"
-                    viewEvent.view.name = "ModifiedViewName"
-                    return viewEvent
-                },
-                resourceEventMapper: { resourceEvent in
-                    var resourceEvent = resourceEvent
-                    resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
-                    return resourceEvent
-                },
-                actionEventMapper: { actionEvent in
-                    if actionEvent.action.type == .applicationStart {
-                        return nil // drop `.applicationStart` action
-                    } else {
-                        var actionEvent = actionEvent
-                        actionEvent.action.target?.name = "Modified tap action name"
-                        return actionEvent
-                    }
-                },
-                errorEventMapper: { errorEvent in
-                    var errorEvent = errorEvent
-                    errorEvent.error.message = "Modified error message"
-                    return errorEvent
-                },
-                longTaskEventMapper: { longTaskEvent in
-                    var mutableLongTaskEvent = longTaskEvent
-                    mutableLongTaskEvent.view.name = "ModifiedLongTaskViewName"
-                    return mutableLongTaskEvent
-                },
-                dateProvider: RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
-            )
-        )
+            var viewEvent = viewEvent
+            viewEvent.view.url = "ModifiedViewURL"
+            viewEvent.view.name = "ModifiedViewName"
+            return viewEvent
+        }
+        config.resourceEventMapper = { resourceEvent in
+            var resourceEvent = resourceEvent
+            resourceEvent.resource.url = "https://foo.com?q=modified-resource-url"
+            return resourceEvent
+        }
+        config.actionEventMapper = { actionEvent in
+            if actionEvent.action.type == .applicationStart {
+                return nil // drop `.applicationStart` action
+            } else {
+                var actionEvent = actionEvent
+                actionEvent.action.target?.name = "Modified tap action name"
+                return actionEvent
+            }
+        }
+        config.errorEventMapper = { errorEvent in
+            var errorEvent = errorEvent
+            errorEvent.error.message = "Modified error message"
+            return errorEvent
+        }
+        config.longTaskEventMapper = { longTaskEvent in
+            var mutableLongTaskEvent = longTaskEvent
+            mutableLongTaskEvent.view.name = "ModifiedLongTaskViewName"
+            return mutableLongTaskEvent
+        }
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView, name: "OriginalViewName")
         monitor.startResource(resourceKey: "/resource/1", url: URL(string: "https://foo.com?q=original-resource-url")!)
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: "Original tap action name")
         monitor.addError(message: "Original error message")
-
-        monitor.dd.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
+        monitor._internal?.addLongTask(at: Date(), duration: 1.0)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -1072,24 +1031,20 @@ class RUMMonitorTests: XCTestCase {
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
-        let monitor = try createTestableRUMMonitor(
-            configuration: .mockWith(
-                resourceEventMapper: { _ in nil },
-                actionEventMapper: { event in
-                    return event.action.type == .applicationStart ? event : nil
-                },
-                errorEventMapper: { _ in nil },
-                longTaskEventMapper: { _ in nil }
-            )
-        )
+        config.resourceEventMapper = { _ in nil }
+        config.actionEventMapper = { event in event.action.type == .applicationStart ? event : nil }
+        config.errorEventMapper = { _ in nil }
+        config.longTaskEventMapper = { _ in nil }
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
 
         monitor.startView(viewController: mockView)
         monitor.startResource(resourceKey: "/resource/1", url: .mockAny())
         monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
         monitor.addAction(type: .tap, name: .mockAny())
         monitor.addError(message: .mockAny())
-
-        monitor.dd.process(command: RUMAddLongTaskCommand(time: Date(), attributes: [:], duration: 1.0))
+        monitor._internal?.addLongTask(at: Date(), duration: 1.0)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
@@ -1130,7 +1085,8 @@ class RUMMonitorTests: XCTestCase {
         try core.register(feature: crashReporter)
 
         // When
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
         // Then
@@ -1144,7 +1100,8 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -1213,7 +1170,9 @@ class RUMMonitorTests: XCTestCase {
 
     func testSendingActionEvents_whenGlobalAttributesHaveConflict() throws {
         // given
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
         monitor.addAttribute(forKey: "abc", value: "123")
 
         // when
@@ -1253,7 +1212,9 @@ class RUMMonitorTests: XCTestCase {
 
     func testSendingActionEvents_whenViewAttributesHaveConflict() throws {
         // given
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
         monitor.startView(key: "View", name: nil, attributes: ["abc": "123"])
 
         // when
@@ -1298,7 +1259,9 @@ class RUMMonitorTests: XCTestCase {
             CrossPlatformAttributes.timestampInMilliseconds: Int64(1_000)
         ]
 
-        let monitor = try createTestableRUMMonitor()
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core).dd
         let transformedCommand = monitor.transform(command: mockCommand)
         XCTAssertTrue(transformedCommand.attributes.isEmpty)
         XCTAssertNotEqual(transformedCommand.time, mockCommand.time)

@@ -29,78 +29,67 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
 
     convenience init(
         in core: DatadogCoreProtocol,
-        configuration: RUMConfiguration
+        configuration: RUM.Configuration
     ) throws {
+        let dependencies = RUMScopeDependencies(
+            core: core,
+            rumApplicationID: configuration.applicationID,
+            sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+            backgroundEventTrackingEnabled: configuration.backgroundEventsTracking,
+            frustrationTrackingEnabled: configuration.frustrationsTracking,
+            firstPartyHosts: {
+                switch configuration.urlSessionTracking?.firstPartyHostsTracing {
+                case let .trace(hosts, _):
+                    return FirstPartyHosts(hosts)
+                case let .traceWithHeaders(hostsWithHeaders, _):
+                    return FirstPartyHosts(hostsWithHeaders)
+                case .none:
+                    return nil
+                }
+            }(),
+            eventBuilder: RUMEventBuilder(
+                eventsMapper: RUMEventsMapper(
+                    viewEventMapper: configuration.viewEventMapper,
+                    errorEventMapper: configuration.errorEventMapper,
+                    resourceEventMapper: configuration.resourceEventMapper,
+                    actionEventMapper: configuration.actionEventMapper,
+                    longTaskEventMapper: configuration.longTaskEventMapper
+                )
+            ),
+            rumUUIDGenerator: configuration.uuidGenerator,
+            ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+            viewUpdatesThrottlerFactory: configuration.viewUpdatesThrottlerFactory,
+            vitalsReaders: configuration.vitalsUpdateFrequency.map { VitalsReaders(frequency: $0.timeInterval) },
+            onSessionStart: configuration.onSessionStart
+        )
+
         try self.init(
             in: core,
             configuration: configuration,
-            with: Monitor(
-                core: core,
-                dependencies: RUMScopeDependencies(
-                    core: core,
-                    configuration: configuration
-                ),
-                dateProvider: configuration.dateProvider
-            )
+            with: Monitor(core: core, dependencies: dependencies, dateProvider: configuration.dateProvider)
         )
     }
 
-    init(
+    private init(
         in core: DatadogCoreProtocol,
-        configuration: RUMConfiguration,
+        configuration: RUM.Configuration,
         with monitor: Monitor
     ) throws {
-        let instrumentation = RUMInstrumentation(
-            configuration: configuration.instrumentation,
+        self.monitor = monitor
+        self.instrumentation = RUMInstrumentation(
+            uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
+            uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
+            longTaskThreshold: configuration.longTaskThreshold,
             dateProvider: configuration.dateProvider
         )
-        instrumentation.publish(to: monitor)
-
-        if let firstPartyHosts = configuration.firstPartyHosts {
-            let urlSessionHandler = URLSessionRUMResourcesHandler(
-                dateProvider: configuration.dateProvider,
-                rumAttributesProvider: configuration.rumAttributesProvider,
-                distributedTracing: .init(
-                    sampler: configuration.tracingSampler,
-                    firstPartyHosts: firstPartyHosts,
-                    traceIDGenerator: configuration.traceIDGenerator
-                )
-            )
-
-            urlSessionHandler.publish(to: monitor)
-            try core.register(urlSessionHandler: urlSessionHandler)
-        }
-
-        let debugRumOverride = configuration.processInfo.arguments.contains(LaunchArguments.DebugRUM)
-        if debugRumOverride {
-            consolePrint("⚠️ Overriding RUM debugging with \(LaunchArguments.DebugRUM) launch argument")
-            monitor.debug = true
-        }
-
-        let telemetry = TelemetryCore(core: core)
-        telemetry.configuration(
-            mobileVitalsUpdatePeriod: configuration.vitalsFrequency?.toInt64Milliseconds,
-            sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampler.samplingRate),
-            telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampler.samplingRate),
-            traceSampleRate: Int64(withNoOverflow: configuration.tracingSampler.samplingRate),
-            trackBackgroundEvents: configuration.backgroundEventTrackingEnabled,
-            trackFrustrations: configuration.frustrationTrackingEnabled,
-            trackInteractions: configuration.instrumentation.uiKitRUMUserActionsPredicate != nil,
-            trackLongTask: configuration.instrumentation.longTaskThreshold != nil,
-            trackNativeLongTasks: configuration.instrumentation.longTaskThreshold != nil,
-            trackNativeViews: configuration.instrumentation.uiKitRUMViewsPredicate != nil,
-            trackNetworkRequests: configuration.firstPartyHosts != nil,
-            useFirstPartyHosts: configuration.firstPartyHosts.map { !$0.hosts.isEmpty }
-        )
-
-        self.monitor = monitor
-        self.instrumentation = instrumentation
-        self.requestBuilder = RequestBuilder(customIntakeURL: configuration.customIntakeURL)
+        self.requestBuilder = RequestBuilder(customIntakeURL: configuration.customEndpoint)
         self.messageReceiver = CombinedFeatureMessageReceiver(
             TelemetryReceiver(
                 dateProvider: configuration.dateProvider,
-                sampler: configuration.telemetrySampler,
-                configurationExtraSampler: configuration.configurationTelemetrySampler
+                sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
+                configurationExtraSampler: Sampler(
+                    samplingRate: configuration._internal.configurationTelemetrySampleRate ?? configuration.defaultConfigurationTelemetrySampleRate
+                )
             ),
             ErrorMessageReceiver(monitor: monitor),
             WebViewEventReceiver(
@@ -110,13 +99,32 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
             CrashReportReceiver(
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
-                sessionSampler: configuration.sessionSampler,
-                backgroundEventTrackingEnabled: configuration.backgroundEventTrackingEnabled,
+                sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
+                backgroundEventTrackingEnabled: configuration.backgroundEventsTracking,
                 uuidGenerator: configuration.uuidGenerator,
-                ciTest: configuration.testExecutionId.map { .init(testExecutionId: $0) }
+                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
             )
         )
-        self.telemetry = telemetry
+        self.telemetry = TelemetryCore(core: core)
+
+        // Forward instrumentation calls to monitor:
+        instrumentation.publish(to: monitor)
+
+        // Send configuration telemetry:
+        telemetry.configuration(
+            mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
+            sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
+            telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),
+            traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
+            trackBackgroundEvents: configuration.backgroundEventsTracking,
+            trackFrustrations: configuration.frustrationsTracking,
+            trackInteractions: configuration.uiKitActionsPredicate != nil,
+            trackLongTask: configuration.longTaskThreshold != nil,
+            trackNativeLongTasks: configuration.longTaskThreshold != nil,
+            trackNativeViews: configuration.uiKitViewsPredicate != nil,
+            trackNetworkRequests: configuration.urlSessionTracking != nil,
+            useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
+        )
     }
 }
 
@@ -126,5 +134,24 @@ extension DatadogRUMFeature: Flushable {
     /// **blocks the caller thread**
     func flush() {
         monitor.flush()
+    }
+}
+
+private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
+    var sampleRate: Float {
+        switch self {
+        case .trace(_, let sampleRate): return sampleRate
+        case .traceWithHeaders(_, let sampleRate): return sampleRate
+        }
+    }
+}
+
+private extension RUM.Configuration.VitalsFrequency {
+    var timeInterval: TimeInterval {
+        switch self {
+        case .frequent: return 0.1
+        case .average:  return 0.5
+        case .rare:     return 1
+        }
     }
 }

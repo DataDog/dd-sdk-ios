@@ -10,6 +10,9 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 
+@_exported import enum DatadogInternal.TrackingConsent
+@_exported import class DatadogInternal.DDURLSessionDelegate
+
 var logger: DatadogLogger!
 var tracer: OTTracer { DatadogTracer.shared() }
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
@@ -38,6 +41,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Set user information
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
+        appConfiguration.testScenario?.configureFeatures()
+
         // Create Logger
         logger = DatadogLogger.builder
             .set(loggerName: "logger-name")
@@ -52,8 +57,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #else
         logger.addTag(withKey: "build_configuration", value: "release")
         #endif
-
-        appConfiguration.testScenario?.configureFeatures()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

@@ -18,6 +18,7 @@ class RUMInternalProxyTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
+        RUM.enable(with: .mockAny(), in: core)
     }
 
     override func tearDown() {
@@ -26,26 +27,9 @@ class RUMInternalProxyTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Enables RUM feature and creates RUM monitor for tests.
-    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
-        let rum = try RUMFeature(
-            in: core,
-            configuration: .mockAny(),
-            with: Monitor(
-                core: core,
-                dependencies: RUMScopeDependencies(core: core,configuration: configuration)
-                // disable RUM view updates sampling for deterministic test behaviour:
-                    .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-                dateProvider: configuration.dateProvider
-            )
-        )
-        try core.register(feature: rum)
-        return rum.monitor
-    }
-
     func testProxyAddLongTaskSendsLongTasks() throws {
         // Given
-        let monitor = try createTestableRUMMonitor()
+        let monitor = RUMMonitor.shared(in: core)
 
         let date = Date()
         let duration: TimeInterval = .mockRandom()
@@ -66,8 +50,7 @@ class RUMInternalProxyTests: XCTestCase {
     func testProxyRecordsPerformanceMetricsAreSent() throws {
         // Given
         let date: Date = .mockRandomInThePast()
-
-        let monitor = try createTestableRUMMonitor()
+        let monitor = RUMMonitor.shared(in: core)
 
         // When
         monitor.startView(viewController: mockView)
@@ -99,7 +82,7 @@ class RUMInternalProxyTests: XCTestCase {
     func testProxyRecordsCustomResourceMetrics() throws {
         // Given
         let date: Date = .mockDecember15th2019At10AMUTC()
-        let monitor = try createTestableRUMMonitor()
+        let monitor = RUMMonitor.shared(in: core)
 
         // When
         monitor.startView(viewController: mockView)

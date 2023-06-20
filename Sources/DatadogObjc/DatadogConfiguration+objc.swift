@@ -78,23 +78,6 @@ public enum DDUploadFrequency: Int {
 }
 
 @objc
-public enum DDVitalsFrequency: Int {
-    case frequent
-    case average
-    case rare
-    case never
-
-    internal var swiftType: Datadog.Configuration.VitalsFrequency {
-        switch self {
-        case .frequent: return .frequent
-        case .average: return .average
-        case .rare: return .rare
-        case .never: return .never
-        }
-    }
-}
-
-@objc
 public class DDTracingHeaderType: NSObject {
     internal let swiftType: TracingHeaderType
 
@@ -172,14 +155,6 @@ public class DDConfiguration: NSObject {
             sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken, environment: environment)
         )
     }
-
-    @objc
-    public static func builder(rumApplicationID: String, clientToken: String, environment: String) -> DDConfigurationBuilder {
-        return DDConfigurationBuilder(
-            sdkBuilder: Datadog.Configuration
-                .builderUsing(rumApplicationID: rumApplicationID, clientToken: clientToken, environment: environment)
-        )
-    }
 }
 
 @objc
@@ -203,11 +178,6 @@ public class DDConfigurationBuilder: NSObject {
     }
 
     @objc
-    public func enableRUM(_ enabled: Bool) {
-        _ = sdkBuilder.enableRUM(enabled)
-    }
-
-    @objc
     public func set(endpoint: DDEndpoint) {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
     }
@@ -215,11 +185,6 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(customLogsEndpoint: URL) {
         _ = sdkBuilder.set(customLogsEndpoint: customLogsEndpoint)
-    }
-
-    @objc
-    public func set(customRUMEndpoint: URL) {
-        _ = sdkBuilder.set(customRUMEndpoint: customRUMEndpoint)
     }
 
     /// Sets a custom NTP synchronization interface.
@@ -273,111 +238,6 @@ public class DDConfigurationBuilder: NSObject {
     @objc
     public func set(tracingSamplingRate: Float) {
         _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
-    }
-
-    @objc
-    public func set(rumSessionsSamplingRate: Float) {
-        _ = sdkBuilder.set(rumSessionsSamplingRate: rumSessionsSamplingRate)
-    }
-
-    @objc
-    public func set(onRUMSessionStart handler: @escaping (String, Bool) -> Void) {
-        _ = sdkBuilder.onRUMSessionStart(handler)
-    }
-
-    @objc
-    public func trackUIKitRUMViews() {
-        let defaultPredicate = DefaultUIKitRUMViewsPredicate()
-        _ = sdkBuilder.trackUIKitRUMViews(using: defaultPredicate)
-    }
-
-    @objc
-    public func trackUIKitRUMViews(using predicate: DDUIKitRUMViewsPredicate) {
-        let predicateBridge = UIKitRUMViewsPredicateBridge(objcPredicate: predicate)
-        _ = sdkBuilder.trackUIKitRUMViews(using: predicateBridge)
-    }
-
-    @available(*, deprecated, message: "This option is replaced by `trackUIKitRUMActions(using:)`. Refer to the new API comment for details.")
-    @objc
-    public func trackUIKitActions() {
-        self.trackUIKitRUMActions()
-    }
-
-    @objc
-    public func trackUIKitRUMActions() {
-        let defaultPredicate = DefaultUIKitRUMUserActionsPredicate()
-        _ = sdkBuilder.trackUIKitRUMActions(using: defaultPredicate)
-    }
-
-    @objc
-    public func trackUIKitRUMActions(using predicate: DDUIKitRUMUserActionsPredicate) {
-        let predicateBridge = UIKitRUMUserActionsPredicateBridge(objcPredicate: predicate)
-        _ = sdkBuilder.trackUIKitRUMActions(using: predicateBridge)
-    }
-
-    @objc
-    public func trackRUMLongTasks() {
-        _ = sdkBuilder.trackRUMLongTasks()
-    }
-
-    @objc
-    public func trackRUMLongTasks(threshold: TimeInterval) {
-        _ = sdkBuilder.trackRUMLongTasks(threshold: threshold)
-    }
-
-    @objc
-    public func setRUMViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent) {
-        _ = sdkBuilder.setRUMViewEventMapper { swiftEvent in
-            let objcEvent = DDRUMViewEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent).swiftModel
-        }
-    }
-
-    @objc
-    public func setRUMResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?) {
-        _ = sdkBuilder.setRUMResourceEventMapper { swiftEvent in
-            let objcEvent = DDRUMResourceEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent)?.swiftModel
-        }
-    }
-
-    @objc
-    public func setRUMActionEventMapper(_ mapper: @escaping (DDRUMActionEvent) -> DDRUMActionEvent?) {
-        _ = sdkBuilder.setRUMActionEventMapper { swiftEvent in
-            let objcEvent = DDRUMActionEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent)?.swiftModel
-        }
-    }
-
-    @objc
-    public func setRUMErrorEventMapper(_ mapper: @escaping (DDRUMErrorEvent) -> DDRUMErrorEvent?) {
-        _ = sdkBuilder.setRUMErrorEventMapper { swiftEvent in
-            let objcEvent = DDRUMErrorEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent)?.swiftModel
-        }
-    }
-
-    @objc
-    public func setRUMLongTaskEventMapper(_ mapper: @escaping (DDRUMLongTaskEvent) -> DDRUMLongTaskEvent?) {
-        _ = sdkBuilder.setRUMLongTaskEventMapper { swiftEvent in
-            let objcEvent = DDRUMLongTaskEvent(swiftModel: swiftEvent)
-            return mapper(objcEvent)?.swiftModel
-        }
-    }
-
-    @objc
-    public func trackBackgroundEvents(_ enabled: Bool = true) {
-        _ = sdkBuilder.trackBackgroundEvents(enabled)
-    }
-
-    @objc
-    public func trackFrustrations(_ enabled: Bool = true) {
-        _ = sdkBuilder.trackFrustrations(enabled)
-    }
-
-    @objc
-    public func set(mobileVitalsFrequency: DDVitalsFrequency) {
-        _ = sdkBuilder.set(mobileVitalsFrequency: mobileVitalsFrequency.swiftType)
     }
 
     @objc

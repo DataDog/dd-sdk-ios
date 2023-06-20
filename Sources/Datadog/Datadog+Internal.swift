@@ -7,7 +7,6 @@
 import Foundation
 import DatadogInternal
 import DatadogLogs
-import DatadogRUM
 
 extension Datadog: DatadogInternal.DatadogInternalInterface {}
 extension Datadog.Configuration.Builder: DatadogInternal.DatadogInternalInterface {}
