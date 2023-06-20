@@ -489,9 +489,9 @@ extension Monitor: RUMMonitorProtocol {
     }
 }
 
-/// Declares additional internal methods for `Monitor`.
-/// These are not available in public API.
+/// An internal interface of RUM monitor.
 extension Monitor {
+    /// Performs initial work in RUM monitor.
     func notifySDKInit() {
         process(
             command: RUMSDKInitCommand(time: dateProvider.now)
@@ -515,5 +515,10 @@ extension Monitor {
                 attributes: attributes
             )
         )
+    }
+
+    /// Completes all asynchronous operations with blocking the caller thread.
+    func flush() {
+        queue.sync { }
     }
 }

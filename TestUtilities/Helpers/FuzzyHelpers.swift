@@ -7,7 +7,7 @@
 import Foundation
 
 /// Randomly picks and executes one of provided effects.
-internal func oneOf(_ effects: [() -> Void]) {
+public func oneOf(_ effects: [() -> Void]) {
     guard let randomEffect = effects.randomElement() else {
         return
     }
@@ -15,7 +15,7 @@ internal func oneOf(_ effects: [() -> Void]) {
 }
 
 /// Randomly picks and executes one or more of provided effects.
-internal func oneOrMoreOf(_ effects: [() -> Void]) {
+public func oneOrMoreOf(_ effects: [() -> Void]) {
     guard effects.count > 1 else {
         effects.first?()
         return

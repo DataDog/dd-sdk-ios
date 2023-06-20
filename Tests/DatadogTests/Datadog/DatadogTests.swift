@@ -176,27 +176,31 @@ class DatadogTests: XCTestCase {
         verify(configuration: rumBuilder.trackUIKitRUMViews().build()) {
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMViews().build()
         ) {
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
 
         verify(configuration: rumBuilder.trackUIKitRUMActions().build()) {
             XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNotNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNotNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
         verify(
             configuration: rumBuilder.enableRUM(false).trackUIKitRUMActions().build()
         ) {
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.viewControllerSwizzler)
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogRUMFeature.self)?.instrumentation.userActionsAutoInstrumentation)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.actionsHandler)
+            XCTAssertNil(CoreRegistry.default.get(feature: RUMFeature.self)?.instrumentation.uiApplicationSwizzler)
         }
     }
 

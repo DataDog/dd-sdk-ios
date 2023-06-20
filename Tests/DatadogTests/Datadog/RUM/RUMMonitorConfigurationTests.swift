@@ -30,10 +30,13 @@ class RUMMonitorConfigurationTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(
-            applicationID: "rum-123",
-            sessionSampler: Sampler(samplingRate: 42.5)
-        ))
+        RUM.enable(
+            with: .mockWith(
+                applicationID: "rum-123",
+                sessionSampler: Sampler(samplingRate: 42.5)
+            ),
+            in: core
+        )
 
         let monitor = RUMMonitor.shared(in: core).dd
 

@@ -201,7 +201,7 @@ public class Datadog {
 
         // First, initialize features:
         if let rumConfiguration = configuration.rum {
-            try RUMMonitor.initialize(in: core, configuration: rumConfiguration)
+            RUM.enable(with: rumConfiguration, in: core)
 
             CITestIntegration.active?.startIntegration()
         }

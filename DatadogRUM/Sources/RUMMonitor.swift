@@ -8,85 +8,25 @@ import UIKit
 import Foundation
 import DatadogInternal
 
-/// A class enabling Datadog RUM features.
+/// A class for manual interaction with the RUM feature. It records RUM events that are sent to Datadog RUM.
 ///
-/// `RUMMonitor` allows recording user events that can be explored and analyzed in Datadog Dashboards.
-/// There can be only one active `RUMMonitor`, and it should be registered/retrieved through `Global.rum`:
+/// There can be only one active RUM monitor for certain instance of Datadog SDK. It gets enabled along with
+/// the call to `RUM.enable(with:in:)`:
 ///
-///     import Datadog
+///     import DatadogRUM
 ///
-///     // register
-///     Global.rum = RUMMonitor.initialize()
+///     // Enable RUM:
+///     RUM.enable(with: configuration)
 ///
-///     // use
-///     Global.rum.startView(...)
+///     // Use RUM monitor:
+///     RUMMonitor.shared().startView(...)
 ///
 public class RUMMonitor {
-    internal struct LaunchArguments {
-        static let DebugRUM = "DD_DEBUG_RUM"
-    }
-
-    /// Initializes the Datadog RUM Monitor.
-    // swiftlint:disable:next function_default_parameter_at_end
-    public static func initialize(
-        in core: DatadogCoreProtocol = CoreRegistry.default,
-        configuration: RUMConfiguration
-    ) throws {
-        do {
-            if core is NOPDatadogCore {
-                throw ProgrammerError(
-                    description: "`Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
-                )
-            }
-
-            let feature = DatadogRUMFeature(in: core, configuration: configuration)
-            try core.register(feature: feature)
-
-            if let firstPartyHosts = configuration.firstPartyHosts {
-                let urlSessionHandler = URLSessionRUMResourcesHandler(
-                    dateProvider: configuration.dateProvider,
-                    rumAttributesProvider: configuration.rumAttributesProvider,
-                    distributedTracing: .init(
-                        sampler: configuration.tracingSampler,
-                        firstPartyHosts: firstPartyHosts,
-                        traceIDGenerator: configuration.traceIDGenerator
-                    )
-                )
-
-                urlSessionHandler.publish(to: feature.monitor)
-                try core.register(urlSessionHandler: urlSessionHandler)
-            }
-
-            feature.monitor.notifySDKInit()
-
-            // Now that RUM is initialized, override the debugRUM value
-            let debugRumOverride = configuration.processInfo.arguments.contains(LaunchArguments.DebugRUM)
-            if debugRumOverride {
-                consolePrint("⚠️ Overriding RUM debugging due to \(LaunchArguments.DebugRUM) launch argument")
-                feature.monitor.debug = true
-            }
-
-            TelemetryCore(core: core)
-                .configuration(
-                    mobileVitalsUpdatePeriod: configuration.vitalsFrequency?.toInt64Milliseconds,
-                    sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampler.samplingRate),
-                    telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampler.samplingRate),
-                    traceSampleRate: Int64(withNoOverflow: configuration.tracingSampler.samplingRate),
-                    trackBackgroundEvents: configuration.backgroundEventTrackingEnabled,
-                    trackFrustrations: configuration.frustrationTrackingEnabled,
-                    trackInteractions: configuration.instrumentation.uiKitRUMUserActionsPredicate != nil,
-                    trackLongTask: configuration.instrumentation.longTaskThreshold != nil,
-                    trackNativeLongTasks: configuration.instrumentation.longTaskThreshold != nil,
-                    trackNativeViews: configuration.instrumentation.uiKitRUMViewsPredicate != nil,
-                    trackNetworkRequests: configuration.firstPartyHosts != nil,
-                    useFirstPartyHosts: configuration.firstPartyHosts.map { !$0.hosts.isEmpty }
-                )
-        } catch {
-            consolePrint("\(error)")
-            throw error
-        }
-    }
-
+    /// Obtains the RUM monitor for manual interaction with the RUM feature.
+    ///
+    /// It requires `RUM.enable(with:in:)` to be called first - otherwise it will return no-op implementation.
+    /// - Parameter core: the instance of Datadog SDK the RUM feature was enabled in (global instance by default)
+    /// - Returns: the RUM monitor
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> RUMMonitorProtocol {
         do {
             guard !(core is NOPDatadogCore) else {

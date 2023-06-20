@@ -46,9 +46,9 @@ class DDGlobalTests: XCTestCase {
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is NOPMonitor)
     }
 
-    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() throws {
+    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() {
         // When
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
+        RUM.enable(with: .mockAny(), in: core)
         // Then
         XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is Monitor)
     }

@@ -34,30 +34,30 @@ public struct RUMConfiguration {
         }
     }
 
-    /* internal */ public let customIntakeURL: URL?
+    /* internal */ public var customIntakeURL: URL?
     /* internal */ public let applicationID: String
-    /* internal */ public let sessionSampler: Sampler
-    /* internal */ public let telemetrySampler: Sampler
-    /* internal */ public let configurationTelemetrySampler: Sampler
-    /* internal */ public let viewEventMapper: RUMViewEventMapper?
-    /* internal */ public let resourceEventMapper: RUMResourceEventMapper?
-    /* internal */ public let actionEventMapper: RUMActionEventMapper?
-    /* internal */ public let errorEventMapper: RUMErrorEventMapper?
-    /* internal */ public let longTaskEventMapper: RUMLongTaskEventMapper?
+    /* internal */ public var sessionSampler: Sampler
+    /* internal */ public var telemetrySampler: Sampler
+    /* internal */ public var configurationTelemetrySampler: Sampler
+    /* internal */ public var viewEventMapper: RUMViewEventMapper?
+    /* internal */ public var resourceEventMapper: RUMResourceEventMapper?
+    /* internal */ public var actionEventMapper: RUMActionEventMapper?
+    /* internal */ public var errorEventMapper: RUMErrorEventMapper?
+    /* internal */ public var longTaskEventMapper: RUMLongTaskEventMapper?
     /// RUM auto instrumentation configuration, `nil` if not enabled.
-    /* internal */ public let instrumentation: Instrumentation
-    /* internal */ public let backgroundEventTrackingEnabled: Bool
-    /* internal */ public let frustrationTrackingEnabled: Bool
-    /* internal */ public let onSessionStart: RUMSessionListener?
-    /* internal */ public let firstPartyHosts: FirstPartyHosts?
-    /* internal */ public let tracingSampler: Sampler
-    /* internal */ public let traceIDGenerator: TraceIDGenerator
+    /* internal */ public var instrumentation: Instrumentation
+    /* internal */ public var backgroundEventTrackingEnabled: Bool
+    /* internal */ public var frustrationTrackingEnabled: Bool
+    /* internal */ public var onSessionStart: RUMSessionListener?
+    /* internal */ public var firstPartyHosts: FirstPartyHosts?
+    /* internal */ public var tracingSampler: Sampler
+    /* internal */ public var traceIDGenerator: TraceIDGenerator
     /// An optional RUM Resource attributes provider.
-    /* internal */ public let rumAttributesProvider: URLSessionRUMAttributesProvider?
-    /* internal */ public let vitalsFrequency: TimeInterval?
-    /* internal */ public let dateProvider: DateProvider
-    /* internal */ public let testExecutionId: String?
-    /* internal */ public let processInfo: ProcessInfo
+    /* internal */ public var rumAttributesProvider: URLSessionRUMAttributesProvider?
+    /* internal */ public var vitalsFrequency: TimeInterval?
+    /* internal */ public var dateProvider: DateProvider
+    /* internal */ public var testExecutionId: String?
+    /* internal */ public var processInfo: ProcessInfo
 
     let uuidGenerator: RUMUUIDGenerator
 

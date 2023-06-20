@@ -18,7 +18,7 @@ class ErrorMessageReceiverTests: XCTestCase {
 
         core = PassthroughCoreMock()
         core.messageReceiver = ErrorMessageReceiver(
-            monitor: .init(
+            monitor: Monitor(
                 core: core,
                 dependencies: .mockAny(),
                 dateProvider: SystemDateProvider()

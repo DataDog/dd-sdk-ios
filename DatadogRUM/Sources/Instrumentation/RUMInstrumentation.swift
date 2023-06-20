@@ -7,29 +7,23 @@
 import Foundation
 import DatadogInternal
 
-/// RUM Auto Instrumentation feature.
+/// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
-    /// RUM User Actions auto instrumentation.
-    class UserActionsAutoInstrumentation {
-        let swizzler: UIApplicationSwizzler
-        let handler: UIEventHandler
-
-        init(dateProvider: DateProvider, predicate: UIKitRUMUserActionsPredicate) throws {
-            handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
-            swizzler = try UIApplicationSwizzler(handler: handler)
-        }
-
-        func enable() {
-            swizzler.swizzle()
-        }
-    }
-
-    let viewsHandler: RUMViewsHandler
-    /// RUM Views auto instrumentation, `nil` if not enabled.
+    /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
+    /// It is `nil` (no swizzling) if RUM View instrumentaiton is not enabled.
     let viewControllerSwizzler: UIViewControllerSwizzler?
-    /// RUM User Actions auto instrumentation, `nil` if not enabled.
-    let userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
-    /// RUM Long Tasks auto instrumentation, `nil` if not enabled.
+    /// Receives interceptions from `UIViewControllerSwizzler` and from SwiftUI instrumentation.
+    /// It is non-optional as we can't know if SwiftUI instrumentation will be used or not.
+    let viewsHandler: RUMViewsHandler
+
+    /// Swizzles `UIApplication` for intercepting `UIEvents` passed to the app.
+    /// It is `nil` (no swizzling) if RUM Action instrumentaiton is not enabled.
+    let uiApplicationSwizzler: UIApplicationSwizzler?
+    /// Receives interceptions from `UIApplicationSwizzler`.
+    /// It is `nil` if RUM Action instrumentaiton is not enabled.
+    let actionsHandler: UIEventHandler?
+
+    /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
 
     // MARK: - Initialization
@@ -38,27 +32,38 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         configuration: RUMConfiguration.Instrumentation,
         dateProvider: DateProvider
     ) {
-        viewsHandler = RUMViewsHandler(
-           dateProvider: dateProvider,
-           predicate: configuration.uiKitRUMViewsPredicate
-        )
+        // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
+        // and only swizzle `UIViewController` if UIKit instrumentation is configured:
+        let viewsHandler = RUMViewsHandler(dateProvider: dateProvider, predicate: configuration.uiKitRUMViewsPredicate)
+        var viewControllerSwizzler: UIViewControllerSwizzler? = nil
 
-        var viewsAutoInstrumentation: UIViewControllerSwizzler?
-        var userActionsAutoInstrumentation: UserActionsAutoInstrumentation?
-        var longTasks: LongTaskObserver?
+        // Create actions handler and `UIApplicationSwizzler` only if UIKit instrumentation is configured:
+        var actionsHandler: UIKitRUMUserActionsHandler? = nil
+        var uiApplicationSwizzler: UIApplicationSwizzler? = nil
+
+        // Create long tasks observer only if configured:
+        var longTasks: LongTaskObserver? = nil
 
         do {
             if configuration.uiKitRUMViewsPredicate != nil {
-                // UIKit auto instrumentation is enabled, so we need to install swizzler
-                viewsAutoInstrumentation = try UIViewControllerSwizzler(handler: viewsHandler)
-            }
-
-            if let predicate = configuration.uiKitRUMUserActionsPredicate {
-                userActionsAutoInstrumentation = try UserActionsAutoInstrumentation(dateProvider: dateProvider, predicate: predicate)
+                // UIKit views instrumentation is enabled, so install the swizzler:
+                viewControllerSwizzler = try UIViewControllerSwizzler(handler: viewsHandler)
             }
         } catch {
             consolePrint(
-                "🔥 Datadog SDK error: RUM automatic tracking can't be set up due to error: \(error)"
+                "🔥 Datadog SDK error: UIKit RUM Views tracking can't be enabled due to error: \(error)"
+            )
+        }
+
+        do {
+            if let predicate = configuration.uiKitRUMUserActionsPredicate {
+                let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
+                actionsHandler = handler
+                uiApplicationSwizzler = try UIApplicationSwizzler(handler: handler)
+            }
+        } catch {
+            consolePrint(
+                "🔥 Datadog SDK error: RUM Actions tracking can't be enabled due to error: \(error)"
             )
         }
 
@@ -66,26 +71,28 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
         }
 
-        self.viewControllerSwizzler = viewsAutoInstrumentation
-        self.userActionsAutoInstrumentation = userActionsAutoInstrumentation
+        self.viewsHandler = viewsHandler
+        self.viewControllerSwizzler = viewControllerSwizzler
+        self.actionsHandler = actionsHandler
+        self.uiApplicationSwizzler = uiApplicationSwizzler
         self.longTasks = longTasks
+
+        // Enable configured instrumentations:
+        self.viewControllerSwizzler?.swizzle()
+        self.uiApplicationSwizzler?.swizzle()
+        self.longTasks?.start()
     }
 
-    func enable() {
-        viewControllerSwizzler?.swizzle()
-        userActionsAutoInstrumentation?.enable()
-        longTasks?.start()
+    deinit {
+        // Disable configured instrumentations:
+        viewControllerSwizzler?.unswizzle()
+        uiApplicationSwizzler?.unswizzle()
+        longTasks?.stop()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
-        userActionsAutoInstrumentation?.handler.publish(to: subscriber)
+        actionsHandler?.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
-    }
-
-    /// Removes RUM instrumentation swizzlings and deinitializes this component.
-    internal func deinitialize() {
-        viewControllerSwizzler?.unswizzle()
-        userActionsAutoInstrumentation?.swizzler.unswizzle()
     }
 }

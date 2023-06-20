@@ -27,32 +27,21 @@ class RUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
-    /// Creates `Monitor` instance for tests.
-    /// The only difference vs. `RUMMonitor.initialize()` is that we disable RUM view updates sampling to get deterministic behaviour.
+    /// Enables RUM feature and creates RUM monitor for tests.
     private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
-        let monitor = Monitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
+        let rum = try RUMFeature(
+            in: core,
+            configuration: configuration,
+            with: Monitor(
                 core: core,
-                configuration: configuration
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-            dateProvider: configuration.dateProvider
+                dependencies: RUMScopeDependencies(core: core,configuration: configuration)
+                    // disable RUM view updates sampling for deterministic test behaviour:
+                    .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+                dateProvider: configuration.dateProvider
+            )
         )
-
-        let instrumentation = RUMInstrumentation(
-            configuration: configuration.instrumentation,
-            dateProvider: configuration.dateProvider
-        )
-
-        let feature = DatadogRUMFeature(
-            monitor: monitor,
-            instrumentation: instrumentation,
-            requestBuilder: FeatureRequestBuilderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
-        )
-
-        try core.register(feature: feature)
-        return monitor
+        try core.register(feature: rum)
+        return rum.monitor
     }
 
     // MARK: - Sending RUM events
@@ -866,20 +855,25 @@ class RUMMonitorTests: XCTestCase {
     }
 
     // MARK: - Launching SDKInit Command
-    func testWhenInitializing_itSendsSDKInitCommand_thenSetsTheSessionId() throws {
+
+    func testWhenNotifyingSDKInit_thenItSetsTheSessionId() throws {
         // Given
         let expectation = self.expectation(description: "sessionId is called")
 
         // When
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(
-            onSessionStart: { sessionId, isDiscarded in
-                // Then
-                XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
-                expectation.fulfill()
-            }
-        ))
+        let monitor = try createTestableRUMMonitor(
+            configuration: .mockWith(
+                onSessionStart: { sessionId, isDiscarded in
+                    // Then
+                    XCTAssertTrue(sessionId.matches(regex: .uuidRegex))
+                    expectation.fulfill()
+                }
+            )
+        )
+        monitor.notifySDKInit()
 
         waitForExpectations(timeout: 0.5)
+        _ = monitor
     }
 
     // MARK: - Tracking App Launch Events
@@ -1150,8 +1144,7 @@ class RUMMonitorTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
-        try RUMMonitor.initialize(in: core, configuration: .mockAny())
-        let monitor = RUMMonitor.shared(in: core)
+        let monitor = try createTestableRUMMonitor()
         let view = mockView
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
@@ -1179,25 +1172,18 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Usage
 
-    func testGivenDatadogNotInitialized_whenInitializingRUMMonitor_itPrintsError() throws {
+    func testGivenSDKNotInitialized_whenObtainingSharedMonitor_itPrintsError() throws {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
         defer { consolePrint = { print($0) } }
 
-        // given
+        // Given
         let core = NOPDatadogCore()
 
-        // when
-        XCTAssertThrowsError(try RUMMonitor.initialize(in: core, configuration: .mockAny()))
-        // then
-        XCTAssertEqual(
-            printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `RUMMonitor.initialize()`."
-        )
-
-        // when
+        // When
         let monitor = RUMMonitor.shared(in: core)
-        // then
+
+        // Then
         XCTAssertEqual(
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: Datadog SDK must be initialized and RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."
@@ -1205,32 +1191,24 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertTrue(monitor is NOPMonitor)
     }
 
-    func testGivenRUMMonitorInitialized_whenTogglingDatadogDebugRUM_itTogglesRUMDebugging() throws {
-        // given
-        let monitor = try createTestableRUMMonitor().dd
+    func testGivenRUMNotEnabled_whenObtainingSharedMonitor_itPrintsError() throws {
+        let printFunction = PrintFunctionMock()
+        consolePrint = printFunction.print
+        defer { consolePrint = { print($0) } }
 
-        monitor.queue.sync { }
-        XCTAssertNil(monitor.debugging)
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        XCTAssertNil(core.get(feature: RUMFeature.self))
 
-        // when & then
-        monitor.debug = true
-        monitor.queue.sync { }
-        XCTAssertNotNil(monitor.debugging)
+        // When
+        let monitor = RUMMonitor.shared(in: core)
 
-        monitor.debug = false
-        monitor.queue.sync { }
-        XCTAssertNil(monitor.debugging)
-    }
-
-    func testSupplyingRumDebugLaunchArgument_itSetsRumDebug() throws {
-        let mockProcessInfo = ProcessInfoMock(
-            arguments: [RUMMonitor.LaunchArguments.DebugRUM]
+        // Then
+        XCTAssertEqual(
+            printFunction.printedMessage,
+            "🔥 Datadog SDK usage error: RUM feature must be enabled before calling `RUMMonitor.shared(in:)`."
         )
-
-        try RUMMonitor.initialize(in: core, configuration: .mockWith(processInfo: mockProcessInfo))
-        let monitor = RUMMonitor.shared(in: core).dd
-        monitor.dd.queue.sync { }
-        XCTAssertNotNil(monitor.dd.debugging)
+        XCTAssertTrue(monitor is NOPMonitor)
     }
 
     func testSendingActionEvents_whenGlobalAttributesHaveConflict() throws {
