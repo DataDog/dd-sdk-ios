@@ -56,7 +56,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
         )
         instrumentation.publish(to: monitor)
 
-        if let firstPartyHosts = configuration.firstPartyHosts, !firstPartyHosts.hosts.isEmpty {
+        if let firstPartyHosts = configuration.firstPartyHosts {
             let urlSessionHandler = URLSessionRUMResourcesHandler(
                 dateProvider: configuration.dateProvider,
                 rumAttributesProvider: configuration.rumAttributesProvider,

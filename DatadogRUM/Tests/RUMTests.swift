@@ -100,7 +100,10 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithFirstPartyHosts() throws {
         // Given
-        config.firstPartyHosts = .init(["foo.com": [.datadog]])
+        oneOf([
+            { self.config.firstPartyHosts = .init([:]) }, // even if empty - first party hosts can be added later in `DDURLSessionDelegate`
+            { self.config.firstPartyHosts = .init(["foo.com": [.datadog]]) }
+        ])
 
         // When
         RUM.enable(with: config, in: core)
@@ -124,10 +127,7 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithNoFirstPartyHosts() {
         // Given
-        oneOf([
-            { self.config.firstPartyHosts = nil },
-            { self.config.firstPartyHosts = .init([:]) },
-        ])
+        config.firstPartyHosts = nil
 
         // When
         RUM.enable(with: config, in: core)
