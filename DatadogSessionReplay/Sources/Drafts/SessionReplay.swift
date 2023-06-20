@@ -43,11 +43,6 @@ public struct SessionReplay {
 
 /// A draft interface of SR controller.
 /// TODO: RUMM-2268 Design convenient public API
-public protocol SessionReplayController {
-    /// Changes the content recording policy.
-    func change(privacy: SessionReplayPrivacy)
-}
+public protocol SessionReplayController { }
 
-internal struct NOPSessionReplayController: SessionReplayController {
-    func change(privacy: SessionReplayPrivacy) {}
-}
+internal struct NOPSessionReplayController: SessionReplayController { }

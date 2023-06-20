@@ -23,7 +23,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
 
     // MARK: - Main Components
 
-    private let recorder: Recording
+    private let recordingCoordinator: RecordingCoordinator
     private let processor: Processing
     private let writer: Writing
 
@@ -43,21 +43,20 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         let scheduler = MainThreadScheduler(interval: 0.1)
         let messageReceiver = RUMContextReceiver()
 
+        let recorder = try Recorder(
+            processor: processor
+        )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
+            privacy: configuration.privacy,
             rumContextObserver: messageReceiver,
             srContextPublisher: SRContextPublisher(core: core),
+            recorder: recorder,
             sampler: Sampler(samplingRate: configuration.samplingRate)
-        )
-        let recorder = try Recorder(
-            configuration: configuration,
-            recordingCoordinator: recordingCoordinator,
-            processor: processor,
-            scheduler: scheduler
         )
 
         self.messageReceiver = messageReceiver
-        self.recorder = recorder
+        self.recordingCoordinator = recordingCoordinator
         self.processor = processor
         self.writer = writer
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
@@ -70,8 +69,4 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
     func register(sessionReplayScope: FeatureScope) {
         writer.startWriting(to: sessionReplayScope)
     }
-
-    // MARK: - SessionReplayController
-
-    func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
 }

@@ -7,44 +7,47 @@
 import Foundation
 import Datadog
 
-internal protocol RecordingCoordination {
-    /// Last received RUM context (or `nil` if RUM session is not sampled).
-    var currentRUMContext: RUMContext? { get }
-
-    /// Flag that determines weather SR should capture the next record.
-    var shouldRecord: Bool { get }
-}
-
 /// Object is responsible for getting the RUM context, randomising the sampling rate,
 /// starting/stopping the recording scheduler as needed and propagating `has_replay` to other features.
-internal class RecordingCoordinator: RecordingCoordination {
-    private(set) var currentRUMContext: RUMContext? = nil
+internal class RecordingCoordinator {
+    private let recorder: Recording
 
-    var shouldRecord: Bool {
-        return isSampled && currentRUMContext?.ids.viewID != nil
-    }
-
-    private var _isSampled = false
-    private let isSampledQueue = DispatchQueue(label: "RecordingCoordinator.isSampled")
-    private var isSampled: Bool {
-        get { return isSampledQueue.sync { _isSampled } }
-        set { isSampledQueue.sync { _isSampled = newValue } }
-    }
+    private var currentRUMContext: RUMContext? = nil
+    private var isSampled = false
 
     init(
         scheduler: Scheduler,
+        privacy: SessionReplayPrivacy,
         rumContextObserver: RUMContextObserver,
         srContextPublisher: SRContextPublisher,
+        recorder: Recording,
         sampler: Sampler
     ) {
+        self.recorder = recorder
         srContextPublisher.setRecordingIsPending(false)
+
+        scheduler.schedule { [weak self] in
+            guard let rumContext = self?.currentRUMContext,
+                  let viewID = rumContext.ids.viewID else {
+                return
+            }
+            let recorderContext = Recorder.Context(
+                privacy: privacy,
+                applicationID: rumContext.ids.applicationID,
+                sessionID: rumContext.ids.sessionID,
+                viewID: viewID,
+                viewServerTimeOffset: rumContext.viewServerTimeOffset
+            )
+            self?.recorder.captureNextRecord(recorderContext)
+        }
+
         scheduler.start()
 
         rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
             if self?.currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID || self?.currentRUMContext == nil {
-                let isSampled = sampler.sample()
-                self?.isSampled = isSampled
+                self?.isSampled = sampler.sample()
             }
+
             self?.currentRUMContext = rumContext
 
             if self?.isSampled == true {
@@ -53,9 +56,9 @@ internal class RecordingCoordinator: RecordingCoordination {
                 scheduler.stop()
             }
 
-            if let shouldRecord = self?.shouldRecord {
-                srContextPublisher.setRecordingIsPending(shouldRecord)
-            }
+            srContextPublisher.setRecordingIsPending(
+                self?.isSampled == true && self?.currentRUMContext?.ids.viewID != nil
+            )
         }
     }
 }

@@ -21,7 +21,6 @@ internal class TestScheduler: Scheduler {
 
     private var _isRunning = false
     private let isRunningQueue = DispatchQueue(label: "testscheduler.isrunning")
-
     var isRunning: Bool {
         get { return isRunningQueue.sync { _isRunning } }
         set { isRunningQueue.sync { _isRunning = newValue } }

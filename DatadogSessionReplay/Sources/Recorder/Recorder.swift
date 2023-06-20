@@ -9,7 +9,7 @@ import Datadog
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
-    func change(privacy: SessionReplayPrivacy)
+    func captureNextRecord(_ recorderContext: Recorder.Context)
 }
 
 /// The main engine and the heart beat of Session Replay.
@@ -52,25 +52,15 @@ internal class Recorder: Recording {
 
     /// Swizzles `UIApplication` for recording touch events.
     private let uiApplicationSwizzler: UIApplicationSwizzler
-
-    /// Schedules view tree captures.
-    private let scheduler: Scheduler
-    /// Coordinates recording schedule
-    private let recordingCoordinator: RecordingCoordination
     /// Captures view tree snapshot (an intermediate representation of the view tree).
     private let viewTreeSnapshotProducer: ViewTreeSnapshotProducer
     /// Captures touch snapshot.
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
-    /// Current content recording policy for creating snapshots.
-    private var currentPrivacy: SessionReplayPrivacy
 
     convenience init(
-        configuration: SessionReplayConfiguration,
-        recordingCoordinator: RecordingCoordination,
-        processor: Processing,
-        scheduler: Scheduler
+        processor: Processing
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -82,10 +72,7 @@ internal class Recorder: Recording {
         )
 
         self.init(
-            configuration: configuration,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
-            scheduler: scheduler,
-            recordingCoordinator: recordingCoordinator,
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: processor
@@ -93,25 +80,15 @@ internal class Recorder: Recording {
     }
 
     init(
-        configuration: SessionReplayConfiguration,
         uiApplicationSwizzler: UIApplicationSwizzler,
-        scheduler: Scheduler,
-        recordingCoordinator: RecordingCoordination,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: Processing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
-        self.scheduler = scheduler
-        self.recordingCoordinator = recordingCoordinator
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
-        self.currentPrivacy = configuration.privacy
-
-        scheduler.schedule { [weak self] in
-            self?.captureNextRecord()
-        }
         uiApplicationSwizzler.swizzle()
     }
 
@@ -121,30 +98,10 @@ internal class Recorder: Recording {
 
     // MARK: - Recording
 
-    func change(privacy: SessionReplayPrivacy) {
-        scheduler.queue.run {
-            self.currentPrivacy = privacy
-        }
-    }
-
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
-    private func captureNextRecord() {
+    func captureNextRecord(_ recorderContext: Context) {
         do {
-            guard recordingCoordinator.shouldRecord else {
-                return
-            }
-            guard let rumContext = recordingCoordinator.currentRUMContext,
-                  let viewID = rumContext.ids.viewID else {
-                return
-            }
-            let recorderContext = Context(
-                privacy: currentPrivacy,
-                applicationID: rumContext.ids.applicationID,
-                sessionID: rumContext.ids.sessionID,
-                viewID: viewID,
-                viewServerTimeOffset: rumContext.viewServerTimeOffset
-            )
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
                 return
