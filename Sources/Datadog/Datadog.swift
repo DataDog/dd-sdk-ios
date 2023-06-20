@@ -110,11 +110,11 @@ public class Datadog {
         return CoreRegistry.default is DatadogCore
     }
 
-    /// Returns the core instance for the given name.
+    /// Returns the Datadog SDK instance for the given name.
     ///
     /// - Parameter name: The name of the instance to get.
     /// - Returns: The core instance if it exists, `NOPDatadogCore` instance otherwise.
-    public static func coreInstance(named name: String) -> DatadogCoreProtocol {
+    public static func sdkInstance(named name: String) -> DatadogCoreProtocol {
         CoreRegistry.instance(named: name)
     }
 
