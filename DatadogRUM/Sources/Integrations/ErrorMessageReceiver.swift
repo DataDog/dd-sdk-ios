@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 internal struct ErrorMessageReceiver: FeatureMessageReceiver {
-    let monitor: RUMMonitorInternalProtocol
+    let monitor: Monitor
 
     /// Adds RUM Error with given message and stack to current RUM View.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {

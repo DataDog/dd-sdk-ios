@@ -17,7 +17,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
 
     let messageReceiver: FeatureMessageReceiver
 
-    let monitor: RUMMonitorProtocol & RUMMonitorInternalProtocol
+    let monitor: Monitor
 
     let instrumentation: RUMInstrumentation
 
@@ -27,40 +27,28 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
         static let DebugRUM = "DD_DEBUG_RUM"
     }
 
-    /// Creates default RUM monitor.
-    internal static func defaultMonitorFactory(
-        core: DatadogCoreProtocol,
-        configuration: RUMConfiguration
-    ) -> RUMMonitorProtocol & RUMMonitorInternalProtocol & RUMCommandSubscriber {
-        return Monitor(
-            core: core,
-            dependencies: RUMScopeDependencies(
-                core: core,
-                configuration: configuration
-            ),
-            dateProvider: configuration.dateProvider
-        )
-    }
-
     convenience init(
         in core: DatadogCoreProtocol,
-        configuration: RUMConfiguration,
-        monitorFactory: (
-            DatadogCoreProtocol,
-            RUMConfiguration
-        ) -> RUMMonitorProtocol & RUMMonitorInternalProtocol & RUMCommandSubscriber = defaultMonitorFactory
+        configuration: RUMConfiguration
     ) throws {
         try self.init(
-            with: monitorFactory(core, configuration),
             in: core,
-            configuration: configuration
+            configuration: configuration,
+            with: Monitor(
+                core: core,
+                dependencies: RUMScopeDependencies(
+                    core: core,
+                    configuration: configuration
+                ),
+                dateProvider: configuration.dateProvider
+            )
         )
     }
 
-    private init(
-        with monitor: RUMMonitorProtocol & RUMMonitorInternalProtocol & RUMCommandSubscriber,
+    init(
         in core: DatadogCoreProtocol,
-        configuration: RUMConfiguration
+        configuration: RUMConfiguration,
+        with monitor: Monitor
     ) throws {
         let instrumentation = RUMInstrumentation(
             configuration: configuration.instrumentation,

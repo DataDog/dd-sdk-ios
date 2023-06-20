@@ -489,8 +489,9 @@ extension Monitor: RUMMonitorProtocol {
     }
 }
 
-/// Declares `Monitor` conformance to internal `RUMMonitorInternalProtocol`.
-extension Monitor: RUMMonitorInternalProtocol {
+/// An internal interface of RUM monitor.
+extension Monitor {
+    /// Performs initial work in RUM monitor.
     func notifySDKInit() {
         process(
             command: RUMSDKInitCommand(time: dateProvider.now)
@@ -516,6 +517,7 @@ extension Monitor: RUMMonitorInternalProtocol {
         )
     }
 
+    /// Completes all asynchronous operations with blocking the caller thread.
     func flush() {
         queue.sync { }
     }

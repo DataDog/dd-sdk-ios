@@ -27,22 +27,20 @@ class RUMInternalProxyTests: XCTestCase {
     }
 
     /// Enables RUM feature and creates RUM monitor for tests.
-    private func createTestableRUMMonitor() throws -> Monitor {
+    private func createTestableRUMMonitor(configuration: RUMConfiguration = .mockAny()) throws -> Monitor {
         let rum = try RUMFeature(
             in: core,
             configuration: .mockAny(),
-            monitorFactory: { core, config in
-                return Monitor(
-                    core: core,
-                    dependencies: RUMScopeDependencies(core: core,configuration: config)
-                    // disable RUM view updates sampling for deterministic test behaviour:
-                        .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
-                    dateProvider: config.dateProvider
-                )
-            }
+            with: Monitor(
+                core: core,
+                dependencies: RUMScopeDependencies(core: core,configuration: configuration)
+                // disable RUM view updates sampling for deterministic test behaviour:
+                    .replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+                dateProvider: configuration.dateProvider
+            )
         )
         try core.register(feature: rum)
-        return rum.monitor as! Monitor
+        return rum.monitor
     }
 
     func testProxyAddLongTaskSendsLongTasks() throws {

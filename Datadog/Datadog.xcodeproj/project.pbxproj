@@ -75,8 +75,6 @@
 		61133C702423993200786299 /* Datadog.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* Datadog.framework */; };
 		6115299725E3BEF9004F740E /* UIKitExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6115299625E3BEF9004F740E /* UIKitExtensionsTests.swift */; };
 		611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */; };
-		6119C37A2A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119C3792A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift */; };
-		6119C37B2A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6119C3792A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift */; };
 		6121627C247D220500AC5D67 /* TracingWithLoggingIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */; };
 		61216B762666DDA10089DCD1 /* LoggerBuilderE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B752666DDA10089DCD1 /* LoggerBuilderE2ETests.swift */; };
 		61216B7B2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7A2667A9AE0089DCD1 /* LoggingConfigurationE2ETests.swift */; };
@@ -1702,7 +1700,6 @@
 		611529A425E3DD51004F740E /* ValuePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValuePublisher.swift; sourceTree = "<group>"; };
 		611529AD25E3E429004F740E /* ValuePublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValuePublisherTests.swift; sourceTree = "<group>"; };
 		611720D42524D9FB00634D9E /* DDURLSessionDelegate+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionDelegate+objc.swift"; sourceTree = "<group>"; };
-		6119C3792A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMMonitorProtocol+Private.swift"; sourceTree = "<group>"; };
 		611F82022563C66100CB9BDB /* UIKitRUMViewsPredicateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicateTests.swift; sourceTree = "<group>"; };
 		61216275247D1CD700AC5D67 /* TracingWithLoggingIntegration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegration.swift; sourceTree = "<group>"; };
 		61216279247D21FE00AC5D67 /* TracingWithLoggingIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingWithLoggingIntegrationTests.swift; sourceTree = "<group>"; };
@@ -4523,7 +4520,6 @@
 				61C713A02A3B78F900FA735A /* RUMMonitorProtocol.swift */,
 				61C713A22A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift */,
 				61C713A12A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift */,
-				6119C3792A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift */,
 				61E5333524B84B43003D6C4E /* RUMMonitor.swift */,
 				D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */,
 				D25FF2E629CC6B320063802D /* Feature */,
@@ -6860,7 +6856,6 @@
 				61C713BA2A3C935C00FA735A /* RUM.swift in Sources */,
 				D23F8E6F29DDCD28001CFAE8 /* RequestBuilder.swift in Sources */,
 				D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */,
-				6119C37B2A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift in Sources */,
 				D23F8E7029DDCD28001CFAE8 /* URLSessionRUMResourcesHandler.swift in Sources */,
 				D23F8E7129DDCD28001CFAE8 /* RUMEventBuilder.swift in Sources */,
 				D23F8E7229DDCD28001CFAE8 /* ErrorMessageReceiver.swift in Sources */,
@@ -7106,7 +7101,6 @@
 				61C713B92A3C935C00FA735A /* RUM.swift in Sources */,
 				D29A9F7929DD85BB005C54A4 /* RequestBuilder.swift in Sources */,
 				D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */,
-				6119C37A2A403A3C004FEB3E /* RUMMonitorProtocol+Private.swift in Sources */,
 				D29A9F5729DD85BB005C54A4 /* URLSessionRUMResourcesHandler.swift in Sources */,
 				D29A9F7C29DD85BB005C54A4 /* RUMEventBuilder.swift in Sources */,
 				D29A9F8829DD85BB005C54A4 /* ErrorMessageReceiver.swift in Sources */,
