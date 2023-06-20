@@ -85,15 +85,18 @@ class DebugLoggingViewController: UIViewController {
     // MARK: - Stress testing
 
     var queues: [DispatchQueue] = []
-    var loggers: [DatadogLogger] = []
+    var loggers: [LoggerProtocol] = []
 
     @IBAction func didTapStressTest(_ sender: Any) {
         stressTestButton.disableFor(seconds: 10)
 
         loggers = (0..<5).map { index in
-            return DatadogLogger.builder.set(loggerName: "stress-logger-\(index)")
-                .sendNetworkInfo(true)
-                .build()
+            return Logger.create(
+                with: Logger.Configuration(
+                    loggerName: "stress-logger-\(index)",
+                    sendNetworkInfo: true
+                )
+            )
         }
 
         queues = (0..<5).map { index in
@@ -106,7 +109,7 @@ class DebugLoggingViewController: UIViewController {
         }
     }
 
-    private func keepSendingLogs(on queue: DispatchQueue, using logger: DatadogLogger, every timeInterval: TimeInterval, until endDate: Date) {
+    private func keepSendingLogs(on queue: DispatchQueue, using logger: LoggerProtocol, every timeInterval: TimeInterval, until endDate: Date) {
         if Date() < endDate {
             queue.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
                 logger.debug(self?.randomLogMessage() ?? "")

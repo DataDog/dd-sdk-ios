@@ -45,7 +45,7 @@ class LoggerTests: XCTestCase {
         )
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         logger.debug("message")
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
@@ -75,11 +75,16 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .set(serviceName: "custom-service-name")
-            .set(loggerName: "custom-logger-name")
-            .sendNetworkInfo(true)
-            .build(in: core)
+        let logger = Logger.create(
+            with: Logger.Configuration(
+                serviceName: "custom-service-name",
+                loggerName: "custom-logger-name",
+                sendNetworkInfo: true,
+                consoleLogFormat: .short
+            ),
+            in: core
+        )
+
         logger.debug("message")
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
@@ -108,7 +113,7 @@ class LoggerTests: XCTestCase {
         )
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         logger.info("message 1")
         logger.info("message 2")
         logger.info("message 3")
@@ -125,7 +130,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         logger.debug("message")
         logger.info("message")
         logger.notice("message")
@@ -148,9 +153,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .set(datadogReportingThreshold: .warn)
-            .build(in: core)
+        let logger = Logger.create(with: Logger.Configuration(datadogReportingThreshold: .warn), in: core)
 
         logger.debug("message")
         logger.info("message")
@@ -178,7 +181,7 @@ class LoggerTests: XCTestCase {
         }
         let error = TestError()
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         logger.debug("message", error: error)
         logger.info("message", error: error)
         logger.notice("message", error: error)
@@ -200,7 +203,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         let errorKind = String.mockRandom()
         let errorMessage = String.mockRandom()
         let stackTrace = String.mockRandom()
@@ -231,8 +234,7 @@ class LoggerTests: XCTestCase {
         )
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .build(in: core)
+        let logger = Logger.create(in: core)
 
         logger.debug(.mockAny())
         logger.info(.mockAny())
@@ -251,8 +253,7 @@ class LoggerTests: XCTestCase {
         )
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .build(in: core)
+        let logger = Logger.create(in: core)
 
         logger.debug(.mockAny())
         logger.info(.mockAny())
@@ -274,7 +275,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         logger.debug("message with no user info")
 
@@ -325,9 +326,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .sendNetworkInfo(true)
-            .build(in: core)
+        let logger = Logger.create(with: Logger.Configuration(sendNetworkInfo: true), in: core)
 
         // simulate entering cellular service range
         core.context.carrierInfo = .mockWith(
@@ -362,9 +361,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder
-            .sendNetworkInfo(true)
-            .build(in: core)
+        let logger = Logger.create(with: Logger.Configuration(sendNetworkInfo: true), in: core)
 
         // simulate reachable network
         core.context.networkConnectionInfo = .mockWith(
@@ -414,7 +411,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         // string literal
         logger.addAttribute(forKey: "string", value: "hello")
@@ -480,7 +477,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         // add logger attribute
         logger.addAttribute(forKey: "attribute", value: "logger's value")
@@ -514,7 +511,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         // add tag
         logger.add(tag: "tag1")
@@ -557,7 +554,7 @@ class LoggerTests: XCTestCase {
         )
 
         // given
-        let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
+        let logger = Logger.create(in: core)
 
         // when
         logger.info("message 0")
@@ -587,7 +584,7 @@ class LoggerTests: XCTestCase {
         )
 
         // given
-        let logger = DatadogLogger.builder.bundleWithRUM(true).build(in: core)
+        let logger = Logger.create(in: core)
 
         // when
         RUMMonitor.shared(in: core).startView(viewController: mockView)
@@ -629,7 +626,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         RUM.enable(
             with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
             in: core
@@ -665,7 +662,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         RUM.enable(
             with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
             in: core
@@ -707,7 +704,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         RUM.enable(
             with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
             in: core
@@ -745,7 +742,7 @@ class LoggerTests: XCTestCase {
         try core.register(feature: logging)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         RUM.enable(
             with: .mockWith { $0.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } },
             in: core
@@ -786,7 +783,7 @@ class LoggerTests: XCTestCase {
         Trace.enable(in: core)
 
         // given
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         let tracer = Tracer.shared(in: core)
 
         // when
@@ -824,7 +821,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
         logger.debug("message")
 
         // Then
@@ -840,7 +837,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         DispatchQueue.concurrentPerform(iterations: 900) { iteration in
             let modulo = iteration % 3
@@ -871,7 +868,7 @@ class LoggerTests: XCTestCase {
         let core = NOPDatadogCore()
 
         // when
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         // then
         XCTAssertEqual(
@@ -882,7 +879,7 @@ class LoggerTests: XCTestCase {
             dd.logger.criticalLog?.error?.message,
             "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `Logger.builder.build()`."
         )
-        XCTAssertTrue(logger.logger is NOPLogger)
+        XCTAssertTrue(logger is NOPLogger)
     }
 
     func testGivenLoggingFeatureDisabled_whenInitializingLogger_itPrintsError() {
@@ -894,7 +891,7 @@ class LoggerTests: XCTestCase {
         XCTAssertNil(core.get(feature: LogsFeature.self))
 
         // when
-        let logger = DatadogLogger.builder.build(in: core)
+        let logger = Logger.create(in: core)
 
         // then
         XCTAssertEqual(
@@ -905,7 +902,7 @@ class LoggerTests: XCTestCase {
             dd.logger.criticalLog?.error?.message,
             "🔥 Datadog SDK usage error: `Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
         )
-        XCTAssertTrue(logger.logger is NOPLogger)
+        XCTAssertTrue(logger is NOPLogger)
     }
 }
 // swiftlint:enable multiline_arguments_brackets

@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
-internal final class RemoteLogger: Logger {
+internal final class RemoteLogger: LoggerProtocol {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).

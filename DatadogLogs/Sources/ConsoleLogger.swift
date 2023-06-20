@@ -8,12 +8,12 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` printing logs to console.
-internal final class ConsoleLogger: Logger {
+internal final class ConsoleLogger: LoggerProtocol {
     struct Configuration {
         /// Time zone for rendering logs.
         let timeZone: TimeZone
         /// The format of rendering logs in console.
-        let format: Builder.ConsoleLogFormat
+        let format: Logger.Configuration.ConsoleLogFormat
     }
 
     /// Date provider for logs.

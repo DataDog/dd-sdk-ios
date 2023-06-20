@@ -25,6 +25,28 @@ public enum DDLogLevel: Int {
     case warn
     case error
     case critical
+
+    internal init(_ swift: LogLevel) {
+        switch swift {
+        case .debug:    self = .debug
+        case .info:     self = .info
+        case .notice:   self = .notice
+        case .warn:     self = .warn
+        case .error:    self = .error
+        case .critical: self = .critical
+        }
+    }
+
+    internal var swift: LogLevel {
+        switch self {
+        case .debug:    return .debug
+        case .info:     return .info
+        case .notice:   return .notice
+        case .warn:     return .warn
+        case .error:    return .error
+        case .critical: return .critical
+        }
+    }
 }
 
 @objc
@@ -76,10 +98,117 @@ public class DDLogs: NSObject {
 }
 
 @objc
-public class DDLogger: NSObject {
-    internal let sdkLogger: Logger
+public class DDLoggerConfiguration: NSObject {
+    internal var configuration: Logger.Configuration
 
-    internal init(sdkLogger: Logger) {
+    /// The service name  (default value is set to application bundle identifier)
+    @objc public var serviceName: String? {
+        get { configuration.serviceName }
+        set { configuration.serviceName = newValue }
+    }
+
+    /// The logger custom name (default value is set to main bundle identifier)
+    @objc public var loggerName: String? {
+        get { configuration.loggerName }
+        set { configuration.loggerName = newValue }
+    }
+
+    /// Enriches logs with network connection info.
+    /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
+    /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
+    ///
+    /// `false` by default
+    @objc public var sendNetworkInfo: Bool {
+        get { configuration.sendNetworkInfo }
+        set { configuration.sendNetworkInfo = newValue }
+    }
+
+    /// Enables the logs integration with RUM.
+    /// If enabled all the logs will be enriched with the current RUM View information and
+    /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
+    ///
+    /// `true` by default
+    @objc public var bundleWithRUM: Bool {
+        get { configuration.bundleWithRUM }
+        set { configuration.bundleWithRUM = newValue }
+    }
+
+    /// Enables the logs integration with active span API from Tracing.
+    /// If enabled all the logs will be bundled with the `DatadogTracer.shared().activeSpan` trace and
+    /// it will be possible to see all the logs sent during that specific trace.
+    ///
+    /// `true` by default
+    @objc public var bundleWithTrace: Bool {
+        get { configuration.bundleWithTrace }
+        set { configuration.bundleWithTrace = newValue }
+    }
+
+    /// Enables logs to be sent to Datadog servers.
+    /// Can be used to disable sending logs in development.
+    /// See also: `printLogsToConsole(_:)`.
+    ///
+    /// `true` by default
+    @objc public var sendLogsToDatadog: Bool {
+        get { configuration.sendLogsToDatadog }
+        set { configuration.sendLogsToDatadog = newValue }
+    }
+
+    /// Enables  logs to be printed to debugger console.
+    ///
+    /// `false` by default.
+    @objc public var printLogsToConsole: Bool {
+        get { configuration.consoleLogFormat != nil }
+        set { configuration.consoleLogFormat = newValue ? .short : nil }
+    }
+
+    /// Set the minim log level reported to Datadog servers.
+    /// Any log with a level equal or above the threshold will be sent.
+    ///
+    /// Note: this setting doesn't impact logs printed to the console if `printLogsToConsole(_:)`
+    /// is used - all logs will be printed, no matter of their level.
+    ///
+    /// `DDLogLevel.debug` by default
+    @objc public var datadogReportingThreshold: DDLogLevel {
+        get { DDLogLevel(configuration.datadogReportingThreshold) }
+        set { configuration.datadogReportingThreshold = newValue.swift }
+    }
+
+    /// Creates a Logs configuration object.
+    ///
+    /// - Parameters:
+    ///   - samplingRate: The sampling rate for logging.
+    ///   - customIntakeURL: Overrides the custom server endpoint where Logs are sent.
+    ///   - bundle: Overrides the main bundle instance.
+    ///   - processInfo: Overrides the current process info.
+    @objc
+    public init(
+        serviceName: String? = nil,
+        loggerName: String? = nil,
+        sendNetworkInfo: Bool = false,
+        bundleWithRUM: Bool = true,
+        bundleWithTrace: Bool = true,
+        sendLogsToDatadog: Bool = true,
+        printLogsToConsole: Bool = false,
+        datadogReportingThreshold: DDLogLevel = .debug
+    ) {
+        configuration = .init(
+            serviceName: serviceName,
+            loggerName: loggerName,
+            sendNetworkInfo: sendNetworkInfo,
+            bundleWithRUM: bundleWithRUM,
+            bundleWithTrace: bundleWithTrace,
+            sendLogsToDatadog: sendLogsToDatadog,
+            consoleLogFormat: printLogsToConsole ? .short : nil,
+            datadogReportingThreshold: datadogReportingThreshold.swift
+        )
+    }
+}
+
+@objc
+public class DDLogger: NSObject {
+    internal let sdkLogger: LoggerProtocol
+
+    internal init(sdkLogger: LoggerProtocol) {
         self.sdkLogger = sdkLogger
     }
 
@@ -206,60 +335,7 @@ public class DDLogger: NSObject {
     }
 
     @objc
-    public static func builder() -> DDLoggerBuilder {
-        return DDLoggerBuilder(sdkBuilder: DatadogLogger.builder)
-    }
-}
-
-@objc
-public class DDLoggerBuilder: NSObject {
-    internal let sdkBuilder: DatadogLogs.Builder
-
-    internal init(sdkBuilder: DatadogLogs.Builder) {
-        self.sdkBuilder = sdkBuilder
-    }
-
-    // MARK: - Public
-
-    @objc
-    public func set(serviceName: String) {
-        _ = sdkBuilder.set(serviceName: serviceName)
-    }
-
-    @objc
-    public func set(loggerName: String) {
-        _ = sdkBuilder.set(loggerName: loggerName)
-    }
-
-    @objc
-    public func sendNetworkInfo(_ enabled: Bool) {
-        _ = sdkBuilder.sendNetworkInfo(enabled)
-    }
-
-    @objc
-    public func sendLogsToDatadog(_ enabled: Bool) {
-        _ = sdkBuilder.sendLogsToDatadog(enabled)
-    }
-
-    @objc
-    public func printLogsToConsole(_ enabled: Bool) {
-        _ = sdkBuilder.printLogsToConsole(enabled)
-    }
-
-    @objc
-    public func set(datadogReportingThreshold: DDLogLevel) {
-        switch datadogReportingThreshold {
-        case .debug: _ = sdkBuilder.set(datadogReportingThreshold: .debug)
-        case .info: _ = sdkBuilder.set(datadogReportingThreshold: .info)
-        case .notice: _ = sdkBuilder.set(datadogReportingThreshold: .notice)
-        case .warn: _ = sdkBuilder.set(datadogReportingThreshold: .warn)
-        case .error: _ = sdkBuilder.set(datadogReportingThreshold: .error)
-        case .critical: _ = sdkBuilder.set(datadogReportingThreshold: .critical)
-        }
-    }
-
-    @objc
-    public func build() -> DDLogger {
-        return DDLogger(sdkLogger: sdkBuilder.build())
+    public static func create(with configuration: DDLoggerConfiguration = .init()) -> DDLogger {
+        return DDLogger(sdkLogger: Logger.create(with: configuration.configuration))
     }
 }
