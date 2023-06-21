@@ -12,7 +12,7 @@ import DatadogLogs
 @testable import Datadog
 @testable import DatadogCrashReporting
 
-class DatadogCrashReporterTests: XCTestCase {
+class CrashReporterTests: XCTestCase {
     // MARK: - Sending Crash Report
 
     func testWhenPendingCrashReportIsFound_itIsSentAndPurged() throws {
