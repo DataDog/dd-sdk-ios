@@ -33,9 +33,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
         // Initialize Datadog SDK
         Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: appConfiguration.initialTrackingConsent,
-            configuration: appConfiguration.sdkConfiguration()
+            with: appConfiguration.sdkConfiguration(),
+            trackingConsent: appConfiguration.initialTrackingConsent
         )
 
         // Set user information

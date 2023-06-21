@@ -18,11 +18,8 @@ internal class ViewController: UIViewController {
         super.viewDidLoad()
 
         Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: .granted,
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc", environment: "tests")
-                .build()
+            with: Datadog.Configuration(clientToken: "abc", env: "tests"),
+            trackingConsent: .granted
         )
 
         Logs.enable()

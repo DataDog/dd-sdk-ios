@@ -14,92 +14,79 @@ import DatadogRUM
 /// This tests verify that objc-compatible `DatadogObjc` wrapper properly interacts with`Datadog` public API (swift).
 class DDConfigurationTests: XCTestCase {
     func testDefaultBuilderForwardsInitializationToSwift() throws {
-        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
-
-        let swiftConfiguration = objcBuilder.build().sdkConfiguration
-
-        [swiftConfiguration].forEach { configuration in
-            XCTAssertEqual(configuration.clientToken, "abc-123")
-            XCTAssertEqual(configuration.environment, "tests")
-            XCTAssertNil(configuration.serviceName)
-            XCTAssertEqual(configuration.batchSize, .medium)
-            XCTAssertEqual(configuration.uploadFrequency, .average)
-            XCTAssertEqual(configuration.additionalConfiguration.count, 0)
-            XCTAssertNil(configuration.encryption)
-            XCTAssertNil(configuration.serverDateProvider)
-        }
+        let objcConfig = DDConfiguration(clientToken: "abc-123", env: "tests")
+        XCTAssertEqual(objcConfig.sdkConfiguration.clientToken, "abc-123")
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1)
+        XCTAssertEqual(objcConfig.sdkConfiguration.env, "tests")
+        XCTAssertNil(objcConfig.sdkConfiguration.service)
+        XCTAssertEqual(objcConfig.sdkConfiguration.batchSize, .medium)
+        XCTAssertEqual(objcConfig.sdkConfiguration.uploadFrequency, .average)
+        XCTAssertEqual(objcConfig.sdkConfiguration.additionalConfiguration.count, 0)
+        XCTAssertNil(objcConfig.sdkConfiguration.encryption)
+        XCTAssertNotNil(objcConfig.sdkConfiguration.serverDateProvider)
     }
 
     func testCustomizedBuilderForwardsInitializationToSwift() throws {
-        let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
+        let objcConfig = DDConfiguration(clientToken: "abc-123", env: "tests")
 
-        objcBuilder.set(endpoint: .eu1())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
+        objcConfig.site = .eu1()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .eu1)
 
-        objcBuilder.set(endpoint: .ap1())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .ap1)
+        objcConfig.site = .ap1()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .ap1)
 
-        objcBuilder.set(endpoint: .us1())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1)
+        objcConfig.site = .us1()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1)
 
-        objcBuilder.set(endpoint: .us3())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us3)
+        objcConfig.site = .us3()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us3)
 
-        objcBuilder.set(endpoint: .us5())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us5)
+        objcConfig.site = .us5()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us5)
 
-        objcBuilder.set(endpoint: .us1_fed())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
+        objcConfig.site = .us1_fed()
+        XCTAssertEqual(objcConfig.sdkConfiguration.site, .us1_fed)
 
-        objcBuilder.set(endpoint: .eu())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
+        objcConfig.service = "service-name"
+        XCTAssertEqual(objcConfig.sdkConfiguration.service, "service-name")
 
-        objcBuilder.set(endpoint: .us())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1)
+        objcConfig.batchSize = .small
+        XCTAssertEqual(objcConfig.sdkConfiguration.batchSize, .small)
 
-        objcBuilder.set(endpoint: .gov())
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
+        objcConfig.batchSize = .large
+        XCTAssertEqual(objcConfig.sdkConfiguration.batchSize, .large)
 
-        objcBuilder.set(serviceName: "service-name")
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
+        objcConfig.uploadFrequency = .frequent
+        XCTAssertEqual(objcConfig.sdkConfiguration.uploadFrequency, .frequent)
 
-        objcBuilder.set(batchSize: .small)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)
+        objcConfig.uploadFrequency = .rare
+        XCTAssertEqual(objcConfig.sdkConfiguration.uploadFrequency, .rare)
 
-        objcBuilder.set(batchSize: .large)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .large)
+        objcConfig.additionalConfiguration = ["foo": 42, "bar": "something"]
+        XCTAssertEqual(objcConfig.sdkConfiguration.additionalConfiguration["foo"] as? Int, 42)
+        XCTAssertEqual(objcConfig.sdkConfiguration.additionalConfiguration["bar"] as? String, "something")
 
-        objcBuilder.set(uploadFrequency: .frequent)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .frequent)
-
-        objcBuilder.set(uploadFrequency: .rare)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.uploadFrequency, .rare)
-
-        objcBuilder.set(additionalConfiguration: ["foo": 42, "bar": "something"])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["foo"] as? Int, 42)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.additionalConfiguration["bar"] as? String, "something")
-
-        objcBuilder.set(proxyConfiguration: [kCFNetworkProxiesHTTPEnable: true, kCFNetworkProxiesHTTPPort: 123, kCFNetworkProxiesHTTPProxy: "www.example.com", kCFProxyUsernameKey: "proxyuser", kCFProxyPasswordKey: "proxypass" ])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
+        objcConfig.proxyConfiguration = [kCFNetworkProxiesHTTPEnable: true, kCFNetworkProxiesHTTPPort: 123, kCFNetworkProxiesHTTPProxy: "www.example.com", kCFProxyUsernameKey: "proxyuser", kCFProxyPasswordKey: "proxypass" ]
+        XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
+        XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)
+        XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
+        XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFProxyUsernameKey] as? String, "proxyuser")
+        XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
 
         class ObjCDataEncryption: DDDataEncryption {
             func encrypt(data: Data) throws -> Data { data }
             func decrypt(data: Data) throws -> Data { data }
         }
         let dataEncryption = ObjCDataEncryption()
-        objcBuilder.set(encryption: dataEncryption)
-        XCTAssertTrue((objcBuilder.build().sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
+        objcConfig.setEncryption(dataEncryption)
+        XCTAssertTrue((objcConfig.sdkConfiguration.encryption as? DDDataEncryptionBridge)?.objcEncryption === dataEncryption)
 
         class ObjcServerDateProvider: DDServerDateProvider {
             func synchronize(update: @escaping (TimeInterval) -> Void) { }
         }
         let serverDateProvider = ObjcServerDateProvider()
-        objcBuilder.set(serverDateProvider: serverDateProvider)
-        XCTAssertTrue((objcBuilder.build().sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
+        objcConfig.setServerDateProvider(serverDateProvider)
+        XCTAssertTrue((objcConfig.sdkConfiguration.serverDateProvider as? DDServerDateProviderBridge)?.objcProvider === serverDateProvider)
     }
 
     func testDataEncryption() throws {
@@ -114,12 +101,12 @@ class DDConfigurationTests: XCTestCase {
         let encryption = ObjCDataEncryption()
 
         // When
-        let objcBuilder = DDConfiguration.builder(
+        let objcConfig = DDConfiguration(
             clientToken: "abc-123",
-            environment: "tests"
+            env: "tests"
         )
-        objcBuilder.set(encryption: encryption)
-        let configuration = objcBuilder.build().sdkConfiguration
+        objcConfig.setEncryption(encryption)
+        let configuration = objcConfig.sdkConfiguration
 
         // Then
         XCTAssertEqual(try configuration.encryption?.encrypt(data: .mockRandom()), encryption.encData)

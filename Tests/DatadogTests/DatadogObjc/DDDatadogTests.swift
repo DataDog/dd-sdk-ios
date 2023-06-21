@@ -27,12 +27,16 @@ class DDDatadogTests: XCTestCase {
     // MARK: - Initializing with configuration
 
     func testItForwardsInitializationToSwift() throws {
-        let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
+        let config = DDConfiguration(
+            clientToken: "abcefghi",
+            env: "tests"
+        )
+
+        config.bundle = .mockWith(CFBundleExecutable: "app-name")
 
         DDDatadog.initialize(
-            appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
-            trackingConsent: randomConsent().objc,
-            configuration: configBuilder.build()
+            configuration: config,
+            trackingConsent: randomConsent().objc
         )
 
         XCTAssertTrue(Datadog.isInitialized)
@@ -53,9 +57,8 @@ class DDDatadogTests: XCTestCase {
         let nextConsent = randomConsent()
 
         DDDatadog.initialize(
-            appContext: .init(),
-            trackingConsent: initialConsent.objc,
-            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
+            configuration: DDConfiguration(clientToken: "abcefghi", env: "tests"),
+            trackingConsent: initialConsent.objc
         )
 
         let core = CoreRegistry.default as? DatadogCore
@@ -72,9 +75,8 @@ class DDDatadogTests: XCTestCase {
 
     func testItForwardsUserInfoToSwift() throws {
         DDDatadog.initialize(
-            appContext: .init(),
-            trackingConsent: randomConsent().objc,
-            configuration: DDConfiguration.builder(clientToken: "abcefghi", environment: "tests").build()
+            configuration: DDConfiguration(clientToken: "abcefghi", env: "tests"),
+            trackingConsent: randomConsent().objc
         )
 
         let core = CoreRegistry.default as? DatadogCore

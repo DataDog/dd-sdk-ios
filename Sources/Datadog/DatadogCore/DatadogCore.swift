@@ -7,9 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Feature-agnostic SDK configuration.
-internal typealias CoreConfiguration = FeaturesConfiguration.Common
-
 /// Core implementation of Datadog SDK.
 ///
 /// The core provides a storage and upload mechanism for each registered Feature
@@ -321,34 +318,42 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
 
 extension DatadogContextProvider {
     /// Creates a core context provider with the given configuration,
-    ///
-    /// - Parameters:
-    ///   - configuration: The configuration.
-    ///   - device: The device description.
-    ///   - dateProvider: The local date provider.
     convenience init(
-        configuration: CoreConfiguration,
+        site: DatadogSite,
+        clientToken: String,
+        service: String,
+        env: String,
+        version: String,
+        variant: String?,
+        source: String,
+        sdkVersion: String,
+        ciAppOrigin: String?,
+        applicationName: String,
+        applicationBundleIdentifier: String,
+        applicationVersion: String,
+        sdkInitDate: Date,
         device: DeviceInfo,
+        dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider
     ) {
         let context = DatadogContext(
-            site: configuration.site,
-            clientToken: configuration.clientToken,
-            service: configuration.serviceName,
-            env: configuration.environment,
-            version: configuration.applicationVersion,
-            variant: configuration.variant,
-            source: configuration.source,
-            sdkVersion: configuration.sdkVersion,
-            ciAppOrigin: configuration.origin,
-            applicationName: configuration.applicationName,
-            applicationBundleIdentifier: configuration.applicationBundleIdentifier,
-            sdkInitDate: configuration.dateProvider.now,
+            site: site,
+            clientToken: clientToken,
+            service: service,
+            env: env,
+            version: applicationVersion,
+            variant: variant,
+            source: source,
+            sdkVersion: sdkVersion,
+            ciAppOrigin: ciAppOrigin,
+            applicationName: applicationName,
+            applicationBundleIdentifier: applicationBundleIdentifier,
+            sdkInitDate: dateProvider.now,
             device: device,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
-            applicationStateHistory: .active(since: configuration.dateProvider.now)
+            applicationStateHistory: .active(since: dateProvider.now)
         )
 
         self.init(context: context)
@@ -378,7 +383,7 @@ extension DatadogContextProvider {
         #if os(iOS) || os(tvOS)
         DispatchQueue.main.async {
             // must be call on the main thread to read `UIApplication.State`
-            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: configuration.dateProvider)
+            let applicationStatePublisher = ApplicationStatePublisher(dateProvider: dateProvider)
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif
