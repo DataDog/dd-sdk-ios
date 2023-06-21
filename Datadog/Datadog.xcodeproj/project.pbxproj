@@ -457,6 +457,8 @@
 		D2303A04298D5317001A1FA3 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		D2303A0A298D5412001A1FA3 /* AsyncWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2303A09298D5412001A1FA3 /* AsyncWriter.swift */; };
 		D2303A0B298D5412001A1FA3 /* AsyncWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2303A09298D5412001A1FA3 /* AsyncWriter.swift */; };
+		D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
+		D23354FD2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
 		D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA2251118FB00C816E5 /* UIViewControllerHandler.swift */; };
@@ -2133,6 +2135,7 @@
 		D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadWriteLock.swift; sourceTree = "<group>"; };
 		D23039DC298D5235001A1FA3 /* DDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		D2303A09298D5412001A1FA3 /* AsyncWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncWriter.swift; sourceTree = "<group>"; };
+		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
 		D2375C262954785A00473EA0 /* WebViewLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewLogReceiverTests.swift; sourceTree = "<group>"; };
@@ -4319,6 +4322,7 @@
 			isa = PBXGroup;
 			children = (
 				D23039D8298D5235001A1FA3 /* DatadogExtended.swift */,
+				D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */,
 				D23039D7298D5235001A1FA3 /* Foundation+Datadog.swift */,
 				D22F06D529DAFD500026CC3C /* FixedWidthInteger+Convenience.swift */,
 				D22F06D629DAFD500026CC3C /* TimeInterval+Convenience.swift */,
@@ -6775,6 +6779,7 @@
 				D23039E7298D5236001A1FA3 /* NetworkConnectionInfo.swift in Sources */,
 				D23039E9298D5236001A1FA3 /* TrackingConsent.swift in Sources */,
 				D2EBEE2629BA160F00B15732 /* OTelHTTPHeaders.swift in Sources */,
+				D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */,
 				D23039F3298D5236001A1FA3 /* DynamicCodingKey.swift in Sources */,
 				D23039FE298D5236001A1FA3 /* FeatureRequestBuilder.swift in Sources */,
 				D2160CE429C0DFEE00FAA9A5 /* MethodSwizzler.swift in Sources */,
@@ -7535,6 +7540,7 @@
 				D2DA2359298D57AA00C6C7E6 /* NetworkConnectionInfo.swift in Sources */,
 				D2DA235A298D57AA00C6C7E6 /* TrackingConsent.swift in Sources */,
 				D2EBEE3429BA161100B15732 /* OTelHTTPHeaders.swift in Sources */,
+				D23354FD2A42E32000AFCAE2 /* InternalExtended.swift in Sources */,
 				D2DA235B298D57AA00C6C7E6 /* DynamicCodingKey.swift in Sources */,
 				D2DA235C298D57AA00C6C7E6 /* FeatureRequestBuilder.swift in Sources */,
 				D2160CE629C0DFEE00FAA9A5 /* MethodSwizzler.swift in Sources */,

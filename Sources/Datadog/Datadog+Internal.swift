@@ -8,8 +8,8 @@ import Foundation
 import DatadogInternal
 import DatadogRUM
 
-extension Datadog: DatadogInternal.DatadogInternalInterface {}
-extension Datadog.Configuration.Builder: DatadogInternal.DatadogInternalInterface {}
+extension Datadog: InternalExtended {}
+extension Datadog.Configuration.Builder: InternalExtended {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.
@@ -19,7 +19,7 @@ extension Datadog.Configuration.Builder: DatadogInternal.DatadogInternalInterfac
 ///
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
-extension DatadogExtension where ExtendedType: Datadog {
+extension InternalExtension where ExtendedType: Datadog {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy { .init() }
 

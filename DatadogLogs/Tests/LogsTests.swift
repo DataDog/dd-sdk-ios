@@ -60,10 +60,13 @@ class LogsTests: XCTestCase {
 
         // Given
         let eventMapper = LogEventMapperMock()
-        let config = Logs.Configuration()
+        var config = Logs.Configuration()
 
         // When
-        config._internal.setLogEventMapper(eventMapper)
+        config._internal_mutation {
+            $0.setLogEventMapper(eventMapper)
+        }
+
 
         // Then
         XCTAssertTrue(config.eventMapper is LogEventMapperMock)

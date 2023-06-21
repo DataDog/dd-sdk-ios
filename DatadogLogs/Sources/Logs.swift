@@ -18,7 +18,7 @@ public struct Logs {
     /// The Logs general configuration.
     ///
     /// This configuration will be applied to all Logger instances.
-    public final class Configuration {
+    public struct Configuration {
         public typealias EventMapperClosure = (LogEvent) -> LogEvent?
         /// Sets the sampling rate for logging.
         ///
@@ -42,7 +42,7 @@ public struct Logs {
         /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
         /// with dropping the Log event entirely, so it won't be send to Datadog.
-        public func setEventMapper(_ mapper: @escaping EventMapperClosure) {
+        public mutating func setEventMapper(_ mapper: @escaping EventMapperClosure) {
             eventMapper = SyncLogEventMapper(mapper)
         }
 
@@ -102,12 +102,12 @@ public struct Logs {
     }
 }
 
-extension Logs.Configuration: DatadogInternalInterface { }
-extension DatadogExtension where ExtendedType == Logs.Configuration {
+extension Logs.Configuration: InternalExtended { }
+extension InternalExtension where ExtendedType == Logs.Configuration {
     /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are sent to Datadog.
     ///
     /// - Parameter mapper: the mapper taking `LogEvent` as input and invoke callback closure with modifier `LogEvent`.
-    public func setLogEventMapper(_ mapper: LogEventMapper) {
+    public mutating func setLogEventMapper(_ mapper: LogEventMapper) {
         type.eventMapper = mapper
     }
 }
