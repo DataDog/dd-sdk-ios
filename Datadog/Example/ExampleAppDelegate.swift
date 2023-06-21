@@ -77,7 +77,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Register Logs
         Logs.enable(
             with: Logs.Configuration(
-                customIntakeURL: Environment.readCustomLogsURL()
+                customEndpoint: Environment.readCustomLogsURL()
             )
         )
 

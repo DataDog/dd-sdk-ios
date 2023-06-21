@@ -37,15 +37,15 @@ public class DDLogsConfiguration: NSObject {
     /// means all logs will be processed.
     ///
     /// By default sampling is disabled, meaning that all logs are being processed).
-    @objc public var samplingRate: Float {
-        get { configuration.samplingRate }
-        set { configuration.samplingRate = newValue }
+    @objc public var sampleRate: Float {
+        get { configuration.sampleRate }
+        set { configuration.sampleRate = newValue }
     }
 
     /// Overrides the custom server endpoint where Logs are sent.
-    @objc public var customIntakeURL: URL? {
-        get { configuration.customIntakeURL }
-        set { configuration.customIntakeURL = newValue }
+    @objc public var customEndpoint: URL? {
+        get { configuration.customEndpoint }
+        set { configuration.customEndpoint = newValue }
     }
 
     /// Overrides the main bundle instance.
@@ -54,31 +54,22 @@ public class DDLogsConfiguration: NSObject {
         set { configuration.bundle = newValue }
     }
 
-    /// Overrides the current process info.
-    @objc public var processInfo: ProcessInfo {
-        get { configuration.processInfo }
-        set { configuration.processInfo = newValue }
-    }
-
     /// Creates a Logs configuration object.
     ///
     /// - Parameters:
-    ///   - samplingRate: The sampling rate for logging.
-    ///   - customIntakeURL: Overrides the custom server endpoint where Logs are sent.
+    ///   - sampleRate: The sampling rate for logging.
+    ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
     ///   - bundle: Overrides the main bundle instance.
-    ///   - processInfo: Overrides the current process info.
     @objc
     public init(
-        samplingRate: Float = 100,
-        customIntakeURL: URL? = nil,
-        bundle: Bundle = .main,
-        processInfo: ProcessInfo = .processInfo
+        sampleRate: Float = 100,
+        customEndpoint: URL? = nil,
+        bundle: Bundle = .main
     ) {
         configuration = .init(
-            samplingRate: samplingRate,
-            customIntakeURL: customIntakeURL,
-            bundle: bundle,
-            processInfo: processInfo
+            sampleRate: sampleRate,
+            customEndpoint: customEndpoint,
+            bundle: bundle
         )
     }
 }

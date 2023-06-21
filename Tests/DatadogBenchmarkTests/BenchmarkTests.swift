@@ -53,7 +53,7 @@ class BenchmarkTests: XCTestCase {
         )
 
         Logs.enable(
-            with: Logs.Configuration(customIntakeURL: anyURL)
+            with: Logs.Configuration(customEndpoint: anyURL)
         )
 
         DatadogTracer.initialize(

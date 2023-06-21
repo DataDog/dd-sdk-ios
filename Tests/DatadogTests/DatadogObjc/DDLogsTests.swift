@@ -35,23 +35,23 @@ class DDLogsTests: XCTestCase {
         let config = DDLogsConfiguration()
 
         // Then
-        XCTAssertEqual(config.configuration.samplingRate, 100)
-        XCTAssertNil(config.configuration.customIntakeURL)
+        XCTAssertEqual(config.configuration.sampleRate, 100)
+        XCTAssertNil(config.configuration.customEndpoint)
         XCTAssertTrue(config.configuration.bundle === Bundle.main)
         XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
     }
 
     func testConfigurationOverrides() throws {
         // Given
-        let samplingRate: Float = .random(in: 0...100)
-        let customIntakeURL: URL = .mockRandom()
+        let sampleRate: Float = .random(in: 0...100)
+        let customEndpoint: URL = .mockRandom()
         let bundleIdentifier: String = .mockRandom()
 
         // When
         DDLogs.enable(
             with: DDLogsConfiguration(
-                samplingRate: samplingRate,
-                customIntakeURL: customIntakeURL,
+                sampleRate: sampleRate,
+                customEndpoint: customEndpoint,
                 bundle: .mockWith(bundleIdentifier: bundleIdentifier)
             )
         )
@@ -60,22 +60,8 @@ class DDLogsTests: XCTestCase {
         let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
         let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
         XCTAssertEqual(logs.applicationBundleIdentifier, bundleIdentifier)
-        XCTAssertEqual(logs.sampler.samplingRate, samplingRate)
-        XCTAssertEqual(requestBuilder.customIntakeURL, customIntakeURL)
-    }
-
-    func testConfiguration_withDebug_itDisableSampling() throws {
-        // When
-        DDLogs.enable(
-            with: DDLogsConfiguration(
-                samplingRate: 0,
-                processInfo: ProcessInfoMock(arguments: [LaunchArguments.Debug])
-            )
-        )
-
-        // Then
-        let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
-        XCTAssertEqual(logs.sampler.samplingRate, 100)
+        XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
+        XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }
 
     func testSendingLogsWithDifferentLevels() throws {

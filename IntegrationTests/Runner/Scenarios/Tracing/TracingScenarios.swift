@@ -25,7 +25,7 @@ final class TracingManualInstrumentationScenario: TestScenario {
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
-                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }

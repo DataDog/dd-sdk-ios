@@ -33,7 +33,7 @@ final class WebViewTrackingScenario: TestScenario {
     func configureFeatures() {
         Logs.enable(
             with: Logs.Configuration(
-                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }

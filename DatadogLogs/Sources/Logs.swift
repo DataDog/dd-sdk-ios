@@ -26,52 +26,49 @@ public struct Logs {
         /// means all logs will be processed.
         ///
         /// By default sampling is disabled, meaning that all logs are being processed).
-        public var samplingRate: Float
+        public var sampleRate: Float
 
         /// Overrides the custom server endpoint where Logs are sent.
-        public var customIntakeURL: URL?
+        public var customEndpoint: URL?
 
         /// Overrides the main bundle instance.
         public var bundle: Bundle = .main
 
         /// Overrides the current process info.
-        public var processInfo: ProcessInfo = .processInfo
+        internal var processInfo: ProcessInfo = .processInfo
 
         /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
         ///
         /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
         /// with dropping the Log event entirely, so it won't be send to Datadog.
-        public mutating func setEventMapper(_ mapper: @escaping EventMapperClosure) {
-            eventMapper = SyncLogEventMapper(mapper)
+        public mutating func eventMapper(_ mapper: @escaping EventMapperClosure) {
+            self.mapper = SyncLogEventMapper(mapper)
         }
 
         /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
         ///
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
         /// with dropping the Log event entirely, so it won't be send to Datadog.
-        internal var eventMapper: LogEventMapper?
+        internal var mapper: LogEventMapper?
 
         /// Creates a Logs configuration object.
         ///
         /// - Parameters:
         ///   - eventMapper: The custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
-        ///   - samplingRate: The sampling rate for logging.
-        ///   - customIntakeURL: Overrides the custom server endpoint where Logs are sent.
+        ///   - sampleRate: The sample rate for logging.
+        ///   - sampleRate: Overrides the custom server endpoint where Logs are sent.
         ///   - bundle: Overrides the main bundle instance.
-        ///   - processInfo: Overrides the current process info.
         public init(
             eventMapper: EventMapperClosure? = nil,
-            samplingRate: Float = 100,
-            customIntakeURL: URL? = nil,
-            bundle: Bundle = .main,
-            processInfo: ProcessInfo = .processInfo
+            sampleRate: Float = 100,
+            customEndpoint: URL? = nil,
+            bundle: Bundle = .main
         ) {
-            self.eventMapper = eventMapper.map(SyncLogEventMapper.init)
-            self.samplingRate = samplingRate
-            self.customIntakeURL = customIntakeURL
+            self.mapper = eventMapper.map(SyncLogEventMapper.init)
+            self.sampleRate = sampleRate
+            self.customEndpoint = customEndpoint
             self.bundle = bundle
-            self.processInfo = processInfo
         }
     }
 
@@ -87,11 +84,11 @@ public struct Logs {
         let applicationBundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         let feature = LogsFeature(
-            logEventMapper: configuration.eventMapper,
+            logEventMapper: configuration.mapper,
             dateProvider: SystemDateProvider(),
             applicationBundleIdentifier: applicationBundleIdentifier,
-            remoteLoggingSampler: Sampler(samplingRate: debug ? 100 : configuration.samplingRate),
-            customIntakeURL: configuration.customIntakeURL
+            remoteLoggingSampler: Sampler(samplingRate: debug ? 100 : configuration.sampleRate),
+            customIntakeURL: configuration.customEndpoint
         )
 
         do {
@@ -108,6 +105,6 @@ extension InternalExtension where ExtendedType == Logs.Configuration {
     ///
     /// - Parameter mapper: the mapper taking `LogEvent` as input and invoke callback closure with modifier `LogEvent`.
     public mutating func setLogEventMapper(_ mapper: LogEventMapper) {
-        type.eventMapper = mapper
+        type.mapper = mapper
     }
 }

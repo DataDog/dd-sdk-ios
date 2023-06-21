@@ -30,7 +30,7 @@ internal class TrackingConsentBaseScenario {
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
-                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }

@@ -21,7 +21,7 @@ final class LoggingManualInstrumentationScenario: TestScenario {
                     }
                     return log
                 },
-                customIntakeURL: Environment.serverMockConfiguration()?.logsEndpoint
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )
     }

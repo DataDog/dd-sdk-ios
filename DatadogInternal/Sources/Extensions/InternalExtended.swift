@@ -36,7 +36,8 @@ public protocol InternalExtended {
 }
 
 extension InternalExtended {
-    /// Static internal extension point.
+    /// Grants access to an internal interface utilized only by other Datadog SDKs.
+    /// **It is not meant for public use** and it might change without prior notice.
     public static var _internal: InternalExtension<Self>.Type {
         InternalExtension<Self>.self
     }
