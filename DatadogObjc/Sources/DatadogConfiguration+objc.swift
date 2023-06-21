@@ -9,41 +9,32 @@ import DatadogInternal
 import Datadog
 
 @objc
-public class DDEndpoint: NSObject {
-    internal let sdkEndpoint: DatadogSite
+public class DDSite: NSObject {
+    internal let sdkSite: DatadogSite
 
-    internal init(sdkEndpoint: DatadogSite) {
-        self.sdkEndpoint = sdkEndpoint
+    internal init(sdkSite: DatadogSite) {
+        self.sdkSite = sdkSite
     }
 
     // MARK: - Public
 
     @objc
-    public static func us1() -> DDEndpoint { .init(sdkEndpoint: .us1) }
+    public static func us1() -> DDSite { .init(sdkSite: .us1) }
 
     @objc
-    public static func us3() -> DDEndpoint { .init(sdkEndpoint: .us3) }
+    public static func us3() -> DDSite { .init(sdkSite: .us3) }
 
     @objc
-    public static func us5() -> DDEndpoint { .init(sdkEndpoint: .us5) }
+    public static func us5() -> DDSite { .init(sdkSite: .us5) }
 
     @objc
-    public static func eu1() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
+    public static func eu1() -> DDSite { .init(sdkSite: .eu1) }
 
     @objc
-    public static func ap1() -> DDEndpoint { .init(sdkEndpoint: .ap1) }
+    public static func ap1() -> DDSite { .init(sdkSite: .ap1) }
 
     @objc
-    public static func us1_fed() -> DDEndpoint { .init(sdkEndpoint: .us1_fed) }
-
-    @objc
-    public static func eu() -> DDEndpoint { .init(sdkEndpoint: .eu1) }
-
-    @objc
-    public static func us() -> DDEndpoint { .init(sdkEndpoint: .us1) }
-
-    @objc
-    public static func gov() -> DDEndpoint { .init(sdkEndpoint: .us1_fed) }
+    public static func us1_fed() -> DDSite { .init(sdkSite: .us1_fed) }
 }
 
 @objc
@@ -59,6 +50,14 @@ public enum DDBatchSize: Int {
         case .large: return .large
         }
     }
+
+    internal init(swiftType: Datadog.Configuration.BatchSize) {
+        switch swiftType {
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        }
+    }
 }
 
 @objc
@@ -72,6 +71,14 @@ public enum DDUploadFrequency: Int {
         case .frequent: return .frequent
         case .average: return .average
         case .rare: return .rare
+        }
+    }
+
+    internal init(swiftType: Datadog.Configuration.UploadFrequency) {
+        switch swiftType {
+        case .frequent: self = .frequent
+        case .average: self = .average
+        case .rare: self = .rare
         }
     }
 }
@@ -140,83 +147,103 @@ internal struct DDServerDateProviderBridge: ServerDateProvider {
 
 @objc
 public class DDConfiguration: NSObject {
-    internal let sdkConfiguration: Datadog.Configuration
+    internal var sdkConfiguration: Datadog.Configuration
 
-    internal init(sdkConfiguration: Datadog.Configuration) {
-        self.sdkConfiguration = sdkConfiguration
+    /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
+    @objc public var clientToken: String {
+        get { sdkConfiguration.clientToken }
+        set { sdkConfiguration.clientToken = newValue }
     }
 
-    // MARK: - Public
+    /// The environment name which will be sent to Datadog. This can be used
+    /// To filter events on different environments (e.g. "staging" or "production").
+    @objc public var env: String {
+        get { sdkConfiguration.env }
+        set { sdkConfiguration.env = newValue }
+    }
 
+    /// The Datadog server site where data is sent.
+    ///
+    /// Default value is `.us1`.
+    @objc public var site: DDSite {
+        get { DDSite(sdkSite: sdkConfiguration.site) }
+        set { sdkConfiguration.site = newValue.sdkSite }
+    }
+
+    /// The service name associated with data send to Datadog.
+    ///
+    /// Default value is set to application bundle identifier.
+    @objc public var service: String? {
+        get { sdkConfiguration.service }
+        set { sdkConfiguration.service = newValue }
+    }
+
+    /// The preferred size of batched data uploaded to Datadog servers.
+    /// This value impacts the size and number of requests performed by the SDK.
+    ///
+    /// `.medium` by default.
+    @objc public var batchSize: DDBatchSize {
+        get { DDBatchSize(swiftType: sdkConfiguration.batchSize) }
+        set { sdkConfiguration.batchSize = newValue.swiftType }
+    }
+
+    /// The preferred frequency of uploading data to Datadog servers.
+    /// This value impacts the frequency of performing network requests by the SDK.
+    ///
+    /// `.average` by default.
+    @objc public var uploadFrequency: DDUploadFrequency {
+        get { DDUploadFrequency(swiftType: sdkConfiguration.uploadFrequency) }
+        set { sdkConfiguration.uploadFrequency = newValue.swiftType }
+    }
+
+    /// Proxy configuration attributes.
+    /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+    @objc public var proxyConfiguration: [AnyHashable: Any]? {
+        get { sdkConfiguration.proxyConfiguration }
+        set { sdkConfiguration.proxyConfiguration = newValue }
+    }
+
+    /// Sets Data encryption to use for on-disk data persistency by providing an object
+    /// complying with `DataEncryption` protocol.
     @objc
-    public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder {
-        return DDConfigurationBuilder(
-            sdkBuilder: Datadog.Configuration.builderUsing(clientToken: clientToken, environment: environment)
-        )
-    }
-}
-
-@objc
-public class DDConfigurationBuilder: NSObject {
-    internal let sdkBuilder: Datadog.Configuration.Builder
-
-    internal init(sdkBuilder: Datadog.Configuration.Builder) {
-        self.sdkBuilder = sdkBuilder
+    public func setEncryption(_ encryption: DDDataEncryption) {
+        sdkConfiguration.encryption = DDDataEncryptionBridge(objcEncryption: encryption)
     }
 
-    // MARK: - Public
-
-    @objc
-    public func set(endpoint: DDEndpoint) {
-        _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
-    }
-
-    /// Sets a custom NTP synchronization interface.
+    /// A custom NTP synchronization interface.
     ///
     /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
-    /// https://www.ntppool.org/ . Using different pools or setting a no-op `DDServerDateProvider`
+    /// https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
     /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
     /// This can lead to significant time shift in RUM sessions or distributed traces.
+    @objc
+    public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider) {
+        sdkConfiguration.serverDateProvider = DDServerDateProviderBridge(objcProvider: serverDateProvider)
+    }
+
+    /// Sets additional configuration attributes.
+    /// This can be used to tweak internal features of the SDK.
+    @objc public var additionalConfiguration: [String: Any] {
+        get { sdkConfiguration.additionalConfiguration }
+        set { sdkConfiguration.additionalConfiguration = newValue }
+    }
+
+    /// The bundle object that contains the current executable.
+    @objc public var bundle: Bundle {
+        get { sdkConfiguration.bundle }
+        set { sdkConfiguration.bundle = newValue }
+    }
+
+    /// Creates a Datadog SDK Configuration object.
     ///
-    /// - Parameter serverDateProvider: An object that complies with `DDServerDateProvider`
-    ///                                 for provider clock synchronisation.
+    /// - Parameters:
+    ///   - clientToken:    Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+    ///                     only for Logging and APM.
+    ///
+    ///   - env:    The environment name which will be sent to Datadog. This can be used
+    ///             To filter events on different environments (e.g. "staging" or "production").
     @objc
-    public func set(serverDateProvider: DDServerDateProvider) {
-        _ = sdkBuilder.set(serverDateProvider: DDServerDateProviderBridge(objcProvider: serverDateProvider))
-    }
-
-    @objc
-    public func set(serviceName: String) {
-        _ = sdkBuilder.set(serviceName: serviceName)
-    }
-
-    @objc
-    public func set(batchSize: DDBatchSize) {
-        _ = sdkBuilder.set(batchSize: batchSize.swiftType)
-    }
-
-    @objc
-    public func set(uploadFrequency: DDUploadFrequency) {
-        _ = sdkBuilder.set(uploadFrequency: uploadFrequency.swiftType)
-    }
-
-    @objc
-    public func set(additionalConfiguration: [String: Any]) {
-        _ = sdkBuilder.set(additionalConfiguration: additionalConfiguration)
-    }
-
-    @objc
-    public func set(proxyConfiguration: [AnyHashable: Any]) {
-        _ = sdkBuilder.set(proxyConfiguration: proxyConfiguration)
-    }
-
-    @objc
-    public func set(encryption: DDDataEncryption) {
-        _ = sdkBuilder.set(encryption: DDDataEncryptionBridge(objcEncryption: encryption))
-    }
-
-    @objc
-    public func build() -> DDConfiguration {
-        return DDConfiguration(sdkConfiguration: sdkBuilder.build())
+    public init(clientToken: String, env: String) {
+        sdkConfiguration = .init(clientToken: clientToken, env: env)
     }
 }

@@ -44,11 +44,8 @@ class BenchmarkTests: XCTestCase {
         let anyURL = connectedServer!.obtainUniqueRecordingSession().recordingURL
 
         Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: .granted,
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "rum-abc", environment: "benchmarks")
-                .build()
+            with: Datadog.Configuration(clientToken: "rum-abc", env: "benchmarks"),
+            trackingConsent: .granted
         )
 
         RUM.enable(with: .init(applicationID: "rum-123", customEndpoint: anyURL))

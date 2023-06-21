@@ -46,19 +46,18 @@ struct UITestsAppConfiguration: AppConfiguration {
     }
 
     func sdkConfiguration() -> Datadog.Configuration {
-        let configuration = Datadog.Configuration
-            .builderUsing(
-                clientToken: "ui-tests-client-token",
-                environment: "integration"
-            )
-            .set(serviceName: "ui-tests-service-name")
-            .set(batchSize: .small)
-            .set(uploadFrequency: .frequent)
+        var configuration = Datadog.Configuration(
+            clientToken: "ui-tests-client-token",
+            env: "integration",
+            service: "ui-tests-service-name",
+            batchSize: .small,
+            uploadFrequency: .frequent
+        )
 
         // Apply the scenario configuration
-        testScenario!.configureSDK(builder: configuration)
+        testScenario?.override(configuration: &configuration)
 
-        return configuration.build()
+        return configuration
     }
 
     func initialStoryboard() -> UIStoryboard? {

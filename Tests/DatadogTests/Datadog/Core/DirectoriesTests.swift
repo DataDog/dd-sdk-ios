@@ -43,7 +43,8 @@ class DirectoriesTests: XCTestCase {
         let coreDirectories = try fixtures.map { clientToken, site, _ in
             try CoreDirectory(
                 in: directory,
-                from: .mockWith(site: site, clientToken: clientToken)
+                clientToken: clientToken,
+                site: site
             )
         }
         defer { coreDirectories.forEach { $0.delete() } }
@@ -60,27 +61,20 @@ class DirectoriesTests: XCTestCase {
     }
 
     func testGivenDifferentSDKConfigurations_whenCreatingCoreDirectories_thenEachDirectoryIsUnique() throws {
-        // Given
-        let sdkConfigurations: [CoreConfiguration] = (0..<50).map { index in
-            let randomSite: DatadogSite = .mockRandom()
-            let randomClientToken: String = .mockRandom(among: .alphanumerics, length: 31) + "\(index)"
-
-            return .mockWith(
-                site: randomSite,
-                clientToken: randomClientToken
-            )
-        }
-
         // When
-        let coreDirectories = try sdkConfigurations.map { sdkConfiguration in
-            try CoreDirectory(in: directory, from: sdkConfiguration)
+        let coreDirectories = try (0..<50).map { index in
+            try CoreDirectory(
+                in: directory,
+                clientToken: .mockRandom(among: .alphanumerics, length: 31) + "\(index)",
+                site: .mockRandom()
+            )
         }
         defer { coreDirectories.forEach { $0.delete() } }
 
         // Then
         let uniqueCoreDirectoryURLs = Set(coreDirectories.map({ $0.coreDirectory.url }))
         XCTAssertEqual(
-            sdkConfigurations.count,
+            coreDirectories.count,
             uniqueCoreDirectoryURLs.count,
             "It must create unique core directory URL for each SDK configuration"
         )
