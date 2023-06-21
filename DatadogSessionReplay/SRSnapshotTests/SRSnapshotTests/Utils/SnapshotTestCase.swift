@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import Datadog
+import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost
 
@@ -36,12 +38,16 @@ internal class SnapshotTestCase: XCTestCase {
         let scheduler = TestScheduler()
         let processor = Processor(queue: NoQueue(), writer: Writer())
         let recorder = try Recorder(
-            configuration: configuration,
-            recordingCoordinator: RecordingCoordinatorMock(),
-            processor: processor,
-            scheduler: scheduler
+            processor: processor
         )
-
+        let recordingCoordinator = RecordingCoordinator(
+            scheduler: scheduler,
+            privacy: configuration.privacy,
+            rumContextObserver: RUMContextObserverMock(),
+            srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
+            recorder: recorder,
+            sampler: Sampler(samplingRate: 1000)
+        )
         // Set up wireframes interception and trigger recorder once:
         var wireframes: [SRWireframe]?
 
@@ -125,13 +131,12 @@ private struct NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
 }
 
-private struct RecordingCoordinatorMock: RecordingCoordination {
-    var currentRUMContext: DatadogSessionReplay.RUMContext? = RUMContext(
-        ids: .init(applicationID: "", sessionID: "", viewID: ""),
-        viewServerTimeOffset: 0
-    )
-
-    var shouldRecord: Bool = true
+private struct RUMContextObserverMock: RUMContextObserver {
+    func observe(on queue: DatadogSessionReplay.Queue, notify: @escaping (DatadogSessionReplay.RUMContext?) -> Void) {
+        queue.run {
+            notify(.init(ids: .init(applicationID: "", sessionID: "", viewID: ""), viewServerTimeOffset: 0))
+        }
+    }
 }
 
 private class TestScheduler: Scheduler {
