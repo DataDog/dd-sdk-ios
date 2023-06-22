@@ -2255,7 +2255,6 @@
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
-		E19BC10D2A0D14EB00540A0F /* RemoteLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteLoggerTests.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
@@ -2698,7 +2697,6 @@
 				3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */,
 				61133B83242393DE00786299 /* Products */,
 				61133C6F2423993200786299 /* Frameworks */,
-				D242C29D2A14D04F004B4980 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -4318,14 +4316,6 @@
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
 			);
 			path = Integrations;
-			sourceTree = "<group>";
-		};
-		D242C29D2A14D04F004B4980 /* Recovered References */ = {
-			isa = PBXGroup;
-			children = (
-				E19BC10D2A0D14EB00540A0F /* RemoteLoggerTests.swift */,
-			);
-			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		D249859B2727FF1D00B4F72D /* UIKit */ = {
