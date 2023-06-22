@@ -28,6 +28,54 @@ public enum DDLogLevel: Int {
 }
 
 @objc
+public class DDLogsConfiguration: NSObject {
+    internal var configuration: Logs.Configuration
+
+    /// Sets the sampling rate for logging.
+    ///
+    /// The sampling rate must be a value between `0` and `100`. A value of `0` means no logs will be processed, `100`
+    /// means all logs will be processed.
+    ///
+    /// By default sampling is disabled, meaning that all logs are being processed).
+    @objc public var sampleRate: Float {
+        get { configuration.sampleRate }
+        set { configuration.sampleRate = newValue }
+    }
+
+    /// Overrides the custom server endpoint where Logs are sent.
+    @objc public var customEndpoint: URL? {
+        get { configuration.customEndpoint }
+        set { configuration.customEndpoint = newValue }
+    }
+
+    /// Creates a Logs configuration object.
+    ///
+    /// - Parameters:
+    ///   - sampleRate: The sampling rate for logging.
+    ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
+    @objc
+    public init(
+        sampleRate: Float = 100,
+        customEndpoint: URL? = nil
+    ) {
+        configuration = .init(
+            sampleRate: sampleRate,
+            customEndpoint: customEndpoint
+        )
+    }
+}
+
+@objc
+public class DDLogs: NSObject {
+    @objc
+    public static func enable(
+        with configuration: DDLogsConfiguration = .init()
+    ) {
+        Logs.enable(with: configuration.configuration)
+    }
+}
+
+@objc
 public class DDLogger: NSObject {
     internal let sdkLogger: Logger
 

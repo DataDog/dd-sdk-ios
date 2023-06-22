@@ -7,6 +7,7 @@
 import Foundation
 import DatadogTrace
 import DatadogRUM
+import DatadogLogs
 import Datadog
 
 internal class TrackingConsentBaseScenario {
@@ -16,22 +17,28 @@ internal class TrackingConsentBaseScenario {
     }
 
     func configureFeatures() {
-        if let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint {
-            // Register Tracer
-            DatadogTracer.initialize(
-                configuration: .init(
-                    sendNetworkInfo: true,
-                    customIntakeURL: tracesEndpoint
-                )
-            )
-        }
-
+        // Enable RUM
         var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
         rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
         rumConfig.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
         rumConfig.urlSessionTracking = .init()
         RUM.enable(with: rumConfig)
+
+        // Register Tracer
+        DatadogTracer.initialize(
+            configuration: .init(
+                sendNetworkInfo: true,
+                customIntakeURL: Environment.serverMockConfiguration()?.tracesEndpoint
+            )
+        )
+
+        // Enable Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
+            )
+        )
     }
 }
 

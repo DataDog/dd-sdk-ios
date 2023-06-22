@@ -36,11 +36,11 @@ class LoggerTests: XCTestCase {
             env: "tests",
             version: "1.0.0",
             sdkVersion: "1.2.3",
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             device: .mockWith(architecture: "testArch")
         )
 
-        let feature: DatadogLogsFeature = .mockWith(
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
+        let feature: LogsFeature = .mockWith(
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
         try core.register(feature: feature)
@@ -72,7 +72,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogWithCustomizedLogger() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder
@@ -103,7 +103,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Sending Customized Logs
 
     func testSendingLogsWithDifferentDates() throws {
-        let feature: DatadogLogsFeature = .mockWith(
+        let feature: LogsFeature = .mockWith(
             dateProvider: RelativeDateProvider(startingFrom: .mockDecember15th2019At10AMUTC(), advancingBySeconds: 1)
         )
         try core.register(feature: feature)
@@ -122,7 +122,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsWithDifferentLevels() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -145,7 +145,7 @@ class LoggerTests: XCTestCase {
     func testSendingLogsAboveCertainLevel() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder
@@ -170,7 +170,7 @@ class LoggerTests: XCTestCase {
     func testLoggingError() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         struct TestError: Error {
@@ -197,7 +197,7 @@ class LoggerTests: XCTestCase {
     func testLoggingErrorStrings() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -226,7 +226,7 @@ class LoggerTests: XCTestCase {
 
     func testSamplingEnabled() throws {
         core.context = .mockAny()
-        let feature: DatadogLogsFeature = .mockWith(
+        let feature: LogsFeature = .mockWith(
             sampler: .mockKeepAll()
         )
         try core.register(feature: feature)
@@ -246,7 +246,7 @@ class LoggerTests: XCTestCase {
 
     func testSamplingDisabled() throws {
         core.context = .mockAny()
-        let feature: DatadogLogsFeature = .mockWith(
+        let feature: LogsFeature = .mockWith(
             sampler: .mockRejectAll()
         )
         try core.register(feature: feature)
@@ -271,7 +271,7 @@ class LoggerTests: XCTestCase {
             userInfo: .empty
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -322,7 +322,7 @@ class LoggerTests: XCTestCase {
             carrierInfo: nil
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder
@@ -359,7 +359,7 @@ class LoggerTests: XCTestCase {
             networkConnectionInfo: nil
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder
@@ -411,7 +411,7 @@ class LoggerTests: XCTestCase {
     func testSendingLoggerAttributesOfDifferentEncodableValues() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -477,7 +477,7 @@ class LoggerTests: XCTestCase {
     func testSendingMessageAttributes() throws {
         core.context = .mockAny()
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -511,7 +511,7 @@ class LoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -548,7 +548,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLogBeforeAnyUserActivity_itContainsSessionId() throws {
         core.context = .mockAny()
 
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         RUM.enable(
@@ -577,7 +577,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithRUMEnabledAndRUMFeatureEnabled_whenSendingLog_itContainsCurrentRUMContext() throws {
         core.context = .mockAny()
 
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         let applicationID: String = .mockRandom()
@@ -625,7 +625,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorForCurrentView() throws {
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         // given
@@ -661,7 +661,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogsWithAttributes_itCreatesRUMErrorForCurrentViewWithAttributes() throws {
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         // given
@@ -703,7 +703,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperSourceType() throws {
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         // given
@@ -741,7 +741,7 @@ class LoggerTests: XCTestCase {
     }
 
     func testWhenSendingErrorOrCriticalLogs_itCreatesRUMErrorWithProperIsCrash() throws {
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         // given
@@ -782,7 +782,7 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.context = .mockAny()
 
-        let logging: DatadogLogsFeature = .mockAny()
+        let logging: LogsFeature = .mockAny()
         try core.register(feature: logging)
 
         DatadogTracer.initialize(in: core)
@@ -825,7 +825,7 @@ class LoggerTests: XCTestCase {
         )
 
         // When
-        let feature: DatadogLogsFeature = .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
+        let feature: LogsFeature = .mockWith(dateProvider: RelativeDateProvider(using: deviceTime))
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -841,7 +841,7 @@ class LoggerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
         let logger = DatadogLogger.builder.build(in: core)
@@ -895,7 +895,7 @@ class LoggerTests: XCTestCase {
 
         // given
         core.context = .mockAny()
-        XCTAssertNil(core.get(feature: DatadogLogsFeature.self))
+        XCTAssertNil(core.get(feature: LogsFeature.self))
 
         // when
         let logger = DatadogLogger.builder.build(in: core)

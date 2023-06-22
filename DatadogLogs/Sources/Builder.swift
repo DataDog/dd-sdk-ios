@@ -140,7 +140,7 @@ public class Builder {
             )
         }
 
-        guard let feature = core.get(feature: DatadogLogsFeature.self) else {
+        guard let feature = core.get(feature: LogsFeature.self) else {
             throw ProgrammerError(
                 description: "`Logger.builder.build()` produces a non-functional logger, as the logging feature is disabled."
             )
@@ -153,7 +153,7 @@ public class Builder {
 
             let configuration = RemoteLogger.Configuration(
                 service: serviceName,
-                loggerName: loggerName ?? feature.applicationBundleIdentifier,
+                loggerName: loggerName,
                 sendNetworkInfo: sendNetworkInfo,
                 threshold: datadogReportingThreshold,
                 eventMapper: feature.logEventMapper,

@@ -8,7 +8,6 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
-@testable import DatadogRUM
 @testable import Datadog
 
 class FeaturesConfigurationTests: XCTestCase {
@@ -199,31 +198,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
     }
 
-    // MARK: - Logging Configuration Tests
-
-    func testWhenLoggingIsDisabled() throws {
-        XCTAssertNil(
-            try FeaturesConfiguration(configuration: .mockWith(loggingEnabled: false), appContext: .mockAny()).logging,
-            "Feature configuration should not be available if the feature is disabled"
-        )
-    }
-
-    func testCustomLogsEndpoint() throws {
-        let randomDatadogEndpoint: DatadogSite = .mockRandom()
-        let randomCustomEndpoint: URL = .mockRandom()
-
-        let configuration = try createConfiguration(
-            datadogEndpoint: randomDatadogEndpoint,
-            customLogsEndpoint: randomCustomEndpoint
-        )
-
-        XCTAssertEqual(
-            configuration.logging?.customURL,
-            randomCustomEndpoint,
-            "When custom endpoint is set it should override `DatadogSite`"
-        )
-    }
-
     // MARK: - Tracing Configuration Tests
 
     func testWhenTracingIsDisabled() throws {
@@ -231,17 +205,6 @@ class FeaturesConfigurationTests: XCTestCase {
             try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracingEnabled,
             "Feature configuration should not be available if the feature is disabled"
         )
-    }
-
-    func testLoggingSamplingRate() throws {
-        let custom = try FeaturesConfiguration(
-            configuration: .mockWith(
-                loggingEnabled: true,
-                loggingSamplingRate: 12.34
-            ),
-            appContext: .mockAny()
-        )
-        XCTAssertEqual(custom.logging?.remoteLoggingSampler.samplingRate, 12.34)
     }
 
     // MARK: - URLSession Auto Instrumentation Configuration Tests
@@ -303,16 +266,13 @@ class FeaturesConfigurationTests: XCTestCase {
     private func createConfiguration(
         clientToken: String = "abc",
         datadogEndpoint: DatadogSite = .us1,
-        customLogsEndpoint: URL? = nil,
         proxyConfiguration: [AnyHashable: Any]? = nil
     ) throws -> FeaturesConfiguration {
         return try FeaturesConfiguration(
             configuration: .mockWith(
                 clientToken: clientToken,
-                loggingEnabled: true,
                 tracingEnabled: true,
                 datadogEndpoint: datadogEndpoint,
-                customLogsEndpoint: customLogsEndpoint,
                 proxyConfiguration: proxyConfiguration
             ),
             appContext: .mockAny()

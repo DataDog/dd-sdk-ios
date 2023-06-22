@@ -555,7 +555,7 @@ class TracerTests: XCTestCase {
     // MARK: - Integration With Logging Feature
 
     func testSendingSpanLogs() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -588,7 +588,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -613,7 +613,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -644,7 +644,7 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -1139,7 +1139,7 @@ class TracerTests: XCTestCase {
         defer { dd.reset() }
 
         // given
-        XCTAssertNil(core.get(feature: DatadogLogsFeature.self))
+        XCTAssertNil(core.get(feature: LogsFeature.self))
         DatadogTracer.initialize(in: core)
 
         // when

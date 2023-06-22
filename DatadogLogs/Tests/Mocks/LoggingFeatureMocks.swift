@@ -10,13 +10,12 @@ import DatadogInternal
 
 @testable import DatadogLogs
 
-extension DatadogLogsFeature {
+extension LogsFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockAny() -> Self { .mockWith() }
 
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockWith(
-        applicationBundleIdentifier: String = .mockAny(),
         logEventMapper: LogEventMapper? = nil,
         sampler: Sampler = .mockKeepAll(),
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
@@ -24,7 +23,6 @@ extension DatadogLogsFeature {
         dateProvider: DateProvider = SystemDateProvider()
     )  -> Self {
         return .init(
-            applicationBundleIdentifier: applicationBundleIdentifier,
             logEventMapper: logEventMapper,
             sampler: sampler,
             requestBuilder: requestBuilder,

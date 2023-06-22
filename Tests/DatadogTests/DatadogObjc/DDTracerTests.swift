@@ -120,7 +120,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogs() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -142,7 +142,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)
@@ -167,7 +167,7 @@ class DDTracerTests: XCTestCase {
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
-        let logging: DatadogLogsFeature = .mockWith(
+        let logging: LogsFeature = .mockWith(
             messageReceiver: LogMessageReceiver.mockAny()
         )
         try core.register(feature: logging)

@@ -64,13 +64,10 @@
 
 - (void)testDDConfigurationBuilderAPI {
     DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"" environment:@""];
-    [builder enableLogging:YES];
     [builder enableTracing:YES];
     [builder setWithEndpoint:[DDEndpoint us]];
-    [builder setWithCustomLogsEndpoint:[NSURL new]];
     [builder trackURLSessionWithFirstPartyHosts:[NSSet setWithArray:@[]]];
     [builder setWithTracingSamplingRate:75];
-    [builder setWithLoggingSamplingRate:100];
     [builder setWithServiceName:@""];
     [builder setWithBatchSize:DDBatchSizeMedium];
     [builder setWithUploadFrequency:DDUploadFrequencyAverage];

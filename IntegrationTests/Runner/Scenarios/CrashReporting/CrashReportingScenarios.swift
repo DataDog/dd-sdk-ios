@@ -7,6 +7,7 @@
 import UIKit
 
 import Datadog
+import DatadogLogs
 import DatadogRUM
 import DatadogCrashReporting
 
@@ -59,7 +60,12 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
 /// A `CrashReportingScenario` which uploads the crash report as "EMERGENCY" Log.
 final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseScenario, TestScenario {
     func configureFeatures() {
-        // No RUM, so the crash report is sent with Logs
+        // Enable Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
+            )
+        )
 
         DatadogCrashReporter.initialize()
     }

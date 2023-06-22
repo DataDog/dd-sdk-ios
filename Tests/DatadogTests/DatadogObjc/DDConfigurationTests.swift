@@ -20,7 +20,6 @@ class DDConfigurationTests: XCTestCase {
 
         [swiftConfiguration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
-            XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
@@ -35,9 +34,6 @@ class DDConfigurationTests: XCTestCase {
 
     func testCustomizedBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
-
-        objcBuilder.enableLogging(false)
-        XCTAssertFalse(objcBuilder.build().sdkConfiguration.loggingEnabled)
 
         objcBuilder.enableTracing(false)
         XCTAssertFalse(objcBuilder.build().sdkConfiguration.tracingEnabled)
@@ -69,10 +65,6 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(endpoint: .gov())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
 
-        let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
-        objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.customLogsEndpoint, customLogsEndpoint)
-
         objcBuilder.set(serviceName: "service-name")
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
 
@@ -84,9 +76,6 @@ class DDConfigurationTests: XCTestCase {
             "example2.com": [.tracecontext],
             "example.com": [.datadog]
         ]))
-
-        objcBuilder.set(loggingSamplingRate: 66)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
 
         objcBuilder.set(tracingSamplingRate: 75)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)

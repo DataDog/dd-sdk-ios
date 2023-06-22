@@ -19,13 +19,10 @@ extension Datadog.Configuration {
     static func mockWith(
         clientToken: String = .mockAny(),
         environment: String = .mockAny(),
-        loggingEnabled: Bool = false,
         tracingEnabled: Bool = false,
         datadogEndpoint: DatadogSite = .us1,
-        customLogsEndpoint: URL? = nil,
         serviceName: String? = .mockAny(),
         firstPartyHosts: FirstPartyHosts? = nil,
-        loggingSamplingRate: Float = 100.0,
         tracingSamplingRate: Float = 100.0,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
@@ -36,13 +33,10 @@ extension Datadog.Configuration {
         return Datadog.Configuration(
             clientToken: clientToken,
             environment: environment,
-            loggingEnabled: loggingEnabled,
             tracingEnabled: tracingEnabled,
             datadogEndpoint: datadogEndpoint,
-            customLogsEndpoint: customLogsEndpoint,
             serviceName: serviceName,
             firstPartyHosts: firstPartyHosts,
-            loggingSamplingRate: loggingSamplingRate,
             tracingSamplingRate: tracingSamplingRate,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
@@ -81,12 +75,10 @@ extension FeaturesConfiguration {
 
     static func mockWith(
         common: Common = .mockAny(),
-        logging: Logging? = .mockAny(),
         tracingEnabled: Bool = .mockAny()
     ) -> Self {
         return .init(
             common: common,
-            logging: logging,
             tracingEnabled: tracingEnabled
         )
     }
@@ -130,26 +122,6 @@ extension FeaturesConfiguration.Common {
             encryption: encryption,
             serverDateProvider: serverDateProvider,
             dateProvider: dateProvider
-        )
-    }
-}
-
-extension FeaturesConfiguration.Logging {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(
-        customURL: URL? = .mockAny(),
-        logEventMapper: LogEventMapper? = nil,
-        dateProvider: DateProvider = SystemDateProvider(),
-        applicationBundleIdentifier: String = .mockAny(),
-        remoteLoggingSampler: Sampler = Sampler(samplingRate: 100.0)
-    ) -> Self {
-        return .init(
-            customURL: customURL,
-            logEventMapper: logEventMapper,
-            dateProvider: dateProvider,
-            applicationBundleIdentifier: applicationBundleIdentifier,
-            remoteLoggingSampler: remoteLoggingSampler
         )
     }
 }

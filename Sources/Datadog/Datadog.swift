@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -167,11 +166,6 @@ public class Datadog {
         core?.clearAllData()
     }
 
-    // MARK: - Internal
-    internal struct LaunchArguments {
-        static let Debug = "DD_DEBUG"
-    }
-
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration,
@@ -209,17 +203,6 @@ public class Datadog {
         )
 
         CITestIntegration.active?.startIntegration()
-
-        if let loggingConfiguration = configuration.logging {
-            try DatadogLogger.initialise(
-                in: core,
-                applicationBundleIdentifier: loggingConfiguration.applicationBundleIdentifier,
-                eventMapper: loggingConfiguration.logEventMapper,
-                dateProvider: loggingConfiguration.dateProvider,
-                sampler: loggingConfiguration.remoteLoggingSampler,
-                customIntakeURL: loggingConfiguration.customURL
-            )
-        }
 
         CoreRegistry.register(core, named: instanceName)
         deleteV1Folders(in: core)

@@ -7,6 +7,7 @@
 import XCTest
 import HTTPServerMock
 import Datadog
+import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 
@@ -47,11 +48,14 @@ class BenchmarkTests: XCTestCase {
             trackingConsent: .granted,
             configuration: Datadog.Configuration
                 .builderUsing(clientToken: "rum-abc", environment: "benchmarks")
-                .set(customLogsEndpoint: anyURL)
                 .build()
         )
 
         RUM.enable(with: .init(applicationID: "rum-123", customEndpoint: anyURL))
+
+        Logs.enable(
+            with: Logs.Configuration(customEndpoint: anyURL)
+        )
 
         DatadogTracer.initialize(
             configuration: .init(customIntakeURL: anyURL)

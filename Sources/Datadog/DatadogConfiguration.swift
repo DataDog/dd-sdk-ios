@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 
 extension Datadog {
     internal struct Constants {
@@ -40,19 +39,14 @@ extension Datadog {
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
         private(set) var clientToken: String
         private(set) var environment: String
-        private(set) var loggingEnabled: Bool
         private(set) var tracingEnabled: Bool
         private(set) var serverDateProvider: ServerDateProvider?
 
         /// If `DatadogSite` is set, it will override `logsEndpoint` and `tracesEndpoint`.
         private(set) var datadogEndpoint: DatadogSite
-        /// If `customLogsEndpoint` is set, it will override logs endpoint value configured with `logsEndpoint` and `DatadogSite`.
-        private(set) var customLogsEndpoint: URL?
 
         private(set) var serviceName: String?
         private(set) var firstPartyHosts: FirstPartyHosts?
-        var logEventMapper: LogEventMapper?
-        private(set) var loggingSamplingRate: Float
         private(set) var tracingSamplingRate: Float
         private(set) var batchSize: BatchSize
         private(set) var uploadFrequency: UploadFrequency
@@ -84,15 +78,12 @@ extension Datadog {
                 self.configuration = Configuration(
                     clientToken: clientToken,
                     environment: environment,
-                    loggingEnabled: true,
                     tracingEnabled: true,
                     // While `.set(<feature>Endpoint:)` APIs are deprecated, the `datadogEndpoint` default must be `nil`,
                     // so we know the clear user's intent to override deprecated values.
                     datadogEndpoint: .us1,
-                    customLogsEndpoint: nil,
                     serviceName: nil,
                     firstPartyHosts: nil,
-                    loggingSamplingRate: 100.0,
                     tracingSamplingRate: 20.0,
                     batchSize: .medium,
                     uploadFrequency: .average,
@@ -113,14 +104,6 @@ extension Datadog {
                 return self
             }
 
-            /// Sets the custom server endpoint where Logs are sent.
-            ///
-            /// - Parameter endpoint: server endpoint (not set by default)
-            public func set(customLogsEndpoint: URL) -> Builder {
-                configuration.customLogsEndpoint = customLogsEndpoint
-                return self
-            }
-
             /// Sets a custom NTP synchronization interface.
             ///
             /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
@@ -132,45 +115,6 @@ extension Datadog {
             ///                                 for provider clock synchronisation.
             public func set(serverDateProvider: ServerDateProvider) -> Builder {
                 configuration.serverDateProvider = serverDateProvider
-                return self
-            }
-
-            // MARK: - Logging Configuration
-
-            /// Enables or disables the logging feature.
-            ///
-            /// This option is meant to opt-out from using Datadog Logging entirely, no matter of your environment or build configuration. If you need to
-            /// disable logging only for certain scenarios (e.g. in `DEBUG` build configuration), use `sendLogsToDatadog(false)` available
-            /// on `Logger.Builder`.
-            ///
-            /// If `enableLogging(false)` is set, the SDK won't instantiate underlying resources required for
-            /// running the logging feature. This will give you additional performance optimization if you only use RUM or tracing.
-            ///
-            /// **NOTE**: If you use logging for tracing (`span.log(fields:)`) keep the logging feature enabled. Otherwise the logs
-            /// you send for `span` objects won't be delivered to Datadog.
-            ///
-            /// - Parameter enabled: `true` by default
-            public func enableLogging(_ enabled: Bool) -> Builder {
-                configuration.loggingEnabled = enabled
-                return self
-            }
-
-            /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
-            /// - Parameter mapper: the closure taking `LogEvent` as input and expecting `LogEvent` as output.
-            /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
-            /// with dropping the Log event entirely, so it won't be send to Datadog.
-            public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent?) -> Builder {
-                configuration.logEventMapper = SyncLogEventMapper(mapper)
-                return self
-            }
-
-            /// Sets the sampling rate for logging.
-            ///
-            /// - Parameter loggingSamplingRate: the sampling rate must be a value between `0.0` and `100.0`. A value of `0.0`
-            /// means no logs will be processed, `100.0` means all logs will be processed.
-            /// (by default sampling is disabled, meaning that all logs are being processed).
-            public func set(loggingSamplingRate: Float) -> Builder {
-                configuration.loggingSamplingRate = loggingSamplingRate
                 return self
             }
 

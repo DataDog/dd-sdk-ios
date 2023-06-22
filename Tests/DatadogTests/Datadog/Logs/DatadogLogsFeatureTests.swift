@@ -70,10 +70,9 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = DatadogLogsFeature(
+        let feature = LogsFeature(
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
-            applicationBundleIdentifier: randomApplicationName,
             remoteLoggingSampler: .mockKeepAll(),
             customIntakeURL: randomUploadURL
         )
@@ -138,10 +137,9 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = DatadogLogsFeature(
+        let feature = LogsFeature(
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
-            applicationBundleIdentifier: .mockAny(),
             remoteLoggingSampler: .mockKeepAll(),
             customIntakeURL: .mockAny()
         )

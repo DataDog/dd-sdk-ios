@@ -14,7 +14,7 @@ internal final class RemoteLogger: Logger {
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
         /// The `logger.name` value for logs.
-        let loggerName: String
+        let loggerName: String?
         /// Whether to send the network info in `network.client.*` log attributes.
         let sendNetworkInfo: Bool
         /// Only logs equal or above this threshold will be sent.
@@ -124,7 +124,7 @@ internal final class RemoteLogger: Logger {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        self.core.scope(for: DatadogLogsFeature.name)?.eventWriteContext { context, writer in
+        self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 

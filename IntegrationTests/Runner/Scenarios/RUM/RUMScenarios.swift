@@ -44,7 +44,6 @@ final class RUMNavigationControllerScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 
@@ -73,7 +72,6 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 
@@ -102,7 +100,6 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 
@@ -139,7 +136,6 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 
@@ -176,7 +172,6 @@ final class RUMTapActionScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 
@@ -195,7 +190,6 @@ final class RUMMobileVitalsScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
     }
 

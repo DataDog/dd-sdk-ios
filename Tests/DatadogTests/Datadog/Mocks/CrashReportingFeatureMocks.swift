@@ -43,6 +43,7 @@ internal class CrashReportingPluginMock: CrashReportingPlugin {
     /// The crash report loaded by this plugin.
     var pendingCrashReport: DDCrashReport?
     /// If the plugin was asked to delete the crash report.
+    @ReadWriteLock
     var hasPurgedCrashReport: Bool?
     /// Custom app state data injected to the plugin.
     var injectedContextData: Data?

@@ -99,26 +99,11 @@ class DatadogTests: XCTestCase {
 
         verify(configuration: defaultBuilder.build()) {
             // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
             XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
             // verify integrations:
             XCTAssertTrue(DD.telemetry is TelemetryCore)
         }
 
-        verify(configuration: defaultBuilder.enableLogging(false).build()) {
-            // verify features:
-            XCTAssertNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
-            XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
-            // verify integrations:
-            XCTAssertTrue(DD.telemetry is TelemetryCore)
-        }
-
-        verify(configuration: defaultBuilder.enableTracing(false).build()) {
-            // verify features:
-            XCTAssertNotNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
-            XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
-            XCTAssertTrue(DD.telemetry is TelemetryCore)
-        }
     }
 
     // MARK: - Public APIs
@@ -279,10 +264,11 @@ class DatadogTests: XCTestCase {
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
             configuration: defaultBuilder
-                .enableLogging(true)
                 .enableTracing(true)
                 .build()
         )
+
+        Logs.enable()
 
         DatadogTracer.initialize()
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)

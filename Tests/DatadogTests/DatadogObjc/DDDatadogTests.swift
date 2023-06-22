@@ -44,7 +44,7 @@ class DDDatadogTests: XCTestCase {
 
         Datadog.flushAndDeinitialize()
 
-        XCTAssertNil(CoreRegistry.default.get(feature: DatadogLogsFeature.self))
+        XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
         XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
     }
 

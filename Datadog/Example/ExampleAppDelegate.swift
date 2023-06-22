@@ -41,16 +41,12 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         rumConfig.telemetrySampleRate = 100
         rumConfig.backgroundEventsTracking = true
 
-        if let customLogsURL = Environment.readCustomLogsURL() {
-            configuration = configuration.set(customLogsEndpoint: customLogsURL)
-        }
         if let customRUMURL = Environment.readCustomRUMURL() {
             rumConfig.customEndpoint = customRUMURL
         }
 
         // Enable all features so they can be tested with debug menu
         configuration = configuration
-            .enableLogging(true)
             .enableTracing(true)
 
         // Initialize Datadog SDK
@@ -77,6 +73,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #else
         logger.addTag(withKey: "build_configuration", value: "release")
         #endif
+
+        // Register Logs
+        Logs.enable(
+            with: Logs.Configuration(
+                customEndpoint: Environment.readCustomLogsURL()
+            )
+        )
 
         // Register Tracer
         DatadogTracer.initialize(
