@@ -103,7 +103,6 @@ class DatadogTests: XCTestCase {
             // verify integrations:
             XCTAssertTrue(DD.telemetry is TelemetryCore)
         }
-
     }
 
     // MARK: - Public APIs
