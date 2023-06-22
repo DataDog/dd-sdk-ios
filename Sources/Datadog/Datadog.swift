@@ -110,6 +110,14 @@ public class Datadog {
         return CoreRegistry.default is DatadogCore
     }
 
+    /// Returns the Datadog SDK instance for the given name.
+    ///
+    /// - Parameter name: The name of the instance to get.
+    /// - Returns: The core instance if it exists, `NOPDatadogCore` instance otherwise.
+    public static func sdkInstance(named name: String) -> DatadogCoreProtocol {
+        CoreRegistry.instance(named: name)
+    }
+
     /// Sets current user information.
     /// Those will be added to logs, traces and RUM events automatically.
     /// - Parameters:
@@ -121,9 +129,10 @@ public class Datadog {
         id: String? = nil,
         name: String? = nil,
         email: String? = nil,
-        extraInfo: [AttributeKey: AttributeValue] = [:]
+        extraInfo: [AttributeKey: AttributeValue] = [:],
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        let core = CoreRegistry.default as? DatadogCore
+        let core = core as? DatadogCore
         core?.setUserInfo(
             id: id,
             name: name,
@@ -139,22 +148,23 @@ public class Datadog {
     /// - Parameters:
     ///   - extraInfo: User's additionall custom attributes
     public static func addUserExtraInfo(
-        _ extraInfo: [AttributeKey: AttributeValue?]
+        _ extraInfo: [AttributeKey: AttributeValue?],
+        in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        let core = CoreRegistry.default as? DatadogCore
+        let core = core as? DatadogCore
         core?.addUserExtraInfo(extraInfo)
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
-    public static func set(trackingConsent: TrackingConsent) {
-        let core = CoreRegistry.default as? DatadogCore
+    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        let core = core as? DatadogCore
         core?.set(trackingConsent: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
-    public static func clearAllData() {
-        let core = CoreRegistry.default as? DatadogCore
+    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default) {
+        let core = core as? DatadogCore
         core?.clearAllData()
     }
 

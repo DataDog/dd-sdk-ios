@@ -26,7 +26,7 @@ public extension WKUserContentController {
     ///
     /// - Parameter core: Datadog SDK core to use for tracking
     /// - Parameter hosts: a set of hosts instrumented with Browser SDK to capture Datadog events from
-    func startTrackingDatadogEvents(core: DatadogCoreProtocol, hosts: Set<String> = []) {
+    func startTrackingDatadogEvents(core: DatadogCoreProtocol = CoreRegistry.default, hosts: Set<String> = []) {
         do {
             try startTrackingDatadogEventsOrThrow(core: core, hosts: hosts)
         } catch {
