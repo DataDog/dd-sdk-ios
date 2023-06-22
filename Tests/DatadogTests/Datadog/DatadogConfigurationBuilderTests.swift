@@ -7,7 +7,6 @@
 import XCTest
 import TestUtilities
 
-@testable import DatadogLogs
 @testable import DatadogRUM
 @testable import Datadog
 
@@ -30,15 +29,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         [configuration, rumConfiguration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
-            XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .us1)
-            XCTAssertNil(configuration.customLogsEndpoint)
             XCTAssertNil(configuration.customRUMEndpoint)
             XCTAssertNil(configuration.serviceName)
             XCTAssertNil(configuration.firstPartyHosts)
-            XCTAssertNil(configuration.logEventMapper)
-            XCTAssertEqual(configuration.loggingSamplingRate, 100.0)
             XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 100.0)
             XCTAssertNil(configuration.rumSessionsListener)
@@ -63,7 +58,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
     }
 
     func testCustomizedBuilder() {
-        let mockLogEvent: LogEvent = .mockAny()
         let mockRUMViewEvent: RUMViewEvent = .mockRandom()
         let mockRUMErrorEvent: RUMErrorEvent = .mockRandom()
         let mockRUMResourceEvent: RUMResourceEvent = .mockRandom()
@@ -73,16 +67,12 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
             _ = builder
                 .set(serviceName: "service-name")
-                .enableLogging(false)
                 .enableTracing(false)
                 .enableRUM(false)
                 .set(endpoint: .eu1)
-                .set(customLogsEndpoint: URL(string: "https://api.custom.logs/")!)
                 .set(customRUMEndpoint: URL(string: "https://api.custom.rum/")!)
                 .set(rumSessionsSamplingRate: 42.5)
                 .onRUMSessionStart { _, _ in }
-                .setLogEventMapper { _ in mockLogEvent }
-                .set(loggingSamplingRate: 66)
                 .set(tracingSamplingRate: 75)
                 .trackURLSession(firstPartyHosts: ["example.com"])
                 .trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.b3]])
@@ -135,14 +125,11 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertEqual(configuration.serviceName, "service-name")
-            XCTAssertFalse(configuration.loggingEnabled)
             XCTAssertFalse(configuration.tracingEnabled)
             XCTAssertFalse(configuration.rumEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .eu1)
-            XCTAssertEqual(configuration.customLogsEndpoint, URL(string: "https://api.custom.logs/")!)
             XCTAssertEqual(configuration.customRUMEndpoint, URL(string: "https://api.custom.rum/")!)
             XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
-            XCTAssertEqual(configuration.loggingSamplingRate, 66)
             XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.rumSessionsSamplingRate, 42.5)
             XCTAssertNotNil(configuration.rumSessionsListener)
@@ -170,11 +157,6 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
             XCTAssertTrue(configuration.encryption is DataEncryptionMock)
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
-
-            // Aync mapper:
-            configuration.logEventMapper?.map(event: .mockRandom()) { event in
-                DDAssertReflectionEqual(event, mockLogEvent)
-            }
         }
 
         XCTAssertTrue(rumConfigurationWithDefaultValues.rumUIKitViewsPredicate is DefaultUIKitRUMViewsPredicate)

@@ -5,9 +5,9 @@
  */
 
 import UIKit
+import Datadog
 import DatadogInternal
 import DatadogRUM
-import Datadog
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
 /// uses the RUM manual instrumentation API to send RUM events to the server.
@@ -40,7 +40,6 @@ final class RUMNavigationControllerScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -63,7 +62,6 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -86,7 +84,6 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -117,7 +114,6 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -149,7 +145,6 @@ final class RUMTapActionScenario: TestScenario {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .trackUIKitRUMActions()
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -163,7 +158,6 @@ final class RUMMobileVitalsScenario: TestScenario {
             .trackUIKitRUMViews()
             .trackUIKitRUMActions()
             .trackRUMLongTasks(threshold: 2.5)
-            .enableLogging(false)
             .enableTracing(false)
     }
 }
@@ -207,7 +201,6 @@ final class RUMScrubbingScenario: TestScenario {
         }
 
         _ = builder
-            .enableLogging(false)
             .enableTracing(false)
             .setRUMViewEventMapper { viewEvent in
                 var viewEvent = viewEvent
@@ -286,7 +279,6 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
         _ = builder
             .trackUIKitRUMViews(using: Predicate())
             .trackUIKitRUMActions()
-            .enableLogging(false)
             .enableTracing(false)
     }
 }

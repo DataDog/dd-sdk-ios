@@ -62,26 +62,6 @@ public class DatadogLogger: Logger {
         logger.remove(tag: tag)
     }
 
-    // MARK: - Registration
-
-    public static func initialise(
-        in core: DatadogCoreProtocol = CoreRegistry.default,
-        applicationBundleIdentifier: String,
-        eventMapper: LogEventMapper? = nil,
-        dateProvider: DateProvider = SystemDateProvider(),
-        sampler: Sampler,
-        customIntakeURL: URL? = nil
-    ) throws {
-        let feature = DatadogLogsFeature(
-            logEventMapper: eventMapper,
-            dateProvider: dateProvider,
-            applicationBundleIdentifier: applicationBundleIdentifier,
-            remoteLoggingSampler: sampler,
-            customIntakeURL: customIntakeURL
-        )
-        try core.register(feature: feature)
-    }
-
     // MARK: - Builder
 
     /// Creates a `DatadogLogger` builder.

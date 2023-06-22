@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 import DatadogRUM
 
 /// Describes the configuration of all features.
@@ -35,18 +34,8 @@ internal struct FeaturesConfiguration {
         let dateProvider: DateProvider
     }
 
-    struct Logging {
-        let customURL: URL?
-        let logEventMapper: LogEventMapper?
-        let dateProvider: DateProvider
-        let applicationBundleIdentifier: String
-        let remoteLoggingSampler: Sampler
-    }
-
     /// Configuration common to all features.
     let common: Common
-    /// Logging feature configuration or `nil` if the feature is disabled.
-    let logging: Logging?
     /// RUM feature configuration or `nil` if the feature is disabled.
     let rum: RUMConfiguration?
     /// Tracing feature enabled.
@@ -62,7 +51,6 @@ extension FeaturesConfiguration {
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
-        var logging: Logging?
         var rum: RUMConfiguration?
 
         tracingEnabled = configuration.tracingEnabled
@@ -72,9 +60,9 @@ extension FeaturesConfiguration {
         let appVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String) ?? appContext.bundleVersion ?? "0.0.0"
         let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
 
-        let debugOverride = appContext.processInfo.arguments.contains(Datadog.LaunchArguments.Debug)
+        let debugOverride = appContext.processInfo.arguments.contains(LaunchArguments.Debug)
         if debugOverride {
-            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(Datadog.LaunchArguments.Debug) launch argument")
+            consolePrint("⚠️ Overriding sampling, verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
             Datadog.verbosityLevel = .debug
         }
 
@@ -102,16 +90,6 @@ extension FeaturesConfiguration {
             serverDateProvider: configuration.serverDateProvider,
             dateProvider: dateProvider
         )
-
-        if configuration.loggingEnabled {
-            logging = Logging(
-                customURL: configuration.customLogsEndpoint,
-                logEventMapper: configuration.logEventMapper,
-                dateProvider: dateProvider,
-                applicationBundleIdentifier: common.applicationBundleIdentifier,
-                remoteLoggingSampler: Sampler(samplingRate: debugOverride ? 100 : configuration.loggingSamplingRate)
-            )
-        }
 
         if configuration.rumEnabled {
             let instrumentation = RUMConfiguration.Instrumentation(
@@ -182,7 +160,6 @@ extension FeaturesConfiguration {
         }
 
         self.common = common
-        self.logging = logging
         self.rum = rum
     }
 }

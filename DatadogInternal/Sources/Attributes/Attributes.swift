@@ -130,3 +130,9 @@ public struct CrossPlatformAttributes {
     /// Expects `Bool` value.
     public static let errorLogIsCrash = "_dd.error_log.is_crash"
 }
+
+public struct LaunchArguments {
+    /// Each product should consider this argument to offer simple debugging experience. 
+    /// For example, if this flag is present it can use no sampling.
+    public static let Debug = "DD_DEBUG"
+}

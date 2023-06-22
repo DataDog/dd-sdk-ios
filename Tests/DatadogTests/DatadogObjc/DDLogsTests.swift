@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+import TestUtilities
 
 @testable import DatadogLogs
 @testable import Datadog
@@ -13,7 +14,7 @@ import DatadogInternal
 
 // swiftlint:disable multiline_arguments_brackets
 // swiftlint:disable compiler_protocol_init
-class DDLoggerTests: XCTestCase {
+class DDLogsTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
@@ -29,8 +30,38 @@ class DDLoggerTests: XCTestCase {
         super.tearDown()
     }
 
+    func testDefaultConfiguration() {
+        // Given
+        let config = DDLogsConfiguration()
+
+        // Then
+        XCTAssertEqual(config.configuration.sampleRate, 100)
+        XCTAssertNil(config.configuration.customEndpoint)
+        XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
+    }
+
+    func testConfigurationOverrides() throws {
+        // Given
+        let sampleRate: Float = .random(in: 0...100)
+        let customEndpoint: URL = .mockRandom()
+
+        // When
+        DDLogs.enable(
+            with: DDLogsConfiguration(
+                sampleRate: sampleRate,
+                customEndpoint: customEndpoint
+            )
+        )
+
+        // Then
+        let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
+        let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
+        XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
+        XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
+    }
+
     func testSendingLogsWithDifferentLevels() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -52,7 +83,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingNSError() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -84,7 +115,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingMessageAttributes() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -109,7 +140,7 @@ class DDLoggerTests: XCTestCase {
     }
 
     func testSendingLoggerAttributes() throws {
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()
@@ -151,7 +182,7 @@ class DDLoggerTests: XCTestCase {
             version: "1.2.3"
         )
 
-        let feature: DatadogLogsFeature = .mockAny()
+        let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
         let objcLogger = DDLogger.builder().build()

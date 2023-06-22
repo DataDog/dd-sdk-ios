@@ -28,7 +28,6 @@ class DDConfigurationTests: XCTestCase {
 
         [swiftConfiguration, swiftConfigurationRUM].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
-            XCTAssertTrue(configuration.loggingEnabled)
             XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
@@ -56,9 +55,6 @@ class DDConfigurationTests: XCTestCase {
             DDConfiguration.builder(clientToken: "abc-123", environment: "tests"),
             DDConfiguration.builder(rumApplicationID: "rum-app-id", clientToken: "abc-123", environment: "tests")
         ].randomElement()!
-
-        objcBuilder.enableLogging(false)
-        XCTAssertFalse(objcBuilder.build().sdkConfiguration.loggingEnabled)
 
         objcBuilder.enableTracing(false)
         XCTAssertFalse(objcBuilder.build().sdkConfiguration.tracingEnabled)
@@ -93,10 +89,6 @@ class DDConfigurationTests: XCTestCase {
         objcBuilder.set(endpoint: .gov())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .us1_fed)
 
-        let customLogsEndpoint = URL(string: "https://api.example.com/v1/logs")!
-        objcBuilder.set(customLogsEndpoint: customLogsEndpoint)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.customLogsEndpoint, customLogsEndpoint)
-
         let customRUMEndpoint = URL(string: "https://api.example.com/v1/rum")!
         objcBuilder.set(customRUMEndpoint: customRUMEndpoint)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.customRUMEndpoint, customRUMEndpoint)
@@ -112,9 +104,6 @@ class DDConfigurationTests: XCTestCase {
             "example2.com": [.tracecontext],
             "example.com": [.datadog]
         ]))
-
-        objcBuilder.set(loggingSamplingRate: 66)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.loggingSamplingRate, 66)
 
         objcBuilder.set(tracingSamplingRate: 75)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)

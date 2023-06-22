@@ -44,7 +44,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
         let userAttributes: [String: AnyCodable] = attributes["userAttributes"] ?? [:]
         let internalAttributes: [String: AnyCodable]? = attributes["internalAttributes"]
 
-        core.scope(for: DatadogLogsFeature.name)?.eventWriteContext(bypassConsent: false) { context, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: false) { context, writer in
             let builder = LogEventBuilder(
                 service: attributes["service"] ?? context.service,
                 loggerName: loggerName,
@@ -189,7 +189,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: DatadogLogsFeature.name)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
             writer.write(value: event)
         }
 
@@ -216,7 +216,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
         let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
-        core.scope(for: DatadogLogsFeature.name)?.eventWriteContext { context, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
 
             if let tags = event[tagsKey] as? String, !tags.isEmpty {

@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogLogs
 import DatadogRUM
 
 /// Datadog SDK configuration object.
@@ -168,11 +167,6 @@ public class Datadog {
         core?.clearAllData()
     }
 
-    // MARK: - Internal
-    internal struct LaunchArguments {
-        static let Debug = "DD_DEBUG"
-    }
-
     private static func initializeOrThrow(
         initialTrackingConsent: TrackingConsent,
         configuration: FeaturesConfiguration,
@@ -214,17 +208,6 @@ public class Datadog {
             RUM.enable(with: rumConfiguration, in: core)
 
             CITestIntegration.active?.startIntegration()
-        }
-
-        if let loggingConfiguration = configuration.logging {
-            try DatadogLogger.initialise(
-                in: core,
-                applicationBundleIdentifier: loggingConfiguration.applicationBundleIdentifier,
-                eventMapper: loggingConfiguration.logEventMapper,
-                dateProvider: loggingConfiguration.dateProvider,
-                sampler: loggingConfiguration.remoteLoggingSampler,
-                customIntakeURL: loggingConfiguration.customURL
-            )
         }
 
         CoreRegistry.register(core, named: instanceName)

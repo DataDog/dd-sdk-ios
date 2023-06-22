@@ -59,13 +59,6 @@ struct UITestsAppConfiguration: AppConfiguration {
 
         let serverMockConfiguration = Environment.serverMockConfiguration()
 
-        // If `HTTPServerMock` endpoint is set for Logging, enable the feature and send data to mock server
-        if let logsEndpoint = serverMockConfiguration?.logsEndpoint {
-            _ = configuration.set(customLogsEndpoint: logsEndpoint)
-        } else {
-            _ = configuration.enableLogging(false)
-        }
-
         // If `HTTPServerMock` endpoint is set for RUM, enable the feature and send data to mock server
         if let rumEndpoint = serverMockConfiguration?.rumEndpoint {
             _ = configuration.set(customRUMEndpoint: rumEndpoint)
