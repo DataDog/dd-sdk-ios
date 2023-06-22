@@ -4,4 +4,7 @@
    <FileRef
       location = "group:Datadog/Datadog.xcodeproj">
    </FileRef>
+   <FileRef
+      location = "group:instrumented-tests/http-server-mock">
+   </FileRef>
 </Workspace>
