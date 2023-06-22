@@ -20,10 +20,8 @@ class DDConfigurationTests: XCTestCase {
 
         [swiftConfiguration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
-            XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertNil(configuration.serviceName)
-            XCTAssertNil(configuration.firstPartyHosts)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -34,9 +32,6 @@ class DDConfigurationTests: XCTestCase {
 
     func testCustomizedBuilderForwardsInitializationToSwift() throws {
         let objcBuilder = DDConfiguration.builder(clientToken: "abc-123", environment: "tests")
-
-        objcBuilder.enableTracing(false)
-        XCTAssertFalse(objcBuilder.build().sdkConfiguration.tracingEnabled)
 
         objcBuilder.set(endpoint: .eu1())
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.datadogEndpoint, .eu1)
@@ -67,18 +62,6 @@ class DDConfigurationTests: XCTestCase {
 
         objcBuilder.set(serviceName: "service-name")
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.serviceName, "service-name")
-
-        objcBuilder.trackURLSession(firstPartyHosts: ["example.com"])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init(["example.com": [.datadog]]))
-
-        objcBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.tracecontext]])
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.firstPartyHosts, .init([
-            "example2.com": [.tracecontext],
-            "example.com": [.datadog]
-        ]))
-
-        objcBuilder.set(tracingSamplingRate: 75)
-        XCTAssertEqual(objcBuilder.build().sdkConfiguration.tracingSamplingRate, 75)
 
         objcBuilder.set(batchSize: .small)
         XCTAssertEqual(objcBuilder.build().sdkConfiguration.batchSize, .small)

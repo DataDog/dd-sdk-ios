@@ -29,19 +29,6 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.firstPartyHosts = firstPartyHosts
     }
 
-    init(
-        tracer: DatadogTracer,
-        contextReceiver: ContextMessageReceiver,
-        distributedTracingConfiguration: DatadogTracer.DistributedTracingConfiguration
-    ) {
-        self.init(
-            tracer: tracer,
-            contextReceiver: contextReceiver,
-            tracingSampler: .init(samplingRate: distributedTracingConfiguration.tracingSamplingRate),
-            firstPartyHosts: .init(distributedTracingConfiguration.firstPartyHosts)
-        )
-    }
-
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> URLRequest {
         guard let tracer = tracer else {
             return request
@@ -130,7 +117,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             var urlComponent = URLComponents(url: requestUrl, resolvingAgainstBaseURL: true)
             urlComponent?.query = nil
             let resourceUrl = urlComponent?.url?.absoluteString ?? "unknown_url"
-            span.setTag(key: DatadogSpanTag.resource, value: resourceUrl)
+            span.setTag(key: SpanTags.resource, value: resourceUrl)
         }
         let method = interception.request.httpMethod ?? "unknown_method"
         span.setTag(key: OTTags.httpUrl, value: url)
@@ -146,7 +133,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             if let error = httpResponse.asClientError() {
                 span.setError(error, file: "", line: 0)
                 if httpStatusCode == 404 {
-                    span.setTag(key: DatadogSpanTag.resource, value: "404")
+                    span.setTag(key: SpanTags.resource, value: "404")
                 }
             }
         }
@@ -156,11 +143,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 between: resourceMetrics.fetch.start...resourceMetrics.fetch.end
             )
 
-            span.setTag(key: DatadogSpanTag.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
+            span.setTag(key: SpanTags.foregroundDuration, value: appStateHistory.foregroundDuration.toNanoseconds)
 
             let didStartInBackground = appStateHistory.initialSnapshot.state == .background
             let doesEndInBackground = appStateHistory.currentSnapshot.state == .background
-            span.setTag(key: DatadogSpanTag.isBackground, value: didStartInBackground || doesEndInBackground)
+            span.setTag(key: SpanTags.isBackground, value: didStartInBackground || doesEndInBackground)
         }
 
         span.finish(at: resourceMetrics.fetch.end)

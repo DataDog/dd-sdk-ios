@@ -53,10 +53,11 @@ internal class ViewController: UIViewController {
             var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
         }
 
-        DatadogTracer.initialize()
+        // Trace APIs must be visible:
+        Trace.enable()
 
         logger.info("It works")
-        _ = DatadogTracer.shared().startSpan(operationName: "This too")
+        _ = Tracer.shared().startSpan(operationName: "this too")
 
         createInstrumentedAlamofireSession()
 

@@ -198,61 +198,6 @@ class FeaturesConfigurationTests: XCTestCase {
         XCTAssertEqual(configuration.common.proxyConfiguration?[kCFProxyPasswordKey] as? String, "proxypass")
     }
 
-    // MARK: - Tracing Configuration Tests
-
-    func testWhenTracingIsDisabled() throws {
-        XCTAssertFalse(
-            try FeaturesConfiguration(configuration: .mockWith(tracingEnabled: false), appContext: .mockAny()).tracingEnabled,
-            "Feature configuration should not be available if the feature is disabled"
-        )
-    }
-
-    // MARK: - URLSession Auto Instrumentation Configuration Tests
-
-    func testURLSessionAutoInstrumentationConfiguration() throws {
-        let randomDatadogEndpoint: DatadogSite = .mockRandom()
-
-        let firstPartyHosts: FirstPartyHosts = .init([
-            "example.com": [.datadog],
-            "foo.eu": [.datadog]
-        ])
-
-        func createConfiguration(
-            tracingEnabled: Bool,
-            firstPartyHosts: FirstPartyHosts?
-        ) throws -> FeaturesConfiguration {
-            try FeaturesConfiguration(
-                configuration: .mockWith(
-                    tracingEnabled: tracingEnabled,
-                    datadogEndpoint: randomDatadogEndpoint,
-                    firstPartyHosts: firstPartyHosts
-                ),
-                appContext: .mockAny()
-            )
-        }
-
-        // When `firstPartyHosts` are provided and both Tracing and RUM are enabled
-        var configuration = try createConfiguration(
-            tracingEnabled: true,
-            firstPartyHosts: firstPartyHosts
-        )
-        XCTAssertTrue(configuration.tracingEnabled)
-
-        // When `firstPartyHosts` are set and only Tracing is enabled
-        configuration = try createConfiguration(
-            tracingEnabled: true,
-            firstPartyHosts: firstPartyHosts
-        )
-        XCTAssertTrue(configuration.tracingEnabled)
-
-        // When `firstPartyHosts` are set and only RUM is enabled
-        configuration = try createConfiguration(
-            tracingEnabled: false,
-            firstPartyHosts: firstPartyHosts
-        )
-        XCTAssertFalse(configuration.tracingEnabled)
-    }
-
     // MARK: - Invalid Configurations
 
     func testWhenClientTokenIsInvalid_itThrowsProgrammerError() {
@@ -271,7 +216,6 @@ class FeaturesConfigurationTests: XCTestCase {
         return try FeaturesConfiguration(
             configuration: .mockWith(
                 clientToken: clientToken,
-                tracingEnabled: true,
                 datadogEndpoint: datadogEndpoint,
                 proxyConfiguration: proxyConfiguration
             ),

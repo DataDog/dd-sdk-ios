@@ -35,8 +35,6 @@ internal struct FeaturesConfiguration {
 
     /// Configuration common to all features.
     let common: Common
-    /// Tracing feature enabled.
-    let tracingEnabled: Bool
 }
 
 extension FeaturesConfiguration {
@@ -48,8 +46,6 @@ extension FeaturesConfiguration {
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
-        tracingEnabled = configuration.tracingEnabled
-
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
         let sdkVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String) ?? __sdkVersion
         let appVersion = (configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String) ?? appContext.bundleVersion ?? "0.0.0"
@@ -85,17 +81,6 @@ extension FeaturesConfiguration {
             serverDateProvider: configuration.serverDateProvider,
             dateProvider: dateProvider
         )
-
-        // TODO: RUMM-2538 Update this wording with final V2 APIs
-        if configuration.firstPartyHosts != nil && !configuration.tracingEnabled {
-            let error = ProgrammerError(
-                description: """
-                To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
-                Use: `.enableTracing(true)` or `.enableRUM(true)`.
-                """
-            )
-            consolePrint("\(error)")
-        }
 
         self.common = common
     }

@@ -28,7 +28,6 @@ class DDDatadogTests: XCTestCase {
 
     func testItForwardsInitializationToSwift() throws {
         let configBuilder = DDConfiguration.builder(clientToken: "abcefghi", environment: "tests")
-        configBuilder.trackURLSession(firstPartyHosts: ["example.com"])
 
         DDDatadog.initialize(
             appContext: DDAppContext(mainBundle: BundleMock.mockWith(CFBundleExecutable: "app-name")),
@@ -45,7 +44,6 @@ class DDDatadogTests: XCTestCase {
         Datadog.flushAndDeinitialize()
 
         XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
-        XCTAssertNil(CoreRegistry.default.get(feature: NetworkInstrumentationFeature.self))
     }
 
     // MARK: - Changing Tracking Consent

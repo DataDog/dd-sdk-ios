@@ -52,14 +52,8 @@ class BenchmarkTests: XCTestCase {
         )
 
         RUM.enable(with: .init(applicationID: "rum-123", customEndpoint: anyURL))
-
-        Logs.enable(
-            with: Logs.Configuration(customEndpoint: anyURL)
-        )
-
-        DatadogTracer.initialize(
-            configuration: .init(customIntakeURL: anyURL)
-        )
+        Logs.enable(with: .init(customEndpoint: anyURL))
+        Trace.enable(with: .init(customEndpoint: anyURL))
     }
 
     // MARK: - `HTTPServerMock` connection

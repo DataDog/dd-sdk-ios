@@ -15,16 +15,15 @@ class DDSpanTests: XCTestCase {
     // MARK: - Sending Span Logs
 
     func testWhenLoggingSpanEvent_itWritesLogToLogOutput() throws {
-        let core = PassthroughCoreMock(
-            messageReceiver: LogMessageReceiver.mockAny()
-        )
+        let core = DatadogCoreProxy()
+        defer { core.flushAndTearDown() }
 
-        core.expectation = expectation(description: "write span event")
-        core.expectation?.expectedFulfillmentCount = 2
+        Logs.enable(in: core)
+        Trace.enable(in: core)
 
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
-        let span: DDSpan = .mockWith(tracer: tracer)
+        let tracer = Tracer.shared(in: core)
+        let span = tracer.startSpan(operationName: .mockAny())
 
         // When
         let log1Fields = mockRandomAttributes()
@@ -34,9 +33,7 @@ class DDSpanTests: XCTestCase {
         span.log(fields: log2Fields)
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let logs: [LogEvent] = core.events()
+        let logs: [LogEvent] = core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 2, "It should send 2 logs")
         DDAssertJSONEqual(
             AnyEncodable(logs[0].attributes.userAttributes),

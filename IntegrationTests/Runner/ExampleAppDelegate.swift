@@ -14,7 +14,7 @@ import DatadogRUM
 @_exported import class DatadogInternal.DDURLSessionDelegate
 
 var logger: DatadogLogger!
-var tracer: OTTracer { DatadogTracer.shared() }
+var tracer: OTTracer { Tracer.shared() }
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
 var serviceName = "integration-scenarios-service-name"

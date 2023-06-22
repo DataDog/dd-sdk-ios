@@ -270,6 +270,39 @@ class RUMTests: XCTestCase {
         XCTAssertNil((rum.requestBuilder as? RequestBuilder)?.customIntakeURL)
     }
 
+    func testWhenEnabledWithDebugSDKArgument() throws {
+        // Given
+        config.sessionSampleRate = .mockRandom(min: 0, max: 100)
+        config.debugSDK = true
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
+        XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, 100)
+    }
+
+    func testWhenEnabledWithNoDebugSDKArgument() throws {
+        // Given
+        let random: Float = .mockRandom(min: 0, max: 100)
+        config.sessionSampleRate = random
+        config.debugSDK = false
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
+        let monitor = try XCTUnwrap(RUMMonitor.shared(in: core) as? Monitor)
+        let crashReceiver = (rum.messageReceiver as! CombinedFeatureMessageReceiver).receivers.firstElement(of: CrashReportReceiver.self)
+        XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, random)
+        XCTAssertEqual(crashReceiver?.sessionSampler.samplingRate, random)
+    }
+
     func testWhenEnabledWithDebugViewsArgument() {
         // Given
         config.debugViews = true

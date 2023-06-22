@@ -253,8 +253,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
-        XCTAssertEqual(span.tags[DatadogSpanTag.foregroundDuration], "10000000000")
-        XCTAssertEqual(span.tags[DatadogSpanTag.isBackground], "false")
+        XCTAssertEqual(span.tags[SpanTags.foregroundDuration], "10000000000")
+        XCTAssertEqual(span.tags[SpanTags.isBackground], "false")
     }
 
     func testGivenRejectingHandler_itDoesNotRecordSpan() throws {

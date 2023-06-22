@@ -12,7 +12,7 @@ import DatadogInternal
 
 extension DatadogCoreProxy {
     func waitAndReturnSpanMatchers(file: StaticString = #file, line: UInt = #line) throws -> [SpanMatcher] {
-        return try waitAndReturnEventsData(ofFeature: DatadogTraceFeature.name)
+        return try waitAndReturnEventsData(ofFeature: TraceFeature.name)
             .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
     }
 }
@@ -86,33 +86,49 @@ extension BaggageItems {
 // MARK: - Component Mocks
 
 extension DatadogTracer {
-    static func mockAny(in core: DatadogCoreProtocol) -> Self {
+    static func mockAny(in core: DatadogCoreProtocol) -> DatadogTracer {
         return mockWith(core: core)
     }
 
     static func mockWith(
         core: DatadogCoreProtocol,
-        configuration: Configuration = .init(),
+        sampler: Sampler = .mockKeepAll(),
+        tags: [String: Encodable] = [:],
+        service: String? = nil,
+        sendNetworkInfo: Bool = true,
+        spanEventMapper: ((SpanEvent) -> SpanEvent)? = nil,
         tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
-        dateProvider: DateProvider = SystemDateProvider()
-    ) -> Self {
-        return .init(
+        dateProvider: DateProvider = SystemDateProvider(),
+        contextReceiver: ContextMessageReceiver = .mockAny(),
+        loggingIntegration: TracingWithLoggingIntegration = .mockAny()
+    ) -> DatadogTracer {
+        return DatadogTracer(
             core: core,
-            configuration: configuration,
+            sampler: sampler,
+            tags: tags,
+            service: service,
+            sendNetworkInfo: sendNetworkInfo,
+            spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
-            contextReceiver: ContextMessageReceiver(bundleWithRUM: configuration.bundleWithRUM),
-            loggingIntegration: .init(core: core, tracerConfiguration: configuration)
+            contextReceiver: contextReceiver,
+            loggingIntegration: loggingIntegration
         )
     }
 }
 
-extension TracingWithLoggingIntegration.Configuration: AnyMockable {
-    public static func mockAny() -> TracingWithLoggingIntegration.Configuration {
-        .init(
+extension TracingWithLoggingIntegration {
+    static func mockAny() -> TracingWithLoggingIntegration {
+        return TracingWithLoggingIntegration(
+            core: NOPDatadogCore(),
             service: .mockAny(),
-            loggerName: .mockAny(),
-            sendNetworkInfo: true
+            sendNetworkInfo: .mockAny()
         )
+    }
+}
+
+extension ContextMessageReceiver {
+    static func mockAny() -> ContextMessageReceiver {
+        return ContextMessageReceiver(bundleWithRUM: true)
     }
 }
