@@ -37,7 +37,6 @@ class DDLogsTests: XCTestCase {
         // Then
         XCTAssertEqual(config.configuration.sampleRate, 100)
         XCTAssertNil(config.configuration.customEndpoint)
-        XCTAssertTrue(config.configuration.bundle === Bundle.main)
         XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
     }
 
@@ -45,21 +44,18 @@ class DDLogsTests: XCTestCase {
         // Given
         let sampleRate: Float = .random(in: 0...100)
         let customEndpoint: URL = .mockRandom()
-        let bundleIdentifier: String = .mockRandom()
 
         // When
         DDLogs.enable(
             with: DDLogsConfiguration(
                 sampleRate: sampleRate,
-                customEndpoint: customEndpoint,
-                bundle: .mockWith(bundleIdentifier: bundleIdentifier)
+                customEndpoint: customEndpoint
             )
         )
 
         // Then
         let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
         let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
-        XCTAssertEqual(logs.applicationBundleIdentifier, bundleIdentifier)
         XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
         XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }

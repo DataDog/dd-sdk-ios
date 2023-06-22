@@ -153,7 +153,7 @@ public class Builder {
 
             let configuration = RemoteLogger.Configuration(
                 service: serviceName,
-                loggerName: loggerName ?? feature.applicationBundleIdentifier,
+                loggerName: loggerName,
                 sendNetworkInfo: sendNetworkInfo,
                 threshold: datadogReportingThreshold,
                 eventMapper: feature.logEventMapper,

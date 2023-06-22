@@ -13,8 +13,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
-
-    let applicationBundleIdentifier: String
     
     let sampler: Sampler
 
@@ -26,12 +24,10 @@ internal struct LogsFeature: DatadogRemoteFeature {
     init(
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
-        applicationBundleIdentifier: String,
         remoteLoggingSampler: Sampler,
         customIntakeURL: URL? = nil
     ) {
         self.init(
-            applicationBundleIdentifier: applicationBundleIdentifier,
             logEventMapper: logEventMapper,
             sampler: remoteLoggingSampler,
             requestBuilder: RequestBuilder(customIntakeURL: customIntakeURL),
@@ -45,14 +41,12 @@ internal struct LogsFeature: DatadogRemoteFeature {
     }
 
     init(
-        applicationBundleIdentifier: String,
         logEventMapper: LogEventMapper?,
         sampler: Sampler,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
         dateProvider: DateProvider
     ) {
-        self.applicationBundleIdentifier = applicationBundleIdentifier
         self.logEventMapper = logEventMapper
         self.sampler = sampler
         self.requestBuilder = requestBuilder

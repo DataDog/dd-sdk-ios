@@ -16,10 +16,9 @@ class LogsTests: XCTestCase {
         let config = Logs.Configuration()
 
         // Then
-        XCTAssertNil(config.mapper)
+        XCTAssertNil(config.eventMapper)
         XCTAssertEqual(config.sampleRate, 100)
         XCTAssertNil(config.customEndpoint)
-        XCTAssertTrue(config.bundle === Bundle.main)
         XCTAssertTrue(config.processInfo === ProcessInfo.processInfo)
     }
 
@@ -27,17 +26,15 @@ class LogsTests: XCTestCase {
         // Given
         let sampleRate: Float = .random(in: 0...100)
         let customEndpoint: URL = .mockRandom()
-        let bundleIdentifier: String = .mockRandom()
         
         let core = SingleFeatureCoreMock<LogsFeature>()
 
         // When
         Logs.enable(
             with: Logs.Configuration(
-                eventMapper: { $0 },
                 sampleRate: sampleRate,
-                customEndpoint: customEndpoint,
-                bundle: .mockWith(bundleIdentifier: bundleIdentifier)
+                eventMapper: { $0 },
+                customEndpoint: customEndpoint
             ),
             in: core
         )
@@ -46,7 +43,6 @@ class LogsTests: XCTestCase {
         let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
         let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
         XCTAssertNotNil(logs.logEventMapper)
-        XCTAssertEqual(logs.applicationBundleIdentifier, bundleIdentifier)
         XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
         XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }
@@ -67,9 +63,8 @@ class LogsTests: XCTestCase {
             $0.setLogEventMapper(eventMapper)
         }
 
-
         // Then
-        XCTAssertTrue(config.mapper is LogEventMapperMock)
+        XCTAssertTrue(config._internalEventMapper is LogEventMapperMock)
     }
 
     func testConfiguration_withDebug_itDisableSampling() throws {

@@ -48,28 +48,19 @@ public class DDLogsConfiguration: NSObject {
         set { configuration.customEndpoint = newValue }
     }
 
-    /// Overrides the main bundle instance.
-    @objc public var bundle: Bundle {
-        get { configuration.bundle }
-        set { configuration.bundle = newValue }
-    }
-
     /// Creates a Logs configuration object.
     ///
     /// - Parameters:
     ///   - sampleRate: The sampling rate for logging.
     ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
-    ///   - bundle: Overrides the main bundle instance.
     @objc
     public init(
         sampleRate: Float = 100,
-        customEndpoint: URL? = nil,
-        bundle: Bundle = .main
+        customEndpoint: URL? = nil
     ) {
         configuration = .init(
             sampleRate: sampleRate,
-            customEndpoint: customEndpoint,
-            bundle: bundle
+            customEndpoint: customEndpoint
         )
     }
 }

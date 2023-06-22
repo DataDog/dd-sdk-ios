@@ -73,7 +73,6 @@ class DatadogLogsFeatureTests: XCTestCase {
         let feature = LogsFeature(
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
-            applicationBundleIdentifier: randomApplicationName,
             remoteLoggingSampler: .mockKeepAll(),
             customIntakeURL: randomUploadURL
         )
@@ -141,7 +140,6 @@ class DatadogLogsFeatureTests: XCTestCase {
         let feature = LogsFeature(
             logEventMapper: nil,
             dateProvider: SystemDateProvider(),
-            applicationBundleIdentifier: .mockAny(),
             remoteLoggingSampler: .mockKeepAll(),
             customIntakeURL: .mockAny()
         )

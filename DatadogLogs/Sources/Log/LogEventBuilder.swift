@@ -13,7 +13,7 @@ internal struct LogEventBuilder {
     /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     let service: String
     /// The `logger.name` value for logs.
-    let loggerName: String
+    let loggerName: String?
     /// Whether to send the network info in `network.client.*` log attributes.
     let sendNetworkInfo: Bool
     /// Allows for modifying (or dropping) logs before they get sent.
@@ -66,7 +66,7 @@ internal struct LogEventBuilder {
             },
             serviceName: service,
             environment: context.env,
-            loggerName: loggerName,
+            loggerName: loggerName ?? context.applicationBundleIdentifier,
             loggerVersion: context.sdkVersion,
             threadName: threadName,
             applicationVersion: context.version,

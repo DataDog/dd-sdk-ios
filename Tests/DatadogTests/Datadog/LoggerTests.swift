@@ -53,11 +53,11 @@ class LoggerTests: XCTestCase {
             env: "tests",
             version: "1.0.0",
             sdkVersion: "1.2.3",
+            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             device: .mockWith(architecture: "testArch")
         )
 
         let feature: LogsFeature = .mockWith(
-            applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
         )
         try core.register(feature: feature)

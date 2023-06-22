@@ -15,11 +15,9 @@ class DatadogLogsBuilderTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreProxy(context: .mockRandom())
+        core = DatadogCoreProxy(context: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests"))
 
-        let feature: LogsFeature = .mockWith(
-            applicationBundleIdentifier: "com.datadog.unit-tests"
-        )
+        let feature: LogsFeature = .mockAny()
         try! core.register(feature: feature)
     }
 
@@ -34,7 +32,7 @@ class DatadogLogsBuilderTests: XCTestCase {
 
         let remoteLogger = try XCTUnwrap(logger.logger as? RemoteLogger)
         XCTAssertNil(remoteLogger.configuration.service)
-        XCTAssertEqual(remoteLogger.configuration.loggerName, "com.datadog.unit-tests")
+        XCTAssertNil(remoteLogger.configuration.loggerName)
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
