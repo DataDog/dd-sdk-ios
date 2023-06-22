@@ -19,6 +19,13 @@ internal class TestScheduler: Scheduler {
     /// Queue to execute operations on.
     let queue: Queue
 
+    private var _isRunning = false
+    private let isRunningQueue = DispatchQueue(label: "testscheduler.isrunning")
+    var isRunning: Bool {
+        get { return isRunningQueue.sync { _isRunning } }
+        set { isRunningQueue.sync { _isRunning = newValue } }
+    }
+
     init(
         queue: Queue = NoQueue(),
         numberOfRepeats: Int = 1
@@ -34,6 +41,7 @@ internal class TestScheduler: Scheduler {
     }
 
     func start() {
+        isRunning = true
         queue.run {
             (0..<self.numberOfRepeats).forEach { _ in
                 self.operations.forEach { operation in operation() }
@@ -42,6 +50,6 @@ internal class TestScheduler: Scheduler {
     }
 
     func stop() {
-        /* no-op */
+        isRunning = false
     }
 }
