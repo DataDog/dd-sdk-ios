@@ -5,9 +5,8 @@
  */
 
 import XCTest
-import Datadog
-import TestUtilities
 import DatadogInternal
+import TestUtilities
 
 @testable import DatadogSessionReplay
 

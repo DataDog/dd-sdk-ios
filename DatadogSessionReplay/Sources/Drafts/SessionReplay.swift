@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 /// A draft interface for SR Feature initialization.
 /// TODO: RUMM-2268 Design convenient public API

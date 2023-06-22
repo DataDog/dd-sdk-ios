@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 /// A type managing Session Replay recording.
 internal protocol Recording {

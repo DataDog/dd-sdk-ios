@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 /// Publisher that sets Session Replay context for being utilized by other Features.
 internal class SRContextPublisher {

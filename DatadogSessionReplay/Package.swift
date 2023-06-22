@@ -13,16 +13,16 @@ let package = Package(
             name: "DatadogSessionReplay",
             targets: ["DatadogSessionReplay"]
         ),
-    ],
-    dependencies: [
-        .package(name: "Datadog", path: ".."),
-        .package(name: "TestUtilities", path: "../TestUtilities"),
+        .library(
+            name: "TestUtilities",
+            targets: ["TestUtilities"]
+        ),
     ],
     targets: [
         .target(
             name: "DatadogSessionReplay",
             dependencies: [
-                .product(name: "Datadog", package: "Datadog"),
+                .target(name: "DatadogInternal"),
             ],
             path: "Sources"
         ),
@@ -30,9 +30,31 @@ let package = Package(
             name: "DatadogSessionReplayTests",
             dependencies: [
                 .target(name: "DatadogSessionReplay"),
-                .product(name: "TestUtilities", package: "TestUtilities")
+                .target(name: "TestUtilities")
             ],
             path: "Tests"
+        ),
+
+        .target(
+            name: "DatadogInternal",
+            path: "DatadogInternal/Sources"
+        ),
+        .testTarget(
+            name: "DatadogInternalTests",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+                .target(name: "TestUtilities"),
+            ],
+            path: "DatadogInternal/Tests"
+        ),
+
+        .target(
+            name: "TestUtilities",
+            dependencies: [
+                .target(name: "DatadogInternal"),
+            ],
+            path: "TestUtilities",
+            sources: ["Mocks", "Helpers"]
         )
     ]
 )

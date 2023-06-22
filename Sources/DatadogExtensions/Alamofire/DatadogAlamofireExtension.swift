@@ -13,7 +13,7 @@ public class DDEventMonitor: EventMonitor {
     private weak var core: DatadogCoreProtocol?
 
     private var interceptor: URLSessionInterceptor? {
-        let core = self.core ?? defaultDatadogCore
+        let core = self.core ?? CoreRegistry.default
         return URLSessionInterceptor.shared(in: core)
     }
 
@@ -44,7 +44,7 @@ public class DDRequestInterceptor: RequestInterceptor {
     private weak var core: DatadogCoreProtocol?
 
     private var interceptor: URLSessionInterceptor? {
-        let core = self.core ?? defaultDatadogCore
+        let core = self.core ?? CoreRegistry.default
         return URLSessionInterceptor.shared(in: core)
     }
 

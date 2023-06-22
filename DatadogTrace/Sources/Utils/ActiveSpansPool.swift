@@ -57,7 +57,6 @@ internal class ActiveSpansPool {
         rlock.unlock()
     }
 
-#if DD_SDK_COMPILED_FOR_TESTING
     /// This explicit way of destroying `ActiveSpansPool` was added after noticing RUMM-2904. It is there to keep test coverage
     /// for a scenario of incorret use of `span.setActive()` API. Until RUMM-2904 is fixed, `destroy()` is necessary to not
     /// leak the `core` object memory in tests. It should be removed after fixing the problem.
@@ -68,5 +67,4 @@ internal class ActiveSpansPool {
         contextMap = [:]
         rlock.unlock()
     }
-#endif
 }

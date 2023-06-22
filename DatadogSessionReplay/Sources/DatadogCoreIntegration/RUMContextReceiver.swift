@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
 
 /// The RUM context received from `DatadogCore`.
 internal struct RUMContext: Decodable, Equatable {

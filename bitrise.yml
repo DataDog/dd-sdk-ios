@@ -243,7 +243,7 @@ workflows:
         title: Run unit tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogSessionReplay
+        - scheme: DatadogSessionReplay-Package
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
