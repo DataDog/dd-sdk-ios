@@ -33,7 +33,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
     let distributedTracing: DistributedTracing?
     /// Attributes-providing callback.
     /// It is configured by the user and should be used to associate additional RUM attributes with intercepted RUM Resource.
-    let rumAttributesProvider: RUMResourceAttributesProvider?
+    let rumAttributesProvider: RUM.ResourceAttributesProvider?
 
     /// First party hosts defined by the user.
     var firstPartyHosts: FirstPartyHosts {
@@ -44,7 +44,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
     init(
         dateProvider: DateProvider,
-        rumAttributesProvider: RUMResourceAttributesProvider?,
+        rumAttributesProvider: RUM.ResourceAttributesProvider?,
         distributedTracing: DistributedTracing?
     ) {
         self.dateProvider = dateProvider

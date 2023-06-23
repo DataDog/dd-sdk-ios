@@ -31,5 +31,5 @@ internal struct RUMScopeDependencies {
     let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
 
     let vitalsReaders: VitalsReaders?
-    let onSessionStart: RUMSessionListener?
+    let onSessionStart: RUM.SessionListener?
 }

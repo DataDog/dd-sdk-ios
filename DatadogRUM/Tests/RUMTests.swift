@@ -294,7 +294,7 @@ class RUMTests: XCTestCase {
 
     func testWhenEnabledWithOverwritingConfigurationTelemetrySampleRate() throws {
         // Given
-        config._internal.configurationTelemetrySampleRate = 42
+        config._internal_mutation { $0.configurationTelemetrySampleRate = 42 }
 
         // When
         RUM.enable(with: config, in: core)
@@ -306,9 +306,6 @@ class RUMTests: XCTestCase {
     }
 
     func testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate() throws {
-        // Given
-        config._internal.configurationTelemetrySampleRate = nil
-
         // When
         RUM.enable(with: config, in: core)
 

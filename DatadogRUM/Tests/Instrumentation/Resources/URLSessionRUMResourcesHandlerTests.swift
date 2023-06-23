@@ -14,7 +14,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     private let commandSubscriber = RUMCommandSubscriberMock()
 
     private func createHandler(
-        rumAttributesProvider: RUMResourceAttributesProvider? = nil,
+        rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(

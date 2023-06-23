@@ -12,15 +12,35 @@ import DatadogInternal
 @_exported import typealias DatadogInternal.DDURLSessionDelegate
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 
-public typealias RUMSessionListener = (String, Bool) -> Void
-public typealias RUMViewEventMapper = (RUMViewEvent) -> RUMViewEvent
-public typealias RUMErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
-public typealias RUMResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
-public typealias RUMActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
-public typealias RUMLongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
-public typealias RUMResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
-
 extension RUM {
+    /// RUM view event mapper.
+    /// - See: `RUM.Configuration.viewEventMapper`.
+    public typealias ViewEventMapper = (RUMViewEvent) -> RUMViewEvent
+
+    /// RUM resource event mapper.
+    /// - See: `RUM.Configuration.resourceEventMapper`.
+    public typealias ResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
+
+    /// RUM error event mapper.
+    /// - See: `RUM.Configuration.errorEventMapper`.
+    public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
+
+    /// RUM action event mapper.
+    /// - See: `RUM.Configuration.actionEventMapper`.
+    public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
+
+    /// RUM long task event mapper.
+    /// - See: `RUM.Configuration.longTaskEventMapper`.
+    public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
+
+    /// RUM session listener.
+    /// - See: `RUM.Configuration.onSessionStart`.
+    public typealias SessionListener = (String, Bool) -> Void
+
+    /// RUM resource attributes provider.
+    /// - See: `RUM.Configuration.URLSessionTracking.resourceAttributesProvider`.
+    public typealias ResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
+
     /// RUM feature configuration.
     public struct Configuration {
         /// An unique identifier of the RUM application in Datadog.
@@ -111,7 +131,7 @@ extension RUM {
         /// collected RUM views, adjust the implementation of the view predicate (see the `uiKitViewsPredicate` option).
         ///
         /// Default: `nil`.
-        public var viewEventMapper: RUMViewEventMapper?
+        public var viewEventMapper: RUM.ViewEventMapper?
 
         /// Custom mapper for RUM resource events.
         ///
@@ -120,7 +140,7 @@ extension RUM {
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
         ///
         /// Default: `nil`.
-        public var resourceEventMapper: RUMResourceEventMapper?
+        public var resourceEventMapper: RUM.ResourceEventMapper?
 
         /// Custom mapper for RUM action events.
         ///
@@ -129,7 +149,7 @@ extension RUM {
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
         ///
         /// Default: `nil`.
-        public var actionEventMapper: RUMActionEventMapper?
+        public var actionEventMapper: RUM.ActionEventMapper?
 
         /// Custom mapper for RUM error events.
         ///
@@ -138,7 +158,7 @@ extension RUM {
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
         ///
         /// Default: `nil`.
-        public var errorEventMapper: RUMErrorEventMapper?
+        public var errorEventMapper: RUM.ErrorEventMapper?
 
         /// Custom mapper for RUM long task events.
         ///
@@ -147,7 +167,7 @@ extension RUM {
         /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
         ///
         /// Default: `nil`.
-        public var longTaskEventMapper: RUMLongTaskEventMapper?
+        public var longTaskEventMapper: RUM.LongTaskEventMapper?
 
         /// RUM session start callback.
         ///
@@ -157,7 +177,7 @@ extension RUM {
         /// Keep the implementation fast and do not make any assumptions on the thread that runs this callback.
         ///
         /// Default: `nil`.
-        public var onSessionStart: RUMSessionListener?
+        public var onSessionStart: RUM.SessionListener?
 
         /// Custom server url for sending RUM data.
         ///
@@ -198,7 +218,7 @@ extension RUM {
             /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
             ///
             /// Default: `nil`.
-            public var resourceAttributesProvider: RUMResourceAttributesProvider?
+            public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
 
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
@@ -214,33 +234,13 @@ extension RUM {
             case rare
         }
 
-        // MARK: - Additional Interface For Datadog Cross-Platform SDKs
-
-        /// Grants access to an internal interface utilized only by Datadog cross-platform SDKs.
-        /// **It is not meant for public use** and it might change without prior notice.
-        public var _internal = InternalConfiguration()
-
-        /// An interface granting access to internal methods exclusively utilized by Datadog cross-platform SDKs.
-        /// **It is not meant for public use.**
-        ///
-        /// Methods, members, and functionality of this interface is subject to change without prior notice,
-        /// as they are not considered part of the public interface of the Datadog SDK.
-        public struct InternalConfiguration {
-            /// The sampling rate for configuration telemetry events. When set, it overwrites the value
-            /// of `configurationTelemetrySampleRate` in `RUM.Configuration`.
-            ///
-            /// It is mostly used to enable or disable telemetry events when running test scenarios.
-            /// Expects value between `0.0` and `100.0`.
-            public var configurationTelemetrySampleRate: Float? = nil
-        }
-
         // MARK: - Internal
 
         /// An extra sampling rate for configuration telemetry events.
         ///
         /// It is applied on top of the value configured in public `telemetrySampleRate`.
         /// It can be overwritten by `InternalConfiguration`.
-        internal let defaultConfigurationTelemetrySampleRate: Float = 20.0
+        internal var configurationTelemetrySampleRate: Float = 20.0
 
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
@@ -280,7 +280,7 @@ extension RUM.Configuration.URLSessionTracking {
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
-        resourceAttributesProvider: RUMResourceAttributesProvider? = nil
+        resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
@@ -317,12 +317,12 @@ extension RUM.Configuration {
         backgroundEventsTracking: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
-        viewEventMapper: RUMViewEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        onSessionStart: RUMSessionListener? = nil,
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
         customEndpoint: URL? = nil,
         telemetrySampleRate: Float = 20
     ) {
@@ -343,5 +343,18 @@ extension RUM.Configuration {
         self.onSessionStart = onSessionStart
         self.customEndpoint = customEndpoint
         self.telemetrySampleRate = telemetrySampleRate
+    }
+}
+
+extension RUM.Configuration: InternalExtended {}
+extension InternalExtension where ExtendedType == RUM.Configuration {
+    /// The sampling rate for configuration telemetry events. When set, it overwrites the value
+    /// of `configurationTelemetrySampleRate` in `RUM.Configuration`.
+    ///
+    /// It is mostly used to enable or disable telemetry events when running test scenarios.
+    /// Expects value between `0.0` and `100.0`.
+    public var configurationTelemetrySampleRate: Float {
+        get { type.configurationTelemetrySampleRate }
+        set { type.configurationTelemetrySampleRate = newValue }
     }
 }

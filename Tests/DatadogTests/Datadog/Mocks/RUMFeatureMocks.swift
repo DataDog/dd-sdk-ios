@@ -104,11 +104,11 @@ extension RUMEventsMapper {
     }
 
     static func mockWith(
-        viewEventMapper: RUMViewEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
@@ -659,7 +659,7 @@ internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
     }
 }
 
-func mockNoOpSessionListener() -> RUMSessionListener {
+func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
@@ -680,7 +680,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
+        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: core,
@@ -710,7 +710,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: RUMSessionListener? = nil
+        onSessionStart: RUM.SessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: self.core,
