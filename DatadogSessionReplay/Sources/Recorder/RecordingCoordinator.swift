@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 /// Object is responsible for getting the RUM context, randomising the sampling rate,
 /// starting/stopping the recording scheduler as needed and propagating `has_replay` to other features.
