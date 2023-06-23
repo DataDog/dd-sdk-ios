@@ -13,7 +13,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
 
-    func request(for events: [Datadog.Event], with context: DatadogContext) throws -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
         let segmentBuilder = SegmentJSONBuilder(source: source)
 
