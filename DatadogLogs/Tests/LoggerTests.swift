@@ -5,22 +5,21 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 
 @testable import DatadogLogs
-@testable import Datadog
 
-class LoggerConfigurationTests: XCTestCase {
-    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+class LoggerTests: XCTestCase {
+    private var core: SingleFeatureCoreMock<LogsFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        core = DatadogCoreProxy(context: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests"))
+        core = SingleFeatureCoreMock(context: .mockWith(applicationBundleIdentifier: "com.datadog.unit-tests"))
         Logs.enable(in: core)
     }
 
     override func tearDown() {
-        core.flushAndTearDown()
         core = nil
         super.tearDown()
     }
@@ -33,6 +32,7 @@ class LoggerConfigurationTests: XCTestCase {
         XCTAssertNil(remoteLogger.configuration.name)
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
+        XCTAssertEqual(remoteLogger.configuration.sampler.samplingRate, 100)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertTrue(remoteLogger.rumContextIntegration)
         XCTAssertTrue(remoteLogger.activeSpanIntegration)
@@ -72,7 +72,8 @@ class LoggerConfigurationTests: XCTestCase {
                 sendNetworkInfo: true,
                 bundleWithRUM: false,
                 bundleWithTrace: false,
-                datadogReportingThreshold: .error
+                remoteSampleRate: 50,
+                remoteLogThreshold: .error
             ),
             in: core
         )
@@ -85,6 +86,7 @@ class LoggerConfigurationTests: XCTestCase {
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertFalse(remoteLogger.rumContextIntegration)
         XCTAssertFalse(remoteLogger.activeSpanIntegration)
+        XCTAssertEqual(remoteLogger.configuration.sampler.samplingRate, 50)
     }
 
     func testCombiningInternalLoggers() throws {
@@ -93,10 +95,10 @@ class LoggerConfigurationTests: XCTestCase {
         logger = Logger.create(in: core)
         XCTAssertTrue(logger is RemoteLogger)
 
-        logger = Logger.create(with: Logger.Configuration(sendLogsToDatadog: true), in: core)
+        logger = Logger.create(with: Logger.Configuration(remoteSampleRate: .random(in: 1...100)), in: core)
         XCTAssertTrue(logger is RemoteLogger)
 
-        logger = Logger.create(with: Logger.Configuration(sendLogsToDatadog: false), in: core)
+        logger = Logger.create(with: Logger.Configuration(remoteSampleRate: 0), in: core)
         XCTAssertTrue(logger is NOPLogger)
 
         logger = Logger.create(with: Logger.Configuration(consoleLogFormat: .short), in: core)
@@ -109,7 +111,7 @@ class LoggerConfigurationTests: XCTestCase {
 
         logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: true,
+                remoteSampleRate: 100,
                 consoleLogFormat: .short
             ),
             in: core
@@ -120,7 +122,7 @@ class LoggerConfigurationTests: XCTestCase {
 
         logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: false,
+                remoteSampleRate: 0,
                 consoleLogFormat: .short
             ),
             in: core
@@ -129,7 +131,7 @@ class LoggerConfigurationTests: XCTestCase {
 
         logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: true,
+                remoteSampleRate: 100,
                 consoleLogFormat: nil
             ),
             in: core
@@ -138,11 +140,24 @@ class LoggerConfigurationTests: XCTestCase {
 
         logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: false,
+                remoteSampleRate: 0,
                 consoleLogFormat: nil
             ),
             in: core
         )
         XCTAssertTrue(logger is NOPLogger)
+    }
+
+    func testConfiguration_withDebug_itDisableSampling() throws {
+        //Given
+        var config = Logger.Configuration(remoteSampleRate: 50)
+        config.processInfo = ProcessInfoMock(arguments: [LaunchArguments.Debug])
+
+        // When
+        let logger = Logger.create(with: config, in: core)
+
+        // Then
+        let remoteLogger = try XCTUnwrap(logger as? RemoteLogger)
+        XCTAssertEqual(remoteLogger.configuration.sampler.samplingRate, 100)
     }
 }

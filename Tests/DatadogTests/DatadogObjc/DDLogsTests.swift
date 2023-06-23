@@ -35,9 +35,7 @@ class DDLogsTests: XCTestCase {
         let config = DDLogsConfiguration()
 
         // Then
-        XCTAssertEqual(config.configuration.sampleRate, 100)
         XCTAssertNil(config.configuration.customEndpoint)
-        XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
     }
 
     func testConfigurationOverrides() throws {
@@ -56,7 +54,6 @@ class DDLogsTests: XCTestCase {
         // Then
         let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
         let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
-        XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
         XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }
 
@@ -212,13 +209,13 @@ class DDLogsTests: XCTestCase {
         objcConfig.name = "logger-name"
         objcConfig.service = "service-name"
         objcConfig.sendNetworkInfo = true
-        objcConfig.sendLogsToDatadog = false
+        objcConfig.remoteSampleRate = 50
         objcConfig.printLogsToConsole = true
 
         XCTAssertEqual(objcConfig.configuration.name, "logger-name")
         XCTAssertEqual(objcConfig.configuration.service, "service-name")
         XCTAssertTrue(objcConfig.configuration.sendNetworkInfo)
-        XCTAssertFalse(objcConfig.configuration.sendLogsToDatadog)
+        XCTAssertEqual(objcConfig.configuration.remoteSampleRate, 50)
         XCTAssertNotNil(objcConfig.configuration.consoleLogFormat)
     }
 }

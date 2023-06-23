@@ -45,17 +45,15 @@ public struct Logger {
         /// `true` by default.
         public var bundleWithTrace: Bool
 
-        /// Enables logs to be sent to Datadog servers.
-        /// Can be used to disable sending logs in development.
-        /// See also: `printLogsToConsole(_:)`.
+        /// Sets the sample rate for remote logging.
         ///
-        /// `true` by default.
-        public var sendLogsToDatadog: Bool
-
-        /// Format to use when printing logs to console - either `.short` or `.json`.
+        /// **When set to `0`, no log entries will be sent to Datadog servers.**
+        /// A value of`100` means all logs will be processed.
         ///
-        /// Do not print to console by default.
-        public var consoleLogFormat: ConsoleLogFormat?
+        /// When setting the `remoteSampleRate` to `0`
+        ///
+        /// Default is `100`, meaning that all logs will be sent.
+        public var remoteSampleRate: Float
 
         /// Set the minimum log level reported to Datadog servers.
         /// Any log with a level equal or above the threshold will be sent.
@@ -64,7 +62,15 @@ public struct Logger {
         /// is used - all logs will be printed, no matter of their level.
         ///
         /// `LogLevel.debug` by default
-        public var datadogReportingThreshold: LogLevel
+        public var remoteLogThreshold: LogLevel
+
+        /// Format to use when printing logs to console - either `.short` or `.json`.
+        ///
+        /// Do not print to console by default.
+        public var consoleLogFormat: ConsoleLogFormat?
+
+        /// Overrides the current process info.
+        internal var processInfo: ProcessInfo = .processInfo
 
         /// Creates a Logger Configuration.
         /// 
@@ -74,27 +80,27 @@ public struct Logger {
         ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
         ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
         ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
-        ///   - sendLogsToDatadog: Enables logs to be sent to Datadog servers. `true` by default.
+        ///   - remoteSampleRate: The sample rate for remote logging. **When set to `0`, no log entries will be sent to Datadog servers.**
+        ///   - remoteLogThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
         ///   - consoleLogFormat: Format to use when printing logs to console - either `.short` or `.json`.
-        ///   - datadogReportingThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
         public init(
             service: String? = nil,
             name: String? = nil,
             sendNetworkInfo: Bool = false,
             bundleWithRUM: Bool = true,
             bundleWithTrace: Bool = true,
-            sendLogsToDatadog: Bool = true,
-            consoleLogFormat: ConsoleLogFormat? = nil,
-            datadogReportingThreshold: LogLevel = .debug
+            remoteSampleRate: Float = 100,
+            remoteLogThreshold: LogLevel = .debug,
+            consoleLogFormat: ConsoleLogFormat? = nil
         ) {
             self.service = service
             self.name = name
             self.sendNetworkInfo = sendNetworkInfo
             self.bundleWithRUM = bundleWithRUM
             self.bundleWithTrace = bundleWithTrace
-            self.sendLogsToDatadog = sendLogsToDatadog
+            self.remoteSampleRate = remoteSampleRate
+            self.remoteLogThreshold = remoteLogThreshold
             self.consoleLogFormat = consoleLogFormat
-            self.datadogReportingThreshold = datadogReportingThreshold
         }
     }
     
@@ -137,8 +143,10 @@ public struct Logger {
             )
         }
 
+        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
+
         let remoteLogger: RemoteLogger? = {
-            guard configuration.sendLogsToDatadog else {
+            guard configuration.remoteSampleRate > 0 else {
                 return nil
             }
 
@@ -148,9 +156,9 @@ public struct Logger {
                     service: configuration.service,
                     name: configuration.name,
                     sendNetworkInfo: configuration.sendNetworkInfo,
-                    threshold: configuration.datadogReportingThreshold,
+                    threshold: configuration.remoteLogThreshold,
                     eventMapper: feature.logEventMapper,
-                    sampler: feature.sampler
+                    sampler: Sampler(samplingRate: debug ? 100 : configuration.remoteSampleRate)
                 ),
                 dateProvider: feature.dateProvider,
                 rumContextIntegration: configuration.bundleWithRUM,

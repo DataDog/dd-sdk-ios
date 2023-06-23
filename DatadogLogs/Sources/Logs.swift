@@ -20,14 +20,6 @@ public struct Logs {
     /// This configuration will be applied to all Logger instances.
     public struct Configuration {
         public typealias EventMapper = (LogEvent) -> LogEvent?
-        /// Sets the sampling rate for logging.
-        ///
-        /// The sampling rate must be a value between `0` and `100`. A value of `0` means no logs will be processed, `100`
-        /// means all logs will be processed.
-        ///
-        /// Default is `100`, meaning that all logs will be sent.
-        public var sampleRate: Float
-
         /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
         ///
         /// The implementation should obtain a mutable version of the `LogEvent`, modify it and return it. Returning `nil` will result
@@ -39,24 +31,20 @@ public struct Logs {
 
         /// Overrides the date provider.
         internal var dateProvider: DateProvider = SystemDateProvider()
-        /// Overrides the current process info.
-        internal var processInfo: ProcessInfo = .processInfo
+        
         /// Overrides the event mapper
         internal var _internalEventMapper: LogEventMapper? = nil
 
         /// Creates a Logs configuration object.
         ///
         /// - Parameters:
-        ///   - sampleRate: The sample rate for logging.
         ///   - eventMapper: The custom mapper for `LogEvent`. This can be used to modify logs before they are send to Datadog.
         ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
         public init(
-            sampleRate: Float = 100,
             eventMapper: EventMapper? = nil,
             customEndpoint: URL? = nil
         ) {
             self.eventMapper = eventMapper
-            self.sampleRate = sampleRate
             self.customEndpoint = customEndpoint
         }
     }
@@ -71,12 +59,10 @@ public struct Logs {
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         let logEventMapper = configuration._internalEventMapper ?? configuration.eventMapper.map(SyncLogEventMapper.init)
-        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
 
         let feature = LogsFeature(
             logEventMapper: logEventMapper,
             dateProvider: configuration.dateProvider,
-            remoteLoggingSampler: Sampler(samplingRate: debug ? 100 : configuration.sampleRate),
             customIntakeURL: configuration.customEndpoint
         )
 

@@ -24,14 +24,12 @@ extension LogsFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockWith(
         logEventMapper: LogEventMapper? = nil,
-        sampler: Sampler = .mockKeepAll(),
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         return .init(
             logEventMapper: logEventMapper,
-            sampler: sampler,
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             dateProvider: dateProvider

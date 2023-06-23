@@ -153,7 +153,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = Logger.create(with: Logger.Configuration(datadogReportingThreshold: .warn), in: core)
+        let logger = Logger.create(with: Logger.Configuration(remoteLogThreshold: .warn), in: core)
 
         logger.debug("message")
         logger.info("message")
@@ -229,12 +229,8 @@ class LoggerTests: XCTestCase {
 
     func testSamplingEnabled() throws {
         core.context = .mockAny()
-        let feature: LogsFeature = .mockWith(
-            sampler: .mockKeepAll()
-        )
-        try core.register(feature: feature)
-
-        let logger = Logger.create(in: core)
+        try core.register(feature: LogsFeature.mockAny())
+        let logger = Logger.create(with: Logger.Configuration(remoteSampleRate: 100), in: core)
 
         logger.debug(.mockAny())
         logger.info(.mockAny())
@@ -248,12 +244,8 @@ class LoggerTests: XCTestCase {
 
     func testSamplingDisabled() throws {
         core.context = .mockAny()
-        let feature: LogsFeature = .mockWith(
-            sampler: .mockRejectAll()
-        )
-        try core.register(feature: feature)
-
-        let logger = Logger.create(in: core)
+        try core.register(feature: LogsFeature.mockAny())
+        let logger = Logger.create(with: Logger.Configuration(remoteSampleRate: 0), in: core)
 
         logger.debug(.mockAny())
         logger.info(.mockAny())

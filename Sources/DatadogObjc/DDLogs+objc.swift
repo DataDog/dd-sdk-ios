@@ -53,17 +53,6 @@ public enum DDLogLevel: Int {
 public class DDLogsConfiguration: NSObject {
     internal var configuration: Logs.Configuration
 
-    /// Sets the sampling rate for logging.
-    ///
-    /// The sampling rate must be a value between `0` and `100`. A value of `0` means no logs will be processed, `100`
-    /// means all logs will be processed.
-    ///
-    /// By default sampling is disabled, meaning that all logs are being processed).
-    @objc public var sampleRate: Float {
-        get { configuration.sampleRate }
-        set { configuration.sampleRate = newValue }
-    }
-
     /// Overrides the custom server endpoint where Logs are sent.
     @objc public var customEndpoint: URL? {
         get { configuration.customEndpoint }
@@ -81,7 +70,6 @@ public class DDLogsConfiguration: NSObject {
         customEndpoint: URL? = nil
     ) {
         configuration = .init(
-            sampleRate: sampleRate,
             customEndpoint: customEndpoint
         )
     }
@@ -143,14 +131,15 @@ public class DDLoggerConfiguration: NSObject {
         set { configuration.bundleWithTrace = newValue }
     }
 
-    /// Enables logs to be sent to Datadog servers.
-    /// Can be used to disable sending logs in development.
-    /// See also: `printLogsToConsole(_:)`.
+    /// Sets the sampling rate for logging.
     ///
-    /// `true` by default
-    @objc public var sendLogsToDatadog: Bool {
-        get { configuration.sendLogsToDatadog }
-        set { configuration.sendLogsToDatadog = newValue }
+    /// The sampling rate must be a value between `0` and `100`. A value of `0` means no logs will be processed, `100`
+    /// means all logs will be processed.
+    ///
+    /// By default sampling is disabled, meaning that all logs are being processed).
+    @objc public var remoteSampleRate: Float {
+        get { configuration.remoteSampleRate }
+        set { configuration.remoteSampleRate = newValue }
     }
 
     /// Enables  logs to be printed to debugger console.
@@ -168,9 +157,9 @@ public class DDLoggerConfiguration: NSObject {
     /// is used - all logs will be printed, no matter of their level.
     ///
     /// `DDLogLevel.debug` by default
-    @objc public var datadogReportingThreshold: DDLogLevel {
-        get { DDLogLevel(configuration.datadogReportingThreshold) }
-        set { configuration.datadogReportingThreshold = newValue.swift }
+    @objc public var remoteLogThreshold: DDLogLevel {
+        get { DDLogLevel(configuration.remoteLogThreshold) }
+        set { configuration.remoteLogThreshold = newValue.swift }
     }
 
     /// Creates a Logger Configuration.
@@ -181,9 +170,9 @@ public class DDLoggerConfiguration: NSObject {
     ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
     ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
     ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
-    ///   - sendLogsToDatadog: Enables logs to be sent to Datadog servers. `true` by default.
+    ///   - remoteSampleRate: The sample rate for remote logging. **When set to `0`, no log entries will be sent to Datadog servers.**
+    ///   - remoteLogThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
     ///   - printLogsToConsole: Format to use when printing logs to console - either `.short` or `.json`.
-    ///   - datadogReportingThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
     @objc
     public init(
         service: String? = nil,
@@ -191,9 +180,9 @@ public class DDLoggerConfiguration: NSObject {
         sendNetworkInfo: Bool = false,
         bundleWithRUM: Bool = true,
         bundleWithTrace: Bool = true,
-        sendLogsToDatadog: Bool = true,
-        printLogsToConsole: Bool = false,
-        datadogReportingThreshold: DDLogLevel = .debug
+        remoteSampleRate: Float = 100,
+        remoteLogThreshold: DDLogLevel = .debug,
+        printLogsToConsole: Bool = false
     ) {
         configuration = .init(
             service: service,
@@ -201,9 +190,9 @@ public class DDLoggerConfiguration: NSObject {
             sendNetworkInfo: sendNetworkInfo,
             bundleWithRUM: bundleWithRUM,
             bundleWithTrace: bundleWithTrace,
-            sendLogsToDatadog: sendLogsToDatadog,
-            consoleLogFormat: printLogsToConsole ? .short : nil,
-            datadogReportingThreshold: datadogReportingThreshold.swift
+            remoteSampleRate: remoteSampleRate,
+            remoteLogThreshold: remoteLogThreshold.swift,
+            consoleLogFormat: printLogsToConsole ? .short : nil
         )
     }
 }
