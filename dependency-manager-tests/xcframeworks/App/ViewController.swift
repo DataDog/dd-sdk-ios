@@ -32,7 +32,7 @@ internal class ViewController: UIViewController {
 
         self.logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: false,
+                remoteSampleRate: 0,
                 consoleLogFormat: .short
             )
         )

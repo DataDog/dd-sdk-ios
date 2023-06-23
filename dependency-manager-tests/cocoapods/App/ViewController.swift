@@ -32,11 +32,11 @@ internal class ViewController: UIViewController {
 
         Logs.enable()
 
-        CrashReporter.enable()
+        DatadogCrashReporter.initialize()
 
         self.logger = Logger.create(
             with: Logger.Configuration(
-                sendLogsToDatadog: false,
+                remoteSampleRate: 0,
                 consoleLogFormat: .short
             )
         )
