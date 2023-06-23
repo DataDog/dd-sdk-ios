@@ -102,15 +102,15 @@ public class DDLoggerConfiguration: NSObject {
     internal var configuration: Logger.Configuration
 
     /// The service name  (default value is set to application bundle identifier)
-    @objc public var serviceName: String? {
-        get { configuration.serviceName }
-        set { configuration.serviceName = newValue }
+    @objc public var service: String? {
+        get { configuration.service }
+        set { configuration.service = newValue }
     }
 
     /// The logger custom name (default value is set to main bundle identifier)
-    @objc public var loggerName: String? {
-        get { configuration.loggerName }
-        set { configuration.loggerName = newValue }
+    @objc public var name: String? {
+        get { configuration.name }
+        set { configuration.name = newValue }
     }
 
     /// Enriches logs with network connection info.
@@ -173,17 +173,21 @@ public class DDLoggerConfiguration: NSObject {
         set { configuration.datadogReportingThreshold = newValue.swift }
     }
 
-    /// Creates a Logs configuration object.
+    /// Creates a Logger Configuration.
     ///
     /// - Parameters:
-    ///   - samplingRate: The sampling rate for logging.
-    ///   - customIntakeURL: Overrides the custom server endpoint where Logs are sent.
-    ///   - bundle: Overrides the main bundle instance.
-    ///   - processInfo: Overrides the current process info.
+    ///   - service: The service name  (default value is set to application bundle identifier)
+    ///   - name: The logger custom name (default value is set to main bundle identifier)
+    ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
+    ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
+    ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
+    ///   - sendLogsToDatadog: Enables logs to be sent to Datadog servers. `true` by default.
+    ///   - printLogsToConsole: Format to use when printing logs to console - either `.short` or `.json`.
+    ///   - datadogReportingThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
     @objc
     public init(
-        serviceName: String? = nil,
-        loggerName: String? = nil,
+        service: String? = nil,
+        name: String? = nil,
         sendNetworkInfo: Bool = false,
         bundleWithRUM: Bool = true,
         bundleWithTrace: Bool = true,
@@ -192,8 +196,8 @@ public class DDLoggerConfiguration: NSObject {
         datadogReportingThreshold: DDLogLevel = .debug
     ) {
         configuration = .init(
-            serviceName: serviceName,
-            loggerName: loggerName,
+            service: service,
+            name: name,
             sendNetworkInfo: sendNetworkInfo,
             bundleWithRUM: bundleWithRUM,
             bundleWithTrace: bundleWithTrace,

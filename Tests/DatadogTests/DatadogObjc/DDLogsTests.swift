@@ -209,15 +209,14 @@ class DDLogsTests: XCTestCase {
 
     func testItForwardsLoggerConfigurationToSwift() {
         let objcConfig = DDLoggerConfiguration()
-        objcConfig.loggerName = "logger-name"
-        objcConfig.loggerName = "logger-name"
-        objcConfig.serviceName = "service-name"
+        objcConfig.name = "logger-name"
+        objcConfig.service = "service-name"
         objcConfig.sendNetworkInfo = true
         objcConfig.sendLogsToDatadog = false
         objcConfig.printLogsToConsole = true
 
-        XCTAssertEqual(objcConfig.configuration.loggerName, "logger-name")
-        XCTAssertEqual(objcConfig.configuration.serviceName, "service-name")
+        XCTAssertEqual(objcConfig.configuration.name, "logger-name")
+        XCTAssertEqual(objcConfig.configuration.service, "service-name")
         XCTAssertTrue(objcConfig.configuration.sendNetworkInfo)
         XCTAssertFalse(objcConfig.configuration.sendLogsToDatadog)
         XCTAssertNotNil(objcConfig.configuration.consoleLogFormat)

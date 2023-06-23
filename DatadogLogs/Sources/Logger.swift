@@ -19,10 +19,10 @@ public struct Logger {
         }
 
         /// The service name  (default value is set to application bundle identifier)
-        public var serviceName: String?
+        public var service: String?
 
         /// The logger custom name (default value is set to main bundle identifier)
-        public var loggerName: String?
+        public var name: String?
 
         /// Enriches logs with network connection info.
         /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
@@ -66,10 +66,11 @@ public struct Logger {
         /// `LogLevel.debug` by default
         public var datadogReportingThreshold: LogLevel
 
-        /// Creates a Logger Configuration
+        /// Creates a Logger Configuration.
+        /// 
         /// - Parameters:
-        ///   - serviceName: The service name  (default value is set to application bundle identifier)
-        ///   - loggerName: The logger custom name (default value is set to main bundle identifier)
+        ///   - service: The service name  (default value is set to application bundle identifier)
+        ///   - name: The logger custom name (default value is set to main bundle identifier)
         ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
         ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
         ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
@@ -77,8 +78,8 @@ public struct Logger {
         ///   - consoleLogFormat: Format to use when printing logs to console - either `.short` or `.json`.
         ///   - datadogReportingThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
         public init(
-            serviceName: String? = nil,
-            loggerName: String? = nil,
+            service: String? = nil,
+            name: String? = nil,
             sendNetworkInfo: Bool = false,
             bundleWithRUM: Bool = true,
             bundleWithTrace: Bool = true,
@@ -86,8 +87,8 @@ public struct Logger {
             consoleLogFormat: ConsoleLogFormat? = nil,
             datadogReportingThreshold: LogLevel = .debug
         ) {
-            self.serviceName = serviceName
-            self.loggerName = loggerName
+            self.service = service
+            self.name = name
             self.sendNetworkInfo = sendNetworkInfo
             self.bundleWithRUM = bundleWithRUM
             self.bundleWithTrace = bundleWithTrace
@@ -144,8 +145,8 @@ public struct Logger {
             return RemoteLogger(
                 core: core,
                 configuration: RemoteLogger.Configuration(
-                    service: configuration.serviceName,
-                    loggerName: configuration.loggerName,
+                    service: configuration.service,
+                    name: configuration.name,
                     sendNetworkInfo: configuration.sendNetworkInfo,
                     threshold: configuration.datadogReportingThreshold,
                     eventMapper: feature.logEventMapper,

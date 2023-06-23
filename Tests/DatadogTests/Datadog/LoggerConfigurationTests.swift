@@ -30,7 +30,7 @@ class LoggerConfigurationTests: XCTestCase {
 
         let remoteLogger = try XCTUnwrap(logger as? RemoteLogger)
         XCTAssertNil(remoteLogger.configuration.service)
-        XCTAssertNil(remoteLogger.configuration.loggerName)
+        XCTAssertNil(remoteLogger.configuration.name)
         XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
@@ -67,8 +67,8 @@ class LoggerConfigurationTests: XCTestCase {
     func testCustomizedLogger() throws {
         let logger = Logger.create(
             with: Logger.Configuration(
-                serviceName: "custom-service-name",
-                loggerName: "custom-logger-name",
+                service: "custom-service-name",
+                name: "custom-logger-name",
                 sendNetworkInfo: true,
                 bundleWithRUM: false,
                 bundleWithTrace: false,
@@ -79,7 +79,7 @@ class LoggerConfigurationTests: XCTestCase {
 
         let remoteLogger = try XCTUnwrap(logger as? RemoteLogger)
         XCTAssertEqual(remoteLogger.configuration.service, "custom-service-name")
-        XCTAssertEqual(remoteLogger.configuration.loggerName, "custom-logger-name")
+        XCTAssertEqual(remoteLogger.configuration.name, "custom-logger-name")
         XCTAssertTrue(remoteLogger.configuration.sendNetworkInfo)
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)

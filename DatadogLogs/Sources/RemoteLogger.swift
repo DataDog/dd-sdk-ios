@@ -14,7 +14,7 @@ internal final class RemoteLogger: LoggerProtocol {
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
         /// The `logger.name` value for logs.
-        let loggerName: String?
+        let name: String?
         /// Whether to send the network info in `network.client.*` log attributes.
         let sendNetworkInfo: Bool
         /// Only logs equal or above this threshold will be sent.
@@ -129,7 +129,7 @@ internal final class RemoteLogger: LoggerProtocol {
 
             let builder = LogEventBuilder(
                 service: self.configuration.service ?? context.service,
-                loggerName: self.configuration.loggerName,
+                loggerName: self.configuration.name,
                 sendNetworkInfo: self.configuration.sendNetworkInfo,
                 eventMapper: self.configuration.eventMapper
             )

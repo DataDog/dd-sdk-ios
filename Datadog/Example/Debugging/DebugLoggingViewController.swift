@@ -93,7 +93,7 @@ class DebugLoggingViewController: UIViewController {
         loggers = (0..<5).map { index in
             return Logger.create(
                 with: Logger.Configuration(
-                    loggerName: "stress-logger-\(index)",
+                    name: "stress-logger-\(index)",
                     sendNetworkInfo: true
                 )
             )

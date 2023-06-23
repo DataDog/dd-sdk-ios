@@ -46,7 +46,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Create Logger
         logger = Logger.create(
             with: Logger.Configuration(
-                loggerName: "logger-name",
+                name: "logger-name",
                 sendNetworkInfo: true,
                 consoleLogFormat: .shortWith(prefix: "[iOS App] ")
             )

@@ -77,8 +77,8 @@ class LoggerTests: XCTestCase {
 
         let logger = Logger.create(
             with: Logger.Configuration(
-                serviceName: "custom-service-name",
-                loggerName: "custom-logger-name",
+                service: "custom-service-name",
+                name: "custom-logger-name",
                 sendNetworkInfo: true,
                 consoleLogFormat: .short
             ),
