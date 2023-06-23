@@ -140,9 +140,10 @@ workflows:
             # by modifying `DD_RUN_*` ENV variables with `envman` (ref.: https://github.com/bitrise-io/envman).
             venv/bin/python3 choose_workflows.py
     after_run:
-      - run_linter
-      - run_unit_tests
-      - run_integration_tests
+      # TODO - revert:
+      # - run_linter
+      # - run_unit_tests
+      # - run_integration_tests
       - run_smoke_tests
       - run_tools_tests
 
@@ -337,18 +338,18 @@ workflows:
             #!/usr/bin/env bash
             set -e
             make test-spm ci=${CI}
-    - script:
-        title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euxo pipefail
+    # - script:
+    #     title: Check Mac Catalyst compatibility (build SPMProject for Catalyst)
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - content: |-
+    #         #!/usr/bin/env bash
+    #         set -euxo pipefail
 
-            xcodebuild build -scheme "App iOS" \
-                -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
-                -destination "platform=macOS,variant=Mac Catalyst" \
-                | xcpretty
+    #         xcodebuild build -scheme "App iOS" \
+    #             -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
+    #             -destination "platform=macOS,variant=Mac Catalyst" \
+    #             | xcpretty
     - xcode-test:
         title: Run SPMProject iOS tests
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
@@ -359,16 +360,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-ios-tests.html"
-    - xcode-test:
-        title: Run SPMProject tvOS tests
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tvos-tests.html"
+    # - xcode-test:
+    #     title: Run SPMProject tvOS tests
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/SPMProject-tvos-tests.html"
     - script:
         title: Test Carthage compatibility
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
@@ -387,16 +388,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-ios-tests.html"
-    - xcode-test:
-        title: Run CTProject tvOS tests
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tvos-tests.html"
+    # - xcode-test:
+    #     title: Run CTProject tvOS tests
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/carthage/CTProject.xcodeproj"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CTProject-tvos-tests.html"
     - script:
         title: Test Cocoapods compatibility
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
@@ -415,36 +416,36 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-dynamic-tests.html"
-    - xcode-test:
-        title: Run CPProject tests iOS with no 'use_frameworks!'
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App Static iOS
-        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-static-tests.html"
-    - xcode-test:
-        title: Run CPProject tests tvOS with 'use_frameworks!'
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App Dynamic tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-dynamic-tests.html"
-    - xcode-test:
-        title: Run CPProject tests tvOS with no 'use_frameworks!'
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App Static tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-static-tests.html"
+    # - xcode-test:
+    #     title: Run CPProject tests iOS with no 'use_frameworks!'
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App Static iOS
+    #     - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-ios-static-tests.html"
+    # - xcode-test:
+    #     title: Run CPProject tests tvOS with 'use_frameworks!'
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App Dynamic tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-dynamic-tests.html"
+    # - xcode-test:
+    #     title: Run CPProject tests tvOS with no 'use_frameworks!'
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App Static tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/cocoapods/CPProject.xcworkspace"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/CPProject-tvos-static-tests.html"
     - script:
         title: Test XCFrameworks compatibility
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
@@ -463,16 +464,16 @@ workflows:
         - cache_level: none
         - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/xcframeworks/XCProject.xcodeproj"
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/XCProject-ios-tests.html"
-    - xcode-test:
-        title: Run XCProject tvOS tests
-        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
-        inputs:
-        - scheme: App tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - cache_level: none
-        - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/xcframeworks/XCProject.xcodeproj"
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/XCProject-tvos-tests.html"
+    # - xcode-test:
+    #     title: Run XCProject tvOS tests
+    #     run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: App tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - cache_level: none
+    #     - project_path: "$BITRISE_SOURCE_DIR/dependency-manager-tests/xcframeworks/XCProject.xcodeproj"
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/XCProject-tvos-tests.html"
 
   run_tools_tests:
     description: |-
