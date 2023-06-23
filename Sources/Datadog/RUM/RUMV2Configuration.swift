@@ -13,7 +13,10 @@ import Foundation
 internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "rum",
-        requestBuilder: RUMRequestBuilder(intake: configuration.uploadURL),
+        requestBuilder: RUMRequestBuilder(
+            intake: configuration.uploadURL,
+            eventsFilter: RUMViewEventsFilter()
+        ),
         messageReceiver: CombinedFeatureMessageReceiver(
             ErrorMessageReceiver(),
             WebViewEventReceiver(
@@ -30,6 +33,45 @@ internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -
     )
 }
 
+internal struct RUMViewEventsFilter: EventsFilter {
+    let decoder: JSONDecoder
+
+    init(decoder: JSONDecoder = JSONDecoder()) {
+        self.decoder = decoder
+    }
+
+    func filter(events: [Event]) -> [Event] {
+        var seen = Set<String>()
+        var filtered = [Event]()
+
+        // reversed is O(1) and no copy because it is view on the original array
+        for event in events.reversed() {
+            guard let metadata = event.metadata else {
+                // If there is no metadata, we can't filter it.
+                filtered.append(event)
+                continue
+            }
+
+            guard let viewMetadata = try? decoder.decode(RUMViewEvent.Metadata.self, from: metadata) else {
+                // If we can't decode the metadata, we can't filter it.
+                filtered.append(event)
+                continue
+            }
+
+            guard seen.contains(viewMetadata.id) == false else {
+                // If we've already seen this view, we can skip this
+                DD.logger.debug("Skipping RUMViewEvent with id: \(viewMetadata.id)")
+                continue
+            }
+
+            filtered.append(event)
+            seen.insert(viewMetadata.id)
+        }
+
+        return filtered.reversed()
+    }
+}
+
 /// The RUM URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload RUM data.
 internal struct RUMRequestBuilder: FeatureRequestBuilder {
@@ -39,7 +81,9 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
     /// The RUM request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    let eventsFilter: EventsFilter
+
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         var tags = [
             "service:\(context.service)",
             "version:\(context.version)",
@@ -71,7 +115,8 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let filteredEvents = eventsFilter.filter(events: events)
+        let data = format.format(filteredEvents.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }

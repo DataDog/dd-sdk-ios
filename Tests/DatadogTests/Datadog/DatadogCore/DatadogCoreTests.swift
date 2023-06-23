@@ -72,7 +72,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(uploadedEvents, [#"{"event":"granted"}"#], "Only `.granted` events should be uploaded")
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
@@ -121,7 +121,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,
@@ -175,7 +175,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,

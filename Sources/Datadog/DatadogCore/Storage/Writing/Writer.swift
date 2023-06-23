@@ -8,7 +8,14 @@ import Foundation
 
 /// A type, writing data.
 public protocol Writer {
-    func write<T: Encodable>(value: T)
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?)
+}
+
+extension Writer {
+    func write<T: Encodable>(value: T) {
+        let metadata: Data? = nil
+        write(value: value, metadata: metadata)
+    }
 }
 
 /// Writer performing writes asynchronously on a given queue.
@@ -21,11 +28,12 @@ internal struct AsyncWriter: Writer {
         self.queue = queue
     }
 
-    func write<T>(value: T) where T: Encodable {
-        queue.async { writer.write(value: value) }
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+        queue.async { writer.write(value: value, metadata: metadata) }
     }
 }
 
 internal struct NOPWriter: Writer {
-    func write<T>(value: T) where T: Encodable {}
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+    }
 }

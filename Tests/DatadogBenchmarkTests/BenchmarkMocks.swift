@@ -13,7 +13,7 @@ extension PerformancePreset {
 struct FeatureRequestBuilderMock: FeatureRequestBuilder {
     let dataFormat = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: .mockAny(),
             queryItems: [.ddtags(tags: ["foo:bar"])],

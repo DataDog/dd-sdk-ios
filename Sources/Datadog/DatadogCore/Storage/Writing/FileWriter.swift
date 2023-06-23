@@ -21,12 +21,25 @@ internal struct FileWriter: Writer {
     // MARK: - Writing data
 
     /// Encodes given value to JSON data and writes it to the file.
-    func write<T: Encodable>(value: T) {
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         do {
-            let data = try encode(event: value)
-            let writeSize = UInt64(data.count)
+            let encodedValue = try encode(encodable: value, blockType: .event)
+            let encodedMetadata: Data?
+            if let metadata = metadata {
+                encodedMetadata = try encode(encodable: metadata, blockType: .eventMetadata)
+            } else {
+                encodedMetadata = nil
+            }
+
+            // Make sure both event and event metadata are written to the same file.
+            // This is to avoid a situation where event is written to one file and event metadata to another.
+            // If this happens, the reader will not be able to match event with its metadata.
+            let writeSize = UInt64(encodedValue.count + (encodedMetadata?.count ?? 0))
             let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
-            try file.append(data: data)
+            try file.append(data: encodedValue)
+            if let encodedMetadata = encodedMetadata {
+                try file.append(data: encodedMetadata)
+            }
         } catch {
             DD.logger.error("Failed to write data", error: error)
             DD.telemetry.error("Failed to write data to file", error: error)
@@ -46,10 +59,10 @@ internal struct FileWriter: Writer {
     ///
     /// - Parameter event: The value to encode.
     /// - Returns: Data representation of the value.
-    private func encode<T: Encodable>(event: T) throws -> Data {
-        let data = try jsonEncoder.encode(event)
+    private func encode(encodable: Encodable, blockType: BlockType) throws -> Data {
+        let data = try jsonEncoder.encode(encodable)
         return try DataBlock(
-            type: .event,
+            type: blockType,
             data: encrypt(data: data)
         ).serialize(
             maxLength: orchestrator.performance.maxObjectSize

@@ -19,6 +19,42 @@ class FileWriterTests: XCTestCase {
         super.tearDown()
     }
 
+    func testItWritesDataWithMetadataToSingleFileInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: nil,
+            forceNewFile: false
+        )
+
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"]) // skipped metadata here
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        let stream = try temporaryDirectory.files()[0].stream()
+
+        let reader = DataBlockReader(input: stream)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"{"meta1":"metaValue1"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key2":"value2"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"{"meta3":"metaValue3"}"#.utf8Data)
+    }
+
     func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -219,7 +255,7 @@ class FileWriterTests: XCTestCase {
     }
 
     func testItWritesEncryptedDataToSingleFile() throws {
-        // Given 
+        // Given
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: temporaryDirectory,
@@ -233,23 +269,34 @@ class FileWriterTests: XCTestCase {
         )
 
         // When
-        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
         writer.write(value: ["key2": "value3"])
-        writer.write(value: ["key3": "value3"])
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
         // Then
         XCTAssertEqual(try temporaryDirectory.files().count, 1)
         let stream = try temporaryDirectory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
+
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)
+
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)
+
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, "foo".utf8Data)
     }
 }
