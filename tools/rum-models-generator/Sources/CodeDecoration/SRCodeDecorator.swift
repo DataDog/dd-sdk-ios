@@ -21,6 +21,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeWireframe",
                 "SRTextWireframe",
                 "SRImageWireframe",
+                "SRPlaceholderWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
                 "SRFullSnapshotRecord",
                 "SRIncrementalSnapshotRecord",

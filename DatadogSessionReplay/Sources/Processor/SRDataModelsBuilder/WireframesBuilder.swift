@@ -146,6 +146,27 @@ internal class WireframesBuilder {
         return .textWireframe(value: wireframe)
     }
 
+    func createPlaceholderWireframe(
+        clip: SRContentClip? = nil,
+        height: Int64,
+        id: Int64,
+        label: String,
+        width: Int64,
+        x: Int64,
+        y: Int64
+    ) -> SRWireframe {
+        let wireframe =  SRPlaceholderWireframe(
+            clip: clip,
+            height: height,
+            id: id,
+            label: label,
+            width: width,
+            x: x,
+            y: y
+        )
+        return .placeholderWireframe(value: wireframe)
+    }
+
     // MARK: - Private
 
     private func createShapeBorder(borderColor: CGColor?, borderWidth: CGFloat?) -> SRShapeBorder? {
