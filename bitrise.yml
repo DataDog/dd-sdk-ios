@@ -495,6 +495,14 @@ workflows:
             #!/usr/bin/env bash
             set -e
             swift test --package-path tools/rum-models-generator
+    - script:
+        title: Run unit tests for sr-snapshots
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            swift test --package-path tools/sr-snapshots
 
   create_dogfooding_pr:
     description: |-

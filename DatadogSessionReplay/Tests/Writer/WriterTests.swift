@@ -20,9 +20,9 @@ class WriterTests: XCTestCase {
         writer.startWriting(to: core)
 
         // Then
-        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
-        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
-        writer.write(nextRecord: EnrichedRecord(rumContext: .mockRandom(), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
 
         XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 3)
     }

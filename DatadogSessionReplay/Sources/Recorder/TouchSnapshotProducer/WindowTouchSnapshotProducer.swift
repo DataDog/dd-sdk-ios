@@ -22,7 +22,7 @@ internal class WindowTouchSnapshotProducer: TouchSnapshotProducer, UIEventHandle
     }
 
     func takeSnapshot(context: Recorder.Context) -> TouchSnapshot? {
-        if let offset = context.rumContext.viewServerTimeOffset {
+        if let offset = context.viewServerTimeOffset {
             buffer = buffer.compactMap {
                 var touch = $0
                 touch.date.addTimeInterval(offset)

@@ -24,7 +24,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
 
         // Then
-        XCTAssertEqual(snapshot.rumContext, randomRecorderContext.rumContext)
+        XCTAssertEqual(snapshot.context, randomRecorderContext)
 
         let queryContext = try XCTUnwrap(nodeRecorder.queryContexts.first)
         XCTAssertTrue(queryContext.coordinateSpace === view)

@@ -53,7 +53,7 @@ internal struct FileWriter: Writer {
             type: .event,
             data: encrypt(data: data)
         ).serialize(
-            maxLenght: orchestrator.performance.maxObjectSize
+            maxLength: orchestrator.performance.maxObjectSize
         )
     }
 

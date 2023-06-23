@@ -20,7 +20,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
     public static func mockRandom() -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: .mockRandom(),
-            rumContext: .mockRandom(),
+            context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50)))
         )
@@ -28,13 +28,13 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
 
     static func mockWith(
         date: Date = .mockAny(),
-        rumContext: RUMContext = .mockAny(),
+        context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
-            rumContext: rumContext,
+            context: context,
             viewportSize: viewportSize,
             nodes: nodes
         )
@@ -397,7 +397,7 @@ extension RUMContext: AnyMockable, RandomMockable {
     static func mockWith(
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
-        viewID: String = .mockAny(),
+        viewID: String? = .mockAny(),
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
@@ -418,9 +418,9 @@ extension Recorder.Context: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Recorder.Context {
         return Recorder.Context(
-            date: .mockRandom(),
             privacy: .mockRandom(),
-            rumContext: .mockRandom()
+            rumContext: .mockRandom(),
+            date: .mockRandom()
         )
     }
 
@@ -430,9 +430,24 @@ extension Recorder.Context: AnyMockable, RandomMockable {
         rumContext: RUMContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
-            date: date,
             privacy: privacy,
-            rumContext: rumContext
+            rumContext: rumContext,
+            date: date
+        )
+    }
+
+    init(
+        privacy: SessionReplayPrivacy,
+        rumContext: RUMContext,
+        date: Date = Date()
+    ) {
+        self.init(
+            privacy: privacy,
+            applicationID: rumContext.ids.applicationID,
+            sessionID: rumContext.ids.sessionID,
+            viewID: rumContext.ids.viewID ?? "",
+            viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            date: date
         )
     }
 }
