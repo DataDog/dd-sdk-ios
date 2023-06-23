@@ -12,7 +12,7 @@ import TestUtilities
 
 extension DatadogCoreProxy {
     func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        return try waitAndReturnEventsData(ofFeature: DatadogRUMFeature.name)
+        return try waitAndReturnEventsData(ofFeature: RUMFeature.name)
             .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
     }
 }

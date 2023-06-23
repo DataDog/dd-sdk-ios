@@ -191,7 +191,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
     private func record(event id: String, in core: DatadogCoreProtocol, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
-            let rum = core.scope(for: DatadogRUMFeature.name),
+            let rum = core.scope(for: RUMFeature.name),
             sampler.sample()
         else {
             return

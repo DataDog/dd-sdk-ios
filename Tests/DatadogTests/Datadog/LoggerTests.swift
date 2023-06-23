@@ -761,7 +761,7 @@ class LoggerTests: XCTestCase {
         ])
 
         // then
-        let errorEvents = core.waitAndReturnEvents(ofFeature: DatadogRUMFeature.name, ofType: RUMErrorEvent.self)
+        let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
         let error1 = try XCTUnwrap(errorEvents.first)
         XCTAssertEqual(error1.error.message, "error message")
         XCTAssertEqual(error1.error.source, .logger)

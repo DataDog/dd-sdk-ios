@@ -142,7 +142,7 @@ class RUMFeatureTests: XCTestCase {
         // Given
         RUM.enable(with: .mockAny(), in: core)
 
-        core.scope(for: DatadogRUMFeature.name)?.eventWriteContext { _, writer in
+        core.scope(for: RUMFeature.name)?.eventWriteContext { _, writer in
             writer.write(value: RUMDataModelMock(attribute: "1st event"))
             writer.write(value: RUMDataModelMock(attribute: "2nd event"))
             writer.write(value: RUMDataModelMock(attribute: "3rd event"))

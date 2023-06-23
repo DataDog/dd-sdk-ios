@@ -7,10 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal typealias RUMFeature = DatadogRUMFeature
-
-// TODO: RUMM-2922 Rename to `RUMFeature`
-internal final class DatadogRUMFeature: DatadogRemoteFeature {
+internal final class RUMFeature: DatadogRemoteFeature {
     static let name = "rum"
 
     let requestBuilder: FeatureRequestBuilder
@@ -126,7 +123,7 @@ internal final class DatadogRUMFeature: DatadogRemoteFeature {
     }
 }
 
-extension DatadogRUMFeature: Flushable {
+extension RUMFeature: Flushable {
     /// Awaits completion of all asynchronous operations.
     ///
     /// **blocks the caller thread**

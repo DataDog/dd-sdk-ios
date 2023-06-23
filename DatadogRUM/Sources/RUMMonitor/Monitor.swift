@@ -131,7 +131,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         // process command in event context
-        core?.scope(for: DatadogRUMFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: RUMFeature.name)?.eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
 
@@ -144,7 +144,7 @@ internal class Monitor: RUMCommandSubscriber {
         }
 
         // update the core context with rum context
-        core?.set(feature: DatadogRUMFeature.name, attributes: {
+        core?.set(feature: RUMFeature.name, attributes: {
             self.queue.sync {
                 let context = self.scopes.activeSession?.viewScopes.last?.context ??
                                 self.scopes.activeSession?.context ??

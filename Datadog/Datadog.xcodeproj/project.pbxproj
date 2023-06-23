@@ -495,7 +495,7 @@
 		D23F8E6129DDCD28001CFAE8 /* RUMConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */; };
 		D23F8E6329DDCD28001CFAE8 /* RUMDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E26E6B824C87693000B3270 /* RUMDataModels.swift */; };
 		D23F8E6429DDCD28001CFAE8 /* SwiftUIViewHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24985A12728048B00B4F72D /* SwiftUIViewHandler.swift */; };
-		D23F8E6529DDCD28001CFAE8 /* DatadogRUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* DatadogRUMFeature.swift */; };
+		D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* RUMFeature.swift */; };
 		D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
 		D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618DCFD624C7265300589570 /* RUMUUID.swift */; };
 		D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */; };
@@ -745,7 +745,7 @@
 		D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */; };
 		D29A9F7129DD85BB005C54A4 /* RUMDeviceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FD9FCB28533EDF00214BD9 /* RUMDeviceInfo.swift */; };
 		D29A9F7329DD85BB005C54A4 /* RUMApplicationScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */; };
-		D29A9F7429DD85BB005C54A4 /* DatadogRUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* DatadogRUMFeature.swift */; };
+		D29A9F7429DD85BB005C54A4 /* RUMFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25FF2E729CC6B680063802D /* RUMFeature.swift */; };
 		D29A9F7529DD85BB005C54A4 /* RUMViewScope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C2C21124C5951400C0321C /* RUMViewScope.swift */; };
 		D29A9F7629DD85BB005C54A4 /* RUMViewsHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */; };
 		D29A9F7729DD85BB005C54A4 /* RUMDebugging.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B22E5924F3E6B700DC26D2 /* RUMDebugging.swift */; };
@@ -2209,7 +2209,7 @@
 		D25CFAA129C8644E00E3A43D /* Casting+Tracing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+Tracing.swift"; sourceTree = "<group>"; };
 		D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D25EE93B29C4C3C300CE3839 /* DatadogTraceTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogTraceTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		D25FF2E729CC6B680063802D /* DatadogRUMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogRUMFeature.swift; sourceTree = "<group>"; };
+		D25FF2E729CC6B680063802D /* RUMFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeature.swift; sourceTree = "<group>"; };
 		D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConfiguration.swift; sourceTree = "<group>"; };
 		D25FF2ED29CC73240063802D /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
 		D25FF2F329CC88060063802D /* RUMBaggageKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMBaggageKeys.swift; sourceTree = "<group>"; };
@@ -4524,7 +4524,7 @@
 		D25FF2E629CC6B320063802D /* Feature */ = {
 			isa = PBXGroup;
 			children = (
-				D25FF2E729CC6B680063802D /* DatadogRUMFeature.swift */,
+				D25FF2E729CC6B680063802D /* RUMFeature.swift */,
 				D25FF2ED29CC73240063802D /* RequestBuilder.swift */,
 				D25FF2F329CC88060063802D /* RUMBaggageKeys.swift */,
 			);
@@ -6902,7 +6902,7 @@
 				D23F8E6329DDCD28001CFAE8 /* RUMDataModels.swift in Sources */,
 				61C713AB2A3B790B00FA735A /* Monitor.swift in Sources */,
 				D23F8E6429DDCD28001CFAE8 /* SwiftUIViewHandler.swift in Sources */,
-				D23F8E6529DDCD28001CFAE8 /* DatadogRUMFeature.swift in Sources */,
+				D23F8E6529DDCD28001CFAE8 /* RUMFeature.swift in Sources */,
 				D23F8E6629DDCD28001CFAE8 /* RUMDebugging.swift in Sources */,
 				D23F8E6729DDCD28001CFAE8 /* RUMUUID.swift in Sources */,
 				D23F8E6829DDCD28001CFAE8 /* UIKitExtensions.swift in Sources */,
@@ -7148,7 +7148,7 @@
 				D29A9F7B29DD85BB005C54A4 /* RUMDataModels.swift in Sources */,
 				61C713AA2A3B790B00FA735A /* Monitor.swift in Sources */,
 				D29A9F8529DD85BB005C54A4 /* SwiftUIViewHandler.swift in Sources */,
-				D29A9F7429DD85BB005C54A4 /* DatadogRUMFeature.swift in Sources */,
+				D29A9F7429DD85BB005C54A4 /* RUMFeature.swift in Sources */,
 				D29A9F7729DD85BB005C54A4 /* RUMDebugging.swift in Sources */,
 				D29A9F6E29DD85BB005C54A4 /* RUMUUID.swift in Sources */,
 				D29A9F8D29DD8665005C54A4 /* UIKitExtensions.swift in Sources */,
