@@ -75,7 +75,7 @@ internal class WireframesBuilder {
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
-            isEmpty: false,
+            isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: mimeType,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
