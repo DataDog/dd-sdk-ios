@@ -12,7 +12,7 @@ public protocol Writer {
 }
 
 extension Writer {
-    func write<T: Encodable>(value: T) {
+    public func write<T: Encodable>(value: T) {
         let metadata: Data? = nil
         write(value: value, metadata: metadata)
     }
