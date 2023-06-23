@@ -24,7 +24,7 @@ SR_SCHEMA_PATH = '/rum-events-format/session-replay-mobile-format.json'
 # Generated file paths (relative to repository root)
 RUM_SWIFT_GENERATED_FILE_PATH = '/Sources/Datadog/RUM/DataModels/RUMDataModels.swift'
 RUM_OBJC_GENERATED_FILE_PATH = '/Sources/DatadogObjc/RUM/RUMDataModels+objc.swift'
-SR_SWIFT_GENERATED_FILE_PATH = '/DatadogSessionReplay/Sources/DatadogSessionReplay/Writer/Models/SRDataModels.swift'
+SR_SWIFT_GENERATED_FILE_PATH = '/DatadogSessionReplay/Sources/Writer/Models/SRDataModels.swift'
 
 
 @dataclass
