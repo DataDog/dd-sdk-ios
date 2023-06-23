@@ -207,7 +207,7 @@ class LoggerTests: XCTestCase {
         let errorKind = String.mockRandom()
         let errorMessage = String.mockRandom()
         let stackTrace = String.mockRandom()
-        logger.log(level: .info,
+        logger._internal.log(level: .info,
                    message: .mockAny(),
                    errorKind: errorKind,
                    errorMessage: errorMessage,
