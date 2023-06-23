@@ -58,7 +58,7 @@ internal class WireframesBuilder {
     }
 
     func createImageWireframe(
-        base64: String?,
+        base64: String,
         id: WireframeID,
         frame: CGRect,
         mimeType: String = "png",
@@ -75,7 +75,7 @@ internal class WireframesBuilder {
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
-            isEmpty: base64?.isEmpty == true ? true : nil,
+            isEmpty: false,
             mimeType: mimeType,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
@@ -147,22 +147,19 @@ internal class WireframesBuilder {
     }
 
     func createPlaceholderWireframe(
-        clip: SRContentClip? = nil,
-        height: Int64,
         id: Int64,
+        frame: CGRect,
         label: String,
-        width: Int64,
-        x: Int64,
-        y: Int64
+        clip: SRContentClip? = nil
     ) -> SRWireframe {
         let wireframe =  SRPlaceholderWireframe(
             clip: clip,
-            height: height,
+            height: Int64(withNoOverflow: frame.size.height),
             id: id,
             label: label,
-            width: width,
-            x: x,
-            y: y
+            width: Int64(withNoOverflow: frame.size.width),
+            x: Int64(withNoOverflow: frame.minX),
+            y: Int64(withNoOverflow: frame.minY)
         )
         return .placeholderWireframe(value: wireframe)
     }
