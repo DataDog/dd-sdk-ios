@@ -8,6 +8,7 @@ import UIKit
 import Datadog
 import DatadogLogs
 import DatadogTrace
+import DatadogRUM
 import DatadogCrashReporting
 
 internal class ViewController: UIViewController {
@@ -32,6 +33,17 @@ internal class ViewController: UIViewController {
             .sendLogsToDatadog(false)
             .printLogsToConsole(true)
             .build()
+
+        // RUM APIs must be visible:
+        RUM.enable(with: .init(applicationID: "app-id"))
+        RUMMonitor.shared().startView(viewController: self)
+
+        // DDURLSessionDelegate APIs must be visible:
+        _ = DDURLSessionDelegate()
+        _ = DatadogURLSessionDelegate()
+        class CustomDelegate: NSObject, __URLSessionDelegateProviding {
+            var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
+        }
 
         DatadogTracer.initialize()
 

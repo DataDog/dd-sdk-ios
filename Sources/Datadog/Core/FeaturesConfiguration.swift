@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogRUM
 
 /// Describes the configuration of all features.
 ///
@@ -36,8 +35,6 @@ internal struct FeaturesConfiguration {
 
     /// Configuration common to all features.
     let common: Common
-    /// RUM feature configuration or `nil` if the feature is disabled.
-    let rum: RUMConfiguration?
     /// Tracing feature enabled.
     let tracingEnabled: Bool
 }
@@ -51,8 +48,6 @@ extension FeaturesConfiguration {
     /// Throws an error on invalid user input, i.e. broken custom URL.
     /// Prints a warning if configuration is inconsistent, i.e. RUM is enabled, but RUM Application ID was not specified.
     init(configuration: Datadog.Configuration, appContext: AppContext) throws {
-        var rum: RUMConfiguration?
-
         tracingEnabled = configuration.tracingEnabled
 
         let source = (configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String) ?? Datadog.Constants.ddsource
@@ -91,55 +86,8 @@ extension FeaturesConfiguration {
             dateProvider: dateProvider
         )
 
-        if configuration.rumEnabled {
-            let instrumentation = RUMConfiguration.Instrumentation(
-                uiKitRUMViewsPredicate: configuration.rumUIKitViewsPredicate,
-                uiKitRUMUserActionsPredicate: configuration.rumUIKitUserActionsPredicate,
-                longTaskThreshold: configuration.rumLongTaskDurationThreshold
-            )
-
-            var configurationSampler = Sampler(samplingRate: 20)
-            if let internalConfigurationSampleRate = configuration.additionalConfiguration[CrossPlatformAttributes.telemetryConfigurationSampleRate] as? Float {
-                configurationSampler = Sampler(samplingRate: internalConfigurationSampleRate)
-            }
-
-            if let rumApplicationID = configuration.rumApplicationID {
-                rum = RUMConfiguration(
-                    applicationID: rumApplicationID,
-                    sessionSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.rumSessionsSamplingRate),
-                    telemetrySampler: Sampler(samplingRate: configuration.rumTelemetrySamplingRate),
-                    configurationTelemetrySampler: configurationSampler,
-                    viewEventMapper: configuration.rumViewEventMapper,
-                    resourceEventMapper: configuration.rumResourceEventMapper,
-                    actionEventMapper: configuration.rumActionEventMapper,
-                    errorEventMapper: configuration.rumErrorEventMapper,
-                    longTaskEventMapper: configuration.rumLongTaskEventMapper,
-                    instrumentation: instrumentation,
-                    backgroundEventTrackingEnabled: configuration.rumBackgroundEventTrackingEnabled,
-                    frustrationTrackingEnabled: configuration.rumFrustrationSignalsTrackingEnabled,
-                    onSessionStart: configuration.rumSessionsListener,
-                    firstPartyHosts: configuration.firstPartyHosts,
-                    tracingSampler: Sampler(samplingRate: debugOverride ? 100.0 : configuration.tracingSamplingRate),
-                    traceIDGenerator: DefaultTraceIDGenerator(),
-                    rumAttributesProvider: configuration.rumResourceAttributesProvider,
-                    vitalsFrequency: configuration.mobileVitalsFrequency.timeInterval,
-                    dateProvider: dateProvider,
-                    customIntakeURL: configuration.customRUMEndpoint,
-                    testExecutionId: CITestIntegration.active?.testExecutionId
-                )
-            } else {
-                let error = ProgrammerError(
-                    description: """
-                    In order to use the RUM feature, `Datadog.Configuration` must be constructed using:
-                    `.builderUsing(rumApplicationID:rumClientToken:environment:)`
-                    """
-                )
-                consolePrint("\(error)")
-            }
-        }
-
         // TODO: RUMM-2538 Update this wording with final V2 APIs
-        if configuration.firstPartyHosts != nil && !configuration.tracingEnabled && !configuration.rumEnabled {
+        if configuration.firstPartyHosts != nil && !configuration.tracingEnabled {
             let error = ProgrammerError(
                 description: """
                 To use `.trackURLSession(firstPartyHosts:)` either RUM or Tracing must be enabled.
@@ -149,29 +97,7 @@ extension FeaturesConfiguration {
             consolePrint("\(error)")
         }
 
-        if configuration.rumResourceAttributesProvider != nil && configuration.firstPartyHosts == nil {
-            let error = ProgrammerError(
-                description: """
-                To use `.setRUMResourceAttributesProvider(_:)` URLSession tracking must be enabled
-                with `.trackURLSession(firstPartyHosts:)`.
-                """
-            )
-            consolePrint("\(error)")
-        }
-
         self.common = common
-        self.rum = rum
-    }
-}
-
-extension Datadog.Configuration.VitalsFrequency {
-    var timeInterval: TimeInterval? {
-        switch self {
-        case .frequent: return 0.1
-        case .average: return 0.5
-        case .rare: return 1
-        case .never: return nil
-        }
     }
 }
 

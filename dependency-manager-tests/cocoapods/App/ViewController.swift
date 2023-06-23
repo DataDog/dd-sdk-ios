@@ -42,11 +42,21 @@ internal class ViewController: UIViewController {
             .printLogsToConsole(true)
             .build()
 
+        // RUM APIs must be visible:
+        RUM.enable(with: .init(applicationID: "app-id"))
+        RUMMonitor.shared().startView(viewController: self)
+
+        // DDURLSessionDelegate APIs must be visible:
+        _ = DDURLSessionDelegate()
+        _ = DatadogURLSessionDelegate()
+        class CustomDelegate: NSObject, __URLSessionDelegateProviding {
+            var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
+        }
+
         DatadogTracer.initialize()
 
         logger.info("It works")
         _ = DatadogTracer.shared().startSpan(operationName: "This too")
-        RUMMonitor.shared().startView(viewController: self)
 
         createInstrumentedAlamofireSession()
 

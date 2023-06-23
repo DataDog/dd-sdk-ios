@@ -24,13 +24,12 @@ private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
 final class WebViewTrackingScenario: TestScenario {
     static var storyboardName: String = "WebViewTrackingScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .trackUIKitRUMViews(using: WebViewTrackingScenarioPredicate())
-            .enableRUM(true)
-    }
-
     func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = WebViewTrackingScenarioPredicate()
+        RUM.enable(with: config)
+
         Logs.enable(
             with: Logs.Configuration(
                 customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint

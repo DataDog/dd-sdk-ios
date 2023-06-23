@@ -25,6 +25,10 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             expectations: Expectations(
                 expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .allCases.randomElement()!,
+                initializationMethod: .allCases.randomElement()!
             )
         )
     }
@@ -35,13 +39,17 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             expectations: Expectations(
                 expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .allCases.randomElement()!,
+                initializationMethod: .allCases.randomElement()!
             )
         )
     }
 
     /// Both, `URLSession` (Swift) and `NSURLSession` (Objective-C) scenarios use different storyboards
     /// and different view controllers to run this test, but the the logic and the instrumentation is the same.
-    private func runTest(for testScenarioClassName: String, expectations: Expectations) throws {
+    private func runTest(for testScenarioClassName: String, expectations: Expectations, urlSessionSetup: URLSessionSetup) throws {
         // Server session recording first party requests send to `HTTPServerMock`.
         // Used to assert that trace propagation headers are send for first party requests.
         let customFirstPartyServerSession = server.obtainUniqueRecordingSession()
@@ -78,7 +86,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                     thirdPartyGETResourceURL,
                     thirdPartyPOSTResourceURL
                 ]
-            )
+            ),
+            urlSessionSetup: urlSessionSetup
         )
 
         app.tapSend3rdPartyRequests()

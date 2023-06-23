@@ -12,56 +12,23 @@ import TestUtilities
 
 extension DatadogCoreProxy {
     func waitAndReturnRUMEventMatchers(file: StaticString = #file, line: UInt = #line) throws -> [RUMEventMatcher] {
-        return try waitAndReturnEventsData(ofFeature: DatadogRUMFeature.name)
+        return try waitAndReturnEventsData(ofFeature: RUMFeature.name)
             .map { data in try RUMEventMatcher.fromJSONObjectData(data) }
     }
 }
 
-extension RUMConfiguration {
-    static func mockAny() -> Self { mockWith() }
+extension RUM.Configuration {
+    static func mockAny() -> RUM.Configuration {
+        return mockWith { _ in }
+    }
 
     static func mockWith(
         applicationID: String = .mockAny(),
-        uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        sessionSampler: Sampler = .mockKeepAll(),
-        telemetrySampler: Sampler = .mockKeepAll(),
-        configurationTelemetrySampler: Sampler = .mockKeepAll(),
-        viewEventMapper: RUMViewEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil,
-        instrumentation: Instrumentation = .init(),
-        backgroundEventTrackingEnabled: Bool = false,
-        frustrationTrackingEnabled: Bool = true,
-        onSessionStart: RUMSessionListener? = nil,
-        firstPartyHosts: FirstPartyHosts = .init(),
-        vitalsFrequency: TimeInterval? = 0.5,
-        dateProvider: DateProvider = SystemDateProvider(),
-        customIntakeURL: URL? = nil,
-        processInfo: ProcessInfo = .processInfo
-    ) -> Self {
-        return .init(
-            applicationID: applicationID,
-            uuidGenerator: uuidGenerator,
-            sessionSampler: sessionSampler,
-            telemetrySampler: telemetrySampler,
-            configurationTelemetrySampler: configurationTelemetrySampler,
-            viewEventMapper: viewEventMapper,
-            resourceEventMapper: resourceEventMapper,
-            actionEventMapper: actionEventMapper,
-            errorEventMapper: errorEventMapper,
-            longTaskEventMapper: longTaskEventMapper,
-            instrumentation: instrumentation,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            frustrationTrackingEnabled: frustrationTrackingEnabled,
-            onSessionStart: onSessionStart,
-            firstPartyHosts: firstPartyHosts,
-            vitalsFrequency: vitalsFrequency,
-            dateProvider: dateProvider,
-            customIntakeURL: customIntakeURL,
-            processInfo: processInfo
-        )
+        mutation: (inout RUM.Configuration) -> Void
+    ) -> RUM.Configuration {
+        var config = RUM.Configuration(applicationID: applicationID)
+        mutation(&config)
+        return config
     }
 }
 
@@ -137,11 +104,11 @@ extension RUMEventsMapper {
     }
 
     static func mockWith(
-        viewEventMapper: RUMViewEventMapper? = nil,
-        errorEventMapper: RUMErrorEventMapper? = nil,
-        resourceEventMapper: RUMResourceEventMapper? = nil,
-        actionEventMapper: RUMActionEventMapper? = nil,
-        longTaskEventMapper: RUMLongTaskEventMapper? = nil
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
@@ -692,7 +659,7 @@ internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
     }
 }
 
-func mockNoOpSessionListener() -> RUMSessionListener {
+func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
@@ -713,7 +680,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
+        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: core,
@@ -743,7 +710,7 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: RUMSessionListener? = nil
+        onSessionStart: RUM.SessionListener? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: self.core,

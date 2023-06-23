@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogRUM
 
 /// Datadog SDK configuration object.
 public class Datadog {
@@ -203,12 +202,7 @@ public class Datadog {
             useProxy: configuration.common.proxyConfiguration != nil
         )
 
-        // First, initialize features:
-        if let rumConfiguration = configuration.rum {
-            RUM.enable(with: rumConfiguration, in: core)
-
-            CITestIntegration.active?.startIntegration()
-        }
+        CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
         deleteV1Folders(in: core)

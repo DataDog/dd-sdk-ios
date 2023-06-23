@@ -5,7 +5,6 @@
  */
 
 import UIKit
-import DatadogInternal
 import Datadog
 
 internal class TSConsentSettingViewController: UIViewController {

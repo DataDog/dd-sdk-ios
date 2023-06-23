@@ -10,6 +10,9 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 
+@_exported import enum DatadogInternal.TrackingConsent
+@_exported import class DatadogInternal.DDURLSessionDelegate
+
 var logger: DatadogLogger!
 var tracer: OTTracer { DatadogTracer.shared() }
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }

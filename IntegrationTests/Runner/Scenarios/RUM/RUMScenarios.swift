@@ -5,14 +5,19 @@
  */
 
 import UIKit
-import Datadog
-import DatadogInternal
 import DatadogRUM
+import Datadog
 
 /// Scenario which starts a navigation controller. Each view controller pushed to this navigation
 /// uses the RUM manual instrumentation API to send RUM events to the server.
 final class RUMManualInstrumentationScenario: TestScenario {
     static let storyboardName = "RUMManualInstrumentationScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        RUM.enable(with: config)
+    }
 }
 
 /// Scenario which starts a navigation controller and runs through 4 different view controllers by navigating
@@ -39,8 +44,14 @@ final class RUMNavigationControllerScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
             .enableTracing(false)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -61,8 +72,14 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
             .enableTracing(false)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -83,8 +100,14 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
             .enableTracing(false)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -113,8 +136,14 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
             .enableTracing(false)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -143,9 +172,15 @@ final class RUMTapActionScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews(using: Predicate())
-            .trackUIKitRUMActions()
             .enableTracing(false)
+    }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -155,39 +190,63 @@ final class RUMMobileVitalsScenario: TestScenario {
 
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews()
-            .trackUIKitRUMActions()
-            .trackRUMLongTasks(threshold: 2.5)
             .enableTracing(false)
     }
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        config.longTaskThreshold = 2.5
+        RUM.enable(with: config)
+    }
 }
 
-/// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
-/// sent with `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
-final class RUMURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
+/// Base scenario for RUM resources testing.
+class RUMResourcesBaseScenario: URLSessionBaseScenario {
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+
+        switch setup.instrumentationMethod {
+        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
+            config.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(
+                    hosts: [
+                        customGETResourceURL.host!,
+                        customPOSTRequest.url!.host!,
+                        badResourceURL.host!,
+                    ],
+                    sampleRate: 100
+                ),
+                resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
+            )
+        case .directWithAdditionalFirstyPartyHosts:
+            config.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
+                resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
+            )
+        }
+        RUM.enable(with: config)
+    }
+}
+
+/// Scenario which uses RUM resources instrumentation to track bunch of network requests
+/// sent with Swift `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
+final class RUMURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .trackUIKitRUMViews()
-            .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
-
-        super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
-    }
+    override func configureFeatures() { super.configureFeatures() }
 }
 
-/// Scenario which uses RUM and Tracing auto instrumentation features to track bunch of network requests
-/// sent with `NSURLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
-final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenario {
+/// Scenario which uses RUM resources instrumentation to track bunch of network requests
+/// sent with Objective-c `NSURLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
+final class RUMNSURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .trackUIKitRUMViews()
-            .setRUMResourceAttributesProvider(rumResourceAttributesProvider(request:response:data:error:))
-
-        super.configureSDK(builder: builder) // applies the `trackURLSession(firstPartyHosts:)`
-    }
+    override func configureFeatures() { super.configureFeatures() }
 }
 
 /// Scenario which uses RUM manual instrumentation API to send bunch of RUM events. Each event contains some
@@ -195,54 +254,55 @@ final class RUMNSURLSessionResourcesScenario: URLSessionBaseScenario, TestScenar
 final class RUMScrubbingScenario: TestScenario {
     static var storyboardName: String = "RUMScrubbingScenario"
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
+    func configureFeatures() {
         func redacted(_ string: String) -> String {
             return string.replacingOccurrences(of: "sensitive", with: "REDACTED")
         }
 
-        _ = builder
-            .enableTracing(false)
-            .setRUMViewEventMapper { viewEvent in
-                var viewEvent = viewEvent
-                viewEvent.view.url = redacted(viewEvent.view.url)
-                if let viewName = viewEvent.view.name {
-                    viewEvent.view.name = redacted(viewName)
-                }
-                return viewEvent
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.viewEventMapper = { viewEvent in
+            var viewEvent = viewEvent
+            viewEvent.view.url = redacted(viewEvent.view.url)
+            if let viewName = viewEvent.view.name {
+                viewEvent.view.name = redacted(viewName)
             }
-            .setRUMErrorEventMapper { errorEvent in
-                var errorEvent = errorEvent
-                errorEvent.error.message = redacted(errorEvent.error.message)
-                errorEvent.view.url = redacted(errorEvent.view.url)
-                if let viewName = errorEvent.view.name {
-                    errorEvent.view.name = redacted(viewName)
-                }
-                if let resourceURL = errorEvent.error.resource?.url {
-                    errorEvent.error.resource?.url = redacted(resourceURL)
-                }
-                if let errorStack = errorEvent.error.stack {
-                    errorEvent.error.stack = redacted(errorStack)
-                }
-                return errorEvent
+            return viewEvent
+        }
+        config.errorEventMapper = { errorEvent in
+            var errorEvent = errorEvent
+            errorEvent.error.message = redacted(errorEvent.error.message)
+            errorEvent.view.url = redacted(errorEvent.view.url)
+            if let viewName = errorEvent.view.name {
+                errorEvent.view.name = redacted(viewName)
             }
-            .setRUMResourceEventMapper { resourceEvent in
-                var resourceEvent = resourceEvent
-                resourceEvent.resource.url = redacted(resourceEvent.resource.url)
-                if let viewName = resourceEvent.view.name {
-                    resourceEvent.view.name = redacted(viewName)
-                }
-                return resourceEvent
+            if let resourceURL = errorEvent.error.resource?.url {
+                errorEvent.error.resource?.url = redacted(resourceURL)
             }
-            .setRUMActionEventMapper { actionEvent in
-                var actionEvent = actionEvent
-                if let targetName = actionEvent.action.target?.name {
-                    actionEvent.action.target?.name = redacted(targetName)
-                }
-                if let viewName = actionEvent.view.name {
-                    actionEvent.view.name = redacted(viewName)
-                }
-                return actionEvent
+            if let errorStack = errorEvent.error.stack {
+                errorEvent.error.stack = redacted(errorStack)
             }
+            return errorEvent
+        }
+        config.resourceEventMapper = { resourceEvent in
+            var resourceEvent = resourceEvent
+            resourceEvent.resource.url = redacted(resourceEvent.resource.url)
+            if let viewName = resourceEvent.view.name {
+                resourceEvent.view.name = redacted(viewName)
+            }
+            return resourceEvent
+        }
+        config.actionEventMapper = { actionEvent in
+            var actionEvent = actionEvent
+            if let targetName = actionEvent.action.target?.name {
+                actionEvent.action.target?.name = redacted(targetName)
+            }
+            if let viewName = actionEvent.view.name {
+                actionEvent.view.name = redacted(viewName)
+            }
+            return actionEvent
+        }
+        RUM.enable(with: config)
     }
 }
 
@@ -251,6 +311,12 @@ final class RUMScrubbingScenario: TestScenario {
 /// uses the RUM manual instrumentation API to send RUM events to the server.
 final class RUMStopSessionsScenario: TestScenario {
     static let storyboardName = "RUMStopSessionScenario"
+
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        RUM.enable(with: config)
+    }
 }
 
 @available(iOS 13, *)
@@ -275,11 +341,12 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .trackUIKitRUMViews(using: Predicate())
-            .trackUIKitRUMActions()
-            .enableTracing(false)
+    func configureFeatures() {
+        var config = RUM.Configuration(applicationID: "rum-application-id")
+        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        config.uiKitViewsPredicate = Predicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        RUM.enable(with: config)
     }
 }
 
@@ -290,7 +357,7 @@ private func rumResourceAttributesProvider(
     response: URLResponse?,
     data: Data?,
     error: Error?
-) -> [AttributeKey: AttributeValue]? {
+) -> [String: Encodable]? {
     /// Apples new-line separated text format to  response headers.
     func format(headers: [AnyHashable: Any]) -> String {
         var formattedHeaders: [String] = []

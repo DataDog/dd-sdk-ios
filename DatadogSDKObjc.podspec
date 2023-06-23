@@ -22,5 +22,6 @@ Pod::Spec.new do |s|
 
   s.source_files = "Sources/DatadogObjc/**/*.swift"
   s.dependency 'DatadogSDK', s.version.to_s
+  s.dependency 'DatadogRUM', s.version.to_s
   s.dependency 'DatadogLogs', s.version.to_s
 end

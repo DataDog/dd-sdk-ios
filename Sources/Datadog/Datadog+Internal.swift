@@ -6,7 +6,6 @@
 
 import Foundation
 import DatadogInternal
-import DatadogRUM
 
 extension Datadog: InternalExtended {}
 extension Datadog.Configuration.Builder: InternalExtended {}

@@ -13,6 +13,7 @@ class ExampleApplication: XCUIApplication {
     func launchWith(
         testScenarioClassName: String,
         serverConfiguration: HTTPServerMockConfiguration,
+        urlSessionSetup: URLSessionSetup? = nil,
         clearPersistentData: Bool = true
     ) {
         if clearPersistentData {
@@ -29,6 +30,9 @@ class ExampleApplication: XCUIApplication {
         var variables: [String: String] = [:]
         variables[Environment.Variable.testScenarioClassName] = testScenarioClassName
         variables[Environment.Variable.serverMockConfiguration] = serverConfiguration.toEnvironmentValue
+        if let urlSessionSetup = urlSessionSetup {
+            variables[Environment.Variable.urlSessionSetup] = urlSessionSetup.toEnvironmentValue
+        }
 
         launchEnvironment = variables
 

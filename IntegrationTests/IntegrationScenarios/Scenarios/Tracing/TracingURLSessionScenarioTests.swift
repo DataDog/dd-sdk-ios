@@ -15,16 +15,28 @@ private extension ExampleApplication {
 
 class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
     func testTracingURLSessionScenario() throws {
-        try runTest(for: "TracingURLSessionScenario")
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .allCases.randomElement()!,
+                initializationMethod: .allCases.randomElement()!
+            )
+        )
     }
 
     func testTracingNSURLSessionScenario() throws {
-        try runTest(for: "TracingNSURLSessionScenario")
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .allCases.randomElement()!,
+                initializationMethod: .allCases.randomElement()!
+            )
+        )
     }
 
     /// Both, `URLSession` (Swift) and `NSURLSession` (Objective-C) scenarios fetch exactly the same
     /// resources, so we can run the same test and assertions.
-    private func runTest(for testScenarioClassName: String) throws {
+    private func runTest(for testScenarioClassName: String, urlSessionSetup: URLSessionSetup) throws {
         let testBeginTimeInNanoseconds = UInt64(Date().timeIntervalSince1970 * 1_000_000_000)
 
         // Server session recording first party requests send to `HTTPServerMock`.
@@ -60,7 +72,8 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
                     thirdPartyGETResourceURL,
                     thirdPartyPOSTResourceURL
                 ]
-            )
+            ),
+            urlSessionSetup: urlSessionSetup
         )
         app.tapSend3rdPartyRequests()
 

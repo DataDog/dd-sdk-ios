@@ -87,10 +87,6 @@ public struct CrossPlatformAttributes {
     /// It does not replace any default native properties as iOS does not have the concept of 'flavors' or variants.
     public static let variant: String = "_dd.variant"
 
-    /// The sampling rate for configuration telemetry events. Mostly used to enable or disable telemetry events when running test scenarios
-    /// Expects `Double` value between `0.0` and `100.0`.
-    public static let telemetryConfigurationSampleRate = "_dd.telemetry.configuration_sample_rate"
-
     /// Event timestamp passed from CP SDK. Used for all RUM events issued by cross platform SDK.
     /// It should replace event time obtained from `DateProvider` to ensure that events are not skewed due to time difference in native and cross-platform SDKs.
     /// Expects `Int64` value (milliseconds).

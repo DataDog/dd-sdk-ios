@@ -1744,7 +1744,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted() throws {
         struct ResourceMapperHolder {
-            var resourceEventMapper: RUMResourceEventMapper?
+            var resourceEventMapper: RUM.ResourceEventMapper?
         }
         var resourceMapperHolder = ResourceMapperHolder()
 

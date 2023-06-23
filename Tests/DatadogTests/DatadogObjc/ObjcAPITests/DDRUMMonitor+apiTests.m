@@ -51,7 +51,7 @@
 - (void)testDDRUMMonitorAPI {
     UIViewController *anyVC = [UIViewController new];
 
-    DDRUMMonitor *monitor = [DDRUMMonitor new];
+    DDRUMMonitor *monitor = [DDRUMMonitor shared];
     [monitor startViewWithViewController:anyVC name:@"" attributes:@{}];
     [monitor stopViewWithViewController:anyVC attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];

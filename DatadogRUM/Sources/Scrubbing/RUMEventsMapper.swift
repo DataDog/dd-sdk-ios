@@ -9,11 +9,11 @@ import DatadogInternal
 
 /// The `EventMapper` for RUM events.
 internal struct RUMEventsMapper {
-    let viewEventMapper: RUMViewEventMapper?
-    let errorEventMapper: RUMErrorEventMapper?
-    let resourceEventMapper: RUMResourceEventMapper?
-    let actionEventMapper: RUMActionEventMapper?
-    let longTaskEventMapper: RUMLongTaskEventMapper?
+    let viewEventMapper: RUM.ViewEventMapper?
+    let errorEventMapper: RUM.ErrorEventMapper?
+    let resourceEventMapper: RUM.ResourceEventMapper?
+    let actionEventMapper: RUM.ActionEventMapper?
+    let longTaskEventMapper: RUM.LongTaskEventMapper?
 
     // MARK: - EventMapper
 

@@ -6,8 +6,8 @@
 
 import Foundation
 import Datadog
-import DatadogInternal
 import DatadogTrace
+import DatadogRUM
 
 /// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through inheritance.
 private class InheritedURLSessionDelegate: DDURLSessionDelegate {
@@ -47,25 +47,8 @@ private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, UR
 /// calls third party endpoints.
 @objc
 class URLSessionBaseScenario: NSObject {
-    /// The method of instrumenting `URLSession` with `DDURLSessionDelegate`
-    private enum InstrumentationMethod: CaseIterable {
-        /// Use `DDURLSessionDelegate` directly and
-        /// use `firstPartyHosts` defined at SDK level (with `DatadogConfiguration.trackURLSession(firstPartyHosts:)`).
-        case directWithGlobalFirstPartyHosts
-        /// Use `DDURLSessionDelegate` directly and
-        /// use additional `firstPartyHosts` defined when instantiating delegate.
-        case directWithAdditionalFirstyPartyHosts
-        /// Use `DDURLSessionDelegate` through inheritance (see: `InheritedURLSessionDelegate`).
-        case inheritance
-        /// Use `DDURLSessionDelegate` through composition (see: `CompositedURLSessionDelegate`).
-        case composition
-    }
-
-    private let instrumentationMethod: InstrumentationMethod
-
-    /// Randomizes the way of creating `URLSession` instrumented with `DDURLSessionDelegate`.
-    /// If `true`, the session is created after `Datadog.initialize()`; if `false`, it's created before.
-    private let lazyInitURLSession: Bool
+    /// A way of instrumenting `URLSession` (with delegate), passed from test runner (through ENV).
+    let setup: URLSessionSetup
 
     /// The URL to custom GET resource, observed by Tracing auto instrumentation.
     @objc
@@ -91,8 +74,20 @@ class URLSessionBaseScenario: NSObject {
     private var ddURLSessionDelegate: DDURLSessionDelegate?
 
     override init() {
-        instrumentationMethod = InstrumentationMethod.allCases.randomElement()!
-        lazyInitURLSession = .random()
+        if Environment.isRunningUITests() {
+            precondition(Environment.urlSessionSetup() != nil, "Environment.urlSessionSetup() must be passed through ENV for URLSessoin-based scenarios")
+            setup = Environment.urlSessionSetup()!
+        } else {
+            setup = .init(
+                instrumentationMethod: .allCases.randomElement()!,
+                initializationMethod: .allCases.randomElement()!
+            )
+        }
+        print("""
+        🎲 Running `URLSessionScenario` with setup:
+        - instrumentation method: \(setup.instrumentationMethod)
+        - initialization method: \(setup.initializationMethod)
+        """)
 
         if ProcessInfo.processInfo.arguments.contains("IS_RUNNING_UI_TESTS") {
             let serverMockConfiguration = Environment.serverMockConfiguration()!
@@ -127,55 +122,12 @@ class URLSessionBaseScenario: NSObject {
         }
         super.init()
 
-        if lazyInitURLSession {
-            self.session = nil // it will be created on lazily, on first access from VC
-        } else {
-            self.session = createInstrumentedURLSession()
+        switch setup.initializationMethod {
+        case .beforeSDK:
+            self.session = createInstrumentedURLSession() // create now
+        case .afterSDK:
+            self.session = nil // it will be created later, on first access from VC
         }
-    }
-
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        switch instrumentationMethod {
-        case .directWithAdditionalFirstyPartyHosts:
-            _ = builder.trackURLSession()
-        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
-            _ = builder.trackURLSession(
-                firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
-            )
-        }
-    }
-
-    func configureFeatures() {
-        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
-            return
-        }
-
-        let firstPartyHosts: Set<String>
-        switch instrumentationMethod {
-        case .directWithAdditionalFirstyPartyHosts:
-            firstPartyHosts = []
-        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
-            firstPartyHosts = [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
-        }
-
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: .init(
-                sendNetworkInfo: true,
-                customIntakeURL: tracesEndpoint,
-                spanEventMapper: {
-                    var span = $0
-                    if span.tags[OTTags.httpUrl] != nil {
-                        span.tags[OTTags.httpUrl] = "redacted"
-                    }
-                    return span
-                }
-            ),
-            distributedTracingConfiguration: .init(
-                firstPartyHosts: firstPartyHosts,
-                tracingSamplingRate: 100
-            )
-        )
     }
 
     private var session: URLSession!
@@ -183,7 +135,7 @@ class URLSessionBaseScenario: NSObject {
     @objc
     func getURLSession() -> URLSession {
         if session == nil {
-            precondition(lazyInitURLSession, "The session is unavailable, but it is not configured for lazy init")
+            precondition(setup.initializationMethod == .afterSDK, "The session is unavailable, but it is not configured for lazy init")
             session = createInstrumentedURLSession()
         }
         return session
@@ -192,20 +144,16 @@ class URLSessionBaseScenario: NSObject {
     private func createInstrumentedURLSession() -> URLSession {
         let delegate: URLSessionDelegate
 
-        switch instrumentationMethod {
+        switch setup.instrumentationMethod {
         case .directWithGlobalFirstPartyHosts:
             delegate = DDURLSessionDelegate()
         case .directWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
-                additionalFirstPartyHostsWithHeaderTypes: [
-                    customGETResourceURL.host,
-                    customPOSTRequest.url?.host,
-                    badResourceURL.host
+                additionalFirstPartyHosts: [
+                    customGETResourceURL.host!,
+                    customPOSTRequest.url!.host!,
+                    badResourceURL.host!
                 ]
-                .compactMap { $0 }
-                .reduce(into: [:], { partialResult, value in
-                    partialResult[value] = [.datadog] // Prevents duplicates
-                })
             )
         case .inheritance:
             delegate = InheritedURLSessionDelegate()

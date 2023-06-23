@@ -29,12 +29,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     // MARK: - Initialization
 
     init(
-        configuration: RUMConfiguration.Instrumentation,
+        uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
+        uiKitRUMActionsPredicate: UIKitRUMUserActionsPredicate?,
+        longTaskThreshold: TimeInterval?,
         dateProvider: DateProvider
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
-        let viewsHandler = RUMViewsHandler(dateProvider: dateProvider, predicate: configuration.uiKitRUMViewsPredicate)
+        let viewsHandler = RUMViewsHandler(dateProvider: dateProvider, predicate: uiKitRUMViewsPredicate)
         var viewControllerSwizzler: UIViewControllerSwizzler? = nil
 
         // Create actions handler and `UIApplicationSwizzler` only if UIKit instrumentation is configured:
@@ -45,7 +47,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         var longTasks: LongTaskObserver? = nil
 
         do {
-            if configuration.uiKitRUMViewsPredicate != nil {
+            if uiKitRUMViewsPredicate != nil {
                 // UIKit views instrumentation is enabled, so install the swizzler:
                 viewControllerSwizzler = try UIViewControllerSwizzler(handler: viewsHandler)
             }
@@ -56,7 +58,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         }
 
         do {
-            if let predicate = configuration.uiKitRUMUserActionsPredicate {
+            if let predicate = uiKitRUMActionsPredicate {
                 let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
                 actionsHandler = handler
                 uiApplicationSwizzler = try UIApplicationSwizzler(handler: handler)
@@ -67,7 +69,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             )
         }
 
-        if let threshold = configuration.longTaskThreshold {
+        if let threshold = longTaskThreshold, threshold > 0 {
             longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
         }
 

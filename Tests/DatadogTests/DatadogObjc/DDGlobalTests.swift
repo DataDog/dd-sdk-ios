@@ -39,17 +39,4 @@ class DDGlobalTests: XCTestCase {
         // Then
         XCTAssertTrue(DatadogObjc.DDTracer.shared.swiftTracer is DatadogTracer)
     }
-
-    // MARK: - Test Global RUMMonitor
-
-    func testWhenDDRUMMonitorIsNotInitailized_itReturnsNoOpImplementation() {
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is NOPMonitor)
-    }
-
-    func testWhenDDRUMMonitorIsInitailized_itSetsSwiftImplementation() {
-        // When
-        RUM.enable(with: .mockAny(), in: core)
-        // Then
-        XCTAssertTrue(DatadogObjc.DDGlobal.rum.swiftRUMMonitor is Monitor)
-    }
 }

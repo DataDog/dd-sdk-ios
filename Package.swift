@@ -47,7 +47,6 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogTrace"),
-                .target(name: "DatadogRUM"),
                 .target(name: "_Datadog_Private"),
             ],
             swiftSettings: [.define("SPM_BUILD")]

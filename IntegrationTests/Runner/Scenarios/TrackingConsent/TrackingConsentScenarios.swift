@@ -5,20 +5,26 @@
  */
 
 import Foundation
-import DatadogInternal
 import DatadogTrace
+import DatadogRUM
 import DatadogLogs
 import Datadog
 
 internal class TrackingConsentBaseScenario {
     func configureSDK(builder: Datadog.Configuration.Builder) {
         _ = builder
-            .trackUIKitRUMViews()
-            .trackUIKitRUMActions()
-            .trackURLSession(firstPartyHosts: ["datadoghq.com"])
+            .trackURLSession()
     }
 
     func configureFeatures() {
+        // Enable RUM
+        var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
+        rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
+        rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
+        rumConfig.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        rumConfig.urlSessionTracking = .init()
+        RUM.enable(with: rumConfig)
+
         // Register Tracer
         DatadogTracer.initialize(
             configuration: .init(
@@ -44,6 +50,10 @@ final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, Te
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         super.configureSDK(builder: builder)
     }
+
+    override func configureFeatures() {
+        super.configureFeatures()
+    }
 }
 
 /// Tracking consent scenario, which launches the app with `.granted` consent value.
@@ -53,5 +63,9 @@ final class TrackingConsentStartGrantedScenario: TrackingConsentBaseScenario, Te
 
     override func configureSDK(builder: Datadog.Configuration.Builder) {
         super.configureSDK(builder: builder)
+    }
+
+    override func configureFeatures() {
+        super.configureFeatures()
     }
 }
