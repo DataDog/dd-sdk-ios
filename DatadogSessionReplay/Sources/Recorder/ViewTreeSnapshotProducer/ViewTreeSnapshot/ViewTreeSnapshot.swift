@@ -18,8 +18,8 @@ import UIKit
 internal struct ViewTreeSnapshot {
     /// The time of taking this snapshot.
     let date: Date
-    /// The RUM context from the moment of taking this snapshot.
-    let rumContext: RUMContext
+    /// The recorder context containing RUM information from the moment of taking this snapshot.
+    let context: Recorder.Context
     /// The size of a viewport in this snapshot.
     let viewportSize: CGSize
     /// An array of nodes recorded for this snapshot - sequenced in DFS order.

@@ -21,14 +21,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayControll
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
 
-    // MARK: - Integrations with other features
-
-    /// Updates other Features with SR context.
-    private let contextPublisher: SRContextPublisher
-
     // MARK: - Main Components
 
-    private let recorder: Recording
+    private let recordingCoordinator: RecordingCoordinator
     private let processor: Processing
     private let writer: Writing
 
@@ -45,42 +40,33 @@ internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayControll
             writer: writer
         )
 
+        let scheduler = MainThreadScheduler(interval: 0.1)
         let messageReceiver = RUMContextReceiver()
+
         let recorder = try Recorder(
-            configuration: configuration,
-            rumContextObserver: messageReceiver,
             processor: processor
+        )
+        let recordingCoordinator = RecordingCoordinator(
+            scheduler: scheduler,
+            privacy: configuration.privacy,
+            rumContextObserver: messageReceiver,
+            srContextPublisher: SRContextPublisher(core: core),
+            recorder: recorder,
+            sampler: Sampler(samplingRate: configuration.samplingRate)
         )
 
         self.messageReceiver = messageReceiver
-        self.recorder = recorder
+        self.recordingCoordinator = recordingCoordinator
         self.processor = processor
         self.writer = writer
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
-        self.contextPublisher = SRContextPublisher(core: core)
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: UInt64(10).MB,
             maxObjectSize: UInt64(10).MB
         )
-        // Set initial SR context (it is configured, but not yet started):
-        contextPublisher.setRecordingIsPending(false)
     }
 
     func register(sessionReplayScope: FeatureScope) {
         writer.startWriting(to: sessionReplayScope)
     }
-
-    // MARK: - SessionReplayController
-
-    func start() {
-        contextPublisher.setRecordingIsPending(true)
-        recorder.start()
-    }
-
-    func stop() {
-        contextPublisher.setRecordingIsPending(false)
-        recorder.stop()
-    }
-
-    func change(privacy: SessionReplayPrivacy) { recorder.change(privacy: privacy) }
 }

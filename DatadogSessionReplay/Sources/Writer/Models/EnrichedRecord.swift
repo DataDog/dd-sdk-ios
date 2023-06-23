@@ -41,11 +41,11 @@ internal struct EnrichedRecord: Encodable {
         case latestTimestamp
     }
 
-    init(rumContext: RUMContext, records: [SRRecord]) {
+    init(context: Recorder.Context, records: [SRRecord]) {
         self.records = records
-        self.applicationID = rumContext.ids.applicationID
-        self.sessionID = rumContext.ids.sessionID
-        self.viewID = rumContext.ids.viewID
+        self.applicationID = context.applicationID
+        self.sessionID = context.sessionID
+        self.viewID = context.viewID
 
         var hasFullSnapshot = false
         var earliestTimestamp: Int64 = .max

@@ -51,7 +51,7 @@ internal final class FileReader: Reader {
     private func decode(stream: InputStream) throws -> [Data] {
         let reader = DataBlockReader(
             input: stream,
-            maxBlockLenght: orchestrator.performance.maxObjectSize
+            maxBlockLength: orchestrator.performance.maxObjectSize
         )
 
         var failure: String? = nil

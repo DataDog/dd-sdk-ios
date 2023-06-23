@@ -5,6 +5,8 @@
  */
 
 import XCTest
+import Datadog
+import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost
 
@@ -33,26 +35,20 @@ internal class SnapshotTestCase: XCTestCase {
         let expectation = self.expectation(description: "Wait for wireframes")
 
         // Set up SR recorder:
-        let scheduler = TestScheduler()
         let processor = Processor(queue: NoQueue(), writer: Writer())
-        let recorder = try Recorder(
-            configuration: configuration,
-            rumContextObserver: RUMContextObserverMock(),
-            processor: processor,
-            scheduler: scheduler
-        )
+        let recorder = try Recorder(processor: processor)
 
-        // Set up wireframes interception and trigger recorder once:
+        // Set up wireframes interception :
         var wireframes: [SRWireframe]?
-
         processor.interceptWireframes = {
             wireframes = $0
             expectation.fulfill()
         }
 
-        recorder.start()
-        scheduler.triggerOnce()
-        recorder.stop()
+        // Capture next record with mock RUM Context
+        recorder.captureNextRecord(
+            .init(privacy: configuration.privacy, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
+        )
 
         waitForExpectations(timeout: 10) // very pessimistic timeout to mitigate CI lags
 
@@ -126,29 +122,4 @@ internal class SnapshotTestCase: XCTestCase {
 
 private struct NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
-}
-
-private struct RUMContextObserverMock: RUMContextObserver {
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
-        queue.run {
-            notify(RUMContext(ids: .init(applicationID: "", sessionID: "", viewID: ""), viewServerTimeOffset: 0))
-        }
-    }
-}
-
-private class TestScheduler: Scheduler {
-    private var operations: [() -> Void] = []
-
-    let queue: Queue = NoQueue()
-
-    func schedule(operation: @escaping () -> Void) {
-        operations.append(operation)
-    }
-
-    func start() {}
-    func stop() {}
-
-    func triggerOnce() {
-        operations.forEach { $0() }
-    }
 }
