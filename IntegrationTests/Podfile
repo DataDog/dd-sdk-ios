@@ -4,11 +4,11 @@ target 'Runner iOS' do
     pod 'DatadogSDK', :path => '..'
     pod 'DatadogSDKObjc', :path => '..'
     pod 'DatadogSDKCrashReporting', :path => '..'
-    pod 'DatadogSDKSessionReplay', :path => '..'
 
     pod 'DatadogLogs', :path => '..'
     pod 'DatadogTrace', :path => '..'
     pod 'DatadogRUM', :path => '..'
+    pod 'DatadogSessionReplay', :path => '..'
     pod 'DatadogWebViewTracking', :path => '..'
 
     target 'IntegrationScenarios' do
