@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "618292C02A46204F00100CA0"
-               BuildableName = "DatadogSessionReplay iOS.framework"
-               BlueprintName = "DatadogSessionReplay iOS"
+               BuildableName = "DatadogSessionReplay.framework"
+               BlueprintName = "DatadogSessionReplay"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -50,8 +50,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "618292C02A46204F00100CA0"
-            BuildableName = "DatadogSessionReplay iOS.framework"
-            BlueprintName = "DatadogSessionReplay iOS"
+            BuildableName = "DatadogSessionReplay.framework"
+            BlueprintName = "DatadogSessionReplay"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
