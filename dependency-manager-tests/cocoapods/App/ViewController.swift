@@ -63,10 +63,9 @@ internal class ViewController: UIViewController {
         addLabel()
 
         #if os(iOS)
-        sessionReplayController = SessionReplay.initialize(
+        SessionReplay.initialize(
             with: SessionReplayConfiguration()
         )
-        sessionReplayController.start()
         #endif
     }
 
