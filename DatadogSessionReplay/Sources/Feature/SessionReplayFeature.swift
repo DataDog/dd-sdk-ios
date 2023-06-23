@@ -7,15 +7,7 @@
 import Foundation
 import DatadogInternal
 
-/// A draft of the main SR component (TODO: RUMM-2268 Design convenient public API).
-/// - It conforms to `DatadogFeature` for communicating with `DatadogCore`.
-/// - It implements `SessionReplayController` for being used from the public API.
-///
-/// An instance of `SessionReplayFeature` is kept by `DatadogCore` but can be also
-/// retained by the user.
-internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayController {
-    // MARK: - DatadogFeature
-
+internal class SessionReplayFeature: DatadogRemoteFeature {
     static let name: String = "session-replay"
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
@@ -23,15 +15,15 @@ internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayControll
 
     // MARK: - Main Components
 
-    private let recordingCoordinator: RecordingCoordinator
-    private let processor: Processing
-    private let writer: Writing
+    let recordingCoordinator: RecordingCoordinator
+    let processor: Processing
+    let writer: Writing
 
     // MARK: - Initialization
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplayConfiguration
+        configuration: SessionReplay.Configuration
     ) throws {
         let writer = Writer()
 
@@ -48,25 +40,21 @@ internal class SessionReplayFeature: DatadogRemoteFeature, SessionReplayControll
         )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: configuration.privacy,
+            privacy: configuration.defaultPrivacyLevel,
             rumContextObserver: messageReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.samplingRate)
+            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)
         )
 
         self.messageReceiver = messageReceiver
         self.recordingCoordinator = recordingCoordinator
         self.processor = processor
         self.writer = writer
-        self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
+        self.requestBuilder = RequestBuilder(customUploadURL: configuration.customEndpoint)
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: UInt64(10).MB,
             maxObjectSize: UInt64(10).MB
         )
-    }
-
-    func register(sessionReplayScope: FeatureScope) {
-        writer.startWriting(to: sessionReplayScope)
     }
 }

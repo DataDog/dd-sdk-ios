@@ -14,7 +14,7 @@ private class WriterMock: Writing {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
-    func startWriting(to featureScope: FeatureScope) {}
+    func startWriting(to core: DatadogCoreProtocol) {}
 }
 
 class ProcessorTests: XCTestCase {
@@ -258,7 +258,7 @@ class ProcessorTests: XCTestCase {
     private let snapshotBuilder = ViewTreeSnapshotBuilder()
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
-        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allowAll, rumContext: rumContext, date: date))
+        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))
     }
 
     private func generateSimpleViewTree() -> UIView {
