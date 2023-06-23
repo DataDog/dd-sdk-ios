@@ -96,6 +96,11 @@ bundle DatadogInternal
 bundle DatadogLogs
 bundle DatadogTrace
 bundle DatadogRUM
+bundle DatadogSessionReplay
 bundle DatadogObjc
 bundle DatadogCrashReporting
 bundle DatadogWebViewTracking
+
+if [[ $PLATFORM == *"iOS"* ]]; then
+    bundle DatadogSessionReplay
+fi

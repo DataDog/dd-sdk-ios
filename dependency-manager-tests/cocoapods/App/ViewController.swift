@@ -18,9 +18,6 @@ import Alamofire
 
 internal class ViewController: UIViewController {
     private var logger: DatadogLogger! // swiftlint:disable:this implicitly_unwrapped_optional
-    #if os(iOS)
-    private var sessionReplayController: SessionReplayController! // swiftlint:disable:this implicitly_unwrapped_optional
-    #endif
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,16 +54,13 @@ internal class ViewController: UIViewController {
 
         logger.info("It works")
         _ = DatadogTracer.shared().startSpan(operationName: "This too")
+        #if os(iOS)
+        SessionReplay.enable(with: .init(replaySampleRate: 0))
+        #endif
 
         createInstrumentedAlamofireSession()
 
         addLabel()
-
-        #if os(iOS)
-        SessionReplay.initialize(
-            with: SessionReplayConfiguration()
-        )
-        #endif
     }
 
     private func createInstrumentedAlamofireSession() {
