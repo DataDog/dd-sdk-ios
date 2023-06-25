@@ -6,7 +6,7 @@
 
 import Foundation
 
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !os(xrOS) && !targetEnvironment(macCatalyst)
 
 import CoreTelephony
 
