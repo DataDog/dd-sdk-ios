@@ -20,7 +20,7 @@ struct FeatureRequestBuilderMock: FeatureRequestBuilder {
             headers: []
         )
 
-        let data = dataFormat.format(events.map { $0.data } )
+        let data = dataFormat.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }
