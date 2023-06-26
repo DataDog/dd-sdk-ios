@@ -20,7 +20,11 @@ internal struct FileWriter: Writer {
 
     // MARK: - Writing data
 
-    /// Encodes given value to JSON data and writes it to the file.
+    /// Encodes given encodable value and metadata, and writes it to the file.
+    /// If encryption is available, the data is encrypted before writing.
+    /// - Parameters:
+    ///  - value: Encodable value to write.
+    ///  - metadata: Encodable metadata to write.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         do {
             let encodedValue = try encode(encodable: value, blockType: .event)
