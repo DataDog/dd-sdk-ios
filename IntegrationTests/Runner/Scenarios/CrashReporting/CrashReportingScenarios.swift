@@ -53,7 +53,7 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
         rumConfig.uiKitViewsPredicate = CustomPredicate()
         RUM.enable(with: rumConfig)
 
-        CrashReporter.enable()
+        CrashReporting.enable()
     }
 }
 
@@ -67,6 +67,6 @@ final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseSc
             )
         )
 
-        CrashReporter.enable()
+        CrashReporting.enable()
     }
 }

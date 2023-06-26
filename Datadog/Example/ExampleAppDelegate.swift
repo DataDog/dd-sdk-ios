@@ -69,7 +69,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
-        CrashReporter.enable()
+        CrashReporting.enable()
 
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug

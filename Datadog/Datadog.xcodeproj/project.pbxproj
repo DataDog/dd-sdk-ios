@@ -354,8 +354,8 @@
 		D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
 		D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
 		D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
-		D214DA8329DF2D5E004D0AE8 /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporter.swift */; };
-		D214DA8429DF2D5E004D0AE8 /* CrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporter.swift */; };
+		D214DA8329DF2D5E004D0AE8 /* CrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporting.swift */; };
+		D214DA8429DF2D5E004D0AE8 /* CrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporting.swift */; };
 		D214DA8929DF2D6A004D0AE8 /* CrashReportSender.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6112B11325C84E7900B37771 /* CrashReportSender.swift */; };
 		D214DA8A29DF2D6A004D0AE8 /* CrashContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161249D25CAB340009901BE /* CrashContext.swift */; };
 		D214DA8B29DF2D6A004D0AE8 /* CrashContextProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616124A625CAC268009901BE /* CrashContextProvider.swift */; };
@@ -1841,7 +1841,7 @@
 		615CC4122695957C0005F08C /* CrashReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportTests.swift; sourceTree = "<group>"; };
 		615D9E2626048EAF006DC6D1 /* DatadogCrashReporting.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogCrashReporting.xcconfig; sourceTree = "<group>"; };
 		615F197B25B5A64B00BE14B5 /* UIKitExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitExtensions.swift; sourceTree = "<group>"; };
-		6161247825CA9CA6009901BE /* CrashReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporter.swift; sourceTree = "<group>"; };
+		6161247825CA9CA6009901BE /* CrashReporting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReporting.swift; sourceTree = "<group>"; };
 		6161249D25CAB340009901BE /* CrashContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContext.swift; sourceTree = "<group>"; };
 		616124A625CAC268009901BE /* CrashContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashContextProvider.swift; sourceTree = "<group>"; };
 		6167ACBD251A0B410012B4D0 /* Example-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Example-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -3518,7 +3518,7 @@
 		6170DC1325C1864B003AED5C /* DatadogCrashReporting */ = {
 			isa = PBXGroup;
 			children = (
-				6161247825CA9CA6009901BE /* CrashReporter.swift */,
+				6161247825CA9CA6009901BE /* CrashReporting.swift */,
 				61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */,
 				D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */,
 				61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */,
@@ -6730,7 +6730,7 @@
 				617247B825DAB0E2007085B3 /* DDCrashReportBuilder.swift in Sources */,
 				612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */,
 				61FDBA1326971953001D9D43 /* CrashReportMinifier.swift in Sources */,
-				D214DA8329DF2D5E004D0AE8 /* CrashReporter.swift in Sources */,
+				D214DA8329DF2D5E004D0AE8 /* CrashReporting.swift in Sources */,
 				61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */,
 				D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
 				D214DA8A29DF2D6A004D0AE8 /* CrashContext.swift in Sources */,
@@ -7560,7 +7560,7 @@
 				D2CB6FC027C5348200A62B57 /* DDCrashReportBuilder.swift in Sources */,
 				D2CB6FC127C5348200A62B57 /* DDCrashReportExporter.swift in Sources */,
 				D2CB6FC227C5348200A62B57 /* CrashReportMinifier.swift in Sources */,
-				D214DA8429DF2D5E004D0AE8 /* CrashReporter.swift in Sources */,
+				D214DA8429DF2D5E004D0AE8 /* CrashReporting.swift in Sources */,
 				D2CB6FC327C5348200A62B57 /* PLCrashReporterIntegration.swift in Sources */,
 				D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */,
 				D214DA8D29DF2D6B004D0AE8 /* CrashContext.swift in Sources */,
