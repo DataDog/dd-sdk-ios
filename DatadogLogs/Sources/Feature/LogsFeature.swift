@@ -13,8 +13,6 @@ internal struct LogsFeature: DatadogRemoteFeature {
     let requestBuilder: FeatureRequestBuilder
 
     let messageReceiver: FeatureMessageReceiver
-    
-    let sampler: Sampler
 
     let logEventMapper: LogEventMapper?
 
@@ -24,12 +22,10 @@ internal struct LogsFeature: DatadogRemoteFeature {
     init(
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
-        remoteLoggingSampler: Sampler,
         customIntakeURL: URL? = nil
     ) {
         self.init(
             logEventMapper: logEventMapper,
-            sampler: remoteLoggingSampler,
             requestBuilder: RequestBuilder(customIntakeURL: customIntakeURL),
             messageReceiver: CombinedFeatureMessageReceiver(
                 LogMessageReceiver(logEventMapper: logEventMapper),
@@ -42,13 +38,11 @@ internal struct LogsFeature: DatadogRemoteFeature {
 
     init(
         logEventMapper: LogEventMapper?,
-        sampler: Sampler,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
         dateProvider: DateProvider
     ) {
         self.logEventMapper = logEventMapper
-        self.sampler = sampler
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
         self.dateProvider = dateProvider

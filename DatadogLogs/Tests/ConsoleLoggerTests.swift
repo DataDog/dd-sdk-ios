@@ -107,7 +107,7 @@ class ConsoleLoggerTests: XCTestCase {
         let errorMessage = String.mockRandom()
         let stackTrace = String.mockRandom()
 
-        logger.log(
+        logger._internal.log(
             level: .info,
             message: message,
             errorKind: errorKind,

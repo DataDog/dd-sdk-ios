@@ -45,7 +45,7 @@ class RemoteLoggerTests: XCTestCase {
             core: core,
             configuration: .init(
                 service: "logger.tests",
-                loggerName: "TestLogger",
+                name: "TestLogger",
                 sendNetworkInfo: false,
                 threshold: LogLevel.info,
                 eventMapper: nil,
@@ -82,7 +82,7 @@ class RemoteLoggerTests: XCTestCase {
             core: core,
             configuration: .init(
                 service: "logger.tests",
-                loggerName: "TestLogger",
+                name: "TestLogger",
                 sendNetworkInfo: false,
                 threshold: LogLevel.info,
                 eventMapper: nil,

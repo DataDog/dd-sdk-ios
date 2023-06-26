@@ -8,12 +8,12 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` printing logs to console.
-internal final class ConsoleLogger: Logger {
+internal final class ConsoleLogger: LoggerProtocol {
     struct Configuration {
         /// Time zone for rendering logs.
         let timeZone: TimeZone
         /// The format of rendering logs in console.
-        let format: Builder.ConsoleLogFormat
+        let format: Logger.Configuration.ConsoleLogFormat
     }
 
     /// Date provider for logs.
@@ -55,18 +55,6 @@ internal final class ConsoleLogger: Logger {
         internalLog(level: level, message: message, errorString: errorString)
     }
 
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
-        var errorString: String? = nil
-        if errorKind != nil || errorMessage != nil || stackTrace != nil {
-            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
-            // for any values that are empty.
-            let ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
-            errorString = buildErrorString(error: ddError)
-        }
-
-        internalLog(level: level, message: message, errorString: errorString)
-    }
-
     private func internalLog(level: LogLevel, message: String, errorString: String?) {
         let time = timeFormatter.string(from: dateProvider.now)
         let status = level.asLogStatus.rawValue.uppercased()
@@ -99,4 +87,18 @@ internal final class ConsoleLogger: Logger {
     func removeTag(withKey key: String) {}
     func add(tag: String) {}
     func remove(tag: String) {}
+}
+
+extension ConsoleLogger: InternalLoggerProtocol {
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+        var errorString: String? = nil
+        if errorKind != nil || errorMessage != nil || stackTrace != nil {
+            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // for any values that are empty.
+            let ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+            errorString = buildErrorString(error: ddError)
+        }
+
+        internalLog(level: level, message: message, errorString: errorString)
+    }
 }

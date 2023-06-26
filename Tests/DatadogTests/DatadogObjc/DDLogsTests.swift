@@ -35,9 +35,7 @@ class DDLogsTests: XCTestCase {
         let config = DDLogsConfiguration()
 
         // Then
-        XCTAssertEqual(config.configuration.sampleRate, 100)
         XCTAssertNil(config.configuration.customEndpoint)
-        XCTAssertTrue(config.configuration.processInfo === ProcessInfo.processInfo)
     }
 
     func testConfigurationOverrides() throws {
@@ -56,7 +54,6 @@ class DDLogsTests: XCTestCase {
         // Then
         let logs = try XCTUnwrap(core.get(feature: LogsFeature.self))
         let requestBuilder = try XCTUnwrap(logs.requestBuilder as? RequestBuilder)
-        XCTAssertEqual(logs.sampler.samplingRate, sampleRate)
         XCTAssertEqual(requestBuilder.customIntakeURL, customEndpoint)
     }
 
@@ -64,7 +61,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.builder().build()
+        let objcLogger = DDLogger.create()
 
         objcLogger.debug("message")
         objcLogger.info("message")
@@ -86,7 +83,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.builder().build()
+        let objcLogger = DDLogger.create()
 
         let error = NSError(domain: "UnitTest", code: 11_235, userInfo: [NSLocalizedDescriptionKey: "UnitTest error"])
 
@@ -118,7 +115,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.builder().build()
+        let objcLogger = DDLogger.create()
 
         objcLogger.debug("message", attributes: ["foo": "bar"])
         objcLogger.info("message", attributes: ["foo": "bar"])
@@ -143,7 +140,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.builder().build()
+        let objcLogger = DDLogger.create()
 
         objcLogger.addAttribute(forKey: "nsstring", value: NSString(string: "hello"))
         objcLogger.addAttribute(forKey: "nsbool", value: NSNumber(booleanLiteral: true))
@@ -185,7 +182,7 @@ class DDLogsTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try CoreRegistry.default.register(feature: feature)
 
-        let objcLogger = DDLogger.builder().build()
+        let objcLogger = DDLogger.create()
 
         objcLogger.addAttribute(forKey: "foo", value: "bar")
         objcLogger.addAttribute(forKey: "bizz", value: "buzz")
@@ -205,6 +202,21 @@ class DDLogsTests: XCTestCase {
         logMatcher.assertValue(forKeyPath: "foo", equals: "bar")
         logMatcher.assertNoValue(forKey: "bizz")
         logMatcher.assertTags(equal: ["foo:bar", "foobar", "env:test", "version:1.2.3"])
+    }
+
+    func testItForwardsLoggerConfigurationToSwift() {
+        let objcConfig = DDLoggerConfiguration()
+        objcConfig.name = "logger-name"
+        objcConfig.service = "service-name"
+        objcConfig.sendNetworkInfo = true
+        objcConfig.remoteSampleRate = 50
+        objcConfig.printLogsToConsole = true
+
+        XCTAssertEqual(objcConfig.configuration.name, "logger-name")
+        XCTAssertEqual(objcConfig.configuration.service, "service-name")
+        XCTAssertTrue(objcConfig.configuration.sendNetworkInfo)
+        XCTAssertEqual(objcConfig.configuration.remoteSampleRate, 50)
+        XCTAssertNotNil(objcConfig.configuration.consoleLogFormat)
     }
 }
 // swiftlint:enable multiline_arguments_brackets

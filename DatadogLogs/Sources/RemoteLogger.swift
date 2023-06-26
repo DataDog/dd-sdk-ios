@@ -8,13 +8,13 @@ import Foundation
 import DatadogInternal
 
 /// `Logger` sending logs to Datadog.
-internal final class RemoteLogger: Logger {
+internal final class RemoteLogger: LoggerProtocol {
     struct Configuration {
         /// The `service` value for logs.
         /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
         let service: String?
         /// The `logger.name` value for logs.
-        let loggerName: String?
+        let name: String?
         /// Whether to send the network info in `network.client.*` log attributes.
         let sendNetworkInfo: Bool
         /// Only logs equal or above this threshold will be sent.
@@ -92,17 +92,6 @@ internal final class RemoteLogger: Logger {
         internalLog(level: level, message: message, error: error.map { DDError(error: $0) }, attributes: attributes)
     }
 
-    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
-        var ddError: DDError?
-        if errorKind != nil || errorMessage != nil || stackTrace != nil {
-            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
-            // for any values that are empty.
-            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
-        }
-
-        internalLog(level: level, message: message, error: ddError, attributes: attributes)
-    }
-
     func internalLog(level: LogLevel, message: String, error: DDError?, attributes: [String: Encodable]?) {
         guard configuration.sampler.sample() else {
             return
@@ -140,7 +129,7 @@ internal final class RemoteLogger: Logger {
 
             let builder = LogEventBuilder(
                 service: self.configuration.service ?? context.service,
-                loggerName: self.configuration.loggerName,
+                loggerName: self.configuration.name,
                 sendNetworkInfo: self.configuration.sendNetworkInfo,
                 eventMapper: self.configuration.eventMapper
             )
@@ -177,5 +166,18 @@ internal final class RemoteLogger: Logger {
                 )
             }
         }
+    }
+}
+
+extension RemoteLogger: InternalLoggerProtocol {
+    func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
+        var ddError: DDError?
+        if errorKind != nil || errorMessage != nil || stackTrace != nil {
+            // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
+            // for any values that are empty.
+            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+        }
+
+        internalLog(level: level, message: message, error: ddError, attributes: attributes)
     }
 }

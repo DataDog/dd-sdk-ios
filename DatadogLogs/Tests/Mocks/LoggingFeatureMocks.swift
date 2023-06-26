@@ -24,7 +24,6 @@ extension LogsFeature {
     )  -> Self {
         return .init(
             logEventMapper: logEventMapper,
-            sampler: sampler,
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
             dateProvider: dateProvider
