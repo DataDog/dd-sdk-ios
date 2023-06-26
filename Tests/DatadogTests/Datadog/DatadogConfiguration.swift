@@ -12,12 +12,12 @@ import DatadogInternal
 
 class DatadogConfigurationTests: XCTestCase {
     private var printFunction: PrintFunctionMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "tests")
+    private var defaultConfig = DatadogCore.Configuration(clientToken: "abc-123", env: "tests")
 
     override func setUp() {
         super.setUp()
 
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(DatadogCore.isInitialized)
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
@@ -25,7 +25,7 @@ class DatadogConfigurationTests: XCTestCase {
     override func tearDown() {
         consolePrint = { print($0) }
         printFunction = nil
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(DatadogCore.isInitialized)
         super.tearDown()
     }
 
@@ -46,13 +46,13 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertNil(configuration.encryption)
         XCTAssertTrue(configuration.serverDateProvider is DatadogNTPDateProvider)
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .granted
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
         XCTAssertNil(core.httpClient.session.configuration.connectionProxyDictionary)
         XCTAssertNil(core.encryption)
@@ -103,13 +103,13 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertTrue(configuration.encryption is DataEncryptionMock)
         XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .pending
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
         XCTAssertTrue(core.encryption is DataEncryptionMock)
 
@@ -135,19 +135,19 @@ class DatadogConfigurationTests: XCTestCase {
     }
 
     func testGivenDefaultConfiguration_itCanBeInitialized() {
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
         )
 
-        XCTAssertTrue(Datadog.isInitialized)
-        Datadog.flushAndDeinitialize()
+        XCTAssertTrue(DatadogCore.isInitialized)
+        DatadogCore.flushAndDeinitialize()
     }
 
     func testGivenInvalidConfiguration_itPrintsError() {
-        let invalidConfiguration = Datadog.Configuration(clientToken: "", env: "tests")
+        let invalidConfiguration = DatadogCore.Configuration(clientToken: "", env: "tests")
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: invalidConfiguration,
             trackingConsent: .mockRandom()
         )
@@ -156,16 +156,16 @@ class DatadogConfigurationTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(DatadogCore.isInitialized)
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: defaultConfig,
             trackingConsent: .mockRandom()
         )
@@ -175,7 +175,7 @@ class DatadogConfigurationTests: XCTestCase {
             "🔥 Datadog SDK usage error: SDK is already initialized."
         )
 
-        Datadog.flushAndDeinitialize()
+        DatadogCore.flushAndDeinitialize()
     }
 
     func testGivenNoExecutable_itUsesBundleTypeAsApplicationName() throws {
@@ -185,13 +185,13 @@ class DatadogConfigurationTests: XCTestCase {
             CFBundleExecutable: nil
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.applicationName, "iOSApp")
     }
@@ -204,13 +204,13 @@ class DatadogConfigurationTests: XCTestCase {
             CFBundleExecutable: nil
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.applicationName, "iOSAppExtension")
     }
@@ -223,13 +223,13 @@ class DatadogConfigurationTests: XCTestCase {
             CFBundleShortVersionString: "1.2.3"
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.version, "1.2.3")
     }
@@ -242,13 +242,13 @@ class DatadogConfigurationTests: XCTestCase {
             CFBundleShortVersionString: nil
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.version, "0.0.0")
     }
@@ -260,13 +260,13 @@ class DatadogConfigurationTests: XCTestCase {
             bundleIdentifier: nil
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleIdentifier, "unknown")
         XCTAssertEqual(context.service, "ios")
@@ -279,30 +279,30 @@ class DatadogConfigurationTests: XCTestCase {
             bundleIdentifier: nil
         )
 
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration,
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.applicationBundleIdentifier, "unknown")
     }
 
     func testEnvironment() throws {
         func verify(validEnv env: String) throws {
-            Datadog.initialize(
-                with: Datadog.Configuration(clientToken: "abc-123", env: env),
+            DatadogCore.initialize(
+                with: DatadogCore.Configuration(clientToken: "abc-123", env: env),
                 trackingConsent: .mockRandom()
             )
-            defer { Datadog.flushAndDeinitialize() }
+            defer { DatadogCore.flushAndDeinitialize() }
             XCTAssertNil(printFunction.printedMessage)
         }
 
         func verify(invalidEnv env: String) {
-            Datadog.initialize(
-                with: Datadog.Configuration(clientToken: "abc-123", env: env),
+            DatadogCore.initialize(
+                with: DatadogCore.Configuration(clientToken: "abc-123", env: env),
                 trackingConsent: .mockRandom()
             )
             XCTAssertEqual(

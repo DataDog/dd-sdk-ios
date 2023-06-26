@@ -17,8 +17,8 @@ internal class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        Datadog.initialize(
-            with: Datadog.Configuration(clientToken: "abc", env: "tests"),
+        DatadogCore.initialize(
+            with: DatadogCore.Configuration(clientToken: "abc", env: "tests"),
             trackingConsent: .granted
         )
 

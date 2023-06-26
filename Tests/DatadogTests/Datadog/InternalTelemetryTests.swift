@@ -20,7 +20,7 @@ class InternalTelemetryTests: XCTestCase {
         let message: String = .mockAny()
 
         // When
-        Datadog._internal.telemetry.debug(id: id, message: message)
+        DatadogCore._internal.telemetry.debug(id: id, message: message)
 
         // Then
         XCTAssertEqual(dd.telemetry.messages.count, 1)
@@ -43,7 +43,7 @@ class InternalTelemetryTests: XCTestCase {
         let kind: String = .mockAny()
 
         // When
-        Datadog._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        DatadogCore._internal.telemetry.error(id: id, message: message, kind: kind, stack: stack)
 
         // Then
         XCTAssertEqual(dd.telemetry.messages.count, 1)

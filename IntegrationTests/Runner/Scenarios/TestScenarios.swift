@@ -16,7 +16,7 @@ protocol TestScenario: AnyObject {
 
     /// Applies additional SDK configuration for running this scenario.
     /// Defaults to no-op.
-    func override(configuration: inout Datadog.Configuration)
+    func override(configuration: inout DatadogCore.Configuration)
 
     /// Applies additional Feature configuration for running this scenario.
     /// Defaults to no-op.
@@ -28,7 +28,7 @@ protocol TestScenario: AnyObject {
 /// Defaults.
 extension TestScenario {
     var initialTrackingConsent: TrackingConsent { .granted }
-    func override(configuration: inout Datadog.Configuration) { /* no-op */ }
+    func override(configuration: inout DatadogCore.Configuration) { /* no-op */ }
     func configureFeatures() { /* no-op */ }
 }
 

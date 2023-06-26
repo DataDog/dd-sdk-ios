@@ -23,7 +23,7 @@ internal class CrashReportingViewController: UIViewController {
 
 #if DD_SDK_COMPILED_FOR_TESTING
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                Datadog.flushAndDeinitialize()
+                DatadogCore.flushAndDeinitialize()
             }
 #endif
         } else {

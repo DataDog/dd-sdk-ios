@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-extension Datadog: InternalExtended {}
+extension DatadogCore: InternalExtended {}
 //extension Datadog.Configuration.Builder: InternalExtended {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
@@ -18,13 +18,13 @@ extension Datadog: InternalExtended {}
 ///
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
-extension InternalExtension where ExtendedType == Datadog {
+extension InternalExtension where ExtendedType == DatadogCore {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy { .init() }
 
     /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public static func set(customVersion: String) {
-        guard let core = CoreRegistry.default as? DatadogCore else {
+        guard let core = CoreRegistry.default as? Core else {
             return
         }
 

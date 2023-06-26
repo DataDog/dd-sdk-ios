@@ -27,16 +27,16 @@
 - (void)testDDDatadog {
     DDConfiguration *configuration = [[DDConfiguration alloc] initWithClientToken:@"abc" env:@"def"];
 
-    [DDDatadog initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted]];
+    [DDCore initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted]];
 
-    DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
-    [DDDatadog setVerbosityLevel:verbosity];
+    DDSDKVerbosityLevel verbosity = [DDCore verbosityLevel];
+    [DDCore setVerbosityLevel:verbosity];
 
-    [DDDatadog setUserInfoWithId:@"" name:@"" email:@"" extraInfo:@{}];
-    [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
+    [DDCore setUserInfoWithId:@"" name:@"" email:@"" extraInfo:@{}];
+    [DDCore setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
 
-    [DDDatadog clearAllData];
-    [DDDatadog flushAndDeinitialize];
+    [DDCore clearAllData];
+    [DDCore flushAndDeinitialize];
 }
 
 #pragma clang diagnostic pop

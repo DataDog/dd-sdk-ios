@@ -14,7 +14,7 @@ import DatadogInternal
 ///
 /// By complying with `DatadogCoreProtocol`, the core can
 /// provide context and writing scopes to Features for event recording.
-internal final class DatadogCore {
+internal final class Core {
     /// The root location for storing Features data in this instance of the SDK.
     /// For each Feature a set of subdirectories is created inside `CoreDirectory` based on their storage configuration.
     let directory: CoreDirectory
@@ -204,7 +204,7 @@ internal final class DatadogCore {
     }
 }
 
-extension DatadogCore: DatadogCoreProtocol {
+extension Core: DatadogCoreProtocol {
     /// Registers a Feature instance.
     ///
     /// A Feature collects and transfers data to a Datadog Product (e.g. Logs, RUM, ...). A registered Feature can
@@ -390,7 +390,7 @@ extension DatadogContextProvider {
     }
 }
 
-extension DatadogCore: Flushable {
+extension Core: Flushable {
     /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
     /// with **blocking the caller thread** till their completion.
     ///

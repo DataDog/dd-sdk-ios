@@ -18,8 +18,8 @@ class _InternalProxyTests: XCTestCase {
         // When
         let randomDebugMessage: String = .mockRandom()
         let randomErrorMessage: String = .mockRandom()
-        Datadog._internal.telemetry.debug(id: .mockAny(), message: randomDebugMessage)
-        Datadog._internal.telemetry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
+        DatadogCore._internal.telemetry.debug(id: .mockAny(), message: randomDebugMessage)
+        DatadogCore._internal.telemetry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
 
         // Then
         XCTAssertEqual(dd.telemetry.messages.count, 2)
@@ -37,18 +37,18 @@ class _InternalProxyTests: XCTestCase {
 
     func testWhenNewVersionIsSetInConfigurationProxy_thenItChangesAppVersionInCore() throws {
         // Given
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: .mockAny(),
             trackingConsent: .mockRandom()
         )
-        defer { Datadog.flushAndDeinitialize() }
+        defer { DatadogCore.flushAndDeinitialize() }
 
         // When
         let randomVersion: String = .mockRandom()
-        Datadog._internal.set(customVersion: randomVersion)
+        DatadogCore._internal.set(customVersion: randomVersion)
 
         // Then
-        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let core = try XCTUnwrap(CoreRegistry.default as? Core)
         XCTAssertEqual(core.applicationVersionPublisher.version, randomVersion)
     }
 }

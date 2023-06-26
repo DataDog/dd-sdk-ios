@@ -36,7 +36,7 @@ class DatadogCoreTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         // Given
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
@@ -84,7 +84,7 @@ class DatadogCoreTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         // Given
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
@@ -140,7 +140,7 @@ class DatadogCoreTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
 
         // Given
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
@@ -190,7 +190,7 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,

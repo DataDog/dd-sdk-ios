@@ -10,7 +10,7 @@ import DatadogInternal
 //swiftlint:disable:next duplicate_imports
 @_exported import enum DatadogInternal.TrackingConsent
 
-public struct Datadog {
+public struct DatadogCore {
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
         /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
@@ -163,7 +163,7 @@ public struct Datadog {
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     public static var isInitialized: Bool {
-        return CoreRegistry.default is DatadogCore
+        return CoreRegistry.default is Core
     }
 
     /// Returns the Datadog SDK instance for the given name.
@@ -188,7 +188,7 @@ public struct Datadog {
         extraInfo: [AttributeKey: AttributeValue] = [:],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        let core = core as? DatadogCore
+        let core = core as? Core
         core?.setUserInfo(
             id: id,
             name: name,
@@ -207,20 +207,20 @@ public struct Datadog {
         _ extraInfo: [AttributeKey: AttributeValue?],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
-        let core = core as? DatadogCore
+        let core = core as? Core
         core?.addUserExtraInfo(extraInfo)
     }
 
     /// Sets the tracking consent regarding the data collection for the Datadog SDK.
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default) {
-        let core = core as? DatadogCore
+        let core = core as? Core
         core?.set(trackingConsent: trackingConsent)
     }
 
     /// Clears all data that has not already been sent to Datadog servers.
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default) {
-        let core = core as? DatadogCore
+        let core = core as? Core
         core?.clearAllData()
     }
 
@@ -256,14 +256,14 @@ public struct Datadog {
         trackingConsent: TrackingConsent,
         instanceName: String
     ) throws {
-        if CoreRegistry.default is DatadogCore {
+        if CoreRegistry.default is Core {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
             consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
-            Datadog.verbosityLevel = .debug
+            self.verbosityLevel = .debug
         }
 
         let applicationVersion = configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
@@ -285,7 +285,7 @@ public struct Datadog {
         )
 
         // Set default `DatadogCore`:
-        let core = DatadogCore(
+        let core = Core(
             directory: try CoreDirectory(
                 in: Directory.cache(),
                 clientToken: configuration.clientToken,
@@ -333,13 +333,13 @@ public struct Datadog {
             dateProvider: configuration.dateProvider,
             timeZone: .current,
             printFunction: consolePrint,
-            verbosityLevel: { Datadog.verbosityLevel }
+            verbosityLevel: { DatadogCore.verbosityLevel }
         )
 
         DD.telemetry = telemetry
     }
 
-    private static func deleteV1Folders(in core: DatadogCore) {
+    private static func deleteV1Folders(in core: Core) {
         let deprecated = ["com.datadoghq.logs", "com.datadoghq.traces", "com.datadoghq.rum"].compactMap {
             try? Directory.cache().subdirectory(path: $0) // ignore errors - deprecated paths likely do not exist
         }
@@ -362,10 +362,10 @@ public struct Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
-        assert(CoreRegistry.instance(named: instanceName) is DatadogCore, "SDK must be first initialized.")
+        assert(CoreRegistry.instance(named: instanceName) is Core, "SDK must be first initialized.")
 
         // Flush and tear down SDK core:
-        (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
+        (CoreRegistry.instance(named: instanceName) as? Core)?.flushAndTearDown()
 
         // Reset Globals:
         DD.telemetry = NOPTelemetry()

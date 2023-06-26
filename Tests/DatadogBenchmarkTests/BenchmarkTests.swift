@@ -43,8 +43,8 @@ class BenchmarkTests: XCTestCase {
 
         let anyURL = connectedServer!.obtainUniqueRecordingSession().recordingURL
 
-        Datadog.initialize(
-            with: Datadog.Configuration(clientToken: "rum-abc", env: "benchmarks"),
+        DatadogCore.initialize(
+            with: DatadogCore.Configuration(clientToken: "rum-abc", env: "benchmarks"),
             trackingConsent: .granted
         )
 

@@ -31,13 +31,13 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     static var referenceCount = 0
 
     /// The SDK core managed by this proxy.
-    private let core: DatadogCore
+    private let core: Core
 
     private var featureScopeInterceptors: [String: FeatureScopeInterceptor] = [:]
 
     init(context: DatadogContext = .mockAny()) {
         self.context = context
-        self.core = DatadogCore(
+        self.core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,

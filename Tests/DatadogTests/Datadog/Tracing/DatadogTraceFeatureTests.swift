@@ -40,7 +40,7 @@ class DatadogTraceFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
@@ -103,7 +103,7 @@ class DatadogTraceFeatureTests: XCTestCase {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = HTTPClient(session: server.getInterceptedURLSession())
 
-        let core = DatadogCore(
+        let core = Core(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,

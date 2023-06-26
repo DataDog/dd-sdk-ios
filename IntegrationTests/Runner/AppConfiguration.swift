@@ -14,7 +14,7 @@ protocol AppConfiguration {
     var initialTrackingConsent: TrackingConsent { get }
 
     /// Datadog SDK configuration for given app configuration.
-    func sdkConfiguration() -> Datadog.Configuration
+    func sdkConfiguration() -> DatadogCore.Configuration
 
     /// Returns the initial Storyboard to launch the app in this configuration.
     func initialStoryboard() -> UIStoryboard?
@@ -45,8 +45,8 @@ struct UITestsAppConfiguration: AppConfiguration {
         return testScenario!.initialTrackingConsent
     }
 
-    func sdkConfiguration() -> Datadog.Configuration {
-        var configuration = Datadog.Configuration(
+    func sdkConfiguration() -> DatadogCore.Configuration {
+        var configuration = DatadogCore.Configuration(
             clientToken: "ui-tests-client-token",
             env: "integration",
             service: "ui-tests-service-name",

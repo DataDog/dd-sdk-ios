@@ -32,13 +32,13 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         appConfiguration = UITestsAppConfiguration()
 
         // Initialize Datadog SDK
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: appConfiguration.sdkConfiguration(),
             trackingConsent: appConfiguration.initialTrackingConsent
         )
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+        DatadogCore.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         appConfiguration.testScenario?.configureFeatures()
 
@@ -58,7 +58,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         #endif
 
         // Set highest verbosity level to see debugging logs from the SDK
-        Datadog.verbosityLevel = .debug
+        DatadogCore.verbosityLevel = .debug
 
         // Enable RUM Views debugging
         RUMMonitor.shared().debug = true

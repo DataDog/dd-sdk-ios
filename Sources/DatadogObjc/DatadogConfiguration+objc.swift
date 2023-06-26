@@ -43,7 +43,7 @@ public enum DDBatchSize: Int {
     case medium
     case large
 
-    internal var swiftType: Datadog.Configuration.BatchSize {
+    internal var swiftType: DatadogCore.Configuration.BatchSize {
         switch self {
         case .small: return .small
         case .medium: return .medium
@@ -51,7 +51,7 @@ public enum DDBatchSize: Int {
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.BatchSize) {
+    internal init(swiftType: DatadogCore.Configuration.BatchSize) {
         switch swiftType {
         case .small: self = .small
         case .medium: self = .medium
@@ -66,7 +66,7 @@ public enum DDUploadFrequency: Int {
     case average
     case rare
 
-    internal var swiftType: Datadog.Configuration.UploadFrequency {
+    internal var swiftType: DatadogCore.Configuration.UploadFrequency {
         switch self {
         case .frequent: return .frequent
         case .average: return .average
@@ -74,7 +74,7 @@ public enum DDUploadFrequency: Int {
         }
     }
 
-    internal init(swiftType: Datadog.Configuration.UploadFrequency) {
+    internal init(swiftType: DatadogCore.Configuration.UploadFrequency) {
         switch swiftType {
         case .frequent: self = .frequent
         case .average: self = .average
@@ -147,7 +147,7 @@ internal struct DDServerDateProviderBridge: ServerDateProvider {
 
 @objc
 public class DDConfiguration: NSObject {
-    internal var sdkConfiguration: Datadog.Configuration
+    internal var sdkConfiguration: DatadogCore.Configuration
 
     /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
     @objc public var clientToken: String {

@@ -29,7 +29,7 @@ public class DDTrackingConsent: NSObject {
 }
 
 @objc
-public class DDDatadog: NSObject {
+public class DDCore: NSObject {
     // MARK: - Public
 
     @objc
@@ -37,7 +37,7 @@ public class DDDatadog: NSObject {
         configuration: DDConfiguration,
         trackingConsent: DDTrackingConsent
     ) {
-        Datadog.initialize(
+        DatadogCore.initialize(
             with: configuration.sdkConfiguration,
             trackingConsent: trackingConsent.sdkConsent
         )
@@ -46,17 +46,17 @@ public class DDDatadog: NSObject {
     @objc
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel) {
         switch verbosityLevel {
-        case .debug: Datadog.verbosityLevel = .debug
-        case .warn: Datadog.verbosityLevel = .warn
-        case .error: Datadog.verbosityLevel = .error
-        case .critical: Datadog.verbosityLevel = .critical
-        case .none: Datadog.verbosityLevel = nil
+        case .debug: DatadogCore.verbosityLevel = .debug
+        case .warn: DatadogCore.verbosityLevel = .warn
+        case .error: DatadogCore.verbosityLevel = .error
+        case .critical: DatadogCore.verbosityLevel = .critical
+        case .none: DatadogCore.verbosityLevel = nil
         }
     }
 
     @objc
     public static func verbosityLevel() -> DDSDKVerbosityLevel {
-        switch Datadog.verbosityLevel {
+        switch DatadogCore.verbosityLevel {
         case .debug: return .debug
         case .warn: return .warn
         case .error: return .error
@@ -67,23 +67,23 @@ public class DDDatadog: NSObject {
 
     @objc
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:]) {
-        Datadog.setUserInfo(id: id, name: name, email: email, extraInfo: castAttributesToSwift(extraInfo))
+        DatadogCore.setUserInfo(id: id, name: name, email: email, extraInfo: castAttributesToSwift(extraInfo))
     }
 
     @objc
     public static func setTrackingConsent(consent: DDTrackingConsent) {
-        Datadog.set(trackingConsent: consent.sdkConsent)
+        DatadogCore.set(trackingConsent: consent.sdkConsent)
     }
 
     @objc
     public static func clearAllData() {
-        Datadog.clearAllData()
+        DatadogCore.clearAllData()
     }
 
 #if DD_SDK_COMPILED_FOR_TESTING
     @objc
     public static func flushAndDeinitialize() {
-        Datadog.flushAndDeinitialize()
+        DatadogCore.flushAndDeinitialize()
     }
 #endif
 }

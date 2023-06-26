@@ -13,8 +13,8 @@ import DatadogInternal
 
 // MARK: - Configuration Mocks
 
-extension Datadog.Configuration {
-    static func mockAny() -> Datadog.Configuration { .mockWith() }
+extension DatadogCore.Configuration {
+    static func mockAny() -> DatadogCore.Configuration { .mockWith() }
 
     static func mockWith(
         clientToken: String = .mockAny(),
@@ -45,7 +45,7 @@ extension Datadog.Configuration {
     }
 }
 
-typealias BatchSize = Datadog.Configuration.BatchSize
+typealias BatchSize = DatadogCore.Configuration.BatchSize
 
 extension BatchSize: CaseIterable {
     public static var allCases: [Self] { [.small, .medium, .large] }
@@ -55,7 +55,7 @@ extension BatchSize: CaseIterable {
     }
 }
 
-typealias UploadFrequency = Datadog.Configuration.UploadFrequency
+typealias UploadFrequency = DatadogCore.Configuration.UploadFrequency
 
 extension UploadFrequency: CaseIterable {
     public static var allCases: [Self] { [.frequent, .average, .rare] }

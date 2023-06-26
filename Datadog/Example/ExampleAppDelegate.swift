@@ -27,8 +27,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         // Initialize Datadog SDK
-        Datadog.initialize(
-            with: Datadog.Configuration(
+        DatadogCore.initialize(
+            with: DatadogCore.Configuration(
                 clientToken: Environment.readClientToken(),
                 env: "tests",
                 service: serviceName,
@@ -39,7 +39,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
 
         // Set user information
-        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+        DatadogCore.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
         // Create Logger
         logger = DatadogLogger.builder
@@ -66,7 +66,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         DatadogCrashReporter.initialize()
 
         // Set highest verbosity level to see debugging logs from the SDK
-        Datadog.verbosityLevel = .debug
+        DatadogCore.verbosityLevel = .debug
 
         // Enable Trace
         Trace.enable(
