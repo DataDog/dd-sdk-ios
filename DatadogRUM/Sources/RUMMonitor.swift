@@ -4,8 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
-import Foundation
 import DatadogInternal
 
 /// A class for manual interaction with the RUM feature. It records RUM events that are sent to Datadog RUM.
@@ -15,7 +13,7 @@ import DatadogInternal
 ///
 ///     import DatadogRUM
 ///
-///     // Enable RUM:
+///     // Enable RUM feature:
 ///     RUM.enable(with: configuration)
 ///
 ///     // Use RUM monitor:

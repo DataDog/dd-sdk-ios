@@ -782,16 +782,12 @@ class LoggerTests: XCTestCase {
     func testGivenBundlingWithTraceEnabledAndTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
         core.context = .mockAny()
 
-        let logging: LogsFeature = .mockAny()
-        try core.register(feature: logging)
-
-        DatadogTracer.initialize(in: core)
+        Logs.enable(in: core)
+        Trace.enable(in: core)
 
         // given
         let logger = DatadogLogger.builder.build(in: core)
-
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        let tracer = Tracer.shared(in: core)
 
         // when
         let span = tracer.startSpan(operationName: "span").setActive()

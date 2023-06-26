@@ -28,7 +28,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         tracer = .mockWith(
             core: core,
-            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0),
+            loggingIntegration: TracingWithLoggingIntegration(core: core, service: .mockAny(), sendNetworkInfo: .mockAny())
         )
 
         handler = TracingURLSessionHandler(
@@ -107,12 +108,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertTrue(span.isError)
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "domain - 123")
+        XCTAssertEqual(span.tags[SpanTags.errorType], "domain - 123")
         XCTAssertEqual(
-            span.tags[DatadogSpanTag.errorStack],
+            span.tags[SpanTags.errorStack],
             "Error Domain=domain Code=123 \"network error\" UserInfo={NSLocalizedDescription=network error}"
         )
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "network error")
+        XCTAssertEqual(span.tags[SpanTags.errorMessage], "network error")
         XCTAssertEqual(span.tags.count, 7)
 
         let log: LogEvent = try XCTUnwrap(core.events().last, "It should send error log")
@@ -175,10 +176,10 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(span.tags[OTTags.httpUrl], request.url!.absoluteString)
         XCTAssertEqual(span.tags[OTTags.httpMethod], "GET")
         XCTAssertEqual(span.tags[OTTags.httpStatusCode], "404")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorType], "HTTPURLResponse - 404")
-        XCTAssertEqual(span.tags[DatadogSpanTag.errorMessage], "404 not found")
+        XCTAssertEqual(span.tags[SpanTags.errorType], "HTTPURLResponse - 404")
+        XCTAssertEqual(span.tags[SpanTags.errorMessage], "404 not found")
         XCTAssertEqual(
-            span.tags[DatadogSpanTag.errorStack],
+            span.tags[SpanTags.errorStack],
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
         XCTAssertEqual(span.tags.count, 8)

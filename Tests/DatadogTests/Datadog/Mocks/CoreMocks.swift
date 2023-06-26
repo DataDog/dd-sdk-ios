@@ -19,11 +19,8 @@ extension Datadog.Configuration {
     static func mockWith(
         clientToken: String = .mockAny(),
         environment: String = .mockAny(),
-        tracingEnabled: Bool = false,
         datadogEndpoint: DatadogSite = .us1,
         serviceName: String? = .mockAny(),
-        firstPartyHosts: FirstPartyHosts? = nil,
-        tracingSamplingRate: Float = 100.0,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
         additionalConfiguration: [String: Any] = [:],
@@ -33,11 +30,8 @@ extension Datadog.Configuration {
         return Datadog.Configuration(
             clientToken: clientToken,
             environment: environment,
-            tracingEnabled: tracingEnabled,
             datadogEndpoint: datadogEndpoint,
             serviceName: serviceName,
-            firstPartyHosts: firstPartyHosts,
-            tracingSamplingRate: tracingSamplingRate,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
             additionalConfiguration: additionalConfiguration,
@@ -73,14 +67,8 @@ extension BundleType: CaseIterable {
 extension FeaturesConfiguration {
     static func mockAny() -> Self { mockWith() }
 
-    static func mockWith(
-        common: Common = .mockAny(),
-        tracingEnabled: Bool = .mockAny()
-    ) -> Self {
-        return .init(
-            common: common,
-            tracingEnabled: tracingEnabled
-        )
+    static func mockWith(common: Common = .mockAny()) -> Self {
+        return .init(common: common)
     }
 }
 

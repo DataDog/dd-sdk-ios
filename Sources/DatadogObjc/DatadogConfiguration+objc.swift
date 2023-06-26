@@ -167,11 +167,6 @@ public class DDConfigurationBuilder: NSObject {
     // MARK: - Public
 
     @objc
-    public func enableTracing(_ enabled: Bool) {
-        _ = sdkBuilder.enableTracing(enabled)
-    }
-
-    @objc
     public func set(endpoint: DDEndpoint) {
         _ = sdkBuilder.set(endpoint: endpoint.sdkEndpoint)
     }
@@ -190,38 +185,9 @@ public class DDConfigurationBuilder: NSObject {
         _ = sdkBuilder.set(serverDateProvider: DDServerDateProviderBridge(objcProvider: serverDateProvider))
     }
 
-    @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
-    @objc
-    public func set(tracedHosts: Set<String>) {
-        track(firstPartyHosts: tracedHosts)
-    }
-
-    @available(*, deprecated, message: "This option is replaced by `trackURLSession(firstPartyHosts:)`. Refer to the new API comment for important details.")
-    @objc
-    public func track(firstPartyHosts: Set<String>) {
-        trackURLSession(firstPartyHosts: firstPartyHosts)
-    }
-
-    @objc
-    public func trackURLSession(firstPartyHosts: Set<String>) {
-        _ = sdkBuilder.trackURLSession(firstPartyHosts: firstPartyHosts)
-    }
-
-    @objc
-    public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
-        _ = sdkBuilder.trackURLSession(firstPartyHostsWithHeaderTypes: firstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
-            return Set(tracingHeaderTypes.map { $0.swiftType })
-        })
-    }
-
     @objc
     public func set(serviceName: String) {
         _ = sdkBuilder.set(serviceName: serviceName)
-    }
-
-    @objc
-    public func set(tracingSamplingRate: Float) {
-        _ = sdkBuilder.set(tracingSamplingRate: tracingSamplingRate)
     }
 
     @objc

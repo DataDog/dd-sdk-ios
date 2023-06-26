@@ -14,11 +14,12 @@ final class TracingManualInstrumentationScenario: TestScenario {
     static let storyboardName = "TracingManualInstrumentationScenario"
 
     func configureFeatures() {
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: .init(
+        // Enable Trace
+        Trace.enable(
+            with: Trace.Configuration(
+                sampleRate: 100,
                 sendNetworkInfo: true,
-                customIntakeURL: Environment.serverMockConfiguration()?.tracesEndpoint
+                customEndpoint: Environment.serverMockConfiguration()?.tracesEndpoint
             )
         )
 
@@ -33,48 +34,36 @@ final class TracingManualInstrumentationScenario: TestScenario {
 
 /// Base scenario for Tracing instrumentation testing.
 class TracingURLSessionBaseScenario: URLSessionBaseScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        switch setup.instrumentationMethod {
-        case .directWithAdditionalFirstyPartyHosts:
-            _ = builder.trackURLSession()
-        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
-            _ = builder.trackURLSession(
-                firstPartyHosts: [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
-            )
-        }
-    }
-
     func configureFeatures() {
-        guard let tracesEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint else {
-            return
+        var config = Trace.Configuration(sampleRate: 100)
+        config.sendNetworkInfo = true
+        config.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
+        config.eventMapper = {
+            var span = $0
+            if span.tags[OTTags.httpUrl] != nil {
+                span.tags[OTTags.httpUrl] = "redacted"
+            }
+            return span
         }
 
-        let firstPartyHosts: Set<String>
         switch setup.instrumentationMethod {
-        case .directWithAdditionalFirstyPartyHosts:
-            firstPartyHosts = []
         case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
-            firstPartyHosts = [customGETResourceURL.host!, customPOSTRequest.url!.host!, badResourceURL.host!]
-        }
-
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: .init(
-                sendNetworkInfo: true,
-                customIntakeURL: tracesEndpoint,
-                spanEventMapper: {
-                    var span = $0
-                    if span.tags[OTTags.httpUrl] != nil {
-                        span.tags[OTTags.httpUrl] = "redacted"
-                    }
-                    return span
-                }
-            ),
-            distributedTracingConfiguration: .init(
-                firstPartyHosts: firstPartyHosts,
-                tracingSamplingRate: 100
+            config.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(
+                    hosts: [
+                        customGETResourceURL.host!,
+                        customPOSTRequest.url!.host!,
+                        badResourceURL.host!,
+                    ],
+                    sampleRate: 100
+                )
             )
-        )
+        case .directWithAdditionalFirstyPartyHosts:
+            config.urlSessionTracking = .init(
+                firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100) // hosts will be set through `DDURLSessionDelegate`
+            )
+        }
+        Trace.enable(with: config)
     }
 }
 
@@ -83,7 +72,6 @@ class TracingURLSessionBaseScenario: URLSessionBaseScenario {
 final class TracingURLSessionScenario: TracingURLSessionBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) { super.configureSDK(builder: builder) }
     override func configureFeatures() { super.configureFeatures() }
 }
 
@@ -93,6 +81,5 @@ final class TracingURLSessionScenario: TracingURLSessionBaseScenario, TestScenar
 final class TracingNSURLSessionScenario: TracingURLSessionBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) { super.configureSDK(builder: builder) }
     override func configureFeatures() { super.configureFeatures() }
 }

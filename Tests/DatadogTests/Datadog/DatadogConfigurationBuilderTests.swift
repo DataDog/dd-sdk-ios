@@ -18,11 +18,8 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         [configuration].forEach { configuration in
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
-            XCTAssertTrue(configuration.tracingEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .us1)
             XCTAssertNil(configuration.serviceName)
-            XCTAssertNil(configuration.firstPartyHosts)
-            XCTAssertEqual(configuration.tracingSamplingRate, 20.0)
             XCTAssertEqual(configuration.batchSize, .medium)
             XCTAssertEqual(configuration.uploadFrequency, .average)
             XCTAssertEqual(configuration.additionalConfiguration.count, 0)
@@ -35,11 +32,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
         func customized(_ builder: Datadog.Configuration.Builder) -> Datadog.Configuration.Builder {
             _ = builder
                 .set(serviceName: "service-name")
-                .enableTracing(false)
                 .set(endpoint: .eu1)
-                .set(tracingSamplingRate: 75)
-                .trackURLSession(firstPartyHosts: ["example.com"])
-                .trackURLSession(firstPartyHostsWithHeaderTypes: ["example2.com": [.b3]])
                 .set(batchSize: .small)
                 .set(uploadFrequency: .frequent)
                 .set(additionalConfiguration: ["foo": 42, "bar": "something"])
@@ -65,10 +58,7 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertEqual(configuration.clientToken, "abc-123")
             XCTAssertEqual(configuration.environment, "tests")
             XCTAssertEqual(configuration.serviceName, "service-name")
-            XCTAssertFalse(configuration.tracingEnabled)
             XCTAssertEqual(configuration.datadogEndpoint, .eu1)
-            XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog], "example2.com": [.b3]]))
-            XCTAssertEqual(configuration.tracingSamplingRate, 75)
             XCTAssertEqual(configuration.batchSize, .small)
             XCTAssertEqual(configuration.uploadFrequency, .frequent)
             XCTAssertEqual(configuration.additionalConfiguration["foo"] as? Int, 42)
@@ -82,19 +72,4 @@ class DatadogConfigurationBuilderTests: XCTestCase {
             XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
         }
     }
-
-    func testDeprecatedAPIs() {
-        let builder = Datadog.Configuration.builderUsing(clientToken: "abc-123", environment: "tests")
-        _ = (builder as ConfigurationBuilderDeprecatedAPIs).set(tracedHosts: ["example.com"])
-
-        let configuration = builder.build()
-
-        XCTAssertEqual(configuration.firstPartyHosts, .init(["example.com": [.datadog]]))
-    }
 }
-
-/// An assistant protocol to shim the deprecated APIs and call them with no compiler warning.
-private protocol ConfigurationBuilderDeprecatedAPIs {
-    func set(tracedHosts: Set<String>) -> Datadog.Configuration.Builder
-}
-extension Datadog.Configuration.Builder: ConfigurationBuilderDeprecatedAPIs {}

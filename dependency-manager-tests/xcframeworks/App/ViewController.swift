@@ -46,12 +46,11 @@ internal class ViewController: UIViewController {
             var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
         }
 
-        DatadogTracer.initialize()
+        // Trace APIs must be visible:
+        Trace.enable()
 
         logger.info("It works")
-
-        // Start span, but never finish it (no upload)
-        _ = DatadogTracer.shared().startSpan(operationName: "This too")
+        _ = Tracer.shared().startSpan(operationName: "this too")
 
         addLabel()
     }

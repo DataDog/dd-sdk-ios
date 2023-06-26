@@ -132,11 +132,9 @@ internal class DDSpan: OTSpan {
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date, sampler: Sampler) {
-        guard let scope = ddTracer.core?.scope(for: DatadogTraceFeature.name) else {
+        guard let scope = ddTracer.core?.scope(for: TraceFeature.name) else {
             return
         }
-
-        let configuration = self.ddTracer.configuration
 
         // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
         let baggageItems = ddContext.baggageItems.all
@@ -148,9 +146,9 @@ internal class DDSpan: OTSpan {
             // as it is very likely to be deallocated after return.
             let event: SpanEvent = self.queue.sync {
                 let builder = SpanEventBuilder(
-                    serviceName: configuration.serviceName,
-                    sendNetworkInfo: configuration.sendNetworkInfo,
-                    eventsMapper: self.ddTracer.configuration.spanEventMapper
+                    serviceName: self.ddTracer.service,
+                    sendNetworkInfo: self.ddTracer.sendNetworkInfo,
+                    eventsMapper: self.ddTracer.spanEventMapper
                 )
 
                 return builder.createSpanEvent(
@@ -176,7 +174,7 @@ internal class DDSpan: OTSpan {
 
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
         loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date, else: {
-            self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logging feature is disabled.") }
+            self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logs feature is not enabled.") }
         })
     }
 

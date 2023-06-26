@@ -268,7 +268,7 @@ class SpanEventBuilderTests: XCTestCase {
             samplingRate: .mockAny(),
             isKept: .mockAny(),
             tags: [
-                DatadogSpanTag.resource: "custom resource name"
+                SpanTags.resource: "custom resource name"
             ],
             baggageItems: [:],
             logFields: []

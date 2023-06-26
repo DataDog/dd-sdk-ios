@@ -11,11 +11,6 @@ import DatadogLogs
 import Datadog
 
 internal class TrackingConsentBaseScenario {
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .trackURLSession()
-    }
-
     func configureFeatures() {
         // Enable RUM
         var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
@@ -25,13 +20,11 @@ internal class TrackingConsentBaseScenario {
         rumConfig.urlSessionTracking = .init()
         RUM.enable(with: rumConfig)
 
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: .init(
-                sendNetworkInfo: true,
-                customIntakeURL: Environment.serverMockConfiguration()?.tracesEndpoint
-            )
-        )
+        // Enable Trace
+        var traceConfig = Trace.Configuration()
+        traceConfig.sendNetworkInfo = true
+        traceConfig.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
+        Trace.enable(with: traceConfig)
 
         // Enable Logs
         Logs.enable(
@@ -47,10 +40,6 @@ final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, Te
     static let storyboardName = "TrackingConsentScenario"
     let initialTrackingConsent: TrackingConsent = .pending
 
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
-        super.configureSDK(builder: builder)
-    }
-
     override func configureFeatures() {
         super.configureFeatures()
     }
@@ -60,10 +49,6 @@ final class TrackingConsentStartPendingScenario: TrackingConsentBaseScenario, Te
 final class TrackingConsentStartGrantedScenario: TrackingConsentBaseScenario, TestScenario {
     static let storyboardName = "TrackingConsentScenario"
     let initialTrackingConsent: TrackingConsent = .granted
-
-    override func configureSDK(builder: Datadog.Configuration.Builder) {
-        super.configureSDK(builder: builder)
-    }
 
     override func configureFeatures() {
         super.configureFeatures()

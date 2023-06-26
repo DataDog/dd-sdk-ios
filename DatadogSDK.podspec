@@ -27,6 +27,5 @@ Pod::Spec.new do |s|
                            "Sources/_Datadog_Private/include/*.h"]
 
   s.dependency 'DatadogInternal', s.version.to_s
-  s.dependency 'DatadogTrace', s.version.to_s
 
 end

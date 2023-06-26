@@ -20,10 +20,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let telemetry: TelemetryCore
 
-    internal struct LaunchArguments {
-        static let DebugRUM = "DD_DEBUG_RUM"
-    }
-
     convenience init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration

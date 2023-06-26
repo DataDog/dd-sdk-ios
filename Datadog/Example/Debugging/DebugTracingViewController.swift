@@ -51,9 +51,9 @@ class DebugTracingViewController: UIViewController {
         let isError = self.isError
 
         queue1.async {
-            let span = DatadogTracer.shared().startSpan(operationName: spanName)
+            let span = tracer.startSpan(operationName: spanName)
             if let resourceName = resourceName {
-                span.setTag(key: DatadogSpanTag.resource, value: resourceName)
+                span.setTag(key: SpanTags.resource, value: resourceName)
             }
             if isError {
                 // To only mark the span as an error, use the Open Tracing `error` tag:
@@ -89,21 +89,21 @@ class DebugTracingViewController: UIViewController {
         queue1.async { [weak self] in
             guard let self = self else { return }
 
-            let rootSpan = DatadogTracer.shared().startSpan(operationName: spanName)
+            let rootSpan = tracer.startSpan(operationName: spanName)
             wait(seconds: 0.5)
 
             self.queue2.sync {
-                let child1 = DatadogTracer.shared().startSpan(operationName: "child operation 1", childOf: rootSpan.context)
+                let child1 = tracer.startSpan(operationName: "child operation 1", childOf: rootSpan.context)
                 wait(seconds: 0.5)
                 child1.finish()
 
                 wait(seconds: 0.1)
 
-                let child2 = DatadogTracer.shared().startSpan(operationName: "child operation 2", childOf: rootSpan.context)
+                let child2 = tracer.startSpan(operationName: "child operation 2", childOf: rootSpan.context)
                 wait(seconds: 0.5)
 
                 self.queue3.sync {
-                    let grandChild = DatadogTracer.shared().startSpan(operationName: "grandchild operation", childOf: child2.context)
+                    let grandChild = tracer.startSpan(operationName: "grandchild operation", childOf: child2.context)
                     wait(seconds: 1)
                     grandChild.finish()
                 }
