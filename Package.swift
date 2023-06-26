@@ -49,7 +49,7 @@ let package = Package(
         .target(
             name: "Datadog",
             dependencies: [
-                "_Datadog_Private",
+                "DatadogPrivate",
             ],
             swiftSettings: [.define("SPM_BUILD")]
         ),
@@ -60,7 +60,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "_Datadog_Private"
+            name: "DatadogPrivate"
         ),
         .target(
             name: "DatadogCrashReporting",

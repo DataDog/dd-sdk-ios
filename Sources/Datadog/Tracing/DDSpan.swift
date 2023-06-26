@@ -7,7 +7,7 @@
 import Foundation
 
 #if SPM_BUILD
-import _Datadog_Private
+import DatadogPrivate
 #endif
 
 internal class DDSpan: OTSpan {
