@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
+
 # 1.20.0 / 01-06-2023
 - [BUGFIX] Use targetTimestamp as reference to calculate FPS for variable refresh rate displays. See [#1272][]
 
@@ -464,6 +466,7 @@
 [#1259]: https://github.com/DataDog/dd-sdk-ios/pull/1259
 [#1264]: https://github.com/DataDog/dd-sdk-ios/pull/1264
 [#1272]: https://github.com/DataDog/dd-sdk-ios/pull/1272
+[#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
