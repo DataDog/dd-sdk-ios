@@ -30,6 +30,10 @@ let package = Package(
             targets: ["DatadogRUM"]
         ),
         .library(
+            name: "DatadogSessionReplay",
+            targets: ["DatadogSessionReplay"]
+        ),
+        .library(
             name: "DatadogCrashReporting",
             targets: ["DatadogCrashReporting"]
         ),

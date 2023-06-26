@@ -10,6 +10,9 @@ import DatadogLogs
 import DatadogTrace
 import DatadogRUM
 import DatadogCrashReporting
+#if os(iOS)
+import DatadogSessionReplay
+#endif
 
 internal class ViewController: UIViewController {
     private var logger: DatadogLogger! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -50,6 +53,11 @@ internal class ViewController: UIViewController {
 
         logger.info("It works")
         _ = Tracer.shared().startSpan(operationName: "this too")
+
+        #if os(iOS)
+        // Session Replay API must be visible:
+        SessionReplay.enable(with: .init(replaySampleRate: 0))
+        #endif
 
         addLabel()
     }
