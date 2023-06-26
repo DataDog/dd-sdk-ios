@@ -64,8 +64,11 @@ internal struct EventGenerator: Sequence, IteratorProtocol {
             return Event(data: event.data, metadata: nil)
         }
 
-        // otherwise, the next block is metadata
+        // otherwise, the next block can be metadata
         let metadata = dataBlocks[index]
+        guard metadata.type == .eventMetadata else {
+            return Event(data: event.data, metadata: nil)
+        }
         index += 1
 
         return Event(data: event.data, metadata: metadata.data)
