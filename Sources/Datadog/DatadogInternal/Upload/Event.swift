@@ -26,7 +26,7 @@ public struct Event: Equatable {
     /// as filtering of the events.
     public let metadata: Data?
 
-    public init(data: Data, metadata: Data?) {
+    public init(data: Data, metadata: Data? = nil) {
         self.data = data
         self.metadata = metadata
     }
