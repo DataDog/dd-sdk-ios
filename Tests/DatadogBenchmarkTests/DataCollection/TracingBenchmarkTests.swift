@@ -14,14 +14,14 @@ class TracingBenchmarkTests: BenchmarkTests {
 
     func testCreatingAndEndingOneSpan() {
         measure {
-            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
+            let testSpan = Tracer.shared().startSpan(operationName: operationName)
             testSpan.finish()
         }
     }
 
     func testCreatingOneSpanWithBaggageItems() {
         measure {
-            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
+            let testSpan = Tracer.shared().startSpan(operationName: operationName)
             (0..<16).forEach { index in
                 testSpan.setBaggageItem(key: "a\(index)", value: "v\(index)")
             }
@@ -31,7 +31,7 @@ class TracingBenchmarkTests: BenchmarkTests {
 
     func testCreatingOneSpanWithTags() {
         measure {
-            let testSpan = DatadogTracer.shared().startSpan(operationName: operationName)
+            let testSpan = Tracer.shared().startSpan(operationName: operationName)
             (0..<8).forEach { index in
                 testSpan.setTag(key: "t\(index)", value: "v\(index)")
             }

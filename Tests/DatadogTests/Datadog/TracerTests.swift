@@ -15,15 +15,18 @@ import DatadogInternal
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var config: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
         core = DatadogCoreProxy()
+        config = Trace.Configuration()
     }
 
     override func tearDown() {
         core.flushAndTearDown()
         core = nil
+        config = nil
         super.tearDown()
     }
 
@@ -39,14 +42,11 @@ class TracerTests: XCTestCase {
             ciAppOrigin: nil,
             applicationBundleIdentifier: "com.datadoghq.ios-sdk"
         )
+        config.dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
+        config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: 1)
 
-        DatadogTracer.initialize(
-            in: core,
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1)
-        )
-
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation")
         span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
@@ -80,15 +80,11 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithCustomizedTracer() throws {
-        DatadogTracer.initialize(
-            in: core,
-            configuration: .init(
-                serviceName: "custom-service-name",
-                sendNetworkInfo: true
-            )
-        )
+        config.service = "custom-service-name"
+        config.sendNetworkInfo = true
 
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
@@ -110,18 +106,14 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithGlobalTags() throws {
-        DatadogTracer.initialize(
-            in: core,
-            configuration: .init(
-                serviceName: "custom-service-name",
-                globalTags: [
-                    "globaltag1": "globalValue1",
-                    "globaltag2": "globalValue2"
-                ]
-            )
-        )
+        config.service = "custom-service-name"
+        config.tags = [
+            "globaltag1": "globalValue1",
+            "globaltag2": "globalValue2"
+        ]
 
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.setTag(key: "globaltag2", value: "overwrittenValue" )
@@ -136,9 +128,10 @@ class TracerTests: XCTestCase {
     // MARK: - Tracer with sampling rate
 
     func testUsingSamplingRate() throws {
-        DatadogTracer.initialize(in: core, configuration: .init(samplingRate: 42))
+        config.sampleRate = 42
 
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(
             operationName: "operation",
@@ -156,16 +149,15 @@ class TracerTests: XCTestCase {
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {
-        DatadogTracer.initialize(in: core)
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(
             operationName: "operation",
             tags: [
                 "tag1": "string value",
                 "error": true,
-                DatadogSpanTag.resource: "GET /foo.png"
+                SpanTags.resource: "GET /foo.png"
             ],
             startTime: .mockDecember15th2019At10AMUTC()
         )
@@ -183,9 +175,8 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithParentAndBaggageItems() throws {
-        DatadogTracer.initialize(in: core)
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let rootSpan = tracer.startSpan(operationName: "root operation")
         let childSpan = tracer.startSpan(operationName: "child operation", childOf: rootSpan.context)
@@ -242,9 +233,9 @@ class TracerTests: XCTestCase {
     }
 
     func testSendingSpanWithActiveSpanAsAParent() throws {
-        DatadogTracer.initialize(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
-        let tracer = DatadogTracer.shared(in: core).dd
         let queue1 = DispatchQueue(label: "\(#function)-queue1")
         let queue2 = DispatchQueue(label: "\(#function)-queue2")
 
@@ -276,9 +267,8 @@ class TracerTests: XCTestCase {
         let expectation = self.expectation(description: "Complete 2 fake API requests")
         expectation.expectedFulfillmentCount = 2
 
-        DatadogTracer.initialize(in: core)
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let queue = DispatchQueue(label: "\(#function)-queue")
 
         func makeAPIRequest(completion: @escaping () -> Void) {
@@ -309,9 +299,8 @@ class TracerTests: XCTestCase {
         let expectation = self.expectation(description: "Complete 2 fake API requests")
         expectation.expectedFulfillmentCount = 2
 
-        DatadogTracer.initialize(in: core)
-
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let queue = DispatchQueue(label: "\(#function)")
 
         func makeFakeAPIRequest(on queue: DispatchQueue, completion: @escaping () -> Void) {
@@ -347,9 +336,8 @@ class TracerTests: XCTestCase {
             userInfo: .empty
         )
 
-        DatadogTracer.initialize(in: core)
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
 
         tracer.startSpan(operationName: "span with no user info").finish()
         tracer.queue.sync {} // wait for processing the span event in `DDSpan`
@@ -402,9 +390,9 @@ class TracerTests: XCTestCase {
             carrierInfo: nil
         )
 
-        DatadogTracer.initialize(in: core, configuration: .init(sendNetworkInfo: true))
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        config.sendNetworkInfo = true
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
 
         // simulate entering cellular service range
         core.context.carrierInfo = .mockWith(
@@ -439,9 +427,9 @@ class TracerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         core.context = .mockWith(networkConnectionInfo: nil)
 
-        DatadogTracer.initialize(in: core, configuration: .init(sendNetworkInfo: true))
-
-        let tracer = DatadogTracer.shared(in: core).dd
+        config.sendNetworkInfo = true
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core).dd
 
         // simulate reachable network
         core.context.networkConnectionInfo = .mockWith(
@@ -487,8 +475,8 @@ class TracerTests: XCTestCase {
     // MARK: - Sending tags
 
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: .mockDecember15th2019At10AMUTC())
 
@@ -560,8 +548,8 @@ class TracerTests: XCTestCase {
         )
         try core.register(feature: logging)
 
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
@@ -593,8 +581,8 @@ class TracerTests: XCTestCase {
         )
         try core.register(feature: logging)
 
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
@@ -618,8 +606,8 @@ class TracerTests: XCTestCase {
         )
         try core.register(feature: logging)
 
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
@@ -649,8 +637,8 @@ class TracerTests: XCTestCase {
         )
         try core.register(feature: logging)
 
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: "operation", startTime: .mockDecember15th2019At10AMUTC())
         span.log(fields: [OTLogFields.message: "hello", "custom.field": "value"])
@@ -725,7 +713,8 @@ class TracerTests: XCTestCase {
     // MARK: - Injecting span context into carrier
 
     func testItInjectsSpanContextWithHTTPHeadersWriter() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
@@ -756,7 +745,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeaders() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
@@ -801,7 +791,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
@@ -838,7 +829,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingSingleHeader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll())
@@ -855,7 +847,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsRejectedSpanContextWithOTelHTTPHeadersWriter_usingMultipleHeader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockRejectAll(), injectEncoding: .multiple)
@@ -872,7 +865,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
@@ -909,7 +903,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsRejectedSpanContextWithW3CHTTPHeadersWriter() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockRejectAll())
@@ -926,7 +921,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
@@ -943,7 +939,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItExtractsSpanContextWithHTTPHeadersReader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
@@ -960,7 +957,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItExtractsSpanContextWithOTelHTTPHeadersReader_forMultipleHeaders() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
@@ -977,7 +975,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItExtractsSpanContextWithOTelHTTPHeadersReader_forSingleHeader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
@@ -994,7 +993,8 @@ class TracerTests: XCTestCase {
     }
 
     func testItExtractsSpanContextWithW3CHTTPHeadersReader() {
-        let tracer: DatadogTracer = .mockAny(in: PassthroughCoreMock())
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
         let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
@@ -1022,12 +1022,9 @@ class TracerTests: XCTestCase {
         )
 
         // When
-        DatadogTracer.initialize(
-            in: core,
-            dateProvider: RelativeDateProvider(using: deviceTime)
-        )
-
-        let tracer = DatadogTracer.shared(in: core)
+        config.dateProvider = RelativeDateProvider(using: deviceTime)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish(at: deviceTime.addingTimeInterval(2)) // 2 seconds long span
@@ -1049,8 +1046,8 @@ class TracerTests: XCTestCase {
     // MARK: - Thread safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() {
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core)
+        Trace.enable(with: config, in: core)
+        let tracer = Tracer.shared(in: core)
 
         var spans: [DDSpan] = []
         let queue = DispatchQueue(label: "spans-array-sync")
@@ -1088,68 +1085,62 @@ class TracerTests: XCTestCase {
 
     // MARK: - Usage errors
 
-    func testGivenDatadogNotInitialized_whenInitializingTracer_itPrintsError() {
+    func testGivenSDKNotInitialized_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
         defer { consolePrint = { print($0) } }
 
         // given
         let core = NOPDatadogCore()
-        DatadogTracer.initialize(in: core)
+        Trace.enable(in: core)
 
         // when
-        let tracer = DatadogTracer.shared(in: core)
+        let tracer = Tracer.shared(in: core)
 
         // then
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `Datadog.initialize()` must be called prior to `DatadogTracer.initialize()`."
+            "🔥 Datadog SDK usage error: Datadog SDK must be initialized and RUM feature must be enabled before calling `Tracer.shared(in:)`."
         )
         XCTAssertTrue(tracer is DDNoopTracer)
     }
 
-    func testGivenDatadogTracerNotInitialized_whenInvokingShared_itPrintsError() {
+    func testGivenTraceNotEnabled_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
         defer { consolePrint = { print($0) } }
 
         // given
-        Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: Datadog.Configuration.builderUsing(clientToken: "abc.def", environment: "tests")
-                .build()
-        )
+        let core = FeatureRegistrationCoreMock()
+        XCTAssertNil(core.get(feature: TraceFeature.self))
 
         // when
-        let tracer = DatadogTracer.shared(in: core)
+        let tracer = Tracer.shared(in: core)
 
         // then
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: `DatadogTracer.initialize()` must be called prior to `DatadogTracer.shared()`."
+            "🔥 Datadog SDK usage error: Trace feature must be enabled before calling `Tracer.shared(in:)`."
         )
         XCTAssertTrue(tracer is DDNoopTracer)
-
-        Datadog.flushAndDeinitialize()
     }
 
-    func testGivenLoggingFeatureNotRegistered_whenSendingLogFromSpan_itPrintsWarning() throws {
+    func testGivenLoggingFeatureNotEnabled_whenSendingLogFromSpan_itPrintsWarning() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
         // given
         XCTAssertNil(core.get(feature: LogsFeature.self))
-        DatadogTracer.initialize(in: core)
+        Trace.enable(in: core)
 
         // when
-        let tracer = DatadogTracer.shared(in: core)
+        let tracer = Tracer.shared(in: core)
         let span = tracer.startSpan(operationName: "foo")
         span.log(fields: ["bar": "bizz"])
 
         // then
         core.flush()
-        XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logging feature is disabled.")
+        XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logs feature is not enabled.")
     }
 }
 // swiftlint:enable multiline_arguments_brackets

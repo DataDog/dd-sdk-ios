@@ -42,11 +42,6 @@ final class RUMNavigationControllerScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
@@ -70,11 +65,6 @@ final class RUMTabBarAutoInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
@@ -96,11 +86,6 @@ final class RUMModalViewsAutoInstrumentationScenario: TestScenario {
                 return nil
             }
         }
-    }
-
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
     }
 
     func configureFeatures() {
@@ -134,11 +119,6 @@ final class RUMUntrackedModalViewsAutoInstrumentationScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
@@ -170,11 +150,6 @@ final class RUMTapActionScenario: TestScenario {
         }
     }
 
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
-    }
-
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
@@ -187,11 +162,6 @@ final class RUMTapActionScenario: TestScenario {
 /// Scenario which uses RUM only. Blocks the main thread and expects to have non-zero MobileVitals values
 final class RUMMobileVitalsScenario: TestScenario {
     static var storyboardName: String = "RUMMobileVitalsScenario"
-
-    func configureSDK(builder: Datadog.Configuration.Builder) {
-        _ = builder
-            .enableTracing(false)
-    }
 
     func configureFeatures() {
         var config = RUM.Configuration(applicationID: "rum-application-id")

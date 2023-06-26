@@ -262,14 +262,12 @@ class DatadogTests: XCTestCase {
         Datadog.initialize(
             appContext: .mockAny(),
             trackingConsent: .mockRandom(),
-            configuration: defaultBuilder
-                .enableTracing(true)
-                .build()
+            configuration: defaultBuilder.build()
         )
 
         Logs.enable()
+        Trace.enable()
 
-        DatadogTracer.initialize()
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
 
         // On SDK init, underlying `ConsentAwareDataWriter` performs data migration for each feature, which includes

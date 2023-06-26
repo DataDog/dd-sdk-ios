@@ -16,7 +16,7 @@ import DatadogCrashReporting
 let serviceName = "ios-sdk-example-app"
 
 var logger: Logger!
-var tracer: OTTracer { DatadogTracer.shared() }
+var tracer: OTTracer { Tracer.shared() }
 var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
 @UIApplicationMain
@@ -28,7 +28,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
-        var configuration = Datadog.Configuration
+        let configuration = Datadog.Configuration
             .builderUsing(
                 clientToken: Environment.readClientToken(),
                 environment: "tests"
@@ -36,18 +36,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             .set(serviceName: serviceName)
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
-
-        var rumConfig = RUM.Configuration(applicationID: Environment.readRUMApplicationID())
-        rumConfig.telemetrySampleRate = 100
-        rumConfig.backgroundEventsTracking = true
-
-        if let customRUMURL = Environment.readCustomRUMURL() {
-            rumConfig.customEndpoint = customRUMURL
-        }
-
-        // Enable all features so they can be tested with debug menu
-        configuration = configuration
-            .enableTracing(true)
 
         // Initialize Datadog SDK
         Datadog.initialize(
@@ -74,18 +62,10 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         logger.addTag(withKey: "build_configuration", value: "release")
         #endif
 
-        // Register Logs
+        // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
                 customEndpoint: Environment.readCustomLogsURL()
-            )
-        )
-
-        // Register Tracer
-        DatadogTracer.initialize(
-            configuration: DatadogTracer.Configuration(
-                sendNetworkInfo: true,
-                customIntakeURL: Environment.readCustomTraceURL()
             )
         )
 
@@ -94,8 +74,23 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug
 
+        // Enable Trace
+        Trace.enable(
+            with: Trace.Configuration(
+                sendNetworkInfo: true,
+                customEndpoint: Environment.readCustomTraceURL()
+            )
+        )
+
         // Enable RUM
-        RUM.enable(with: rumConfig)
+        RUM.enable(
+            with: RUM.Configuration(
+                applicationID: Environment.readRUMApplicationID(),
+                backgroundEventsTracking: true,
+                customEndpoint: Environment.readCustomRUMURL(),
+                telemetrySampleRate: 100
+            )
+        )
         RUMMonitor.shared().debug = true
 
         // Launch initial screen depending on the launch configuration

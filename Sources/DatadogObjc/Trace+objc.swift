@@ -9,6 +9,101 @@ import DatadogInternal
 import DatadogTrace
 
 @objc
+public class DDTraceConfiguration: NSObject {
+    internal var swiftConfig: Trace.Configuration
+
+    @objc
+    override public init() {
+        swiftConfig = .init()
+    }
+
+    @objc public var sampleRate: Float {
+        set { swiftConfig.sampleRate = newValue }
+        get { swiftConfig.sampleRate }
+    }
+
+    @objc public var service: String? {
+        set { swiftConfig.service = newValue }
+        get { swiftConfig.service }
+    }
+
+    @objc public var tags: [String: Any]? {
+        set { swiftConfig.tags = newValue.map { castAttributesToSwift($0) } }
+        get { swiftConfig.tags.map { castAttributesToObjectiveC($0) } }
+    }
+
+    @objc
+    public func setURLSessionTracking(_ tracking: DDTraceURLSessionTracking) {
+        swiftConfig.urlSessionTracking = tracking.swiftConfig
+    }
+
+    @objc public var bundleWithRUM: Bool {
+        set { swiftConfig.bundleWithRUM = newValue }
+        get { swiftConfig.bundleWithRUM }
+    }
+
+    @objc public var sendNetworkInfo: Bool {
+        set { swiftConfig.sendNetworkInfo = newValue }
+        get { swiftConfig.sendNetworkInfo }
+    }
+
+    @objc public var customEndpoint: URL? {
+        set { swiftConfig.customEndpoint = newValue }
+        get { swiftConfig.customEndpoint }
+    }
+}
+
+@objc
+public class DDTraceFirstPartyHostsTracing: NSObject {
+    internal var swiftType: Trace.Configuration.URLSessionTracking.FirstPartyHostsTracing
+
+    @objc
+    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
+        let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in Set(headerTypes.map { $0.swiftType }) }
+        swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders)
+    }
+
+    @objc
+    public init(hostsWithHeaderTypes: [String: Set<DDTracingHeaderType>], sampleRate: Float) {
+        let swiftHostsWithHeaders = hostsWithHeaderTypes.mapValues { headerTypes in Set(headerTypes.map { $0.swiftType }) }
+        swiftType = .traceWithHeaders(hostsWithHeaders: swiftHostsWithHeaders, sampleRate: sampleRate)
+    }
+
+    @objc
+    public init(hosts: Set<String>) {
+        swiftType = .trace(hosts: hosts)
+    }
+
+    @objc
+    public init(hosts: Set<String>, sampleRate: Float) {
+        swiftType = .trace(hosts: hosts, sampleRate: sampleRate)
+    }
+}
+
+@objc
+public class DDTraceURLSessionTracking: NSObject {
+    internal var swiftConfig: Trace.Configuration.URLSessionTracking
+
+    @objc
+    public init(firstPartyHostsTracing: DDTraceFirstPartyHostsTracing) {
+        swiftConfig = .init(firstPartyHostsTracing: firstPartyHostsTracing.swiftType)
+    }
+
+    @objc
+    public func setFirstPartyHostsTracing(_ firstPartyHostsTracing: DDTraceFirstPartyHostsTracing) {
+        swiftConfig.firstPartyHostsTracing = firstPartyHostsTracing.swiftType
+    }
+}
+
+@objc
+public class DDTrace: NSObject {
+    @objc
+    public static func enable(with configuration: DDTraceConfiguration) {
+        Trace.enable(with: configuration.swiftConfig)
+    }
+}
+
+@objc
 public class DDTracer: NSObject, DatadogObjc.OTTracer {
     // MARK: - Internal
 
@@ -21,14 +116,8 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
     // MARK: - Public
 
     @objc
-    public static func initialize(configuration: DDTracerConfiguration) {
-        DatadogTracer.initialize(
-            configuration: configuration.swiftConfiguration
-        )
-    }
-
-    @objc public static var shared: DDTracer {
-        DDTracer(swiftTracer: DatadogTracer.shared())
+    public static func shared() -> DatadogObjc.OTTracer {
+        DDTracer(swiftTracer: Tracer.shared())
     }
 
     @objc

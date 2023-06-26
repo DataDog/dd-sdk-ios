@@ -54,7 +54,6 @@ struct UITestsAppConfiguration: AppConfiguration {
             .set(serviceName: "ui-tests-service-name")
             .set(batchSize: .small)
             .set(uploadFrequency: .frequent)
-            .set(tracingSamplingRate: 100)
 
         // Apply the scenario configuration
         testScenario!.configureSDK(builder: configuration)

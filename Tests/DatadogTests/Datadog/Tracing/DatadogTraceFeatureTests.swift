@@ -69,15 +69,11 @@ class DatadogTraceFeatureTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        DatadogTracer.initialize(
-            in: core,
-            configuration: .init(customIntakeURL: randomUploadURL)
-        )
-
         // Given
-        let tracer = DatadogTracer.shared(in: core).dd
+        Trace.enable(with: .init(customEndpoint: randomUploadURL), in: core)
 
         // When
+        let tracer = Tracer.shared(in: core)
         let span = tracer.startSpan(operationName: .mockAny())
         span.finish()
 
@@ -135,8 +131,11 @@ class DatadogTraceFeatureTests: XCTestCase {
         )
         defer { core.flushAndTearDown() }
 
-        DatadogTracer.initialize(in: core)
-        let tracer = DatadogTracer.shared(in: core).dd
+        // Given
+        Trace.enable(in: core)
+
+        // When
+        let tracer = Tracer.shared(in: core)
 
         tracer.startSpan(operationName: "operation 1").finish()
         tracer.startSpan(operationName: "operation 2").finish()

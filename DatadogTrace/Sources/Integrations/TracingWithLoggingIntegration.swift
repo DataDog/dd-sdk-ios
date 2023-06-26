@@ -30,38 +30,15 @@ internal struct TracingWithLoggingIntegration {
         case critical
     }
 
-    struct Configuration {
-        /// The `service` value for logs.
-        /// See: [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
-        let service: String?
-        /// The `logger.name` value for logs.
-        let loggerName: String
-        /// Whether to send the network info in `network.client.*` log attributes.
-        let sendNetworkInfo: Bool
-    }
-
     /// `DatadogCore` instance managing this integration.
     weak var core: DatadogCoreProtocol?
-    /// Builds log events.
-    let configuration: Configuration
+    let service: String?
+    let sendNetworkInfo: Bool
 
-    init(
-        core: DatadogCoreProtocol,
-        tracerConfiguration: DatadogTracer.Configuration
-    ) {
-        self.init(
-            core: core,
-            configuration: .init(
-                service: tracerConfiguration.serviceName,
-                loggerName: "trace",
-                sendNetworkInfo: tracerConfiguration.sendNetworkInfo
-            )
-        )
-    }
-
-    init(core: DatadogCoreProtocol, configuration: Configuration) {
+    init(core: DatadogCoreProtocol, service: String?, sendNetworkInfo: Bool) {
         self.core = core
-        self.configuration = configuration
+        self.service = service
+        self.sendNetworkInfo = sendNetworkInfo
     }
 
     func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date, else fallback: @escaping () -> Void) {
@@ -101,15 +78,15 @@ internal struct TracingWithLoggingIntegration {
                 key: "log",
                 baggage: [
                     "date": date,
-                    "loggerName": configuration.loggerName,
-                    "service": configuration.service,
+                    "loggerName": "trace",
+                    "service": service,
                     "threadName": Thread.current.dd.name,
                     "message": message,
                     "level": level,
                     "error": extractedError,
                     "userAttributes": AnyEncodable(userAttributes),
                     "internalAttributes": internalAttributes,
-                    "sendNetworkInfo": configuration.sendNetworkInfo
+                    "sendNetworkInfo": sendNetworkInfo
                 ]
             ),
             else: fallback
