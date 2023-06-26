@@ -42,30 +42,27 @@ internal struct RUMViewEventsFilter: EventsFilter {
 
     func filter(events: [Event]) -> [Event] {
         var seen = Set<String>()
-        var filtered = [Event]()
 
         // reversed is O(1) and no copy because it is view on the original array
-        for event in events.reversed() {
+        let filtered = events.reversed().compactMap { event in
             guard let metadata = event.metadata else {
                 // If there is no metadata, we can't filter it.
-                filtered.append(event)
-                continue
+                return event
             }
 
             guard let viewMetadata = try? decoder.decode(RUMViewEvent.Metadata.self, from: metadata) else {
                 // If we can't decode the metadata, we can't filter it.
-                filtered.append(event)
-                continue
+                return event
             }
 
             guard seen.contains(viewMetadata.id) == false else {
                 // If we've already seen this view, we can skip this
                 DD.logger.debug("Skipping RUMViewEvent with id: \(viewMetadata.id)")
-                continue
+                return nil
             }
 
-            filtered.append(event)
             seen.insert(viewMetadata.id)
+            return event
         }
 
         return filtered.reversed()
