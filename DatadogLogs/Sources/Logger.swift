@@ -103,7 +103,7 @@ public struct Logger {
             self.consoleLogFormat = consoleLogFormat
         }
     }
-    
+
     // MARK: - Logger Creation
 
     /// Creates a Logger complying with `LoggerProtocol`.

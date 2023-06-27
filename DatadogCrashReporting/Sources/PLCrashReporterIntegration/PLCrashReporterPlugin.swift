@@ -10,12 +10,12 @@ import DatadogInternal
 /// The implementation of `Datadog.DDCrashReportingPluginType`.
 /// Pass its instance as the crash reporting plugin for Datadog SDK to enable crash reporting feature.
 @objc
-class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
+internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
     static var thirdPartyCrashReporter: ThirdPartyCrashReporter?
 
     // MARK: - Initialization
 
-    override public convenience init() {
+    override convenience init() {
         self.init { try PLCrashReporterIntegration() }
     }
 

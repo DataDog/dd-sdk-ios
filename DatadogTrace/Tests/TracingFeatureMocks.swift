@@ -185,7 +185,7 @@ extension DatadogTracer {
     static func mockWith(
         core: DatadogCoreProtocol,
         sampler: Sampler = .mockKeepAll(),
-        tags: [String : Encodable] = [:],
+        tags: [String: Encodable] = [:],
         service: String? = nil,
         sendNetworkInfo: Bool = true,
         spanEventMapper: ((SpanEvent) -> SpanEvent)? = nil,

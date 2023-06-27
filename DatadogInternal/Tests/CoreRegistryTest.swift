@@ -36,6 +36,7 @@ class CoreRegistryTest: XCTestCase {
     func testConcurrency() {
         let core = PassthroughCoreMock()
 
+        // swiftlint:disable opening_brace
         callConcurrently(
             { CoreRegistry.register(default: core) },
             { _ = CoreRegistry.default },
@@ -44,5 +45,6 @@ class CoreRegistryTest: XCTestCase {
             { _ = CoreRegistry.instance(named: "test") },
             { CoreRegistry.unregisterInstance(named: "test") }
         )
+        // swiftlint:enable opening_brace
     }
 }

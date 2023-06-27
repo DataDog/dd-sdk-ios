@@ -40,7 +40,7 @@ private struct NOPInternalLogger: InternalLoggerProtocol {
         errorKind: String?,
         errorMessage: String?,
         stackTrace: String?,
-        attributes: [String : Encodable]?
+        attributes: [String: Encodable]?
     ) { }
 }
 

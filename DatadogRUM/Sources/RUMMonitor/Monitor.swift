@@ -163,7 +163,6 @@ internal class Monitor: RUMCommandSubscriber {
                         RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
                     ],
                     RUMContextAttributes.serverTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
-
                 ]
             }
         })
@@ -217,7 +216,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - views
 
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey : AttributeValue]) {
+    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -229,7 +228,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopView(viewController: UIViewController, attributes: [AttributeKey : AttributeValue]) {
+    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
@@ -239,7 +238,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startView(key: String, name: String?, attributes: [AttributeKey : AttributeValue]) {
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -251,7 +250,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopView(key: String, attributes: [AttributeKey : AttributeValue]) {
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopViewCommand(
                 time: dateProvider.now,
@@ -275,7 +274,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - errors
 
-    func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue], file: StaticString?, line: UInt?) {
+    func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
         let stack: String? = stack ?? {
             if let file = file,
                let fileName = "\(file)".split(separator: "/").last,
@@ -296,7 +295,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue]) {
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
@@ -309,7 +308,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - resources
 
-    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -323,7 +322,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -337,7 +336,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) {
+    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartResourceCommand(
                 resourceKey: resourceKey,
@@ -351,7 +350,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func addResourceMetrics(resourceKey: String, metrics: URLSessionTaskMetrics, attributes: [AttributeKey : AttributeValue]) {
+    func addResourceMetrics(resourceKey: String, metrics: URLSessionTaskMetrics, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddResourceMetricsCommand(
                 resourceKey: resourceKey,
@@ -362,7 +361,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
         let resourceKind: RUMResourceType
         var statusCode: Int?
 
@@ -385,7 +384,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceCommand(
                 resourceKey: resourceKey,
@@ -398,7 +397,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
@@ -411,7 +410,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) {
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopResourceWithErrorCommand(
                 resourceKey: resourceKey,
@@ -427,7 +426,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - actions
 
-    func addAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) {
+    func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMAddUserActionCommand(
                 time: dateProvider.now,
@@ -438,7 +437,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func startAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) {
+    func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStartUserActionCommand(
                 time: dateProvider.now,
@@ -449,7 +448,7 @@ extension Monitor: RUMMonitorProtocol {
         )
     }
 
-    func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey : AttributeValue]) {
+    func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
         process(
             command: RUMStopUserActionCommand(
                 time: dateProvider.now,

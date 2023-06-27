@@ -10,7 +10,7 @@ import TestUtilities
 
 class NetworkInstrumentationFeatureTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
-    private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>!
     private var handler: URLSessionHandlerMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -59,7 +59,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenURLSessionWithDatadogDelegate_whenUsingTaskWithURLRequest_itNotifiesInterceptor() {
-        let notifyRequestMutation  = expectation(description: "Notify request mutation")
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionStart = expectation(description: "Notify interception did start")
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
@@ -253,7 +253,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         feature.intercept(task: task, additionalFirstPartyHosts: nil)
         feature.flush()
-
 
         // Then
         let interception = handler.interceptions.first?.value

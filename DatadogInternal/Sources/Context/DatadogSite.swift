@@ -42,12 +42,14 @@ public enum DatadogSite: String {
 extension DatadogSite {
     public var endpoint: URL {
         switch self {
+        // swiftlint:disable force_unwrapping
         case .us1: return URL(string: "https://browser-intake-datadoghq.com/")!
         case .us3: return URL(string: "https://browser-intake-us3-datadoghq.com/")!
         case .us5: return URL(string: "https://browser-intake-us5-datadoghq.com/")!
         case .eu1: return URL(string: "https://browser-intake-datadoghq.eu/")!
         case .ap1: return URL(string: "https://browser-intake-ap1-datadoghq.com/")!
         case .us1_fed: return URL(string: "https://browser-intake-ddog-gov.com/")!
+        // swiftlint:enable force_unwrapping
         }
     }
 }

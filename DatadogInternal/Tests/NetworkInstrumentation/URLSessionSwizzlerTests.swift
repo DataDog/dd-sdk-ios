@@ -10,7 +10,7 @@ import TestUtilities
 
 class URLSessionSwizzlerTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
-    private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: SingleFeatureCoreMock<NetworkInstrumentationFeature>!
     private var handler: URLSessionHandlerMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -72,7 +72,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     // MARK: - Interception Flow
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLRequestAndCompletion_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
-        let notifyRequestMutation  = expectation(description: "Notify request mutation")
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionStart = expectation(description: "Notify interception did start")
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let completionHandlerCalled = expectation(description: "Call completion handler")
@@ -92,9 +92,9 @@ class URLSessionSwizzlerTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        session.dataTask(with: URLRequest(url: url)) { _, _, _ in
-            completionHandlerCalled.fulfill()
-        }.resume()
+        session
+            .dataTask(with: URLRequest(url: url)) { _, _, _ in completionHandlerCalled.fulfill() }
+            .resume()
 
         // Then
         wait(for: [completionHandlerCalled], timeout: 1)
@@ -113,7 +113,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     }
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLAndCompletion_itNotifiesTaskCreationAndCompletionAndModifiesTheRequestOnlyPriorToIOS13() throws {
-        let notifyRequestMutation  = expectation(description: "Notify request mutation")
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
         if #available(iOS 13.0, *) {
             notifyRequestMutation.isInverted = true
         }
@@ -132,9 +132,9 @@ class URLSessionSwizzlerTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
-        session.dataTask(with: URL.mockRandom()) { _, _, _ in
-            completionHandlerCalled.fulfill()
-        }.resume()
+        session
+            .dataTask(with: URL.mockRandom()) { _, _, _ in completionHandlerCalled.fulfill() }
+            .resume()
 
         // Then
         wait(
@@ -158,7 +158,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     }
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURLRequest_itNotifiesCreationAndCompletionAndModifiesTheRequest() throws {
-        let notifyRequestMutation  = expectation(description: "Notify request mutation")
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
         let notifyInterceptionStart = expectation(description: "Notify interception did start")
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
@@ -196,7 +196,7 @@ class URLSessionSwizzlerTests: XCTestCase {
     }
 
     func testGivenURLSessionWithDDURLSessionDelegate_whenUsingTaskWithURL_itNotifiesCreationAndCompletionAndDoesNotModifyTheRequest() throws {
-        let notifyRequestMutation  = expectation(description: "Notify request mutation")
+        let notifyRequestMutation = expectation(description: "Notify request mutation")
         notifyRequestMutation.isInverted = true
         let notifyInterceptionStart = expectation(description: "Notify interception did start")
         let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
@@ -280,7 +280,8 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, expectedResponse.statusCode)
             XCTAssertNil(error)
             completionHandlersCalled.fulfill()
-        }.resume()
+        }
+        .resume()
 
         let url2: URL = .mockRandom()
         session.dataTask(with: url2) { data, response, error in
@@ -288,7 +289,8 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, expectedResponse.statusCode)
             XCTAssertNil(error)
             completionHandlersCalled.fulfill()
-        }.resume()
+        }
+        .resume()
 
         let url3: URL = .mockRandom()
         session
@@ -335,7 +337,8 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertNil(response)
             XCTAssertEqual((error! as NSError).localizedDescription, "some error")
             completionHandlersCalled.fulfill()
-        }.resume()
+        }
+        .resume()
 
         let url2: URL = .mockRandom()
         session.dataTask(with: url2) { data, response, error in
@@ -343,7 +346,8 @@ class URLSessionSwizzlerTests: XCTestCase {
             XCTAssertNil(response)
             XCTAssertEqual((error! as NSError).localizedDescription, "some error")
             completionHandlersCalled.fulfill()
-        }.resume()
+        }
+        .resume()
 
         let url3: URL = .mockRandom()
         session

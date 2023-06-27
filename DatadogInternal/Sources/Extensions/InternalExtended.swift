@@ -8,7 +8,6 @@ import Foundation
 
 /// Type that acts as a generic extension point for all `InternalExtended` types.
 public struct InternalExtension<ExtendedType> {
-
     /// Stores the type or meta-type of any extended type.
     public var type: ExtendedType
 

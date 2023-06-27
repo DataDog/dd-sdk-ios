@@ -31,7 +31,7 @@ public struct Logs {
 
         /// Overrides the date provider.
         internal var dateProvider: DateProvider = SystemDateProvider()
-        
+
         /// Overrides the event mapper
         internal var _internalEventMapper: LogEventMapper? = nil
 

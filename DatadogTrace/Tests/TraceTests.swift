@@ -11,7 +11,7 @@ import TestUtilities
 
 class TraceTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var config: Trace.Configuration!
+    private var config: Trace.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         core = FeatureRegistrationCoreMock()
@@ -117,6 +117,7 @@ class TraceTests: XCTestCase {
 
     func testWhenEnabledWithURLSessionTracking() throws {
         // Given
+        // swiftlint:disable opening_brace
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"])
@@ -125,6 +126,7 @@ class TraceTests: XCTestCase {
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]])
             ) },
         ])
+        // swiftlint:enable opening_brace
 
         // When
         Trace.enable(with: config, in: core)
@@ -144,6 +146,7 @@ class TraceTests: XCTestCase {
     func testWhenEnabledWithURLSessionTrackingAndCustomSampleRate() throws {
         // Given
         let random: Float = .mockRandom(min: 0, max: 100)
+        // swiftlint:disable opening_brace
         oneOf([
             { self.config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: ["example.com"], sampleRate: random)
@@ -152,6 +155,7 @@ class TraceTests: XCTestCase {
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: ["example.com": [.datadog, .b3]], sampleRate: random)
             ) },
         ])
+        // swiftlint:enable opening_brace
 
         // When
         Trace.enable(with: config, in: core)
@@ -226,10 +230,12 @@ class TraceTests: XCTestCase {
         // Given
         let random: Float = .mockRandom(min: 0, max: 100)
         config.sampleRate = random
+        // swiftlint:disable opening_brace
         oneOf([
             { self.config.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: random)) },
             { self.config.urlSessionTracking = .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: [:], sampleRate: random)) },
         ])
+        // swiftlint:enable opening_brace
         config.debugSDK = true
 
         // When
@@ -247,10 +253,12 @@ class TraceTests: XCTestCase {
         // Given
         let random: Float = .mockRandom(min: 0, max: 100)
         config.sampleRate = random
+        // swiftlint:disable opening_brace
         oneOf([
             { self.config.urlSessionTracking = .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: random)) },
             { self.config.urlSessionTracking = .init(firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: [:], sampleRate: random)) },
         ])
+        // swiftlint:enable opening_brace
         config.debugSDK = false
 
         // When

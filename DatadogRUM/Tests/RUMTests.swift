@@ -11,7 +11,7 @@ import TestUtilities
 
 class RUMTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var config: RUM.Configuration!
+    private var config: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
         core = FeatureRegistrationCoreMock()

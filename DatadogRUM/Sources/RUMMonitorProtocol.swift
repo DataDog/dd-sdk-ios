@@ -34,7 +34,6 @@ public enum RUMErrorSource {
     case custom
 }
 
-
 /// Public interface of RUM monitor for manual interaction with RUM feature.
 public protocol RUMMonitorProtocol: AnyObject {
     // MARK: - attributes
@@ -45,7 +44,7 @@ public protocol RUMMonitorProtocol: AnyObject {
     ///   nesting attribute values using dot `.` syntax.
     ///   - value: any value that conforms to `Encodable`. See `AttributeValue` documentation
     ///   for information about nested encoding containers limitation.
-    func addAttribute(forKey key: AttributeKey,value: AttributeValue)
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue)
 
     /// Removes an attribute from next RUM events.
     /// Events created prior to this call will not lose this attribute.
@@ -325,24 +324,24 @@ internal class NOPMonitor: RUMMonitorProtocol {
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
     func removeAttribute(forKey key: AttributeKey) { warn() }
     func stopSession() { warn() }
-    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopView(viewController: UIViewController, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startView(key: String, name: String?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopView(key: String, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func startView(viewController: UIViewController, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(viewController: UIViewController, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startView(key: String, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopView(key: String, attributes: [AttributeKey: AttributeValue]) { warn() }
     func addTiming(name: String) { warn() }
-    func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue], file: StaticString?, line: UInt?) { warn() }
-    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func addResourceMetrics(resourceKey: String, metrics: URLSessionTaskMetrics, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func addAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func startAction(type: RUMActionType, name: String, attributes: [AttributeKey : AttributeValue]) { warn() }
-    func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey : AttributeValue]) { warn() }
+    func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) { warn() }
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func addResourceMetrics(resourceKey: String, metrics: URLSessionTaskMetrics, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopResource(resourceKey: String, response: URLResponse, size: Int64?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopResource(resourceKey: String, statusCode: Int?, kind: RUMResourceType, size: Int64?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopResourceWithError(resourceKey: String, error: Error, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopResourceWithError(resourceKey: String, message: String, type: String?, response: URLResponse?, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) { warn() }
+    func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) { warn() }
     func addFeatureFlagEvaluation(name: String, value: Encodable) { warn() }
     var debug: Bool {
         set { warn() }

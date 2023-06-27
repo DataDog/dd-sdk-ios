@@ -23,7 +23,7 @@ class LogsTests: XCTestCase {
     func testConfigurationOverrides() throws {
         // Given
         let customEndpoint: URL = .mockRandom()
-        
+
         let core = SingleFeatureCoreMock<LogsFeature>()
 
         // When

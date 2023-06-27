@@ -8,9 +8,11 @@ import Foundation
 import DatadogInternal
 
 // Export `DDURLSessionDelegate` elements to be available with `import DatadogTrace`:
+// swiftlint:disable duplicate_imports
 @_exported import class DatadogInternal.DatadogURLSessionDelegate
 @_exported import typealias DatadogInternal.DDURLSessionDelegate
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
+// swiftlint:enable duplicate_imports
 
 extension Trace {
     /// Trace feature configuration.
@@ -131,7 +133,7 @@ extension Trace {
         public init(
             sampleRate: Float = 100,
             service: String? = nil,
-            tags: [String : Encodable]? = nil,
+            tags: [String: Encodable]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,
             bundleWithRUM: Bool = true,
             sendNetworkInfo: Bool = false,
