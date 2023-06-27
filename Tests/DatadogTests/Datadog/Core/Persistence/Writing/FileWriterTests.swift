@@ -55,6 +55,46 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"{"meta3":"metaValue3"}"#.utf8Data)
     }
 
+    func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: temporaryDirectory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: DataEncryptionMock(
+                encrypt: { data in
+                    "encrypted".utf8Data + data + "encrypted".utf8Data
+                }
+            ),
+            forceNewFile: false
+        )
+
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"]) // skipped metadata here
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+
+        XCTAssertEqual(try temporaryDirectory.files().count, 1)
+        let stream = try temporaryDirectory.files()[0].stream()
+
+        let reader = DataBlockReader(input: stream)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key1":"value1"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"encrypted{"meta1":"metaValue1"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key2":"value2"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key3":"value3"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"encrypted{"meta3":"metaValue3"}encrypted"#.utf8Data)
+    }
+
     func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
