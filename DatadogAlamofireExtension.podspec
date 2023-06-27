@@ -1,7 +1,6 @@
 Pod::Spec.new do |s|
-  s.name         = "DatadogSDKAlamofireExtension"
-  s.module_name  = "DatadogAlamofireExtension"
-  s.version      = "1.21.0"
+  s.name         = "DatadogAlamofireExtension"
+  s.version      = "1.20.0"
   s.summary      = "An Official Extensions of Datadog Swift SDK for Alamofire."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -13,8 +12,6 @@ Pod::Spec.new do |s|
     "Mert Buran" => "mert.buran@datadoghq.com",
     "Maxime Epain" => "maxime.epain@datadoghq.com"
   }
-
-  s.deprecated_in_favor_of = "DatadogAlamofireExtension"
 
   s.swift_version      = '5.1'
   s.ios.deployment_target = '11.0'
