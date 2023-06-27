@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "TestUtilities"
-  s.version      = "1.20.0"
+  s.version      = "1.21.0"
   s.summary      = "Datadog Testing Utilities. This module is for internal testing and should not be published."
   
   s.homepage     = "https://www.datadoghq.com"

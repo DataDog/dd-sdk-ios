@@ -18,6 +18,25 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(String(TraceID(rawValue: .max), representation: .hexadecimal), "ffffffffffffffff")
     }
 
+    func testTo16CharHexadecimalStringConversion() {
+        XCTAssertEqual(String(TraceID(rawValue: 0), representation: .hexadecimal16Chars), "0000000000000000")
+        XCTAssertEqual(String(TraceID(rawValue: 1), representation: .hexadecimal16Chars), "0000000000000001")
+        XCTAssertEqual(String(TraceID(rawValue: 15), representation: .hexadecimal16Chars), "000000000000000f")
+        XCTAssertEqual(String(TraceID(rawValue: 16), representation: .hexadecimal16Chars), "0000000000000010")
+        XCTAssertEqual(String(TraceID(rawValue: 123), representation: .hexadecimal16Chars), "000000000000007b")
+        XCTAssertEqual(String(TraceID(rawValue: 123_456), representation: .hexadecimal16Chars), "000000000001e240")
+        XCTAssertEqual(String(TraceID(rawValue: .max), representation: .hexadecimal16Chars), "ffffffffffffffff")
+    }
+
+    func testTo32CharHexadecimalStringConversion() {
+        XCTAssertEqual(String(TraceID(rawValue: 0), representation: .hexadecimal32Chars), "00000000000000000000000000000000")
+        XCTAssertEqual(String(TraceID(rawValue: 1), representation: .hexadecimal32Chars), "00000000000000000000000000000001")
+        XCTAssertEqual(String(TraceID(rawValue: 15), representation: .hexadecimal32Chars), "0000000000000000000000000000000f")
+        XCTAssertEqual(String(TraceID(rawValue: 16), representation: .hexadecimal32Chars), "00000000000000000000000000000010")
+        XCTAssertEqual(String(TraceID(rawValue: 123), representation: .hexadecimal32Chars), "0000000000000000000000000000007b")
+        XCTAssertEqual(String(TraceID(rawValue: 123_456), representation: .hexadecimal32Chars), "0000000000000000000000000001e240")
+        XCTAssertEqual(String(TraceID(rawValue: .max), representation: .hexadecimal32Chars), "0000000000000000ffffffffffffffff")
+    }
     func testToDecimalStringConversion() {
         XCTAssertEqual(String(TraceID(rawValue: 0)), "0")
         XCTAssertEqual(String(TraceID(rawValue: 1)), "1")
