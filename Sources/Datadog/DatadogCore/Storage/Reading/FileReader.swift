@@ -59,13 +59,6 @@ internal final class FileReader: Reader {
         }
 
         return try reader.all()
-            // get event blocks only
-            .compactMap {
-                switch $0.type {
-                case .event, .eventMetadata:
-                    return $0
-                }
-            }
             .compactMap { dataBlock in
                 do {
                     return try decrypt(dataBlock: dataBlock)
