@@ -1,5 +1,11 @@
 # Unreleased
 
+# 1.21.0 / 27-07-2023
+- [BUGFIX] Fix TracingUUID string format. See [#1311][] (Thanks [@changm4n][])
+- [BUGFIX] Rename _Datadog_Private to DatadogPrivate. See [#1331] (Thanks [@alexfanatics][])
+- [IMPROVEMENT] Add context to crash when there's an active view. See [#1315][]
+
+# 1.20.0 / 01-06-2023
 - [BUGFIX] Use targetTimestamp as reference to calculate FPS for variable refresh rate displays. See [#1272][]
 
 # 1.19.0 / 26-04-2023
@@ -463,6 +469,9 @@
 [#1259]: https://github.com/DataDog/dd-sdk-ios/pull/1259
 [#1264]: https://github.com/DataDog/dd-sdk-ios/pull/1264
 [#1272]: https://github.com/DataDog/dd-sdk-ios/pull/1272
+[#1311]: https://github.com/DataDog/dd-sdk-ios/pull/1311
+[#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
+[#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
@@ -490,3 +499,5 @@
 [@avdlee]: https://github.com/AvdLee
 [@dfed]: https://github.com/dfed
 [@cltnschlosser]: https://github.com/cltnschlosser
+[@alexfanatics]: https://github.com/alexfanatics
+[@changm4n]: https://github.com/changm4n

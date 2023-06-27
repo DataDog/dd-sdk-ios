@@ -16,11 +16,11 @@ class EnrichedRecordTests: XCTestCase {
 
         // When
         let enrichedRecords1 = EnrichedRecord(
-            rumContext: .mockAny(),
+            context: .mockAny(),
             records: recordsWithFSR
         )
         let enrichedRecords2 = EnrichedRecord(
-            rumContext: .mockAny(),
+            context: .mockAny(),
             records: recordsWithNoFSR
         )
 
@@ -35,7 +35,7 @@ class EnrichedRecordTests: XCTestCase {
 
         // When
         let enrichedRecords = EnrichedRecord(
-            rumContext: .mockAny(),
+            context: .mockAny(),
             records: records
         )
 

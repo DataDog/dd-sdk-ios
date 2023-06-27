@@ -52,7 +52,6 @@ internal class ViewController: UIViewController {
         sessionReplayController = SessionReplay.initialize(
             with: SessionReplayConfiguration()
         )
-        sessionReplayController.start()
         #endif
     }
 

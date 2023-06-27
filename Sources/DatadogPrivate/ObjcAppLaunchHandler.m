@@ -36,7 +36,7 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval);
 static __dd_private_AppLaunchHandler *_shared;
 
 + (void)load {
-    // This is called at the `_Datadog_Private` load time, keep the work minimal
+    // This is called at the `DatadogPrivate` load time, keep the work minimal
     _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
                                        loadTime:CFAbsoluteTimeGetCurrent()];
 

@@ -9,9 +9,7 @@ import Datadog
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
-    func start()
-    func stop()
-    func change(privacy: SessionReplayPrivacy)
+    func captureNextRecord(_ recorderContext: Recorder.Context)
 }
 
 /// The main engine and the heart beat of Session Replay.
@@ -22,19 +20,38 @@ internal protocol Recording {
 internal class Recorder: Recording {
     /// The context of recording next snapshot.
     struct Context: Equatable {
-        /// The time of requesting this snapshot.
-        let date: Date
         /// The content recording policy from the moment of requesting snapshot.
         let privacy: SessionReplayPrivacy
-        /// The RUM context from the moment of requesting snapshot.
-        let rumContext: RUMContext
+        /// Current RUM application ID - standard UUID string, lowecased.
+        let applicationID: String
+        /// Current RUM session ID - standard UUID string, lowecased.
+        let sessionID: String
+        /// Current RUM view ID - standard UUID string, lowecased.
+        let viewID: String
+        /// Current view related server time offset
+        let viewServerTimeOffset: TimeInterval?
+        /// The time of requesting this snapshot.
+        let date: Date
+
+        internal init(
+            privacy: SessionReplayPrivacy,
+            applicationID: String,
+            sessionID: String,
+            viewID: String,
+            viewServerTimeOffset: TimeInterval?,
+            date: Date = Date()
+        ) {
+            self.privacy = privacy
+            self.applicationID = applicationID
+            self.sessionID = sessionID
+            self.viewID = viewID
+            self.viewServerTimeOffset = viewServerTimeOffset
+            self.date = date
+        }
     }
 
     /// Swizzles `UIApplication` for recording touch events.
     private let uiApplicationSwizzler: UIApplicationSwizzler
-
-    /// Schedules view tree captures.
-    private let scheduler: Scheduler
     /// Captures view tree snapshot (an intermediate representation of the view tree).
     private let viewTreeSnapshotProducer: ViewTreeSnapshotProducer
     /// Captures touch snapshot.
@@ -42,19 +59,8 @@ internal class Recorder: Recording {
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
 
-    /// Notifies on RUM context changes through integration with `DatadogCore`.
-    private let rumContextObserver: RUMContextObserver
-    /// Last received RUM context (or `nil` if RUM session is not sampled).
-    /// It's synchronized through `scheduler.queue` (main thread).
-    private var currentRUMContext: RUMContext?
-    /// Current content recording policy for creating snapshots.
-    private var currentPrivacy: SessionReplayPrivacy
-
     convenience init(
-        configuration: SessionReplayConfiguration,
-        rumContextObserver: RUMContextObserver,
-        processor: Processing,
-        scheduler: Scheduler = MainThreadScheduler(interval: 0.1)
+        processor: Processing
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -66,10 +72,7 @@ internal class Recorder: Recording {
         )
 
         self.init(
-            configuration: configuration,
-            rumContextObserver: rumContextObserver,
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
-            scheduler: scheduler,
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: processor
@@ -77,30 +80,15 @@ internal class Recorder: Recording {
     }
 
     init(
-        configuration: SessionReplayConfiguration,
-        rumContextObserver: RUMContextObserver,
         uiApplicationSwizzler: UIApplicationSwizzler,
-        scheduler: Scheduler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: Processing
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
-        self.scheduler = scheduler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
-        self.rumContextObserver = rumContextObserver
-        self.currentPrivacy = configuration.privacy
-
-        scheduler.schedule { [weak self] in
-            self?.captureNextRecord()
-        }
-
-        rumContextObserver.observe(on: scheduler.queue) { [weak self] rumContext in
-            self?.currentRUMContext = rumContext
-        }
-
         uiApplicationSwizzler.swizzle()
     }
 
@@ -110,35 +98,10 @@ internal class Recorder: Recording {
 
     // MARK: - Recording
 
-    func start() {
-        scheduler.start()
-    }
-
-    func stop() {
-        scheduler.stop()
-    }
-
-    func change(privacy: SessionReplayPrivacy) {
-        scheduler.queue.run {
-            self.currentPrivacy = privacy
-        }
-    }
-
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
-    private func captureNextRecord() {
+    func captureNextRecord(_ recorderContext: Context) {
         do {
-            guard let rumContext = currentRUMContext else {
-                // The RUM context was not yet received or current RUM session is not sampled.
-                return
-            }
-
-            let recorderContext = Context(
-                date: Date(), // TODO: RUMM-2688 Synchronize SR snapshot timestamps with current RUM time (+ NTP offset)
-                privacy: currentPrivacy,
-                rumContext: rumContext
-            )
-
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
                 return
