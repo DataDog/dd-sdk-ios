@@ -83,9 +83,9 @@ extension String {
         case .hexadecimal:
             self.init(traceID.rawValue, radix: 16)
         case .hexadecimal16Chars:
-            self.init(format: "%016x", traceID.rawValue)
+            self.init(format: "%016llx", traceID.rawValue)
         case .hexadecimal32Chars:
-            self.init(format: "%032x", traceID.rawValue)
+            self.init(format: "%032llx", traceID.rawValue)
         }
     }
 }
