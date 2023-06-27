@@ -65,12 +65,6 @@ internal class ViewController: UIViewController {
         createInstrumentedAlamofireSession()
 
         addLabel()
-
-        #if os(iOS)
-        sessionReplayController = SessionReplay.initialize(
-            with: SessionReplayConfiguration()
-        )
-        #endif
     }
 
     private func createInstrumentedAlamofireSession() {
