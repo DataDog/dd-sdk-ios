@@ -125,11 +125,27 @@ sr-models-verify:
 
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:
-		@cd tools/api-surface/ && swift build --configuration release
 		@echo "Generating api-surface-swift"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "Datadog iOS" --path . > api-surface-swift
+		@cd tools/api-surface && \
+			swift run api-surface spm \
+			--path ../../ \
+			--library-name Datadog \
+			--library-name DatadogLogs \
+			--library-name DatadogTrace \
+			--library-name DatadogRUM \
+			--library-name DatadogSessionReplay \
+			--library-name DatadogCrashReporting \
+			--library-name DatadogWebViewTracking \
+			> ../../api-surface-swift && \
+			cd -
+
 		@echo "Generating api-surface-objc"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "DatadogObjc iOS" --path . > api-surface-objc
+		@cd tools/api-surface && \
+			swift run api-surface spm \
+			--path ../../ \
+			--library-name DatadogObjc \
+			> ../../api-surface-objc && \
+			cd -
 
 # Generate Datadog monitors terraform definition for E2E tests:
 e2e-monitors-generate:
