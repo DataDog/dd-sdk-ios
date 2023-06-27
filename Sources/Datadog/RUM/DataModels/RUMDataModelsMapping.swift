@@ -57,3 +57,23 @@ internal extension RUMViewEvent.Source {
         }
     }
 }
+
+internal extension RUMViewEvent {
+    /// Metadata associated with the `RUMViewEvent`.
+    /// It may be used to filter out the `RUMViewEvent` from the batch.
+    struct Metadata: Codable {
+        let id: String
+        let documentVersion: Int64
+
+        private enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case documentVersion = "document_version"
+        }
+    }
+
+    /// Creates `Metadata` from the given `RUMViewEvent`.
+    /// - Returns: The `Metadata` for the given `RUMViewEvent`.
+    func metadata() -> Metadata {
+        return Metadata(id: view.id, documentVersion: dd.documentVersion)
+    }
+}
