@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 #if SPM_BUILD
-import _Datadog_Private
+import DatadogPrivate
 #endif
 
 internal struct LaunchTimePublisher: ContextValuePublisher {

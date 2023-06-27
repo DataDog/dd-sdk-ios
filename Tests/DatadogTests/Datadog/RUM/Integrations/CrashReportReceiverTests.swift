@@ -501,6 +501,16 @@ class CrashReportReceiverTests: XCTestCase {
             && sendRUMErrorEvent.model.view.id == lastRUMViewEvent.view.id,
             "The `RUMErrorEvent` sent must be linked to the same RUM Session as the last `RUMViewEvent`."
         )
+
+        XCTAssertNotNil(sendRUMErrorEvent.context, "It must contain context details")
+        XCTAssertNotNil(lastRUMViewEvent.context, "It must contain context details")
+
+        DDAssertJSONEqual(
+            AnyEncodable(sendRUMErrorEvent.context?.contextInfo),
+            AnyEncodable(lastRUMViewEvent.context?.contextInfo),
+            "The `RUMErrorEvent` sent must be include the context of the last `RUMViewEvent`."
+        )
+
         XCTAssertTrue(
             sendRUMErrorEvent.model.error.isCrash == true, "The `RUMErrorEvent` sent must be marked as crash."
         )
@@ -659,6 +669,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.binaryImages], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
+            XCTAssertNil(sentRUMView.context, "It musn't contain context as there was no last active view")
         }
 
         try test(

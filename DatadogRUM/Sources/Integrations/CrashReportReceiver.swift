@@ -331,7 +331,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             application: .init(id: lastRUMView.application.id),
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
-            context: nil,
+            context: lastRUMView.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
             display: nil,
