@@ -27,23 +27,18 @@ internal struct FileWriter: Writer {
     ///  - metadata: Encodable metadata to write.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         do {
-            let encodedValue = try encode(encodable: value, blockType: .event)
-            let encodedMetadata: Data?
+            var encoded = try encode(encodable: value, blockType: .event)
             if let metadata = metadata {
-                encodedMetadata = try encode(encodable: metadata, blockType: .eventMetadata)
-            } else {
-                encodedMetadata = nil
+                let encodedMetadata = try encode(encodable: metadata, blockType: .eventMetadata)
+                encoded.append(encodedMetadata)
             }
 
             // Make sure both event and event metadata are written to the same file.
             // This is to avoid a situation where event is written to one file and event metadata to another.
             // If this happens, the reader will not be able to match event with its metadata.
-            let writeSize = UInt64(encodedValue.count + (encodedMetadata?.count ?? 0))
+            let writeSize = UInt64(encoded.count)
             let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
-            try file.append(data: encodedValue)
-            if let encodedMetadata = encodedMetadata {
-                try file.append(data: encodedMetadata)
-            }
+            try file.append(data: encoded)
         } catch {
             DD.logger.error("Failed to write data", error: error)
             DD.telemetry.error("Failed to write data to file", error: error)
