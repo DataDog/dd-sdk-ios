@@ -33,7 +33,7 @@ internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -
     )
 }
 
-internal struct RUMViewEventsFilter: EventsFilter {
+internal struct RUMViewEventsFilter {
     let decoder: JSONDecoder
 
     init(decoder: JSONDecoder = JSONDecoder()) {
@@ -78,7 +78,7 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
     /// The RUM request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    let eventsFilter: EventsFilter
+    let eventsFilter: RUMViewEventsFilter
 
     func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         var tags = [

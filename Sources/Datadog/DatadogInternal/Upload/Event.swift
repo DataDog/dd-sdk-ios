@@ -6,15 +6,6 @@
 
 import Foundation
 
-/// Interface that allows filtering of the events before they are sent
-/// to the server.
-public protocol EventsFilter {
-    /// Filters the events.
-    /// - Parameter events: The events to be filtered.
-    /// - Returns: The filtered events.
-    func filter(events: [Event]) -> [Event]
-}
-
 /// Struct representing a single event.
 public struct Event: Equatable {
     /// Data representing the event.
