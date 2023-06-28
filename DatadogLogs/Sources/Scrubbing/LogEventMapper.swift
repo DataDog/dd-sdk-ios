@@ -24,14 +24,14 @@ public protocol LogEventMapper {
 /// Synchronous log event mapper.
 ///
 /// The class take a flat-map closure parameter for event scrubbing
-public final class SyncLogEventMapper: LogEventMapper {
+internal final class SyncLogEventMapper: LogEventMapper {
     let mapper: (LogEvent) -> LogEvent?
 
-    public init(_ mapper: @escaping (LogEvent) -> LogEvent?) {
+    init(_ mapper: @escaping (LogEvent) -> LogEvent?) {
         self.mapper = mapper
     }
 
-    public func map(event: LogEvent, callback: @escaping (LogEvent) -> Void) {
+    func map(event: LogEvent, callback: @escaping (LogEvent) -> Void) {
         mapper(event).map(callback)
     }
 }
