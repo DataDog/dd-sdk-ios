@@ -268,13 +268,20 @@ class FileWriterTests: XCTestCase {
             ioInterruptionQueue.async { try? file?.makeReadWrite() }
         }
 
-        struct Foo: Codable {
+        struct Foo: Codable, Equatable {
             var foo = "bar"
         }
 
+        struct Metadata: Codable, Equatable {
+            var meta = "data"
+        }
+
+        let foo = Foo()
+        let metadata = Metadata()
+
         // Write 300 of `Foo`s and interrupt writes randomly
         (0..<300).forEach { _ in
-            writer.write(value: Foo())
+            writer.write(value: foo, metadata: metadata)
             randomlyInterruptIO(for: try? temporaryDirectory.files().first)
         }
 
@@ -287,11 +294,20 @@ class FileWriterTests: XCTestCase {
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
-        let events = try blocks.map { try jsonDecoder.decode(Foo.self, from: $0.data) }
+        let eventGenerator = try EventGenerator(dataBlocks: blocks)
+        let events = eventGenerator.map { $0 }
 
         // Assert that some (including all) `Foo`s were written
         XCTAssertGreaterThan(events.count, 0)
         XCTAssertLessThanOrEqual(events.count, 300)
+        for event in events {
+            let actualFoo = try jsonDecoder.decode(Foo.self, from: event.data)
+            XCTAssertEqual(actualFoo, foo)
+
+            XCTAssertNotNil(event.metadata)
+            let actualMetadata = try jsonDecoder.decode(Metadata.self, from: event.metadata!)
+            XCTAssertEqual(actualMetadata, metadata)
+        }
     }
 
     func testItWritesEncryptedDataToSingleFile() throws {
