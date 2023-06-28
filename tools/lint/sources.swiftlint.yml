@@ -99,6 +99,7 @@ included:
   - ../../DatadogSessionReplay/Sources
   - ../../DatadogCrashReporting/Sources
   - ../../DatadogWebViewTracking/Sources
+  - ../../DatadogObjc/Sources
   - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources
