@@ -73,7 +73,6 @@ internal class Generator {
                 }()
             )
             return [singleItem]
-
         } else if let substructure = dictionary.substructure {
             let multipleItems = traverse(dictionaries: substructure, context: context)
             return multipleItems

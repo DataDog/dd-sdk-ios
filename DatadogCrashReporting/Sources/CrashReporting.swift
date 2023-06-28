@@ -18,8 +18,7 @@ import DatadogInternal
 /// Then, verify your configuration by running a test crash and restarting your application.
 ///
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
-public final class CrashReporting
- {
+public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
         do {
@@ -55,9 +54,9 @@ public final class CrashReporting
 /// Then, verify your configuration by running a test crash and restarting your application.
 ///
 /// Your crash reports appear in [Error Tracking](https://app.datadoghq.com/rum/error-tracking).
-@available(swift, obsoleted: 1) @objc(DDCrashReporter)
+@available(swift, obsoleted: 1)
+@objc(DDCrashReporter)
 public final class objc_CrashReporting: NSObject {
-
     /// Initializes the Datadog Crash Reporter.
     @objc
     public static func enable() {
