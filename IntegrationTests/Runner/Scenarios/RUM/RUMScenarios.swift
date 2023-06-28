@@ -154,7 +154,7 @@ final class RUMTapActionScenario: TestScenario {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.uiKitViewsPredicate = Predicate()
-        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         RUM.enable(with: config)
     }
 }
@@ -167,7 +167,7 @@ final class RUMMobileVitalsScenario: TestScenario {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         config.longTaskThreshold = 2.5
         RUM.enable(with: config)
     }
@@ -315,7 +315,7 @@ final class RUMSwiftUIInstrumentationScenario: TestScenario {
         var config = RUM.Configuration(applicationID: "rum-application-id")
         config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         config.uiKitViewsPredicate = Predicate()
-        config.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        config.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         RUM.enable(with: config)
     }
 }
