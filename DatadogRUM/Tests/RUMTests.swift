@@ -81,7 +81,7 @@ class RUMTests: XCTestCase {
     func testWhenEnabledWithAllInstrumentations() throws {
         // Given
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
-        config.uiKitActionsPredicate = UIKitRUMUserActionsPredicateMock()
+        config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
         config.longTaskThreshold = 0.5
 
         // When

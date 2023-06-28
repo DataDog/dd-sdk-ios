@@ -45,7 +45,7 @@ public protocol DDUIKitRUMViewsPredicate: AnyObject {
     func rumView(for viewController: UIViewController) -> DDRUMView?
 }
 
-internal struct UIKitRUMActionsPredicateBridge: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
+internal struct UIKitRUMActionsPredicateBridge: UITouchRUMActionsPredicate & UIPressRUMActionsPredicate {
     let objcPredicate: AnyObject?
 
     init(objcPredicate: DDUITouchRUMActionsPredicate) {

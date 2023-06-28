@@ -940,12 +940,12 @@ class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
 }
 
 #if os(tvOS)
-typealias UIKitRUMUserActionsPredicateMock = UIPressRUMUserActionsPredicateMock
+typealias UIKitRUMActionsPredicateMock = UIPressRUMActionsPredicateMock
 #else
-typealias UIKitRUMUserActionsPredicateMock = UITouchRUMUserActionsPredicateMock
+typealias UIKitRUMActionsPredicateMock = UITouchRUMActionsPredicateMock
 #endif
 
-class UITouchRUMUserActionsPredicateMock: UITouchRUMUserActionsPredicate {
+class UITouchRUMActionsPredicateMock: UITouchRUMActionsPredicate {
     var resultByView: [UIView: RUMAction] = [:]
     var result: RUMAction?
 
@@ -958,7 +958,7 @@ class UITouchRUMUserActionsPredicateMock: UITouchRUMUserActionsPredicate {
     }
 }
 
-class UIPressRUMUserActionsPredicateMock: UIPressRUMUserActionsPredicate {
+class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
     var resultByView: [UIView: RUMAction] = [:]
     var result: RUMAction?
 

@@ -13,13 +13,13 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
 
-    private func touchHandler(with predicate: UITouchRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
+    private func touchHandler(with predicate: UITouchRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> UIKitRUMUserActionsHandler {
         let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
         handler.publish(to: commandSubscriber)
         return handler
     }
 
-    private func pressHandler(with predicate: UIPressRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> UIKitRUMUserActionsHandler {
+    private func pressHandler(with predicate: UIPressRUMActionsPredicate = DefaultUIKitRUMActionsPredicate()) -> UIKitRUMUserActionsHandler {
         let handler = UIKitRUMUserActionsHandler(dateProvider: dateProvider, predicate: predicate)
         handler.publish(to: commandSubscriber)
         return handler
@@ -232,7 +232,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
         let handler = touchHandler(
-            with: MockUIKitRUMUserActionsPredicate(
+            with: MockUIKitRUMActionsPredicate(
                 actionOverride: (name: "foobar", attributes: mockAttributes)
             )
         )
@@ -256,7 +256,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     func testGivenUserActionPredicateReturnsNil_itDoesntSendTapAction() {
         // Given
         let handler = touchHandler(
-            with: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
+            with: MockUIKitRUMActionsPredicate(actionOverride: nil)
         )
         let view = UIButton()
             .attached(to: mockAppWindow)
@@ -390,7 +390,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
         // Given
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
         let handler = pressHandler(
-            with: MockUIKitRUMUserActionsPredicate(
+            with: MockUIKitRUMActionsPredicate(
                 actionOverride: (name: "foobar", attributes: mockAttributes)
             )
         )
@@ -414,7 +414,7 @@ class UIKitRUMUserActionsHandlerTests: XCTestCase {
     func testGivenUserActionPredicateReturnsNil_itDoesntSendClickAction() {
         // Given
         let handler = pressHandler(
-            with: MockUIKitRUMUserActionsPredicate(actionOverride: nil)
+            with: MockUIKitRUMActionsPredicate(actionOverride: nil)
         )
         let view = UIButton()
             .attached(to: mockAppWindow)
@@ -449,7 +449,7 @@ private extension UIView {
 /// The mock the keyboard window by having the class name contain "UIRemoteKeyboardWindow" string.
 private class MockUIRemoteKeyboardWindow: UIWindow {}
 
-private class MockUIKitRUMUserActionsPredicate: UITouchRUMUserActionsPredicate & UIPressRUMUserActionsPredicate {
+private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPressRUMActionsPredicate {
     private let actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?
 
     init(actionOverride: (name: String, attributes: [AttributeKey: AttributeValue])?) {

@@ -30,7 +30,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
     init(
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
-        uiKitRUMActionsPredicate: UIKitRUMUserActionsPredicate?,
+        uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         longTaskThreshold: TimeInterval?,
         dateProvider: DateProvider
     ) {
