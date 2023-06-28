@@ -3344,7 +3344,7 @@
 				613BE07C25643C100015216C /* DataStorage */,
 			);
 			name = DatadogBenchmarkTests;
-			path = ../Tests/DatadogBenchmarkTests;
+			path = ../BenchmarkTests;
 			sourceTree = "<group>";
 		};
 		61441C8F2461A648003D8BB8 /* Utils */ = {
