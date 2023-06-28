@@ -129,7 +129,7 @@ api-surface:
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
-			--library-name Datadog \
+			--library-name DatadogCore \
 			--library-name DatadogLogs \
 			--library-name DatadogTrace \
 			--library-name DatadogRUM \
