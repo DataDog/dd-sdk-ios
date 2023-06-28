@@ -63,7 +63,6 @@
     configuration.bundle = [NSBundle mainBundle];
     configuration.batchSize = DDBatchSizeMedium;
     configuration.uploadFrequency = DDUploadFrequencyAverage;
-    configuration.additionalConfiguration = @{};
     [configuration setEncryption:[CustomDDDataEncryption new]];
 }
 

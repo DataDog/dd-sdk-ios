@@ -24,7 +24,6 @@ extension Datadog.Configuration {
         bundle: Bundle = .main,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
-        additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
         encryption: DataEncryption? = nil,
         serverDateProvider: ServerDateProvider? = nil
@@ -37,7 +36,6 @@ extension Datadog.Configuration {
             bundle: bundle,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
-            additionalConfiguration: additionalConfiguration,
             proxyConfiguration: proxyConfiguration,
             encryption: encryption,
             serverDateProvider: serverDateProvider

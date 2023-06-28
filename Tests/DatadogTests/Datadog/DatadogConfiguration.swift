@@ -92,11 +92,13 @@ class DatadogConfigurationTests: XCTestCase {
         )
         configuration.encryption = DataEncryptionMock()
         configuration.serverDateProvider = ServerDateProviderMock()
-        configuration.additionalConfiguration = [
-            CrossPlatformAttributes.ddsource: "cp-source",
-            CrossPlatformAttributes.variant: "cp-variant",
-            CrossPlatformAttributes.sdkVersion: "cp-version"
-        ]
+        configuration._internal_mutation {
+            $0.additionalConfiguration = [
+                CrossPlatformAttributes.ddsource: "cp-source",
+                CrossPlatformAttributes.variant: "cp-variant",
+                CrossPlatformAttributes.sdkVersion: "cp-version"
+            ]
+        }
 
         XCTAssertEqual(configuration.batchSize, .small)
         XCTAssertEqual(configuration.uploadFrequency, .frequent)

@@ -221,13 +221,6 @@ public class DDConfiguration: NSObject {
         sdkConfiguration.serverDateProvider = DDServerDateProviderBridge(objcProvider: serverDateProvider)
     }
 
-    /// Sets additional configuration attributes.
-    /// This can be used to tweak internal features of the SDK.
-    @objc public var additionalConfiguration: [String: Any] {
-        get { sdkConfiguration.additionalConfiguration }
-        set { sdkConfiguration.additionalConfiguration = newValue }
-    }
-
     /// The bundle object that contains the current executable.
     @objc public var bundle: Bundle {
         get { sdkConfiguration.bundle }

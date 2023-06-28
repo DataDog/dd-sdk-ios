@@ -78,15 +78,15 @@ public struct Datadog {
         /// This can lead to significant time shift in RUM sessions or distributed traces.
         public var serverDateProvider: ServerDateProvider
 
-        /// Sets additional configuration attributes.
-        /// This can be used to tweak internal features of the SDK.
-        public var additionalConfiguration: [String: Any]
-
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
         /// Overrides the default process information.
         internal var processInfo: ProcessInfo = .processInfo
+
+        /// Sets additional configuration attributes.
+        /// This can be used to tweak internal features of the SDK.
+        internal var additionalConfiguration: [String: Any] = [:]
 
         /// Overrides the date provider.
         internal var dateProvider: DateProvider = SystemDateProvider()
@@ -115,9 +115,6 @@ public struct Datadog {
         ///                                 This value impacts the frequency of performing network requests by the SDK.
         ///                                 `.average` by default.
         ///
-        ///   - additionalConfiguration:    Additional configuration attributes.
-        ///                                 This can be used to tweak internal features of the SDK.
-        ///
         ///   - proxyConfiguration:         A proxy configuration attributes.
         ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
         ///
@@ -137,7 +134,6 @@ public struct Datadog {
             bundle: Bundle = .main,
             batchSize: BatchSize = .medium,
             uploadFrequency: UploadFrequency = .average,
-            additionalConfiguration: [String: Any] = [:],
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil
@@ -149,7 +145,6 @@ public struct Datadog {
             self.bundle = bundle
             self.batchSize = batchSize
             self.uploadFrequency = uploadFrequency
-            self.additionalConfiguration = additionalConfiguration
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
