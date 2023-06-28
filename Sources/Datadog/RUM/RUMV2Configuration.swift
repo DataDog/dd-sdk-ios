@@ -58,6 +58,9 @@ internal struct RUMViewEventsFilter {
 
             guard seen.contains(viewMetadata.id) == false else {
                 // If we've already seen this view, we can skip this
+                if skipped[viewMetadata.id] == nil {
+                    skipped[viewMetadata.id] = []
+                }
                 skipped[viewMetadata.id]?.append(viewMetadata.documentVersion)
                 return nil
             }
@@ -67,7 +70,7 @@ internal struct RUMViewEventsFilter {
         }
 
         for (id, versions) in skipped {
-            DD.logger.debug("Skipping RUMViewEvent with id: \(id) and versions: \(versions)")
+            DD.logger.debug("Skipping RUMViewEvent with id: \(id) and versions: \(versions.reversed().map(String.init).joined(separator: ", "))")
         }
 
         return filtered.reversed()
