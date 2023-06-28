@@ -68,27 +68,20 @@ public class DDTrackingConsent: NSObject
     public static func granted() -> DDTrackingConsent
     public static func notGranted() -> DDTrackingConsent
     public static func pending() -> DDTrackingConsent
-public class DDAppContext: NSObject
-    public init(mainBundle: Bundle)
-    override public init()
 public class DDDatadog: NSObject
-    public static func initialize(appContext: DDAppContext, configuration: DDConfiguration)
-    public static func initialize(appContext: DDAppContext,trackingConsent: DDTrackingConsent,configuration: DDConfiguration)
+    public static func initialize(configuration: DDConfiguration,trackingConsent: DDTrackingConsent)
     public static func setVerbosityLevel(_ verbosityLevel: DDSDKVerbosityLevel)
     public static func verbosityLevel() -> DDSDKVerbosityLevel
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func setTrackingConsent(consent: DDTrackingConsent)
     public static func clearAllData()
-public class DDEndpoint: NSObject
-    public static func us1() -> DDEndpoint
-    public static func us3() -> DDEndpoint
-    public static func us5() -> DDEndpoint
-    public static func eu1() -> DDEndpoint
-    public static func ap1() -> DDEndpoint
-    public static func us1_fed() -> DDEndpoint
-    public static func eu() -> DDEndpoint
-    public static func us() -> DDEndpoint
-    public static func gov() -> DDEndpoint
+public class DDSite: NSObject
+    public static func us1() -> DDSite
+    public static func us3() -> DDSite
+    public static func us5() -> DDSite
+    public static func eu1() -> DDSite
+    public static func ap1() -> DDSite
+    public static func us1_fed() -> DDSite
 public enum DDBatchSize: Int
     case small
     case medium
@@ -108,17 +101,17 @@ public protocol DDDataEncryption: AnyObject
 public protocol DDServerDateProvider: AnyObject
     func synchronize(update: @escaping (TimeInterval) -> Void)
 public class DDConfiguration: NSObject
-    public static func builder(clientToken: String, environment: String) -> DDConfigurationBuilder
-public class DDConfigurationBuilder: NSObject
-    public func set(endpoint: DDEndpoint)
-    public func set(serverDateProvider: DDServerDateProvider)
-    public func set(serviceName: String)
-    public func set(batchSize: DDBatchSize)
-    public func set(uploadFrequency: DDUploadFrequency)
-    public func set(additionalConfiguration: [String: Any])
-    public func set(proxyConfiguration: [AnyHashable: Any])
-    public func set(encryption: DDDataEncryption)
-    public func build() -> DDConfiguration
+    @objc public var clientToken: String
+    @objc public var env: String
+    @objc public var site: DDSite
+    @objc public var service: String?
+    @objc public var batchSize: DDBatchSize
+    @objc public var uploadFrequency: DDUploadFrequency
+    @objc public var proxyConfiguration: [AnyHashable: Any]?
+    public func setEncryption(_ encryption: DDDataEncryption)
+    public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider)
+    @objc public var bundle: Bundle
+    public init(clientToken: String, env: String)
 public protocol OTSpan
     var context: OTSpanContext
     var tracer: OTTracer
