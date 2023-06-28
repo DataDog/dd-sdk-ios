@@ -10,7 +10,23 @@ import DatadogInternal
 //swiftlint:disable:next duplicate_imports
 @_exported import enum DatadogInternal.TrackingConsent
 
+/// An entry point to Datadog SDK.
+///
+/// Initialize the core instance of the Datadog SDK prior to enabling any Features.
+///
+///     Datadog.initialize(
+///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
+///         trackingConsent: .pending
+///     )
+///
+/// Once Datadog SDK is initialized, you can enable Features, such as RUM:
+///
+///     RUM.enable(
+///         with: RUM.Configuration(applicationID: "<application>")
+///     )
+///     
 public struct Datadog {
+    /// Configuration of Datadog SDK.
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
         /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
@@ -320,6 +336,8 @@ public struct Datadog {
             useLocalEncryption: configuration.encryption != nil,
             useProxy: configuration.proxyConfiguration != nil
         )
+
+        CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
         deleteV1Folders(in: core)
