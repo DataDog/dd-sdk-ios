@@ -215,4 +215,8 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
         XCTAssertEqual(expected, actual as? JSONUnionType)
     }
+
+    func test_enumTypeInferring() {
+        
+    }
 }

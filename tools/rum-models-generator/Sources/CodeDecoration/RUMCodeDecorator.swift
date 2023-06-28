@@ -22,7 +22,6 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMCITest",
                 "RUMDevice",
                 "RUMOperatingSystem",
-                "RUMDisplay",
                 "RUMActionID",
             ]
         )

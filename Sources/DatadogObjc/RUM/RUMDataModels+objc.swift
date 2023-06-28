@@ -188,20 +188,23 @@ public class DDRUMActionEventDDSession: NSObject {
 
 @objc
 public enum DDRUMActionEventDDSessionPlan: Int {
-    internal init(swift: RUMActionEvent.DD.Session.Plan) {
+    internal init(swift: RUMActionEvent.DD.Session.Plan?) {
         switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
         }
     }
 
-    internal var toSwift: RUMActionEvent.DD.Session.Plan {
+    internal var toSwift: RUMActionEvent.DD.Session.Plan? {
         switch self {
+        case .none: return nil
         case .plan1: return .plan1
         case .plan2: return .plan2
         }
     }
 
+    case none
     case plan1
     case plan2
 }
@@ -637,6 +640,10 @@ public class DDRUMActionEventRUMOperatingSystem: NSObject {
         self.root = root
     }
 
+    @objc public var build: String? {
+        root.swiftModel.os!.build
+    }
+
     @objc public var name: String {
         root.swiftModel.os!.name
     }
@@ -933,20 +940,23 @@ public class DDRUMErrorEventDDSession: NSObject {
 
 @objc
 public enum DDRUMErrorEventDDSessionPlan: Int {
-    internal init(swift: RUMErrorEvent.DD.Session.Plan) {
+    internal init(swift: RUMErrorEvent.DD.Session.Plan?) {
         switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
         }
     }
 
-    internal var toSwift: RUMErrorEvent.DD.Session.Plan {
+    internal var toSwift: RUMErrorEvent.DD.Session.Plan? {
         switch self {
+        case .none: return nil
         case .plan1: return .plan1
         case .plan2: return .plan2
         }
     }
 
+    case none
     case plan1
     case plan2
 }
@@ -1233,6 +1243,11 @@ public class DDRUMErrorEventError: NSObject {
     @objc public var causes: [DDRUMErrorEventErrorCauses]? {
         set { root.swiftModel.error.causes = newValue?.map { $0.swiftModel } }
         get { root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) } }
+    }
+
+    @objc public var fingerprint: String? {
+        set { root.swiftModel.error.fingerprint = newValue }
+        get { root.swiftModel.error.fingerprint }
     }
 
     @objc public var handling: DDRUMErrorEventErrorHandling {
@@ -1599,6 +1614,10 @@ public class DDRUMErrorEventRUMOperatingSystem: NSObject {
         self.root = root
     }
 
+    @objc public var build: String? {
+        root.swiftModel.os!.build
+    }
+
     @objc public var name: String {
         root.swiftModel.os!.name
     }
@@ -1895,20 +1914,23 @@ public class DDRUMLongTaskEventDDSession: NSObject {
 
 @objc
 public enum DDRUMLongTaskEventDDSessionPlan: Int {
-    internal init(swift: RUMLongTaskEvent.DD.Session.Plan) {
+    internal init(swift: RUMLongTaskEvent.DD.Session.Plan?) {
         switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.DD.Session.Plan {
+    internal var toSwift: RUMLongTaskEvent.DD.Session.Plan? {
         switch self {
+        case .none: return nil
         case .plan1: return .plan1
         case .plan2: return .plan2
         }
     }
 
+    case none
     case plan1
     case plan2
 }
@@ -2211,6 +2233,10 @@ public class DDRUMLongTaskEventRUMOperatingSystem: NSObject {
 
     internal init(root: DDRUMLongTaskEvent) {
         self.root = root
+    }
+
+    @objc public var build: String? {
+        root.swiftModel.os!.build
     }
 
     @objc public var name: String {
@@ -2517,20 +2543,23 @@ public class DDRUMResourceEventDDSession: NSObject {
 
 @objc
 public enum DDRUMResourceEventDDSessionPlan: Int {
-    internal init(swift: RUMResourceEvent.DD.Session.Plan) {
+    internal init(swift: RUMResourceEvent.DD.Session.Plan?) {
         switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
         }
     }
 
-    internal var toSwift: RUMResourceEvent.DD.Session.Plan {
+    internal var toSwift: RUMResourceEvent.DD.Session.Plan? {
         switch self {
+        case .none: return nil
         case .plan1: return .plan1
         case .plan2: return .plan2
         }
     }
 
+    case none
     case plan1
     case plan2
 }
@@ -2814,6 +2843,10 @@ public class DDRUMResourceEventRUMOperatingSystem: NSObject {
         self.root = root
     }
 
+    @objc public var build: String? {
+        root.swiftModel.os!.build
+    }
+
     @objc public var name: String {
         root.swiftModel.os!.name
     }
@@ -2847,8 +2880,8 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.download != nil ? DDRUMResourceEventResourceDownload(root: root) : nil
     }
 
-    @objc public var duration: NSNumber {
-        root.swiftModel.resource.duration as NSNumber
+    @objc public var duration: NSNumber? {
+        root.swiftModel.resource.duration as NSNumber?
     }
 
     @objc public var firstByte: DDRUMResourceEventResourceFirstByte? {
@@ -3359,6 +3392,10 @@ public class DDRUMViewEvent: NSObject {
         root.swiftModel.os != nil ? DDRUMViewEventRUMOperatingSystem(root: root) : nil
     }
 
+    @objc public var privacy: DDRUMViewEventPrivacy? {
+        root.swiftModel.privacy != nil ? DDRUMViewEventPrivacy(root: root) : nil
+    }
+
     @objc public var service: String? {
         root.swiftModel.service
     }
@@ -3412,8 +3449,84 @@ public class DDRUMViewEventDD: NSObject {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
+    @objc public var pageStates: [DDRUMViewEventDDPageStates]? {
+        root.swiftModel.dd.pageStates?.map { DDRUMViewEventDDPageStates(swiftModel: $0) }
+    }
+
+    @objc public var replayStats: DDRUMViewEventDDReplayStats? {
+        root.swiftModel.dd.replayStats != nil ? DDRUMViewEventDDReplayStats(root: root) : nil
+    }
+
     @objc public var session: DDRUMViewEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventDDPageStates: NSObject {
+    internal var swiftModel: RUMViewEvent.DD.PageStates
+    internal var root: DDRUMViewEventDDPageStates { self }
+
+    internal init(swiftModel: RUMViewEvent.DD.PageStates) {
+        self.swiftModel = swiftModel
+    }
+
+    @objc public var start: NSNumber {
+        root.swiftModel.start as NSNumber
+    }
+
+    @objc public var state: DDRUMViewEventDDPageStatesState {
+        .init(swift: root.swiftModel.state)
+    }
+}
+
+@objc
+public enum DDRUMViewEventDDPageStatesState: Int {
+    internal init(swift: RUMViewEvent.DD.PageStates.State) {
+        switch swift {
+        case .active: self = .active
+        case .passive: self = .passive
+        case .hidden: self = .hidden
+        case .frozen: self = .frozen
+        case .terminated: self = .terminated
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.DD.PageStates.State {
+        switch self {
+        case .active: return .active
+        case .passive: return .passive
+        case .hidden: return .hidden
+        case .frozen: return .frozen
+        case .terminated: return .terminated
+        }
+    }
+
+    case active
+    case passive
+    case hidden
+    case frozen
+    case terminated
+}
+
+@objc
+public class DDRUMViewEventDDReplayStats: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var recordsCount: NSNumber? {
+        root.swiftModel.dd.replayStats!.recordsCount as NSNumber?
+    }
+
+    @objc public var segmentsCount: NSNumber? {
+        root.swiftModel.dd.replayStats!.segmentsCount as NSNumber?
+    }
+
+    @objc public var segmentsTotalRawSize: NSNumber? {
+        root.swiftModel.dd.replayStats!.segmentsTotalRawSize as NSNumber?
     }
 }
 
@@ -3432,20 +3545,23 @@ public class DDRUMViewEventDDSession: NSObject {
 
 @objc
 public enum DDRUMViewEventDDSessionPlan: Int {
-    internal init(swift: RUMViewEvent.DD.Session.Plan) {
+    internal init(swift: RUMViewEvent.DD.Session.Plan?) {
         switch swift {
-        case .plan1: self = .plan1
-        case .plan2: self = .plan2
+        case nil: self = .none
+        case .plan1?: self = .plan1
+        case .plan2?: self = .plan2
         }
     }
 
-    internal var toSwift: RUMViewEvent.DD.Session.Plan {
+    internal var toSwift: RUMViewEvent.DD.Session.Plan? {
         switch self {
+        case .none: return nil
         case .plan1: return .plan1
         case .plan2: return .plan2
         }
     }
 
+    case none
     case plan1
     case plan2
 }
@@ -3663,8 +3779,37 @@ public class DDRUMViewEventRUMDisplay: NSObject {
         self.root = root
     }
 
+    @objc public var scroll: DDRUMViewEventRUMDisplayScroll? {
+        root.swiftModel.display!.scroll != nil ? DDRUMViewEventRUMDisplayScroll(root: root) : nil
+    }
+
     @objc public var viewport: DDRUMViewEventRUMDisplayViewport? {
         root.swiftModel.display!.viewport != nil ? DDRUMViewEventRUMDisplayViewport(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventRUMDisplayScroll: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var maxDepth: NSNumber {
+        root.swiftModel.display!.scroll!.maxDepth as NSNumber
+    }
+
+    @objc public var maxDepthScrollHeight: NSNumber {
+        root.swiftModel.display!.scroll!.maxDepthScrollHeight as NSNumber
+    }
+
+    @objc public var maxDepthScrollTop: NSNumber {
+        root.swiftModel.display!.scroll!.maxDepthScrollTop as NSNumber
+    }
+
+    @objc public var maxDepthTime: NSNumber {
+        root.swiftModel.display!.scroll!.maxDepthTime as NSNumber
     }
 }
 
@@ -3706,6 +3851,10 @@ public class DDRUMViewEventRUMOperatingSystem: NSObject {
         self.root = root
     }
 
+    @objc public var build: String? {
+        root.swiftModel.os!.build
+    }
+
     @objc public var name: String {
         root.swiftModel.os!.name
     }
@@ -3717,6 +3866,42 @@ public class DDRUMViewEventRUMOperatingSystem: NSObject {
     @objc public var versionMajor: String {
         root.swiftModel.os!.versionMajor
     }
+}
+
+@objc
+public class DDRUMViewEventPrivacy: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var replayLevel: DDRUMViewEventPrivacyReplayLevel {
+        .init(swift: root.swiftModel.privacy!.replayLevel)
+    }
+}
+
+@objc
+public enum DDRUMViewEventPrivacyReplayLevel: Int {
+    internal init(swift: RUMViewEvent.Privacy.ReplayLevel) {
+        switch swift {
+        case .allow: self = .allow
+        case .mask: self = .mask
+        case .maskUserInput: self = .maskUserInput
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Privacy.ReplayLevel {
+        switch self {
+        case .allow: return .allow
+        case .mask: return .mask
+        case .maskUserInput: return .maskUserInput
+        }
+    }
+
+    case allow
+    case mask
+    case maskUserInput
 }
 
 @objc
@@ -3739,8 +3924,12 @@ public class DDRUMViewEventSession: NSObject {
         root.swiftModel.session.isActive as NSNumber?
     }
 
-    @objc public var startReason: DDRUMViewEventSessionStartReason {
-        .init(swift: root.swiftModel.session.startReason)
+    @objc public var sampledForReplay: NSNumber? {
+        root.swiftModel.session.sampledForReplay as NSNumber?
+    }
+
+    @objc public var startPrecondition: DDRUMViewEventSessionStartPrecondition {
+        .init(swift: root.swiftModel.session.startPrecondition)
     }
 
     @objc public var type: DDRUMViewEventSessionSessionType {
@@ -3749,34 +3938,34 @@ public class DDRUMViewEventSession: NSObject {
 }
 
 @objc
-public enum DDRUMViewEventSessionStartReason: Int {
-    internal init(swift: RUMViewEvent.Session.StartReason?) {
+public enum DDRUMViewEventSessionStartPrecondition: Int {
+    internal init(swift: RUMViewEvent.Session.StartPrecondition?) {
         switch swift {
         case nil: self = .none
-        case .appStart?: self = .appStart
+        case .appLaunch?: self = .appLaunch
         case .inactivityTimeout?: self = .inactivityTimeout
         case .maxDuration?: self = .maxDuration
-        case .stopApi?: self = .stopApi
+        case .explicitStop?: self = .explicitStop
         case .backgroundEvent?: self = .backgroundEvent
         }
     }
 
-    internal var toSwift: RUMViewEvent.Session.StartReason? {
+    internal var toSwift: RUMViewEvent.Session.StartPrecondition? {
         switch self {
         case .none: return nil
-        case .appStart: return .appStart
+        case .appLaunch: return .appLaunch
         case .inactivityTimeout: return .inactivityTimeout
         case .maxDuration: return .maxDuration
-        case .stopApi: return .stopApi
+        case .explicitStop: return .explicitStop
         case .backgroundEvent: return .backgroundEvent
         }
     }
 
     case none
-    case appStart
+    case appLaunch
     case inactivityTimeout
     case maxDuration
-    case stopApi
+    case explicitStop
     case backgroundEvent
 }
 
@@ -4879,6 +5068,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.silentMultipleInit as NSNumber?
     }
 
+    @objc public var startSessionReplayRecordingManually: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually as NSNumber? }
+    }
+
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -5131,4 +5325,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a45fbc913eb36f3bf0cc37aa1bdbee126104972b
+// Generated from https://github.com/DataDog/rum-events-format/tree/dcb6897cf883fb8938e7aa0f69ed9a035df98c2c
