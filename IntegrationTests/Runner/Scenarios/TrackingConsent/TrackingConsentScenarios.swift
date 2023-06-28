@@ -16,7 +16,7 @@ internal class TrackingConsentBaseScenario {
         var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
         rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         rumConfig.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
-        rumConfig.uiKitActionsPredicate = DefaultUIKitRUMUserActionsPredicate()
+        rumConfig.uiKitActionsPredicate = DefaultUIKitRUMActionsPredicate()
         rumConfig.urlSessionTracking = .init()
         RUM.enable(with: rumConfig)
 

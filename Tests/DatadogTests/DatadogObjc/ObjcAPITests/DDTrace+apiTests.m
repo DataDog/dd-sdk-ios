@@ -17,6 +17,7 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
+#pragma clang diagnostic ignored "-Wunused-variable"
 
 - (void)testDDTraceAPI {
     DDTraceConfiguration *config = [[DDTraceConfiguration alloc] init];

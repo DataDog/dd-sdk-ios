@@ -74,13 +74,13 @@ extension RUM {
         /// should return RUM action parameters if the given interaction should be accepted, or `nil` to ignore it.
         /// Touch events on the keyboard are ignored for privacy reasons.
         ///
-        /// You can use `DefaultUIKitRUMUserActionsPredicate` or create your own predicate by
-        /// implementing `UIKitRUMUserActionsPredicate`.
+        /// You can use `DefaultUIKitRUMActionsPredicate` or create your own predicate by
+        /// implementing `UIKitRUMActionsPredicate`.
         ///
         /// Note: Automatic RUM action tracking involves swizzling the `UIApplication.sendEvent(_:)` method.
         ///
         /// Default: `nil` - which means automatic RUM action tracking is not enabled by default.
-        public var uiKitActionsPredicate: UIKitRUMUserActionsPredicate?
+        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
 
         /// The configuration for automatic RUM resources tracking.
         ///
@@ -313,7 +313,7 @@ extension RUM.Configuration {
         applicationID: String,
         sessionSampleRate: Float = 100,
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
-        uiKitActionsPredicate: UIKitRUMUserActionsPredicate? = nil,
+        uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
         frustrationsTracking: Bool = true,
         backgroundEventsTracking: Bool = false,

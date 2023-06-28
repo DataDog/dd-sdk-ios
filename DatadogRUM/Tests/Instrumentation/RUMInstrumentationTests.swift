@@ -35,7 +35,7 @@ class RUMInstrumentationTests: XCTestCase {
         // When
         let instrumentation = RUMInstrumentation(
             uiKitRUMViewsPredicate: nil,
-            uiKitRUMActionsPredicate: UIKitRUMUserActionsPredicateMock(),
+            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             longTaskThreshold: nil,
             dateProvider: SystemDateProvider()
         )
@@ -85,7 +85,7 @@ class RUMInstrumentationTests: XCTestCase {
         // Given
         let instrumentation = RUMInstrumentation(
             uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            uiKitRUMActionsPredicate: UIKitRUMUserActionsPredicateMock(),
+            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             longTaskThreshold: 0.5,
             dateProvider: SystemDateProvider()
         )

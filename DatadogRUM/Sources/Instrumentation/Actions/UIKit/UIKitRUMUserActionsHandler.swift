@@ -18,12 +18,12 @@ internal protocol UIEventCommandFactory {
 internal class UIKitRUMUserActionsHandler: UIEventHandler {
     let factory: UIEventCommandFactory
 
-    convenience init(dateProvider: DateProvider, predicate: UITouchRUMUserActionsPredicate) {
+    convenience init(dateProvider: DateProvider, predicate: UITouchRUMActionsPredicate) {
         let factory = UITouchCommandFactory(dateProvider: dateProvider, predicate: predicate)
         self.init(factory: factory)
     }
 
-    convenience init(dateProvider: DateProvider, predicate: UIPressRUMUserActionsPredicate) {
+    convenience init(dateProvider: DateProvider, predicate: UIPressRUMActionsPredicate) {
         let factory = UIPressCommandFactory(dateProvider: dateProvider, predicate: predicate)
         self.init(factory: factory)
     }
@@ -89,7 +89,7 @@ extension UIEventCommandFactory {
 internal struct UITouchCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
 
-    let predicate: UITouchRUMUserActionsPredicate
+    let predicate: UITouchRUMActionsPredicate
 
     func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let allTouches = event.allTouches else {
@@ -146,7 +146,7 @@ internal struct UITouchCommandFactory: UIEventCommandFactory {
 internal struct UIPressCommandFactory: UIEventCommandFactory {
     let dateProvider: DateProvider
 
-    let predicate: UIPressRUMUserActionsPredicate
+    let predicate: UIPressRUMActionsPredicate
 
     func command(from event: UIEvent) -> RUMAddUserActionCommand? {
         guard let event = event as? UIPressesEvent else {

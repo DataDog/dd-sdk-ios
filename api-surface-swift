@@ -94,8 +94,6 @@ public struct LogEvent: Encodable
     public var attributes: LogEvent.Attributes
     public var tags: [String]?
     public func encode(to encoder: Encoder) throws
-[?] internal struct LogEventSanitizer
-    public struct Constraints
 public struct Logger
     public struct Configuration
         public enum ConsoleLogFormat
@@ -148,9 +146,6 @@ public struct Logs
     public mutating func setLogEventMapper(_ mapper: LogEventMapper)
 public protocol LogEventMapper
     func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
-public final class SyncLogEventMapper: LogEventMapper
-    public init(_ mapper: @escaping (LogEvent) -> LogEvent?)
-    public func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
 
 
 # ----------------------------------
@@ -1098,16 +1093,16 @@ public struct RUMAction
     public var name: String
     public var attributes: [AttributeKey: AttributeValue]
     public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
-public typealias UIKitRUMUserActionsPredicate = UITouchRUMUserActionsPredicate
-public protocol UITouchRUMUserActionsPredicate
+public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
+public protocol UITouchRUMActionsPredicate
     func rumAction(targetView: UIView) -> RUMAction?
-public protocol UIPressRUMUserActionsPredicate
+public protocol UIPressRUMActionsPredicate
     func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
-public struct DefaultUIKitRUMUserActionsPredicate
+public struct DefaultUIKitRUMActionsPredicate
     public init ()
-[?] extension DefaultUIKitRUMUserActionsPredicate: UITouchRUMUserActionsPredicate
+[?] extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate
     public func rumAction(targetView: UIView) -> RUMAction?
-[?] extension DefaultUIKitRUMUserActionsPredicate: UIPressRUMUserActionsPredicate
+[?] extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate
     public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
 public extension SwiftUI.View
     func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
@@ -1137,7 +1132,7 @@ public struct RUM
         public let applicationID: String
         public var sessionSampleRate: Float
         public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
-        public var uiKitActionsPredicate: UIKitRUMUserActionsPredicate?
+        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
         public var urlSessionTracking: URLSessionTracking?
         public var frustrationsTracking: Bool
         public var backgroundEventsTracking: Bool
@@ -1164,7 +1159,7 @@ public struct RUM
         case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
-    public init(applicationID: String,sessionSampleRate: Float = 100,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMUserActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,frustrationsTracking: Bool = true,backgroundEventsTracking: Bool = false,longTaskThreshold: TimeInterval? = 0.1,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: Float = 20)
+    public init(applicationID: String,sessionSampleRate: Float = 100,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,frustrationsTracking: Bool = true,backgroundEventsTracking: Bool = false,longTaskThreshold: TimeInterval? = 0.1,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: Float = 20)
 [?] extension InternalExtension where ExtendedType == RUM.Configuration
     public var configurationTelemetrySampleRate: Float
 public class RUMMonitor
@@ -1270,12 +1265,3 @@ public static func enable()
 public extension WKUserContentController
     func startTrackingDatadogEvents(core: DatadogCoreProtocol = CoreRegistry.default, hosts: Set<String> = [])
     func stopTrackingDatadogEvents()
-public protocol WebViewTracking
-    func send(message: WebViewTrackingMessage) throws
-public struct WebViewTrackingCore: WebViewTracking
-    public init(core: DatadogCoreProtocol)
-    public func send(message: WebViewTrackingMessage) throws
-public typealias JSON = [String: Any]
-public enum WebViewTrackingMessage
-    case log(JSON)
-    case rum(JSON)
