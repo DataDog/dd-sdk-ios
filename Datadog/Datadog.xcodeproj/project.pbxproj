@@ -2953,7 +2953,7 @@
 				61133C0A2423983800786299 /* ObjcIntercompatibility */,
 			);
 			name = DatadogObjc;
-			path = ../Sources/DatadogObjc;
+			path = ../DatadogObjc/Sources;
 			sourceTree = "<group>";
 		};
 		61133C0A2423983800786299 /* ObjcIntercompatibility */ = {
