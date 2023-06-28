@@ -92,7 +92,13 @@ custom_rules:
 
 included:
   - ../../Sources
+  - ../../DatadogInternal/Sources
+  - ../../DatadogLogs/Sources
+  - ../../DatadogTrace/Sources
+  - ../../DatadogRUM/Sources
   - ../../DatadogSessionReplay/Sources
+  - ../../DatadogCrashReporting/Sources
+  - ../../DatadogWebViewTracking/Sources
   - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources

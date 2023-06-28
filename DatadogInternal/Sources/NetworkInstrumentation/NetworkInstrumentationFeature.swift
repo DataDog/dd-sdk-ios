@@ -84,7 +84,7 @@ extension NetworkInstrumentationFeature {
 
         queue.async {
             let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
-            
+
             let interception = URLSessionTaskInterception(
                 request: request,
                 isFirstParty: firstPartyHosts.isFirstParty(url: request.url)

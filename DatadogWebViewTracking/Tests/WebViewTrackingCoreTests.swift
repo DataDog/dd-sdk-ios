@@ -65,13 +65,12 @@ class WebViewTrackingCoreTests: XCTestCase {
                         XCTAssertEqual(event["message"] as? String, "console error: error")
                         XCTAssertEqual(event["status"] as? String, "error")
                         XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                        XCTAssertEqual(event["error"] as? [String : String], ["origin": "console"])
+                        XCTAssertEqual(event["error"] as? [String: String], ["origin": "console"])
                         XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                         expectation.fulfill()
                     default:
                         XCTFail("Unexpected custom message received: key: \(key), baggage: \(baggage)")
                     }
-                    break
                 case .context:
                     break
                 default:
@@ -118,7 +117,6 @@ class WebViewTrackingCoreTests: XCTestCase {
                     XCTAssertEqual((event["session"] as? JSON)?["id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                     XCTAssertEqual((event["view"] as? JSON)?["url"] as? String, "http://localhost:8080/test.html")
                     expectation.fulfill()
-                    break
                 case .context:
                     break
                 default:

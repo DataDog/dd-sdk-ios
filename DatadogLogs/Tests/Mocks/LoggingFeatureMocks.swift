@@ -21,7 +21,7 @@ extension LogsFeature {
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
         dateProvider: DateProvider = SystemDateProvider()
-    )  -> Self {
+    ) -> Self {
         return .init(
             logEventMapper: logEventMapper,
             requestBuilder: requestBuilder,

@@ -8,6 +8,8 @@ import UIKit
 import Foundation
 import DatadogInternal
 
+// swiftlint:disable function_default_parameter_at_end
+
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
 ///
 /// ⚠️ Be extra caucious when adding new methods here. Each method overloads (shadows) its original
@@ -299,3 +301,5 @@ public extension RUMMonitorProtocol {
         stopAction(type: type, name: name, attributes: attributes)
     }
 }
+
+// swiftlint:enable function_default_parameter_at_end

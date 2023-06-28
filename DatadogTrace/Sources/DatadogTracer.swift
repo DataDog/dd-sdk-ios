@@ -70,7 +70,7 @@ internal class DatadogTracer: OTTracer {
 
     // MARK: - Open Tracing interface
 
-    public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+    func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
         return startSpan(
             spanContext: createSpanContext(parentSpanContext: parentSpanContext),
@@ -80,7 +80,7 @@ internal class DatadogTracer: OTTracer {
         )
     }
 
-    public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+    func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         return startSpan(
             spanContext: createSpanContext(parentSpanContext: nil),
             operationName: operationName,
@@ -89,16 +89,16 @@ internal class DatadogTracer: OTTracer {
         )
     }
 
-    public func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
+    func inject(spanContext: OTSpanContext, writer: OTFormatWriter) {
         writer.inject(spanContext: spanContext)
     }
 
-    public func extract(reader: OTFormatReader) -> OTSpanContext? {
+    func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
         reader.extract()
     }
 
-    public var activeSpan: OTSpan? {
+    var activeSpan: OTSpan? {
         return activeSpansPool.getActiveSpan()
     }
 

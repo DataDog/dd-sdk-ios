@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-/// This is a fixture file used by `api-surface` tests.
+/// A fixture file used in `api-surface` tests.
 
 import Foundation
 
@@ -32,4 +32,12 @@ internal struct Engine {
 
 public extension Car {
     var price: Int { 100 }
+}
+
+extension String {
+    public func foo() {}
+}
+
+public extension Int {
+    func bar() {}
 }

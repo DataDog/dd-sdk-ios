@@ -43,7 +43,6 @@ public protocol DatadogFeature {
     var performanceOverride: PerformancePresetOverride? { get }
 }
 
-
 /// A Datadog Feature with remote data store.
 public protocol DatadogRemoteFeature: DatadogFeature {
     /// The URL request builder for uploading data.

@@ -155,7 +155,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
                         XCTAssertEqual(event["message"] as? String, "console error: error")
                         XCTAssertEqual(event["status"] as? String, "error")
                         XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                        XCTAssertEqual(event["error"] as? [String : String], ["origin": "console"])
+                        XCTAssertEqual(event["error"] as? [String: String], ["origin": "console"])
                         XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                         logMessageExpectation.fulfill()
                     case "browser-rum-event":
@@ -165,7 +165,6 @@ class WKUserContentController_DatadogTests: XCTestCase {
                     default:
                         XCTFail("Unexpected custom message received: key: \(key), baggage: \(baggage)")
                     }
-                    break
                 case .context:
                     break
                 default:

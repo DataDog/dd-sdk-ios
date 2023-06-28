@@ -100,6 +100,7 @@ public struct DatadogContext {
     /// Feature attributes provider.
     public var featuresAttributes: [String: FeatureBaggage] = [:]
 
+    // swiftlint:disable function_default_parameter_at_end
     public init(
         site: DatadogSite,
         clientToken: String,
@@ -149,4 +150,5 @@ public struct DatadogContext {
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
         self.featuresAttributes = featuresAttributes
     }
+    // swiftlint:enable function_default_parameter_at_end
 }
