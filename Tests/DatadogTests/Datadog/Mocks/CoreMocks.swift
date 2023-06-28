@@ -18,24 +18,27 @@ extension Datadog.Configuration {
 
     static func mockWith(
         clientToken: String = .mockAny(),
-        environment: String = .mockAny(),
-        datadogEndpoint: DatadogSite = .us1,
-        serviceName: String? = .mockAny(),
+        env: String = .mockAny(),
+        site: DatadogSite = .us1,
+        service: String? = .mockAny(),
+        bundle: Bundle = .main,
         batchSize: BatchSize = .medium,
         uploadFrequency: UploadFrequency = .average,
-        additionalConfiguration: [String: Any] = [:],
         proxyConfiguration: [AnyHashable: Any]? = nil,
-        internalMonitoringClientToken: String? = nil
-    ) -> Datadog.Configuration {
-        return Datadog.Configuration(
+        encryption: DataEncryption? = nil,
+        serverDateProvider: ServerDateProvider? = nil
+    ) -> Self {
+        .init(
             clientToken: clientToken,
-            environment: environment,
-            datadogEndpoint: datadogEndpoint,
-            serviceName: serviceName,
+            env: env,
+            site: site,
+            service: service,
+            bundle: bundle,
             batchSize: batchSize,
             uploadFrequency: uploadFrequency,
-            additionalConfiguration: additionalConfiguration,
-            proxyConfiguration: proxyConfiguration
+            proxyConfiguration: proxyConfiguration,
+            encryption: encryption,
+            serverDateProvider: serverDateProvider
         )
     }
 }
@@ -62,78 +65,6 @@ extension UploadFrequency: CaseIterable {
 
 extension BundleType: CaseIterable {
     public static var allCases: [Self] { [.iOSApp, iOSAppExtension] }
-}
-
-extension FeaturesConfiguration {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(common: Common = .mockAny()) -> Self {
-        return .init(common: common)
-    }
-}
-
-extension FeaturesConfiguration.Common {
-    static func mockAny() -> Self { mockWith() }
-
-    static func mockWith(
-        site: DatadogSite = .mockAny(),
-        clientToken: String = .mockAny(),
-        applicationName: String = .mockAny(),
-        applicationVersion: String = .mockAny(),
-        applicationBundleIdentifier: String = .mockAny(),
-        serviceName: String = .mockAny(),
-        environment: String = .mockAny(),
-        performance: PerformancePreset = .mockAny(),
-        source: String = .mockAny(),
-        variant: String? = nil,
-        origin: String? = nil,
-        sdkVersion: String = .mockAny(),
-        proxyConfiguration: [AnyHashable: Any]? = nil,
-        encryption: DataEncryption? = nil,
-        serverDateProvider: ServerDateProvider? = nil,
-        dateProvider: DateProvider = SystemDateProvider()
-    ) -> Self {
-        return .init(
-            site: site,
-            clientToken: clientToken,
-            applicationName: applicationName,
-            applicationVersion: applicationVersion,
-            applicationBundleIdentifier: applicationBundleIdentifier,
-            serviceName: serviceName,
-            environment: environment,
-            performance: performance,
-            source: source,
-            variant: variant,
-            origin: origin,
-            sdkVersion: sdkVersion,
-            proxyConfiguration: proxyConfiguration,
-            encryption: encryption,
-            serverDateProvider: serverDateProvider,
-            dateProvider: dateProvider
-        )
-    }
-}
-
-extension AppContext {
-    static func mockAny() -> AppContext {
-        return mockWith()
-    }
-
-    static func mockWith(
-        bundleType: BundleType = .iOSApp,
-        bundleIdentifier: String? = .mockAny(),
-        bundleVersion: String? = .mockAny(),
-        bundleName: String? = .mockAny(),
-        processInfo: ProcessInfo = ProcessInfoMock()
-    ) -> AppContext {
-        return AppContext(
-            bundleType: bundleType,
-            bundleIdentifier: bundleIdentifier,
-            bundleVersion: bundleVersion,
-            bundleName: bundleName,
-            processInfo: processInfo
-        )
-    }
 }
 
 struct DataEncryptionMock: DataEncryption {

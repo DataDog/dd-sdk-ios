@@ -11,8 +11,6 @@ import DatadogTrace
 import DatadogRUM
 import DatadogCrashReporting
 
-@_exported import enum DatadogInternal.TrackingConsent
-
 let serviceName = "ios-sdk-example-app"
 
 var logger: LoggerProtocol!
@@ -28,20 +26,16 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             return false
         }
 
-        let configuration = Datadog.Configuration
-            .builderUsing(
-                clientToken: Environment.readClientToken(),
-                environment: "tests"
-            )
-            .set(serviceName: serviceName)
-            .set(batchSize: .small)
-            .set(uploadFrequency: .frequent)
-
         // Initialize Datadog SDK
         Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: .granted,
-            configuration: configuration.build()
+            with: Datadog.Configuration(
+                clientToken: Environment.readClientToken(),
+                env: "tests",
+                service: serviceName,
+                batchSize: .small,
+                uploadFrequency: .frequent
+            ),
+            trackingConsent: .granted
         )
 
         // Set user information

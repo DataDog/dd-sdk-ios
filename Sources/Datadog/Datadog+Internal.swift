@@ -8,7 +8,6 @@ import Foundation
 import DatadogInternal
 
 extension Datadog: InternalExtended {}
-extension Datadog.Configuration.Builder: InternalExtended {}
 
 /// This extension exposes internal methods that are used by other Datadog modules and cross platform
 /// frameworks. It is not meant for public use.
@@ -18,7 +17,7 @@ extension Datadog.Configuration.Builder: InternalExtended {}
 ///
 /// Methods, members, and functionality of this class  are subject to change without notice, as they
 /// are not considered part of the public interface of the Datadog SDK.
-extension InternalExtension where ExtendedType: Datadog {
+extension InternalExtension where ExtendedType == Datadog {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy { .init() }
 
@@ -41,5 +40,15 @@ public struct _TelemetryProxy {
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
         DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+    }
+}
+
+extension Datadog.Configuration: InternalExtended { }
+extension InternalExtension where ExtendedType == Datadog.Configuration {
+    /// Sets additional configuration attributes.
+    /// This can be used to tweak internal features of the SDK.
+    public var additionalConfiguration: [String: Any] {
+        get { type.additionalConfiguration }
+        set { type.additionalConfiguration = newValue}
     }
 }

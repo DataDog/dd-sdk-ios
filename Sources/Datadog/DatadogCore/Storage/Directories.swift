@@ -5,7 +5,7 @@
  */
 
 import Foundation
-
+import DatadogInternal
 /// Indicates the main directory for a given instance of the SDK.
 /// Each instance of `DatadogCore` creates its own `CoreDirectory` to manage data for registered Features.
 /// The core directory is created under `/Library/Caches` and uses a name that identifies the certain instance
@@ -38,14 +38,12 @@ internal struct CoreDirectory {
 
 internal extension CoreDirectory {
     /// Creates the core directory.
+    /// 
     /// - Parameters:
     ///   - osDirectory: the root OS directory (`/Library/Caches`) to create core directory inside.
-    ///   - configuration: the configuration of SDK instance. It is used to determine unique path of the core
-    ///   directory created for this instance of the SDK.
-    init(in osDirectory: Directory, from configuration: CoreConfiguration) throws {
-        let clientToken = configuration.clientToken
-        let site = configuration.site.rawValue
-
+    ///   - clientToken: The core instance client token.
+    ///   - site: The cor instance site.
+    init(in osDirectory: Directory, clientToken: String, site: DatadogSite) throws {
         let sdkInstanceUUID = sha256("\(clientToken)\(site)")
         let path = "com.datadoghq/v2/\(sdkInstanceUUID)"
 

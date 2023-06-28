@@ -24,17 +24,10 @@
     [DDTrackingConsent pending];
 }
 
-- (void)testDDAppContextAPI {
-    [[DDAppContext alloc] initWithMainBundle:[NSBundle mainBundle]];
-    [[DDAppContext alloc] init];
-}
-
 - (void)testDDDatadog {
-    DDConfiguration *configuration = [[DDConfiguration builderWithClientToken:@"abc" environment:@"def"] build];
+    DDConfiguration *configuration = [[DDConfiguration alloc] initWithClientToken:@"abc" env:@"def"];
 
-    [DDDatadog initializeWithAppContext:[[DDAppContext alloc] init]
-                        trackingConsent:[DDTrackingConsent notGranted]
-                          configuration:configuration];
+    [DDDatadog initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted]];
 
     DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
     [DDDatadog setVerbosityLevel:verbosity];

@@ -29,50 +29,17 @@ public class DDTrackingConsent: NSObject {
 }
 
 @objc
-public class DDAppContext: NSObject {
-    internal let sdkAppContext: Datadog.AppContext
-
-    // MARK: - Public
-
-    @objc
-    public init(mainBundle: Bundle) {
-        self.sdkAppContext = Datadog.AppContext(mainBundle: mainBundle)
-    }
-
-    @objc
-    override public init() {
-        self.sdkAppContext = Datadog.AppContext()
-    }
-}
-
-@objc
 public class DDDatadog: NSObject {
     // MARK: - Public
 
-    @available(*, deprecated, message: """
-    This method is deprecated and uses the `DDTrackingConsent.granted()` value as a default privacy consent.
-    This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
-
-    Use `DDDatadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `granted()` to preserve previous behaviour.
-    """)
-    @objc
-    public static func initialize(appContext: DDAppContext, configuration: DDConfiguration) {
-        Datadog.initialize(
-            appContext: appContext.sdkAppContext,
-            configuration: configuration.sdkConfiguration
-        )
-    }
-
     @objc
     public static func initialize(
-        appContext: DDAppContext,
-        trackingConsent: DDTrackingConsent,
-        configuration: DDConfiguration
+        configuration: DDConfiguration,
+        trackingConsent: DDTrackingConsent
     ) {
         Datadog.initialize(
-            appContext: appContext.sdkAppContext,
-            trackingConsent: trackingConsent.sdkConsent,
-            configuration: configuration.sdkConfiguration
+            with: configuration.sdkConfiguration,
+            trackingConsent: trackingConsent.sdkConsent
         )
     }
 

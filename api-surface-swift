@@ -2,25 +2,15 @@
 # API surface for Datadog:
 # ----------------------------------
 
-[?] extension InternalExtension where ExtendedType: Datadog
+[?] extension InternalExtension where ExtendedType == Datadog
     public static var telemetry: _TelemetryProxy
     public static func set(customVersion: String)
 public struct _TelemetryProxy
     public func debug(id: String, message: String)
     public func error(id: String, message: String, kind: String?, stack: String?)
-public class Datadog
-    public struct AppContext
-        public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo)
-    public static func initialize(appContext: AppContext, configuration: Configuration)
-    public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration,instanceName: String = CoreRegistry.defaultInstanceName)
-    public static var verbosityLevel: CoreLoggerLevel? = nil
-    public static var isInitialized: Bool
-    public static func sdkInstance(named name: String) -> DatadogCoreProtocol
-    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
-    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
-    public init()
+[?] extension InternalExtension where ExtendedType == Datadog.Configuration
+    public var additionalConfiguration: [String: Any]
+public struct Datadog
     public struct Configuration
         public enum BatchSize
             case small
@@ -30,17 +20,25 @@ public class Datadog
             case frequent
             case average
             case rare
-        public static func builderUsing(clientToken: String, environment: String) -> Builder
-        public class Builder
-            public func set(endpoint: DatadogSite) -> Builder
-            public func set(serverDateProvider: ServerDateProvider) -> Builder
-            public func set(serviceName: String) -> Builder
-            public func set(batchSize: BatchSize) -> Builder
-            public func set(uploadFrequency: UploadFrequency) -> Builder
-            public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder
-            public func set(additionalConfiguration: [String: Any]) -> Builder
-            public func set(encryption: DataEncryption) -> Builder
-            public func build() -> Configuration
+        public var clientToken: String
+        public var env: String
+        public var site: DatadogSite
+        public var service: String?
+        public var batchSize: BatchSize
+        public var uploadFrequency: UploadFrequency
+        public var proxyConfiguration: [AnyHashable: Any]?
+        public var encryption: DataEncryption?
+        public var serverDateProvider: ServerDateProvider
+        public var bundle: Bundle
+        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil)
+    public static var verbosityLevel: CoreLoggerLevel? = nil
+    public static var isInitialized: Bool
+    public static func sdkInstance(named name: String) -> DatadogCoreProtocol
+    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName)
 public let DatadogNTPServers = ["0.datadog.pool.ntp.org","1.datadog.pool.ntp.org","2.datadog.pool.ntp.org","3.datadog.pool.ntp.org"]
 public protocol ServerDateProvider
     func synchronize(update: @escaping (TimeInterval) -> Void)

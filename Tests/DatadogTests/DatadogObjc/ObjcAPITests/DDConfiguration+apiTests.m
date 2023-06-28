@@ -38,16 +38,13 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
-- (void)testDDEndpointAPI {
-    [DDEndpoint eu];
-    [DDEndpoint eu1];
-    [DDEndpoint gov];
-    [DDEndpoint us];
-    [DDEndpoint us1];
-    [DDEndpoint us1];
-    [DDEndpoint us1_fed];
-    [DDEndpoint us3];
-    [DDEndpoint us5];
+- (void)testDDSiteAPI {
+    [DDSite eu1];
+    [DDSite us1];
+    [DDSite us1];
+    [DDSite us1_fed];
+    [DDSite us3];
+    [DDSite us5];
 }
 
 - (void)testDDBatchSizeAPI {
@@ -58,20 +55,15 @@
     DDUploadFrequencyRare; DDUploadFrequencyAverage; DDUploadFrequencyFrequent;
 }
 
-- (void)testDDConfigurationAPI {
-    [DDConfiguration builderWithClientToken:@"" environment:@""];
-}
-
 - (void)testDDConfigurationBuilderAPI {
-    DDConfigurationBuilder *builder = [DDConfiguration builderWithClientToken:@"" environment:@""];
-    [builder setWithEndpoint:[DDEndpoint us]];
-    [builder setWithServiceName:@""];
-    [builder setWithBatchSize:DDBatchSizeMedium];
-    [builder setWithUploadFrequency:DDUploadFrequencyAverage];
-    [builder setWithAdditionalConfiguration:@{}];
-    [builder setWithEncryption:[CustomDDDataEncryption new]];
+    DDConfiguration *configuration = [[DDConfiguration alloc] initWithClientToken:@"abc" env:@"def"];
 
-    [builder build];
+    configuration.site = [DDSite us1];
+    configuration.service = @"";
+    configuration.bundle = [NSBundle mainBundle];
+    configuration.batchSize = DDBatchSizeMedium;
+    configuration.uploadFrequency = DDUploadFrequencyAverage;
+    [configuration setEncryption:[CustomDDDataEncryption new]];
 }
 
 - (void)testDatadogCrashReporterAPI {

@@ -7,94 +7,163 @@
 import Foundation
 import DatadogInternal
 
-/// Datadog SDK configuration object.
-public class Datadog {
-    /// Provides information about the app.
-    public struct AppContext {
-        internal let bundleType: BundleType
-        internal let bundleIdentifier: String?
-        /// Executable version (i.e. application version or app extension version)
-        internal let bundleVersion: String?
-        /// Executable name (i.e. application name or app extension name)
-        internal let bundleName: String?
-        /// Process info
-        internal let processInfo: ProcessInfo
+//swiftlint:disable:next duplicate_imports
+@_exported import enum DatadogInternal.TrackingConsent
 
-        public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo) {
-            let bundleVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
-            let bundleShortVersion = mainBundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
-
-            self.init(
-                bundleType: mainBundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp,
-                bundleIdentifier: mainBundle.bundleIdentifier,
-                bundleVersion: bundleShortVersion ?? bundleVersion,
-                bundleName: mainBundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String,
-                processInfo: processInfo
-            )
+/// An entry point to Datadog SDK.
+///
+/// Initialize the core instance of the Datadog SDK prior to enabling any Features.
+///
+///     Datadog.initialize(
+///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
+///         trackingConsent: .pending
+///     )
+///
+/// Once Datadog SDK is initialized, you can enable Features, such as RUM:
+///
+///     RUM.enable(
+///         with: RUM.Configuration(applicationID: "<application>")
+///     )
+///     
+public struct Datadog {
+    /// Configuration of Datadog SDK.
+    public struct Configuration {
+        /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
+        /// Smaller batches mean smaller but more network requests, whereas larger batches mean fewer but larger network requests.
+        public enum BatchSize {
+            /// Prefer small sized data batches.
+            case small
+            /// Prefer medium sized data batches.
+            case medium
+            /// Prefer large sized data batches.
+            case large
         }
 
-        internal init(
-            bundleType: BundleType,
-            bundleIdentifier: String?,
-            bundleVersion: String?,
-            bundleName: String?,
-            processInfo: ProcessInfo
+        /// Defines the frequency at which Datadog SDK will try to upload data batches.
+        public enum UploadFrequency {
+            /// Try to upload batched data frequently.
+            case frequent
+            /// Try to upload batched data with a medium frequency.
+            case average
+            /// Try to upload batched data rarely.
+            case rare
+        }
+
+        /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
+        public var clientToken: String
+
+        /// The environment name which will be sent to Datadog. This can be used
+        /// To filter events on different environments (e.g. "staging" or "production").
+        public var env: String
+
+        /// The Datadog server site where data is sent.
+        ///
+        /// Default value is `.us1`.
+        public var site: DatadogSite
+
+        /// The service name associated with data send to Datadog.
+        ///
+        /// Default value is set to application bundle identifier.
+        public var service: String?
+
+        /// The preferred size of batched data uploaded to Datadog servers.
+        /// This value impacts the size and number of requests performed by the SDK.
+        ///
+        /// `.medium` by default.
+        public var batchSize: BatchSize
+
+        /// The preferred frequency of uploading data to Datadog servers.
+        /// This value impacts the frequency of performing network requests by the SDK.
+        ///
+        /// `.average` by default.
+        public var uploadFrequency: UploadFrequency
+
+        /// Proxy configuration attributes.
+        /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        public var proxyConfiguration: [AnyHashable: Any]?
+
+        /// SeData encryption to use for on-disk data persistency by providing an object
+        /// complying with `DataEncryption` protocol.
+        public var encryption: DataEncryption?
+
+        /// A custom NTP synchronization interface.
+        ///
+        /// By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        /// https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        /// implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        /// This can lead to significant time shift in RUM sessions or distributed traces.
+        public var serverDateProvider: ServerDateProvider
+
+        /// The bundle object that contains the current executable.
+        public var bundle: Bundle
+
+        /// Overrides the default process information.
+        internal var processInfo: ProcessInfo = .processInfo
+
+        /// Sets additional configuration attributes.
+        /// This can be used to tweak internal features of the SDK.
+        internal var additionalConfiguration: [String: Any] = [:]
+
+        /// Overrides the date provider.
+        internal var dateProvider: DateProvider = SystemDateProvider()
+
+        /// Creates a Datadog SDK Configuration object.
+        ///
+        /// - Parameters:
+        ///   - clientToken:                Either the RUM client token (which supports RUM, Logging and APM) or regular client token,
+        ///                                 only for Logging and APM.
+        ///
+        ///   - env:                        The environment name which will be sent to Datadog. This can be used
+        ///                                 To filter events on different environments (e.g. "staging" or "production").
+        ///
+        ///   - site:                       Datadog site endpoint, default value is `.us1`.
+        ///
+        ///   - service:                    The service name associated with data send to Datadog.
+        ///                                 Default value is set to application bundle identifier.
+        ///
+        ///   - bundle:                     The bundle object that contains the current executable.
+        ///
+        ///   - batchSize:                  The preferred size of batched data uploaded to Datadog servers.
+        ///                                 This value impacts the size and number of requests performed by the SDK.
+        ///                                 `.medium` by default.
+        ///
+        ///   - uploadFrequency:            The preferred frequency of uploading data to Datadog servers.
+        ///                                 This value impacts the frequency of performing network requests by the SDK.
+        ///                                 `.average` by default.
+        ///
+        ///   - proxyConfiguration:         A proxy configuration attributes.
+        ///                                 This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        ///   - encryption:                 Data encryption to use for on-disk data persistency by providing an object
+        ///                                 complying with `DataEncryption` protocol.
+        ///
+        ///   - serverDateProvider:         A custom NTP synchronization interface.
+        ///                                 By default, the Datadog SDK synchronizes with dedicated NTP pools provided by the
+        ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
+        ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
+        ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        public init(
+            clientToken: String,
+            env: String,
+            site: DatadogSite = .us1,
+            service: String? = nil,
+            bundle: Bundle = .main,
+            batchSize: BatchSize = .medium,
+            uploadFrequency: UploadFrequency = .average,
+            proxyConfiguration: [AnyHashable: Any]? = nil,
+            encryption: DataEncryption? = nil,
+            serverDateProvider: ServerDateProvider? = nil
         ) {
-            self.bundleType = bundleType
-            self.bundleIdentifier = bundleIdentifier
-            self.bundleVersion = bundleVersion
-            self.bundleName = bundleName
-            self.processInfo = processInfo
-        }
-    }
-
-    /// Initializes the Datadog SDK.
-    /// - Parameters:
-    ///   - appContext: context passing information about the app.
-    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(...)`.
-    @available(*, deprecated, message: """
-    This method is deprecated and uses the `TrackingConsent.granted` value as a default privacy consent.
-    This means that the SDK will start recording and sending data immediately after initialisation without waiting for the user's consent to be given.
-
-    Use `Datadog.initialize(appContext:trackingConsent:configuration:)` and set consent to `.granted` to preserve previous behaviour.
-    """)
-    public static func initialize(appContext: AppContext, configuration: Configuration) {
-        initialize(
-            appContext: appContext,
-            trackingConsent: .granted,
-            configuration: configuration
-        )
-    }
-
-    /// Initializes the Datadog SDK.
-    ///
-    /// - Parameters:
-    ///   - appContext: context passing information about the app.
-    ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
-    ///   - configuration: the SDK configuration obtained using `Datadog.Configuration.builderUsing(...)`.
-    ///   - instanceName: The core instance name.
-    public static func initialize(
-        appContext: AppContext,
-        trackingConsent: TrackingConsent,
-        configuration: Configuration,
-        instanceName: String = CoreRegistry.defaultInstanceName
-    ) {
-        // TODO: RUMM-511 remove this warning
-        #if targetEnvironment(macCatalyst)
-        consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
-        #endif
-
-        do {
-            try initializeOrThrow(
-                initialTrackingConsent: trackingConsent,
-                configuration: try FeaturesConfiguration(
-                    configuration: configuration,
-                    appContext: appContext
-                ),
-                instanceName: instanceName
-            )
-        } catch {
-            consolePrint("\(error)")
+            self.clientToken = clientToken
+            self.env = env
+            self.site = site
+            self.service = service
+            self.bundle = bundle
+            self.batchSize = batchSize
+            self.uploadFrequency = uploadFrequency
+            self.proxyConfiguration = proxyConfiguration
+            self.encryption = encryption
+            self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
         }
     }
 
@@ -166,40 +235,106 @@ public class Datadog {
         core?.clearAllData()
     }
 
+    /// Initializes the Datadog SDK.
+    ///
+    /// - Parameters:
+    ///   - configuration: the SDK configuration.
+    ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
+    ///   - instanceName: The core instance name.
+    public static func initialize(
+        with configuration: Configuration,
+        trackingConsent: TrackingConsent,
+        instanceName: String = CoreRegistry.defaultInstanceName
+    ) {
+        // TODO: RUMM-511 remove this warning
+        #if targetEnvironment(macCatalyst)
+        consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
+        #endif
+
+        do {
+            try initializeOrThrow(
+                with: configuration,
+                trackingConsent: trackingConsent,
+                instanceName: instanceName
+            )
+        } catch {
+            consolePrint("\(error)")
+        }
+    }
+
     private static func initializeOrThrow(
-        initialTrackingConsent: TrackingConsent,
-        configuration: FeaturesConfiguration,
+        with configuration: Configuration,
+        trackingConsent: TrackingConsent,
         instanceName: String
     ) throws {
-        if Datadog.isInitialized {
+        if CoreRegistry.default is DatadogCore {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
 
-        let serverDateProvider = configuration.common.serverDateProvider ?? DatadogNTPDateProvider()
+        let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
+        if debug {
+            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
+            Datadog.verbosityLevel = .debug
+        }
+
+        let applicationVersion = configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0.0.0"
+
+        let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
+        let bundleType: BundleType = configuration.bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
+        let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
+        let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
+        let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
+        let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
+        let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
+
+        let performance = PerformancePreset(
+            batchSize: debug ? .small : configuration.batchSize,
+            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
+            bundleType: bundleType
+        )
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
-            directory: try CoreDirectory(in: Directory.cache(), from: configuration.common),
-            dateProvider: configuration.common.dateProvider,
-            initialConsent: initialTrackingConsent,
-            performance: configuration.common.performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.common.proxyConfiguration),
-            encryption: configuration.common.encryption,
-            contextProvider: DatadogContextProvider(
-                configuration: configuration.common,
-                device: .init(),
-                serverDateProvider: serverDateProvider
+            directory: try CoreDirectory(
+                in: Directory.cache(),
+                clientToken: configuration.clientToken,
+                site: configuration.site
             ),
-            applicationVersion: configuration.common.applicationVersion
+            dateProvider: configuration.dateProvider,
+            initialConsent: trackingConsent,
+            performance: performance,
+            httpClient: HTTPClient(proxyConfiguration: configuration.proxyConfiguration),
+            encryption: configuration.encryption,
+            contextProvider: DatadogContextProvider(
+                site: configuration.site,
+                clientToken: try ifValid(clientToken: configuration.clientToken),
+                service: service,
+                env: try ifValid(env: configuration.env),
+                version: applicationVersion,
+                variant: variant,
+                source: source,
+                sdkVersion: sdkVersion,
+                ciAppOrigin: CITestIntegration.active?.origin,
+                applicationName: bundleName ?? bundleType.rawValue,
+                applicationBundleIdentifier: bundleIdentifier,
+                applicationVersion: applicationVersion,
+                sdkInitDate: configuration.dateProvider.now,
+                device: DeviceInfo(),
+                dateProvider: configuration.dateProvider,
+                serverDateProvider: configuration.serverDateProvider
+            ),
+            applicationVersion: applicationVersion
         )
 
         let telemetry = TelemetryCore(core: core)
 
         telemetry.configuration(
-            batchSize: Int64(exactly: configuration.common.performance.maxFileSize),
-            batchUploadFrequency: configuration.common.performance.minUploadDelay.toInt64Milliseconds,
-            useLocalEncryption: configuration.common.encryption != nil,
-            useProxy: configuration.common.proxyConfiguration != nil
+            batchSize: Int64(exactly: performance.maxFileSize),
+            batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
+            useLocalEncryption: configuration.encryption != nil,
+            useProxy: configuration.proxyConfiguration != nil
         )
 
         CITestIntegration.active?.startIntegration()
@@ -208,16 +343,13 @@ public class Datadog {
         deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
-            dateProvider: SystemDateProvider(),
+            dateProvider: configuration.dateProvider,
             timeZone: .current,
             printFunction: consolePrint,
             verbosityLevel: { Datadog.verbosityLevel }
         )
 
         DD.telemetry = telemetry
-    }
-
-    public init() {
     }
 
     private static func deleteV1Folders(in core: DatadogCore) {
@@ -237,24 +369,39 @@ public class Datadog {
     ///
     /// This is highly experimental API and only supported in tests.
 #if DD_SDK_COMPILED_FOR_TESTING
-    public static func flushAndDeinitialize() {
-        internalFlushAndDeinitialize()
+    public static func flushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
+        internalFlushAndDeinitialize(instanceName: instanceName)
     }
 #endif
 
-    internal static func internalFlushAndDeinitialize() {
-        assert(Datadog.isInitialized, "SDK must be first initialized.")
+    internal static func internalFlushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
+        assert(CoreRegistry.instance(named: instanceName) is DatadogCore, "SDK must be first initialized.")
 
         // Flush and tear down SDK core:
-        (CoreRegistry.default as? DatadogCore)?.flushAndTearDown()
+        (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
 
         // Reset Globals:
         DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
-        CoreRegistry.unregisterDefault()
+        CoreRegistry.unregisterInstance(named: instanceName)
     }
 }
 
-/// Convenience typealias.
-internal typealias AppContext = Datadog.AppContext
+private func ifValid(env: String) throws -> String {
+    /// 1. cannot be more than 200 chars (including `env:` prefix)
+    /// 2. cannot end with `:`
+    /// 3. can contain letters, numbers and _:./-_ (other chars are converted to _ at backend)
+    let regex = #"^[a-zA-Z0-9_:./-]{0,195}[a-zA-Z0-9_./-]$"#
+    if env.range(of: regex, options: .regularExpression, range: nil, locale: nil) == nil {
+        throw ProgrammerError(description: "`env`: \(env) contains illegal characters (only alphanumerics and `_` are allowed)")
+    }
+    return env
+}
+
+private func ifValid(clientToken: String) throws -> String {
+    if clientToken.isEmpty {
+        throw ProgrammerError(description: "`clientToken` cannot be empty.")
+    }
+    return clientToken
+}

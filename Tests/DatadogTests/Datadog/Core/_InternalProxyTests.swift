@@ -38,9 +38,8 @@ class _InternalProxyTests: XCTestCase {
     func testWhenNewVersionIsSetInConfigurationProxy_thenItChangesAppVersionInCore() throws {
         // Given
         Datadog.initialize(
-            appContext: .mockAny(),
-            trackingConsent: .mockRandom(),
-            configuration: .mockAny()
+            with: .mockAny(),
+            trackingConsent: .mockRandom()
         )
         defer { Datadog.flushAndDeinitialize() }
 
