@@ -6,7 +6,7 @@
 
 import Foundation
 import DatadogInternal
-import Datadog
+import DatadogCore
 
 /// Casts `[String: Any]` attributes to their `Encodable` representation by wrapping each `Any` into `AnyEncodable`.
 internal func castAttributesToSwift(_ attributes: [String: Any]) -> [String: Encodable] {

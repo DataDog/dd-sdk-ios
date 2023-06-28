@@ -8,7 +8,7 @@ import XCTest
 import DatadogInternal
 
 @testable import DatadogTrace
-@testable import Datadog
+@testable import DatadogCore
 
 class TracingStorageBenchmarkTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional

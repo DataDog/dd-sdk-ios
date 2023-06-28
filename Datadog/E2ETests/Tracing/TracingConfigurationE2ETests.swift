@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogCore
 
 class TracingConfigurationE2ETests: E2ETests {
     override func setUp() {

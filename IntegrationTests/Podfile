@@ -1,7 +1,7 @@
 target 'Runner iOS' do
     platform :ios, '11.0'
 
-    pod 'DatadogSDK', :path => '..'
+    pod 'DatadogCore', :path => '..'
     pod 'DatadogSDKObjc', :path => '..'
     pod 'DatadogSDKCrashReporting', :path => '..'
 

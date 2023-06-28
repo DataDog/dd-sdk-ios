@@ -10,8 +10,8 @@ let package = Package(
     ],
     products: [
         .library(
-            name: "Datadog",
-            targets: ["Datadog"]
+            name: "DatadogCore",
+            targets: ["DatadogCore"]
         ),
         .library(
             name: "DatadogObjc",
@@ -47,18 +47,18 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Datadog",
+            name: "DatadogCore",
             dependencies: [
                 .target(name: "DatadogInternal"),
-                .target(name: "DatadogTrace"),
                 .target(name: "DatadogPrivate"),
             ],
+            path: "DatadogCore/Sources",
             swiftSettings: [.define("SPM_BUILD")]
         ),
         .target(
             name: "DatadogObjc",
             dependencies: [
-                .target(name: "Datadog"),
+                .target(name: "DatadogCore"),
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogRUM"),
@@ -66,7 +66,8 @@ let package = Package(
             path: "DatadogObjc/Sources"
         ),
         .target(
-            name: "DatadogPrivate"
+            name: "DatadogPrivate",
+            path: "DatadogCore/Private"
         ),
 
         .target(

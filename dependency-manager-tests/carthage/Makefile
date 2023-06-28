@@ -21,7 +21,7 @@ test:
 		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/Datadog.xcframework" ] && echo "Datadog.xcframework - OK" || { echo "Datadog.xcframework - missing"; false; }
+		@[ -e "Carthage/Build/DatadogCore.xcframework" ] && echo "DatadogCore.xcframework - OK" || { echo "DatadogCore.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogLogs.xcframework" ] && echo "DatadogLogs.xcframework - OK" || { echo "DatadogLogs.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogTrace.xcframework" ] && echo "DatadogTrace.xcframework - OK" || { echo "DatadogTrace.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogRUM.xcframework" ] && echo "DatadogRUM.xcframework - OK" || { echo "DatadogRUM.xcframework - missing"; false; }

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-@testable import Datadog
+@testable import DatadogCore
 
 class KronosE2ETests: E2ETests {
     /// The logger sending logs on Kronos execution. These logs are available in Mobile Integrations org.

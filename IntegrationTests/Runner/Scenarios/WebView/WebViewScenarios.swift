@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogCore
 import DatadogRUM
 import DatadogLogs
 

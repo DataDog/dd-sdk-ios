@@ -86,6 +86,7 @@ included:
   - ../../Tests
   - ../../TestUtilities/Sources
   - ../../DatadogInternal/Tests
+  - ../../DatadogCore/Tests
   - ../../DatadogLogs/Tests
   - ../../DatadogTrace/Tests
   - ../../DatadogRUM/Tests

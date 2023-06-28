@@ -25,12 +25,12 @@ class XCFrameworkValidator:
 
 
 class DatadogXCFrameworkValidator(XCFrameworkValidator):
-    name = 'Datadog.xcframework'
+    name = 'DatadogCore.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        # always expect `Datadog.xcframework`
+        # always expect `DatadogCore.xcframework`
 
-        dir = zip_directory.get('Datadog.xcframework')
+        dir = zip_directory.get('DatadogCore.xcframework')
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version.parse('1.12.1')

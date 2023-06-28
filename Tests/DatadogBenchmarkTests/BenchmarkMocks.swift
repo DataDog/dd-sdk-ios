@@ -5,7 +5,7 @@
  */
 
 import DatadogInternal
-@testable import Datadog
+@testable import DatadogCore
 
 extension PerformancePreset {
     static let benchmarksPreset = PerformancePreset(batchSize: .small, uploadFrequency: .frequent, bundleType: .iOSApp)

@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogCore
 import DatadogTrace
 
 class DebugTracingViewController: UIViewController {
