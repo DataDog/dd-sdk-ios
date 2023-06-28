@@ -104,7 +104,7 @@ private extension SRPlaceholderWireframe {
             ),
             content: frameContent(
                 text: label ?? "Placeholder",
-                textStyle: .init(color: "#FF000000", family: UIFont.systemFont(ofSize: 12).fontName, size: 12),
+                textStyle: .init(color: "#FF000000", family: "Verdana", size: 12),
                 textPosition: .init(
                     alignment: .init(horizontal: .center, vertical: .center),
                     padding: .init(bottom: 0, left: 0, right: 0, top: 0)

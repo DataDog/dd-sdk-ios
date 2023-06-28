@@ -98,25 +98,9 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let shouldRecordImage: Bool
 
-    private var clip: SRContentClip? {
+    private var relativeIntersectedRect: CGRect? {
         guard let contentFrame = contentFrame else {
             return nil
-        }
-        let top = max(relativeIntersectedRect.origin.y - contentFrame.origin.y, 0)
-        let left = max(relativeIntersectedRect.origin.x - contentFrame.origin.x, 0)
-        let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
-        let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
-        return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
-        )
-    }
-
-    private var relativeIntersectedRect: CGRect {
-        guard let contentFrame = contentFrame else {
-            return .zero
         }
         return attributes.frame.intersection(contentFrame)
     }
@@ -140,14 +124,13 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 tintColor: tintColor
             )
         }
-        if let contentFrame = contentFrame {
+        if let contentFrame = clipsToBounds ? relativeIntersectedRect : contentFrame {
             if let base64 = base64 {
                 wireframes.append(
                     builder.createImageWireframe(
                         base64: base64,
                         id: imageWireframeID,
-                        frame: contentFrame,
-                        clip: clipsToBounds ? clip : nil
+                        frame: contentFrame
                     )
                 )
             } else {
@@ -155,8 +138,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                     builder.createPlaceholderWireframe(
                         id: imageWireframeID,
                         frame: contentFrame,
-                        label: "Content Image",
-                        clip: clipsToBounds ? clip : nil
+                        label: "Content Image"
                     )
                 )
             }
