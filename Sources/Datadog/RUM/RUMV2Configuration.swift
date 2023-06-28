@@ -42,6 +42,7 @@ internal struct RUMViewEventsFilter {
 
     func filter(events: [Event]) -> [Event] {
         var seen = Set<String>()
+        var skipped: [String: [Int64]] = [:]
 
         // reversed is O(1) and no copy because it is view on the original array
         let filtered = events.reversed().compactMap { event in
@@ -57,12 +58,16 @@ internal struct RUMViewEventsFilter {
 
             guard seen.contains(viewMetadata.id) == false else {
                 // If we've already seen this view, we can skip this
-                DD.logger.debug("Skipping RUMViewEvent with id: \(viewMetadata.id)")
+                skipped[viewMetadata.id]?.append(viewMetadata.documentVersion)
                 return nil
             }
 
             seen.insert(viewMetadata.id)
             return event
+        }
+
+        for (id, versions) in skipped {
+            DD.logger.debug("Skipping RUMViewEvent with id: \(id) and versions: \(versions)")
         }
 
         return filtered.reversed()
