@@ -22,7 +22,6 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMCITest",
                 "RUMDevice",
                 "RUMOperatingSystem",
-                "RUMDisplay",
                 "RUMActionID",
             ]
         )
@@ -99,10 +98,6 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "OS" {
             fixedName = "RUMOperatingSystem"
-        }
-
-        if fixedName == "Display" {
-            fixedName = "RUMDisplay"
         }
 
         // Since https://github.com/DataDog/rum-events-format/pull/57 `action.id` can be either

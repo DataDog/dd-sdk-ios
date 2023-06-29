@@ -35,8 +35,14 @@ internal class JSONSchemaToJSONTypeTransformer {
             return try transformSchemaToObject(schema, named: name)
         }
 
-        let schemaType = try schema.type
-            .unwrapOrThrow(.inconsistency("`JSONSchema` must define `type`: \(schema)."))
+        let schemaType: JSONSchema.SchemaType
+        if let enumarations = schema.enum, schema.type == nil {
+            schemaType = try enumarations.inferrSchemaType()
+                .unwrapOrThrow(.inconsistency("Heteregenous enum is not supported: \(enumarations)."))
+        } else {
+            schemaType = try schema.type
+                .unwrapOrThrow(.inconsistency("`JSONSchema` must define `type`: \(schema)."))
+        }
 
         switch schemaType {
         case .object:
