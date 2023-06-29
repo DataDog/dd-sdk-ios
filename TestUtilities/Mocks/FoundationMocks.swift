@@ -411,6 +411,10 @@ extension Float: AnyMockable, RandomMockable {
     public static func mockRandom() -> Float {
         return .random(in: -Float(Int.min)...Float(Int.max))
     }
+
+    public static func mockRandom(min: Float, max: Float) -> Float {
+        return .random(in: min...max)
+    }
 }
 
 extension Double: AnyMockable, RandomMockable {

@@ -35,7 +35,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
@@ -154,14 +154,14 @@ public struct RUMActionEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
-            public let plan: Plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -300,6 +300,30 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -407,7 +431,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Error properties
     public var error: Error
@@ -484,14 +508,14 @@ public struct RUMErrorEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
-            public let plan: Plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -519,10 +543,37 @@ public struct RUMErrorEvent: RUMDataModel {
         }
     }
 
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+        }
+    }
+
     /// Error properties
     public struct Error: Codable {
         /// Causes of the error
         public var causes: [Causes]?
+
+        /// Fingerprint used for Error Tracking custom grouping
+        public var fingerprint: String?
 
         /// Whether the error has been handled manually in the source code or not
         public let handling: Handling?
@@ -556,6 +607,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case causes = "causes"
+            case fingerprint = "fingerprint"
             case handling = "handling"
             case handlingStack = "handling_stack"
             case id = "id"
@@ -825,7 +877,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Long Task properties
     public let longTask: LongTask
@@ -902,14 +954,14 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
-            public let plan: Plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -934,6 +986,30 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case id = "id"
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
         }
     }
 
@@ -1058,7 +1134,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
@@ -1147,14 +1223,14 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
-            public let plan: Plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -1182,6 +1258,30 @@ public struct RUMResourceEvent: RUMDataModel {
         }
     }
 
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+        }
+    }
+
     /// Resource properties
     public struct Resource: Codable {
         /// Connect phase properties
@@ -1194,7 +1294,7 @@ public struct RUMResourceEvent: RUMDataModel {
         public let download: Download?
 
         /// Duration of the resource
-        public let duration: Int64
+        public let duration: Int64?
 
         /// First Byte phase properties
         public let firstByte: FirstByte?
@@ -1479,13 +1579,16 @@ public struct RUMViewEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Feature flags properties
     public internal(set) var featureFlags: FeatureFlags?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
+
+    /// Privacy properties
+    public let privacy: Privacy?
 
     /// The service name for this application
     public let service: String?
@@ -1522,6 +1625,7 @@ public struct RUMViewEvent: RUMDataModel {
         case display = "display"
         case featureFlags = "feature_flags"
         case os = "os"
+        case privacy = "privacy"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -1543,6 +1647,12 @@ public struct RUMViewEvent: RUMDataModel {
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
+        /// List of the page states during the view
+        public let pageStates: [PageStates]?
+
+        /// Debug metadata for Replay Sessions
+        public let replayStats: ReplayStats?
+
         /// Session-related internal properties
         public let session: Session?
 
@@ -1550,19 +1660,62 @@ public struct RUMViewEvent: RUMDataModel {
             case browserSdkVersion = "browser_sdk_version"
             case documentVersion = "document_version"
             case formatVersion = "format_version"
+            case pageStates = "page_states"
+            case replayStats = "replay_stats"
             case session = "session"
+        }
+
+        /// Properties of the page state
+        public struct PageStates: Codable {
+            /// Duration in ns between start of the view and start of the page state
+            public let start: Int64
+
+            /// Page state name
+            public let state: State
+
+            enum CodingKeys: String, CodingKey {
+                case start = "start"
+                case state = "state"
+            }
+
+            /// Page state name
+            public enum State: String, Codable {
+                case active = "active"
+                case passive = "passive"
+                case hidden = "hidden"
+                case frozen = "frozen"
+                case terminated = "terminated"
+            }
+        }
+
+        /// Debug metadata for Replay Sessions
+        public struct ReplayStats: Codable {
+            /// The number of records produced during this view lifetime
+            public let recordsCount: Int64?
+
+            /// The number of segments sent during this view lifetime
+            public let segmentsCount: Int64?
+
+            /// The total size in bytes of the segments sent during this view lifetime
+            public let segmentsTotalRawSize: Int64?
+
+            enum CodingKeys: String, CodingKey {
+                case recordsCount = "records_count"
+                case segmentsCount = "segments_count"
+                case segmentsTotalRawSize = "segments_total_raw_size"
+            }
         }
 
         /// Session-related internal properties
         public struct Session: Codable {
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
-            public let plan: Plan
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
             }
 
-            /// Session plan: 1 is the plan without replay, 2 is the plan with replay
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
@@ -1580,9 +1733,76 @@ public struct RUMViewEvent: RUMDataModel {
         }
     }
 
+    /// Display properties
+    public struct Display: Codable {
+        /// Scroll properties
+        public let scroll: Scroll?
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case scroll = "scroll"
+            case viewport = "viewport"
+        }
+
+        /// Scroll properties
+        public struct Scroll: Codable {
+            /// Distance between the top and the lowest point reached on this view (in pixels)
+            public let maxDepth: Double
+
+            /// Page scroll height (total height) when the maximum scroll depth was reached for this view (in pixels)
+            public let maxDepthScrollHeight: Double
+
+            /// Page scroll top (scrolled distance) when the maximum scroll depth was reached for this view (in pixels)
+            public let maxDepthScrollTop: Double
+
+            /// Duration between the view start and the scroll event that reached the maximum scroll depth for this view (in nanoseconds)
+            public let maxDepthTime: Double
+
+            enum CodingKeys: String, CodingKey {
+                case maxDepth = "max_depth"
+                case maxDepthScrollHeight = "max_depth_scroll_height"
+                case maxDepthScrollTop = "max_depth_scroll_top"
+                case maxDepthTime = "max_depth_time"
+            }
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+        }
+    }
+
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
+    }
+
+    /// Privacy properties
+    public struct Privacy: Codable {
+        /// The replay privacy level
+        public let replayLevel: ReplayLevel
+
+        enum CodingKeys: String, CodingKey {
+            case replayLevel = "replay_level"
+        }
+
+        /// The replay privacy level
+        public enum ReplayLevel: String, Codable {
+            case allow = "allow"
+            case mask = "mask"
+            case maskUserInput = "mask-user-input"
+        }
     }
 
     /// Session properties
@@ -1596,8 +1816,11 @@ public struct RUMViewEvent: RUMDataModel {
         /// Whether this session is currently active. Set to false to manually stop a session
         public let isActive: Bool?
 
+        /// Whether this session has been sampled for replay
+        public let sampledForReplay: Bool?
+
         /// The precondition that led to the creation of the session
-        public let startReason: StartReason?
+        public let startPrecondition: StartPrecondition?
 
         /// Type of the session
         public let type: SessionType
@@ -1606,16 +1829,17 @@ public struct RUMViewEvent: RUMDataModel {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
-            case startReason = "start_reason"
+            case sampledForReplay = "sampled_for_replay"
+            case startPrecondition = "start_precondition"
             case type = "type"
         }
 
         /// The precondition that led to the creation of the session
-        public enum StartReason: String, Codable {
-            case appStart = "app_start"
+        public enum StartPrecondition: String, Codable {
+            case appLaunch = "app_launch"
             case inactivityTimeout = "inactivity_timeout"
             case maxDuration = "max_duration"
-            case stopApi = "stop_api"
+            case explicitStop = "explicit_stop"
             case backgroundEvent = "background_event"
         }
 
@@ -2447,6 +2671,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether initialization fails silently if the SDK is already initialized
             public let silentMultipleInit: Bool?
 
+            /// Whether the session replay start is handled manually
+            public var startSessionReplayRecordingManually: Bool?
+
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
 
@@ -2553,6 +2780,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
+                case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -2823,32 +3051,11 @@ public struct RUMDevice: Codable {
     }
 }
 
-/// Display properties
-public struct RUMDisplay: Codable {
-    /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-    public let viewport: Viewport?
-
-    enum CodingKeys: String, CodingKey {
-        case viewport = "viewport"
-    }
-
-    /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
-    public struct Viewport: Codable {
-        /// Height of the viewport (in pixels)
-        public let height: Double
-
-        /// Width of the viewport (in pixels)
-        public let width: Double
-
-        enum CodingKeys: String, CodingKey {
-            case height = "height"
-            case width = "width"
-        }
-    }
-}
-
 /// Operating system properties
 public struct RUMOperatingSystem: Codable {
+    /// Operating system build number, e.g. 15D21
+    public let build: String?
+
     /// Operating system name, e.g. Android, iOS
     public let name: String
 
@@ -2859,6 +3066,7 @@ public struct RUMOperatingSystem: Codable {
     public let versionMajor: String
 
     enum CodingKeys: String, CodingKey {
+        case build = "build"
         case name = "name"
         case version = "version"
         case versionMajor = "version_major"
@@ -2974,4 +3182,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/a45fbc913eb36f3bf0cc37aa1bdbee126104972b
+// Generated from https://github.com/DataDog/rum-events-format/tree/1c5eaa897c065e5f790a5f8aaf6fc8782d706051

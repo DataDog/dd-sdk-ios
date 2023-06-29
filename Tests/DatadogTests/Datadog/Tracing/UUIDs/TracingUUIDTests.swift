@@ -18,6 +18,26 @@ class UUIDTests: XCTestCase {
         XCTAssertEqual(TracingUUID(rawValue: .max).toString(.hexadecimal), "ffffffffffffffff")
     }
 
+    func testTo16CharHexadecimalStringConversion() {
+        XCTAssertEqual(TracingUUID(rawValue: 0).toString(.hexadecimal16Chars), "0000000000000000")
+        XCTAssertEqual(TracingUUID(rawValue: 1).toString(.hexadecimal16Chars), "0000000000000001")
+        XCTAssertEqual(TracingUUID(rawValue: 15).toString(.hexadecimal16Chars), "000000000000000f")
+        XCTAssertEqual(TracingUUID(rawValue: 16).toString(.hexadecimal16Chars), "0000000000000010")
+        XCTAssertEqual(TracingUUID(rawValue: 123).toString(.hexadecimal16Chars), "000000000000007b")
+        XCTAssertEqual(TracingUUID(rawValue: 123_456).toString(.hexadecimal16Chars), "000000000001e240")
+        XCTAssertEqual(TracingUUID(rawValue: .max).toString(.hexadecimal16Chars), "ffffffffffffffff")
+    }
+
+    func testTo32CharHexadecimalStringConversion() {
+        XCTAssertEqual(TracingUUID(rawValue: 0).toString(.hexadecimal32Chars), "00000000000000000000000000000000")
+        XCTAssertEqual(TracingUUID(rawValue: 1).toString(.hexadecimal32Chars), "00000000000000000000000000000001")
+        XCTAssertEqual(TracingUUID(rawValue: 15).toString(.hexadecimal32Chars), "0000000000000000000000000000000f")
+        XCTAssertEqual(TracingUUID(rawValue: 16).toString(.hexadecimal32Chars), "00000000000000000000000000000010")
+        XCTAssertEqual(TracingUUID(rawValue: 123).toString(.hexadecimal32Chars), "0000000000000000000000000000007b")
+        XCTAssertEqual(TracingUUID(rawValue: 123_456).toString(.hexadecimal32Chars), "0000000000000000000000000001e240")
+        XCTAssertEqual(TracingUUID(rawValue: .max).toString(.hexadecimal32Chars), "0000000000000000ffffffffffffffff")
+    }
+
     func testToDecimalStringConversion() {
         XCTAssertEqual(TracingUUID(rawValue: 0).toString(.decimal), "0")
         XCTAssertEqual(TracingUUID(rawValue: 1).toString(.decimal), "1")

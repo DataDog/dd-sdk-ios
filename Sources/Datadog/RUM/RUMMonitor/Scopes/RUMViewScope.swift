@@ -441,6 +441,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: version.toInt64,
+                pageStates: nil,
+                replayStats: nil,
                 session: .init(plan: .plan1)
             ),
             application: .init(id: self.context.rumApplicationID),
@@ -452,12 +454,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
+            privacy: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.srBaggage?.isReplayBeingRecorded,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
-                startReason: nil,
+                sampledForReplay: nil,
+                startPrecondition: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
