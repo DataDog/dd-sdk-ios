@@ -3,7 +3,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "DatadogSDK",
+    name: "Datadog",
     platforms: [
         .iOS(.v11),
         .tvOS(.v11)
