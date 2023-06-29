@@ -27,11 +27,14 @@ internal struct FileWriter: Writer {
     ///  - metadata: Encodable metadata to write.
     func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
         do {
-            var encoded = try encode(encodable: value, blockType: .event)
+            var encoded: Data = .init()
             if let metadata = metadata {
                 let encodedMetadata = try encode(encodable: metadata, blockType: .eventMetadata)
                 encoded.append(encodedMetadata)
             }
+
+            let encodedValue = try encode(encodable: value, blockType: .event)
+            encoded.append(encodedValue)
 
             // Make sure both event and event metadata are written to the same file.
             // This is to avoid a situation where event is written to one file and event metadata to another.

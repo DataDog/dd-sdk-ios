@@ -34,6 +34,12 @@ internal struct EventGenerator: Sequence, IteratorProtocol {
     }
 
     /// Returns the next event.
+    ///
+    /// Data format
+    /// ```
+    /// [EVENT 1 METADATA] [EVENT 1] [EVENT 2 METADATA] [EVENT 2] [EVENT 3]
+    /// ```
+    ///
     /// - Returns: The next event or `nil` if there are no more events.
     /// - Note: a `DataBlock` with `.event` type marks the beginning of the event.
     ///         It is either followed by another `DataBlock` with `.event` type or
@@ -43,25 +49,28 @@ internal struct EventGenerator: Sequence, IteratorProtocol {
             return nil
         }
 
-        let event = dataBlocks[index]
-        index += 1
-        // if the first block is not event, then skip it
-        guard event.type == .event else {
+        var metadata: DataBlock? = nil
+        // If the next block is an event metadata, read it.
+        if dataBlocks[index].type == .eventMetadata {
+            metadata = dataBlocks[index]
+            index += 1
+        }
+
+        // If this is the last block, return nil.
+        // there cannot be a metadata block without an event block.
+        guard index < dataBlocks.count else {
+            return nil
+        }
+
+        // If the next block is an event, read it.
+        guard dataBlocks[index].type == .event else {
+            // this is safeguard against corrupted data.
+            // if there was a metadata block, it will be skipped.
             return next()
         }
-
-        // if the next block is also event, then there is no metadata
-        guard index < dataBlocks.count, dataBlocks[index].type != .event else {
-            return Event(data: event.data, metadata: nil)
-        }
-
-        // otherwise, the next block can be metadata
-        let metadata = dataBlocks[index]
-        guard metadata.type == .eventMetadata else {
-            return Event(data: event.data, metadata: nil)
-        }
+        let event = dataBlocks[index]
         index += 1
 
-        return Event(data: event.data, metadata: metadata.data)
+        return Event(data: event.data, metadata: metadata?.data)
     }
 }

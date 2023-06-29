@@ -39,20 +39,20 @@ class FileWriterTests: XCTestCase {
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()
-        XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
-        block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"{"meta1":"metaValue1"}"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"{"key2":"value2"}"#.utf8Data)
+        XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+        XCTAssertEqual(block?.data, #"{"key2":"value2"}"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"{"meta3":"metaValue3"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
     func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
@@ -79,20 +79,20 @@ class FileWriterTests: XCTestCase {
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()
-        XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"encrypted{"key1":"value1"}encrypted"#.utf8Data)
-        block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"encrypted{"meta1":"metaValue1"}encrypted"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"encrypted{"key2":"value2"}encrypted"#.utf8Data)
+        XCTAssertEqual(block?.data, #"encrypted{"key1":"value1"}encrypted"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, #"encrypted{"key3":"value3"}encrypted"#.utf8Data)
+        XCTAssertEqual(block?.data, #"encrypted{"key2":"value2"}encrypted"#.utf8Data)
         block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"encrypted{"meta3":"metaValue3"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key3":"value3"}encrypted"#.utf8Data)
     }
 
     func testItWritesDataToSingleFileInTLVFormat() throws {
@@ -294,7 +294,7 @@ class FileWriterTests: XCTestCase {
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
-        let eventGenerator = try EventGenerator(dataBlocks: blocks)
+        let eventGenerator = EventGenerator(dataBlocks: blocks)
         let events = eventGenerator.map { $0 }
 
         // Assert that some (including all) `Foo`s were written
@@ -336,10 +336,6 @@ class FileWriterTests: XCTestCase {
         let reader = DataBlockReader(input: stream)
 
         var block = try reader.next()
-        XCTAssertEqual(block?.type, .event)
-        XCTAssertEqual(block?.data, "foo".utf8Data)
-
-        block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, "foo".utf8Data)
 
@@ -353,6 +349,10 @@ class FileWriterTests: XCTestCase {
 
         block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)
     }
 }
