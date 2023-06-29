@@ -256,5 +256,3 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual as? JSONObject)
     }
 }
-
-
