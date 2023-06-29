@@ -10,6 +10,16 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
+extension PrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> PrivacyLevel {
+        return .allow
+    }
+
+    public static func mockRandom() -> PrivacyLevel {
+        return [.allow, .mask, .maskUserInput].randomElement()!
+    }
+}
+
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
@@ -20,7 +30,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
     public static func mockRandom() -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: .mockRandom(),
-            rumContext: .mockRandom(),
+            context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50)))
         )
@@ -28,13 +38,13 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
 
     static func mockWith(
         date: Date = .mockAny(),
-        rumContext: RUMContext = .mockAny(),
+        context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
-            rumContext: rumContext,
+            context: context,
             viewportSize: viewportSize,
             nodes: nodes
         )
@@ -150,14 +160,9 @@ extension ViewAttributes: AnyMockable, RandomMockable {
             isHidden = false
             alpha = 1
             frame = .mockRandom(minWidth: 10, minHeight: 10)
-            // some appearance:
-            oneOrMoreOf([
-                {
-                    layerBorderWidth = .mockRandom(min: 1, max: 5)
-                    layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
-                },
-                { backgroundColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor }
-            ])
+            backgroundColor = UIColor.mockRandomWith(alpha: 1).cgColor
+            layerBorderWidth = .mockRandom(min: 1, max: 5)
+            layerBorderColor = UIColor.mockRandomWith(alpha: .mockRandom(min: 0.1, max: 1)).cgColor
         }
         // swiftlint:enable opening_brace
 
@@ -277,7 +282,7 @@ internal class TextObfuscatorMock: TextObfuscating {
 }
 
 internal func mockRandomTextObfuscator() -> TextObfuscating {
-    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLegthMaskObfuscator()].randomElement()!
+    return [NOPTextObfuscator(), SpacePreservingMaskObfuscator(), FixLengthMaskObfuscator()].randomElement()!
 }
 
 extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
@@ -290,8 +295,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            imageDataProvider: mockRandomImageDataProvider(),
-            textObfuscators: TextObfuscators()
+            imageDataProvider: mockRandomImageDataProvider()
         )
     }
 
@@ -299,15 +303,13 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        imageDataProvider: ImageDataProviding = MockImageDataProvider(),
-        textObfuscators: TextObfuscators = TextObfuscators()
+        imageDataProvider: ImageDataProviding = MockImageDataProvider()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            imageDataProvider: imageDataProvider,
-            textObfuscators: textObfuscators
+            imageDataProvider: imageDataProvider
         )
     }
 }
@@ -315,6 +317,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 class NodeRecorderMock: NodeRecorder {
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []
+    var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
     var resultForView: (UIView) -> NodeSemantics?
 
     init(resultForView: @escaping (UIView) -> NodeSemantics?) {
@@ -324,6 +327,7 @@ class NodeRecorderMock: NodeRecorder {
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         queriedViews.insert(view)
         queryContexts.append(context)
+        queryContextsByView[view] = context
         return resultForView(view)
     }
 }
@@ -403,7 +407,7 @@ extension RUMContext: AnyMockable, RandomMockable {
     static func mockWith(
         applicationID: String = .mockAny(),
         sessionID: String = .mockAny(),
-        viewID: String = .mockAny(),
+        viewID: String? = .mockAny(),
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
@@ -424,21 +428,36 @@ extension Recorder.Context: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Recorder.Context {
         return Recorder.Context(
-            date: .mockRandom(),
             privacy: .mockRandom(),
-            rumContext: .mockRandom()
+            rumContext: .mockRandom(),
+            date: .mockRandom()
         )
     }
 
     static func mockWith(
         date: Date = .mockAny(),
-        privacy: SessionReplayPrivacy = .mockAny(),
+        privacy: PrivacyLevel = .mockAny(),
         rumContext: RUMContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
-            date: date,
             privacy: privacy,
-            rumContext: rumContext
+            rumContext: rumContext,
+            date: date
+        )
+    }
+
+    init(
+        privacy: PrivacyLevel,
+        rumContext: RUMContext,
+        date: Date = Date()
+    ) {
+        self.init(
+            privacy: privacy,
+            applicationID: rumContext.ids.applicationID,
+            sessionID: rumContext.ids.sessionID,
+            viewID: rumContext.ids.viewID ?? "",
+            viewServerTimeOffset: rumContext.viewServerTimeOffset,
+            date: date
         )
     }
 }

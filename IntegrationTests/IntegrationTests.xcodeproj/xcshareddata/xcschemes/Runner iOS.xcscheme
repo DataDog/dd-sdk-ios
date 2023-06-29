@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1410"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61441C0124616DE9003D8BB8"
+               BuildableName = "Integration Tests Runner.app"
+               BlueprintName = "Runner iOS"
+               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <PreActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "REPOSITORY_ROOT=&quot;${SRCROOT}/..&quot;&#10;cd &quot;${REPOSITORY_ROOT}&quot; &amp;&amp; ./instrumented-tests/http-server-mock/python/start_mock_server.py&amp;&#10;">
+               <EnvironmentBuildable>
+                  <BuildableReference
+                     BuildableIdentifier = "primary"
+                     BlueprintIdentifier = "61441C2924616F1D003D8BB8"
+                     BuildableName = "IntegrationScenarios.xctest"
+                     BlueprintName = "IntegrationScenarios"
+                     ReferencedContainer = "container:IntegrationTests.xcodeproj">
+                  </BuildableReference>
+               </EnvironmentBuildable>
+            </ActionContent>
+         </ExecutionAction>
+      </PreActions>
+      <PostActions>
+         <ExecutionAction
+            ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
+            <ActionContent
+               title = "Run Script"
+               scriptText = "pkill -f start_mock_server.py;&#10;">
+            </ActionContent>
+         </ExecutionAction>
+      </PostActions>
+      <TestPlans>
+         <TestPlanReference
+            reference = "container:xctestplans/DatadogIntegrationTests.xctestplan"
+            default = "YES">
+         </TestPlanReference>
+         <TestPlanReference
+            reference = "container:xctestplans/DatadogCrashReportingIntegrationTests.xctestplan">
+         </TestPlanReference>
+      </TestPlans>
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61441C2924616F1D003D8BB8"
+               BuildableName = "IntegrationScenarios.xctest"
+               BlueprintName = "IntegrationScenarios"
+               ReferencedContainer = "container:IntegrationTests.xcodeproj">
+            </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "CrashReportingWithLoggingScenarioTests">
+               </Test>
+               <Test
+                  Identifier = "CrashReportingWithRUMScenarioTests">
+               </Test>
+            </SkippedTests>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Integration"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61441C0124616DE9003D8BB8"
+            BuildableName = "Integration Tests Runner.app"
+            BlueprintName = "Runner iOS"
+            ReferencedContainer = "container:IntegrationTests.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "DD_DEBUG"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "DD_DEBUG_RUM"
+            isEnabled = "NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "LoggingManualInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMSwiftUIInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMMobileVitalsScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "TracingManualInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "TracingURLSessionScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "TracingNSURLSessionScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMManualInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMNavigationControllerScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMTapActionScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMTabBarAutoInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMModalViewsAutoInstrumentationScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMURLSessionResourcesScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMNSURLSessionResourcesScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "TrackingConsentStartPendingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "TrackingConsentStartGrantedScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "RUMScrubbingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "CrashReportingCollectOrSendWithRUMScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "CrashReportingCollectOrSendWithLoggingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_TEST_SCENARIO_CLASS_NAME"
+            value = "WebViewTrackingScenario"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61441C0124616DE9003D8BB8"
+            BuildableName = "Integration Tests Runner.app"
+            BlueprintName = "Runner iOS"
+            ReferencedContainer = "container:IntegrationTests.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

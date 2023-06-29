@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogCore
 
 class LoggingTrackingConsentE2ETests: E2ETests {
     private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional

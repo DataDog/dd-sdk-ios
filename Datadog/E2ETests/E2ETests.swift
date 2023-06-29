@@ -5,7 +5,7 @@
 */
 
 import XCTest
-import Datadog
+import DatadogCore
 
 /// A base class for all E2E test cases.
 class E2ETests: XCTestCase {
@@ -47,7 +47,7 @@ class E2ETests: XCTestCase {
         let result = block()
         let stop = Date()
 
-        let performanceSpan = Global.sharedTracer.startRootSpan(operationName: "perf_measure", startTime: start)
+        let performanceSpan = DatadogTracer.shared().startRootSpan(operationName: "perf_measure", startTime: start)
         performanceSpan.setTag(key: DDTags.resource, value: resourceName)
         performanceSpan.finish(at: stop)
 
@@ -66,7 +66,7 @@ class E2ETests: XCTestCase {
             configuration: configuration
         )
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        DatadogTracer.initialize()
         Global.rum = RUMMonitor.initialize()
     }
 

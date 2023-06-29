@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogSessionReplay
 
 // swiftlint:disable opening_brace
@@ -72,25 +73,34 @@ class UITextFieldRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        func textObfuscator(in privacyMode: SessionReplayPrivacy) throws -> TextObfuscating {
+        func textObfuscator(in privacyMode: PrivacyLevel) throws -> TextObfuscating {
             return try recorder
                 .semantics(of: textField, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
                 .expectWireframeBuilder(ofType: UITextFieldWireframesBuilder.self)
                 .textObfuscator
         }
 
-        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
 
         // When
-        oneOf([
+        oneOrMoreOf([
             { self.textField.isSecureTextEntry = true },
-            { self.textField.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+            { self.textField.textContentType = sensitiveContentTypes.randomElement() },
         ])
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
+
+        // When
+        textField.text = nil
+        textField.placeholder = .mockRandom()
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace

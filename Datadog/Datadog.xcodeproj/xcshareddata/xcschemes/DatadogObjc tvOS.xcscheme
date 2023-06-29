@@ -29,8 +29,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
-               BuildableName = "DatadogTests.xctest"
-               BlueprintName = "DatadogTests tvOS"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -47,8 +47,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
-            BuildableName = "DatadogTests.xctest"
-            BlueprintName = "DatadogTests tvOS"
+            BuildableName = "DatadogCoreTests.xctest"
+            BlueprintName = "DatadogCoreTests tvOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -154,8 +154,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D2CB6E0A27C50EAE00A62B57"
-            BuildableName = "Datadog.framework"
-            BlueprintName = "Datadog tvOS"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore tvOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
          <BuildableReference
@@ -172,8 +172,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
-               BuildableName = "DatadogTests.xctest"
-               BlueprintName = "DatadogTests tvOS"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>

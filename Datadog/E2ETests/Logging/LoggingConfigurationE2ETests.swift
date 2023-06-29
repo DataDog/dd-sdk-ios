@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogCore
 import DatadogCrashReporting
 
 class LoggingConfigurationE2ETests: E2ETests {

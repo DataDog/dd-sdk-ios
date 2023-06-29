@@ -4,14 +4,14 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogCore
 
 class TracerE2ETests: E2ETests {
     private var tracer: OTTracer! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        tracer = Tracer.initialize(configuration: .init())
+        tracer = DatadogTracer.initialize(configuration: .init())
     }
 
     override func tearDown() {

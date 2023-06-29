@@ -7,7 +7,7 @@
 import zlib
 import XCTest
 import Compression
-@testable import Datadog
+
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 

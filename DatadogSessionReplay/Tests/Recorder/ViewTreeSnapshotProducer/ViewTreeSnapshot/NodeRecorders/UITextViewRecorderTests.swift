@@ -40,7 +40,7 @@ class UITextViewRecorderTests: XCTestCase {
         // Then
         let semantics = try XCTUnwrap(recorder.semantics(of: textView, with: viewAttributes, in: .mockAny()))
         XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertEqual(semantics.subtreeStrategy, .record)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
 
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UITextViewWireframesBuilder)
         XCTAssertEqual(builder.text, randomText)
@@ -62,25 +62,36 @@ class UITextViewRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        func textObfuscator(in privacyMode: SessionReplayPrivacy) throws -> TextObfuscating {
+        func textObfuscator(in privacyMode: PrivacyLevel) throws -> TextObfuscating {
             return try recorder
                 .semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
                 .expectWireframeBuilder(ofType: UITextViewWireframesBuilder.self)
                 .textObfuscator
         }
 
-        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
 
         // When
-        oneOf([
+        textView.isEditable = .mockRandom()
+        oneOrMoreOf([
             { self.textView.isSecureTextEntry = true },
-            { self.textView.textContentType = [.telephoneNumber, .emailAddress].randomElement()! },
+            { self.textView.textContentType = sensitiveContentTypes.randomElement() },
         ])
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLegthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mockRandom()) is FixLengthMaskObfuscator)
+
+        // When
+        textView.isEditable = false
+        textView.isSecureTextEntry = false // non-sensitive
+        textView.textContentType = nil // non-sensitive
+
+        // Then
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
 // swiftlint:enable opening_brace
