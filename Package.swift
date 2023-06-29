@@ -7,7 +7,7 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
     [.define("DD_BENCHMARK")] : []
 
 let package = Package(
-    name: "DatadogSDK",
+    name: "Datadog",
     platforms: [
         .iOS(.v12),
         .tvOS(.v12),
