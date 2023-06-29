@@ -35,7 +35,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
@@ -301,7 +301,7 @@ public struct RUMActionEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct RUMDisplay: Codable {
+    public struct Display: Codable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -431,7 +431,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Error properties
     public var error: Error
@@ -544,7 +544,7 @@ public struct RUMErrorEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct RUMDisplay: Codable {
+    public struct Display: Codable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -877,7 +877,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Long Task properties
     public let longTask: LongTask
@@ -990,7 +990,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct RUMDisplay: Codable {
+    public struct Display: Codable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -1134,7 +1134,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Operating system properties
     public let os: RUMOperatingSystem?
@@ -1259,7 +1259,7 @@ public struct RUMResourceEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct RUMDisplay: Codable {
+    public struct Display: Codable {
         /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
         public let viewport: Viewport?
 
@@ -1579,7 +1579,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let device: RUMDevice?
 
     /// Display properties
-    public let display: RUMDisplay?
+    public let display: Display?
 
     /// Feature flags properties
     public internal(set) var featureFlags: FeatureFlags?
@@ -1734,7 +1734,7 @@ public struct RUMViewEvent: RUMDataModel {
     }
 
     /// Display properties
-    public struct RUMDisplay: Codable {
+    public struct Display: Codable {
         /// Scroll properties
         public let scroll: Scroll?
 
@@ -3182,4 +3182,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/dcb6897cf883fb8938e7aa0f69ed9a035df98c2c
+// Generated from https://github.com/DataDog/rum-events-format/tree/1c5eaa897c065e5f790a5f8aaf6fc8782d706051
