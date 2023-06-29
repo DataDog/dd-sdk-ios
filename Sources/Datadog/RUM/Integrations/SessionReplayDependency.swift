@@ -18,6 +18,9 @@ internal struct SessionReplayDependency {
 
     /// The key referencing a `Bool` value that indicates if replay is being recorded.
     static let hasReplay = "has_replay"
+
+    /// The key referencing a `[String: Int64]` value that indicates number of records recorded for a given viewID.
+    static let recordsCount = "records_count"
 }
 
 // MARK: - Extracting SR context from `DatadogContext`
@@ -36,5 +39,13 @@ extension FeatureBaggage {
             return false
         }
         return hasReplay
+    }
+
+    /// The value of `[String: Int64]` that indicates number of records recorded for a given viewID.
+    var recordsCount: [String: Int64] {
+        guard let recordsCount: [String: Int64] = self[SessionReplayDependency.recordsCount] else {
+            return [:]
+        }
+        return recordsCount
     }
 }

@@ -22,4 +22,12 @@ internal class SRContextPublisher {
             attributes: { [RUMDependency.hasReplay: value] }
         )
     }
+
+    /// Notifies other Features on the state of  Session Replay recording.
+    func setRecordsCount(_ value: [String: Int64]) {
+        core?.set(
+            feature: RUMDependency.srBaggageKey,
+            attributes: { [RUMDependency.recordsCount: value] }
+        )
+    }
 }

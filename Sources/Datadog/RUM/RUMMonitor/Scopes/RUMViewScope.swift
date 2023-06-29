@@ -438,7 +438,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 browserSdkVersion: nil,
                 documentVersion: version.toInt64,
                 pageStates: nil,
-                replayStats: nil,
+                replayStats: .init(
+                    recordsCount: context.srBaggage?.recordsCount[viewUUID.rawValue.uuidString],
+                    segmentsCount: nil,
+                    segmentsTotalRawSize: nil
+                ),
                 session: .init(plan: .plan1)
             ),
             application: .init(id: self.context.rumApplicationID),
