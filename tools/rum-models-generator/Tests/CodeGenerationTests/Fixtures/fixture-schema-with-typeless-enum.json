@@ -1,0 +1,16 @@
+{
+    "$id": "Schema ID",
+    "type": "object",
+    "title": "Schema title",
+    "description": "Schema description.",
+    "properties": {
+        "stringEnumProperty": {
+            "description": "Description of `stringEnumProperty` without explicit type.",
+            "enum": ["case1", "case2", "case3", "case4"]
+        },
+        "integerEnumProperty": {
+            "description": "Description of `integerEnumProperty` without explicit type.",
+            "enum": [1, 2, 3, 4]
+        }
+    }
+}
