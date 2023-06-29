@@ -162,4 +162,6 @@ bump:
 		@read -p "Enter version number: " version;  \
 		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
 		./tools/podspec_bump_version.sh $$version; \
+		git add . ; \
+		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
