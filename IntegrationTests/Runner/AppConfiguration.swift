@@ -5,7 +5,7 @@
  */
 
 import UIKit
-import Datadog
+import DatadogCore
 import DatadogCrashReporting
 import enum DatadogInternal.TrackingConsent
 

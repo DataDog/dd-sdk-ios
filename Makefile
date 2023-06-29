@@ -129,7 +129,7 @@ api-surface:
 		@cd tools/api-surface && \
 			swift run api-surface spm \
 			--path ../../ \
-			--library-name Datadog \
+			--library-name DatadogCore \
 			--library-name DatadogLogs \
 			--library-name DatadogTrace \
 			--library-name DatadogRUM \
@@ -160,6 +160,6 @@ e2e-monitors-generate:
 
 bump:
 		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
+		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
 		./tools/podspec_bump_version.sh $$version; \
 		echo Bumped version to $$version

@@ -1,7 +1,13 @@
 # ----------------------------------
-# API surface for Datadog:
+# API surface for DatadogCore:
 # ----------------------------------
 
+public let DatadogNTPServers = ["0.datadog.pool.ntp.org","1.datadog.pool.ntp.org","2.datadog.pool.ntp.org","3.datadog.pool.ntp.org"]
+public protocol ServerDateProvider
+    func synchronize(update: @escaping (TimeInterval) -> Void)
+public protocol DataEncryption
+    func encrypt(data: Data) throws -> Data
+    func decrypt(data: Data) throws -> Data
 [?] extension InternalExtension where ExtendedType == Datadog
     public static var telemetry: _TelemetryProxy
     public static func set(customVersion: String)
@@ -39,12 +45,6 @@ public struct Datadog
     public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName)
-public let DatadogNTPServers = ["0.datadog.pool.ntp.org","1.datadog.pool.ntp.org","2.datadog.pool.ntp.org","3.datadog.pool.ntp.org"]
-public protocol ServerDateProvider
-    func synchronize(update: @escaping (TimeInterval) -> Void)
-public protocol DataEncryption
-    func encrypt(data: Data) throws -> Data
-    func decrypt(data: Data) throws -> Data
 
 
 # ----------------------------------

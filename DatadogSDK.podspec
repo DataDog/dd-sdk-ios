@@ -10,22 +10,21 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Mert Buran" => "mert.buran@datadoghq.com",
-    "Maxime Epain" => "maxime.epain@datadoghq.com"
+    "Maciej Burda" => "maciej.burda@datadoghq.com",
+    "Maxime Epain" => "maxime.epain@datadoghq.com",
+    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version      = '5.1'
+  s.swift_version = '5.5'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
-  s.source_files = ["Sources/Datadog/**/*.swift",
-                    "Sources/DatadogPrivate/**/*.{h,m}",
-                    "Datadog/TargetSupport/Datadog/Datadog.h"]
-  s.public_header_files = ["Datadog/TargetSupport/Datadog/Datadog.h", 
-                           "Sources/DatadogPrivate/include/*.h"]
+  s.default_subspec = 'Core'
 
-  s.dependency 'DatadogInternal', s.version.to_s
+  s.subspec 'Core' do |ss|
+    ss.dependency 'DatadogCore', s.version.to_s
+  end
 
 end

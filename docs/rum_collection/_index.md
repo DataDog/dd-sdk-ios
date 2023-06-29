@@ -278,7 +278,7 @@ Configure and register the RUM Monitor. You only need to do it once, usually in 
 {{< tabs >}}
 {{% tab "Swift" %}}
 ```swift
-import Datadog
+import DatadogCore
 
 Global.rum = RUMMonitor.initialize()
 ```

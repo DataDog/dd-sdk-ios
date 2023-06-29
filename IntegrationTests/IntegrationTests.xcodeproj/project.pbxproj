@@ -676,7 +676,7 @@
 				D2774EE3299E2E90004EC36A /* JSONDataMatcher.swift */,
 			);
 			name = Matchers;
-			path = ../../Tests/DatadogTests/Matchers;
+			path = ../../DatadogCore/Tests/Matchers;
 			sourceTree = "<group>";
 		};
 		D2791EF32716F16E0046E07A /* SwiftUIInstrumentation */ = {

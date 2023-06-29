@@ -201,7 +201,7 @@ workflows:
         title: Run unit tests for Datadog - iOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog iOS
+        - scheme: DatadogCore iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
@@ -222,7 +222,7 @@ workflows:
         title: Run unit tests for Datadog - tvOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog tvOS
+        - scheme: DatadogCore tvOS
         - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'

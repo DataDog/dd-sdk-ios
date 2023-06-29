@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogCore
 
 internal struct RUMConstants {
     static let customAttribute_String = "custom_attribute.string"

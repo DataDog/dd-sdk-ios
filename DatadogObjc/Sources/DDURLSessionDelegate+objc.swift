@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogCore
 import DatadogInternal
 
 @objc
