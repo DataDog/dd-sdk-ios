@@ -27,8 +27,8 @@ class FileReaderTests: XCTestCase {
             )
         )
         let dataBlocks = [
-            DataBlock(type: .event, data: "ABCD".utf8Data),
-            DataBlock(type: .eventMetadata, data: "EFGH".utf8Data)
+            DataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
+            DataBlock(type: .event, data: "ABCD".utf8Data)
         ]
         let data = try dataBlocks
             .map { try $0.serialize() }
@@ -49,11 +49,11 @@ class FileReaderTests: XCTestCase {
     func testItReadsSingleEncryptedBatch() throws {
         // Given
         let dataBlocks = [
-            DataBlock(type: .event, data: "foo".utf8Data),
             DataBlock(type: .eventMetadata, data: "foo".utf8Data),
             DataBlock(type: .event, data: "foo".utf8Data),
             DataBlock(type: .event, data: "foo".utf8Data),
-            DataBlock(type: .eventMetadata, data: "foo".utf8Data)
+            DataBlock(type: .eventMetadata, data: "foo".utf8Data),
+            DataBlock(type: .event, data: "foo".utf8Data)
         ]
         let data = try dataBlocks
             .map { Data(try $0.serialize()) }
@@ -96,15 +96,15 @@ class FileReaderTests: XCTestCase {
             )
         )
         let file1 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
-        try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
         try file1.append(data: DataBlock(type: .eventMetadata, data: "2".utf8Data).serialize())
+        try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
 
         let file2 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
         try file2.append(data: DataBlock(type: .event, data: "2".utf8Data).serialize())
 
         let file3 = try temporaryDirectory.createFile(named: dateProvider.now.toFileName)
-        try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
         try file3.append(data: DataBlock(type: .eventMetadata, data: "4".utf8Data).serialize())
+        try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
 
         let expected = [
             Event(data: "1".utf8Data, metadata: "2".utf8Data),
