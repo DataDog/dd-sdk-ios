@@ -100,8 +100,9 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
             XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
             XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
-            XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration, 100_000_000 - 1) // ~0.1s
-            XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
+            XCTAssertNotNil(view1.resourceEvents[0].resource.duration)
+            XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration!, 100_000_000 - 1) // ~0.1s
+            XCTAssertLessThan(view1.resourceEvents[0].resource.duration!, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
             let view2 = normalSession.viewVisits[1]
@@ -123,8 +124,9 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
             XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
             XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
-            XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration, 100_000_000 - 1) // ~0.1s
-            XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
+            XCTAssertNotNil(view1.resourceEvents[0].resource.duration)
+            XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration!, 100_000_000 - 1) // ~0.1s
+            XCTAssertLessThan(view1.resourceEvents[0].resource.duration!, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
             let view2 = interruptedSession.viewVisits[1]
