@@ -36,7 +36,7 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [
@@ -56,7 +56,7 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let data = format.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }

@@ -8,6 +8,20 @@ import XCTest
 @testable import Datadog
 
 class DataBlockTests: XCTestCase {
+    func testSerializeEventBlock() throws {
+        XCTAssertEqual(
+            try DataBlock(type: .event, data: Data([0xFF])).serialize(),
+            Data([0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF])
+        )
+    }
+
+    func testSerializeEventMetadataBlock() throws {
+        XCTAssertEqual(
+            try DataBlock(type: .eventMetadata, data: Data([0xFF])).serialize(),
+            Data([0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF])
+        )
+    }
+
     func testSerializeDataBlock() throws {
         XCTAssertEqual(
             try DataBlock(type: .event, data: Data([0xFF])).serialize(),
@@ -31,6 +45,22 @@ class DataBlockTests: XCTestCase {
         XCTAssertEqual(data.count, 10_000_006)
         // TLV representation: T=0x0000, L=0x00989680, V[0]=0xFF
         XCTAssertEqual(data.prefix(7), Data([0x00, 0x00, 0x80, 0x96, 0x98, 0x00, 0xFF]))
+    }
+
+    func testDataBlockReader_withEventDataBlock() throws {
+        let data = Data([0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF])
+        let reader = DataBlockReader(data: data)
+        let block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, Data([0xFF]))
+    }
+
+    func testDataBlockReader_withEventMetadataBlock() throws {
+        let data = Data([0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0xFF])
+        let reader = DataBlockReader(data: data)
+        let block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, Data([0xFF]))
     }
 
     func testDataBlockReader_withSingleBlock() throws {

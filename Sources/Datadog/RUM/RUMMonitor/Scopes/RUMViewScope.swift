@@ -513,7 +513,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
             if viewUpdatesThrottler.accept(event: event) {
-                writer.write(value: event)
+                writer.write(value: event, metadata: event.metadata())
             } else { // if event was dropped by sampler
                 version -= 1
             }

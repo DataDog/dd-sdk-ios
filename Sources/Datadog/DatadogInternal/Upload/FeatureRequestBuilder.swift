@@ -25,5 +25,5 @@ public protocol FeatureRequestBuilder {
     ///   - context: The current core context.
     ///   - events: The events data to be uploaded.
     /// - Returns: The URL request.
-    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest
 }

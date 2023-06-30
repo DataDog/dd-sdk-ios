@@ -149,8 +149,8 @@ private class FeatureScopeInterceptor {
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
 
-        func write<T>(value: T) where T: Encodable {
-            actualWriter.write(value: value)
+        func write<T: Encodable, M: Encodable>(value: T, metadata: M) {
+            actualWriter.write(value: value, metadata: metadata)
 
             let event = value
             let data = try! InterceptingWriter.jsonEncoder.encode(value)
