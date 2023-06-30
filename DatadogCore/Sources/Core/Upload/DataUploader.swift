@@ -9,7 +9,7 @@ import DatadogInternal
 
 /// A type that performs data uploads.
 internal protocol DataUploaderType {
-    func upload(events: [Data], context: DatadogContext) throws -> DataUploadStatus
+    func upload(events: [Event], context: DatadogContext) throws -> DataUploadStatus
 }
 
 /// Synchronously uploads data to server using `HTTPClient`.
@@ -27,7 +27,7 @@ internal final class DataUploader: DataUploaderType {
 
     /// Uploads data synchronously (will block current thread) and returns the upload status.
     /// Uses timeout configured for `HTTPClient`.
-    func upload(events: [Data], context: DatadogContext) throws -> DataUploadStatus {
+    func upload(events: [Event], context: DatadogContext) throws -> DataUploadStatus {
         let request = try requestBuilder.request(for: events, with: context)
         let requestID = request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField)
 

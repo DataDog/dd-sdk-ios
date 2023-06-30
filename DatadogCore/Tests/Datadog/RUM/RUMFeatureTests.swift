@@ -143,23 +143,22 @@ class RUMFeatureTests: XCTestCase {
         RUM.enable(with: .mockAny(), in: core)
 
         core.scope(for: RUMFeature.name)?.eventWriteContext { _, writer in
-            writer.write(value: RUMDataModelMock(attribute: "1st event"))
-            writer.write(value: RUMDataModelMock(attribute: "2nd event"))
-            writer.write(value: RUMDataModelMock(attribute: "3rd event"))
+            writer.write(value: RUMDataModelMock(attribute: "1st event"), metadata: RUMViewEvent.Metadata(id: "1", documentVersion: 1))
+            writer.write(value: RUMDataModelMock(attribute: "2nd event"), metadata: RUMViewEvent.Metadata(id: "2", documentVersion: 1))
+            writer.write(value: RUMDataModelMock(attribute: "3rd event"), metadata: RUMViewEvent.Metadata(id: "1", documentVersion: 2))
         }
 
         let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
         // Expected payload format:
+        // event1JSON is skipped in favor of event3JSON which is same event with higher document revision
         // ```
-        // event1JSON
         // event2JSON
         // event3JSON
         // ```
 
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
-        XCTAssertEqual((try eventMatchers[0].model() as RUMDataModelMock).attribute, "1st event")
-        XCTAssertEqual((try eventMatchers[1].model() as RUMDataModelMock).attribute, "2nd event")
-        XCTAssertEqual((try eventMatchers[2].model() as RUMDataModelMock).attribute, "3rd event")
+        XCTAssertEqual((try eventMatchers[0].model() as RUMDataModelMock).attribute, "2nd event")
+        XCTAssertEqual((try eventMatchers[1].model() as RUMDataModelMock).attribute, "3rd event")
     }
 }

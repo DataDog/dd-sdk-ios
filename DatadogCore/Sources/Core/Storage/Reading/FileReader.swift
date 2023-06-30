@@ -32,8 +32,8 @@ internal final class FileReader: Reader {
         }
 
         do {
-            let events = try decode(stream: file.stream())
-            return Batch(events: events, file: file)
+            let dataBlocks = try decode(stream: file.stream())
+            return Batch(dataBlocks: dataBlocks, file: file)
         } catch {
             DD.telemetry.error("Failed to read data from file", error: error)
             return nil
@@ -48,7 +48,7 @@ internal final class FileReader: Reader {
     ///
     /// - Parameter stream: The InputStream that provides data to decode.
     /// - Returns: The decoded and formatted data.
-    private func decode(stream: InputStream) throws -> [Data] {
+    private func decode(stream: InputStream) throws -> [DataBlock] {
         let reader = DataBlockReader(
             input: stream,
             maxBlockLength: orchestrator.performance.maxObjectSize
@@ -60,22 +60,19 @@ internal final class FileReader: Reader {
         }
 
         return try reader.all()
-            // get event blocks only
-            .compactMap {
-                switch $0.type {
-                case .event:
-                    return $0.data
-                }
-            }
-            // decrypt data - report failure
-            .compactMap { (data: Data) in
+            .compactMap { dataBlock in
                 do {
-                    return try decrypt(data: data)
+                    return try decrypt(dataBlock: dataBlock)
                 } catch {
                     failure = "🔥 Failed to decrypt data with error: \(error)"
                     return nil
                 }
             }
+    }
+
+    private func decrypt(dataBlock: DataBlock) throws -> DataBlock {
+        let decrypted = try decrypt(data: dataBlock.data)
+        return DataBlock(type: dataBlock.type, data: decrypted)
     }
 
     /// Decrypts data if encryption is available.

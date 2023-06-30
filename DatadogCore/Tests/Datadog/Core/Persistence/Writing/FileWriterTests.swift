@@ -23,6 +23,82 @@ class FileWriterTests: XCTestCase {
         super.tearDown()
     }
 
+    func testItWritesDataWithMetadataToSingleFileInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: directory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: nil,
+            forceNewFile: false
+        )
+
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"]) // skipped metadata here
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
+
+        let reader = DataBlockReader(input: stream)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"{"meta1":"metaValue1"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key2":"value2"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"{"meta3":"metaValue3"}"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
+    }
+
+    func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
+        let writer = FileWriter(
+            orchestrator: FilesOrchestrator(
+                directory: directory,
+                performance: PerformancePreset.mockAny(),
+                dateProvider: SystemDateProvider()
+            ),
+            encryption: DataEncryptionMock(
+                encrypt: { data in
+                    "encrypted".utf8Data + data + "encrypted".utf8Data
+                }
+            ),
+            forceNewFile: false
+        )
+
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
+        writer.write(value: ["key2": "value2"]) // skipped metadata here
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
+
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
+
+        let reader = DataBlockReader(input: stream)
+        var block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"encrypted{"meta1":"metaValue1"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key1":"value1"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key2":"value2"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, #"encrypted{"meta3":"metaValue3"}encrypted"#.utf8Data)
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, #"encrypted{"key3":"value3"}encrypted"#.utf8Data)
+    }
+
     func testItWritesDataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
@@ -196,13 +272,20 @@ class FileWriterTests: XCTestCase {
             ioInterruptionQueue.async { try? file?.makeReadWrite() }
         }
 
-        struct Foo: Codable {
+        struct Foo: Codable, Equatable {
             var foo = "bar"
         }
 
+        struct Metadata: Codable, Equatable {
+            var meta = "data"
+        }
+
+        let foo = Foo()
+        let metadata = Metadata()
+
         // Write 300 of `Foo`s and interrupt writes randomly
         (0..<300).forEach { _ in
-            writer.write(value: Foo())
+            writer.write(value: foo, metadata: metadata)
             randomlyInterruptIO(for: try? directory.files().first)
         }
 
@@ -215,15 +298,24 @@ class FileWriterTests: XCTestCase {
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
-        let events = try blocks.map { try jsonDecoder.decode(Foo.self, from: $0.data) }
+        let eventGenerator = EventGenerator(dataBlocks: blocks)
+        let events = eventGenerator.map { $0 }
 
         // Assert that some (including all) `Foo`s were written
         XCTAssertGreaterThan(events.count, 0)
         XCTAssertLessThanOrEqual(events.count, 300)
+        for event in events {
+            let actualFoo = try jsonDecoder.decode(Foo.self, from: event.data)
+            XCTAssertEqual(actualFoo, foo)
+
+            XCTAssertNotNil(event.metadata)
+            let actualMetadata = try jsonDecoder.decode(Metadata.self, from: event.metadata!)
+            XCTAssertEqual(actualMetadata, metadata)
+        }
     }
 
     func testItWritesEncryptedDataToSingleFile() throws {
-        // Given 
+        // Given
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -237,21 +329,32 @@ class FileWriterTests: XCTestCase {
         )
 
         // When
-        writer.write(value: ["key1": "value1"])
+        writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
         writer.write(value: ["key2": "value3"])
-        writer.write(value: ["key3": "value3"])
+        writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
         // Then
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
+
         var block = try reader.next()
-        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, "foo".utf8Data)
+
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)
+
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .event)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+
+        block = try reader.next()
+        XCTAssertEqual(block?.type, .eventMetadata)
+        XCTAssertEqual(block?.data, "foo".utf8Data)
+
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, "foo".utf8Data)
