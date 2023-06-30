@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SafariServices
 
 internal class ShapesViewController: UIViewController {
     @IBOutlet weak var yellowView: UIView?
@@ -13,5 +14,56 @@ internal class ShapesViewController: UIViewController {
         super.viewDidLoad()
         yellowView?.layer.borderWidth = 5
         yellowView?.layer.borderColor = UIColor.yellow.cgColor
+    }
+}
+
+internal class TextsViewController: UIViewController {
+    @IBOutlet weak var textView: UITextView?
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        textView?.becomeFirstResponder()
+    }
+}
+
+internal class PopupsViewController: UIViewController {
+
+    @IBAction func showSafari() {
+        present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
+    }
+
+    @IBAction func showAlert() {
+        let alertController = UIAlertController(
+            title: "Alert Example",
+            message: "This is an elaborate example of UIAlertController",
+            preferredStyle: .alert
+        )
+
+        alertController.addTextField { (textField) in
+            textField.placeholder = "Enter your name"
+        }
+
+        let confirmAction = UIAlertAction(title: "Confirm", style: .default) { [weak alertController] _ in
+            if let textField = alertController?.textFields?[0], let text = textField.text {
+                print("Name entered: \(text)")
+            }
+        }
+        alertController.addAction(confirmAction)
+
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { (_) in
+            print("Action cancelled")
+        }
+        alertController.addAction(cancelAction)
+
+        let customAction = UIAlertAction(title: "Custom", style: .destructive) { (_) in
+            print("Custom action selected")
+        }
+        alertController.addAction(customAction)
+        present(alertController, animated: false)
+    }
+
+    @IBAction func showActivity() {
+        let activityViewController = UIActivityViewController(activityItems: [], applicationActivities: nil)
+        present(activityViewController, animated: true, completion: nil)
     }
 }

@@ -56,9 +56,7 @@ def should_run_integration_tests(ctx: CIContext) -> bool:
         build_env=context.build_env.DD_OVERRIDE_RUN_INTEGRATION_TESTS,
         pr_keyword='[x] Run integration tests',
         pr_path_prefixes=[
-            'Datadog/Example/',
-            'Tests/DatadogIntegrationTests/',
-            'Tests/DatadogBenchmarkTests/',
+            'IntegrationTests/',
         ],
         pr_file_extensions=[]
     )

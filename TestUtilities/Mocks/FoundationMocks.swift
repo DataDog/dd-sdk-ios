@@ -226,7 +226,10 @@ extension URL: AnyMockable, RandomMockable {
         return URL(string: "https://www.foo.com/")!.appendingPathComponent(pathComponent)
     }
 
-    public static func mockWith(url: String, queryParams: [URLQueryItem]) -> URL {
+    public static func mockWith(
+        url: String,
+        queryParams: [URLQueryItem]? = nil
+    ) -> URL {
         var urlComponents = URLComponents(string: url)
         urlComponents!.queryItems = queryParams
         return urlComponents!.url!
@@ -411,6 +414,10 @@ extension Float: AnyMockable, RandomMockable {
     public static func mockRandom() -> Float {
         return .random(in: -Float(Int.min)...Float(Int.max))
     }
+
+    public static func mockRandom(min: Float, max: Float) -> Float {
+        return .random(in: min...max)
+    }
 }
 
 extension Double: AnyMockable, RandomMockable {
@@ -544,7 +551,11 @@ extension URLRequest: AnyMockable {
         return request
     }
 
-    public static func mockWith(url: String, queryParams: [URLQueryItem], httpMethod: String) -> URLRequest {
+    public static func mockWith(
+        url: String,
+        queryParams: [URLQueryItem]? = nil,
+        httpMethod: String = "GET"
+    ) -> URLRequest {
         let url: URL = .mockWith(url: url, queryParams: queryParams)
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
@@ -577,12 +588,12 @@ extension URLSession {
 }
 
 extension URLSessionTask {
-    public static func mockAny() -> URLSessionTask {
-        return URLSessionTaskMock(request: .mockAny(), response: .mockAny())
+    public static func mockAny() -> URLSessionDataTask {
+        return URLSessionDataTaskMock(request: .mockAny(), response: .mockAny())
     }
 
-    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionTask {
-        return URLSessionTaskMock(request: request, response: response)
+    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionDataTask {
+        return URLSessionDataTaskMock(request: request, response: response)
     }
 }
 
@@ -678,7 +689,7 @@ extension URLSessionTaskTransactionMetrics {
     }
 }
 
-private class URLSessionTaskMock: URLSessionTask {
+private class URLSessionDataTaskMock: URLSessionDataTask {
     private let _originalRequest: URLRequest
     override var originalRequest: URLRequest? { _originalRequest }
 

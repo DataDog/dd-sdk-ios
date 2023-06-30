@@ -7,6 +7,7 @@
 import XCTest
 import WebKit
 import SwiftUI
+import SafariServices
 @testable import DatadogSessionReplay
 
 @available(iOS 13.0, *)
@@ -14,10 +15,10 @@ class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
     private let unsupportedViews: [UIView] = [
-        UIProgressView(), UIActivityIndicatorView(), WKWebView(), UIHostingController(rootView: Text("Test")).view
+        UIProgressView(), UIActivityIndicatorView(), WKWebView()
     ].compactMap { $0 }
     private let expectedUnsupportedViewsClassNames = [
-        "UIProgressView", "UIActivityIndicatorView", "WKWebView", "SwiftUI._UIHostingView<SwiftUI.Text>"
+        "UIProgressView", "UIActivityIndicatorView", "WKWebView"
     ]
     private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
 
@@ -53,5 +54,17 @@ class UnsupportedViewRecorderTests: XCTestCase {
         otherViews.forEach { view in
             XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
         }
+    }
+
+    func testWhenViewIsUnsupportedViewControllersRootView() throws {
+        var context = ViewTreeRecordingContext.mockRandom()
+        context.viewControllerContext.isRootView = true
+        context.viewControllerContext.parentType = [.safari, .activity, .swiftUI].randomElement()
+
+        let semantics = try XCTUnwrap(recorder.semantics(of: UIView(), with: .mock(fixture: .visible(.someAppearance)), in: context))
+        XCTAssertTrue(semantics is SpecificElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore)
+        let wireframeBuilder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UnsupportedViewWireframesBuilder)
+        XCTAssertNotNil(wireframeBuilder.unsupportedClassName)
     }
 }

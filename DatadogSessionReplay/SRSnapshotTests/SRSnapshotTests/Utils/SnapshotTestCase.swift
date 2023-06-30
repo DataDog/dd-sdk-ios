@@ -5,8 +5,13 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost
+
+private var defaultPrivacyLevel: SessionReplay.Configuration.PrivacyLevel {
+    return SessionReplay.Configuration(replaySampleRate: 100).defaultPrivacyLevel
+}
 
 internal class SnapshotTestCase: XCTestCase {
     private var app: AppDelegate { UIApplication.shared.delegate as! AppDelegate }
@@ -29,30 +34,24 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
-    func takeSnapshot(configuration: SessionReplayConfiguration = .init()) throws -> UIImage {
+    func takeSnapshot(with privacyLevel: SessionReplay.Configuration.PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
         let expectation = self.expectation(description: "Wait for wireframes")
 
         // Set up SR recorder:
-        let scheduler = TestScheduler()
         let processor = Processor(queue: NoQueue(), writer: Writer())
-        let recorder = try Recorder(
-            configuration: configuration,
-            rumContextObserver: RUMContextObserverMock(),
-            processor: processor,
-            scheduler: scheduler
-        )
+        let recorder = try Recorder(processor: processor)
 
-        // Set up wireframes interception and trigger recorder once:
+        // Set up wireframes interception :
         var wireframes: [SRWireframe]?
-
         processor.interceptWireframes = {
             wireframes = $0
             expectation.fulfill()
         }
 
-        recorder.start()
-        scheduler.triggerOnce()
-        recorder.stop()
+        // Capture next record with mock RUM Context
+        recorder.captureNextRecord(
+            .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
+        )
 
         waitForExpectations(timeout: 10) // very pessimistic timeout to mitigate CI lags
 
@@ -71,8 +70,8 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: seconds * 2)
     }
 
-    func forEachPrivacyMode(do work: (SessionReplayPrivacy) throws -> Void) rethrows {
-        let modes: [SessionReplayPrivacy] = [.maskAll, .allowAll, .maskUserInput]
+    func forEachPrivacyMode(do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
+        let modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput]
         try modes.forEach { try work($0) }
     }
 
@@ -126,29 +125,4 @@ internal class SnapshotTestCase: XCTestCase {
 
 private struct NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
-}
-
-private struct RUMContextObserverMock: RUMContextObserver {
-    func observe(on queue: Queue, notify: @escaping (RUMContext?) -> Void) {
-        queue.run {
-            notify(RUMContext(ids: .init(applicationID: "", sessionID: "", viewID: ""), viewServerTimeOffset: 0))
-        }
-    }
-}
-
-private class TestScheduler: Scheduler {
-    private var operations: [() -> Void] = []
-
-    let queue: Queue = NoQueue()
-
-    func schedule(operation: @escaping () -> Void) {
-        operations.append(operation)
-    }
-
-    func start() {}
-    func stop() {}
-
-    func triggerOnce() {
-        operations.forEach { $0() }
-    }
 }

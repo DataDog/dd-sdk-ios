@@ -17,15 +17,14 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            imageDataProvider: MockImageDataProvider(),
-            textObfuscators: TextObfuscators()
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When
         let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
 
         // Then
-        XCTAssertEqual(snapshot.rumContext, randomRecorderContext.rumContext)
+        XCTAssertEqual(snapshot.context, randomRecorderContext)
 
         let queryContext = try XCTUnwrap(nodeRecorder.queryContexts.first)
         XCTAssertTrue(queryContext.coordinateSpace === view)
@@ -40,8 +39,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         let builder = ViewTreeSnapshotBuilder(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: [nodeRecorder]),
             idsGenerator: NodeIDGenerator(),
-            imageDataProvider: MockImageDataProvider(),
-            textObfuscators: TextObfuscators()
+            imageDataProvider: MockImageDataProvider()
         )
 
         // When

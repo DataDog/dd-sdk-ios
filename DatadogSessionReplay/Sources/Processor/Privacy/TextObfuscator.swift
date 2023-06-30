@@ -13,20 +13,10 @@ internal protocol TextObfuscating {
     func mask(text: String) -> String
 }
 
-/// Available text obfuscators.
-internal struct TextObfuscators {
-    /// Text obfuscator that returns original text (no obfuscation).
-    let nop = NOPTextObfuscator()
-    /// Text obfuscator that replaces each character with `"x"` mask.
-    let spacePreservingMask = SpacePreservingMaskObfuscator()
-    /// Text obfuscator that replaces whole text with fixed-length `"xxx"` mask (three asterics).
-    let fixLegthMask = FixLegthMaskObfuscator()
-}
-
 /// Text obfuscator which replaces all readable characters with space-preserving `"x"` characters.
 internal struct SpacePreservingMaskObfuscator: TextObfuscating {
     /// The character to mask text with.
-    let maskCharacter: UnicodeScalar = "x"
+    private static let maskCharacter: UnicodeScalar = "x"
 
     /// Masks given `text` by replacing all not whitespace characters with `"x"`.
     /// - Parameter text: the text to be masked
@@ -41,7 +31,7 @@ internal struct SpacePreservingMaskObfuscator: TextObfuscating {
             case " ", "\n", "\r", "\t":
                 masked.unicodeScalars.append(nextScalar)
             default:
-                masked.unicodeScalars.append(maskCharacter)
+                masked.unicodeScalars.append(SpacePreservingMaskObfuscator.maskCharacter)
             }
         }
 
@@ -49,9 +39,9 @@ internal struct SpacePreservingMaskObfuscator: TextObfuscating {
     }
 }
 
-/// Text obfuscator which replaces entire text with fix-length `"xxx"` mask value.
-internal struct FixLegthMaskObfuscator: TextObfuscating {
-    private static let maskedString = "xxx"
+/// Text obfuscator which replaces entire text with fix-length `"***"` mask value.
+internal struct FixLengthMaskObfuscator: TextObfuscating {
+    private static let maskedString = "***"
 
     func mask(text: String) -> String { Self.maskedString }
 }

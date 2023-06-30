@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogCore
 
 class RUMTrackingConsentE2ETests: E2ETests {
     private lazy var rum = Global.rum.dd

@@ -75,8 +75,10 @@ internal class Processor: Processing {
 
         var records: [SRRecord] = []
         // Create records for describing UI:
-        if viewTreeSnapshot.rumContext != lastSnapshot?.rumContext {
-            // If RUM context has changed, new segment should be started.
+        if viewTreeSnapshot.context.applicationID != lastSnapshot?.context.applicationID ||
+            viewTreeSnapshot.context.sessionID != lastSnapshot?.context.sessionID ||
+            viewTreeSnapshot.context.viewID != lastSnapshot?.context.viewID {
+            // If RUM context ids have changed, new segment should be started.
             // Segment must always start with "meta" → "focus" → "full snapshot" records.
             records.append(recordsBuilder.createMetaRecord(from: viewTreeSnapshot))
             records.append(recordsBuilder.createFocusRecord(from: viewTreeSnapshot))
@@ -111,7 +113,7 @@ internal class Processor: Processing {
         if !records.isEmpty {
             // Transform `[SRRecord]` to `EnrichedRecord` so we can write it to `DatadogCore` and
             // later read it back (as `EnrichedRecordJSON`) for preparing upload request(s):
-            let enrichedRecord = EnrichedRecord(rumContext: viewTreeSnapshot.rumContext, records: records)
+            let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
             writer.write(nextRecord: enrichedRecord)
         }
 

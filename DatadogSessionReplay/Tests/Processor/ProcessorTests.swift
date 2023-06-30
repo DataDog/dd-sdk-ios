@@ -5,15 +5,16 @@
  */
 
 import XCTest
-import Datadog
+import DatadogInternal
+import TestUtilities
+
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 private class WriterMock: Writing {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
-    func startWriting(to featureScope: FeatureScope) {}
+    func startWriting(to core: DatadogCoreProtocol) {}
 }
 
 class ProcessorTests: XCTestCase {
@@ -186,7 +187,7 @@ class ProcessorTests: XCTestCase {
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
-        processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, rumContext: rum), touchSnapshot: touchSnapshot)
+        processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, context: .mockWith(rumContext: rum)), touchSnapshot: touchSnapshot)
 
         // Then
         XCTAssertEqual(writer.records.count, 1)
@@ -217,12 +218,47 @@ class ProcessorTests: XCTestCase {
         }
     }
 
+    func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
+        let time = Date()
+        let rum1: RUMContext = .mockWith(serverTimeOffset: 123)
+        let rum2: RUMContext = .mockWith(serverTimeOffset: 456)
+
+        // Given
+        let processor = Processor(queue: NoQueue(), writer: writer)
+        let viewTree = generateSimpleViewTree()
+
+        // When
+        let snapshot1 = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum1)
+        let snapshot2 = generateViewTreeSnapshot(for: morphed(viewTree: viewTree), date: time.addingTimeInterval(1), rumContext: rum2)
+
+        processor.process(viewTreeSnapshot: snapshot1, touchSnapshot: nil)
+        processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
+
+        // Then
+        let enrichedRecords = writer.records
+        XCTAssertEqual(writer.records.count, 2)
+
+        XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
+        XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
+        XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+
+        XCTAssertEqual(enrichedRecords[1].records.count, 1, "It should follow with 'incremental snapshot' record")
+        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
+
+        zip(enrichedRecords, [rum1, rum2]).forEach { enrichedRecord, expectedRUM in
+            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.ids.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
+        }
+    }
+
     // MARK: - `ViewTreeSnapshot` generation
 
     private let snapshotBuilder = ViewTreeSnapshotBuilder()
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
-        snapshotBuilder.createSnapshot(of: viewTree, with: .init(date: date, privacy: .allowAll, rumContext: rumContext))
+        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))
     }
 
     private func generateSimpleViewTree() -> UIView {

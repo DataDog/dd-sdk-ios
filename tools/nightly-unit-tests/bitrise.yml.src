@@ -53,8 +53,7 @@ workflows:
         inputs:
         - project_path: $PROJECT_PATH
         - scheme: $PROJECT_SCHEME
-        - simulator_device: $SIMULATOR_DEVICE
-        - simulator_os_version: $SIMULATOR_OS_VERSION
+        - destination: platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS_VERSION
         - is_clean_build: 'no'
         - test_repetition_mode: 'retry_on_failure'
         - maximum_test_repetitions: 2

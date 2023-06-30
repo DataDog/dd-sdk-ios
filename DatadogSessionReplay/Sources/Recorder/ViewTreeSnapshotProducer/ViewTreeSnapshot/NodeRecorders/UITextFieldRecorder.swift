@@ -13,15 +13,13 @@ internal struct UITextFieldRecorder: NodeRecorder {
     private let iconsRecorder: UIImageViewRecorder
     private let subtreeRecorder: ViewTreeRecorder
 
-    var textObfuscator: (ViewTreeRecordingContext, _ isSensitiveText: Bool) -> TextObfuscating = { context, isSensitiveText in
-        if isSensitiveText {
-            return context.textObfuscators.fixLegthMask
-        }
-
-        switch context.recorder.privacy {
-        case .allowAll:         return context.textObfuscators.nop
-        case .maskAll:          return context.textObfuscators.spacePreservingMask
-        case .maskUserInput:    return context.textObfuscators.fixLegthMask
+    var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isPlaceholder: Bool) -> TextObfuscating = { context, isSensitive, isPlaceholder in
+        if isPlaceholder {
+            return context.recorder.privacy.hintTextObfuscator
+        } else if isSensitive {
+            return context.recorder.privacy.sensitiveTextObfuscator
+        } else {
+            return context.recorder.privacy.inputAndOptionTextObfuscator
         }
     }
 
@@ -83,8 +81,6 @@ internal struct UITextFieldRecorder: NodeRecorder {
         let textFrame = attributes.frame
             .insetBy(dx: 5, dy: 5) // 5 points padding
 
-        let isSensitiveText = textField.isSecureTextEntry || textField.textContentType == .emailAddress || textField.textContentType == .telephoneNumber
-
         let builder = UITextFieldWireframesBuilder(
             wireframeRect: textFrame,
             attributes: attributes,
@@ -95,7 +91,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
             isPlaceholderText: isPlaceholder,
             font: textField.font,
             fontScalingEnabled: textField.adjustsFontSizeToFitWidth,
-            textObfuscator: textObfuscator(context, isSensitiveText)
+            textObfuscator: textObfuscator(context, textField.isSensitiveText, isPlaceholder)
         )
         return Node(viewAttributes: attributes, wireframesBuilder: builder)
     }

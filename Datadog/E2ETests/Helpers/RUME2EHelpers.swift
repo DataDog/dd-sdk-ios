@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogCore
 
 extension DDRUMMonitor {
     var dd: RUMMonitor { self as! RUMMonitor }
