@@ -30,7 +30,6 @@ class FileReaderTests: XCTestCase {
                 dateProvider: SystemDateProvider()
             )
         )
-
         let dataBlocks = [
             DataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
             DataBlock(type: .event, data: "ABCD".utf8Data)
@@ -38,7 +37,6 @@ class FileReaderTests: XCTestCase {
         let data = try dataBlocks
             .map { try $0.serialize() }
             .reduce(.init(), +)
-
         _ = try directory
             .createFile(named: Date.mockAny().toFileName)
             .append(data: data)
@@ -103,7 +101,6 @@ class FileReaderTests: XCTestCase {
         )
         let file1 = try directory.createFile(named: dateProvider.now.toFileName)
         try file1.append(data: DataBlock(type: .eventMetadata, data: "2".utf8Data).serialize())
-
         try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
 
         let file2 = try directory.createFile(named: dateProvider.now.toFileName)

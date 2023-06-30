@@ -75,7 +75,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             longTaskThreshold: configuration.longTaskThreshold,
             dateProvider: configuration.dateProvider
         )
-        self.requestBuilder = RequestBuilder(customIntakeURL: configuration.customEndpoint)
+        self.requestBuilder = RequestBuilder(
+            customIntakeURL: configuration.customEndpoint,
+            eventsFilter: RUMViewEventsFilter()
+        )
         self.messageReceiver = CombinedFeatureMessageReceiver(
             TelemetryReceiver(
                 dateProvider: configuration.dateProvider,

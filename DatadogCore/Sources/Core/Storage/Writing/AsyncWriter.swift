@@ -7,24 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// A type, writing data.
-public protocol Writer {
-    /// Encodes given encodable value and metadata, and writes to the destination.
-    /// - Parameter value: Encodable value to write.
-    /// - Parameter metadata: Encodable metadata to write.
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?)
-}
-
-extension Writer {
-    /// Encodes given encodable value and writes to the destination.
-    /// Uses `write(value:metadata:)` with `nil` metadata.
-    /// - Parameter value: Encodable value to write.
-    public func write<T: Encodable>(value: T) {
-        let metadata: Data? = nil
-        write(value: value, metadata: metadata)
-    }
-}
-
 /// Writer performing writes asynchronously on a given queue.
 internal struct AsyncWriter: Writer {
     private let writer: Writer
@@ -41,5 +23,6 @@ internal struct AsyncWriter: Writer {
 }
 
 internal struct NOPWriter: Writer {
-    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) { }
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+    }
 }

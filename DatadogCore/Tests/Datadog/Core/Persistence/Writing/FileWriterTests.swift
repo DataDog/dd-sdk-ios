@@ -26,7 +26,7 @@ class FileWriterTests: XCTestCase {
     func testItWritesDataWithMetadataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -38,8 +38,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key2": "value2"]) // skipped metadata here
         writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let stream = try temporaryDirectory.files()[0].stream()
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()
@@ -62,7 +62,7 @@ class FileWriterTests: XCTestCase {
     func testItWritesEncryptedDataWithMetadataToSingleFileInTLVFormat() throws {
         let writer = FileWriter(
             orchestrator: FilesOrchestrator(
-                directory: temporaryDirectory,
+                directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider()
             ),
@@ -78,8 +78,8 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key2": "value2"]) // skipped metadata here
         writer.write(value: ["key3": "value3"], metadata: ["meta3": "metaValue3"])
 
-        XCTAssertEqual(try temporaryDirectory.files().count, 1)
-        let stream = try temporaryDirectory.files()[0].stream()
+        XCTAssertEqual(try directory.files().count, 1)
+        let stream = try directory.files()[0].stream()
 
         let reader = DataBlockReader(input: stream)
         var block = try reader.next()

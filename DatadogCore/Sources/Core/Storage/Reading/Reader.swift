@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 internal struct Batch {
     /// Data blocks in the batch.

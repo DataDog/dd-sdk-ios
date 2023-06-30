@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-@testable import Datadog
+import DatadogInternal
+@testable import DatadogRUM
 
 final class RUMViewEventsFilterTests: XCTestCase {
     let sut = RUMViewEventsFilter()
@@ -108,16 +109,8 @@ final class RUMViewEventsFilterTests: XCTestCase {
 
 extension Event {
     init(data: String, metadata: RUMViewEvent.Metadata?) throws {
-        self.init(data: data.utf8Data, metadata: try JSONEncoder().encode(metadata))
-    }
-}
-
-extension Event: AnyMockable {
-    public static func mockAny() -> Self {
-        return mockWith()
-    }
-
-    public static func mockWith(data: Data = .init(), metadata: Data? = nil) -> Self {
-        return Event(data: data, metadata: metadata)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        self.init(data: data.utf8Data, metadata: try encoder.encode(metadata))
     }
 }
