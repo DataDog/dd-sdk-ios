@@ -152,7 +152,7 @@ internal class WireframesBuilder {
         label: String,
         clip: SRContentClip? = nil
     ) -> SRWireframe {
-        let wireframe =  SRPlaceholderWireframe(
+        let wireframe = SRPlaceholderWireframe(
             clip: clip,
             height: Int64(withNoOverflow: frame.size.height),
             id: id,
