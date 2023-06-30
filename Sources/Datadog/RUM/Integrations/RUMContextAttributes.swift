@@ -10,11 +10,11 @@ import Foundation
 internal enum RUMContextAttributes {
     internal enum IDs {
         /// The ID of RUM application (`String`).
-        internal static let applicationID = "application_id"
+        internal static let applicationID = "application.id"
 
         /// The ID of current RUM session (standard UUID `String`, lowercased).
         /// In case the session is rejected (not sampled), RUM context is set to empty (`[:]`) in core.
-        internal static let sessionID = "session_id"
+        internal static let sessionID = "session.id"
 
         /// The ID of current RUM view (standard UUID `String`, lowercased).
         internal static let viewID = "view.id"

@@ -27,7 +27,7 @@ extension Tracer {
         /// - Parameter enabled: `true` by default
         public var bundleWithRUM: Bool
 
-        /// The sampling rate for Traces, as a Float between 0 and 100. Defautl is 100.
+        /// The sampling rate for Traces, as a Float between 0 and 100. Default is 100.
         public var samplingRate: Float
 
         /// Initializes the Datadog Tracer configuration.

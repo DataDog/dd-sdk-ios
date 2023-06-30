@@ -562,7 +562,7 @@ class LoggerTests: XCTestCase {
 
         logMatchers.forEach {
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                forKeyPath: "application_id",
                 isTypeOf: String.self
             )
         }
@@ -594,17 +594,17 @@ class LoggerTests: XCTestCase {
 
         logMatchers.forEach {
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.applicationID,
+                forKeyPath: "application_id",
                 equals: rum.configuration.applicationID
             )
 
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                forKeyPath: "session_id",
                 isTypeOf: String.self
             )
 
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.viewID,
+                forKeyPath: "view.id",
                 isTypeOf: String.self
             )
         }
