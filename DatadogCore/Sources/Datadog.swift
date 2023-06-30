@@ -240,7 +240,8 @@ public struct Datadog {
     /// - Parameters:
     ///   - configuration: the SDK configuration.
     ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
-    ///   - instanceName: The core instance name.
+    ///   - instanceName:   The core instance name. This value will be used for data persistency and should be
+    ///                     stable between application runs.
     public static func initialize(
         with configuration: Configuration,
         trackingConsent: TrackingConsent,
@@ -299,7 +300,7 @@ public struct Datadog {
         let core = DatadogCore(
             directory: try CoreDirectory(
                 in: Directory.cache(),
-                clientToken: configuration.clientToken,
+                instancenName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
