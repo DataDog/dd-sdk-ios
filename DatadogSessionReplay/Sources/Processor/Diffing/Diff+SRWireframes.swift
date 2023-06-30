@@ -100,7 +100,7 @@ extension SRShapeWireframe: MutableWireframe {
 
 extension SRPlaceholderWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
-        guard case .imageWireframe(let other) = otherWireframe else {
+        guard case .placeholderWireframe(let other) = otherWireframe else {
             throw WireframeMutationError.typeMismatch
         }
         guard other.id == id else {
