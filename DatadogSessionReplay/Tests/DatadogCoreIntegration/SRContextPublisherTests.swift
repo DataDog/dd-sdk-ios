@@ -22,7 +22,7 @@ class SRContextPublisherTests: XCTestCase {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
 
-        let recordsCount: [String: Int64]  = ["view-id": 2]
+        let recordsCount: [String: Int64] = ["view-id": 2]
         srContextPublisher.setRecordsCount(recordsCount)
 
         XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], recordsCount)
