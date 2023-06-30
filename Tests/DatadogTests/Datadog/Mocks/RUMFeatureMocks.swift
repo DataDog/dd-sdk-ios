@@ -1029,10 +1029,11 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
 // MARK: - Dependency on Session Replay
 
 extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCount: [String: Int64]? = nil) -> Self {
         return [
             SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
+                SessionReplayDependency.hasReplay: hasReplay,
+                SessionReplayDependency.recordsCount: recordsCount
             ]
         ]
     }

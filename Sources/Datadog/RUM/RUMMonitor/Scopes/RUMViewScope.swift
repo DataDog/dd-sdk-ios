@@ -439,7 +439,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 documentVersion: version.toInt64,
                 pageStates: nil,
                 replayStats: .init(
-                    recordsCount: context.srBaggage?.recordsCount[viewUUID.rawValue.uuidString],
+                    recordsCount: context.srBaggage?.recordsCount[viewUUID.toRUMDataFormat],
                     segmentsCount: nil,
                     segmentsTotalRawSize: nil
                 ),
