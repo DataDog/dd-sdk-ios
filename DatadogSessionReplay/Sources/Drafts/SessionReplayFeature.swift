@@ -38,7 +38,7 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         let processor = Processor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
             writer: writer,
-            contextPublisher: SRContextPublisher(core: core)
+            srContextPublisher: SRContextPublisher(core: core)
         )
 
         let scheduler = MainThreadScheduler(interval: 0.1)

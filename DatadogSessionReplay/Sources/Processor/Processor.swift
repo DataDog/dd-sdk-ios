@@ -52,16 +52,16 @@ internal class Processor: Processing {
     var interceptWireframes: (([SRWireframe]) -> Void)? = nil
     #endif
 
-    private var contextPublisher: SRContextPublisher
+    private var srContextPublisher: SRContextPublisher
 
     init(
         queue: Queue,
         writer: Writing,
-        contextPublisher: SRContextPublisher
+        srContextPublisher: SRContextPublisher
     ) {
         self.queue = queue
         self.writer = writer
-        self.contextPublisher = contextPublisher
+        self.srContextPublisher = srContextPublisher
     }
 
     // MARK: - Processing
@@ -139,6 +139,6 @@ internal class Processor: Processing {
         } else {
             recordsCount[key] = value
         }
-        contextPublisher.setRecordsCount(recordsCount)
+        srContextPublisher.setRecordsCount(recordsCount)
     }
 }

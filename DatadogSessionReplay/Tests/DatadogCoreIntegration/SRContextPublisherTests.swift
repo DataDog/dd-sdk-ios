@@ -6,13 +6,25 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+import TestUtilities
 
-// swiftlint:disable empty_xctest_method
 class SRContextPublisherTests: XCTestCase {
     func testItSetsHasReplayAccordingly() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating mocks for `DatadogCore` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+
+        srContextPublisher.setRecordingIsPending(true)
+
+        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, true)
+    }
+
+    func testItSetsRecordsCountAccordingly() {
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+
+        let recordsCount: [String: Int64]  = ["view-id": 2]
+        srContextPublisher.setRecordsCount(recordsCount)
+
+        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], recordsCount)
     }
 }
-// swiftlint:enable empty_xctest_method

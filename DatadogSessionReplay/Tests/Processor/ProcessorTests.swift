@@ -26,7 +26,9 @@ class ProcessorTests: XCTestCase {
         let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -47,6 +49,8 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecord.records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecord.records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot)
+
+        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], ["abc": 3])
     }
 
     func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
@@ -54,7 +58,9 @@ class ProcessorTests: XCTestCase {
         let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -90,6 +96,8 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.earliestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
             XCTAssertEqual(enrichedRecord.latestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
         }
+
+        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], ["abc": 5])
     }
 
     func testWhenOrientationChanges_itWritesRecordsViewportResizeDataSegment() {
@@ -97,7 +105,9 @@ class ProcessorTests: XCTestCase {
         let rum: RUMContext = .mockRandom()
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
         let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
@@ -124,6 +134,11 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
+
+        XCTAssertEqual(
+            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64])?.values.first,
+            5
+        )
     }
 
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
@@ -132,7 +147,9 @@ class ProcessorTests: XCTestCase {
         let rum2: RUMContext = .mockRandom()
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -171,6 +188,11 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
             XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
         }
+
+        XCTAssertEqual(
+            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64])?.values.map { $0 },
+            [4, 4]
+        )
     }
 
     // MARK: - Processing `TouchSnapshots`
@@ -182,7 +204,9 @@ class ProcessorTests: XCTestCase {
         let rum: RUMContext = .mockWith(serverTimeOffset: 0)
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
@@ -215,6 +239,11 @@ class ProcessorTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
             XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
         }
+
+        XCTAssertEqual(
+            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64]),
+            ["abc": 13]
+        )
     }
 
     func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
@@ -223,7 +252,9 @@ class ProcessorTests: XCTestCase {
         let rum2: RUMContext = .mockWith(serverTimeOffset: 456)
 
         // Given
-        let processor = Processor(queue: NoQueue(), writer: writer)
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -250,6 +281,11 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
             XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
         }
+
+        XCTAssertEqual(
+            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64]),
+            ["abc": 4]
+        )
     }
 
     // MARK: - `ViewTreeSnapshot` generation
