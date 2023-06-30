@@ -715,7 +715,7 @@ class TracerTests: XCTestCase {
 //
 //        // then
 //        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.\(RUMContextAttributes.IDs.sessionID)"))
 //    }
 
     // TODO: RUMM-2843 [V2 regression] RUM context is not associated with span started on caller thread
@@ -743,8 +743,8 @@ class TracerTests: XCTestCase {
 //            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.applicationID)"),
 //            rum.configuration.applicationID
 //        )
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.viewID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.\(RUMContextAttributes.IDs.sessionID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.\(RUMContextAttributes.IDs.viewID)"))
 //    }
 
     // MARK: - Injecting span context into carrier

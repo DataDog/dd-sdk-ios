@@ -161,6 +161,17 @@ internal struct LogEventEncoder {
         init(_ string: String) { self.stringValue = string }
     }
 
+    func mapInternalAttributeKey(_ originalAttribute: String) -> String {
+        switch originalAttribute {
+        case "application.id":
+            return "application_id"
+        case "session.id":
+            return "session_id"
+        default:
+            return originalAttribute
+        }
+    }
+
     func encode(_ log: LogEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
         try container.encode(log.date, forKey: .date)
@@ -232,7 +243,7 @@ internal struct LogEventEncoder {
         // 3. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
             let encodableInternalAttributes = Dictionary(
-                uniqueKeysWithValues: internalAttributes.map { name, value in (name, AnyEncodable(value)) }
+                uniqueKeysWithValues: internalAttributes.map { name, value in (mapInternalAttributeKey(name), AnyEncodable(value)) }
             )
             try encodableInternalAttributes.forEach { try attributesContainer.encode($0.value, forKey: DynamicCodingKey($0.key)) }
         }

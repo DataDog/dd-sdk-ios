@@ -234,6 +234,21 @@ internal struct SpanEventEncoder {
         }
     }
 
+    func mapInternalMetaTags(_ originalTag: String) -> String {
+        switch originalTag {
+        case "application.id":
+            return "_dd.application.id"
+        case "session.id":
+            return "_dd.session.id"
+        case "view.id":
+            return "_dd.view.id"
+        case "user_action.id":
+            return "_dd.action.id"
+        default:
+            return originalTag
+        }
+    }
+
     /// Encodes `meta.*` attributes coming from user
     private func encodeCustomMeta(_ span: SpanEvent, to container: inout KeyedEncodingContainer<DynamicCodingKey>) throws {
         // NOTE: RUMM-299 only string values are supported for `meta.*` attributes
@@ -244,7 +259,7 @@ internal struct SpanEventEncoder {
 
         try span.tags.forEach {
             if $0.value != "null" {
-                let metaKey = "meta.\($0.key)"
+                let metaKey = "meta.\(mapInternalMetaTags($0.key))"
                 try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
             }
         }
