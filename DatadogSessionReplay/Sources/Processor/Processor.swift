@@ -54,6 +54,8 @@ internal class Processor: Processing {
 
     private var srContextPublisher: SRContextPublisher
 
+    private var recordsCount: [String: Int64] = [:]
+
     init(
         queue: Queue,
         writer: Writing,
@@ -131,9 +133,7 @@ internal class Processor: Processing {
         lastWireframes = wireframes
     }
 
-    var recordsCount: [String: Int64] = [:]
-
-    func trackRecord(key: String, value: Int64) {
+    private func trackRecord(key: String, value: Int64) {
         if let existingValue = recordsCount[key] {
             recordsCount[key] = existingValue + value
         } else {
