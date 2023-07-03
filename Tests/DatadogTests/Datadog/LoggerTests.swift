@@ -631,7 +631,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 core: core,
                 rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            ),
             dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
@@ -675,7 +675,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 core: core,
                 rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            ),
             dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
@@ -725,7 +725,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 core: core,
                 rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            ),
             dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
@@ -771,7 +771,7 @@ class LoggerTests: XCTestCase {
             dependencies: RUMScopeDependencies(
                 core: core,
                 rumFeature: rum
-            ).replacing(viewUpdatesThrottlerFactory: { NoOpRUMViewUpdatesThrottler() }),
+            ),
             dateProvider: SystemDateProvider()
         )
         Global.rum.startView(viewController: mockView)
