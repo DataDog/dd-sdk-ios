@@ -20,8 +20,8 @@ internal struct RUMScopeDependencies {
     weak var core: DatadogCoreProtocol?
     let rumApplicationID: String
     let sessionSampler: Sampler
-    let backgroundEventTrackingEnabled: Bool
-    let frustrationTrackingEnabled: Bool
+    let trackBackgroundEvents: Bool
+    let trackFrustrations: Bool
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator

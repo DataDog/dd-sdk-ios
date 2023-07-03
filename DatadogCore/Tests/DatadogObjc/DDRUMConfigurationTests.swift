@@ -87,16 +87,16 @@ class DDRUMConfigurationTests: XCTestCase {
 
     func testFrustrationsTracking() {
         let random: Bool = .mockRandom()
-        objc.frustrationsTracking = random
-        XCTAssertEqual(objc.frustrationsTracking, random)
-        XCTAssertEqual(swift.frustrationsTracking, random)
+        objc.trackFrustrations = random
+        XCTAssertEqual(objc.trackFrustrations, random)
+        XCTAssertEqual(swift.trackFrustrations, random)
     }
 
     func testBackgroundEventsTracking() {
         let random: Bool = .mockRandom()
-        objc.backgroundEventsTracking = random
-        XCTAssertEqual(objc.backgroundEventsTracking, random)
-        XCTAssertEqual(swift.backgroundEventsTracking, random)
+        objc.trackBackgroundEvents = random
+        XCTAssertEqual(objc.trackBackgroundEvents, random)
+        XCTAssertEqual(swift.trackBackgroundEvents, random)
     }
 
     func testLongTaskThreshold() {

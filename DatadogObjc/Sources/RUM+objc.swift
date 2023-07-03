@@ -327,14 +327,14 @@ public class DDRUMConfiguration: NSObject {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
     }
 
-    @objc public var frustrationsTracking: Bool {
-        set { swiftConfig.frustrationsTracking = newValue }
-        get { swiftConfig.frustrationsTracking }
+    @objc public var trackFrustrations: Bool {
+        set { swiftConfig.trackFrustrations = newValue }
+        get { swiftConfig.trackFrustrations }
     }
 
-    @objc public var backgroundEventsTracking: Bool {
-        set { swiftConfig.backgroundEventsTracking = newValue }
-        get { swiftConfig.backgroundEventsTracking }
+    @objc public var trackBackgroundEvents: Bool {
+        set { swiftConfig.trackBackgroundEvents = newValue }
+        get { swiftConfig.trackBackgroundEvents }
     }
 
     @objc public var longTaskThreshold: TimeInterval {

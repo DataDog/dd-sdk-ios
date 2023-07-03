@@ -82,7 +82,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
-                backgroundEventsTracking: true,
+                trackBackgroundEvents: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )

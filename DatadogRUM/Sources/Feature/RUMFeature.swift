@@ -28,8 +28,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             core: core,
             rumApplicationID: configuration.applicationID,
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-            backgroundEventTrackingEnabled: configuration.backgroundEventsTracking,
-            frustrationTrackingEnabled: configuration.frustrationsTracking,
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackFrustrations: configuration.trackFrustrations,
             firstPartyHosts: {
                 switch configuration.urlSessionTracking?.firstPartyHostsTracing {
                 case let .trace(hosts, _):
@@ -91,7 +91,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
-                backgroundEventTrackingEnabled: configuration.backgroundEventsTracking,
+                trackBackgroundEvents: configuration.trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
             )
@@ -107,8 +107,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
             telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
-            trackBackgroundEvents: configuration.backgroundEventsTracking,
-            trackFrustrations: configuration.frustrationsTracking,
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackFrustrations: configuration.trackFrustrations,
             trackInteractions: configuration.uiKitActionsPredicate != nil,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
