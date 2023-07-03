@@ -13,7 +13,7 @@ internal class DatadogTracer: OTTracer {
     /// Global tags configured for Trace feature.
     let tags: [String: Encodable]
     let service: String?
-    let sendNetworkInfo: Bool
+    let networkInfoEnabled: Bool
     let spanEventMapper: ((SpanEvent) -> SpanEvent)?
     /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
     let queue: DispatchQueue
@@ -44,7 +44,7 @@ internal class DatadogTracer: OTTracer {
         sampler: Sampler,
         tags: [String: Encodable],
         service: String?,
-        sendNetworkInfo: Bool,
+        networkInfoEnabled: Bool,
         spanEventMapper: ((SpanEvent) -> SpanEvent)?,
         tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
@@ -54,7 +54,7 @@ internal class DatadogTracer: OTTracer {
         self.core = core
         self.tags = tags
         self.service = service
-        self.sendNetworkInfo = sendNetworkInfo
+        self.networkInfoEnabled = networkInfoEnabled
         self.spanEventMapper = spanEventMapper
         self.queue = DispatchQueue(
             label: "com.datadoghq.tracer",

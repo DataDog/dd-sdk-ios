@@ -22,7 +22,7 @@ internal class TrackingConsentBaseScenario {
 
         // Enable Trace
         var traceConfig = Trace.Configuration()
-        traceConfig.sendNetworkInfo = true
+        traceConfig.networkInfoEnabled = true
         traceConfig.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
         Trace.enable(with: traceConfig)
 

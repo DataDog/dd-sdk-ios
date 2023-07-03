@@ -14,7 +14,7 @@ internal struct SpanEventBuilder {
     /// Enriches traces with network connection info.
     /// This means: reachability status, connection type, mobile carrier name and many more will be added to every span and span logs.
     /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
-    let sendNetworkInfo: Bool
+    let networkInfoEnabled: Bool
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
 
@@ -67,8 +67,8 @@ internal struct SpanEventBuilder {
             isKept: isKept,
             tracerVersion: context.sdkVersion,
             applicationVersion: context.version,
-            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,
-            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfo : nil,
+            networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
+            mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             userInfo: spanUserInfo,
             tags: tags
         )

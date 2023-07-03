@@ -12,7 +12,7 @@ import TestUtilities
 class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesApplicationStateHistory() throws {
         // Given
-        let receiver = ContextMessageReceiver(bundleWithRUM: .mockRandom())
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: .mockRandom())
         let core = PassthroughCoreMock(
             context: .mockWith(applicationStateHistory: .mockAppInBackground()),
             messageReceiver: receiver
@@ -29,7 +29,7 @@ class ContextMessageReceiverTests: XCTestCase {
 
     func testItReceivesRUMContext() throws {
         // Given
-        let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
         var ids: [String: String] = .mockRandom()
 
         let core = PassthroughCoreMock(
@@ -49,7 +49,7 @@ class ContextMessageReceiverTests: XCTestCase {
 
     func testItIngnoresRUMContext() throws {
         // Given
-        let receiver = ContextMessageReceiver(bundleWithRUM: false)
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: false)
         var ids: [String: String] = .mockRandom()
 
         let core = PassthroughCoreMock(

@@ -187,7 +187,7 @@ extension DatadogTracer {
         sampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
         service: String? = nil,
-        sendNetworkInfo: Bool = true,
+        networkInfoEnabled: Bool = true,
         spanEventMapper: ((SpanEvent) -> SpanEvent)? = nil,
         tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
@@ -199,7 +199,7 @@ extension DatadogTracer {
             sampler: sampler,
             tags: tags,
             service: service,
-            sendNetworkInfo: sendNetworkInfo,
+            networkInfoEnabled: networkInfoEnabled,
             spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
@@ -214,14 +214,14 @@ extension TracingWithLoggingIntegration {
         return TracingWithLoggingIntegration(
             core: NOPDatadogCore(),
             service: .mockAny(),
-            sendNetworkInfo: .mockAny()
+            networkInfoEnabled: .mockAny()
         )
     }
 }
 
 extension ContextMessageReceiver {
     static func mockAny() -> ContextMessageReceiver {
-        return ContextMessageReceiver(bundleWithRUM: true)
+        return ContextMessageReceiver(bundleWithRumEnabled: true)
     }
 }
 
@@ -232,12 +232,12 @@ extension SpanEventBuilder {
 
     static func mockWith(
         serviceName: String = .mockAny(),
-        sendNetworkInfo: Bool = false,
+        networkInfoEnabled: Bool = false,
         eventsMapper: SpanEventMapper? = nil
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             serviceName: serviceName,
-            sendNetworkInfo: sendNetworkInfo,
+            networkInfoEnabled: networkInfoEnabled,
             eventsMapper: eventsMapper
         )
     }

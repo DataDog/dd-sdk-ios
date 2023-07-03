@@ -20,7 +20,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
         configuration: Trace.Configuration
     ) {
         let contextReceiver = ContextMessageReceiver(
-            bundleWithRUM: configuration.bundleWithRUM
+            bundleWithRumEnabled: configuration.bundleWithRumEnabled
         )
         self.requestBuilder = TracingRequestBuilder(customIntakeURL: configuration.customEndpoint)
         self.messageReceiver = contextReceiver
@@ -29,7 +29,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sampleRate),
             tags: configuration.tags ?? [:],
             service: configuration.service,
-            sendNetworkInfo: configuration.sendNetworkInfo,
+            networkInfoEnabled: configuration.networkInfoEnabled,
             spanEventMapper: configuration.eventMapper,
             tracingUUIDGenerator: configuration.traceIDGenerator,
             dateProvider: configuration.dateProvider,
@@ -37,7 +37,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
                 service: configuration.service,
-                sendNetworkInfo: configuration.sendNetworkInfo
+                networkInfoEnabled: configuration.networkInfoEnabled
             )
         )
         self.telemetry = TelemetryCore(core: core)
