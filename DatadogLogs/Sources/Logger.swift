@@ -25,25 +25,28 @@ public struct Logger {
         public var name: String?
 
         /// Enriches logs with network connection info.
+        ///
         /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
         /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
         ///
         /// `false` by default.
-        public var sendNetworkInfo: Bool
+        public var networkInfoEnabled: Bool
 
         /// Enables the logs integration with RUM.
+        ///
         /// If enabled all the logs will be enriched with the current RUM View information and
         /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
         ///
         /// `true` by default.
-        public var bundleWithRUM: Bool
+        public var bundleWithRumEnabled: Bool
 
         /// Enables the logs integration with active span API from Tracing.
+        ///
         /// If enabled all the logs will be bundled with the `DatadogTracer.shared().activeSpan` trace and
         /// it will be possible to see all the logs sent during that specific trace.
         ///
         /// `true` by default.
-        public var bundleWithTrace: Bool
+        public var bundleWithTraceEnabled: Bool
 
         /// Sets the sample rate for remote logging.
         ///
@@ -77,27 +80,27 @@ public struct Logger {
         /// - Parameters:
         ///   - service: The service name  (default value is set to application bundle identifier)
         ///   - name: The logger custom name (default value is set to main bundle identifier)
-        ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
+        ///   - networkInfoEnabled: Enriches logs with network connection info. `false` by default.
         ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
-        ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
+        ///   - bundleWithTraceEnabled: Enables the logs integration with active span API from Tracing. `true` by default
         ///   - remoteSampleRate: The sample rate for remote logging. **When set to `0`, no log entries will be sent to Datadog servers.**
         ///   - remoteLogThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
         ///   - consoleLogFormat: Format to use when printing logs to console - either `.short` or `.json`.
         public init(
             service: String? = nil,
             name: String? = nil,
-            sendNetworkInfo: Bool = false,
-            bundleWithRUM: Bool = true,
-            bundleWithTrace: Bool = true,
+            networkInfoEnabled: Bool = false,
+            bundleWithRumEnabled: Bool = true,
+            bundleWithTraceEnabled: Bool = true,
             remoteSampleRate: Float = 100,
             remoteLogThreshold: LogLevel = .debug,
             consoleLogFormat: ConsoleLogFormat? = nil
         ) {
             self.service = service
             self.name = name
-            self.sendNetworkInfo = sendNetworkInfo
-            self.bundleWithRUM = bundleWithRUM
-            self.bundleWithTrace = bundleWithTrace
+            self.networkInfoEnabled = networkInfoEnabled
+            self.bundleWithRumEnabled = bundleWithRumEnabled
+            self.bundleWithTraceEnabled = bundleWithTraceEnabled
             self.remoteSampleRate = remoteSampleRate
             self.remoteLogThreshold = remoteLogThreshold
             self.consoleLogFormat = consoleLogFormat
@@ -155,14 +158,14 @@ public struct Logger {
                 configuration: RemoteLogger.Configuration(
                     service: configuration.service,
                     name: configuration.name,
-                    sendNetworkInfo: configuration.sendNetworkInfo,
+                    networkInfoEnabled: configuration.networkInfoEnabled,
                     threshold: configuration.remoteLogThreshold,
                     eventMapper: feature.logEventMapper,
                     sampler: Sampler(samplingRate: debug ? 100 : configuration.remoteSampleRate)
                 ),
                 dateProvider: feature.dateProvider,
-                rumContextIntegration: configuration.bundleWithRUM,
-                activeSpanIntegration: configuration.bundleWithTrace
+                rumContextIntegration: configuration.bundleWithRumEnabled,
+                activeSpanIntegration: configuration.bundleWithTraceEnabled
             )
         }()
 

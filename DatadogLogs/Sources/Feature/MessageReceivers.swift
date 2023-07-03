@@ -48,7 +48,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
             let builder = LogEventBuilder(
                 service: attributes["service"] ?? context.service,
                 loggerName: loggerName,
-                sendNetworkInfo: attributes["sendNetworkInfo"] ?? false,
+                networkInfoEnabled: attributes["networkInfoEnabled"] ?? false,
                 eventMapper: logEventMapper
             )
 

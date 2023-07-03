@@ -94,7 +94,8 @@ class DebugLoggingViewController: UIViewController {
             return Logger.create(
                 with: Logger.Configuration(
                     name: "stress-logger-\(index)",
-                    sendNetworkInfo: true
+                    networkInfoEnabled
+                    : true
                 )
             )
         }

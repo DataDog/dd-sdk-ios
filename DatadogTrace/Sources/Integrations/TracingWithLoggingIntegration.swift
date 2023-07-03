@@ -86,7 +86,7 @@ internal struct TracingWithLoggingIntegration {
                     "error": extractedError,
                     "userAttributes": AnyEncodable(userAttributes),
                     "internalAttributes": internalAttributes,
-                    "sendNetworkInfo": sendNetworkInfo
+                    "networkInfoEnabled": sendNetworkInfo
                 ]
             ),
             else: fallback

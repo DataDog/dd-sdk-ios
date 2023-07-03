@@ -79,7 +79,7 @@ class LoggerTests: XCTestCase {
             with: Logger.Configuration(
                 service: "custom-service-name",
                 name: "custom-logger-name",
-                sendNetworkInfo: true,
+                networkInfoEnabled: true,
                 consoleLogFormat: .short
             ),
             in: core
@@ -318,7 +318,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = Logger.create(with: Logger.Configuration(sendNetworkInfo: true), in: core)
+        let logger = Logger.create(with: Logger.Configuration(networkInfoEnabled: true), in: core)
 
         // simulate entering cellular service range
         core.context.carrierInfo = .mockWith(
@@ -353,7 +353,7 @@ class LoggerTests: XCTestCase {
         let feature: LogsFeature = .mockAny()
         try core.register(feature: feature)
 
-        let logger = Logger.create(with: Logger.Configuration(sendNetworkInfo: true), in: core)
+        let logger = Logger.create(with: Logger.Configuration(networkInfoEnabled: true), in: core)
 
         // simulate reachable network
         core.context.networkConnectionInfo = .mockWith(
