@@ -267,6 +267,8 @@
 		61DA8CB828647A500074A606 /* InternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB728647A500074A606 /* InternalLoggerTests.swift */; };
 		61DA8CB928647A500074A606 /* InternalLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CB728647A500074A606 /* InternalLoggerTests.swift */; };
 		61DB33B225DEDFC200F7EA71 /* CustomObjcViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */; };
+		61E0DF2E2A542AA100DAA236 /* StorageMetricsPoC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E0DF2D2A542AA100DAA236 /* StorageMetricsPoC.swift */; };
+		61E0DF2F2A542AA100DAA236 /* StorageMetricsPoC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E0DF2D2A542AA100DAA236 /* StorageMetricsPoC.swift */; };
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
@@ -1987,6 +1989,7 @@
 		61DB33B025DEDFC200F7EA71 /* CustomObjcViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CustomObjcViewController.h; sourceTree = "<group>"; };
 		61DB33B125DEDFC200F7EA71 /* CustomObjcViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = CustomObjcViewController.m; sourceTree = "<group>"; };
 		61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingPlugin.swift; sourceTree = "<group>"; };
+		61E0DF2D2A542AA100DAA236 /* StorageMetricsPoC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StorageMetricsPoC.swift; sourceTree = "<group>"; };
 		61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceIDTests.swift; sourceTree = "<group>"; };
 		61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventBuilderTests.swift; sourceTree = "<group>"; };
 		61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONDataMatcher.swift; sourceTree = "<group>"; };
@@ -2855,6 +2858,7 @@
 		61133BA62423979B00786299 /* Storage */ = {
 			isa = PBXGroup;
 			children = (
+				61E0DF2D2A542AA100DAA236 /* StorageMetricsPoC.swift */,
 				D21C26C428A3B49C005DD405 /* FeatureStorage.swift */,
 				61DA8CA828609C5B0074A606 /* Directories.swift */,
 				D29CDD3128211A2200F7DAA5 /* DataBlock.swift */,
@@ -6439,6 +6443,7 @@
 				61D3E0D8277B23F1008BE766 /* KronosNTPClient.swift in Sources */,
 				D20605B22874E1660047275C /* CarrierInfoPublisher.swift in Sources */,
 				D2A1EE32287DA51900D28DFB /* UserInfoPublisher.swift in Sources */,
+				61E0DF2E2A542AA100DAA236 /* StorageMetricsPoC.swift in Sources */,
 				61133BD52423979B00786299 /* DataUploadConditions.swift in Sources */,
 				61D3E0D7277B23F1008BE766 /* KronosData+Bytes.swift in Sources */,
 				61133BD92423979B00786299 /* DataUploadDelay.swift in Sources */,
@@ -7348,6 +7353,7 @@
 				D2CB6EA727C50EAE00A62B57 /* Versioning.swift in Sources */,
 				D2CB6EA827C50EAE00A62B57 /* HTTPClient.swift in Sources */,
 				D2CB6EAF27C50EAE00A62B57 /* BundleType.swift in Sources */,
+				61E0DF2F2A542AA100DAA236 /* StorageMetricsPoC.swift in Sources */,
 				D2CB6EB327C50EAE00A62B57 /* KronosNTPClient.swift in Sources */,
 				D2CB6EBA27C50EAE00A62B57 /* DataUploadConditions.swift in Sources */,
 				D2CB6EBF27C50EAE00A62B57 /* KronosData+Bytes.swift in Sources */,

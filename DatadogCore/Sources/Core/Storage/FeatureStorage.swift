@@ -109,12 +109,18 @@ extension FeatureStorage {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            metrics: StorageMetricsPoC(
+                featureName: featureName,
+                directory: directories.authorized,
+                directoryAccessQueue: queue
+            )
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            metrics: nil
         )
 
         self.init(

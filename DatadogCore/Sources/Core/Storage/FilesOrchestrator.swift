@@ -26,6 +26,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
     let performance: StoragePerformancePreset
+    /// Metrics of this orchestrator.
+    let metrics: StorageMetricsPoC?
 
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
@@ -36,11 +38,13 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        metrics: StorageMetricsPoC?
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.metrics = metrics
     }
 
     // MARK: - `WritableFile` orchestration
