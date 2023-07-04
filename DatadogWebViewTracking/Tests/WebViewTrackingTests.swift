@@ -105,7 +105,7 @@ class WebViewTrackingTests: XCTestCase {
         let webview = WKWebView(frame: .zero, configuration: configuration)
 
         WebViewTracking.enable(
-            webview: webview,
+            webView: webview,
             in: core
         )
 
@@ -123,7 +123,7 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertEqual(controller.userScripts.count, componentCount + 1)
         XCTAssertEqual(controller.messageHandlers.count, componentCount + 1)
 
-        WebViewTracking.disable(webview: webview)
+        WebViewTracking.disable(webView: webview)
 
         XCTAssertEqual(controller.userScripts.count, componentCount)
         XCTAssertEqual(controller.messageHandlers.count, componentCount)

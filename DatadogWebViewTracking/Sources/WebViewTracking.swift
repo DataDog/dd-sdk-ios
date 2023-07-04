@@ -29,16 +29,16 @@ public final class WebViewTracking {
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
     ///
     /// - Parameters:
-    ///   - webview: The web-view to track.
+    ///   - webView: The web-view to track.
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
     ///   - core: Datadog SDK core to use for tracking.
     public static func enable(
-        webview: WKWebView,
+        webView: WKWebView,
         hosts: Set<String> = [],
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         enable(
-            tracking: webview.configuration.userContentController,
+            tracking: webView.configuration.userContentController,
             hosts: hosts,
             hostsSanitizer: HostsSanitizer(),
             in: core
@@ -50,9 +50,9 @@ public final class WebViewTracking {
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
     /// - Note: This method **must** be called when the webview can be deinitialized.
     /// 
-    /// - Parameter webview: The web-view to stop tracking.
-    public static func disable(webview: WKWebView) {
-        let controller = webview.configuration.userContentController
+    /// - Parameter webView: The web-view to stop tracking.
+    public static func disable(webView: WKWebView) {
+        let controller = webView.configuration.userContentController
         controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
         let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
         controller.removeAllUserScripts()

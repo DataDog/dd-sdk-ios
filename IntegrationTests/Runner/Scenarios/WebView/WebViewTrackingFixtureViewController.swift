@@ -36,14 +36,14 @@ class ShopistWebviewViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         WebViewTracking.enable(
-            webview: webView,
+            webView: webView,
             hosts: ["shopist.io"]
         )
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        WebViewTracking.disable(webview: webView)
+        WebViewTracking.disable(webView: webView)
     }
 
     override func viewDidAppear(_ animated: Bool) {

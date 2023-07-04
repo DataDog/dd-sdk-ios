@@ -93,7 +93,7 @@ class WebviewViewController: UIViewController {
         config.userContentController = controller
         webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
 
-        WebViewTracking.enable(webview: webView)
+        WebViewTracking.enable(webView: webView)
 
         view.addSubview(webView)
     }
