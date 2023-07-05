@@ -56,6 +56,31 @@ let package = Package(
   ```
 </details>
 
+<details>
+  <summary>Carthage</summary>
+
+  The `Cartfile` stays the same: 
+  ```
+  github "DataDog/dd-sdk-ios"
+  ```
+
+  In Xcode, you **must** link the following frameworks:
+  ```
+  DatadogInternal.xcframework
+  DatadogCore.xcframework
+  ```
+
+  Then you can select the modules you want to use:
+  ```
+  DatadogLogs.xcframework
+  DatadogTrace.xcframework
+  DatadogRUM.xcframework
+  DatadogCrashReporting.xcframework + CrashReporter.xcframework
+  DatadogWebViewTracking.xcframework
+  DatadogObjc.xcframework
+  ```
+</details>
+
 **NOTE**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
 
 The `2.0` version of the iOS SDK also exposes unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
