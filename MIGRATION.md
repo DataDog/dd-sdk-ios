@@ -18,11 +18,11 @@ These come in addition to the existing `DatadogCrashReporting` and `DatadogObjc`
 
 **NOTE**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
 
-The `2.0` version of the iOS SDK also expose unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
+The `2.0` version of the iOS SDK also exposes unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
 
 ## SDK Configuration Changes
 
-Better SDK granularity is achieved with the extraction of different products into independent modules, therefor all product-specific configurations have been moved to their dedicated modules.
+Better SDK granularity is achieved with the extraction of different products into independent modules, therefore all product-specific configurations have been moved to their dedicated modules.
 
 > The SDK must be initialized before enabling any product.
 
