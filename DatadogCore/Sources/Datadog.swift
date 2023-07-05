@@ -12,14 +12,14 @@ import DatadogInternal
 
 /// An entry point to Datadog SDK.
 ///
-/// Initialize the core instance of the Datadog SDK prior to enabling any Features.
+/// Initialize the core instance of the Datadog SDK prior to enabling any Product.
 ///
 ///     Datadog.initialize(
 ///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
 ///         trackingConsent: .pending
 ///     )
 ///
-/// Once Datadog SDK is initialized, you can enable Features, such as RUM:
+/// Once Datadog SDK is initialized, you can enable products, such as RUM:
 ///
 ///     RUM.enable(
 ///         with: RUM.Configuration(applicationID: "<application>")
@@ -173,8 +173,10 @@ public struct Datadog {
     public static var verbosityLevel: CoreLoggerLevel? = nil
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
-    public static var isInitialized: Bool {
-        return CoreRegistry.default is DatadogCore
+    ///
+    /// - Parameter name: The name of the SDK instance to verify.
+    public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool {
+        CoreRegistry.instance(named: name) is DatadogCore
     }
 
     /// Returns the Datadog SDK instance for the given name.
@@ -186,7 +188,9 @@ public struct Datadog {
     }
 
     /// Sets current user information.
+    ///
     /// Those will be added to logs, traces and RUM events automatically.
+    ///
     /// - Parameters:
     ///   - id: User ID, if any
     ///   - name: Name representing the user, if any
@@ -212,6 +216,7 @@ public struct Datadog {
     ///
     /// This extra info will be added to already existing extra info that is added
     /// to  logs traces and RUM events automatically.
+    ///
     /// - Parameters:
     ///   - extraInfo: User's additionall custom attributes
     public static func addUserExtraInfo(
@@ -237,29 +242,62 @@ public struct Datadog {
 
     /// Initializes the Datadog SDK.
     ///
+    /// You **must** initialize the core instance of the Datadog SDK prior to enabling any Product.
+    ///
+    ///     Datadog.initialize(
+    ///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
+    ///         trackingConsent: .pending
+    ///     )
+    ///
+    /// Once Datadog SDK is initialized, you can enable products, such as RUM:
+    ///
+    ///     RUM.enable(
+    ///         with: RUM.Configuration(applicationID: "<application>")
+    ///     )
+    ///
+    /// It is possible to initialize multiple instances of the SDK, associating them with a name.
+    /// Many methods of the SDK can optionally take a SDK instance as an argument. If not provided,
+    /// the call will be associated with the default (nameless) SDK instance.
+    ///
+    /// To use a secondary instance of the SDK, provide a name to the ``initialize`` method
+    /// and use the returned instance to enable products:
+    ///
+    ///     let core = Datadog.initialize(
+    ///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
+    ///         trackingConsent: .pending,
+    ///         instanceName: "my-instance"
+    ///     )
+    ///
+    ///     RUM.enable(
+    ///         with: RUM.Configuration(applicationID: "<application>"),
+    ///         in: core
+    ///     )
+    ///
     /// - Parameters:
     ///   - configuration: the SDK configuration.
     ///   - trackingConsent: the initial state of the Data Tracking Consent given by the user of the app.
     ///   - instanceName:   The core instance name. This value will be used for data persistency and should be
     ///                     stable between application runs.
+    @discardableResult
     public static func initialize(
         with configuration: Configuration,
         trackingConsent: TrackingConsent,
         instanceName: String = CoreRegistry.defaultInstanceName
-    ) {
+    ) -> DatadogCoreProtocol {
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
 
         do {
-            try initializeOrThrow(
+            return try initializeOrThrow(
                 with: configuration,
                 trackingConsent: trackingConsent,
                 instanceName: instanceName
             )
         } catch {
             consolePrint("\(error)")
+            return NOPDatadogCore()
         }
     }
 
@@ -267,7 +305,7 @@ public struct Datadog {
         with configuration: Configuration,
         trackingConsent: TrackingConsent,
         instanceName: String
-    ) throws {
+    ) throws -> DatadogCoreProtocol {
         if CoreRegistry.default is DatadogCore {
             throw ProgrammerError(description: "SDK is already initialized.")
         }
@@ -351,6 +389,8 @@ public struct Datadog {
         )
 
         DD.telemetry = telemetry
+
+        return core
     }
 
     private static func deleteV1Folders(in core: DatadogCore) {
