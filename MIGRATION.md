@@ -176,10 +176,9 @@ All the classes related to Trace are now strictly in the `DatadogTrace` module. 
 ```swift
 import DatadogTrace
 
-// Using the default SDK core instance
 Trace.enable(
     with: Trace.Configuration(...)
-    )
+)
 ```
 
 Then, you can access the shared Tracer instance:
@@ -187,7 +186,6 @@ Then, you can access the shared Tracer instance:
 ```swift
 import DatadogTrace
 
-// Using the default SDK core instance
 let tracer = Tracer.shared()
 ```
 
@@ -322,7 +320,6 @@ let core = Datadog.sdkInstance(named: "my-instance")
 ```swift
 import DatadogLogs
 
-Logs.enable(in: core)
 let logger = Logger.create(in: core)
 ```
 
@@ -330,7 +327,6 @@ let logger = Logger.create(in: core)
 ```swift
 import DatadogRUM
 
-RUM.enable(in: core)
 let monitor = RUMMonitor.shared(in: core)
 ```
 
@@ -338,6 +334,5 @@ let monitor = RUMMonitor.shared(in: core)
 ```swift
 import DatadogRUM
 
-RUM.enable(in: core)
 let monitor = RUMMonitor.shared(in: core)
 ```
