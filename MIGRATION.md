@@ -16,6 +16,46 @@ In comparison with version 1.x where all products were in a single module `Datad
 
 These come in addition to the existing `DatadogCrashReporting` and `DatadogObjc`.
 
+<details>
+  <summary>SPM</summary>
+
+  ```swift
+let package = Package(
+    ...
+    dependencies: [
+        .package(url: "https://github.com/DataDog/dd-sdk-ios", from: "2.0.0")
+    ],
+    targets: [
+        .target(
+            ...
+            dependencies: [
+                .product(name: "DatadogCore", package: "dd-sdk-ios"),
+                .product(name: "DatadogLogs", package: "dd-sdk-ios"),
+                .product(name: "DatadogTrace", package: "dd-sdk-ios"),
+                .product(name: "DatadogRUM", package: "dd-sdk-ios"),
+                .product(name: "DatadogCrashReporting", package: "dd-sdk-ios"),
+                .product(name: "DatadogWebViewTracking", package: "dd-sdk-ios"),
+            ]
+        ),
+    ]
+)
+  ```
+</details>
+
+<details>
+  <summary>CocoaPods</summary>
+
+  ```ruby
+  pod 'DatadogCore'
+  pod 'DatadogLogs'
+  pod 'DatadogTrace'
+  pod 'DatadogRUM'
+  pod 'DatadogCrashReporting'
+  pod 'DatadogWebViewTracking'
+  pod 'DatadogObjc'
+  ```
+</details>
+
 **NOTE**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
 
 The `2.0` version of the iOS SDK also exposes unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
