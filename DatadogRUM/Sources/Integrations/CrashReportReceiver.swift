@@ -92,7 +92,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let applicationID: String
     let dateProvider: DateProvider
     let sessionSampler: Sampler
-    let backgroundEventTrackingEnabled: Bool
+    let trackBackgroundEvents: Bool
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
@@ -103,14 +103,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         applicationID: String,
         dateProvider: DateProvider,
         sessionSampler: Sampler,
-        backgroundEventTrackingEnabled: Bool,
+        trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?
     ) {
         self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sessionSampler = sessionSampler
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
+        self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
     }
@@ -201,7 +201,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: lastRUMSessionState,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         let newRUMView: RUMViewEvent?
@@ -254,7 +254,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: nil,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         let newRUMView: RUMViewEvent?

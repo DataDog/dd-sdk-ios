@@ -44,7 +44,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private let dependencies: RUMScopeDependencies
 
     /// Automatically detect background events by creating "Background" view if no other view is active
-    internal let backgroundEventTrackingEnabled: Bool
+    internal let trackBackgroundEvents: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
@@ -74,7 +74,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
-        self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
+        self.trackBackgroundEvents = dependencies.trackBackgroundEvents
         self.isActive = true
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
@@ -251,7 +251,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: state,
             isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         switch handlingRule {

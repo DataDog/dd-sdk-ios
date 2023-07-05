@@ -20,7 +20,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
         core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
             LogMessageReceiver.mockAny(),
             receiver
@@ -29,7 +29,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         tracer = .mockWith(
             core: core,
             tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0),
-            loggingIntegration: TracingWithLoggingIntegration(core: core, service: .mockAny(), sendNetworkInfo: .mockAny())
+            loggingIntegration: TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
         )
 
         handler = TracingURLSessionHandler(

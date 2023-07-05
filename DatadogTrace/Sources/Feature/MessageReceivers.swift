@@ -18,7 +18,7 @@ internal struct CoreContext {
 }
 
 internal final class ContextMessageReceiver: FeatureMessageReceiver {
-    let bundleWithRUM: Bool
+    let bundleWithRumEnabled: Bool
 
     /// The up-to-date core context.
     ///
@@ -26,8 +26,8 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     @ReadWriteLock
     var context: CoreContext = .init()
 
-    init(bundleWithRUM: Bool) {
-        self.bundleWithRUM = bundleWithRUM
+    init(bundleWithRumEnabled: Bool) {
+        self.bundleWithRumEnabled = bundleWithRumEnabled
     }
 
     /// Process messages receives from the bus.
@@ -51,7 +51,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
 
-            if bundleWithRUM {
+            if bundleWithRumEnabled {
                 $0.rum = context.featuresAttributes["rum"]?.ids
             }
         }

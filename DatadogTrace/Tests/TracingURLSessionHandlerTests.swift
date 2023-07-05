@@ -19,7 +19,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
         core = PassthroughCoreMock(messageReceiver: receiver)
 
         tracer = .mockWith(
@@ -46,7 +46,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
+            contextReceiver: ContextMessageReceiver(bundleWithRumEnabled: true),
             tracingSampler: .mockKeepAll(),
             firstPartyHosts: .init()
         )
@@ -77,7 +77,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         // Given
         let handler = TracingURLSessionHandler(
             tracer: tracer,
-            contextReceiver: ContextMessageReceiver(bundleWithRUM: true),
+            contextReceiver: ContextMessageReceiver(bundleWithRumEnabled: true),
             tracingSampler: .mockRejectAll(),
             firstPartyHosts: .init()
         )
@@ -262,7 +262,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        let receiver = ContextMessageReceiver(bundleWithRUM: true)
+        let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
 
         let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),

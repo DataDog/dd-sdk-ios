@@ -133,7 +133,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command?.attributes)
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
-        if dependencies.frustrationTrackingEnabled, errorsCount > 0, actionType == .tap {
+        if dependencies.trackFrustrations, errorsCount > 0, actionType == .tap {
             frustrations = [.errorTap]
         }
 

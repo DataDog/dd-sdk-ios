@@ -225,14 +225,14 @@ extension LogEventBuilder: AnyMockable {
     public static func mockWith(
         service: String = .mockAny(),
         loggerName: String = .mockAny(),
-        sendNetworkInfo: Bool = .mockAny(),
+        networkInfoEnabled: Bool = .mockAny(),
         eventMapper: LogEventMapper? = nil,
         deviceInfo: DeviceInfo = .mockAny()
     ) -> LogEventBuilder {
         return LogEventBuilder(
             service: service,
             loggerName: loggerName,
-            sendNetworkInfo: sendNetworkInfo,
+            networkInfoEnabled: networkInfoEnabled,
             eventMapper: eventMapper
         )
     }

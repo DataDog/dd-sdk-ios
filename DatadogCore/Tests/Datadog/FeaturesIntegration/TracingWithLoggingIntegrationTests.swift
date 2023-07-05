@@ -29,7 +29,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         core.expectation = expectation(description: "Send log")
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), sendNetworkInfo: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
         // When
         integration.writeLog(
@@ -67,7 +67,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 3
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), sendNetworkInfo: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
         // When
         integration.writeLog(
@@ -106,7 +106,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         core.expectation = expectation(description: "Send log")
 
         // Given
-        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), sendNetworkInfo: .mockAny())
+        let integration = TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
 
         // When
         integration.writeLog(

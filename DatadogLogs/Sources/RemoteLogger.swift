@@ -16,7 +16,7 @@ internal final class RemoteLogger: LoggerProtocol {
         /// The `logger.name` value for logs.
         let name: String?
         /// Whether to send the network info in `network.client.*` log attributes.
-        let sendNetworkInfo: Bool
+        let networkInfoEnabled: Bool
         /// Only logs equal or above this threshold will be sent.
         let threshold: LogLevel
         /// Allows for modifying (or dropping) logs before they get sent.
@@ -130,7 +130,7 @@ internal final class RemoteLogger: LoggerProtocol {
             let builder = LogEventBuilder(
                 service: self.configuration.service ?? context.service,
                 loggerName: self.configuration.name,
-                sendNetworkInfo: self.configuration.sendNetworkInfo,
+                networkInfoEnabled: self.configuration.networkInfoEnabled,
                 eventMapper: self.configuration.eventMapper
             )
 

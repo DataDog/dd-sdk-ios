@@ -87,13 +87,13 @@
         return @{};
     }];
 
-    XCTAssertTrue(config.frustrationsTracking);
-    config.frustrationsTracking = NO;
-    XCTAssertFalse(config.frustrationsTracking);
+    XCTAssertTrue(config.trackFrustrations);
+    config.trackFrustrations = NO;
+    XCTAssertFalse(config.trackFrustrations);
 
-    XCTAssertFalse(config.backgroundEventsTracking);
-    config.backgroundEventsTracking = YES;
-    XCTAssertTrue(config.backgroundEventsTracking);
+    XCTAssertFalse(config.trackBackgroundEvents);
+    config.trackBackgroundEvents = YES;
+    XCTAssertTrue(config.trackBackgroundEvents);
 
     XCTAssertEqual(config.longTaskThreshold, 0.1);
     config.longTaskThreshold = 1;
