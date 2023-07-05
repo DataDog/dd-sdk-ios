@@ -224,16 +224,6 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "3CE11A2629F7BE1B00202522"
-               BuildableName = "DatadogWebViewTrackingTests.xctest"
-               BlueprintName = "DatadogWebViewTrackingTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

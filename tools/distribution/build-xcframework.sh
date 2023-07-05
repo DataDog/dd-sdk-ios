@@ -98,4 +98,9 @@ bundle DatadogTrace
 bundle DatadogRUM
 bundle DatadogObjc
 bundle DatadogCrashReporting
-bundle DatadogWebViewTracking
+
+# Build DatadogWebViewTracking for iOS only
+if [[ $PLATFORM == *"iOS"* ]]; then
+    PLATFORM="iOS"
+    bundle DatadogWebViewTracking
+fi
