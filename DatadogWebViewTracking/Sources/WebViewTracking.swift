@@ -23,7 +23,7 @@ import WebKit
 /// - Track user journeys across web and native components in mobile applications
 /// - Scope the root cause of latency to web pages or native components in mobile applications
 /// - Support users that have difficulty loading web pages on mobile devices
-public final class WebViewTracking {
+public enum WebViewTracking {
 #if !os(tvOS)
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
