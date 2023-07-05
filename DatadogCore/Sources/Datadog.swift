@@ -14,16 +14,20 @@ import DatadogInternal
 ///
 /// Initialize the core instance of the Datadog SDK prior to enabling any Product.
 ///
-///     Datadog.initialize(
-///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
-///         trackingConsent: .pending
-///     )
+/// ```swift
+/// Datadog.initialize(
+///     with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
+///     trackingConsent: .pending
+/// )
+/// ```
 ///
 /// Once Datadog SDK is initialized, you can enable products, such as RUM:
 ///
-///     RUM.enable(
-///         with: RUM.Configuration(applicationID: "<application>")
-///     )
+/// ```swift
+/// RUM.enable(
+///     with: RUM.Configuration(applicationID: "<application>")
+/// )
+/// ```
 ///     
 public struct Datadog {
     /// Configuration of Datadog SDK.
@@ -244,17 +248,20 @@ public struct Datadog {
     ///
     /// You **must** initialize the core instance of the Datadog SDK prior to enabling any Product.
     ///
+    ///    ```swift
     ///     Datadog.initialize(
     ///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
     ///         trackingConsent: .pending
     ///     )
+    ///    ```
     ///
     /// Once Datadog SDK is initialized, you can enable products, such as RUM:
     ///
+    ///    ```swift
     ///     RUM.enable(
     ///         with: RUM.Configuration(applicationID: "<application>")
     ///     )
-    ///
+    ///    ```
     /// It is possible to initialize multiple instances of the SDK, associating them with a name.
     /// Many methods of the SDK can optionally take a SDK instance as an argument. If not provided,
     /// the call will be associated with the default (nameless) SDK instance.
@@ -262,6 +269,7 @@ public struct Datadog {
     /// To use a secondary instance of the SDK, provide a name to the ``initialize`` method
     /// and use the returned instance to enable products:
     ///
+    ///    ```swift
     ///     let core = Datadog.initialize(
     ///         with: Datadog.Configuration(clientToken: "<client token>", env: "<environment>"),
     ///         trackingConsent: .pending,
@@ -272,6 +280,7 @@ public struct Datadog {
     ///         with: RUM.Configuration(applicationID: "<application>"),
     ///         in: core
     ///     )
+    ///    ```
     ///
     /// - Parameters:
     ///   - configuration: the SDK configuration.
