@@ -14,7 +14,7 @@ class MessageEmitterCoreTests: XCTestCase {
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itFailsParsing() {
-        let bridge = MessageEmitterCore(core: PassthroughCoreMock())
+        let bridge = MessageEmitter(core: PassthroughCoreMock())
 
         let messageInvalidJSON = """
         { 123: foobar }
@@ -29,7 +29,7 @@ class MessageEmitterCoreTests: XCTestCase {
     // MARK: - Routing
 
     func testWhenEventTypeIsMissing_itThrows() {
-        let bridge = MessageEmitterCore(core: PassthroughCoreMock())
+        let bridge = MessageEmitter(core: PassthroughCoreMock())
 
         let messageMissingEventType = """
         {
@@ -79,7 +79,7 @@ class MessageEmitterCoreTests: XCTestCase {
             }
         )
 
-        let bridge = MessageEmitterCore(core: core)
+        let bridge = MessageEmitter(core: core)
 
         let messageLog = """
         {
@@ -125,7 +125,7 @@ class MessageEmitterCoreTests: XCTestCase {
             }
         )
 
-        let bridge = MessageEmitterCore(core: core)
+        let bridge = MessageEmitter(core: core)
 
         let messageRUM = """
         {

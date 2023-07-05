@@ -75,7 +75,7 @@ public enum WebViewTracking {
         let bridgeName = DDScriptMessageHandler.name
 
         let messageHandler = DDScriptMessageHandler(
-            emitter: MessageEmitterCore(core: core)
+            emitter: MessageEmitter(core: core)
         )
 
         controller.add(messageHandler, name: bridgeName)
@@ -117,7 +117,15 @@ public enum WebViewTracking {
 }
 
 extension WebViewTracking: InternalExtended { }
-extension InternalExtension where ExtendedType: WebViewTracking {
+extension InternalExtension where ExtendedType == WebViewTracking {
+    /// Abstract Message Emitter definition.
+    public class AbstractMessageEmitter {
+        /// Sends a web-view message.
+        ///
+        /// - Parameter message: The message to send
+        public func send(body: Any) throws {}
+    }
+
     /// Creates a web-view message emitter for cross-platform.
     ///
     /// Cross platform SDKs should instantiate a `MessageEmitter` implementation from
@@ -125,7 +133,7 @@ extension InternalExtension where ExtendedType: WebViewTracking {
     ///
     /// - Parameter core: The Datadog SDK core instance
     /// - Returns: A `MessageEmitter` instance
-    public static func messageEmitter(in core: DatadogCoreProtocol) -> MessageEmitter {
-        return MessageEmitterCore(core: core)
+    public static func messageEmitter(in core: DatadogCoreProtocol) -> AbstractMessageEmitter {
+        return MessageEmitter(core: core)
     }
 }
