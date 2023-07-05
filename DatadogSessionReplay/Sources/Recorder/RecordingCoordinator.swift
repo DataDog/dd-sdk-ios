@@ -24,7 +24,7 @@ internal class RecordingCoordinator {
         sampler: Sampler
     ) {
         self.recorder = recorder
-        srContextPublisher.setRecordingIsPending(false)
+        srContextPublisher.setHasReplay(false)
 
         scheduler.schedule { [weak self] in
             guard let rumContext = self?.currentRUMContext,
@@ -56,7 +56,7 @@ internal class RecordingCoordinator {
                 scheduler.stop()
             }
 
-            srContextPublisher.setRecordingIsPending(
+            srContextPublisher.setHasReplay(
                 self?.isSampled == true && self?.currentRUMContext?.ids.viewID != nil
             )
         }

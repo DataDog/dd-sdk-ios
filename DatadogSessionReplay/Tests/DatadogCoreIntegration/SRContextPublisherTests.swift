@@ -9,13 +9,14 @@ import XCTest
 import TestUtilities
 
 class SRContextPublisherTests: XCTestCase {
-    func testItSetsHasReplayAccordingly() {
+    func testItSetsHasReplayAccordingly() throws {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
 
-        srContextPublisher.setRecordingIsPending(true)
+        srContextPublisher.setHasReplay(true)
 
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, true)
+        let hasReplay = try XCTUnwrap(core.hasReplay)
+        XCTAssertTrue(hasReplay)
     }
 
     func testItSetsRecordsCountAccordingly() {
@@ -25,6 +26,35 @@ class SRContextPublisherTests: XCTestCase {
         let recordsCount: [String: Int64] = ["view-id": 2]
         srContextPublisher.setRecordsCount(recordsCount)
 
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], recordsCount)
+        XCTAssertEqual(core.recordsCount, recordsCount)
+    }
+
+    func testItDoesNotOverridePreviouslySetValue() throws {
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let recordsCount: [String: Int64] = ["view-id": 2]
+
+        srContextPublisher.setHasReplay(true)
+        srContextPublisher.setRecordsCount(recordsCount)
+
+        XCTAssertEqual(core.recordsCount, recordsCount)
+        let hasReplay = try XCTUnwrap(core.hasReplay)
+        XCTAssertTrue(hasReplay)
+
+        srContextPublisher.setHasReplay(false)
+
+        let hasReplay2 = try XCTUnwrap(core.hasReplay)
+        XCTAssertFalse(hasReplay2)
+        XCTAssertEqual(core.recordsCount, recordsCount)
+    }
+}
+
+fileprivate extension PassthroughCoreMock {
+    var hasReplay: Bool? {
+        return context.featuresAttributes["session-replay"]?.has_replay
+    }
+
+    var recordsCount: [String: Int64]? {
+        return context.featuresAttributes["session-replay"]?.records_count
     }
 }

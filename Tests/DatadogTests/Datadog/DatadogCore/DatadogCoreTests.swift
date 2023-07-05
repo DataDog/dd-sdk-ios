@@ -221,4 +221,35 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
     }
+
+    func testItUpdatesTheFeatureBaggage() throws {
+        // Given
+        let contextProvider: DatadogContextProvider = .mockAny()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            userInfoProvider: .mockAny(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: contextProvider,
+            applicationVersion: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        try core.register(feature: FeatureMock(name: "mock"))
+
+        // When
+        core.update(feature: "mock") {
+            return ["foo": "bar"]
+        }
+        core.update(feature: "mock") {
+            return ["bizz": "bazz"]
+        }
+
+        // Then
+        let context = contextProvider.read()
+        XCTAssertEqual(context.featuresAttributes["mock"]?.foo, "bar")
+        XCTAssertEqual(context.featuresAttributes["mock"]?.bizz, "bazz")
+    }
 }

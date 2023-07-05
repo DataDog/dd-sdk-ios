@@ -50,7 +50,7 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecord.records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot)
 
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], ["abc": 3])
+        XCTAssertEqual(core.recordsCount, ["abc": 3])
     }
 
     func testWhenRUMContextDoesNotChangeInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
@@ -97,7 +97,7 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.latestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
         }
 
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64], ["abc": 5])
+        XCTAssertEqual(core.recordsCount, ["abc": 5])
     }
 
     func testWhenOrientationChanges_itWritesRecordsViewportResizeDataSegment() {
@@ -135,10 +135,7 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
 
-        XCTAssertEqual(
-            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64])?.values.first,
-            5
-        )
+        XCTAssertEqual(core.recordsCount?.values.first, 5)
     }
 
     func testWhenRUMContextChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatIndicateNextSegments() {
@@ -189,10 +186,7 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
         }
 
-        XCTAssertEqual(
-            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64])?.values.map { $0 },
-            [4, 4]
-        )
+        XCTAssertEqual(core.recordsCount?.values.map { $0 }, [4, 4])
     }
 
     // MARK: - Processing `TouchSnapshots`
@@ -240,10 +234,7 @@ class ProcessorTests: XCTestCase {
             XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
         }
 
-        XCTAssertEqual(
-            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64]),
-            ["abc": 13]
-        )
+        XCTAssertEqual(core.recordsCount, ["abc": 13])
     }
 
     func testWhenRUMContextTimeOffsetChangesInSucceedingViewTreeSnapshots_itWritesRecordsThatContinueCurrentSegment() {
@@ -282,10 +273,7 @@ class ProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
         }
 
-        XCTAssertEqual(
-            (core.context.featuresAttributes["session-replay"]?.attributes["records_count"] as? [String: Int64]),
-            ["abc": 4]
-        )
+        XCTAssertEqual(core.recordsCount, ["abc": 4])
     }
 
     // MARK: - `ViewTreeSnapshot` generation
@@ -327,5 +315,11 @@ class ProcessorTests: XCTestCase {
                     )
             }
         )
+    }
+}
+
+fileprivate extension PassthroughCoreMock {
+    var recordsCount: [String: Int64]? {
+        return context.featuresAttributes["session-replay"]?.records_count
     }
 }
