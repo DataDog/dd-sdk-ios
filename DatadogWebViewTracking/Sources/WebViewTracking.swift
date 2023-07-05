@@ -7,7 +7,9 @@
 import Foundation
 import DatadogInternal
 
-#if !os(tvOS)
+#if os(tvOS)
+#warning("Datadog WebView Tracking does not support tvOS")
+#else
 import WebKit
 #endif
 
