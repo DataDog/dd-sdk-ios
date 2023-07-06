@@ -87,6 +87,10 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(feature: feature, attributes: attributes)
     }
 
+    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        core.update(feature: feature, attributes: attributes)
+    }
+
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
         core.send(message: message, sender: self, else: fallback)
     }

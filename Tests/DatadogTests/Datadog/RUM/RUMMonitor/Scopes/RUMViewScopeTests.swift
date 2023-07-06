@@ -183,10 +183,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
-        let hasReplay: Bool = .mockRandom()
-        var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
-
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
@@ -200,6 +196,14 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
+
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(
+            hasReplay: hasReplay,
+            recordsCountByViewID: [scope.viewUUID.toRUMDataFormat: 1]
+        )
+
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
             context: context,
@@ -227,6 +231,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
     }
 
     func testWhenInitialViewHasCconfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {

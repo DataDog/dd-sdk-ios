@@ -63,7 +63,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         startTime: Date,
         dependencies: RUMScopeDependencies,
-        isReplayBeingRecorded: Bool?,
+        hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
@@ -79,7 +79,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
-            didStartWithReplay: isReplayBeingRecorded
+            didStartWithReplay: hasReplay
         )
 
         if let viewScope = resumingViewScope,
@@ -115,7 +115,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             startTime: startTime,
             dependencies: expiredSession.dependencies,
-            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
+            hasReplay: context.srBaggage?.hasReplay
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:

@@ -759,14 +759,14 @@ extension RUMSessionScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        isReplayBeingRecorded: Bool? = .mockAny()
+        hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
             dependencies: dependencies,
-            isReplayBeingRecorded: isReplayBeingRecorded
+            hasReplay: hasReplay
         )
     }
 }
@@ -1029,10 +1029,11 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
 // MARK: - Dependency on Session Replay
 
 extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) -> Self {
         return [
             SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
+                SessionReplayDependency.hasReplay: hasReplay,
+                SessionReplayDependency.recordsCountByViewID: recordsCountByViewID
             ]
         ]
     }
