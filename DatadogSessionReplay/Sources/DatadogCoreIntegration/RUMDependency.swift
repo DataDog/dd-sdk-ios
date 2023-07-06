@@ -43,5 +43,5 @@ internal enum RUMDependency {
     static let hasReplay = "has_replay"
 
     /// They key referencing a `[String: Int64]` dictionary of viewIDs and associated records count.
-    static let recordsCount = "records_count"
+    static let recordsCountByViewID = "records_count_by_view_id"
 }

@@ -119,7 +119,7 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
     ///         let fooID: Int? = context.featuresAttributes["foo"]?.id
-    ///         let fooName: Int? = context.featuresAttributes["foo"]?.name
+    ///         let fooName: String? = context.featuresAttributes["foo"]?.name
     ///     }
     ///
     /// - Parameters:

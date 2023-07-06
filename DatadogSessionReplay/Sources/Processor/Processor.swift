@@ -54,7 +54,7 @@ internal class Processor: Processing {
 
     private var srContextPublisher: SRContextPublisher
 
-    private var recordsCount: [String: Int64] = [:]
+    private var recordsCountByViewID: [String: Int64] = [:]
 
     init(
         queue: Queue,
@@ -134,11 +134,11 @@ internal class Processor: Processing {
     }
 
     private func trackRecord(key: String, value: Int64) {
-        if let existingValue = recordsCount[key] {
-            recordsCount[key] = existingValue + value
+        if let existingValue = recordsCountByViewID[key] {
+            recordsCountByViewID[key] = existingValue + value
         } else {
-            recordsCount[key] = value
+            recordsCountByViewID[key] = value
         }
-        srContextPublisher.setRecordsCount(recordsCount)
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }

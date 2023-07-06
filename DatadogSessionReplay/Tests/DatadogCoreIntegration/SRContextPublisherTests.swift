@@ -23,21 +23,21 @@ class SRContextPublisherTests: XCTestCase {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
 
-        let recordsCount: [String: Int64] = ["view-id": 2]
-        srContextPublisher.setRecordsCount(recordsCount)
+        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
 
-        XCTAssertEqual(core.recordsCount, recordsCount)
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
     }
 
     func testItDoesNotOverridePreviouslySetValue() throws {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let recordsCount: [String: Int64] = ["view-id": 2]
+        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
 
         srContextPublisher.setHasReplay(true)
-        srContextPublisher.setRecordsCount(recordsCount)
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
 
-        XCTAssertEqual(core.recordsCount, recordsCount)
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
         let hasReplay = try XCTUnwrap(core.hasReplay)
         XCTAssertTrue(hasReplay)
 
@@ -45,7 +45,7 @@ class SRContextPublisherTests: XCTestCase {
 
         let hasReplay2 = try XCTUnwrap(core.hasReplay)
         XCTAssertFalse(hasReplay2)
-        XCTAssertEqual(core.recordsCount, recordsCount)
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
     }
 }
 
@@ -54,7 +54,7 @@ fileprivate extension PassthroughCoreMock {
         return context.featuresAttributes["session-replay"]?.has_replay
     }
 
-    var recordsCount: [String: Int64]? {
-        return context.featuresAttributes["session-replay"]?.records_count
+    var recordsCountByViewID: [String: Int64]? {
+        return context.featuresAttributes["session-replay"]?.records_count_by_view_id
     }
 }

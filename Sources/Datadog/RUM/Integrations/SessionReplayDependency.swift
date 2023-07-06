@@ -20,7 +20,7 @@ internal struct SessionReplayDependency {
     static let hasReplay = "has_replay"
 
     /// The key referencing a `[String: Int64]` value that indicates number of records recorded for a given viewID.
-    static let recordsCount = "records_count"
+    static let recordsCountByViewID = "records_count_by_view_id"
 }
 
 // MARK: - Extracting SR context from `DatadogContext`
@@ -42,10 +42,10 @@ extension FeatureBaggage {
     }
 
     /// The value of `[String: Int64]` that indicates number of records recorded for a given viewID.
-    var recordsCount: [String: Int64] {
-        guard let recordsCount: [String: Int64] = self[SessionReplayDependency.recordsCount] else {
+    var recordsCountByViewID: [String: Int64] {
+        guard let recordsCountByViewID: [String: Int64] = self[SessionReplayDependency.recordsCountByViewID] else {
             return [:]
         }
-        return recordsCount
+        return recordsCountByViewID
     }
 }

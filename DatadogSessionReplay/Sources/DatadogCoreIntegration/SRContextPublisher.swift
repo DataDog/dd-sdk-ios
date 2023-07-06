@@ -24,10 +24,10 @@ internal class SRContextPublisher {
     }
 
     /// Notifies other Features on the state of Session Replay records count.
-    func setRecordsCount(_ value: [String: Int64]) {
+    func setRecordsCountByViewID(_ value: [String: Int64]) {
         core?.update(
             feature: RUMDependency.srBaggageKey,
-            attributes: { [RUMDependency.recordsCount: value] }
+            attributes: { [RUMDependency.recordsCountByViewID: value] }
         )
     }
 }
