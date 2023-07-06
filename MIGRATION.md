@@ -4,9 +4,9 @@ This document describes the main changes introduced in SDK `2.0` compared to `1.
 
 ### Product Modules 
 
-All the products (RUM, Trace, Logs, etc.) are now extracted into different modules. That allows you to integrate only what is needed into your application.
+All relevant products (RUM, Trace, Logs, etc.) are now extracted into different modules. That allows you to integrate only what is needed into your application.
 
-In comparison with version 1.x where all products were in a single module `Datadog`, now you need to adopt the following libraries instead:
+Whereas all products in version 1.x were contained in the single module, `Datadog`, you now need to adopt the following libraries:
 
 - `DatadogCore`
 - `DatadogLogs`
@@ -81,7 +81,7 @@ let package = Package(
   ```
 </details>
 
-**NOTE**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
+**Note**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
 
 The `2.0` version of the iOS SDK also exposes unified API layouts and naming between iOS and Android SDKs and with other Datadog products.
 
@@ -136,7 +136,7 @@ API changes:
 
 ## Logs Product Changes
 
-All the classes related to Logs are now strictly in the `DatadogLogs` module. You will first need to enable the product:
+All the classes related to Logs are now strictly in the `DatadogLogs` module. You first need to enable the product:
 
 ```swift
 import DatadogLogs
@@ -171,7 +171,7 @@ API changes:
 
 ## APM Trace Product Changes
 
-All the classes related to Trace are now strictly in the `DatadogTrace` module. You will first need to enable the product:
+All the classes related to Trace are now strictly in the `DatadogTrace` module. You first need to enable the product:
 
 ```swift
 import DatadogTrace
@@ -306,7 +306,7 @@ Logs.enable(in: core)
 Trace.enable(in: core)
 ```
 
-**NOTE**: SDK instance name should have the same value between application runs. Storage paths for SDK events are associated with it.
+**Note**: The SDK instance name should have the same value between application runs. Storage paths for SDK events are associated with it.
 
 Once initialized, you can retrieve the named SDK instance by calling `Datadog.sdkInstance(named: "<name>")` and use it for accessing the products.
 
