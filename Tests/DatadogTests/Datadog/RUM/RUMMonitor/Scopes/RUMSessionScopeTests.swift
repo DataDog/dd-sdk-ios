@@ -317,7 +317,7 @@ class RUMSessionScopeTests: XCTestCase {
                 core: core,
                 sessionSampler: .mockRandom() // no matter if sampled or not
             ),
-            isReplayBeingRecorded: randomIsReplayBeingRecorded
+            hasReplay: randomIsReplayBeingRecorded
         )
 
         // Then
@@ -352,7 +352,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(core: core),
-            isReplayBeingRecorded: randomIsReplayBeingRecorded
+            hasReplay: randomIsReplayBeingRecorded
         )
 
         // When

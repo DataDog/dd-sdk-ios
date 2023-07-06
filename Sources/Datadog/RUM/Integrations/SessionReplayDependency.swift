@@ -34,7 +34,7 @@ extension DatadogContext {
 
 extension FeatureBaggage {
     /// The value indicating if replay is being performed by Session Replay.
-    var isReplayBeingRecorded: Bool {
+    var hasReplay: Bool {
         guard let hasReplay: Bool = self[SessionReplayDependency.hasReplay] else {
             return false
         }

@@ -199,7 +199,10 @@ class RUMViewScopeTests: XCTestCase {
 
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay, recordsCount: [scope.viewUUID.toRUMDataFormat: 1])
+        context.featuresAttributes = .mockSessionReplayAttributes(
+            hasReplay: hasReplay,
+            recordsCountByViewID: [scope.viewUUID.toRUMDataFormat: 1]
+        )
 
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
