@@ -140,8 +140,21 @@ class PerformancePresetTests: XCTestCase {
 
     func testPresetsUpdate() {
         let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
-        let updatedPreset = preset.updated(with: PerformancePresetOverride(maxFileSize: .mockRandom(), maxObjectSize: .mockRandom()))
+        let updatedPreset = preset.updated(
+            with: PerformancePresetOverride(
+                maxFileSize: .mockRandom(),
+                maxObjectSize: .mockRandom(),
+                meanFileAge: .mockRandom(),
+                minUploadDelay: .mockRandom()
+            )
+        )
         XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
         XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
+        XCTAssertNotEqual(preset.maxFileAgeForWrite, updatedPreset.maxFileAgeForWrite)
+        XCTAssertNotEqual(preset.minFileAgeForRead, updatedPreset.minFileAgeForRead)
+        XCTAssertNotEqual(preset.initialUploadDelay, updatedPreset.initialUploadDelay)
+        XCTAssertNotEqual(preset.minUploadDelay, updatedPreset.minUploadDelay)
+        XCTAssertNotEqual(preset.maxUploadDelay, updatedPreset.maxUploadDelay)
+        XCTAssertNotEqual(preset.uploadDelayChangeRate, updatedPreset.uploadDelayChangeRate)
     }
 }
