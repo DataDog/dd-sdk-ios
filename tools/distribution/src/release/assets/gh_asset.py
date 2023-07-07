@@ -25,12 +25,14 @@ class XCFrameworkValidator:
 
 
 class DatadogXCFrameworkValidator(XCFrameworkValidator):
-    name = 'DatadogCore.xcframework'
+    name = 'Datadog.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        # always expect `DatadogCore.xcframework`
+        max_version = Version.parse('2.0.0-beta1')
+        if in_version.is_newer_than_or_equal(max_version):
+            return False # Datadog.xcframework no longer exist in `2.0`
 
-        dir = zip_directory.get('DatadogCore.xcframework')
+        dir = zip_directory.get('Datadog.xcframework')
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version.parse('1.12.1')
@@ -203,9 +205,9 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
             return False
             
         zip_directory.get('Kronos.xcframework').assert_it_has_files([
-            'ios-arm64_armv7',
-            'ios-arm64_armv7/dSYMs/*.dSYM',
-            'ios-arm64_armv7/**/*.swiftinterface',
+            'ios-arm64_arm64e',
+            'ios-arm64_arm64e/dSYMs/*.dSYM',
+            'ios-arm64_arm64e/**/*.swiftinterface',
 
             'ios-arm64_i386_x86_64-simulator',
             'ios-arm64_i386_x86_64-simulator/dSYMs/*.dSYM',
@@ -213,16 +215,61 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
         ])
 
         return True
+    
+class DatadogModuleXCFrameworkValidator(XCFrameworkValidator):
+    def __init__(self, name, platforms = ["ios", "tvos"]):
+        self.name = f"{name}.xcframework"
+        self.platforms = platforms
 
+    def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
+        min_version = Version.parse('2.0.0-beta1')
+        if in_version.is_older_than(min_version):
+            return False # introduced in 2.0
+        
+        directory = zip_directory.get(self.name)
+
+        if "ios" in self.platforms :
+            directory.assert_it_has_files([
+                'ios-arm64_arm64e',
+                'ios-arm64_arm64e/dSYMs/*.dSYM',
+                'ios-arm64_arm64e/**/*.swiftinterface',
+
+                'ios-arm64_x86_64-simulator',
+                'ios-arm64_x86_64-simulator/dSYMs/*.dSYM',
+                'ios-arm64_x86_64-simulator/**/*.swiftinterface',
+            ])
+
+
+        if "tvos" in self.platforms :
+            directory.assert_it_has_files([
+
+                'tvos-arm64',
+                'tvos-arm64/dSYMs/*.dSYM',
+                'tvos-arm64/**/*.swiftinterface',
+
+                'tvos-arm64_x86_64-simulator',
+                'tvos-arm64_x86_64-simulator/dSYMs/*.dSYM',
+                'tvos-arm64_x86_64-simulator/**/*.swiftinterface',
+            ])
+
+        return True
 
 xcframeworks_validators: [XCFrameworkValidator] = [
     DatadogXCFrameworkValidator(),
+    KronosXCFrameworkValidator(),
+
+    # 2.0
+    DatadogModuleXCFrameworkValidator("DatadogInternal"),
+    DatadogModuleXCFrameworkValidator("DatadogCore"),
+    DatadogModuleXCFrameworkValidator("DatadogLogs"),
+    DatadogModuleXCFrameworkValidator("DatadogTrace"),
+    DatadogModuleXCFrameworkValidator("DatadogRUM"),
+    DatadogModuleXCFrameworkValidator("DatadogWebViewTracking", platforms=["ios"]),
+
     DatadogObjcXCFrameworkValidator(),
     DatadogCrashReportingXCFrameworkValidator(),
     CrashReporterXCFrameworkValidator(),
-    KronosXCFrameworkValidator(),
 ]
-
 
 class GHAsset:
     """

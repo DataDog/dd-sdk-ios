@@ -21,12 +21,11 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 
   s.deprecated_in_favor_of =
-    'DatadogCore, DatadogLogs, DatadogRUM, DatadogTrace, and DatadogWebViewTracking'
+    'DatadogCore, DatadogLogs, DatadogRUM, and DatadogTrace'
 
   s.dependency 'DatadogCore', s.version.to_s
   s.dependency 'DatadogLogs', s.version.to_s
   s.dependency 'DatadogRUM', s.version.to_s
   s.dependency 'DatadogTrace', s.version.to_s
-  s.dependency 'DatadogWebViewTracking', s.version.to_s
 
 end
