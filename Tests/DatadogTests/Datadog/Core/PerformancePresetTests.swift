@@ -148,6 +148,7 @@ class PerformancePresetTests: XCTestCase {
                 minUploadDelay: .mockRandom()
             )
         )
+
         XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
         XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
         XCTAssertNotEqual(preset.maxFileAgeForWrite, updatedPreset.maxFileAgeForWrite)
@@ -155,6 +156,6 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertNotEqual(preset.initialUploadDelay, updatedPreset.initialUploadDelay)
         XCTAssertNotEqual(preset.minUploadDelay, updatedPreset.minUploadDelay)
         XCTAssertNotEqual(preset.maxUploadDelay, updatedPreset.maxUploadDelay)
-        XCTAssertNotEqual(preset.uploadDelayChangeRate, updatedPreset.uploadDelayChangeRate)
+        XCTAssertEqual(0.1, updatedPreset.uploadDelayChangeRate)
     }
 }
