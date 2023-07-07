@@ -17,7 +17,6 @@ internal class KeyWindowObserver: AppWindowObserver {
         if #available(iOS 13.0, tvOS 13.0, *) {
             return findONiOS13AndLater()
         } else {
-            assertionFailure("TODO: RUMM-2409 `AppWindowObserver` isn't yet ready for this version of OS")
             return nil
         }
     }

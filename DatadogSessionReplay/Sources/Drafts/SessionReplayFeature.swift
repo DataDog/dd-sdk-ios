@@ -63,7 +63,9 @@ internal class SessionReplayFeature: DatadogFeature, SessionReplayController {
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customUploadURL)
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: UInt64(10).MB,
-            maxObjectSize: UInt64(10).MB
+            maxObjectSize: UInt64(10).MB,
+            meanFileAge: 5, // equivalent of `batchSize: .small` - see `DatadogCore.PerformancePreset`
+            minUploadDelay: 1 // equivalent of `uploadFrequency: .frequent` - see `DatadogCore.PerformancePreset`
         )
     }
 

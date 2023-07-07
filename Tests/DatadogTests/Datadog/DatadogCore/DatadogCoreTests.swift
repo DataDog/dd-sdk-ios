@@ -214,12 +214,19 @@ class DatadogCoreTests: XCTestCase {
         try core.register(
             feature: FeatureMock(
                 name: name,
-                performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
+                performanceOverride: PerformancePresetOverride(
+                    maxFileSize: 123,
+                    maxObjectSize: 456,
+                    meanFileAge: 100,
+                    minUploadDelay: nil
+                )
             )
         )
         feature = core.v2Features.values.first
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
     }
 
     func testItUpdatesTheFeatureBaggage() throws {
