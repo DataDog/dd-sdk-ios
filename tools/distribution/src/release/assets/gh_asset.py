@@ -206,8 +206,8 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
             
         zip_directory.get('Kronos.xcframework').assert_it_has_files([
             'ios-arm64_arm64e',
-                'ios-arm64_arm64e/dSYMs/*.dSYM',
-                'ios-arm64_arm64e/**/*.swiftinterface',
+            'ios-arm64_arm64e/dSYMs/*.dSYM',
+            'ios-arm64_arm64e/**/*.swiftinterface',
 
             'ios-arm64_i386_x86_64-simulator',
             'ios-arm64_i386_x86_64-simulator/dSYMs/*.dSYM',
