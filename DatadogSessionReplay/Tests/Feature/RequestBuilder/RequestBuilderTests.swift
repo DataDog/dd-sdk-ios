@@ -9,7 +9,6 @@ import DatadogInternal
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-// swiftlint:disable empty_xctest_method
 class RequestBuilderTests: XCTestCase {
     private let rumContext: RUMContext = .mockRandom() // all records must reference the same RUM context
     private var mockEvents: [Event] {
@@ -134,7 +133,7 @@ class RequestBuilderTests: XCTestCase {
             var formFiles: [String: (filename: String, data: Data, mimeType: String)] = [:]
             var returnedData: Data = .mockRandom()
 
-            var boundary: UUID = UUID()
+            var boundary = UUID()
             func addFormField(name: String, value: String) { formFields[name] = value }
             func addFormData(name: String, filename: String, data: Data, mimeType: String) {
                 formFiles[name] = (filename: filename, data: data, mimeType: mimeType)
@@ -191,4 +190,3 @@ class RequestBuilderTests: XCTestCase {
         )
     }
 }
-// swiftlint:enable empty_xctest_method
