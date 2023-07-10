@@ -619,7 +619,7 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.create(in: core)
-        RUM.enable(in: core)
+        RUM.enable(with: .mockAny(), in: core)
         RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
@@ -652,7 +652,7 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.create(in: core)
-        RUM.enable(in: core)
+        RUM.enable(with: .mockAny(), in: core)
         RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
@@ -691,7 +691,7 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.create(in: core)
-        RUM.enable(in: core)
+        RUM.enable(with: .mockAny(), in: core)
         RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when
@@ -726,7 +726,7 @@ class LoggerTests: XCTestCase {
 
         // given
         let logger = Logger.create(in: core)
-        RUM.enable(in: core)
+        RUM.enable(with: .mockAny(), in: core)
         RUMMonitor.shared(in: core).startView(viewController: mockView)
 
         // when

@@ -70,8 +70,7 @@ internal final class DatadogCore {
     /// - Parameters:
     ///   - directory: The core directory for this instance of the SDK.
     ///   - dateProvider: The system date provider.
-    ///   - consentProvider: The user consent provider.
-    ///   - userInfoProvider: The user info provider.
+    ///   - initialConsent: The initial user consent.
     ///   - performance: The core SDK performance presets.
     ///   - httpClient: The HTTP Client for uploads.
     ///   - encryption: The on-disk data encryption.

@@ -20,27 +20,27 @@ public struct PerformancePresetOverride {
 
     /// Overrides the maximum age qualifying given file for reuse (in seconds).
     /// If recently used file is younger than this, it is reused - otherwise: new file is created.
-    let maxFileAgeForWrite: TimeInterval?
+    public let maxFileAgeForWrite: TimeInterval?
 
     /// Minimum age qualifying given file for upload (in seconds).
     /// If the file is older than this, it is uploaded (and then deleted if upload succeeded).
     /// It has an arbitrary offset  (~0.5s) over `maxFileAgeForWrite` to ensure that no upload can start for the file being currently written.
-    let minFileAgeForRead: TimeInterval?
+    public let minFileAgeForRead: TimeInterval?
 
     /// Overrides the initial upload delay (in seconds).
     /// At runtime, the upload interval starts with `initialUploadDelay` and then ranges from `minUploadDelay` to `maxUploadDelay` depending
     /// on delivery success or failure.
-    let initialUploadDelay: TimeInterval?
+    public let initialUploadDelay: TimeInterval?
 
     /// Overrides the mininum  interval of data upload (in seconds).
-    let minUploadDelay: TimeInterval?
+    public let minUploadDelay: TimeInterval?
 
     /// Overrides the maximum interval of data upload (in seconds).
-    let maxUploadDelay: TimeInterval?
+    public let maxUploadDelay: TimeInterval?
 
     /// Overrides the current interval is change on successful upload. Should be less or equal `1.0`.
     /// E.g: if rate is `0.1` then `delay` will be changed by `delay * 0.1`.
-    let uploadDelayChangeRate: Double?
+    public let uploadDelayChangeRate: Double?
 
     /// Initializes a new `PerformancePresetOverride` instance with the provided overrides.
     ///

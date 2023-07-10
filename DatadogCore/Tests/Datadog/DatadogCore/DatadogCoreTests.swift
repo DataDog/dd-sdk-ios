@@ -203,12 +203,11 @@ class DatadogCoreTests: XCTestCase {
         try core.register(
             feature: FeatureMock(performanceOverride: nil)
         )
-        var store = core.stores.values.first
+        let store = core.stores.values.first
         XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
         XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
         try core.register(
             feature: FeatureMock(
-                name: name,
                 performanceOverride: PerformancePresetOverride(
                     maxFileSize: 123,
                     maxObjectSize: 456,
@@ -217,11 +216,11 @@ class DatadogCoreTests: XCTestCase {
                 )
             )
         )
-        feature = core.v2Features.values.first
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
-        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+        let storage = core.stores.values.first?.storage
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
     }
 
     func testItUpdatesTheFeatureBaggage() throws {
@@ -231,7 +230,6 @@ class DatadogCoreTests: XCTestCase {
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
-            userInfoProvider: .mockAny(),
             performance: .mockRandom(),
             httpClient: .mockAny(),
             encryption: nil,
@@ -239,7 +237,7 @@ class DatadogCoreTests: XCTestCase {
             applicationVersion: .mockAny()
         )
         defer { core.flushAndTearDown() }
-        try core.register(feature: FeatureMock(name: "mock"))
+        try core.register(feature: FeatureMock())
 
         // When
         core.update(feature: "mock") {
