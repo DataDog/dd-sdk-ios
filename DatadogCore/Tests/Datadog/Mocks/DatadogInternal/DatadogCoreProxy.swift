@@ -86,28 +86,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.update(feature: feature, attributes: attributes)
     }
 
-    func send(message: FeatureMessag, else fallback: @escaping () -> Void) {
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         core.send(message: message, else: fallback)
-    }
-}
-
-extension DatadogCoreProxy: DatadogV1CoreProtocol {
-    func feature<T>(_ type: T.Type) -> T? {
-        return core.feature(type)
-    }
-
-    func register<T>(feature instance: T?) {
-        let key = String(describing: T.self)
-        featureScopeInterceptors[key] = FeatureScopeInterceptor()
-
-        core.register(feature: instance)
-    }
-
-    func scope<T>(for featureType: T.Type) -> FeatureScope? {
-        return core.scope(for: featureType).map { scope in
-            let key = String(describing: T.self)
-            return FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[key]!)
-        }
     }
 }
 

@@ -86,6 +86,7 @@ extension RUMDevice.RUMDeviceType: RandomMockable {
 extension RUMOperatingSystem: RandomMockable {
     public static func mockRandom() -> RUMOperatingSystem {
         return .init(
+            build: nil,
             name: .mockRandom(length: 5),
             version: .mockRandom(among: .decimalDigits, length: 2),
             versionMajor: .mockRandom(among: .decimalDigits, length: 1)
@@ -108,6 +109,8 @@ extension RUMViewEvent: RandomMockable {
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: .mockRandom(),
+                pageStates: nil,
+                replayStats: nil,
                 session: .init(plan: .plan1)
             ),
             application: .init(id: .mockRandom()),
@@ -118,12 +121,14 @@ extension RUMViewEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             os: .mockRandom(),
+            privacy: nil,
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
                 id: .mockRandom(),
                 isActive: true,
-                startReason: .appStart,
+                sampledForReplay: nil,
+                startPrecondition: .appLaunch,
                 type: .user
             ),
             source: .ios,
