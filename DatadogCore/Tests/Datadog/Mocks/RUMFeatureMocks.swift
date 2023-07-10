@@ -653,12 +653,6 @@ extension RUMSessionState: AnyMockable, RandomMockable {
 
 // MARK: - RUMScope Mocks
 
-internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
-    func accept(event: RUMViewEvent) -> Bool {
-        return true // always send view update
-    }
-}
-
 func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }

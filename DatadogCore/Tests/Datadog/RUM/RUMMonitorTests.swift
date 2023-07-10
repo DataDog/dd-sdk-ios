@@ -21,7 +21,6 @@ class RUMMonitorTests: XCTestCase {
         super.setUp()
         core = DatadogCoreProxy()
         config = RUM.Configuration(applicationID: .mockAny())
-        config.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } // disable view updates sampling for deterministic behaviour
     }
 
     override func tearDown() {

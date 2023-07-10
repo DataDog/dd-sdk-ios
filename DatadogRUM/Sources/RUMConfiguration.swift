@@ -250,9 +250,6 @@ extension RUM {
 
         internal var dateProvider: DateProvider = SystemDateProvider()
 
-        /// Produces view update events' throttler for each started RUM view scope.
-        internal var viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType = { RUMViewUpdatesThrottler() }
-
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
         internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]

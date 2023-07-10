@@ -27,9 +27,6 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
-    /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
-    let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
-
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
 }
