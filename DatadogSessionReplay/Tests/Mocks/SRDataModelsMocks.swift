@@ -1221,6 +1221,13 @@ internal extension SRRecord {
         default: return nil
         }
     }
+
+    var fullSnapshot: SRFullSnapshotRecord? {
+        switch self {
+        case .fullSnapshotRecord(let value): return value
+        default: return nil
+        }
+    }
 }
 
 extension SRIncrementalSnapshotRecord {

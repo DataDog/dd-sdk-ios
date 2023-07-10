@@ -9,7 +9,7 @@ import XCTest
 @testable import TestUtilities
 
 class RecorderTests: XCTestCase {
-    func testGivenRUMContextAvailable_whenStarted_itCapturesSnapshotsAndPassesThemToProcessor() {
+    func testAfterCapturingSnapshot_itIsPassesToProcessor() {
         let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom()
         let mockTouchSnapshots: [TouchSnapshot] = .mockRandom()
         let processor = ProcessorSpy()
@@ -19,7 +19,8 @@ class RecorderTests: XCTestCase {
             uiApplicationSwizzler: .mockAny(),
             viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: mockViewTreeSnapshots),
             touchSnapshotProducer: TouchSnapshotProducerMock(succeedingSnapshots: mockTouchSnapshots),
-            snapshotProcessor: processor
+            snapshotProcessor: processor,
+            telemetry: TelemetryMock()
         )
         // When
         recorder.captureNextRecord(.mockRandom())
@@ -29,7 +30,7 @@ class RecorderTests: XCTestCase {
         DDAssertReflectionEqual(processor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
     }
 
-    func testGivenRUMContextAvailable_whenCapturingSnapshots_itUsesDefaultRecorderContext() {
+    func testWhenCapturingSnapshots_itUsesDefaultRecorderContext() {
         let recorderContext: Recorder.Context = .mockRandom()
         let viewTreeSnapshotProducer = ViewTreeSnapshotProducerSpy()
         let touchSnapshotProducer = TouchSnapshotProducerMock()
@@ -39,7 +40,8 @@ class RecorderTests: XCTestCase {
             uiApplicationSwizzler: .mockAny(),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: ProcessorSpy()
+            snapshotProcessor: ProcessorSpy(),
+            telemetry: TelemetryMock()
         )
         // When
         recorder.captureNextRecord(recorderContext)
@@ -47,5 +49,33 @@ class RecorderTests: XCTestCase {
         // Then
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts.count, 1)
         XCTAssertEqual(viewTreeSnapshotProducer.succeedingContexts[0], recorderContext)
+    }
+
+    func testWhenCapturingSnapshotFails_itSendsErrorTelemetry() {
+        let telemetry = TelemetryMock()
+        let viewTreeSnapshotProducer = ViewTreeSnapshotProducerMock(
+            succeedingErrors: [ErrorMock("snapshot creation error")]
+        )
+
+        // Given
+        let recorder = Recorder(
+            uiApplicationSwizzler: .mockAny(),
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: TouchSnapshotProducerMock(),
+            snapshotProcessor: ProcessorSpy(),
+            telemetry: telemetry
+        )
+
+        // When
+        recorder.captureNextRecord(.mockRandom())
+
+        // Then
+        XCTAssertEqual(
+            telemetry.description,
+            """
+            Telemetry logs:
+             - [error] [SR] Failed to take snapshot - snapshot creation error, kind: ErrorMock, stack: snapshot creation error
+            """
+        )
     }
 }

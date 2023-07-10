@@ -38,8 +38,13 @@ internal class SnapshotTestCase: XCTestCase {
         let expectation = self.expectation(description: "Wait for wireframes")
 
         // Set up SR recorder:
-        let processor = Processor(queue: NoQueue(), writer: Writer())
-        let recorder = try Recorder(processor: processor)
+        let processor = Processor(
+            queue: NoQueue(),
+            writer: Writer(),
+            srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
+            telemetry: TelemetryMock()
+        )
+        let recorder = try Recorder(processor: processor, telemetry: TelemetryMock())
 
         // Set up wireframes interception :
         var wireframes: [SRWireframe]?

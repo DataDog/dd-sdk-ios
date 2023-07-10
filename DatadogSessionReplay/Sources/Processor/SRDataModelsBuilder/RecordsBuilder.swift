@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Builds SR records from VTS snapshots to transport wireframes (see `WireframesBuilder`).
 /// There are several types of records in SR format, including Full Snapshot Record (FSR contains all wireframes
@@ -13,6 +14,13 @@ import Foundation
 ///
 /// Note: `RecordsBuilder` is used by `Processor` on a single background thread.
 internal class RecordsBuilder {
+    /// Sends telemetry through sdk core.
+    private let telemetry: Telemetry
+
+    init(telemetry: Telemetry) {
+        self.telemetry = telemetry
+    }
+
     /// Creates Meta Record, defining the viewport size of the player.
     func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
@@ -58,7 +66,7 @@ internal class RecordsBuilder {
             return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
         } catch {
             // In case of any trouble, fallback to FSR which is always possible:
-            print("Failed to create incremental record: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+            telemetry.error("[SR] Failed to create incremental record", error: DDError(error: error))
             return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
         }
     }
