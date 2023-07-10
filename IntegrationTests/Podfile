@@ -1,0 +1,25 @@
+target 'Runner iOS' do
+    platform :ios, '11.0'
+
+    pod 'DatadogCore', :path => '..'
+    pod 'DatadogLogs', :path => '..'
+    pod 'DatadogTrace', :path => '..'
+    pod 'DatadogRUM', :path => '..'
+    pod 'DatadogCrashReporting', :path => '..'
+    pod 'DatadogSessionReplay', :path => '..'
+    pod 'DatadogWebViewTracking', :path => '..'
+    pod 'DatadogObjc', :path => '..'
+
+    target 'IntegrationScenarios' do
+        pod 'DatadogInternal', :path => '..'
+        pod 'TestUtilities', :path => '..'
+    end
+end
+
+post_install do |installer|
+    installer.pods_project.targets.each do |target|
+        target.build_configurations.each do |config|
+            config.build_settings['SWIFT_ACTIVE_COMPILATION_CONDITIONS'] = '$(inherited) DD_SDK_ENABLE_EXPERIMENTAL_APIS DD_SDK_COMPILED_FOR_TESTING'
+        end
+    end
+end

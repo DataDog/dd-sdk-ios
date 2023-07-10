@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
@@ -21,7 +21,7 @@ internal class Recorder: Recording {
     /// The context of recording next snapshot.
     struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
-        let privacy: SessionReplayPrivacy
+        let privacy: PrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -34,7 +34,7 @@ internal class Recorder: Recording {
         let date: Date
 
         internal init(
-            privacy: SessionReplayPrivacy,
+            privacy: PrivacyLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,

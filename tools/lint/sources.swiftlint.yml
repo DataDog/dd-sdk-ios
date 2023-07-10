@@ -71,7 +71,7 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
 attributes:
   always_on_line_above:
     - "@ReadWriteLock"
-    
+
 custom_rules:
   todo_without_jira: # enforces that all TODO comments must be followed by JIRA reference
     name: "TODO without JIRA"
@@ -91,8 +91,15 @@ custom_rules:
     severity: error
 
 included:
-  - ../../Sources
+  - ../../DatadogInternal/Sources
+  - ../../DatadogCore/Sources
+  - ../../DatadogLogs/Sources
+  - ../../DatadogTrace/Sources
+  - ../../DatadogRUM/Sources
   - ../../DatadogSessionReplay/Sources
+  - ../../DatadogCrashReporting/Sources
+  - ../../DatadogWebViewTracking/Sources
+  - ../../DatadogObjc/Sources
   - ../../Datadog/E2E
   - ../../instrumented-tests/http-server-mock/Sources
   - ../../tools/api-surface/Sources

@@ -25,12 +25,12 @@
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
 		61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */; };
 		61E7DFBB299A5C9D001D7A3A /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */; };
-		61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = 61EC1A36299CFD7E00224FB6 /* TestUtilities */; };
 		A7025BD129E8202E00747BFB /* ImagesViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7025BD029E8202E00747BFB /* ImagesViewControllers.swift */; };
 		A719BC3B29E6A5C600E7B646 /* UnsupportedViews.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A719BC3929E6A4CA00E7B646 /* UnsupportedViews.storyboard */; };
 		A719BC3F29E6AFCA00E7B646 /* UnsupportedViewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A719BC3E29E6AFCA00E7B646 /* UnsupportedViewsViewController.swift */; };
 		A797A95029D5958400EE73EB /* Images.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A797A94F29D5958400EE73EB /* Images.storyboard */; };
 		A797A95229D59E7900EE73EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A797A95129D59E7900EE73EB /* Assets.xcassets */; };
+		D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D2F37BFA2A40A2CF004A28A4 /* TestUtilities */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -84,7 +84,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61EC1A37299CFD7E00224FB6 /* TestUtilities in Frameworks */,
+				D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -208,7 +208,7 @@
 			);
 			name = SRSnapshotTests;
 			packageProductDependencies = (
-				61EC1A36299CFD7E00224FB6 /* TestUtilities */,
+				D2F37BFA2A40A2CF004A28A4 /* TestUtilities */,
 			);
 			productName = SRSnapshotTests;
 			productReference = 61B3BC622993BEAF0032C78A /* SRSnapshotTests.xctest */;
@@ -597,7 +597,7 @@
 			package = 61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */;
 			productName = Framer;
 		};
-		61EC1A36299CFD7E00224FB6 /* TestUtilities */ = {
+		D2F37BFA2A40A2CF004A28A4 /* TestUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = TestUtilities;
 		};

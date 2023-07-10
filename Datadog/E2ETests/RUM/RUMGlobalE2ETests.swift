@@ -6,7 +6,7 @@
 
 import Foundation
 import TestUtilities
-import Datadog
+import DatadogCore
 
 class RUMGlobalE2ETests: E2ETests {
     private lazy var rum = Global.rum.dd

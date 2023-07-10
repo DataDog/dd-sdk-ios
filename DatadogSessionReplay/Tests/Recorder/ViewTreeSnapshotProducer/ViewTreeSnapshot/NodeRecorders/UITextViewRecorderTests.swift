@@ -62,15 +62,15 @@ class UITextViewRecorderTests: XCTestCase {
         viewAttributes = .mock(fixture: .visible())
 
         // Then
-        func textObfuscator(in privacyMode: SessionReplayPrivacy) throws -> TextObfuscating {
+        func textObfuscator(in privacyMode: PrivacyLevel) throws -> TextObfuscating {
             return try recorder
                 .semantics(of: textView, with: viewAttributes, in: .mockWith(recorder: .mockWith(privacy: privacyMode)))
                 .expectWireframeBuilder(ofType: UITextViewWireframesBuilder.self)
                 .textObfuscator
         }
 
-        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is FixLengthMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is FixLengthMaskObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is FixLengthMaskObfuscator)
 
         // When
@@ -89,8 +89,8 @@ class UITextViewRecorderTests: XCTestCase {
         textView.textContentType = nil // non-sensitive
 
         // Then
-        XCTAssertTrue(try textObfuscator(in: .allowAll) is NOPTextObfuscator)
-        XCTAssertTrue(try textObfuscator(in: .maskAll) is SpacePreservingMaskObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .allow) is NOPTextObfuscator)
+        XCTAssertTrue(try textObfuscator(in: .mask) is SpacePreservingMaskObfuscator)
         XCTAssertTrue(try textObfuscator(in: .maskUserInput) is NOPTextObfuscator)
     }
 }
