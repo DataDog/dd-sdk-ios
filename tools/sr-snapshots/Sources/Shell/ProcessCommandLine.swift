@@ -29,7 +29,7 @@ public class ProcessCommandLine: CommandLine {
         }
         _ = semaphore.wait(timeout: .distantFuture)
 
-        switch result! {
+        switch result! { // swiftlint:disable:this force_unwrapping
         case .success(let result): return result
         case .failure(let error): throw error
         }
@@ -87,7 +87,7 @@ public class ProcessCommandLine: CommandLine {
                 processGroup.enter()
                 let stdoutFile = stdoutPipe.fileHandleForReading
                 let stdoutReadIO = DispatchIO(type: .stream, fileDescriptor: stdoutFile.fileDescriptor, queue: queue) { _ in
-                    try! stdoutFile.close()
+                    try! stdoutFile.close() // swiftlint:disable:this force_try
                 }
                 stdoutReadIO.read(offset: 0, length: .max, queue: queue) { isDone, chunk, error in
                     stdoutData.append(contentsOf: chunk ?? .empty)
@@ -102,7 +102,7 @@ public class ProcessCommandLine: CommandLine {
                 processGroup.enter()
                 let stderrFile = stderrPipe.fileHandleForReading
                 let stderrReadIO = DispatchIO(type: .stream, fileDescriptor: stderrFile.fileDescriptor, queue: queue) { _ in
-                    try! stderrFile.close()
+                    try! stderrFile.close() // swiftlint:disable:this force_try
                 }
                 stderrReadIO.read(offset: 0, length: .max, queue: queue) { isDone, chunk, error in
                     stderrData.append(contentsOf: chunk ?? .empty)
@@ -117,7 +117,7 @@ public class ProcessCommandLine: CommandLine {
                 // We’ve only entered the group once at this point, so the single leave done by the
                 // termination handler is enough to run the notify block and call the
                 // client’s completion handler.
-                task.terminationHandler!(task)
+                task.terminationHandler!(task) // swiftlint:disable:this force_unwrapping
             }
         }
     }
