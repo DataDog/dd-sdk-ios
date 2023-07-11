@@ -5,7 +5,6 @@
  */
 
 import Foundation
-import DatadogCore
 
 /// Collection of utilities for creating values for facets configured in "Mobile - Integration" org.
 struct DD {
@@ -98,7 +97,7 @@ struct DD {
     /// Attributes added to each log event.
     ///
     /// Each attributes has a facet used in monitor to assert that events are actually delivered.
-    static func logAttributes(functionName: StaticString = #function) -> [AttributeKey: AttributeValue] {
+    static func logAttributes(functionName: StaticString = #function) -> [String: Encodable] {
         return [
             "test_method_name": testMethodName(functionName: functionName)
         ]

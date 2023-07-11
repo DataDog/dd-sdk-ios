@@ -6,13 +6,14 @@
 
 import TestUtilities
 import DatadogCore
+import DatadogLogs
 
 class LoggerE2ETests: E2ETests {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        logger = Logger.builder.build()
+        logger = Logger.create()
     }
 
     override func tearDown() {

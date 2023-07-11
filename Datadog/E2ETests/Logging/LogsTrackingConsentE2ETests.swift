@@ -5,9 +5,10 @@
  */
 
 import DatadogCore
+import DatadogLogs
 
-class LoggingTrackingConsentE2ETests: E2ETests {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+class LogsTrackingConsentE2ETests: E2ETests {
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test
@@ -32,7 +33,7 @@ class LoggingTrackingConsentE2ETests: E2ETests {
 
     // MARK: - Starting With a Consent
 
-    /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
+    /// - api-surface: Datadog.initialize(with : Configuration, trackingConsent: TrackingConsent)
     /// - api-surface: TrackingConsent.granted
     ///
     /// - data monitor:
@@ -43,15 +44,20 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
+    /// - api-surface: Datadog.initialize(with : Configuration, trackingConsent: TrackingConsent)
     /// - api-surface: TrackingConsent.notGranted
     ///
     /// - data monitor - we assert that no data is delivered in this monitor:
@@ -64,15 +70,20 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_NOT_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Datadog.initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
+    /// - api-surface: Datadog.initialize(with : Configuration, trackingConsent: TrackingConsent)
     /// - api-surface: TrackingConsent.pending
     ///
     /// - data monitor - we assert that no data is delivered in this monitor:
@@ -85,10 +96,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_PENDING() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         logger.sendRandomLog(with: DD.logAttributes())
     }
@@ -107,10 +123,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_GRANTED_to_NOT_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .notGranted)
@@ -131,10 +152,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_GRANTED_to_PENDING() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .pending)
@@ -153,10 +179,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_NOT_GRANTED_to_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .granted)
@@ -177,10 +208,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_NOT_GRANTED_to_PENDING() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
             Datadog.set(trackingConsent: .pending)
@@ -199,10 +235,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_PENDING_to_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -224,10 +265,15 @@ class LoggingTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_logs_config_consent_PENDING_to_NOT_GRANTED() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            Logs.enable()
         }
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())

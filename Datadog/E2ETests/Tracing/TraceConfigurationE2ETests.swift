@@ -5,14 +5,18 @@
  */
 
 import DatadogCore
+import DatadogTrace
+import DatadogLogs
+import DatadogRUM
+import DatadogCrashReporting
 
-class TracingConfigurationE2ETests: E2ETests {
+class TraceConfigurationE2ETests: E2ETests {
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test
         super.setUp()
     }
 
-    /// - api-surface: Datadog.Configuration.Builder.enableTracing(_ enabled: Bool) -> Builder
+    /// - api-surface: Trace.enable()
     ///
     /// - data monitor:
     /// ```apm
@@ -24,21 +28,22 @@ class TracingConfigurationE2ETests: E2ETests {
     /// ```
     func test_trace_config_feature_enabled() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(
-                trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
-                    .enableLogging(true)
-                    .enableTracing(true)
-                    .enableRUM(true)
-                    .build()
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
             )
+
+            Logs.enable()
+            Trace.enable()
+            RUM.enable(with: .e2e)
+            CrashReporting.enable()
         }
 
-        let span = DatadogTracer.shared().startRootSpan(operationName: "trace_config_feature_enabled_observed_span")
+        let span = Tracer.shared().startRootSpan(operationName: "trace_config_feature_enabled_observed_span")
         span.finish()
     }
 
-    /// - api-surface: Datadog.Configuration.Builder.enableTracing(_ enabled: Bool) -> Builder
+    /// - api-surface: Trace.enable()
     ///
     /// - data monitor:
     /// ```apm
@@ -50,17 +55,17 @@ class TracingConfigurationE2ETests: E2ETests {
     /// ```
     func test_trace_config_feature_disabled() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(
-                trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
-                    .enableLogging(true)
-                    .enableTracing(true)
-                    .enableRUM(true)
-                    .build()
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
             )
+
+            Logs.enable()
+            RUM.enable(with: .e2e)
+            CrashReporting.enable()
         }
 
-        let span = DatadogTracer.shared().startRootSpan(operationName: "test_trace_config_feature_disabled_observed_span")
+        let span = Tracer.shared().startRootSpan(operationName: "test_trace_config_feature_disabled_observed_span")
         span.finish()
     }
 }
