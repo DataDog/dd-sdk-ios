@@ -41,7 +41,12 @@ internal func DDAssertSnapshotTest(
     DDAssertSimulatorDevice("iPhone14,7", "16.2", file: file, line: line)
 
     if record {
-        DDSaveSnapshot(image: newImage, into: snapshotLocation, file: file, line: line)
+        DDSaveSnapshotIfDifferent(image: newImage, into: snapshotLocation, file: file, line: line)
+        XCTFail(
+            "✅ All OK, we fail tests deliberately to prevent accidentally leaving recording mode enabled",
+            file: file,
+            line: line
+        )
     } else {
         DDAssertSnapshotEquals(snapshotLocation: snapshotLocation, image: newImage, file: file, line: line)
     }
@@ -63,9 +68,18 @@ private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedOSVersio
     }
 }
 
-/// Writes image PNG data into given location.
-private func DDSaveSnapshot(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
+/// Writes image PNG data into given location when:
+/// - image at `location` doesn't exist;
+/// - the difference between `image` and the image at `location` is higher than threshold.
+private func DDSaveSnapshotIfDifferent(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
     _DDEvaluateAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
+        let oldFileExists = FileManager.default.fileExists(atPath: location.url.path)
+        guard try !oldFileExists || difference(for: image, againstReference: location) != nil else {
+            print("🎬 ⏩ Skips saving `\(location.url.lastPathComponent)` as it has no significant difference with existing file")
+            return
+        }
+
+        print("🎬 📸 Saving `\(location.url.lastPathComponent)`")
         guard let data = image.pngData() else {
             throw DDAssertError.expectedFailure("Failed to create PNG data for `image`")
         }
@@ -79,18 +93,30 @@ private func DDSaveSnapshot(image: UIImage, into location: ImageLocation, file: 
 private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
     let imageName = snapshotLocation.url.lastPathComponent
     _DDEvaluateAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
-        let oldImageData = try Data(contentsOf: snapshotLocation.url)
-        guard let oldImage = UIImage(data: oldImageData) else {
-            throw DDAssertError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
-        }
-
-        // Check if both images are identical (precission: 1) or their difference is not
-        // noticable for the human eye (perceptualPrecision: 0.98).
-        // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
-        if let difference = compare(oldImage, image, precision: 1, perceptualPrecision: 0.98) {
-            throw DDAssertError.expectedFailure(difference)
+        if let differenceExplained = try difference(for: image, againstReference: snapshotLocation) {
+            throw DDAssertError.expectedFailure(differenceExplained)
         }
     }
+}
+
+/// Returns the difference from `image` to the reference image stored at certain `snapshotLocation`.
+/// - it returns `nil` if no difference is found (considering the threshold);
+/// - it returns human readable string denoting the difference if some is found;
+private func difference(for image: UIImage, againstReference snapshotLocation: ImageLocation) throws -> String? {
+    let imageName = snapshotLocation.url.lastPathComponent
+    let oldImageData = try Data(contentsOf: snapshotLocation.url)
+    guard let oldImage = UIImage(data: oldImageData, scale: image.scale) else {
+        throw DDAssertError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
+    }
+
+    // Extract "Actual UI" and "Wireframes" images from new and reference snapshots:
+    let newImages = extractSideBySideImages(image: image)
+    let oldImages = extractSideBySideImages(image: oldImage)
+
+    // Check if both wireframe images are identical (precission: 1) or their difference is not
+    // noticable for the human eye (perceptualPrecision: 0.98).
+    // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
+    return compare(oldImages.wireframes, newImages.wireframes, precision: 1, perceptualPrecision: 0.98)
 }
 
 // Copyright © pointfreeco swift-snapshot-testing (MIT License)
