@@ -201,7 +201,7 @@ workflows:
         title: Run unit tests for Datadog - iOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog iOS
+        - scheme: DatadogCore iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
@@ -222,7 +222,7 @@ workflows:
         title: Run unit tests for Datadog - tvOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog tvOS
+        - scheme: DatadogCore tvOS
         - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
@@ -243,7 +243,7 @@ workflows:
         title: Run unit tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogSessionReplay
+        - scheme: DatadogSessionReplay-Package
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
@@ -270,12 +270,13 @@ workflows:
         Only ran if 'DD_RUN_INTEGRATION_TESTS' is '1'.
     steps:
     - script:
-        title: Generate mock server address
+        title: Prepare Integration Tests
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env zsh
             set -e
+            make prepare-integration-tests
             ./tools/config/generate-http-server-mock-config.sh
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
@@ -292,12 +293,12 @@ workflows:
         title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogIntegrationTests
+        - scheme: IntegrationScenarios
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
+        - project_path: IntegrationTests/IntegrationTests.xcworkspace
         - xcodebuild_options: -testPlan DatadogIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
     - script:
@@ -313,12 +314,12 @@ workflows:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogIntegrationTests
+        - scheme: IntegrationScenarios
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
+        - project_path: IntegrationTests/IntegrationTests.xcworkspace
         - xcodebuild_options: -testPlan DatadogCrashReportingIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 

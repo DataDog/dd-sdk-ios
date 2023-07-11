@@ -7,12 +7,9 @@ This package provides a command-line tool for listing `public` interface of a Sw
 ## Usage
 
 ```
-$ api-surface spm --module-name Foo --path ./Foo 
+$ api-surface spm --library-name Foo --path ./Foo
 ```
-or
-```
-$ api-surface workspace --workspace-name Foo.xcworkspace --scheme Foo --path .
-```
+
 Check `api-surface help`  for full overview.
 
 ## What is API surface?

@@ -2,7 +2,7 @@
 
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
 
-# 1.21.0 / 27-07-2023
+# 1.21.0 / 27-06-2023
 - [BUGFIX] Fix TracingUUID string format. See [#1311][] (Thanks [@changm4n][])
 - [BUGFIX] Rename _Datadog_Private to DatadogPrivate. See [#1331] (Thanks [@alexfanatics][])
 - [IMPROVEMENT] Add context to crash when there's an active view. See [#1315][]

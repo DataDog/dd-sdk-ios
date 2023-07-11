@@ -22,7 +22,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .basicTexts)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -35,7 +35,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .sliders)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -48,7 +48,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .segments)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -61,7 +61,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .pickers)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -74,7 +74,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .switches)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -87,7 +87,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .textFields)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -100,7 +100,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .steppers)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -115,7 +115,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-inline-\(privacyMode)-privacy"),
@@ -129,7 +129,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
@@ -142,7 +142,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
@@ -155,7 +155,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .timePickersCountDown)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-count-down-\(privacyMode)-privacy"),
@@ -168,7 +168,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-wheels-\(privacyMode)-privacy"),
@@ -182,7 +182,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-compact-\(privacyMode)-privacy"),
@@ -195,7 +195,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         show(fixture: .images)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),
@@ -207,7 +207,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testUnsupportedView() throws {
         show(fixture: .unsupportedViews)
 
-        let image = try takeSnapshot(configuration: .init(privacy: .allowAll))
+        let image = try takeSnapshot(with: .allow)
         DDAssertSnapshotTest(
             newImage: image,
             snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-allowAll-privacy"),
@@ -221,7 +221,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         wait(seconds: 0.5)
 
         try forEachPrivacyMode { privacyMode in
-            let image = try takeSnapshot(configuration: .init(privacy: privacyMode))
+            let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderName, fileNameSuffix: "-\(privacyMode)-privacy"),

@@ -5,7 +5,8 @@
  */
 
 import Foundation
-import Datadog
+import DatadogRUM
+import TestUtilities
 
 internal struct RUMConstants {
     static let customAttribute_String = "custom_attribute.string"
@@ -17,7 +18,7 @@ internal struct RUMConstants {
     static let timingName = "custom timing"
 }
 
-internal extension RUMMonitor {
+internal extension RUMMonitorProtocol {
     func sendRandomRUMEvent() {
         let viewKey = String.mockRandom()
         let viewName = String.mockRandom()
@@ -31,19 +32,19 @@ internal extension RUMMonitor {
             {
                 let resourceKey = String.mockRandom()
                 self.startView(key: viewKey, name: viewName, attributes: [:])
-                self.startResourceLoading(resourceKey: resourceKey, httpMethod: .get, urlString: String.mockRandom(), attributes: [:])
-                self.stopResourceLoading(resourceKey: resourceKey, statusCode: (200...500).randomElement()!, kind: .other)
+                self.startResource(resourceKey: resourceKey, httpMethod: .get, urlString: String.mockRandom(), attributes: [:])
+                self.stopResource(resourceKey: resourceKey, statusCode: (200...500).randomElement()!, kind: .other)
                 self.stopView(key: viewKey, attributes: [:])
             },
             {
                 self.startView(key: viewKey, name: viewName, attributes: [:])
-                self.addError(message: String.mockRandom(), source: .custom, stack: String.mockRandom(), attributes: [:], file: nil, line: nil)
+                self.addError(message: String.mockRandom(), stack: String.mockRandom(), source: .custom, attributes: [:], file: nil, line: nil)
                 self.stopView(key: viewKey, attributes: [:])
             },
             {
                 let actionName = String.mockRandom()
                 self.startView(key: viewKey, name: viewName, attributes: [:])
-                self.addUserAction(type: [RUMUserActionType.swipe, .scroll, .tap, .custom].randomElement()!, name: actionName, attributes: [:])
+                self.addAction(type: [RUMActionType.swipe, .scroll, .tap, .custom].randomElement()!, name: actionName, attributes: [:])
                 self.sendRandomActionOutcomeEvent()
                 self.stopView(key: viewKey, attributes: [:])
             }
@@ -56,10 +57,10 @@ internal extension RUMMonitor {
     func sendRandomActionOutcomeEvent() {
         if Bool.random() {
             let key = String.mockRandom()
-            self.startResourceLoading(resourceKey: key, httpMethod: .get, urlString: key)
-            self.stopResourceLoading(resourceKey: key, statusCode: (200...500).randomElement()!, kind: .other)
+            self.startResource(resourceKey: key, httpMethod: .get, urlString: key)
+            self.stopResource(resourceKey: key, statusCode: (200...500).randomElement()!, kind: .other)
         } else {
-            self.addError(message: String.mockRandom(), source: .custom, stack: nil, attributes: [:], file: nil, line: nil)
+            self.addError(message: String.mockRandom(), stack: nil, source: .custom, attributes: [:], file: nil, line: nil)
         }
     }
 }

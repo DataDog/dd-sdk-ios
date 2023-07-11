@@ -5,7 +5,12 @@
 */
 
 import XCTest
-import Datadog
+import DatadogInternal
+import DatadogLogs
+import DatadogTrace
+import DatadogRUM
+
+@testable import DatadogCore
 
 /// A base class for all E2E test cases.
 class E2ETests: XCTestCase {
@@ -18,7 +23,14 @@ class E2ETests: XCTestCase {
         super.setUp()
         deleteAllSDKData()
         if !skipSDKInitialization {
-            initializeSDK()
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            Logs.enable()
+            Trace.enable()
+            RUM.enable(with: .e2e)
         }
     }
 
@@ -47,28 +59,14 @@ class E2ETests: XCTestCase {
         let result = block()
         let stop = Date()
 
-        let performanceSpan = Global.sharedTracer.startRootSpan(operationName: "perf_measure", startTime: start)
-        performanceSpan.setTag(key: DDTags.resource, value: resourceName)
+        let performanceSpan = Tracer.shared().startRootSpan(operationName: "perf_measure", startTime: start)
+        performanceSpan.setTag(key: SpanTags.resource, value: resourceName)
         performanceSpan.finish(at: stop)
 
         return result
     }
 
     // MARK: - SDK Lifecycle
-
-    func initializeSDK(
-        trackingConsent: TrackingConsent = .granted,
-        configuration: Datadog.Configuration = Datadog.Configuration.builderUsingE2EConfig().build()
-    ) {
-        Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: trackingConsent,
-            configuration: configuration
-        )
-
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
-        Global.rum = RUMMonitor.initialize()
-    }
 
     /// Sends all collected data and deinitializes the SDK. It is executed synchronously.
     private func sendAllDataAndDeinitializeSDK() {
@@ -79,6 +77,7 @@ class E2ETests: XCTestCase {
 
     /// Deletes persisted data for all SDK features. Ensures clean start for each test.
     private func deleteAllSDKData() {
-        PersistenceHelpers.deleteAllSDKData()
+        let core = CoreRegistry.default as? DatadogCore
+        core?.stores.values.forEach { $0.storage.clearAllData() }
     }
 }

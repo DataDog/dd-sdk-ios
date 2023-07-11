@@ -4,11 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogLogs
 import TestUtilities
-import Datadog
 
-extension Logger {
-    func sendRandomLog(with attributes: [AttributeKey: AttributeValue]) {
+extension LoggerProtocol {
+    func sendRandomLog(with attributes: [String: Encodable]) {
         let message: String = .mockRandom()
         let error: Error? = Bool.random() ? ErrorMock(.mockRandom()) : nil
 
@@ -28,9 +28,9 @@ extension Logger {
     }
 }
 
-extension Logger.Builder.ConsoleLogFormat {
-    static func random() -> Logger.Builder.ConsoleLogFormat {
-        let allFormats: [Logger.Builder.ConsoleLogFormat] = [
+extension Logger.Configuration.ConsoleLogFormat {
+    static func random() -> Logger.Configuration.ConsoleLogFormat {
+        let allFormats: [Logger.Configuration.ConsoleLogFormat] = [
             .short,
             .shortWith(prefix: .mockRandom())
         ]

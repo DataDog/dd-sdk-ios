@@ -44,7 +44,7 @@ For example:
 
 ```
 import WebKit
-import Datadog
+import DatadogCore
  
 webView.configuration.userContentController.trackDatadogEvents(in: ["example.com"])
 ```

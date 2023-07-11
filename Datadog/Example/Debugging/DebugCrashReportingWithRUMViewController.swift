@@ -5,15 +5,14 @@
  */
 
 import UIKit
-import Datadog
+import DatadogRUM
 
 class DebugCrashReportingWithRUMViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
-
+        rumServiceNameTextField.text = serviceName
         viewNameTextField.placeholder = viewName
     }
 

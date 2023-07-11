@@ -5,13 +5,13 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 public class FileWriterMock: Writer {
     public init() { }
 
     /// Recorded events.
-    internal private(set) var events: [Encodable] = []
+    public private(set) var events: [Encodable] = []
 
     /// Adds an `Encodable` event to the events stack.
     ///

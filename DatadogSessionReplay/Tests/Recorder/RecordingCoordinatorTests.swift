@@ -5,20 +5,29 @@
  */
 
 import XCTest
-import Datadog
+import DatadogInternal
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 class RecordingCoordinatorTests: XCTestCase {
+    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
     var recordingCoordinator: RecordingCoordinator?
 
-    private var core = PassthroughCoreMock()
     private var recordingMock = RecordingMock()
     private var scheduler = TestScheduler()
     private var rumContextObserver = RUMContextObserverMock()
     private lazy var contextPublisher: SRContextPublisher = {
         SRContextPublisher(core: core)
     }()
+
+    override func setUpWithError() throws {
+        core = PassthroughCoreMock()
+    }
+
+    override func tearDown() {
+        core = nil
+        XCTAssertEqual(PassthroughCoreMock.referenceCount, 0)
+    }
 
     func test_itStartsScheduler_afterInitializing() {
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: .mockRandom(min: 0, max: 100)))
@@ -42,7 +51,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
     func test_whenSampled_itStartsScheduler_andShouldRecord() {
         // Given
-        let privacy = SessionReplayPrivacy.mockRandom()
+        let privacy = PrivacyLevel.mockRandom()
         prepareRecordingCoordinator(sampler: Sampler(samplingRate: 100), privacy: privacy)
 
         // When
@@ -96,7 +105,7 @@ class RecordingCoordinatorTests: XCTestCase {
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
-    private func prepareRecordingCoordinator(sampler: Sampler, privacy: SessionReplayPrivacy = .allowAll) {
+    private func prepareRecordingCoordinator(sampler: Sampler, privacy: PrivacyLevel = .allow) {
         recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: privacy,
