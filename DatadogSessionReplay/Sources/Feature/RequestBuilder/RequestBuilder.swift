@@ -12,18 +12,24 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
+    /// Sends telemetry through sdk core.
+    let telemetry: Telemetry
+    /// Builds multipart form for request's body.
+    var multipartBuilder: MultipartFormDataBuilder = MultipartFormData(boundary: UUID())
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
+        let fallbackSource: () -> SRSegment.Source = {
+            telemetry.error("[SR] Could not create segment source from provided string '\(context.source)'")
+            return .ios
+        }
+
+        let source = SRSegment.Source(rawValue: context.source) ?? fallbackSource()
         let segmentBuilder = SegmentJSONBuilder(source: source)
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
         // error to let the core delete the batch:
         let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0.data) }
         let segment = try segmentBuilder.createSegmentJSON(from: records)
-
-        // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
-        // we fallback to `.us1` - TODO: RUMM-2410 Report error with `DD.logger` in such case
         let url = customUploadURL ?? intakeURL(for: context.site)
 
         return try createRequest(url: url, segment: segment, context: context)
@@ -49,7 +55,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     private func createRequest(url: URL, segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {
-        var multipart = MultipartFormData(boundary: UUID())
+        var multipart = multipartBuilder
 
         let builder = URLRequestBuilder(
             url: url,

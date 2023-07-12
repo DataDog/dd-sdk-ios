@@ -10,15 +10,34 @@ import Foundation
 // MARK: - `ViewTreeSnapshotProducer` Mocks
 
 internal class ViewTreeSnapshotProducerMock: ViewTreeSnapshotProducer {
-    /// Succeding snapshots to return for each `takeSnapshot()`.
-    var succeedingSnapshots: [ViewTreeSnapshot]
+    enum TakeSnapshotResult {
+        case snapshot(ViewTreeSnapshot)
+        case error(Error)
+    }
 
-    init(succeedingSnapshots: [ViewTreeSnapshot]) {
-        self.succeedingSnapshots = succeedingSnapshots
+    /// Succeding results for each `takeSnapshot()`.
+    var succeedingResults: [TakeSnapshotResult]
+
+    convenience init(succeedingSnapshots: [ViewTreeSnapshot]) {
+        self.init(succeedingResults: succeedingSnapshots.map { .snapshot($0) })
+    }
+
+    convenience init(succeedingErrors: [Error]) {
+        self.init(succeedingResults: succeedingErrors.map { .error($0) })
+    }
+
+    init(succeedingResults: [TakeSnapshotResult]) {
+        self.succeedingResults = succeedingResults
     }
 
     func takeSnapshot(with context: Recorder.Context) throws -> ViewTreeSnapshot? {
-        return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
+        guard let result = succeedingResults.isEmpty ? nil : succeedingResults.removeFirst() else {
+            return nil
+        }
+        switch result {
+        case .snapshot(let snapshot): return snapshot
+        case .error(let error): throw error
+        }
     }
 }
 
