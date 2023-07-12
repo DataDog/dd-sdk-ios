@@ -13,10 +13,10 @@ import os
 import re
 import traceback
 from tempfile import TemporaryDirectory
+from packaging.version import Version
 from src.release.git import clone_repo
 from src.release.assets.gh_asset import GHAsset
 from src.release.assets.podspec import CPPodspec
-from src.release.semver import Version
 import shutil
 
 DD_SDK_IOS_REPO_SSH = 'git@github.com:DataDog/dd-sdk-ios.git'
@@ -76,9 +76,9 @@ if __name__ == "__main__":
         if only_cocoapods and add_xcode_version_to_github_asset:
             raise Exception('--add-xcode-version-to-github-asset` and `--only-cocoapods` cannot be used together.')
 
-        tag_regex = r'^[0-9]+\.[0-9]+\.[0-9]+(\-(alpha|beta|rc)[0-9]+)?$'
-        if not re.match(tag_regex, git_tag):
-            raise Exception(f'Given git tag ("{git_tag}") seems invalid (it must match "{tag_regex}")')
+        version = Version(git_tag)
+        if not version:
+            raise Exception(f'Given git tag ("{git_tag}") is invalid, it must comply with Semantic Versioning, see https://semver.org/')
 
         print(f'🛠️️ ENV:\n'
               f'- BITRISE_GIT_TAG                       = {os.environ.get("BITRISE_GIT_TAG")}\n'
@@ -97,7 +97,7 @@ if __name__ == "__main__":
               f'- add_xcode_version_to_github_asset  = {add_xcode_version_to_github_asset}\n'
               f'- dry_run                            = {dry_run}.')
 
-        print(f'🛠️ Git tag read to version: {Version.parse(git_tag)}')
+        print(f'🛠️ Git tag read to version: {version}')
 
         publish_to_gh = not only_cocoapods
         publish_to_cp = not only_github
