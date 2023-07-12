@@ -58,16 +58,36 @@ internal class SnapshotTestCase: XCTestCase {
             .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
         )
 
-        waitForExpectations(timeout: 10) // very pessimistic timeout to mitigate CI lags
+        waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
 
         // Render images:
-        let wireframesImage = wireframes.map { renderImage(for: $0) } ?? UIImage()
+        guard let wireframes = wireframes, !wireframes.isEmpty else {
+            XCTFail("Recorded no wireframes.")
+            return UIImage()
+        }
+        let renderedWireframes = renderImage(for: wireframes)
         let appImage = app.keyWindow.map { renderImage(for: $0) } ?? UIImage()
 
-        return createSideBySideImage(actualUI: appImage, wireframes: wireframesImage)
+        // Add XCTest attachements for debugging and troubleshooting:
+        // - attach recorded wireframes as JSON
+        let wireframesAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpWireframesAsJSON())
+        wireframesAttachement.name = "recorded-wireframes-(\(privacyLevel)).json"
+        wireframesAttachement.lifetime = .deleteOnSuccess
+        add(wireframesAttachement)
+
+        // - attach rendered as blueprint text
+        let blueprintAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpImageAsBlueprint())
+        blueprintAttachement.name = "rendered-blueprint-(\(privacyLevel)).txt"
+        blueprintAttachement.lifetime = .deleteOnSuccess
+        add(blueprintAttachement)
+
+        return createSideBySideImage(leftImage: appImage, rightImage: renderedWireframes.image)
     }
 
     func wait(seconds: TimeInterval) {
+        // To anticipate lags, await more if running on CI:
+        let ciMultiplier: Double = Environment.isCI() ? 5 : 1
+        let seconds = seconds * ciMultiplier
         let expectation = self.expectation(description: "Wait \(seconds)")
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
             expectation.fulfill()

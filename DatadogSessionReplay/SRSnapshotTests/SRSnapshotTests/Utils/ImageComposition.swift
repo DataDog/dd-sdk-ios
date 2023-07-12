@@ -18,9 +18,12 @@ private struct Constants {
 }
 
 /// Puts two images side-by-side, adds titles and returns new, composite image.
-///
-/// It is used to assemble side-by-side image from app image and wireframes image with adding labels on top of each.
-internal func createSideBySideImage(actualUI image1: UIImage, wireframes image2: UIImage) -> UIImage {
+internal func createSideBySideImage(
+    leftImage image1: UIImage,
+    rightImage image2: UIImage,
+    leftTitle: String = Constants.appImageLabel,
+    rightTitle: String = Constants.wireframesImageLabel
+) -> UIImage {
     var leftRect = CGRect(origin: .zero, size: image1.size)
     var rightRect = CGRect(origin: .init(x: image1.size.width, y: 0), size: image2.size)
     let imageRect = leftRect.union(rightRect)
@@ -61,15 +64,13 @@ internal func createSideBySideImage(actualUI image1: UIImage, wireframes image2:
         let leftTextRect = leftRect.offsetBy(dx: 2, dy: -25)
         let rightTextRect = rightRect.offsetBy(dx: 2, dy: -25)
 
-        Constants.appImageLabel.draw(in: leftTextRect, withAttributes: textAttributes)
-        Constants.wireframesImageLabel.draw(in: rightTextRect, withAttributes: textAttributes)
+        leftTitle.draw(in: leftTextRect, withAttributes: textAttributes)
+        rightTitle.draw(in: rightTextRect, withAttributes: textAttributes)
     }
 }
 
-/// Reverts the result of `createSideBySideImage(actualUI:wireframes:) -> UIImage` operation.
-///
-/// It takes assembled side-by-side image and returns original images for both sides: app image + wireframes image.
-internal func extractSideBySideImages(image: UIImage) -> (actualUI: UIImage, wireframes: UIImage) {
+/// It extracts left and right images from the composite image produced by `createSideBySideImage(left:right:) -> UIImage`.
+internal func extractSideBySideImages(image: UIImage) -> (leftImage: UIImage, rightImage: UIImage) {
     let negativeInsets = UIEdgeInsets(
         top: -Constants.edgeInsets.top,
         left: -Constants.edgeInsets.left,
@@ -93,5 +94,18 @@ internal func extractSideBySideImages(image: UIImage) -> (actualUI: UIImage, wir
         image.draw(at: rightRect.origin.applying(.init(scaleX: -1, y: -1)))
     }
 
-    return (actualUI: leftImage, wireframes: rightImage)
+    return (leftImage: leftImage, rightImage: rightImage)
+}
+
+/// Renders two images on top of each other with using `.difference` blend mode to surface differences.
+internal func overlayImages(image1: UIImage, image2: UIImage) -> UIImage {
+    let format = UIGraphicsImageRendererFormat()
+    format.opaque = true
+    let renderer = UIGraphicsImageRenderer(size: image1.size, format: format)
+
+    let overlay = renderer.image { context in
+        image1.draw(at: .zero)
+        image2.draw(at: .zero, blendMode: .difference, alpha: 1)
+    }
+    return overlay
 }
