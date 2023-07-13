@@ -37,7 +37,12 @@ class LoggerTests: XCTestCase {
             version: "1.0.0",
             sdkVersion: "1.2.3",
             applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-            device: .mockWith(architecture: "testArch")
+            device: .mockWith(
+                name: "testOS",
+                osVersion: "1.0",
+                osBuildNumber: "FFFFFF",
+                architecture: "testArch"
+            )
         )
 
         let feature: LogsFeature = .mockWith(
@@ -53,6 +58,11 @@ class LoggerTests: XCTestCase {
         {
           "status" : "debug",
           "message" : "message",
+          "os": {
+            "build": "FFFFFF",
+            "name": "testOS",
+            "version": "1.0"
+          },
           "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "1.2.3",

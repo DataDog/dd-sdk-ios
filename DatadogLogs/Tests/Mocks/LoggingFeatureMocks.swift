@@ -95,6 +95,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
         dd: LogEvent.Dd = .mockAny(),
+        os: LogEvent.OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         networkConnectionInfo: NetworkConnectionInfo = .mockAny(),
         mobileCarrierInfo: CarrierInfo? = .mockAny(),
@@ -113,6 +114,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             threadName: threadName,
             applicationVersion: applicationVersion,
             dd: dd,
+            os: os,
             userInfo: userInfo,
             networkConnectionInfo: networkConnectionInfo,
             mobileCarrierInfo: mobileCarrierInfo,
@@ -134,6 +136,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
             dd: .mockRandom(),
+            os: .mockRandom(),
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             mobileCarrierInfo: .mockRandom(),
@@ -201,6 +204,24 @@ extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
     public static func mockRandom() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
             architecture: .mockRandom()
+        )
+    }
+}
+
+extension LogEvent.OperatingSystem: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        .init(
+            name: .mockAny(),
+            version: .mockAny(),
+            build: .mockAny()
+        )
+    }
+
+    public static func mockRandom() -> Self {
+        .init(
+            name: .mockRandom(),
+            version: .mockRandom(),
+            build: .mockRandom()
         )
     }
 }

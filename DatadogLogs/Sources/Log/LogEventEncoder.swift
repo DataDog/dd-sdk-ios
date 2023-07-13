@@ -26,6 +26,7 @@ public struct LogEvent: Encodable {
         /// Log attributes added internally by the SDK. They are not a subject for sanitization.
         internal let internalAttributes: [String: Encodable]?
     }
+
     public struct UserInfo {
         /// User ID, if any.
         public let id: String?
@@ -36,6 +37,7 @@ public struct LogEvent: Encodable {
         /// User custom attributes, if any.
         public var extraInfo: [String: Encodable]
     }
+
     public struct Error {
         // The Log error kind
         public var kind: String?
@@ -44,21 +46,24 @@ public struct LogEvent: Encodable {
         // The Log error stack
         public var stack: String?
     }
+
     public struct DeviceInfo: Codable {
         // The architecture of the device
         public let architecture: String
-
-        enum CodingKeys: String, CodingKey {
-            case architecture = "architecture"
-        }
     }
-    public struct Dd: Codable {
-        // Device informatino
-        public let device: DeviceInfo
 
-        enum CodingKeys: String, CodingKey {
-            case device = "device"
-        }
+    public struct OperatingSystem: Codable {
+        /// Operating system name, e.g. Android, iOS
+        public let name: String
+        /// Full operating system version, e.g. 8.1.1
+        public let version: String
+        /// Operating system build number, e.g. 15D21
+        public let build: String?
+    }
+
+    public struct Dd: Codable {
+        // Device information
+        public let device: DeviceInfo
     }
 
     /// The log's timestamp
@@ -83,6 +88,8 @@ public struct LogEvent: Encodable {
     public let applicationVersion: String
     /// Datadog specific attributes
     public let dd: Dd
+    /// The associated log error
+    public let os: OperatingSystem
     /// Custom user information configured globally for the SDK.
     public var userInfo: UserInfo
     /// The network connection information from the moment the log was sent.
@@ -110,6 +117,7 @@ internal struct LogEventEncoder {
         case serviceName = "service"
         case environment = "env"
         case tags = "ddtags"
+        case os = "os"
 
         // MARK: - Error
 
@@ -168,6 +176,7 @@ internal struct LogEventEncoder {
         try container.encode(log.status, forKey: .status)
         try container.encode(log.message, forKey: .message)
         try container.encode(log.serviceName, forKey: .serviceName)
+        try container.encode(log.os, forKey: .os)
 
         // Encode log.error properties
         if let someError = log.error {

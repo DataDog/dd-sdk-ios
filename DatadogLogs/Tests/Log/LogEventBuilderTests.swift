@@ -61,6 +61,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.loggerName, randomLoggerName)
             XCTAssertEqual(log.threadName, randomThreadName)
             XCTAssertEqual(log.dd.device.architecture, randomArchitecture)
+
             expectation.fulfill()
         }
 
@@ -78,11 +79,18 @@ class LogEventBuilderTests: XCTestCase {
         let randomNetworkInfo: NetworkConnectionInfo = .mockRandom()
         let randomCarrierInfo: CarrierInfo = .mockRandom()
         let randomServerOffset: TimeInterval = .mockRandom(min: -10, max: 10)
+        let randomOSVersion: String = .mockRandom()
+        let randomOSBuild: String = .mockRandom()
+
         let randomSDKContext: DatadogContext = .mockWith(
             env: randomEnvironment,
             version: randomApplicationVersion,
             sdkVersion: randomSDKVersion,
             serverTimeOffset: randomServerOffset,
+            device: .mockWith(
+                osVersion: randomOSVersion,
+                osBuildNumber: randomOSBuild
+            ),
             userInfo: randomUserInfo,
             networkConnectionInfo: randomNetworkInfo,
             carrierInfo: randomCarrierInfo
@@ -118,6 +126,8 @@ class LogEventBuilderTests: XCTestCase {
             DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
             XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
             XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
+            XCTAssertEqual(log.os.version, randomOSVersion)
+            XCTAssertEqual(log.os.build, randomOSBuild)
             expectation.fulfill()
         }
 

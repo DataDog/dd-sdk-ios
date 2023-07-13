@@ -97,12 +97,19 @@ class CrashLogReceiverTests: XCTestCase {
         )
 
         let mockArchitecture = String.mockRandom()
+        let mockOSName: String = .mockRandom()
+        let mockOSVersion: String = .mockRandom()
+        let mockOSBuild: String = .mockRandom()
+
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             service: .mockRandom(),
             env: .mockRandom(),
             version: .mockRandom(),
             device: .mockWith(
+                name: mockOSName,
+                osVersion: mockOSVersion,
+                osBuildNumber: mockOSBuild,
                 architecture: mockArchitecture
             ),
             sdkVersion: .mockRandom(),
@@ -142,6 +149,11 @@ class CrashLogReceiverTests: XCTestCase {
             threadName: nil,
             applicationVersion: crashContext.version,
             dd: .init(device: .init(architecture: mockArchitecture)),
+            os: .init(
+                name: mockOSName,
+                version: mockOSVersion,
+                build: mockOSBuild
+            ),
             userInfo: .init(
                 id: user.id,
                 name: user.name,
