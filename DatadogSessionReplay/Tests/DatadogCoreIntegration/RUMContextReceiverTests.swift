@@ -17,9 +17,9 @@ class RUMContextReceiverTests: XCTestCase {
         let context = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
                 RUMDependency.ids: [
-                    RUMDependency.IDs.applicationIDKey: "app-id",
-                    RUMDependency.IDs.sessionIDKey: "session-id",
-                    RUMDependency.IDs.viewIDKey: "view-id"
+                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id",
+                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id",
+                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id"
                 ],
                 RUMDependency.serverTimeOffsetKey: TimeInterval(123)
             ]
@@ -68,9 +68,9 @@ class RUMContextReceiverTests: XCTestCase {
         let context1 = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
                 RUMDependency.ids: [
-                    RUMDependency.IDs.applicationIDKey: "app-id-1",
-                    RUMDependency.IDs.sessionIDKey: "session-id-1",
-                    RUMDependency.IDs.viewIDKey: "view-id-1"
+                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id-1",
+                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id-1",
+                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id-1"
                 ],
                 RUMDependency.serverTimeOffsetKey: TimeInterval(123)
             ]
@@ -79,9 +79,9 @@ class RUMContextReceiverTests: XCTestCase {
         let context2 = DatadogContext.mockWith(featuresAttributes: [
             RUMDependency.rumBaggageKey: [
                 RUMDependency.ids: [
-                    RUMDependency.IDs.applicationIDKey: "app-id-2",
-                    RUMDependency.IDs.sessionIDKey: "session-id-2",
-                    RUMDependency.IDs.viewIDKey: "view-id-2"
+                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id-2",
+                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id-2",
+                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id-2"
                 ],
                 RUMDependency.serverTimeOffsetKey: TimeInterval(345)
             ]
@@ -126,13 +126,5 @@ class RUMContextReceiverTests: XCTestCase {
 
         // Then
         XCTAssertTrue(fallbackCalled)
-    }
-}
-
-fileprivate extension RUMDependency {
-    enum IDs {
-        static let applicationIDKey = "application_id"
-        static let sessionIDKey = "session_id"
-        static let viewIDKey = "view.id"
     }
 }
