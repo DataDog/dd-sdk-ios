@@ -72,4 +72,10 @@ class ColorsTests: XCTestCase {
             XCTAssertEqual(expectedHex, actualHex)
         }
     }
+
+    func testWhenConvertingInvalidCGColorRef() {
+        let string: Any = "invalid CGColor value"
+        let color = string as! CGColor
+        XCTAssertNil(hexString(from: color))
+    }
 }
