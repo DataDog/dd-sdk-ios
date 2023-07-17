@@ -86,8 +86,8 @@ class CrashLogReceiverTests: XCTestCase {
             ],
             meta: .init(
                 incidentIdentifier: "incident-identifier",
-                processName: "process-name",
-                parentProcess: "parent-process",
+                process: "process [1]",
+                parentProcess: "parent-process [0]",
                 path: "process/path",
                 codeType: "arch",
                 exceptionType: "EXCEPTION_TYPE",

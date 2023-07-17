@@ -59,7 +59,7 @@ internal extension DDCrashReport {
             binaryImages: [],
             meta: .init(
                 incidentIdentifier: "any",
-                processName: "any",
+                process: "any",
                 parentProcess: "any",
                 path: "any",
                 codeType: "any",
@@ -217,12 +217,14 @@ extension CrashReport {
 extension CrashedProcessInfo {
     static func mockWith(
         processName: String? = nil,
+        processID: UInt = 1,
         processPath: String? = nil,
         parentProcessID: UInt = 0,
         parentProcessName: String? = nil
     ) -> CrashedProcessInfo {
         return CrashedProcessInfo(
             processName: processName,
+            processID: processID,
             processPath: processPath,
             parentProcessID: parentProcessID,
             parentProcessName: parentProcessName

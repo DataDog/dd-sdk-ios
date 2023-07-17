@@ -358,10 +358,23 @@ class DDCrashReportExporterTests: XCTestCase {
         XCTAssertEqual(exporter.export(crashReport).meta.incidentIdentifier, randomIdentifier)
     }
 
-    func testExportingProcessName() {
+    func testExportingProcess() {
         let randomName: String = .mockRandom()
-        crashReport.processInfo = .mockWith(processName: randomName)
-        XCTAssertEqual(exporter.export(crashReport).meta.processName, randomName)
+        let randomID: UInt = .mockRandom()
+        crashReport.processInfo = .mockWith(
+            processName: randomName,
+            processID: randomID
+        )
+        XCTAssertEqual(exporter.export(crashReport).meta.process, "\(randomName) [\(randomID)]")
+    }
+
+    func testExportingProcessID() {
+        let randomID: UInt = .mockRandom()
+        crashReport.processInfo = .mockWith(
+            processName: nil,
+            processID: randomID
+        )
+        XCTAssertEqual(exporter.export(crashReport).meta.process, "[\(randomID)]")
     }
 
     func testExportingParentProcess() {
