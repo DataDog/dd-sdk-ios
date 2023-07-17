@@ -20,6 +20,8 @@ public struct LogEvent: Encodable {
         case critical
         case emergency
     }
+
+    /// Custom attributes associated with a the log event.
     public struct Attributes {
         /// Log custom attributes, They are subject for sanitization.
         public var userAttributes: [String: Encodable]
@@ -27,6 +29,7 @@ public struct LogEvent: Encodable {
         internal let internalAttributes: [String: Encodable]?
     }
 
+    /// User information associated with a the log event.
     public struct UserInfo {
         /// User ID, if any.
         public let id: String?
@@ -38,20 +41,23 @@ public struct LogEvent: Encodable {
         public var extraInfo: [String: Encodable]
     }
 
+    /// Error description associated with a log event.
     public struct Error {
-        // The Log error kind
+        /// The Log error kind
         public var kind: String?
-        // The Log error message
+        /// The Log error message
         public var message: String?
-        // The Log error stack
+        /// The Log error stack
         public var stack: String?
     }
 
+    /// Device information.
     public struct DeviceInfo: Codable {
-        // The architecture of the device
+        /// The architecture of the device
         public let architecture: String
     }
 
+    /// Operating System description.
     public struct OperatingSystem: Codable {
         /// Operating system name, e.g. Android, iOS
         public let name: String
@@ -61,8 +67,9 @@ public struct LogEvent: Encodable {
         public let build: String?
     }
 
+    /// Datadog specific attributes.
     public struct Dd: Codable {
-        // Device information
+        /// Device information
         public let device: DeviceInfo
     }
 
