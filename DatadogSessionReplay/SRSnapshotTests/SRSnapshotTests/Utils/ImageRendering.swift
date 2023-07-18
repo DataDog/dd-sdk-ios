@@ -42,6 +42,8 @@ private extension SRWireframe {
             return text.toFrame()
         case .imageWireframe(value: let image):
             return image.toFrame()
+        case .placeholderWireframe(value: let placeholder):
+            return placeholder.toFrame()
         }
     }
 }
@@ -84,6 +86,34 @@ private extension SRImageWireframe {
         )
     }
 }
+
+private extension SRPlaceholderWireframe {
+    func toFrame() -> BlueprintFrame {
+        BlueprintFrame(
+            x: CGFloat(x),
+            y: CGFloat(y),
+            width: CGFloat(width),
+            height: CGFloat(height),
+            style: frameStyle(
+                border: .init(color: "#000000FF", width: 4),
+                style: .init(
+                    backgroundColor: "#A9A9A9FF",
+                    cornerRadius: 0,
+                    opacity: 1
+                )
+            ),
+            content: frameContent(
+                text: label ?? "Placeholder",
+                textStyle: .init(color: "#000000FF", family: "-apple-system", size: 24),
+                textPosition: .init(
+                    alignment: .init(horizontal: .center, vertical: .center),
+                    padding: .init(bottom: 0, left: 0, right: 0, top: 0)
+                )
+            )
+        )
+    }
+}
+
 
 private func frameStyle(border: SRShapeBorder?, style: SRShapeStyle?) -> BlueprintFrame.Style {
     var fs = BlueprintFrame.Style(

@@ -102,6 +102,14 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         context.featuresAttributes[feature] = attributes()
     }
 
+    public func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        if context.featuresAttributes[feature] != nil {
+            context.featuresAttributes[feature]?.merge(with: attributes())
+        } else {
+            context.featuresAttributes[feature] = attributes()
+        }
+    }
+
     public func send(message: FeatureMessage, else fallback: () -> Void) {
         if !messageReceiver.receive(message: message, from: self) {
             fallback()

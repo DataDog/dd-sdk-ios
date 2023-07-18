@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSessionReplay"
-  s.version      = "2.0.0-alpha1"
+  s.version      = "2.0.0-beta.2"
   s.summary      = "Official Datadog Session Replay SDK for iOS. This module is currently in beta - contact Datadog to request a try."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -13,7 +13,7 @@ Pod::Spec.new do |s|
     "Maxime Epain" => "maxime.epain@datadoghq.com"
   }
 
-  s.swift_version      = '5.1'
+  s.swift_version = '5.5'
   s.ios.deployment_target = '11.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }

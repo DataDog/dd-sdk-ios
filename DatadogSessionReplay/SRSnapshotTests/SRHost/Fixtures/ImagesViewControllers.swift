@@ -9,6 +9,7 @@ import UIKit
 internal class ImagesViewController: UIViewController {
     @IBOutlet weak var customButton: UIButton!
     @IBOutlet weak var customImageView: UIImageView!
+    @IBOutlet weak var contentImageView: UIImageView!
     @IBOutlet weak var tabBar: UITabBar!
     @IBOutlet weak var navigationBar: UINavigationBar!
 
@@ -23,6 +24,8 @@ internal class ImagesViewController: UIViewController {
         navigationBar.setBackgroundImage(UIImage(color: color), for: .default)
 
         customImageView.image = UIImage(named: "dd_logo")?.withRenderingMode(.alwaysTemplate)
+
+        contentImageView.image = UIImage(color: color)
     }
 }
 

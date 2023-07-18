@@ -18,7 +18,7 @@ final class TracingManualInstrumentationScenario: TestScenario {
         Trace.enable(
             with: Trace.Configuration(
                 sampleRate: 100,
-                sendNetworkInfo: true,
+                networkInfoEnabled: true,
                 customEndpoint: Environment.serverMockConfiguration()?.tracesEndpoint
             )
         )
@@ -36,7 +36,7 @@ final class TracingManualInstrumentationScenario: TestScenario {
 class TracingURLSessionBaseScenario: URLSessionBaseScenario {
     func configureFeatures() {
         var config = Trace.Configuration(sampleRate: 100)
-        config.sendNetworkInfo = true
+        config.networkInfoEnabled = true
         config.customEndpoint = Environment.serverMockConfiguration()?.tracesEndpoint
         config.eventMapper = {
             var span = $0

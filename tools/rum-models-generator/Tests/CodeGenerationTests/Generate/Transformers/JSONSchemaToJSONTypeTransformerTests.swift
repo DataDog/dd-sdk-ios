@@ -215,4 +215,44 @@ final class JSONSchemaToJSONTypeTransformerTests: XCTestCase {
         let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
         XCTAssertEqual(expected, actual as? JSONUnionType)
     }
+
+    func testTransformingJSONSchemaWithNoExplicitEnumTypeIntoJSONObject() throws {
+        let expected = JSONObject(
+            name: "Schema title",
+            comment: "Schema description.",
+            properties: [
+                JSONObject.Property(
+                    name: "stringEnumProperty",
+                    comment: "Description of `stringEnumProperty` without explicit type.",
+                    type: JSONEnumeration(
+                        name: "stringEnumProperty",
+                        comment: "Description of `stringEnumProperty` without explicit type.",
+                        values: [.string(value: "case1"), .string(value: "case2"), .string(value: "case3"), .string(value: "case4")]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                ),
+                JSONObject.Property(
+                    name: "integerEnumProperty",
+                    comment: "Description of `integerEnumProperty` without explicit type.",
+                    type: JSONEnumeration(
+                        name: "integerEnumProperty",
+                        comment: "Description of `integerEnumProperty` without explicit type.",
+                        values: [.integer(value: 1), .integer(value: 2), .integer(value: 3), .integer(value: 4)]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: true
+                )
+            ]
+        )
+
+        let file = Bundle.module.url(forResource: "Fixtures/fixture-schema-with-typeless-enum", withExtension: "json")!
+
+        let jsonSchema = try JSONSchemaReader().read(file)
+
+        let actual = try JSONSchemaToJSONTypeTransformer().transform(jsonSchema: jsonSchema)
+        XCTAssertEqual(expected, actual as? JSONObject)
+    }
 }

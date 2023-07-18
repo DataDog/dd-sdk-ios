@@ -7,11 +7,10 @@
 import DatadogCore
 
 extension Datadog.Configuration {
-    static func builderUsingE2EConfig() -> Datadog.Configuration.Builder {
-        return builderUsing(
-            rumApplicationID: E2EConfig.readRUMApplicationID(),
+    static var e2e: Self {
+        .init(
             clientToken: E2EConfig.readClientToken(),
-            environment: E2EConfig.readEnv()
-        ).set(sampleTelemetry: 100)
+            env: E2EConfig.readEnv()
+        )
     }
 }

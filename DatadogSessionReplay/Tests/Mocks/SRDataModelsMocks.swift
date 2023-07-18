@@ -309,6 +309,137 @@ extension SRContentClip: AnyMockable, RandomMockable {
     }
 }
 
+extension SRPlaceholderWireframe: AnyMockable, RandomMockable {
+    public static func mockAny() -> SRPlaceholderWireframe {
+        return SRPlaceholderWireframe(
+            clip: .mockAny(),
+            height: .mockAny(),
+            id: .mockAny(),
+            width: .mockAny(),
+            x: .mockAny(),
+            y: .mockAny()
+        )
+    }
+
+    public static func mockRandom() -> SRPlaceholderWireframe {
+        return SRPlaceholderWireframe(
+            clip: .mockRandom(),
+            height: .mockRandom(),
+            id: .mockRandom(),
+            width: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        clip: SRContentClip? = .mockAny(),
+        height: Int64 = .mockAny(),
+        id: Int64 = .mockAny(),
+        width: Int64 = .mockAny(),
+        x: Int64 = .mockAny(),
+        y: Int64 = .mockAny()
+    ) -> SRPlaceholderWireframe {
+        return SRPlaceholderWireframe(
+            clip: clip,
+            height: height,
+            id: id,
+            width: width,
+            x: x,
+            y: y
+        )
+    }
+
+    static func mockRandomWith(id: WireframeID) -> SRPlaceholderWireframe {
+        return SRPlaceholderWireframe(
+            clip: .mockRandom(),
+            height: .mockRandom(),
+            id: id,
+            width: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+}
+
+extension SRImageWireframe: AnyMockable, RandomMockable {
+    public static func mockAny() -> SRImageWireframe {
+        return SRImageWireframe(
+            base64: .mockAny(),
+            border: .mockAny(),
+            clip: .mockAny(),
+            height: .mockAny(),
+            id: .mockAny(),
+            isEmpty: .mockAny(),
+            mimeType: .mockAny(),
+            shapeStyle: .mockAny(),
+            width: .mockAny(),
+            x: .mockAny(),
+            y: .mockAny()
+        )
+    }
+
+    public static func mockRandom() -> SRImageWireframe {
+        return SRImageWireframe(
+            base64: .mockRandom(),
+            border: .mockRandom(),
+            clip: .mockRandom(),
+            height: .mockRandom(),
+            id: .mockRandom(),
+            isEmpty: .mockRandom(),
+            mimeType: .mockRandom(),
+            shapeStyle: .mockRandom(),
+            width: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        base64: String? = .mockAny(),
+        border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
+        height: Int64 = .mockAny(),
+        id: Int64 = .mockAny(),
+        isEmpty: Bool = .mockAny(),
+        mimeType: String? = .mockAny(),
+        shapeStyle: SRShapeStyle? = .mockAny(),
+        width: Int64 = .mockAny(),
+        x: Int64 = .mockAny(),
+        y: Int64 = .mockAny()
+    ) -> SRImageWireframe {
+        return SRImageWireframe(
+            base64: base64,
+            border: border,
+            clip: clip,
+            height: height,
+            id: id,
+            isEmpty: isEmpty,
+            mimeType: mimeType,
+            shapeStyle: shapeStyle,
+            width: width,
+            x: x,
+            y: y
+        )
+    }
+
+    static func mockRandomWith(id: WireframeID) -> SRImageWireframe {
+        return SRImageWireframe(
+            base64: .mockRandom(),
+            border: .mockRandom(),
+            clip: .mockRandom(),
+            height: .mockRandom(),
+            id: id,
+            isEmpty: .mockRandom(),
+            mimeType: .mockRandom(),
+            shapeStyle: .mockRandom(),
+            width: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+}
+
 extension SRWireframe: AnyMockable, RandomMockable {
     public static func mockAny() -> SRWireframe {
         return .shapeWireframe(value: .mockAny())

@@ -17,8 +17,8 @@ class TraceConfigurationTests: XCTestCase {
         XCTAssertNil(config.service)
         XCTAssertNil(config.tags)
         XCTAssertNil(config.urlSessionTracking)
-        XCTAssertTrue(config.bundleWithRUM)
-        XCTAssertFalse(config.sendNetworkInfo)
+        XCTAssertTrue(config.bundleWithRumEnabled)
+        XCTAssertFalse(config.networkInfoEnabled)
         XCTAssertNil(config.eventMapper)
         XCTAssertNil(config.customEndpoint)
     }

@@ -4,20 +4,21 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
+import DatadogInternal
+import DatadogLogs
+
 @testable import DatadogCore
 
 class KronosE2ETests: E2ETests {
     /// The logger sending logs on Kronos execution. These logs are available in Mobile Integrations org.
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
     /// The logger sending telemetry on internal Kronos execution. These logs are available in Mobile Integrations org.
     private let queue = DispatchQueue(label: "kronos-monitor-queue")
 
     override func setUp() {
         super.setUp()
-        logger = Logger
-            .builder
-            .set(loggerName: "kronos-e2e")
-            .build()
+        logger = Logger.create(with: Logger.Configuration(name: "kronos-e2e"))
     }
 
     override func tearDown() {

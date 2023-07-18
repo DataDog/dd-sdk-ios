@@ -96,7 +96,7 @@ class LogMessageReceiverTests: XCTestCase {
                     "error": DDError.mockAny(),
                     "userAttributes": ["user": "attribute"],
                     "internalAttributes": ["internal": "attribute"],
-                    "sendNetworkInfo": true
+                    "networkInfoEnabled": true
                 ]
             )
         )

@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3CB135E629F6B8F90000234F /* DatadogWebViewTracking.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */; };
 		3CB135E729F6B90F0000234F /* DatadogWebViewTracking.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */; };
 		3CB135E829F6B90F0000234F /* DatadogWebViewTracking.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
@@ -193,7 +192,6 @@
 				D2675BF92A019D0100190669 /* DatadogInternal.xcframework in Frameworks */,
 				D290BA1F27CD09740019936D /* CrashReporter.xcframework in Frameworks */,
 				D20D6FE629F6C2EB00D2886E /* DatadogRUM.xcframework in Frameworks */,
-				3CB135E629F6B8F90000234F /* DatadogWebViewTracking.xcframework in Frameworks */,
 				D290BA2127CD09740019936D /* DatadogCore.xcframework in Frameworks */,
 				D2675BF72A019CFF00190669 /* DatadogCrashReporting.xcframework in Frameworks */,
 				D290BA2227CD09740019936D /* DatadogObjc.xcframework in Frameworks */,

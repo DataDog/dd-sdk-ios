@@ -28,7 +28,7 @@ class LogEventBuilderTests: XCTestCase {
         let builder = LogEventBuilder(
             service: randomService,
             loggerName: randomLoggerName,
-            sendNetworkInfo: .mockAny(),
+            networkInfoEnabled: .mockAny(),
             eventMapper: nil
         )
 
@@ -92,7 +92,7 @@ class LogEventBuilderTests: XCTestCase {
         let builder = LogEventBuilder(
             service: .mockAny(),
             loggerName: .mockAny(),
-            sendNetworkInfo: true,
+            networkInfoEnabled: true,
             eventMapper: nil
         )
 
@@ -131,7 +131,7 @@ class LogEventBuilderTests: XCTestCase {
         let builder = LogEventBuilder(
             service: .mockAny(),
             loggerName: .mockAny(),
-            sendNetworkInfo: false,
+            networkInfoEnabled: false,
             eventMapper: nil
         )
 
@@ -167,7 +167,7 @@ class LogEventBuilderTests: XCTestCase {
         let builder = LogEventBuilder(
             service: .mockAny(),
             loggerName: .mockAny(),
-            sendNetworkInfo: .mockAny(),
+            networkInfoEnabled: .mockAny(),
             eventMapper: SyncLogEventMapper { log in
                 var mutableLog = log
                 mutableLog.message = "modified message"
@@ -202,7 +202,7 @@ class LogEventBuilderTests: XCTestCase {
         let builder = LogEventBuilder(
             service: .mockAny(),
             loggerName: .mockAny(),
-            sendNetworkInfo: .mockAny(),
+            networkInfoEnabled: .mockAny(),
             eventMapper: SyncLogEventMapper { _ in
                 return nil
             }

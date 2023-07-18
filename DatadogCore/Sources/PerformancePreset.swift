@@ -81,12 +81,11 @@ internal extension PerformancePreset {
             }
         }()
 
-        let uploadDelayFactors: (initial: Double, default: Double, min: Double, max: Double, changeRate: Double) = {
+        let uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double) = {
             switch bundleType {
             case .iOSApp:
                 return (
                     initial: 5,
-                    default: 5,
                     min: 1,
                     max: 10,
                     changeRate: 0.1
@@ -94,7 +93,6 @@ internal extension PerformancePreset {
             case .iOSAppExtension:
                 return (
                     initial: 0.5, // ensures the the first upload is checked quickly after starting the short-lived app extension
-                    default: 3,
                     min: 1,
                     max: 5,
                     changeRate: 0.5 // if batches are found, reduces interval significantly for more uploads in short-lived app extension
@@ -112,7 +110,7 @@ internal extension PerformancePreset {
     init(
         meanFileAge: TimeInterval,
         minUploadDelay: TimeInterval,
-        uploadDelayFactors: (initial: Double, default: Double, min: Double, max: Double, changeRate: Double)
+        uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
     ) {
         self.maxFileSize = UInt64(4).MB
         self.maxDirectorySize = UInt64(512).MB
@@ -127,19 +125,19 @@ internal extension PerformancePreset {
         self.uploadDelayChangeRate = uploadDelayFactors.changeRate
     }
 
-    func updated(with: PerformancePresetOverride) -> PerformancePreset {
+    func updated(with override: PerformancePresetOverride) -> PerformancePreset {
         return PerformancePreset(
-            maxFileSize: with.maxFileSize ?? maxFileSize,
+            maxFileSize: override.maxFileSize ?? maxFileSize,
             maxDirectorySize: maxDirectorySize,
-            maxFileAgeForWrite: maxFileAgeForWrite,
-            minFileAgeForRead: minFileAgeForRead,
+            maxFileAgeForWrite: override.maxFileAgeForWrite ?? maxFileAgeForWrite,
+            minFileAgeForRead: override.minFileAgeForRead ?? minFileAgeForRead,
             maxFileAgeForRead: maxFileAgeForRead,
             maxObjectsInFile: maxObjectsInFile,
-            maxObjectSize: with.maxObjectSize ?? maxObjectSize,
-            initialUploadDelay: initialUploadDelay,
-            minUploadDelay: minUploadDelay,
-            maxUploadDelay: maxUploadDelay,
-            uploadDelayChangeRate: uploadDelayChangeRate
+            maxObjectSize: override.maxObjectSize ?? maxObjectSize,
+            initialUploadDelay: override.initialUploadDelay ?? initialUploadDelay,
+            minUploadDelay: override.minUploadDelay ?? minUploadDelay,
+            maxUploadDelay: override.maxUploadDelay ?? maxUploadDelay,
+            uploadDelayChangeRate: override.uploadDelayChangeRate ?? uploadDelayChangeRate
         )
     }
 }

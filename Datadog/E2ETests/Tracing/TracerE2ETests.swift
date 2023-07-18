@@ -5,19 +5,11 @@
  */
 
 import DatadogCore
+import DatadogInternal
+import DatadogTrace
 
 class TracerE2ETests: E2ETests {
-    private var tracer: OTTracer! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    override func setUp() {
-        super.setUp()
-        tracer = DatadogTracer.initialize(configuration: .init())
-    }
-
-    override func tearDown() {
-        tracer = nil
-        super.tearDown()
-    }
+    private var tracer: OTTracer { Tracer.shared() }
 
     /// - api-surface: OTTracer.startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
     ///

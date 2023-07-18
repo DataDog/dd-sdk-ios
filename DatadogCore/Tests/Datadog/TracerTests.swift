@@ -81,7 +81,7 @@ class TracerTests: XCTestCase {
 
     func testSendingSpanWithCustomizedTracer() throws {
         config.service = "custom-service-name"
-        config.sendNetworkInfo = true
+        config.networkInfoEnabled = true
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -390,7 +390,7 @@ class TracerTests: XCTestCase {
             carrierInfo: nil
         )
 
-        config.sendNetworkInfo = true
+        config.networkInfoEnabled = true
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core).dd
 
@@ -427,7 +427,7 @@ class TracerTests: XCTestCase {
     func testSendingNetworkConnectionInfoWhenReachabilityChanges() throws {
         core.context = .mockWith(networkConnectionInfo: nil)
 
-        config.sendNetworkInfo = true
+        config.networkInfoEnabled = true
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core).dd
 

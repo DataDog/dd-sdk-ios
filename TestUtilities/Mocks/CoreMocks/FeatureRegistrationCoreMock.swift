@@ -55,6 +55,10 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         // not supported - use different type of core mock if you need this
     }
 
+    public func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        // not supported - use different type of core mock if you need thi
+    }
+
     public func send(message: DatadogInternal.FeatureMessage, else fallback: @escaping () -> Void) {
         // not supported - use different type of core mock if you need this
     }

@@ -4,8 +4,17 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogCore
+@testable import DatadogRUM
 
-extension DDRUMMonitor {
-    var dd: RUMMonitor { self as! RUMMonitor }
+extension RUMMonitorProtocol {
+    var dd: Monitor { self as! Monitor }
+}
+
+extension RUM.Configuration {
+    static var e2e: Self {
+        .init(
+            applicationID: E2EConfig.readRUMApplicationID(),
+            telemetrySampleRate: 100
+        )
+    }
 }

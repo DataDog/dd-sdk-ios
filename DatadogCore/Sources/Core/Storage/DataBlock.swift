@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Block size binary type
 internal typealias BlockSize = UInt32
@@ -14,7 +15,11 @@ private let MAX_DATA_LENGTH: UInt64 = 10 * 1_024 * 1_024
 
 /// Block type supported in data stream
 internal enum BlockType: UInt16 {
+    /// Represents an event
     case event = 0x00
+    /// Represents an event metadata associated with the previous event.
+    /// This block is optional and may be omitted.
+    case eventMetadata = 0x01
 }
 
 /// Reported errors while manipulating data blocks.

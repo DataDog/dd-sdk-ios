@@ -17,7 +17,12 @@ internal struct AsyncWriter: Writer {
         self.queue = queue
     }
 
-    func write<T>(value: T) where T: Encodable {
-        queue.async { writer.write(value: value) }
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
+        queue.async { writer.write(value: value, metadata: metadata) }
+    }
+}
+
+internal struct NOPWriter: Writer {
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?) {
     }
 }

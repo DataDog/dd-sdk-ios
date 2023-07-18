@@ -133,7 +133,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        var base64: String = ""
+        var base64: String?
         if shouldRecordImage {
             base64 = imageDataProvider.contentBase64String(
                 of: image,
@@ -141,14 +141,24 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             )
         }
         if let contentFrame = contentFrame {
-            wireframes.append(
-                builder.createImageWireframe(
-                    base64: base64,
-                    id: imageWireframeID,
-                    frame: contentFrame,
-                    clip: clipsToBounds ? clip : nil
+            if let base64 = base64 {
+                wireframes.append(
+                    builder.createImageWireframe(
+                        base64: base64,
+                        id: imageWireframeID,
+                        frame: contentFrame,
+                        clip: clipsToBounds ? clip : nil
+                    )
                 )
-            )
+            } else {
+                wireframes.append(
+                    builder.createPlaceholderWireframe(
+                        id: imageWireframeID,
+                        frame: clipsToBounds ? relativeIntersectedRect : contentFrame,
+                        label: "Content Image"
+                    )
+                )
+            }
         }
         return wireframes
     }

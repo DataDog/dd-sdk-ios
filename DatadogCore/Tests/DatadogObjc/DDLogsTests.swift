@@ -208,13 +208,13 @@ class DDLogsTests: XCTestCase {
         let objcConfig = DDLoggerConfiguration()
         objcConfig.name = "logger-name"
         objcConfig.service = "service-name"
-        objcConfig.sendNetworkInfo = true
+        objcConfig.networkInfoEnabled = true
         objcConfig.remoteSampleRate = 50
         objcConfig.printLogsToConsole = true
 
         XCTAssertEqual(objcConfig.configuration.name, "logger-name")
         XCTAssertEqual(objcConfig.configuration.service, "service-name")
-        XCTAssertTrue(objcConfig.configuration.sendNetworkInfo)
+        XCTAssertTrue(objcConfig.configuration.networkInfoEnabled)
         XCTAssertEqual(objcConfig.configuration.remoteSampleRate, 50)
         XCTAssertNotNil(objcConfig.configuration.consoleLogFormat)
     }

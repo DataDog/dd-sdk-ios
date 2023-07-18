@@ -6,13 +6,55 @@
 
 import XCTest
 @testable import DatadogSessionReplay
+import TestUtilities
 
-// swiftlint:disable empty_xctest_method
 class SRContextPublisherTests: XCTestCase {
-    func testItSetsHasReplayAccordingly() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating mocks for `DatadogCore` and `DatadogContext`,
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    func testItSetsHasReplayAccordingly() throws {
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+
+        srContextPublisher.setHasReplay(true)
+
+        let hasReplay = try XCTUnwrap(core.hasReplay)
+        XCTAssertTrue(hasReplay)
+    }
+
+    func testItSetsRecordsCountAccordingly() {
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+
+        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
+
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
+    }
+
+    func testItDoesNotOverridePreviouslySetValue() throws {
+        let core = PassthroughCoreMock()
+        let srContextPublisher = SRContextPublisher(core: core)
+        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
+
+        srContextPublisher.setHasReplay(true)
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
+
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
+        let hasReplay = try XCTUnwrap(core.hasReplay)
+        XCTAssertTrue(hasReplay)
+
+        srContextPublisher.setHasReplay(false)
+
+        let hasReplay2 = try XCTUnwrap(core.hasReplay)
+        XCTAssertFalse(hasReplay2)
+        XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
     }
 }
-// swiftlint:enable empty_xctest_method
+
+fileprivate extension PassthroughCoreMock {
+    var hasReplay: Bool? {
+        return context.featuresAttributes["session-replay"]?.has_replay
+    }
+
+    var recordsCountByViewID: [String: Int64]? {
+        return context.featuresAttributes["session-replay"]?.records_count_by_view_id
+    }
+}

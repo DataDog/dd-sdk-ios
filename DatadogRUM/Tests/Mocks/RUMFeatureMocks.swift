@@ -50,7 +50,7 @@ extension CrashReportReceiver: AnyMockable {
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
-        backgroundEventTrackingEnabled: Bool = true,
+        trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil
     ) -> Self {
@@ -58,7 +58,7 @@ extension CrashReportReceiver: AnyMockable {
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
+            trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
             ciTest: ciTest
         )
@@ -640,12 +640,6 @@ extension RUMContext {
 
 // MARK: - RUMScope Mocks
 
-internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
-    func accept(event: RUMViewEvent) -> Bool {
-        return true // always send view update
-    }
-}
-
 func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
@@ -659,13 +653,12 @@ extension RUMScopeDependencies {
         core: DatadogCoreProtocol = NOPDatadogCore(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
-        backgroundEventTrackingEnabled: Bool = .mockAny(),
-        frustrationTrackingEnabled: Bool = true,
+        trackBackgroundEvents: Bool = .mockAny(),
+        trackFrustrations: Bool = true,
         firstPartyHosts: FirstPartyHosts = .init([:]),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
-        viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
@@ -673,13 +666,12 @@ extension RUMScopeDependencies {
             core: core,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled,
-            frustrationTrackingEnabled: frustrationTrackingEnabled,
+            trackBackgroundEvents: trackBackgroundEvents,
+            trackFrustrations: trackFrustrations,
             firstPartyHosts: firstPartyHosts,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             ciTest: ciTest,
-            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart
         )
@@ -689,13 +681,12 @@ extension RUMScopeDependencies {
     func replacing(
         rumApplicationID: String? = nil,
         sessionSampler: Sampler? = nil,
-        backgroundEventTrackingEnabled: Bool? = nil,
-        frustrationTrackingEnabled: Bool? = nil,
+        trackBackgroundEvents: Bool? = nil,
+        trackFrustrations: Bool? = nil,
         firstPartyHosts: FirstPartyHosts? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         ciTest: RUMCITest? = nil,
-        viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil
     ) -> RUMScopeDependencies {
@@ -703,13 +694,12 @@ extension RUMScopeDependencies {
             core: self.core,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
-            backgroundEventTrackingEnabled: backgroundEventTrackingEnabled ?? self.backgroundEventTrackingEnabled,
-            frustrationTrackingEnabled: frustrationTrackingEnabled ?? self.frustrationTrackingEnabled,
+            trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
+            trackFrustrations: trackFrustrations ?? self.trackFrustrations,
             firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             ciTest: ciTest ?? self.ciTest,
-            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart
         )
@@ -733,14 +723,14 @@ extension RUMSessionScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        isReplayBeingRecorded: Bool? = .mockAny()
+        hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
             dependencies: dependencies,
-            isReplayBeingRecorded: isReplayBeingRecorded
+            hasReplay: hasReplay
         )
     }
 }
@@ -988,5 +978,18 @@ internal class ValueObserverMock<Value>: ValueObserver {
     func onValueChanged(oldValue: Value, newValue: Value) {
         lastChange = (oldValue, newValue)
         onValueChange?(oldValue, newValue)
+    }
+}
+
+// MARK: - Dependency on Session Replay
+
+extension Dictionary where Key == String, Value == FeatureBaggage {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) -> Self {
+        return [
+            SessionReplayDependency.srBaggageKey: [
+                SessionReplayDependency.hasReplay: hasReplay,
+                SessionReplayDependency.recordsCountByViewID: recordsCountByViewID
+            ]
+        ]
     }
 }

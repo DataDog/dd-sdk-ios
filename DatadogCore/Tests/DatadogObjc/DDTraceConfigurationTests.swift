@@ -54,16 +54,16 @@ class DDTraceConfigurationTests: XCTestCase {
 
     func testBundleWithRUM() {
         let random: Bool = .mockRandom()
-        objc.bundleWithRUM = random
-        XCTAssertEqual(objc.bundleWithRUM, random)
-        XCTAssertEqual(swift.bundleWithRUM, random)
+        objc.bundleWithRumEnabled = random
+        XCTAssertEqual(objc.bundleWithRumEnabled, random)
+        XCTAssertEqual(swift.bundleWithRumEnabled, random)
     }
 
     func testSendNetworkInfo() {
         let random: Bool = .mockRandom()
-        objc.sendNetworkInfo = random
-        XCTAssertEqual(objc.sendNetworkInfo, random)
-        XCTAssertEqual(swift.sendNetworkInfo, random)
+        objc.networkInfoEnabled = random
+        XCTAssertEqual(objc.networkInfoEnabled, random)
+        XCTAssertEqual(swift.networkInfoEnabled, random)
     }
 
     func testCustomEndpoint() {

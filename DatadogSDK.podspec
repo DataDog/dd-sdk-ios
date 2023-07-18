@@ -1,7 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDK"
-  s.module_name  = "Datadog"
-  s.version      = "2.0.0-alpha1"
+  s.version      = "2.0.0-beta.2"
   s.summary      = "Official Datadog Swift SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -20,11 +19,13 @@ Pod::Spec.new do |s|
   s.tvos.deployment_target = '11.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
-  
-  s.default_subspec = 'Core'
 
-  s.subspec 'Core' do |ss|
-    ss.dependency 'DatadogCore', s.version.to_s
-  end
+  s.deprecated_in_favor_of =
+    'DatadogCore, DatadogLogs, DatadogRUM, and DatadogTrace'
+
+  s.dependency 'DatadogCore', s.version.to_s
+  s.dependency 'DatadogLogs', s.version.to_s
+  s.dependency 'DatadogRUM', s.version.to_s
+  s.dependency 'DatadogTrace', s.version.to_s
 
 end

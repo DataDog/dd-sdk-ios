@@ -133,7 +133,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         attributes.merge(rumCommandAttributes: command?.attributes)
 
         var frustrations: [RUMActionEvent.Action.Frustration.FrustrationType]? = nil
-        if dependencies.frustrationTrackingEnabled, errorsCount > 0, actionType == .tap {
+        if dependencies.trackFrustrations, errorsCount > 0, actionType == .tap {
             frustrations = [.errorTap]
         }
 
@@ -164,7 +164,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

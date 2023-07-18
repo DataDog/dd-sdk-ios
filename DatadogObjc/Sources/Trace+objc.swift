@@ -37,14 +37,14 @@ public class DDTraceConfiguration: NSObject {
         swiftConfig.urlSessionTracking = tracking.swiftConfig
     }
 
-    @objc public var bundleWithRUM: Bool {
-        set { swiftConfig.bundleWithRUM = newValue }
-        get { swiftConfig.bundleWithRUM }
+    @objc public var bundleWithRumEnabled: Bool {
+        set { swiftConfig.bundleWithRumEnabled = newValue }
+        get { swiftConfig.bundleWithRumEnabled }
     }
 
-    @objc public var sendNetworkInfo: Bool {
-        set { swiftConfig.sendNetworkInfo = newValue }
-        get { swiftConfig.sendNetworkInfo }
+    @objc public var networkInfoEnabled: Bool {
+        set { swiftConfig.networkInfoEnabled = newValue }
+        get { swiftConfig.networkInfoEnabled }
     }
 
     @objc public var customEndpoint: URL? {

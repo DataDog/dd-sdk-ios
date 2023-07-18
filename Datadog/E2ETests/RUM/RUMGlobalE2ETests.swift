@@ -6,10 +6,10 @@
 
 import Foundation
 import TestUtilities
-import DatadogCore
+import DatadogRUM
 
 class RUMGlobalE2ETests: E2ETests {
-    private lazy var rum = Global.rum.dd
+    private var rum: RUMMonitorProtocol { RUMMonitor.shared() }
 
     // MARK: - Common Monitors
 
@@ -31,7 +31,7 @@ class RUMGlobalE2ETests: E2ETests {
 
     // MARK: - RUM manual APIs
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: RUMMonitorProtocol.addAttribute(forKey key: AttributeKey, value: AttributeValue)
     ///
     /// - data monitor:
     /// ```rum
@@ -56,7 +56,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
+    /// - api-surface: RUMMonitorProtocol.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -85,7 +85,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: RUMMonitorProtocol.addAttribute(forKey key: AttributeKey, value: AttributeValue)
     ///
     /// - data monitor:
     /// ```rum
@@ -109,7 +109,7 @@ class RUMGlobalE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.addUserAction(type: .custom, name: actionName, attributes: DD.logAttributes())
+        rum.addAction(type: .custom, name: actionName, attributes: DD.logAttributes())
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
 
         rum.stopView(key: viewKey, attributes: [:])
@@ -118,7 +118,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
+    /// - api-surface: RUMMonitorProtocol.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -146,13 +146,13 @@ class RUMGlobalE2ETests: E2ETests {
             rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
         }
 
-        rum.addUserAction(type: .custom, name: actionName, attributes: DD.logAttributes())
+        rum.addAction(type: .custom, name: actionName, attributes: DD.logAttributes())
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: RUMMonitorProtocol.addAttribute(forKey key: AttributeKey, value: AttributeValue)
     ///
     /// - data monitor:
     /// ```rum
@@ -176,7 +176,7 @@ class RUMGlobalE2ETests: E2ETests {
             rum.addAttribute(forKey: RUMConstants.customAttribute_Int, value: intAttrValue)
         }
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
@@ -190,7 +190,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
+    /// - api-surface: RUMMonitorProtocol.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -217,7 +217,7 @@ class RUMGlobalE2ETests: E2ETests {
             rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
         }
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
@@ -228,7 +228,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    /// - api-surface: RUMMonitorProtocol.addAttribute(forKey key: AttributeKey, value: AttributeValue)
     ///
     /// - data monitor:
     /// ```rum
@@ -254,8 +254,8 @@ class RUMGlobalE2ETests: E2ETests {
 
         rum.addError(
             message: errorMessage,
-            source: .source,
             stack: nil,
+            source: .source,
             attributes: DD.logAttributes(),
             file: nil,
             line: nil
@@ -268,7 +268,7 @@ class RUMGlobalE2ETests: E2ETests {
         rum.removeAttribute(forKey: RUMConstants.customAttribute_Int)
     }
 
-    /// - api-surface: DDRUMMonitor.removeAttribute(forKey key: AttributeKey)
+    /// - api-surface: RUMMonitorProtocol.removeAttribute(forKey key: AttributeKey)
     ///
     /// - data monitor:
     /// ```rum
@@ -297,8 +297,8 @@ class RUMGlobalE2ETests: E2ETests {
 
         rum.addError(
             message: errorMessage,
-            source: .source,
             stack: nil,
+            source: .source,
             attributes: DD.logAttributes(),
             file: nil,
             line: nil

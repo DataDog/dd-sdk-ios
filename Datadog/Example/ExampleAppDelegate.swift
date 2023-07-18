@@ -45,7 +45,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         logger = Logger.create(
             with: Logger.Configuration(
                 name: "logger-name",
-                sendNetworkInfo: true,
+                networkInfoEnabled: true,
                 consoleLogFormat: .shortWith(prefix: "[iOS App] ")
             )
         )
@@ -73,7 +73,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable Trace
         Trace.enable(
             with: Trace.Configuration(
-                sendNetworkInfo: true,
+                networkInfoEnabled: true,
                 customEndpoint: Environment.readCustomTraceURL()
             )
         )
@@ -82,7 +82,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
-                backgroundEventsTracking: true,
+                trackBackgroundEvents: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )

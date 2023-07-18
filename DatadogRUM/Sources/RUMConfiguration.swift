@@ -97,7 +97,7 @@ extension RUM {
         /// RUM detects "error taps"  when an error follows a RUM tap action.
         ///
         /// Default: `true`.
-        public var frustrationsTracking: Bool
+        public var trackFrustrations: Bool
 
         /// Determines whether RUM events should be tracked when no view is active (including when the app is in the background).
         ///
@@ -106,7 +106,7 @@ extension RUM {
         /// Note: Enabling this option may increase the number of sessions tracked and result in higher billing.
         ///
         /// Default: `false`.
-        public var backgroundEventsTracking: Bool
+        public var trackBackgroundEvents: Bool
 
         /// Enables RUM long tasks tracking with the given threshold (in seconds).
         ///
@@ -250,9 +250,6 @@ extension RUM {
 
         internal var dateProvider: DateProvider = SystemDateProvider()
 
-        /// Produces view update events' throttler for each started RUM view scope.
-        internal var viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType = { RUMViewUpdatesThrottler() }
-
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
         internal var ciTestExecutionID: String? = ProcessInfo.processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"]
@@ -297,8 +294,8 @@ extension RUM.Configuration {
     ///   - uiKitViewsPredicate: The predicate for automatically tracking `UIViewControllers` as RUM views. Default: `nil`.
     ///   - uiKitActionsPredicate: The predicate for automatically tracking `UITouch` events as RUM actions. Default: `nil`.
     ///   - urlSessionTracking: The configuration for automatic RUM resources tracking. Default: `nil`.
-    ///   - frustrationsTracking: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
-    ///   - backgroundEventsTracking: Determines whether RUM events should be tracked when no view is active. Default: `false`.
+    ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
+    ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
@@ -315,8 +312,8 @@ extension RUM.Configuration {
         uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,
         uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,
         urlSessionTracking: URLSessionTracking? = nil,
-        frustrationsTracking: Bool = true,
-        backgroundEventsTracking: Bool = false,
+        trackFrustrations: Bool = true,
+        trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         viewEventMapper: RUM.ViewEventMapper? = nil,
@@ -333,8 +330,8 @@ extension RUM.Configuration {
         self.uiKitViewsPredicate = uiKitViewsPredicate
         self.uiKitActionsPredicate = uiKitActionsPredicate
         self.urlSessionTracking = urlSessionTracking
-        self.frustrationsTracking = frustrationsTracking
-        self.backgroundEventsTracking = backgroundEventsTracking
+        self.trackFrustrations = trackFrustrations
+        self.trackBackgroundEvents = trackBackgroundEvents
         self.longTaskThreshold = longTaskThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
         self.viewEventMapper = viewEventMapper

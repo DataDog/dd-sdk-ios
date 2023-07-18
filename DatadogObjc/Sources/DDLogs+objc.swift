@@ -102,33 +102,36 @@ public class DDLoggerConfiguration: NSObject {
     }
 
     /// Enriches logs with network connection info.
+    ///
     /// This means: reachability status, connection type, mobile carrier name and many more will be added to each log.
     /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
     ///
     /// `false` by default
-    @objc public var sendNetworkInfo: Bool {
-        get { configuration.sendNetworkInfo }
-        set { configuration.sendNetworkInfo = newValue }
+    @objc public var networkInfoEnabled: Bool {
+        get { configuration.networkInfoEnabled }
+        set { configuration.networkInfoEnabled = newValue }
     }
 
     /// Enables the logs integration with RUM.
+    /// 
     /// If enabled all the logs will be enriched with the current RUM View information and
     /// it will be possible to see all the logs sent during a specific View lifespan in the RUM Explorer.
     ///
     /// `true` by default
-    @objc public var bundleWithRUM: Bool {
-        get { configuration.bundleWithRUM }
-        set { configuration.bundleWithRUM = newValue }
+    @objc public var bundleWithRumEnabled: Bool {
+        get { configuration.bundleWithRumEnabled }
+        set { configuration.bundleWithRumEnabled = newValue }
     }
 
     /// Enables the logs integration with active span API from Tracing.
+    ///
     /// If enabled all the logs will be bundled with the `DatadogTracer.shared().activeSpan` trace and
     /// it will be possible to see all the logs sent during that specific trace.
     ///
     /// `true` by default
-    @objc public var bundleWithTrace: Bool {
-        get { configuration.bundleWithTrace }
-        set { configuration.bundleWithTrace = newValue }
+    @objc public var bundleWithTraceEnabled: Bool {
+        get { configuration.bundleWithTraceEnabled }
+        set { configuration.bundleWithTraceEnabled = newValue }
     }
 
     /// Sets the sampling rate for logging.
@@ -167,9 +170,9 @@ public class DDLoggerConfiguration: NSObject {
     /// - Parameters:
     ///   - service: The service name  (default value is set to application bundle identifier)
     ///   - name: The logger custom name (default value is set to main bundle identifier)
-    ///   - sendNetworkInfo: Enriches logs with network connection info. `false` by default.
-    ///   - bundleWithRUM: Enables the logs integration with RUM. `true` by default.
-    ///   - bundleWithTrace: Enables the logs integration with active span API from Tracing. `true` by default
+    ///   - networkInfoEnabled: Enriches logs with network connection info. `false` by default.
+    ///   - bundleWithRumEnabled: Enables the logs integration with RUM. `true` by default.
+    ///   - bundleWithTraceEnabled: Enables the logs integration with active span API from Tracing. `true` by default
     ///   - remoteSampleRate: The sample rate for remote logging. **When set to `0`, no log entries will be sent to Datadog servers.**
     ///   - remoteLogThreshold: Set the minimum log level reported to Datadog servers. .debug by default.
     ///   - printLogsToConsole: Format to use when printing logs to console - either `.short` or `.json`.
@@ -177,9 +180,9 @@ public class DDLoggerConfiguration: NSObject {
     public init(
         service: String? = nil,
         name: String? = nil,
-        sendNetworkInfo: Bool = false,
-        bundleWithRUM: Bool = true,
-        bundleWithTrace: Bool = true,
+        networkInfoEnabled: Bool = false,
+        bundleWithRumEnabled: Bool = true,
+        bundleWithTraceEnabled: Bool = true,
         remoteSampleRate: Float = 100,
         remoteLogThreshold: DDLogLevel = .debug,
         printLogsToConsole: Bool = false
@@ -187,9 +190,9 @@ public class DDLoggerConfiguration: NSObject {
         configuration = .init(
             service: service,
             name: name,
-            sendNetworkInfo: sendNetworkInfo,
-            bundleWithRUM: bundleWithRUM,
-            bundleWithTrace: bundleWithTrace,
+            networkInfoEnabled: networkInfoEnabled,
+            bundleWithRumEnabled: bundleWithRumEnabled,
+            bundleWithTraceEnabled: bundleWithTraceEnabled,
             remoteSampleRate: remoteSampleRate,
             remoteLogThreshold: remoteLogThreshold.swift,
             consoleLogFormat: printLogsToConsole ? .short : nil

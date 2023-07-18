@@ -88,7 +88,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+            trackBackgroundEvents: .mockRandom() // no matter BET
         )
 
         // When
@@ -125,7 +125,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+            trackBackgroundEvents: .mockRandom() // no matter BET
         )
 
         // When
@@ -160,7 +160,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+            trackBackgroundEvents: .mockRandom() // no matter BET
         )
 
         // When
@@ -196,7 +196,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: true // BET enabled
+            trackBackgroundEvents: true // BET enabled
         )
 
         // When
@@ -233,7 +233,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
-            backgroundEventTrackingEnabled: true // BET enabled
+            trackBackgroundEvents: true // BET enabled
         )
 
         // When
@@ -301,7 +301,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: crashDate),
-            backgroundEventTrackingEnabled: false // BET disabled
+            trackBackgroundEvents: false // BET disabled
         )
 
         // When
@@ -342,7 +342,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: .mockRandom(), // no matter current session sampling
-            backgroundEventTrackingEnabled: .mockRandom()
+            trackBackgroundEvents: .mockRandom()
         )
 
         // When
@@ -378,7 +378,7 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(
             dateProvider: RelativeDateProvider(using: crashDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+            trackBackgroundEvents: .mockRandom() // no matter BET
         )
 
         // When
@@ -478,7 +478,7 @@ class CrashReportReceiverTests: XCTestCase {
                 )
             ),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-            backgroundEventTrackingEnabled: .mockRandom() // no matter BET
+            trackBackgroundEvents: .mockRandom() // no matter BET
         )
 
         // When
@@ -563,7 +563,7 @@ class CrashReportReceiverTests: XCTestCase {
                 messageReceiver: CrashReportReceiver.mockWith(
                     applicationID: randomRUMAppID,
                     sessionSampler: .mockKeepAll(),
-                    backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
                     uuidGenerator: DefaultRUMUUIDGenerator()
                 )
             )
@@ -591,7 +591,7 @@ class CrashReportReceiverTests: XCTestCase {
                 applicationID: randomRUMAppID,
                 dateProvider: RelativeDateProvider(using: crashDate),
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
             )
 
             // When
@@ -708,7 +708,7 @@ class CrashReportReceiverTests: XCTestCase {
                 messageReceiver: CrashReportReceiver.mockWith(
                     applicationID: randomRUMAppID,
                     sessionSampler: .mockKeepAll(),
-                    backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled,
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
                     uuidGenerator: DefaultRUMUUIDGenerator()
                 )
             )
@@ -735,7 +735,7 @@ class CrashReportReceiverTests: XCTestCase {
             let receiver: CrashReportReceiver = .mockWith(
                 applicationID: randomRUMAppID,
                 dateProvider: RelativeDateProvider(using: crashDate),
-                backgroundEventTrackingEnabled: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
             )
 
             // When

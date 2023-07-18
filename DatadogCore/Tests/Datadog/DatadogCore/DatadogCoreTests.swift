@@ -74,7 +74,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(uploadedEvents, [#"{"event":"granted"}"#], "Only `.granted` events should be uploaded")
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
@@ -122,7 +122,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,
@@ -175,7 +175,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,
@@ -203,16 +203,53 @@ class DatadogCoreTests: XCTestCase {
         try core.register(
             feature: FeatureMock(performanceOverride: nil)
         )
-        var store = core.stores.values.first
+        let store = core.stores.values.first
         XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
         XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
         try core.register(
             feature: FeatureMock(
-                performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
+                performanceOverride: PerformancePresetOverride(
+                    maxFileSize: 123,
+                    maxObjectSize: 456,
+                    meanFileAge: 100,
+                    minUploadDelay: nil
+                )
             )
         )
-        store = core.stores.values.first
-        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
-        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        let storage = core.stores.values.first?.storage
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
+        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+    }
+
+    func testItUpdatesTheFeatureBaggage() throws {
+        // Given
+        let contextProvider: DatadogContextProvider = .mockAny()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: contextProvider,
+            applicationVersion: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        try core.register(feature: FeatureMock())
+
+        // When
+        core.update(feature: "mock") {
+            return ["foo": "bar"]
+        }
+        core.update(feature: "mock") {
+            return ["bizz": "bazz"]
+        }
+
+        // Then
+        let context = contextProvider.read()
+        XCTAssertEqual(context.featuresAttributes["mock"]?.foo, "bar")
+        XCTAssertEqual(context.featuresAttributes["mock"]?.bizz, "bazz")
     }
 }

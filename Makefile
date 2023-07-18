@@ -133,7 +133,6 @@ api-surface:
 			--library-name DatadogLogs \
 			--library-name DatadogTrace \
 			--library-name DatadogRUM \
-			--library-name DatadogSessionReplay \
 			--library-name DatadogCrashReporting \
 			--library-name DatadogWebViewTracking \
 			> ../../api-surface-swift && \

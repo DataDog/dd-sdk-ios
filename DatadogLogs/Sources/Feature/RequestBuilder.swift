@@ -20,7 +20,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         self.customIntakeURL = customIntakeURL
     }
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: url(with: context),
             queryItems: [
@@ -40,7 +40,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let data = format.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 

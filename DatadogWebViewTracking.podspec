@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogWebViewTracking"
-  s.version      = "2.0.0-alpha1"
+  s.version      = "2.0.0-beta.2"
   s.summary      = "Datadog WebView Tracking Module."
 
   s.homepage     = "https://www.datadoghq.com"
@@ -14,9 +14,8 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version      = '5.1'
+  s.swift_version = '5.5'
   s.ios.deployment_target = '11.0'
-  s.tvos.deployment_target = '11.0'
 
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
 

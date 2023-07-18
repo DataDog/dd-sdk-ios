@@ -19,7 +19,7 @@ class DatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(Datadog.isInitialized())
         printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
     }
@@ -27,7 +27,7 @@ class DatadogTests: XCTestCase {
     override func tearDown() {
         consolePrint = { print($0) }
         printFunction = nil
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(Datadog.isInitialized())
         super.tearDown()
     }
 
@@ -143,7 +143,7 @@ class DatadogTests: XCTestCase {
             with: defaultConfig,
             trackingConsent: .mockRandom()
         )
-        XCTAssertTrue(Datadog.isInitialized)
+        XCTAssertTrue(Datadog.isInitialized())
         Datadog.flushAndDeinitialize()
     }
 
@@ -159,7 +159,7 @@ class DatadogTests: XCTestCase {
             printFunction.printedMessage,
             "🔥 Datadog SDK usage error: `clientToken` cannot be empty."
         )
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(Datadog.isInitialized())
     }
 
     func testGivenValidConfiguration_whenInitializedMoreThanOnce_itPrintsError() {

@@ -16,5 +16,6 @@ extension RUMOperatingSystem {
         self.name = device.osName
         self.version = device.osVersion
         self.versionMajor = device.osVersion.split(separator: ".").first.map { String($0) } ?? device.osVersion
+        self.build = nil
     }
 }

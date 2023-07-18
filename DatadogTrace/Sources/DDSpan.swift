@@ -147,7 +147,7 @@ internal class DDSpan: OTSpan {
             let event: SpanEvent = self.queue.sync {
                 let builder = SpanEventBuilder(
                     serviceName: self.ddTracer.service,
-                    sendNetworkInfo: self.ddTracer.sendNetworkInfo,
+                    networkInfoEnabled: self.ddTracer.networkInfoEnabled,
                     eventsMapper: self.ddTracer.spanEventMapper
                 )
 

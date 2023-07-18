@@ -46,7 +46,7 @@ class RemoteLoggerTests: XCTestCase {
             configuration: .init(
                 service: "logger.tests",
                 name: "TestLogger",
-                sendNetworkInfo: false,
+                networkInfoEnabled: false,
                 threshold: LogLevel.info,
                 eventMapper: nil,
                 sampler: Sampler(samplingRate: 100.0)
@@ -83,7 +83,7 @@ class RemoteLoggerTests: XCTestCase {
             configuration: .init(
                 service: "logger.tests",
                 name: "TestLogger",
-                sendNetworkInfo: false,
+                networkInfoEnabled: false,
                 threshold: LogLevel.info,
                 eventMapper: nil,
                 sampler: Sampler(samplingRate: 100.0)

@@ -16,7 +16,7 @@ public class FileWriterMock: Writer {
     /// Adds an `Encodable` event to the events stack.
     ///
     /// - Parameter value: The event value to record.
-    public func write<T>(value: T) where T: Encodable {
+    public func write<T: Encodable, M: Encodable>(value: T, metadata: M) {
         events.append(value)
     }
 

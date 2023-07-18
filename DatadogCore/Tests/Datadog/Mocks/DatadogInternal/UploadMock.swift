@@ -27,18 +27,18 @@ internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
         self.format = format
     }
 
-    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         let builder = URLRequestBuilder(url: url, queryItems: queryItems, headers: headers)
-        let data = format.format(events)
+        let data = format.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }
 
 internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
     /// Records parameters passed to `requet(for:with:)`
-    var requestParameters: [(events: [Data], context: DatadogContext)] = []
+    var requestParameters: [(events: [Event], context: DatadogContext)] = []
 
-    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         requestParameters.append((events: events, context: context))
         return .mockAny()
     }
@@ -47,7 +47,7 @@ internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
 internal struct FailingRequestBuilderMock: FeatureRequestBuilder {
     let error: Error
 
-    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         throw error
     }
 }

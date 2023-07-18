@@ -2,14 +2,13 @@ target 'Runner iOS' do
     platform :ios, '11.0'
 
     pod 'DatadogCore', :path => '..'
-    pod 'DatadogSDKObjc', :path => '..'
-    pod 'DatadogSDKCrashReporting', :path => '..'
-
     pod 'DatadogLogs', :path => '..'
     pod 'DatadogTrace', :path => '..'
     pod 'DatadogRUM', :path => '..'
+    pod 'DatadogCrashReporting', :path => '..'
     pod 'DatadogSessionReplay', :path => '..'
     pod 'DatadogWebViewTracking', :path => '..'
+    pod 'DatadogObjc', :path => '..'
 
     target 'IntegrationScenarios' do
         pod 'DatadogInternal', :path => '..'

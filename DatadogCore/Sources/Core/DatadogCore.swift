@@ -70,8 +70,7 @@ internal final class DatadogCore {
     /// - Parameters:
     ///   - directory: The core directory for this instance of the SDK.
     ///   - dateProvider: The system date provider.
-    ///   - consentProvider: The user consent provider.
-    ///   - userInfoProvider: The user info provider.
+    ///   - initialConsent: The initial user consent.
     ///   - performance: The core SDK performance presets.
     ///   - httpClient: The HTTP Client for uploads.
     ///   - encryption: The on-disk data encryption.
@@ -285,6 +284,16 @@ extension DatadogCore: DatadogCoreProtocol {
 
     /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
+    }
+
+    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        contextProvider.write {
+            if $0.featuresAttributes[feature] != nil {
+                $0.featuresAttributes[feature]?.merge(with: attributes())
+            } else {
+                $0.featuresAttributes[feature] = attributes()
+            }
+        }
     }
 
     /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {

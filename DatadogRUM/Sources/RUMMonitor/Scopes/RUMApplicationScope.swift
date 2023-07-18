@@ -118,7 +118,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             startTime: context.sdkInitDate,
             dependencies: dependencies,
-            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
+            hasReplay: context.srBaggage?.hasReplay
         )
 
         sessionScopes.append(initialSession)
@@ -150,7 +150,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             startTime: command.time,
             dependencies: dependencies,
-            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded,
+            hasReplay: context.srBaggage?.hasReplay,
             resumingViewScope: resumingViewScope
         )
         lastActiveView = nil

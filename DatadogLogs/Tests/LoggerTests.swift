@@ -30,7 +30,7 @@ class LoggerTests: XCTestCase {
         let remoteLogger = try XCTUnwrap(logger as? RemoteLogger)
         XCTAssertNil(remoteLogger.configuration.service)
         XCTAssertNil(remoteLogger.configuration.name)
-        XCTAssertFalse(remoteLogger.configuration.sendNetworkInfo)
+        XCTAssertFalse(remoteLogger.configuration.networkInfoEnabled)
         XCTAssertEqual(remoteLogger.configuration.threshold, .debug)
         XCTAssertEqual(remoteLogger.configuration.sampler.samplingRate, 100)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
@@ -44,7 +44,7 @@ class LoggerTests: XCTestCase {
 
         let logger2 = Logger.create(
             with: Logger.Configuration(
-                bundleWithRUM: false
+                bundleWithRumEnabled: false
             ),
             in: core
         )
@@ -57,7 +57,7 @@ class LoggerTests: XCTestCase {
 
         let logger2 = Logger.create(
             with: Logger.Configuration(
-                bundleWithTrace: false
+                bundleWithTraceEnabled: false
             ),
             in: core
         )
@@ -69,9 +69,9 @@ class LoggerTests: XCTestCase {
             with: Logger.Configuration(
                 service: "custom-service-name",
                 name: "custom-logger-name",
-                sendNetworkInfo: true,
-                bundleWithRUM: false,
-                bundleWithTrace: false,
+                networkInfoEnabled: true,
+                bundleWithRumEnabled: false,
+                bundleWithTraceEnabled: false,
                 remoteSampleRate: 50,
                 remoteLogThreshold: .error
             ),
@@ -81,7 +81,7 @@ class LoggerTests: XCTestCase {
         let remoteLogger = try XCTUnwrap(logger as? RemoteLogger)
         XCTAssertEqual(remoteLogger.configuration.service, "custom-service-name")
         XCTAssertEqual(remoteLogger.configuration.name, "custom-logger-name")
-        XCTAssertTrue(remoteLogger.configuration.sendNetworkInfo)
+        XCTAssertTrue(remoteLogger.configuration.networkInfoEnabled)
         XCTAssertEqual(remoteLogger.configuration.threshold, .error)
         XCTAssertNil(remoteLogger.configuration.eventMapper)
         XCTAssertFalse(remoteLogger.rumContextIntegration)

@@ -89,11 +89,12 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.startTrackingDatadogEvents(core: CoreRegistry.default)
         let config = WKWebViewConfiguration()
         config.userContentController = controller
-
         webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
+
+        WebViewTracking.enable(webView: webView)
+
         view.addSubview(webView)
     }
 

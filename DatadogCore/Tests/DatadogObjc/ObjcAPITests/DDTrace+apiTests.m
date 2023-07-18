@@ -46,11 +46,11 @@
     tracing = [[DDTraceFirstPartyHostsTracing alloc] initWithHostsWithHeaderTypes:@{} sampleRate:20];
     DDTraceURLSessionTracking *urlSessionTracking = [[DDTraceURLSessionTracking alloc] initWithFirstPartyHostsTracing:tracing];
 
-    config.bundleWithRUM = NO;
-    XCTAssertFalse(config.bundleWithRUM);
+    config.bundleWithRumEnabled = NO;
+    XCTAssertFalse(config.bundleWithRumEnabled);
 
-    config.sendNetworkInfo = YES;
-    XCTAssertTrue(config.sendNetworkInfo);
+    config.networkInfoEnabled = YES;
+    XCTAssertTrue(config.networkInfoEnabled);
 
     XCTAssertNil(config.customEndpoint);
     config.customEndpoint = [NSURL new];

@@ -44,7 +44,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private let dependencies: RUMScopeDependencies
 
     /// Automatically detect background events by creating "Background" view if no other view is active
-    internal let backgroundEventTrackingEnabled: Bool
+    internal let trackBackgroundEvents: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
@@ -64,7 +64,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         parent: RUMContextProvider,
         startTime: Date,
         dependencies: RUMScopeDependencies,
-        isReplayBeingRecorded: Bool?,
+        hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
@@ -74,13 +74,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
-        self.backgroundEventTrackingEnabled = dependencies.backgroundEventTrackingEnabled
+        self.trackBackgroundEvents = dependencies.trackBackgroundEvents
         self.isActive = true
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
-            didStartWithReplay: isReplayBeingRecorded
+            didStartWithReplay: hasReplay
         )
 
         if let viewScope = resumingViewScope,
@@ -116,7 +116,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             startTime: startTime,
             dependencies: expiredSession.dependencies,
-            isReplayBeingRecorded: context.srBaggage?.isReplayBeingRecorded
+            hasReplay: context.srBaggage?.hasReplay
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
@@ -251,7 +251,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: state,
             isAppInForeground: context.applicationStateHistory.currentSnapshot.state.isRunningInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         switch handlingRule {

@@ -24,7 +24,7 @@ class DirectoriesTests: XCTestCase {
 
     func testWhenCreatingCoreDirectory_thenItsNameIsUniqueForClientTokenAndSite() throws {
         // Given
-        let fixtures: [(clientToken: String, site: DatadogSite, expectedName: String)] = [
+        let fixtures: [(instancenName: String, site: DatadogSite, expectedName: String)] = [
             ("abcdef", .us1, "d5f91716d9c17bc76cb9931e1f9ff37724a27d4c05f1eb7081f59ea34d44c777"),
             ("abcdef", .us3, "4a2e7e5b459af9976950e85463db2ba1e71500cdd77ead26b41559bf5a372dfb"),
             ("abcdef", .us5, "38028ebbeab2aa980eab9e5a8ee714f93e8118621472697dabe084e6a9c55cd1"),
@@ -40,10 +40,10 @@ class DirectoriesTests: XCTestCase {
         ]
 
         // When
-        let coreDirectories = try fixtures.map { clientToken, site, _ in
+        let coreDirectories = try fixtures.map { instancenName, site, _ in
             try CoreDirectory(
                 in: directory,
-                clientToken: clientToken,
+                instancenName: instancenName,
                 site: site
             )
         }
@@ -54,7 +54,7 @@ class DirectoriesTests: XCTestCase {
             let directoryName = coreDirectory.coreDirectory.url.lastPathComponent
             XCTAssertEqual(directoryName, fixture.expectedName)
             XCTAssertFalse(
-                directoryName.contains(fixture.clientToken),
+                directoryName.contains(fixture.instancenName),
                 "The core directory name must not include client token"
             )
         }
@@ -65,7 +65,7 @@ class DirectoriesTests: XCTestCase {
         let coreDirectories = try (0..<50).map { index in
             try CoreDirectory(
                 in: directory,
-                clientToken: .mockRandom(among: .alphanumerics, length: 31) + "\(index)",
+                instancenName: .mockRandom(among: .alphanumerics, length: 31) + "\(index)",
                 site: .mockRandom()
             )
         }

@@ -663,7 +663,7 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMUserActionScope.mockWith(
             parent: parent,
             dependencies: .mockWith(
-                frustrationTrackingEnabled: false
+                trackFrustrations: false
             ),
             actionType: .tap,
             startTime: currentTime,

@@ -29,7 +29,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         let processor = Processor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
-            writer: writer
+            writer: writer,
+            srContextPublisher: SRContextPublisher(core: core)
         )
 
         let scheduler = MainThreadScheduler(interval: 0.1)
@@ -54,7 +55,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.requestBuilder = RequestBuilder(customUploadURL: configuration.customEndpoint)
         self.performanceOverride = PerformancePresetOverride(
             maxFileSize: UInt64(10).MB,
-            maxObjectSize: UInt64(10).MB
+            maxObjectSize: UInt64(10).MB,
+            meanFileAge: 5, // equivalent of `batchSize: .small` - see `DatadogCore.PerformancePreset`
+            minUploadDelay: 1 // equivalent of `uploadFrequency: .frequent` - see `DatadogCore.PerformancePreset`
         )
     }
 }

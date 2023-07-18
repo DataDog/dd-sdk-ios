@@ -5,9 +5,12 @@
  */
 
 import DatadogCore
+import DatadogLogs
+import DatadogRUM
+import DatadogTrace
 
-class LoggerBuilderE2ETests: E2ETests {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+class LoggerConfigurationTests: E2ETests {
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func tearDown() {
         logger = nil
@@ -16,7 +19,7 @@ class LoggerBuilderE2ETests: E2ETests {
 
     // MARK: - Common Monitors
 
-    /// - common performance monitor - measures `Logger.builder.build()` performance:
+    /// - common performance monitor - measures `Logger.create()` performance:
     /// ```apm
     /// $feature = logs
     /// $monitor_id = logs_logger_initialize_performance
@@ -27,7 +30,7 @@ class LoggerBuilderE2ETests: E2ETests {
 
     // MARK: - Enabling Options
 
-    /// - api-surface: Logger.Builder.set(serviceName: String) -> Builder
+    /// - api-surface: Logger.Configuration(service: String) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -37,13 +40,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_set_SERVICE_NAME() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.set(serviceName: "com.datadog.ios.nightly.custom").build()
+            logger = Logger.create(with: Logger.Configuration(service: "com.datadog.ios.nightly.custom"))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.set(loggerName: String) -> Builder
+    /// - api-surface: Logger.Configuration(name: String) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -53,13 +56,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_set_LOGGER_NAME() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.set(loggerName: "custom_logger_name").build()
+            logger = Logger.create(with: Logger.Configuration(name: "custom_logger_name"))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.sendNetworkInfo(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(networkInfoEnabled: Bool) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -69,13 +72,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_SEND_NETWORK_INFO_enabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.sendNetworkInfo(true).build()
+            logger = Logger.create(with: Logger.Configuration(networkInfoEnabled: true))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.sendNetworkInfo(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(networkInfoEnabled: Bool) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -87,7 +90,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_SEND_NETWORK_INFO_disabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.sendNetworkInfo(false).build()
+            logger = Logger.create(with: Logger.Configuration(networkInfoEnabled: false))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -95,7 +98,7 @@ class LoggerBuilderE2ETests: E2ETests {
 
     // MARK: - Choosing Logs Output
 
-    /// - api-surface: Logger.Builder.sendLogsToDatadog(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(remoteSampleRate: Float) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -105,13 +108,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_enabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.sendLogsToDatadog(true).build()
+            logger = Logger.create(with: Logger.Configuration(remoteSampleRate: 100))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.sendLogsToDatadog(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(remoteSampleRate: Float) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -123,13 +126,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_SEND_LOGS_TO_DATADOG_disabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.sendLogsToDatadog(false).build()
+            logger = Logger.create(with: Logger.Configuration(remoteSampleRate: 0))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
+    /// - api-surface: Logger.Configuration(consoleLogFormat: ConsoleLogFormat) -> Builder
     ///
     /// - data monitor - as long as sending logs to Datadog is enabled (which is default), this this monitor should receive data:
     /// ```logs
@@ -139,13 +142,13 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_enabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.printLogsToConsole(true, usingFormat: .random()).build()
+            logger = Logger.create(with: Logger.Configuration(consoleLogFormat: .random()))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Logger.Builder.printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Builder
+    /// - api-surface: Logger.Configuration(consoleLogFormat: ConsoleLogFormat) -> Builder
     ///
     /// - data monitor - as long as sending logs to Datadog is enabled (which is default), this this monitor should receive data:
     /// ```logs
@@ -155,7 +158,7 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_PRINT_LOGS_TO_CONSOLE_disabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.printLogsToConsole(false, usingFormat: .random()).build()
+            logger = Logger.create(with: Logger.Configuration(consoleLogFormat: nil))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
@@ -163,7 +166,7 @@ class LoggerBuilderE2ETests: E2ETests {
 
     // MARK: - Bundling With Other Features
 
-    /// - api-surface: Logger.Builder.bundleWithRUM(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(bundleWithRumEnabled: Bool) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -173,17 +176,16 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_RUM_enabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.bundleWithRUM(true).build()
+            logger = Logger.create(with: Logger.Configuration(bundleWithRumEnabled: true))
         }
 
         let viewKey: String = .mockRandom()
-        Global.rum.startView(key: viewKey)
-        Global.rum.dd.flush()
+        RUMMonitor.shared().startView(key: viewKey)
         logger.sendRandomLog(with: DD.logAttributes())
-        Global.rum.stopView(key: viewKey)
+        RUMMonitor.shared().stopView(key: viewKey)
     }
 
-    /// - api-surface: Logger.Builder.bundleWithRUM(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(bundleWithRumEnabled: Bool) -> Builder
     ///
     /// - data monitor:
     /// ```logs
@@ -195,19 +197,18 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_RUM_disabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.bundleWithRUM(false).build()
+            logger = Logger.create(with: Logger.Configuration(bundleWithRumEnabled: false))
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
 
         let viewKey: String = .mockRandom()
-        Global.rum.startView(key: viewKey)
-        Global.rum.dd.flush()
+        RUMMonitor.shared().startView(key: viewKey)
         logger.sendRandomLog(with: DD.logAttributes())
-        Global.rum.stopView(key: viewKey)
+        RUMMonitor.shared().stopView(key: viewKey)
     }
 
-    /// - api-surface: Logger.Builder.bundleWithTrace(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(bundleWithTraceEnabled: Bool) -> Builder
     ///
     /// - data monitor - unfortunately we can't assert any APM trait in this monitor, so we just check if the data comes in:
     /// ```logs
@@ -217,17 +218,17 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_TRACE_enabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.bundleWithTrace(true).build()
+            logger = Logger.create(with: Logger.Configuration(bundleWithTraceEnabled: true))
         }
 
-        let activeSpan = DatadogTracer.shared()
+        let activeSpan = Tracer.shared()
             .startRootSpan(operationName: .mockRandom())
             .setActive()
         logger.sendRandomLog(with: DD.logAttributes())
         activeSpan.finish()
     }
 
-    /// - api-surface: Logger.Builder.bundleWithTrace(_ enabled: Bool) -> Builder
+    /// - api-surface: Logger.Configuration(bundleWithTraceEnabled: Bool) -> Builder
     ///
     /// - data monitor - unfortunately we can't assert any APM trait in this monitor, so we just check if the data comes in:
     /// ```logs
@@ -237,10 +238,10 @@ class LoggerBuilderE2ETests: E2ETests {
     /// ```
     func test_logs_logger_builder_BUNDLE_WITH_TRACE_disabled() {
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.bundleWithTrace(false).build()
+            logger = Logger.create(with: Logger.Configuration(bundleWithTraceEnabled: false))
         }
 
-        let activeSpan = DatadogTracer.shared()
+        let activeSpan = Tracer.shared()
             .startRootSpan(operationName: .mockRandom())
             .setActive()
         logger.sendRandomLog(with: DD.logAttributes())

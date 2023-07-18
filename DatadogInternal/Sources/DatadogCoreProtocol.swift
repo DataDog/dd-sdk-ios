@@ -72,6 +72,36 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - attributes: The Feature's attributes to set.
     func set(feature: String, attributes: @escaping () -> FeatureBaggage)
 
+    /// Updates given attributes for a given Feature for sharing data through `DatadogContext`.
+    ///
+    /// This method provides a passive communication chanel between Features of the Core.
+    /// For an active Feature-to-Feature communication, please use the `send(message:)`
+    /// method.
+    ///
+    /// Updating attributes will update the Core Context and will be shared across Features.
+    /// In the following examples, the Feature `foo` will update two attributes and a second
+    /// Feature `bar` will read them through the event write context.
+    /// This function does not remove item if `nil` is provided as a value.
+    ///
+    ///     // Foo.swift
+    ///     core.update(feature: "foo", attributes: [
+    ///         "id": 1
+    ///     ])
+    ///     core.update(feature: "foo", attributes: [
+    ///         "name": "bazz"
+    ///     ])
+    ///
+    ///     // Bar.swift
+    ///     core.scope(for: "bar").eventWriteContext { context, writer in
+    ///         let fooID: Int? = context.featuresAttributes["foo"]?.id
+    ///         let fooName: Int? = context.featuresAttributes["foo"]?.name
+    ///     }
+    ///
+    /// - Parameters:
+    ///   - feature: The Feature's name.
+    ///   - attributes: The Feature's attributes to set.
+    func update(feature: String, attributes: @escaping () -> FeatureBaggage)
+
     /// Sends a message on the bus shared by features registered in this core.
     ///
     /// If the message could not be processed by any registered feature, the fallback closure
@@ -149,6 +179,8 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func scope(for feature: String) -> FeatureScope? { nil }
     /// no-op
     public func set(feature: String, attributes: @escaping @autoclosure () -> FeatureBaggage) { }
+    /// no-op
+    public func update(feature: String, attributes: @escaping () -> FeatureBaggage) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }

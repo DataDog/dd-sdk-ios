@@ -4,10 +4,10 @@
 
 ## Usage
 
-To update the data models to the latest version:
-
+To update the data models to the latest version, call this in the root directory of the `dd-sdk-ios`.
 ```
-# make rum-models-generator
+# make rum-models-generate
+# make sr-models-generate
 ```
 
 ## License

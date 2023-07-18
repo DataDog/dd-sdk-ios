@@ -5,10 +5,13 @@
  */
 
 import DatadogCore
+import DatadogLogs
+import DatadogRUM
+import DatadogTrace
 import DatadogCrashReporting
 
-class LoggingConfigurationE2ETests: E2ETests {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+class LogsConfigurationE2ETests: E2ETests {
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test
@@ -20,7 +23,7 @@ class LoggingConfigurationE2ETests: E2ETests {
         super.tearDown()
     }
 
-    /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
+    /// - api-surface: Logs.enable()
     ///
     /// - data monitor:
     /// ```logs
@@ -30,25 +33,25 @@ class LoggingConfigurationE2ETests: E2ETests {
     /// ```
     func test_logs_config_feature_enabled() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(
-                trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
-                    .enableLogging(true)
-                    .enableTracing(true)
-                    .enableRUM(true)
-                    .enableCrashReporting(using: DDCrashReportingPlugin())
-                    .build()
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
             )
+
+            Logs.enable()
+            Trace.enable()
+            RUM.enable(with: .e2e)
+            CrashReporting.enable()
         }
 
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())
     }
 
-    /// - api-surface: Datadog.Configuration.Builder.enableLogging(_ enabled: Bool) -> Builder
+    /// - api-surface: Logs.enable()
     ///
     /// - data monitor - we assert that no data is delivered in this monitor:
     /// ```logs
@@ -60,19 +63,18 @@ class LoggingConfigurationE2ETests: E2ETests {
     /// ```
     func test_logs_config_feature_disabled() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(
-                trackingConsent: .granted,
-                configuration: Datadog.Configuration.builderUsingE2EConfig()
-                    .enableLogging(false)
-                    .enableTracing(true)
-                    .enableRUM(true)
-                    .enableCrashReporting(using: DDCrashReportingPlugin())
-                    .build()
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
             )
+
+            Trace.enable()
+            RUM.enable(with: .e2e)
+            CrashReporting.enable()
         }
 
         measure(resourceName: DD.PerfSpanName.loggerInitialize) {
-            logger = Logger.builder.build()
+            logger = Logger.create()
         }
 
         logger.sendRandomLog(with: DD.logAttributes())

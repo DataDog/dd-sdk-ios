@@ -23,7 +23,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     /// A list of checks ensuring global state integrity before and after each tests.
     private let checks: [TestIntegrityCheck] = [
         .init(
-            assert: { !Datadog.isInitialized },
+            assert: { !Datadog.isInitialized() },
             problem: "`Datadog` must not be initialized.",
             solution: """
             Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.

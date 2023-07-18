@@ -41,17 +41,18 @@ final class MockScriptMessage: WKScriptMessage {
     override var body: Any { return mockBody }
 }
 
-class WKUserContentController_DatadogTests: XCTestCase {
+class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScriptAndMessageHandler() throws {
         let mockSanitizer = HostsSanitizerMock()
         let controller = DDUserContentController()
 
         let initialUserScriptCount = controller.userScripts.count
 
-        controller.addDatadogMessageHandler(
-            core: PassthroughCoreMock(),
-            allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: mockSanitizer
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: ["datadoghq.com"],
+            hostsSanitizer: mockSanitizer,
+            in: PassthroughCoreMock()
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
@@ -74,10 +75,11 @@ class WKUserContentController_DatadogTests: XCTestCase {
 
         let multipleTimes = 5
         (0..<multipleTimes).forEach { _ in
-            controller.addDatadogMessageHandler(
-                core: PassthroughCoreMock(),
-                allowedWebViewHosts: ["datadoghq.com"],
-                hostsSanitizer: mockSanitizer
+            WebViewTracking.enable(
+                tracking: controller,
+                hosts: ["datadoghq.com"],
+                hostsSanitizer: mockSanitizer,
+                in: PassthroughCoreMock()
             )
         }
 
@@ -98,8 +100,14 @@ class WKUserContentController_DatadogTests: XCTestCase {
     func testWhenStoppingTracking_itKeepsNonDatadogComponents() throws {
         let core = PassthroughCoreMock()
         let controller = DDUserContentController()
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = controller
+        let webview = WKWebView(frame: .zero, configuration: configuration)
 
-        controller.startTrackingDatadogEvents(core: core, hosts: [])
+        WebViewTracking.enable(
+            webView: webview,
+            in: core
+        )
 
         let componentCount = 10
         for i in 0..<componentCount {
@@ -115,7 +123,7 @@ class WKUserContentController_DatadogTests: XCTestCase {
         XCTAssertEqual(controller.userScripts.count, componentCount + 1)
         XCTAssertEqual(controller.messageHandlers.count, componentCount + 1)
 
-        controller.stopTrackingDatadogEvents()
+        WebViewTracking.disable(webView: webview)
 
         XCTAssertEqual(controller.userScripts.count, componentCount)
         XCTAssertEqual(controller.messageHandlers.count, componentCount)
@@ -126,13 +134,14 @@ class WKUserContentController_DatadogTests: XCTestCase {
         defer { dd.reset() }
 
         let controller = DDUserContentController()
-        controller.addDatadogMessageHandler(
-            core: PassthroughCoreMock(),
-            allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: HostsSanitizerMock()
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: ["datadoghq.com"],
+            hostsSanitizer: HostsSanitizerMock(),
+            in: PassthroughCoreMock()
         )
 
-        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
+        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
         // non-string body is passed
         messageHandler?.userContentController(controller, didReceive: MockScriptMessage(body: 123))
         messageHandler?.queue.sync { }
@@ -174,13 +183,14 @@ class WKUserContentController_DatadogTests: XCTestCase {
         )
 
         let controller = DDUserContentController()
-        controller.addDatadogMessageHandler(
-            core: core,
-            allowedWebViewHosts: ["datadoghq.com"],
-            hostsSanitizer: HostsSanitizerMock()
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: ["datadoghq.com"],
+            hostsSanitizer: HostsSanitizerMock(),
+            in: core
         )
 
-        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DatadogMessageHandler
+        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
         let webLogMessage = MockScriptMessage(body: """
         {
           "eventType": "log",

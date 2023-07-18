@@ -20,16 +20,13 @@ internal struct RUMScopeDependencies {
     weak var core: DatadogCoreProtocol?
     let rumApplicationID: String
     let sessionSampler: Sampler
-    let backgroundEventTrackingEnabled: Bool
-    let frustrationTrackingEnabled: Bool
+    let trackBackgroundEvents: Bool
+    let trackFrustrations: Bool
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
-    /// Produces `RUMViewUpdatesThrottlerType` for each started RUM view scope.
-    let viewUpdatesThrottlerFactory: () -> RUMViewUpdatesThrottlerType
-
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
 }

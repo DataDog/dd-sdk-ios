@@ -142,7 +142,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(
-                backgroundEventTrackingEnabled: true // BET enabled
+                trackBackgroundEvents: true // BET enabled
             )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
@@ -171,7 +171,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(
-                backgroundEventTrackingEnabled: true // BET enabled
+                trackBackgroundEvents: true // BET enabled
             )
         )
 
@@ -207,7 +207,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(
-                backgroundEventTrackingEnabled: true // BET enabled
+                trackBackgroundEvents: true // BET enabled
             )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
@@ -233,7 +233,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(
-                backgroundEventTrackingEnabled: false // BET disabled
+                trackBackgroundEvents: false // BET disabled
             )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
@@ -261,7 +261,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(
-                backgroundEventTrackingEnabled: .mockRandom() // no matter of BET state
+                trackBackgroundEvents: .mockRandom() // no matter of BET state
             )
         )
         XCTAssertTrue(scope.viewScopes.isEmpty, "There is no view scope")
@@ -318,7 +318,7 @@ class RUMSessionScopeTests: XCTestCase {
                 core: core,
                 sessionSampler: .mockRandom() // no matter if sampled or not
             ),
-            isReplayBeingRecorded: randomIsReplayBeingRecorded
+            hasReplay: randomIsReplayBeingRecorded
         )
 
         // Then
@@ -353,7 +353,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             startTime: sessionStartTime,
             dependencies: .mockWith(core: core),
-            isReplayBeingRecorded: randomIsReplayBeingRecorded
+            hasReplay: randomIsReplayBeingRecorded
         )
 
         // When

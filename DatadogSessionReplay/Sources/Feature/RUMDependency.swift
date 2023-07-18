@@ -41,4 +41,7 @@ internal enum RUMDependency {
 
     /// The key referencing a `Bool` value that indicates if replay is being recorded.
     static let hasReplay = "has_replay"
+
+    /// They key referencing a `[String: Int64]` dictionary of viewIDs and associated records count.
+    static let recordsCountByViewID = "records_count_by_view_id"
 }

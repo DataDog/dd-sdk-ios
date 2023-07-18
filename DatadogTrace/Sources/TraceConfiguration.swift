@@ -49,14 +49,14 @@ extension Trace {
         /// When enabled, all spans will be enriched with the current RUM view information.
         ///
         /// Default: `true`.
-        public var bundleWithRUM: Bool
+        public var bundleWithRumEnabled: Bool
 
         /// Enriches traces with network connection information.
         ///
         /// This includes reachability status, connection type, mobile carrier name, and more, which will be added to every span and span log.
         ///
         /// Default: `false`
-        public var sendNetworkInfo: Bool
+        public var networkInfoEnabled: Bool
 
         /// Custom mapper for span events.
         ///
@@ -126,8 +126,8 @@ extension Trace {
         ///   - service: The `service` value for spans.
         ///   - tags: Global tags associated with each span created with the default tracer.
         ///   - urlSessionTracking: The configuration for automatic network requests tracing.
-        ///   - bundleWithRUM: Determines if traces should be enriched with RUM information.
-        ///   - sendNetworkInfo: Determines if traces should be enriched with network connection information.
+        ///   - bundleWithRumEnabled: Determines if traces should be enriched with RUM information.
+        ///   - networkInfoEnabled: Determines if traces should be enriched with network connection information.
         ///   - eventMapper: Custom mapper for span events.
         ///   - customEndpoint: Custom server url for sending traces.
         public init(
@@ -135,8 +135,8 @@ extension Trace {
             service: String? = nil,
             tags: [String: Encodable]? = nil,
             urlSessionTracking: URLSessionTracking? = nil,
-            bundleWithRUM: Bool = true,
-            sendNetworkInfo: Bool = false,
+            bundleWithRumEnabled: Bool = true,
+            networkInfoEnabled: Bool = false,
             eventMapper: EventMapper? = nil,
             customEndpoint: URL? = nil
         ) {
@@ -144,8 +144,8 @@ extension Trace {
             self.service = service
             self.tags = tags
             self.urlSessionTracking = urlSessionTracking
-            self.bundleWithRUM = bundleWithRUM
-            self.sendNetworkInfo = sendNetworkInfo
+            self.bundleWithRumEnabled = bundleWithRumEnabled
+            self.networkInfoEnabled = networkInfoEnabled
             self.eventMapper = eventMapper
             self.customEndpoint = customEndpoint
         }

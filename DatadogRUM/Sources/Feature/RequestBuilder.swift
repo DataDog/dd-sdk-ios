@@ -13,10 +13,13 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// A custom RUM intake.
     let customIntakeURL: URL?
 
+    /// The RUM view events filter from the payload.
+    let eventsFilter: RUMViewEventsFilter
+
     /// The RUM request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         var tags = [
             "service:\(context.service)",
             "version:\(context.version)",
@@ -48,7 +51,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let filteredEvents = eventsFilter.filter(events: events)
+        let data = format.format(filteredEvents.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 

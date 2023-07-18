@@ -16,11 +16,11 @@ import TestUtilities
 class DDDatadogTests: XCTestCase {
     override func setUp() {
         super.setUp()
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(Datadog.isInitialized())
     }
 
     override func tearDown() {
-        XCTAssertFalse(Datadog.isInitialized)
+        XCTAssertFalse(Datadog.isInitialized())
         super.tearDown()
     }
 
@@ -39,7 +39,7 @@ class DDDatadogTests: XCTestCase {
             trackingConsent: randomConsent().objc
         )
 
-        XCTAssertTrue(Datadog.isInitialized)
+        XCTAssertTrue(Datadog.isInitialized())
 
         let context = try XCTUnwrap(CoreRegistry.default as? DatadogCore).contextProvider.read()
         XCTAssertEqual(context.applicationName, "app-name")

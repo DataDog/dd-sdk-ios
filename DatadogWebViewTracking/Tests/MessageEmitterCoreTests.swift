@@ -10,11 +10,11 @@ import DatadogInternal
 
 @testable import DatadogWebViewTracking
 
-class WebViewTrackingCoreTests: XCTestCase {
+class MessageEmitterCoreTests: XCTestCase {
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itFailsParsing() {
-        let bridge = WebViewTrackingCore(core: PassthroughCoreMock())
+        let bridge = MessageEmitter(core: PassthroughCoreMock())
 
         let messageInvalidJSON = """
         { 123: foobar }
@@ -29,7 +29,7 @@ class WebViewTrackingCoreTests: XCTestCase {
     // MARK: - Routing
 
     func testWhenEventTypeIsMissing_itThrows() {
-        let bridge = WebViewTrackingCore(core: PassthroughCoreMock())
+        let bridge = MessageEmitter(core: PassthroughCoreMock())
 
         let messageMissingEventType = """
         {
@@ -46,8 +46,8 @@ class WebViewTrackingCoreTests: XCTestCase {
             "Missing eventType should throw"
         ) { error in
             XCTAssertEqual(
-                error as? WebViewTrackingMessageError,
-                .missingKey(key: WebViewTrackingMessage.Keys.eventType)
+                error as? WebViewMessageError,
+                .missingKey(key: WebViewMessage.Keys.eventType)
             )
         }
     }
@@ -79,7 +79,7 @@ class WebViewTrackingCoreTests: XCTestCase {
             }
         )
 
-        let bridge = WebViewTrackingCore(core: core)
+        let bridge = MessageEmitter(core: core)
 
         let messageLog = """
         {
@@ -125,7 +125,7 @@ class WebViewTrackingCoreTests: XCTestCase {
             }
         )
 
-        let bridge = WebViewTrackingCore(core: core)
+        let bridge = MessageEmitter(core: core)
 
         let messageRUM = """
         {

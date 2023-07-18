@@ -52,9 +52,18 @@ internal class Processor: Processing {
     var interceptWireframes: (([SRWireframe]) -> Void)? = nil
     #endif
 
-    init(queue: Queue, writer: Writing) {
+    private var srContextPublisher: SRContextPublisher
+
+    private var recordsCountByViewID: [String: Int64] = [:]
+
+    init(
+        queue: Queue,
+        writer: Writing,
+        srContextPublisher: SRContextPublisher
+    ) {
         self.queue = queue
         self.writer = writer
+        self.srContextPublisher = srContextPublisher
     }
 
     // MARK: - Processing
@@ -114,11 +123,22 @@ internal class Processor: Processing {
             // Transform `[SRRecord]` to `EnrichedRecord` so we can write it to `DatadogCore` and
             // later read it back (as `EnrichedRecordJSON`) for preparing upload request(s):
             let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
+            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+
             writer.write(nextRecord: enrichedRecord)
         }
 
         // Track state:
         lastSnapshot = viewTreeSnapshot
         lastWireframes = wireframes
+    }
+
+    private func trackRecord(key: String, value: Int64) {
+        if let existingValue = recordsCountByViewID[key] {
+            recordsCountByViewID[key] = existingValue + value
+        } else {
+            recordsCountByViewID[key] = value
+        }
+        srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }

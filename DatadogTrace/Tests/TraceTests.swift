@@ -70,7 +70,7 @@ class TraceTests: XCTestCase {
         XCTAssertNil(tracer.loggingIntegration.service)
         XCTAssertTrue(tracer.tags.isEmpty)
         XCTAssertNil(core.get(feature: NetworkInstrumentationFeature.self))
-        XCTAssertEqual(tracer.sendNetworkInfo, false)
+        XCTAssertEqual(tracer.networkInfoEnabled, false)
         XCTAssertNil(tracer.spanEventMapper)
         XCTAssertNil((trace.requestBuilder as? TracingRequestBuilder)?.customIntakeURL)
     }
@@ -175,42 +175,42 @@ class TraceTests: XCTestCase {
     func testWhenEnabledWithBundleWithRUM() throws {
         // Given
         let random: Bool = .mockRandom()
-        config.bundleWithRUM = random
+        config.bundleWithRumEnabled = random
 
         // When
         Trace.enable(with: config, in: core)
 
         // Then
         let trace = try XCTUnwrap(core.get(feature: TraceFeature.self))
-        XCTAssertEqual((trace.messageReceiver as? ContextMessageReceiver)?.bundleWithRUM, random)
+        XCTAssertEqual((trace.messageReceiver as? ContextMessageReceiver)?.bundleWithRumEnabled, random)
     }
 
     func testWhenEnabledWithSendNetworkInfo() {
         // Given
         let random: Bool = .mockRandom()
-        config.sendNetworkInfo = random
+        config.networkInfoEnabled = random
 
         // When
         Trace.enable(with: config, in: core)
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.sendNetworkInfo, random)
-        XCTAssertEqual(tracer.loggingIntegration.sendNetworkInfo, random)
+        XCTAssertEqual(tracer.networkInfoEnabled, random)
+        XCTAssertEqual(tracer.loggingIntegration.networkInfoEnabled, random)
     }
 
     func testWhenEnabledWithEventMapper() {
         // Given
         let random: Bool = .mockRandom()
-        config.sendNetworkInfo = random
+        config.networkInfoEnabled = random
 
         // When
         Trace.enable(with: config, in: core)
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.sendNetworkInfo, random)
-        XCTAssertEqual(tracer.loggingIntegration.sendNetworkInfo, random)
+        XCTAssertEqual(tracer.networkInfoEnabled, random)
+        XCTAssertEqual(tracer.loggingIntegration.networkInfoEnabled, random)
     }
 
     func testWhenEnabledWithCustomEndpoint() throws {

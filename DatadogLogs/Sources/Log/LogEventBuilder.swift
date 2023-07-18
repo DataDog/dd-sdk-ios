@@ -15,7 +15,7 @@ internal struct LogEventBuilder {
     /// The `logger.name` value for logs.
     let loggerName: String?
     /// Whether to send the network info in `network.client.*` log attributes.
-    let sendNetworkInfo: Bool
+    let networkInfoEnabled: Bool
     /// Allows for modifying (or dropping) logs before they get sent.
     let eventMapper: LogEventMapper?
 
@@ -79,8 +79,8 @@ internal struct LogEventBuilder {
                 email: userInfo.email,
                 extraInfo: userInfo.extraInfo
             ),
-            networkConnectionInfo: sendNetworkInfo ? context.networkConnectionInfo : nil,
-            mobileCarrierInfo: sendNetworkInfo ? context.carrierInfo : nil,
+            networkConnectionInfo: networkInfoEnabled ? context.networkConnectionInfo : nil,
+            mobileCarrierInfo: networkInfoEnabled ? context.carrierInfo : nil,
             attributes: attributes,
             tags: !tags.isEmpty ? Array(tags) : nil
         )

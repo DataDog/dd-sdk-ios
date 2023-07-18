@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogCrashReporting"
-  s.version      = "2.0.0-alpha1"
+  s.version      = "2.0.0-beta.2"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version      = '5.1'
+  s.swift_version = '5.5'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 

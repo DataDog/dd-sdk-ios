@@ -141,7 +141,6 @@ class DDRUMMonitorTests: XCTestCase {
         core = DatadogCoreProxy()
         CoreRegistry.register(default: core)
         config = RUM.Configuration(applicationID: .mockAny())
-        config.viewUpdatesThrottlerFactory = { NoOpRUMViewUpdatesThrottler() } // disable view updates sampling for deterministic behaviour
     }
 
     override func tearDown() {
@@ -198,7 +197,6 @@ class DDRUMMonitorTests: XCTestCase {
     }
 
     func testSendingViewEventsWithTiming() throws {
-        config.viewUpdatesThrottlerFactory = { RUMViewUpdatesThrottler() }
         RUM.enable(with: config)
         let objcRUMMonitor = DDRUMMonitor.shared()
 
@@ -211,7 +209,7 @@ class DDRUMMonitorTests: XCTestCase {
         let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self) { event in
             return event.view.name != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName
         }
-        XCTAssertEqual(viewEvents.count, 2)
+        XCTAssertEqual(viewEvents.count, 3)
 
         let event1: RUMViewEvent = try viewEvents[0].model()
         let event2: RUMViewEvent = try viewEvents[1].model()

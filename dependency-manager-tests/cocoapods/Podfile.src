@@ -1,23 +1,25 @@
 abstract_target 'Common' do
   pod 'DatadogInternal', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogCore', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogLogs', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogTrace', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogRUM', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'DatadogCore', :git => 'GIT_REMOTE', :GIT_REFERENCE
-  pod 'DatadogSDKAlamofireExtension', :git => 'GIT_REMOTE', :GIT_REFERENCE
-  pod 'DatadogSDKCrashReporting', :git => 'GIT_REMOTE', :GIT_REFERENCE
-  pod 'DatadogWebViewTracking', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogAlamofireExtension', :git => 'GIT_REMOTE', :GIT_REFERENCE
+  pod 'DatadogCrashReporting', :git => 'GIT_REMOTE', :GIT_REFERENCE
   pod 'Alamofire'
 
   target 'App Dynamic iOS' do
     platform :ios, '13.0'
     use_frameworks!
     pod 'DatadogSessionReplay', :git => 'GIT_REMOTE', :GIT_REFERENCE
+    pod 'DatadogWebViewTracking', :git => 'GIT_REMOTE', :GIT_REFERENCE
   end
 
   target 'App Static iOS' do
     platform :ios, '13.0'
     pod 'DatadogSessionReplay', :git => 'GIT_REMOTE', :GIT_REFERENCE
+    pod 'DatadogWebViewTracking', :git => 'GIT_REMOTE', :GIT_REFERENCE
 
     target 'App Static iOS Tests' do
       inherit! :search_paths

@@ -15,11 +15,19 @@ internal class SRContextPublisher {
         self.core = core
     }
 
-    /// Notifies other Features on the state of  Session Replay recording.
-    func setRecordingIsPending(_ value: Bool) {
-        core?.set(
+    /// Notifies other Features if Session Replay is recording.
+    func setHasReplay(_ value: Bool) {
+        core?.update(
             feature: RUMDependency.srBaggageKey,
             attributes: { [RUMDependency.hasReplay: value] }
+        )
+    }
+
+    /// Notifies other Features on the state of Session Replay records count.
+    func setRecordsCountByViewID(_ value: [String: Int64]) {
+        core?.update(
+            feature: RUMDependency.srBaggageKey,
+            attributes: { [RUMDependency.recordsCountByViewID: value] }
         )
     }
 }

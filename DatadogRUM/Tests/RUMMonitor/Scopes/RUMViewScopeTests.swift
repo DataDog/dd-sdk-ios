@@ -184,10 +184,6 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent() throws {
-        let hasReplay: Bool = .mockRandom()
-        var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
-
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
             isInitialView: true,
@@ -201,6 +197,14 @@ class RUMViewScopeTests: XCTestCase {
             startTime: currentTime,
             serverTimeOffset: .zero
         )
+
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(
+            hasReplay: hasReplay,
+            recordsCountByViewID: [scope.viewUUID.toRUMDataFormat: 1]
+        )
+
         _ = scope.process(
             command: RUMCommandMock(time: currentTime),
             context: context,
@@ -228,6 +232,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
     }
 
     func testWhenInitialViewHasCconfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
@@ -1902,96 +1907,6 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
     }
 
-    // MARK: Suppressing number of view updates
-
-    // swiftlint:disable opening_brace
-    func testGivenScopeWithViewUpdatesThrottler_whenReceivingStreamOfCommands_thenItSendsLessViewUpdatesThanScopeWithNoThrottler() throws {
-        let commandsIssuingViewUpdates: [(Date) -> RUMCommand] = [
-            // receive resource:
-            { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) },
-            { date in RUMStopResourceCommand.mockWith(resourceKey: "resource", time: date) },
-            // add action:
-            { date in RUMStartUserActionCommand.mockWith(time: date, actionType: .scroll) },
-            { date in RUMStopUserActionCommand.mockWith(time: date, actionType: .scroll) },
-            // add error:
-            { date in RUMAddCurrentViewErrorCommand.mockWithErrorObject(time: date) },
-            // add long task:
-            { date in RUMAddLongTaskCommand.mockWith(time: date) },
-            // receive timing:
-            { date in RUMAddViewTimingCommand.mockWith(time: date, timingName: .mockRandom()) },
-        ]
-        let stopViewCommand: [(Date) -> RUMCommand] = [
-            { date in RUMStopViewCommand.mockWith(time: date, identity: mockView) }
-        ]
-
-        let commands = (0..<5).flatMap({ _ in commandsIssuingViewUpdates }) + stopViewCommand // loop 5 times through all commands
-        let timeIntervalBetweenCommands = 1.0
-        let simulationDuration = timeIntervalBetweenCommands * Double(commands.count)
-        let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
-
-        // Given
-        let throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: samplingDuration)
-        let sampledWriter = FileWriterMock()
-        let sampledScope: RUMViewScope = .mockWith(
-            parent: parent,
-            dependencies: .mockWith(
-                viewUpdatesThrottlerFactory: { throttler }
-            )
-        )
-
-        let noOpThrottler = NoOpRUMViewUpdatesThrottler()
-        let notSampledWriter = FileWriterMock()
-        let notSampledScope: RUMViewScope = .mockWith(
-            parent: parent,
-            dependencies: .mockWith(
-                viewUpdatesThrottlerFactory: { noOpThrottler }
-            )
-        )
-
-        // When
-        func send(commands: [(Date) -> RUMCommand], to scope: RUMViewScope, writer: Writer) {
-            var currentTime = scope.viewStartTime
-            commands.forEach { command in
-                currentTime.addTimeInterval(timeIntervalBetweenCommands)
-                _ = scope.process(
-                    command: command(currentTime),
-                    context: context,
-                    writer: writer
-                )
-            }
-        }
-
-        send(commands: commands, to: sampledScope, writer: sampledWriter)
-        send(commands: commands, to: notSampledScope, writer: notSampledWriter)
-
-        // Then
-        let viewUpdatesInSampledScope = sampledWriter.events(ofType: RUMViewEvent.self)
-        let viewUpdatesInNotSampledScope = notSampledWriter.events(ofType: RUMViewEvent.self)
-        XCTAssertLessThan(
-            viewUpdatesInSampledScope.count,
-            viewUpdatesInNotSampledScope.count ,
-            "Sampled scope should send less view updates than not sampled"
-        )
-
-        let actualSamplingRatio = Double(viewUpdatesInSampledScope.count) / Double(viewUpdatesInNotSampledScope.count)
-        let maxExpectedSamplingRatio = samplingDuration / simulationDuration
-        XCTAssertLessThan(
-            actualSamplingRatio,
-            maxExpectedSamplingRatio,
-            "Less than \(maxExpectedSamplingRatio * 100)% of view updates should be sampled"
-        )
-
-        let actualLastUpdate = try XCTUnwrap(viewUpdatesInSampledScope.last)
-        let expectedLastUpdate = try XCTUnwrap(viewUpdatesInNotSampledScope.last)
-        XCTAssertEqual(actualLastUpdate.view.resource.count, expectedLastUpdate.view.resource.count, "It should count all resources")
-        XCTAssertEqual(actualLastUpdate.view.action.count, expectedLastUpdate.view.action.count, "It should count all actions")
-        XCTAssertEqual(actualLastUpdate.view.error.count, expectedLastUpdate.view.error.count, "It should count all errors")
-        XCTAssertEqual(actualLastUpdate.view.longTask?.count, expectedLastUpdate.view.longTask?.count, "It should count all long tasks")
-        XCTAssertEqual(actualLastUpdate.view.customTimings?.count, expectedLastUpdate.view.customTimings?.count, "It should count all view timings")
-        XCTAssertTrue(actualLastUpdate.view.isActive == false, "Terminal view update must always be sent")
-    }
-    // swiftlint:enable opening_brace
-
     // MARK: Integration with Crash Context
 
     func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {
@@ -2034,51 +1949,5 @@ class RUMViewScopeTests: XCTestCase {
         // Then
         let rumViewSent = try XCTUnwrap(core.events(ofType: RUMViewEvent.self).last, "It should send view event")
         DDAssertReflectionEqual(viewEvent, rumViewSent, "It must inject sent event to crash context")
-    }
-
-    // MARK: Cross-platform crashes
-
-    func testGivenScopeWithViewUpdatesThrottler_whenReceivingCrossPlatformCrash_thenItSendsViewUpdateWithUpdatedCrashCount() throws {
-        let commands: [(Date) -> RUMCommand] = [
-            // receive resource:
-            { date in RUMStartResourceCommand.mockWith(resourceKey: "resource", time: date) }, { date in RUMStopResourceCommand.mockWith(resourceKey: "resource", time: date) },
-            // receive error:
-            { date in RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: date, attributes: [CrossPlatformAttributes.errorIsCrash: true]) }
-        ]
-        let timeIntervalBetweenCommands = 1.0
-        let simulationDuration = timeIntervalBetweenCommands * Double(commands.count)
-        let samplingDuration = simulationDuration * 0.5 // at least half view updates should be skipped
-
-        // Given
-        let throttler = RUMViewUpdatesThrottler(viewUpdateThreshold: samplingDuration)
-        let sampledWriter = FileWriterMock()
-        let sampledScope: RUMViewScope = .mockWith(
-            parent: parent,
-            dependencies: .mockWith(
-                viewUpdatesThrottlerFactory: { throttler }
-            )
-        )
-
-        // When
-        func send(commands: [(Date) -> RUMCommand], to scope: RUMViewScope, writer: Writer) {
-            var currentTime = scope.viewStartTime
-            commands.forEach { command in
-                currentTime.addTimeInterval(timeIntervalBetweenCommands)
-                _ = scope.process(
-                    command: command(currentTime),
-                    context: context,
-                    writer: writer
-                )
-            }
-        }
-
-        send(commands: commands, to: sampledScope, writer: sampledWriter)
-
-        // Then
-        let viewUpdatesInSampledScope = sampledWriter.events(ofType: RUMViewEvent.self)
-        XCTAssertEqual(viewUpdatesInSampledScope.count, 2, "It should send the first event and the error")
-
-        let actualLastUpdate = try XCTUnwrap(viewUpdatesInSampledScope.last)
-        XCTAssertEqual(actualLastUpdate.view.crash?.count, 1, "It should contain a crash")
     }
 }

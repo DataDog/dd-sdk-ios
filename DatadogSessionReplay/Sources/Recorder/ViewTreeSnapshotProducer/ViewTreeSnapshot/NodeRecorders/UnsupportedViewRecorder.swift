@@ -47,17 +47,10 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         return [
-            builder.createTextWireframe(
+            builder.createPlaceholderWireframe(
                 id: wireframeID,
                 frame: attributes.frame,
-                text: unsupportedClassName,
-                textFrame: attributes.frame,
-                textAlignment: .init(horizontal: .center, vertical: .center),
-                textColor: UIColor.red.cgColor,
-                borderColor: UIColor.lightGray.cgColor,
-                borderWidth: 1,
-                backgroundColor: UIColor(white: 0.95, alpha: 1).cgColor,
-                cornerRadius: 4
+                label: unsupportedClassName
             )
         ]
     }

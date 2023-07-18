@@ -139,7 +139,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "RUM Resource should be send for `firstPartyGETResourceURL`"
         )
         XCTAssertEqual(firstPartyResource1.resource.method, .get)
-        XCTAssertGreaterThan(firstPartyResource1.resource.duration, 0)
+        XCTAssertNotNil(firstPartyResource1.resource.duration)
+        XCTAssertGreaterThan(firstPartyResource1.resource.duration!, 0)
 
         XCTAssertNil(firstPartyResource1.dd.traceId, "`firstPartyGETResourceURL` should not be traced")
         XCTAssertNil(firstPartyResource1.dd.spanId, "`firstPartyGETResourceURL` should not be traced")
@@ -150,7 +151,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "RUM Resource should be send for `firstPartyPOSTResourceURL`"
         )
         XCTAssertEqual(firstPartyResource2.resource.method, .post)
-        XCTAssertGreaterThan(firstPartyResource2.resource.duration, 0)
+        XCTAssertNotNil(firstPartyResource2.resource.duration)
+        XCTAssertGreaterThan(firstPartyResource2.resource.duration!, 0)
         XCTAssertEqual(
             firstPartyResource2.dd.traceId,
             firstPartyPOSTRequestTraceID,
@@ -181,7 +183,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "RUM Resource should be send for `thirdPartyGETResourceURL`"
         )
         XCTAssertEqual(thirdPartyResource1.resource.method, .get)
-        XCTAssertGreaterThan(thirdPartyResource1.resource.duration, 0)
+        XCTAssertNotNil(thirdPartyResource1.resource.duration)
+        XCTAssertGreaterThan(thirdPartyResource1.resource.duration!, 0)
         XCTAssertNil(thirdPartyResource1.dd.traceId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource1.dd.spanId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource1.dd.rulePsr, "Not traced resource should not send sample rate")
@@ -191,7 +194,8 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             "RUM Resource should be send for `thirdPartyPOSTResourceURL`"
         )
         XCTAssertEqual(thirdPartyResource2.resource.method, .post)
-        XCTAssertGreaterThan(thirdPartyResource2.resource.duration, 0)
+        XCTAssertNotNil(thirdPartyResource2.resource.duration)
+        XCTAssertGreaterThan(thirdPartyResource2.resource.duration!, 0)
         XCTAssertNil(thirdPartyResource2.dd.traceId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource2.dd.spanId, "3rd party RUM Resources should not be traced")
         XCTAssertNil(thirdPartyResource2.dd.rulePsr, "Not traced resource should not send sample rate")

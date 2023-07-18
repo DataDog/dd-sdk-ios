@@ -33,7 +33,7 @@ internal class RecordingCoordinator {
         self.privacy = privacy
         self.srContextPublisher = srContextPublisher
 
-        srContextPublisher.setRecordingIsPending(false)
+        srContextPublisher.setHasReplay(false)
 
         scheduler.schedule { [weak self] in self?.captureNextRecord() }
         scheduler.start()
@@ -54,7 +54,7 @@ internal class RecordingCoordinator {
             scheduler.stop()
         }
 
-        srContextPublisher.setRecordingIsPending(
+        srContextPublisher.setHasReplay(
             isSampled == true && currentRUMContext?.ids.viewID != nil
         )
     }

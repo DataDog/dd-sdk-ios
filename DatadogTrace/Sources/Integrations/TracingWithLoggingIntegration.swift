@@ -33,12 +33,12 @@ internal struct TracingWithLoggingIntegration {
     /// `DatadogCore` instance managing this integration.
     weak var core: DatadogCoreProtocol?
     let service: String?
-    let sendNetworkInfo: Bool
+    let networkInfoEnabled: Bool
 
-    init(core: DatadogCoreProtocol, service: String?, sendNetworkInfo: Bool) {
+    init(core: DatadogCoreProtocol, service: String?, networkInfoEnabled: Bool) {
         self.core = core
         self.service = service
-        self.sendNetworkInfo = sendNetworkInfo
+        self.networkInfoEnabled = networkInfoEnabled
     }
 
     func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date, else fallback: @escaping () -> Void) {
@@ -86,7 +86,7 @@ internal struct TracingWithLoggingIntegration {
                     "error": extractedError,
                     "userAttributes": AnyEncodable(userAttributes),
                     "internalAttributes": internalAttributes,
-                    "sendNetworkInfo": sendNetworkInfo
+                    "networkInfoEnabled": networkInfoEnabled
                 ]
             ),
             else: fallback

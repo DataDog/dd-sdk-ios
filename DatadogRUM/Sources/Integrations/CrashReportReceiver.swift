@@ -92,7 +92,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let applicationID: String
     let dateProvider: DateProvider
     let sessionSampler: Sampler
-    let backgroundEventTrackingEnabled: Bool
+    let trackBackgroundEvents: Bool
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
@@ -103,14 +103,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         applicationID: String,
         dateProvider: DateProvider,
         sessionSampler: Sampler,
-        backgroundEventTrackingEnabled: Bool,
+        trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?
     ) {
         self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sessionSampler = sessionSampler
-        self.backgroundEventTrackingEnabled = backgroundEventTrackingEnabled
+        self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
     }
@@ -201,7 +201,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: lastRUMSessionState,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         let newRUMView: RUMViewEvent?
@@ -254,7 +254,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: nil,
             isAppInForeground: crashContext.lastIsAppInForeground,
-            isBETEnabled: backgroundEventTrackingEnabled
+            isBETEnabled: trackBackgroundEvents
         )
 
         let newRUMView: RUMViewEvent?
@@ -378,6 +378,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: original.dd.documentVersion + 1,
+                pageStates: nil,
+                replayStats: nil,
                 session: .init(plan: .plan1)
             ),
             application: original.application,
@@ -388,6 +390,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             device: original.device,
             display: nil,
             os: original.os,
+            privacy: nil,
             service: original.service,
             session: original.session,
             source: original.source ?? .ios,
@@ -451,6 +454,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: 1,
+                pageStates: nil,
+                replayStats: nil,
                 session: .init(plan: .plan1)
             ),
             application: .init(
@@ -470,12 +475,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // before restarting the app after crash. To solve this, the OS information would have to be
             // persisted in `crashContext` the same way as we do for other dynamic information.
             os: .init(device: context.device),
+            privacy: nil,
             service: context.service,
             session: .init(
                 hasReplay: hasReplay,
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
-                startReason: nil,
+                sampledForReplay: nil,
+                startPrecondition: nil,
                 type: ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,

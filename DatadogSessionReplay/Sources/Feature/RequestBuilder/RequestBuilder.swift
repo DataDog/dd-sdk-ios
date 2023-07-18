@@ -13,13 +13,13 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// Custom URL for uploading data to.
     let customUploadURL: URL?
 
-    func request(for events: [Data], with context: DatadogContext) throws -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         let source = SRSegment.Source(rawValue: context.source) ?? .ios // TODO: RUMM-2410 Send telemetry on `?? .ios`
         let segmentBuilder = SegmentJSONBuilder(source: source)
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
         // error to let the core delete the batch:
-        let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0) }
+        let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0.data) }
         let segment = try segmentBuilder.createSegmentJSON(from: records)
 
         // If the SDK was configured with deprecated `set(*Endpoint:)` APIs we don't have `context.site`, so
