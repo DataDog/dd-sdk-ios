@@ -109,6 +109,10 @@ public class DDRUMActionEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var configuration: DDRUMActionEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? DDRUMActionEventDDConfiguration(root: root) : nil
+    }
+
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
@@ -170,6 +174,23 @@ public class DDRUMActionEventDDActionTarget: NSObject {
 
     @objc public var width: NSNumber? {
         root.swiftModel.dd.action!.target!.width as NSNumber?
+    }
+}
+
+@objc
+public class DDRUMActionEventDDConfiguration: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    }
+
+    @objc public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 }
 
@@ -916,12 +937,33 @@ public class DDRUMErrorEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var configuration: DDRUMErrorEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? DDRUMErrorEventDDConfiguration(root: root) : nil
+    }
+
     @objc public var formatVersion: NSNumber {
         root.swiftModel.dd.formatVersion as NSNumber
     }
 
     @objc public var session: DDRUMErrorEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMErrorEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMErrorEventDDConfiguration: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    }
+
+    @objc public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 }
 
@@ -1886,6 +1928,10 @@ public class DDRUMLongTaskEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var configuration: DDRUMLongTaskEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? DDRUMLongTaskEventDDConfiguration(root: root) : nil
+    }
+
     @objc public var discarded: NSNumber? {
         root.swiftModel.dd.discarded as NSNumber?
     }
@@ -1896,6 +1942,23 @@ public class DDRUMLongTaskEventDD: NSObject {
 
     @objc public var session: DDRUMLongTaskEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMLongTaskEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMLongTaskEventDDConfiguration: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    }
+
+    @objc public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 }
 
@@ -2503,6 +2566,10 @@ public class DDRUMResourceEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var configuration: DDRUMResourceEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? DDRUMResourceEventDDConfiguration(root: root) : nil
+    }
+
     @objc public var discarded: NSNumber? {
         root.swiftModel.dd.discarded as NSNumber?
     }
@@ -2525,6 +2592,23 @@ public class DDRUMResourceEventDD: NSObject {
 
     @objc public var traceId: String? {
         root.swiftModel.dd.traceId
+    }
+}
+
+@objc
+public class DDRUMResourceEventDDConfiguration: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    }
+
+    @objc public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 }
 
@@ -3441,6 +3525,10 @@ public class DDRUMViewEventDD: NSObject {
         root.swiftModel.dd.browserSdkVersion
     }
 
+    @objc public var configuration: DDRUMViewEventDDConfiguration? {
+        root.swiftModel.dd.configuration != nil ? DDRUMViewEventDDConfiguration(root: root) : nil
+    }
+
     @objc public var documentVersion: NSNumber {
         root.swiftModel.dd.documentVersion as NSNumber
     }
@@ -3459,6 +3547,23 @@ public class DDRUMViewEventDD: NSObject {
 
     @objc public var session: DDRUMViewEventDDSession? {
         root.swiftModel.dd.session != nil ? DDRUMViewEventDDSession(root: root) : nil
+    }
+}
+
+@objc
+public class DDRUMViewEventDDConfiguration: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var sessionReplaySampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    }
+
+    @objc public var sessionSampleRate: NSNumber {
+        root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
 }
 
@@ -4810,6 +4915,10 @@ public class DDTelemetryDebugEventTelemetry: NSObject {
     @objc public var type: String? {
         root.swiftModel.telemetry.type
     }
+
+    @objc public var telemetryInfo: [String: Any] {
+        root.swiftModel.telemetry.telemetryInfo.castToObjectiveC()
+    }
 }
 
 @objc
@@ -5325,4 +5434,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/1c5eaa897c065e5f790a5f8aaf6fc8782d706051
+// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00

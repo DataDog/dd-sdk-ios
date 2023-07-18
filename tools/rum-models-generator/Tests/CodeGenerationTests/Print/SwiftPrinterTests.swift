@@ -229,7 +229,7 @@ final class SwiftPrinterTests: XCTestCase {
                     mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .static(value: "property_2")
-                )
+                ),
             ],
             conformance: [codableProtocol]
         )
@@ -270,6 +270,15 @@ final class SwiftPrinterTests: XCTestCase {
                     mutability: .immutable,
                     defaultValue: nil,
                     codingKey: .dynamic
+                ),
+                SwiftStruct.Property(
+                    name: "ignoredProperty",
+                    comment: "This property will be ignored in coding because it uses default value and is immutable",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: "default value",
+                    codingKey: .static(value: "ignoredProperty")
                 )
             ],
             conformance: [codableProtocol]
@@ -282,6 +291,13 @@ final class SwiftPrinterTests: XCTestCase {
 
         public struct Foo: Codable {
             public let context: [String: Codable]
+
+            /// This property will be ignored in coding because it uses default value and is immutable
+            public let ignoredProperty: String = "default value"
+
+            enum StaticCodingKeys: String, CodingKey {
+                case ignoredProperty = "ignoredProperty"
+            }
         }
 
         extension Foo {
