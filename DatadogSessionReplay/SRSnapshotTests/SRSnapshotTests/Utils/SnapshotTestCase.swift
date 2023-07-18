@@ -58,16 +58,36 @@ internal class SnapshotTestCase: XCTestCase {
             .init(privacy: privacyLevel, applicationID: "", sessionID: "", viewID: "", viewServerTimeOffset: 0)
         )
 
-        waitForExpectations(timeout: 10) // very pessimistic timeout to mitigate CI lags
+        waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
 
         // Render images:
-        let wireframesImage = wireframes.map { renderImage(for: $0) } ?? UIImage()
+        guard let wireframes = wireframes, !wireframes.isEmpty else {
+            XCTFail("Recorded no wireframes.")
+            return UIImage()
+        }
+        let renderedWireframes = renderImage(for: wireframes)
         let appImage = app.keyWindow.map { renderImage(for: $0) } ?? UIImage()
 
-        return createSideBySideImage(appImage, wireframesImage)
+        // Add XCTest attachements for debugging and troubleshooting:
+        // - attach recorded wireframes as JSON
+        let wireframesAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpWireframesAsJSON())
+        wireframesAttachement.name = "recorded-wireframes-(\(privacyLevel)).json"
+        wireframesAttachement.lifetime = .deleteOnSuccess
+        add(wireframesAttachement)
+
+        // - attach rendered as blueprint text
+        let blueprintAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpImageAsBlueprint())
+        blueprintAttachement.name = "rendered-blueprint-(\(privacyLevel)).txt"
+        blueprintAttachement.lifetime = .deleteOnSuccess
+        add(blueprintAttachement)
+
+        return createSideBySideImage(leftImage: appImage, rightImage: renderedWireframes.image)
     }
 
     func wait(seconds: TimeInterval) {
+        // To anticipate lags, await more if running on CI:
+        let ciMultiplier: Double = Environment.isCI() ? 5 : 1
+        let seconds = seconds * ciMultiplier
         let expectation = self.expectation(description: "Wait \(seconds)")
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) {
             expectation.fulfill()
@@ -78,51 +98,6 @@ internal class SnapshotTestCase: XCTestCase {
     func forEachPrivacyMode(do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
         let modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput]
         try modes.forEach { try work($0) }
-    }
-
-    /// Puts two images side-by-side, adds titles and returns new, composite image.
-    private func createSideBySideImage(_ image1: UIImage, _ image2: UIImage) -> UIImage {
-        var leftRect = CGRect(origin: .zero, size: image1.size)
-        var rightRect = CGRect(origin: .init(x: image1.size.width, y: 0), size: image2.size)
-        let imageRect = leftRect.union(rightRect)
-            .inset(by: .init(top: -30, left: -5, bottom: -5, right: -5))
-
-        leftRect = leftRect.offsetBy(dx: 5, dy: 30)
-        rightRect = rightRect.offsetBy(dx: 5, dy: 30)
-
-        let format = UIGraphicsImageRendererFormat()
-        format.opaque = true
-        let renderer = UIGraphicsImageRenderer(size: imageRect.size, format: format)
-
-        return renderer.image { context in
-            // Fill the image:
-            context.cgContext.setFillColor(UIColor.white.cgColor)
-            context.cgContext.addRect(CGRect(origin: .zero, size: imageRect.size))
-            context.cgContext.fillPath()
-
-            // Draw both images:
-            image1.draw(at: leftRect.origin)
-            image2.draw(at: rightRect.origin)
-
-            // Draw strokes around both images
-            context.cgContext.setLineWidth(2)
-            context.cgContext.setStrokeColor(UIColor.black.cgColor)
-            context.cgContext.addRect(leftRect)
-            context.cgContext.addRect(rightRect)
-            context.cgContext.strokePath()
-
-            // Add image titles
-            let textAttributes: [NSAttributedString.Key : Any] = [
-                NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 15),
-                NSAttributedString.Key.foregroundColor: #colorLiteral(red: 0.3882352941, green: 0.1725490196, blue: 0.6509803922, alpha: 1),
-            ]
-
-            let leftTextRect = leftRect.offsetBy(dx: 2, dy: -25)
-            let rightTextRect = rightRect.offsetBy(dx: 2, dy: -25)
-
-            "Actual UI:".draw(in: leftTextRect, withAttributes: textAttributes)
-            "Wireframes:".draw(in: rightTextRect, withAttributes: textAttributes)
-        }
     }
 }
 
