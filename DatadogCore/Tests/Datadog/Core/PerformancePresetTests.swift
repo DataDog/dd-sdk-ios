@@ -140,23 +140,35 @@ class PerformancePresetTests: XCTestCase {
     }
 
     func testPresetsUpdate() {
+        // Given
+        let maxFileSizeOverride: UInt64 = .mockRandom()
+        let maxObjectSizeOverride: UInt64 = .mockRandom()
+        let meanFileAgeOverride: TimeInterval = .mockRandom()
+        let uploadDelayOverride: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double) = (
+            initial: .mockRandom(),
+            range: (TimeInterval.mockRandom(min: 1, max: 10)..<TimeInterval.mockRandom(min: 11, max: 100)),
+            changeRate: .mockRandom()
+        )
+
+        // When
         let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
         let updatedPreset = preset.updated(
             with: PerformancePresetOverride(
-                maxFileSize: .mockRandom(),
-                maxObjectSize: .mockRandom(),
-                meanFileAge: .mockRandom(),
-                minUploadDelay: .mockRandom()
+                maxFileSize: maxFileSizeOverride,
+                maxObjectSize: maxObjectSizeOverride,
+                meanFileAge: meanFileAgeOverride,
+                uploadDelay: uploadDelayOverride
             )
         )
 
-        XCTAssertNotEqual(preset.maxFileSize, updatedPreset.maxFileSize)
-        XCTAssertNotEqual(preset.maxObjectSize, updatedPreset.maxObjectSize)
-        XCTAssertNotEqual(preset.maxFileAgeForWrite, updatedPreset.maxFileAgeForWrite)
-        XCTAssertNotEqual(preset.minFileAgeForRead, updatedPreset.minFileAgeForRead)
-        XCTAssertNotEqual(preset.initialUploadDelay, updatedPreset.initialUploadDelay)
-        XCTAssertNotEqual(preset.minUploadDelay, updatedPreset.minUploadDelay)
-        XCTAssertNotEqual(preset.maxUploadDelay, updatedPreset.maxUploadDelay)
-        XCTAssertEqual(0.1, updatedPreset.uploadDelayChangeRate)
+        // Then
+        XCTAssertEqual(updatedPreset.maxFileSize, maxFileSizeOverride)
+        XCTAssertEqual(updatedPreset.maxObjectSize, maxObjectSizeOverride)
+        XCTAssertEqual(updatedPreset.maxFileAgeForWrite, meanFileAgeOverride * 0.95, accuracy: 0.01)
+        XCTAssertEqual(updatedPreset.minFileAgeForRead, meanFileAgeOverride * 1.05, accuracy: 0.01)
+        XCTAssertEqual(updatedPreset.initialUploadDelay, uploadDelayOverride.initial)
+        XCTAssertEqual(updatedPreset.minUploadDelay, uploadDelayOverride.range.lowerBound)
+        XCTAssertEqual(updatedPreset.maxUploadDelay, uploadDelayOverride.range.upperBound)
+        XCTAssertEqual(updatedPreset.uploadDelayChangeRate, uploadDelayOverride.changeRate)
     }
 }
