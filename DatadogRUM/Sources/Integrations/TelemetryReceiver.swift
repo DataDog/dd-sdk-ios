@@ -87,12 +87,12 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
+            let rum: [String: String]? = context.featuresAttributes["rum"]?.ids
 
-            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
-            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
-            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
+            let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
+            let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
+            let viewId = rum?[RUMContextAttributes.IDs.viewID]
+            let actionId = rum?[RUMContextAttributes.IDs.userActionID]
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
