@@ -66,8 +66,9 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
         messages.append(telemetry)
 
         switch telemetry {
-        case .debug(_, let message):
-            description.append("\n- [debug] \(message)")
+        case .debug(_, let message, let attributes):
+            let attributesString = attributes.map({ ", \($0)" }) ?? ""
+            description.append("\n- [debug] \(message)" + attributesString)
         case .error(_, let message, let kind, let stack):
             description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
         case .configuration(let configuration):

@@ -62,9 +62,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// - Returns: Always `true`.
     func receive(telemetry: TelemetryMessage, from core: DatadogCoreProtocol) -> Bool {
         switch telemetry {
-        case .debug(let id, let message):
-            debug(id: id, message: message, in: core)
-        case .error(let id, let message, let kind, let stack):
+        case let .debug(id, message, attributes):
+            debug(id: id, message: message, attributes: attributes, in: core)
+        case let .error(id, message, kind, stack):
             error(id: id, message: message, kind: kind, stack: stack, in: core)
         case .configuration(let configuration):
             send(configuration: configuration, in: core)
@@ -82,7 +82,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
-    func debug(id: String, message: String, in core: DatadogCoreProtocol) {
+    ///   - attributes: Custom attributes attached to the log (optional).
+    func debug(id: String, message: String, attributes: [String: Encodable]?, in core: DatadogCoreProtocol) {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
@@ -104,7 +105,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: message,
-                    telemetryInfo: [:]
+                    telemetryInfo: attributes ?? [:]
                 ),
                 version: context.sdkVersion,
                 view: viewId.map { .init(id: $0) }
