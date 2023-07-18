@@ -102,7 +102,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
                 source: .init(rawValue: context.source) ?? .ios,
-                telemetry: .init(message: message),
+                telemetry: .init(
+                    message: message,
+                    telemetryInfo: [:]
+                ),
                 version: context.sdkVersion,
                 view: viewId.map { .init(id: $0) }
             )
