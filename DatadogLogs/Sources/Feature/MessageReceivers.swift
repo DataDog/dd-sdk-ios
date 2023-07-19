@@ -292,7 +292,8 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             }
 
             if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                event.merge(baggage as [String: Any]) { $1 }
+                let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
+                event.merge(mappedBaggage as [String: Any]) { $1 }
             }
 
             writer.write(value: AnyEncodable(event))

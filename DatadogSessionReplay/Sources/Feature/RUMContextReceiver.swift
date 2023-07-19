@@ -11,8 +11,8 @@ import DatadogInternal
 internal struct RUMContext: Decodable, Equatable {
     internal struct IDs: Decodable, Equatable {
         enum CodingKeys: String, CodingKey {
-            case applicationID = "application_id"
-            case sessionID = "session_id"
+            case applicationID = "application.id"
+            case sessionID = "session.id"
             case viewID = "view.id"
         }
         /// Current RUM application ID - standard UUID string, lowecased.

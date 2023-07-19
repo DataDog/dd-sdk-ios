@@ -367,8 +367,8 @@ class RUMTests: XCTestCase {
             FeatureBaggage(
                 [
                     "ids": [
-                        "application_id": applicationID,
-                        "session_id": sessionID.toRUMDataFormat,
+                        "application.id": applicationID,
+                        "session.id": sessionID.toRUMDataFormat,
                         "view.id": nil,
                         "user_action.id": nil
                     ]

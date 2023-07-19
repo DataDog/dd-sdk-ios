@@ -41,23 +41,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Set user information
         Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
 
-        // Create Logger
-        logger = Logger.create(
-            with: Logger.Configuration(
-                name: "logger-name",
-                networkInfoEnabled: true,
-                consoleLogFormat: .shortWith(prefix: "[iOS App] ")
-            )
-        )
-
-        logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
-
-        #if DEBUG
-        logger.addTag(withKey: "build_configuration", value: "debug")
-        #else
-        logger.addTag(withKey: "build_configuration", value: "release")
-        #endif
-
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
@@ -65,6 +48,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
+        // Enable Crash Reporting
         CrashReporting.enable()
 
         // Set highest verbosity level to see debugging logs from the SDK
@@ -82,12 +66,30 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
+                urlSessionTracking: .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100)),
                 trackBackgroundEvents: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )
         )
         RUMMonitor.shared().debug = true
+
+        // Create Logger
+        logger = Logger.create(
+            with: Logger.Configuration(
+                name: "logger-name",
+                networkInfoEnabled: true,
+                consoleLogFormat: .shortWith(prefix: "[iOS App] ")
+            )
+        )
+
+        logger.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        #if DEBUG
+        logger.addTag(withKey: "build_configuration", value: "debug")
+        #else
+        logger.addTag(withKey: "build_configuration", value: "release")
+        #endif
 
         // Launch initial screen depending on the launch configuration
         #if os(iOS)

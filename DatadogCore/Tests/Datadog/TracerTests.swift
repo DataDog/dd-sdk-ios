@@ -703,11 +703,11 @@ class TracerTests: XCTestCase {
 //        // then
 //        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
 //        XCTAssertEqual(
-//            try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.applicationID)"),
+//            try spanMatcher.meta.custom(keyPath: "meta._dd.application.id"),
 //            rum.configuration.applicationID
 //        )
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.viewID)"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.session.id"))
+//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.view.id"))
 //    }
 
     // MARK: - Injecting span context into carrier

@@ -11,7 +11,7 @@ internal struct CoreContext {
     /// The RUM attributes that should be added as Span tags.
     ///
     /// These attributes are synchronized using a read-write lock.
-    var rum: [String: String]?
+    var rum: [String: String?]?
 
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?
@@ -51,8 +51,10 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
 
-            if bundleWithRumEnabled {
-                $0.rum = context.featuresAttributes["rum"]?.ids
+            if bundleWithRumEnabled, let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids {
+                let tags = attributes.compactMapValues { $0 }
+                let mappedTags = Dictionary(uniqueKeysWithValues: tags.map { key, value in (mapRUMContextAttributeKeyToSpanTagName(key), value) })
+                $0.rum = mappedTags
             }
         }
 
