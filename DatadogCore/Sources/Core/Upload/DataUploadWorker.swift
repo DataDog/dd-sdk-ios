@@ -76,7 +76,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                     } else {
-                        self.fileReader.markBatchAsRead(batch)
+                        self.fileReader.markBatchAsRead(batch, reason: .intakeCode(responseCode: uploadStatus.responseCode ?? -1)) // -1 is unexpected here
                         self.delay.decrease()
 
                         DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
@@ -93,7 +93,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     }
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
-                    self.fileReader.markBatchAsRead(batch)
+                    self.fileReader.markBatchAsRead(batch, reason: .invalid)
                     DD.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             } else {
@@ -125,7 +125,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
                 _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
-                self.fileReader.markBatchAsRead(nextBatch)
+                self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
             }
         }
     }

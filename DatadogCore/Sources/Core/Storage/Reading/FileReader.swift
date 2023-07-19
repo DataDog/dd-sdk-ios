@@ -91,8 +91,8 @@ internal final class FileReader: Reader {
 
     // MARK: - Accepting batches
 
-    func markBatchAsRead(_ batch: Batch) {
-        orchestrator.delete(readableFile: batch.file)
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
+        orchestrator.delete(readableFile: batch.file, deletionReason: reason)
         filesRead.insert(batch.file.name)
     }
 }

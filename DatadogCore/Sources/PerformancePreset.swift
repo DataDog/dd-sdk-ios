@@ -34,6 +34,12 @@ internal protocol StoragePerformancePreset {
     var maxObjectSize: UInt64 { get }
 }
 
+internal extension StoragePerformancePreset {
+    /// The default duration since last write after which the uploader will consider the file to be  “ready for upload”.
+    /// Added for computing batching & upload metrics in RUMM-3459.
+    var uploaderWindow: TimeInterval { (minFileAgeForRead + maxFileAgeForWrite) * 0.5 }
+}
+
 internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPerformancePreset {
     // MARK: - StoragePerformancePreset
 

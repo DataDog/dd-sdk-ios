@@ -222,9 +222,23 @@ extension FeatureUpload {
     }
 }
 
+extension Reader {
+    func markBatchAsRead(_ batch: Batch) {
+        // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
+        markBatchAsRead(batch, reason: .flushed)
+    }
+}
+
+extension FilesOrchestratorType {
+    func delete(readableFile: ReadableFile) {
+        // We can ignore `deletionReason` in most tests (used for sending metric), so we provide this convenience variant.
+        delete(readableFile: readableFile, deletionReason: .flushed)
+    }
+}
+
 class NOPReader: Reader {
     func readNextBatch() -> Batch? { nil }
-    func markBatchAsRead(_ batch: Batch) {}
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
 internal class NOPFilesOrchestrator: FilesOrchestratorType {
@@ -241,7 +255,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
-    func delete(readableFile: ReadableFile) { }
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
 
     var ignoreFilesAgeWhenReading = false
 }
@@ -290,6 +304,7 @@ extension DataUploadStatus: RandomMockable {
     public static func mockRandom() -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: .random(),
+            responseCode: .mockRandom(),
             userDebugDescription: .mockRandom(),
             error: nil
         )
@@ -297,11 +312,13 @@ extension DataUploadStatus: RandomMockable {
 
     static func mockWith(
         needsRetry: Bool = .mockAny(),
+        responseCode: Int = .mockAny(),
         userDebugDescription: String = .mockAny(),
         error: DataUploadError? = nil
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
+            responseCode: responseCode,
             userDebugDescription: userDebugDescription,
             error: error
         )

@@ -103,6 +103,8 @@
 		6143966D2A65539D00197326 /* RUMContextMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6143966B2A65539D00197326 /* RUMContextMapping.swift */; };
 		6143966F2A65663E00197326 /* RUMContextMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6143966E2A65663E00197326 /* RUMContextMapping.swift */; };
 		614396702A65663E00197326 /* RUMContextMapping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6143966E2A65663E00197326 /* RUMContextMapping.swift */; };
+		614396722A67D74F00197326 /* Metrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396712A67D74F00197326 /* Metrics.swift */; };
+		614396732A67D74F00197326 /* Metrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614396712A67D74F00197326 /* Metrics.swift */; };
 		61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */; };
 		61441C0C24616DE9003D8BB8 /* Main iOS.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0A24616DE9003D8BB8 /* Main iOS.storyboard */; };
 		61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0D24616DEC003D8BB8 /* Assets.xcassets */; };
@@ -1768,6 +1770,7 @@
 		61411B0F24EC15AC0012EAB2 /* Casting+RUM.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+RUM.swift"; sourceTree = "<group>"; };
 		6143966B2A65539D00197326 /* RUMContextMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextMapping.swift; sourceTree = "<group>"; };
 		6143966E2A65663E00197326 /* RUMContextMapping.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextMapping.swift; sourceTree = "<group>"; };
+		614396712A67D74F00197326 /* Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Metrics.swift; sourceTree = "<group>"; };
 		61441C0224616DE9003D8BB8 /* Example iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppDelegate.swift; sourceTree = "<group>"; };
 		61441C0B24616DE9003D8BB8 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = "Base.lproj/Main iOS.storyboard"; sourceTree = "<group>"; };
@@ -2866,6 +2869,7 @@
 				61C3638424361E9200C4D4E6 /* Globals.swift */,
 				6139CD702589FAFD007E8BB7 /* Retrying.swift */,
 				61DA8CAE28620C760074A606 /* Cryptography.swift */,
+				614396712A67D74F00197326 /* Metrics.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -6323,6 +6327,7 @@
 				D20605CB2875A83F0047275C /* ContextValueReader.swift in Sources */,
 				61D3E0DB277B23F1008BE766 /* KronosNSTimer+ClosureKit.swift in Sources */,
 				D20605A92874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
+				614396722A67D74F00197326 /* Metrics.swift in Sources */,
 				D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */,
@@ -7240,6 +7245,7 @@
 				D2A7841029A53B2F003B03BB /* Directory.swift in Sources */,
 				61DA8CB028620C760074A606 /* Cryptography.swift in Sources */,
 				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
+				614396732A67D74F00197326 /* Metrics.swift in Sources */,
 				D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
 				D20605A7287476230047275C /* ServerOffsetPublisher.swift in Sources */,
 				D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */,

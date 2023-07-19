@@ -157,4 +157,12 @@ class DataUploadStatusTests: XCTestCase {
         let status = DataUploadStatus(networkError: NSError(domain: NSURLErrorDomain, code: notAlertingNSURLErrorCode, userInfo: nil))
         XCTAssertNil(status.error, "Upload status error should not be created for NSURLError code: \(notAlertingNSURLErrorCode)")
     }
+
+    // MARK: - Test Response Code
+
+    func testWhenUploadFinishesWithResponse_itSetsResponseCode() {
+        let randomCode: Int = .mockRandom(min: 1, max: 999)
+        let status = DataUploadStatus(httpResponse: .mockResponseWith(statusCode: randomCode), ddRequestID: nil)
+        XCTAssertEqual(status.responseCode, randomCode)
+    }
 }
