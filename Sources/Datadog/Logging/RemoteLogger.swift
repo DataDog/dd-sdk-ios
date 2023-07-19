@@ -129,7 +129,8 @@ internal final class RemoteLogger: LoggerProtocol {
 
             if self.rumContextIntegration, let attributes: [String: AnyCodable?] = contextAttributes["rum"]?.ids {
                 let attributes = attributes.compactMapValues { $0 }
-                internalAttributes.merge(attributes) { $1 }
+                let mappedAttributes = Dictionary(uniqueKeysWithValues: attributes.map { key, value in (mapInternalAttributeKey(key), value) })
+                internalAttributes.merge(mappedAttributes) { $1 }
             }
 
             if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {

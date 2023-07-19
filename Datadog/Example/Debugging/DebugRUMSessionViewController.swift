@@ -39,6 +39,12 @@ private class DebugRUMSessionViewModel: ObservableObject {
     @Published var errorMessage: String = ""
     @Published var resourceKey: String = ""
 
+    @Published var logMessage: String = ""
+    @Published var spanOperationName: String = ""
+    @Published var instrumentedRequestURL: String = "https://api.shopist.io/checkout.json"
+
+    var urlSessions: [URLSession] = []
+
     func startView() {
         guard !viewKey.isEmpty else {
             return
@@ -74,7 +80,11 @@ private class DebugRUMSessionViewModel: ObservableObject {
         )
 
         Global.rum.addUserAction(type: .custom, name: actionName)
-        self.actionName = ""
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.sendSpan()
+            self.actionName = ""
+        }
     }
 
     func addError() {
@@ -115,6 +125,45 @@ private class DebugRUMSessionViewModel: ObservableObject {
         self.resourceKey = ""
     }
 
+    func sendLog() {
+        logger.debug(logMessage)
+        logMessage = ""
+    }
+
+    func sendSpan() {
+        let span = Global.sharedTracer.startRootSpan(operationName: spanOperationName, tags: [:])
+        Thread.sleep(forTimeInterval: 0.1)
+        span.finish()
+        spanOperationName = ""
+    }
+
+    func sendPOSTRequest() {
+        guard let url = URL(string: instrumentedRequestURL) else {
+            print("🔥 POST Request not sent - invalid url: \(instrumentedRequestURL)")
+            return
+        }
+        guard let host = url.host else {
+            print("🔥 POST Request not sent - invalid url host: \(instrumentedRequestURL)")
+            return
+        }
+
+        let delegate = DDURLSessionDelegate(additionalFirstPartyHosts: [host])
+        let session = URLSession(configuration: .ephemeral, delegate: delegate, delegateQueue: nil)
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let task = session.dataTask(with: request) { _, _, error in
+            if let error = error {
+                print("🌍🔥 POST \(url) completed with network error: \(error)")
+            } else {
+                print("🌍 POST \(url) sent successfully")
+            }
+        }
+        task.resume()
+
+        urlSessions.append(session) // keep session
+    }
+
     // MARK: - Private
 
     private func modifySessionItem(type: SessionItemType, label: String, change: (inout SessionItem) -> Void) {
@@ -138,40 +187,80 @@ internal struct DebugRUMSessionView: View {
 
     var body: some View {
         VStack() {
-            HStack {
-                FormItemView(
-                    title: "RUM View", placeholder: "view key", accent: .rumViewColor, value: $viewModel.viewKey
-                )
-                Button("START") { viewModel.startView() }
+            Group {
+                Text("RUM Session")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.bold))
+                Text("Debug RUM Session by creating events manually:")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.light))
+                HStack {
+                    FormItemView(
+                        title: "RUM View", placeholder: "view key", accent: .rumViewColor, value: $viewModel.viewKey
+                    )
+                    Button("START") { viewModel.startView() }
+                }
+                HStack {
+                    FormItemView(
+                        title: "RUM Action", placeholder: "name", accent: .rumActionColor, value: $viewModel.actionName
+                    )
+                    Button("ADD") { viewModel.addAction() }
+                }
+                HStack {
+                    FormItemView(
+                        title: "RUM Error", placeholder: "message", accent: .rumErrorColor, value: $viewModel.errorMessage
+                    )
+                    Button("ADD") { viewModel.addError() }
+                }
+                HStack {
+                    FormItemView(
+                        title: "RUM Resource", placeholder: "key", accent: .rumResourceColor, value: $viewModel.resourceKey
+                    )
+                    Button("START") { viewModel.startResource() }
+                }
+                Divider()
             }
-            HStack {
-                FormItemView(
-                    title: "RUM Action", placeholder: "name", accent: .rumActionColor, value: $viewModel.actionName
-                )
-                Button("ADD") { viewModel.addAction() }
+            Group {
+                Text("Bundling Logs and Spans")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.bold))
+                Text("Debug bundling Logs and Spans with RUM Session by sending them manually while the session is active.")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.light))
+                HStack {
+                    FormItemView(
+                        title: "Log", placeholder: "log message", accent: .gray, value: $viewModel.logMessage
+                    )
+                    Button("Send") { viewModel.sendLog() }
+                }
+                HStack {
+                    FormItemView(
+                        title: "Span", placeholder: "span name", accent: .gray, value: $viewModel.spanOperationName
+                    )
+                    Button("Send") { viewModel.sendSpan() }
+                }
+                Text("Send 1st party request with instrumented URLSession:")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.light))
+                HStack {
+                    FormItemView(
+                        title: "POST Request", placeholder: "request url", accent: .gray, value: $viewModel.instrumentedRequestURL
+                    )
+                    Button("Send") { viewModel.sendPOSTRequest() }
+                }
+                Divider()
             }
-            HStack {
-                FormItemView(
-                    title: "RUM Error", placeholder: "message", accent: .rumErrorColor, value: $viewModel.errorMessage
-                )
-                Button("ADD") { viewModel.addError() }
+            Group {
+                Text("Current RUM Session:")
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .font(.caption.weight(.bold))
+                List(viewModel.sessionItems) { sessionItem in
+                    SessionItemView(item: sessionItem)
+                        .listRowInsets(EdgeInsets())
+                        .padding(4)
+                }
+                .listStyle(PlainListStyle())
             }
-            HStack {
-                FormItemView(
-                    title: "RUM Resource", placeholder: "key", accent: .rumResourceColor, value: $viewModel.resourceKey
-                )
-                Button("START") { viewModel.startResource() }
-            }
-            Divider()
-            Text("RUM Session:")
-                .bold()
-                .font(.footnote)
-            List(viewModel.sessionItems) { sessionItem in
-                SessionItemView(item: sessionItem)
-                    .listRowInsets(EdgeInsets())
-                    .padding(4)
-            }
-            .listStyle(PlainListStyle())
         }
         .buttonStyle(DatadogButtonStyle())
         .padding()
