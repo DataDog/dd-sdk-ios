@@ -73,6 +73,9 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
             description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
         case .configuration(let configuration):
             description.append("\n- [configuration] \(configuration)")
+        case let .metric(name, attributes):
+            let attributesString = attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
+            description.append("\n- [metric] '\(name)' (" + attributesString + ")")
         }
     }
 }

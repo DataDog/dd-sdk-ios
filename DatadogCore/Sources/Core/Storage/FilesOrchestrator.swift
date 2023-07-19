@@ -232,19 +232,22 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
-        let uploaderWindow = performance.uploaderWindow
 
-        let attributes: [String: Encodable] = [
-            BatchDeletedMetric.typeKey: BatchDeletedMetric.typeValue,
-            BatchDeletedMetric.trackKey: trackValue,
-            BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
-            BatchDeletedMetric.uploaderWindowKey: uploaderWindow.toMilliseconds,
-            BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
-            BatchDeletedMetric.batchRemovalReasonKey: deletionReason.asString,
-            BatchDeletedMetric.inBackgroundKey: false,
-        ]
-
-        print("⏱️ [Mobile Metric] Batch Deleted, attributes: \(attributes)")
+        DD.telemetry.metric(
+            name: BatchDeletedMetric.name,
+            attributes: [
+                BatchDeletedMetric.typeKey: BatchDeletedMetric.typeValue,
+                BatchDeletedMetric.trackKey: trackValue,
+                BatchDeletedMetric.uploaderDelayKey: [
+                    BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
+                    BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
+                ],
+                BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
+                BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
+                BatchDeletedMetric.batchRemovalReasonKey: deletionReason.asString,
+                BatchDeletedMetric.inBackgroundKey: false,
+            ]
+        )
     }
 }
 

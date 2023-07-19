@@ -175,7 +175,11 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         // sends 101 telemetry events
         for index in 0...TelemetryReceiver.maxEventsPerSessions {
-            telemetry.debug(id: "\(index)", message: "telemetry debug")
+            if index % 2 == 0 {
+                telemetry.debug(id: "\(index)", message: "telemetry debug")
+            } else {
+                telemetry.metric(name: "metric name", attributes: mockRandomAttributes())
+            }
         }
 
         // Then
@@ -190,7 +194,11 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         // sends 10 telemetry events
         for index in 0..<10 {
-            telemetry.debug(id: "\(index)", message: "telemetry debug")
+            if index % 2 == 0 {
+                telemetry.debug(id: "\(index)", message: "telemetry debug")
+            } else {
+                telemetry.metric(name: "metric name", attributes: mockRandomAttributes())
+            }
         }
 
         // Then
@@ -332,5 +340,62 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.useLocalEncryption, useLocalEncryption)
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)
         XCTAssertEqual(event?.telemetry.configuration.useTracing, useTracing)
+    }
+
+    // MARK: - Metrics Telemetry Events
+
+    func testSendTelemetryMetric() {
+        // Given
+        core.messageReceiver = TelemetryReceiver.mockWith(
+            dateProvider: RelativeDateProvider(
+                using: .init(timeIntervalSince1970: 0)
+            )
+        )
+
+        // When
+        let randomName: String = .mockRandom()
+        let randomAttributes = mockRandomAttributes()
+        telemetry.metric(name: randomName, attributes: randomAttributes)
+
+        // Then
+        let event = core.events(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.date, 0)
+        XCTAssertEqual(event?.version, core.context.sdkVersion)
+        XCTAssertEqual(event?.service, "dd-sdk-ios")
+        XCTAssertEqual(event?.source.rawValue, core.context.source)
+        XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] \(randomName)")
+        DDAssertReflectionEqual(event?.telemetry.telemetryInfo, randomAttributes)
+    }
+
+    func testSendTelemetryMetricWithRUMContext() {
+        // Given
+        core.messageReceiver = TelemetryReceiver.mockWith(
+            dateProvider: RelativeDateProvider(
+                using: .init(timeIntervalSince1970: 0)
+            )
+        )
+
+        let applicationId: String = .mockRandom()
+        let sessionId: String = .mockRandom()
+        let viewId: String = .mockRandom()
+        let actionId: String = .mockRandom()
+        core.set(feature: RUMFeature.name, attributes: {[
+            RUMContextAttributes.ids: [
+                RUMContextAttributes.IDs.applicationID: applicationId,
+                RUMContextAttributes.IDs.sessionID: sessionId,
+                RUMContextAttributes.IDs.viewID: viewId,
+                RUMContextAttributes.IDs.userActionID: actionId
+            ]
+        ]})
+
+        // When
+        telemetry.metric(name: .mockRandom(), attributes: mockRandomAttributes())
+
+        // Then
+        let event = core.events(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.application?.id, applicationId)
+        XCTAssertEqual(event?.session?.id, sessionId)
+        XCTAssertEqual(event?.view?.id, viewId)
+        XCTAssertEqual(event?.action?.id, actionId)
     }
 }
