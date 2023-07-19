@@ -212,7 +212,7 @@ class DatadogCoreTests: XCTestCase {
                     maxFileSize: 123,
                     maxObjectSize: 456,
                     meanFileAge: 100,
-                    minUploadDelay: nil
+                    uploadDelay: nil
                 )
             )
         )
