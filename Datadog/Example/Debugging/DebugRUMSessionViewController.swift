@@ -81,10 +81,10 @@ private class DebugRUMSessionViewModel: ObservableObject {
 
         Global.rum.addUserAction(type: .custom, name: actionName)
 
-        Thread.sleep(forTimeInterval: 0.05)
-        sendSpan()
-
-        self.actionName = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            self.sendSpan()
+            self.actionName = ""
+        }
     }
 
     func addError() {

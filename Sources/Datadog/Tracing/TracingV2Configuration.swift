@@ -88,6 +88,7 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
         if let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids {
+            let attributes = attributes.compactMapValues { $0 }
             let mappedAttribues = Dictionary(uniqueKeysWithValues: attributes.map { key, value in (mapInternalTags(key), value) })
 
             rum.attributes = mappedAttribues
