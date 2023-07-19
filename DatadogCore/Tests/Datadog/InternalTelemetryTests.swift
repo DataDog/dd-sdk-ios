@@ -24,7 +24,7 @@ class InternalTelemetryTests: XCTestCase {
 
         // Then
         XCTAssertEqual(dd.telemetry.messages.count, 1)
-        guard case .debug(let receivedId, let receivedMessage) = dd.telemetry.messages.first else {
+        guard case .debug(let receivedId, let receivedMessage, _) = dd.telemetry.messages.first else {
             return XCTFail("A debug should be send to `DD.telemetry`.")
         }
 

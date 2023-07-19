@@ -62,9 +62,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// - Returns: Always `true`.
     func receive(telemetry: TelemetryMessage, from core: DatadogCoreProtocol) -> Bool {
         switch telemetry {
-        case .debug(let id, let message):
-            debug(id: id, message: message, in: core)
-        case .error(let id, let message, let kind, let stack):
+        case let .debug(id, message, attributes):
+            debug(id: id, message: message, attributes: attributes, in: core)
+        case let .error(id, message, kind, stack):
             error(id: id, message: message, kind: kind, stack: stack, in: core)
         case .configuration(let configuration):
             send(configuration: configuration, in: core)
@@ -82,16 +82,17 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
-    func debug(id: String, message: String, in core: DatadogCoreProtocol) {
+    ///   - attributes: Custom attributes attached to the log (optional).
+    func debug(id: String, message: String, attributes: [String: Encodable]?, in core: DatadogCoreProtocol) {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
+            let rum: [String: String]? = context.featuresAttributes["rum"]?.ids
 
-            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
-            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
-            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
+            let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
+            let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
+            let viewId = rum?[RUMContextAttributes.IDs.viewID]
+            let actionId = rum?[RUMContextAttributes.IDs.userActionID]
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
@@ -102,7 +103,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 service: "dd-sdk-ios",
                 session: sessionId.map { .init(id: $0) },
                 source: .init(rawValue: context.source) ?? .ios,
-                telemetry: .init(message: message),
+                telemetry: .init(
+                    message: message,
+                    telemetryInfo: attributes ?? [:]
+                ),
                 version: context.sdkVersion,
                 view: viewId.map { .init(id: $0) }
             )

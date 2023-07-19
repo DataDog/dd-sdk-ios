@@ -42,7 +42,7 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
-        telemetry.debug("Hello world!")
+        telemetry.debug("Hello world!", attributes: ["foo": 42])
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first
@@ -51,6 +51,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source.rawValue, core.context.source)
         XCTAssertEqual(event?.telemetry.message, "Hello world!")
+        XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
     }
 
     func testSendTelemetryError() {
@@ -93,7 +94,7 @@ class TelemetryReceiverTests: XCTestCase {
         ]})
 
         // When
-        telemetry.debug("telemetry debug")
+        telemetry.debug("telemetry debug", attributes: ["foo": 42])
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first
@@ -102,6 +103,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, sessionId)
         XCTAssertEqual(event?.view?.id, viewId)
         XCTAssertEqual(event?.action?.id, actionId)
+        XCTAssertEqual(event?.telemetry.telemetryInfo as? [String: Int], ["foo": 42])
     }
 
     func testSendTelemetryError_withRUMContext() throws {

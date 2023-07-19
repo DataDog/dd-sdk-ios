@@ -24,7 +24,7 @@ class _InternalProxyTests: XCTestCase {
         // Then
         XCTAssertEqual(dd.telemetry.messages.count, 2)
 
-        guard case .debug(_, let receivedMessage) = dd.telemetry.messages.first else {
+        guard case .debug(_, let receivedMessage, _) = dd.telemetry.messages.first else {
             return XCTFail("A debug should be send to `DD.telemetry`.")
         }
         XCTAssertEqual(receivedMessage, randomDebugMessage)

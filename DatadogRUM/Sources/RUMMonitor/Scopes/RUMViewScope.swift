@@ -368,6 +368,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -437,6 +438,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 documentVersion: version.toInt64,
                 pageStates: nil,
                 replayStats: .init(
@@ -535,6 +537,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map { rumUUID in
@@ -598,6 +601,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 discarded: nil,
                 session: .init(plan: .plan1)
             ),
