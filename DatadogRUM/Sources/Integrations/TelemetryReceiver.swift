@@ -87,8 +87,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let rum: [String: String]? = context.featuresAttributes["rum"]?.ids
-
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let rum = rumAttributes?.compactMapValues { $0 }
             let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
             let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
             let viewId = rum?[RUMContextAttributes.IDs.viewID]
@@ -130,8 +130,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
-
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let attributes = rumAttributes?.compactMapValues { $0 }
             let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
             let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
             let viewId = attributes?[RUMContextAttributes.IDs.viewID]
@@ -169,7 +169,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         self.record(event: "_dd.configuration", in: core) { context, writer in
-            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let attributes = rumAttributes?.compactMapValues { $0 }
             let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
             let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
             let viewId = attributes?[RUMContextAttributes.IDs.viewID]
@@ -203,7 +204,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
         rum.eventWriteContext { context, writer in
             // reset recorded events on session renewal
-            let attributes: [String: String]? = context.featuresAttributes["rum"]?.ids
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let attributes = rumAttributes?.compactMapValues { $0 }
             let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
 
             if sessionId != self.currentSessionID {
