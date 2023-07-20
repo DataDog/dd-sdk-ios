@@ -59,7 +59,7 @@ public struct PerformancePresetOverride {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
 
-        if let meanFileAge {
+        if let meanFileAge = meanFileAge {
             // Following constants are the same as in `DatadogCore.PerformancePreset`
             self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
             self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
