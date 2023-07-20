@@ -204,8 +204,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: nil, in: core) { context, writer in
-            let rum: [String: String]? = context.featuresAttributes[RUMFeature.name]?.ids
-
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let rum = rumAttributes?.compactMapValues { $0 }
             let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
             let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
             let viewId = rum?[RUMContextAttributes.IDs.viewID]
