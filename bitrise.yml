@@ -558,7 +558,7 @@ workflows:
         - environment_key_list: |-
             DD_RELEASE_GIT_TAG
             DD_RELEASE_DRY_RUN
-        
+
   publish_github_asset:
     before_run:
     - _make_dependencies  # install tooling
