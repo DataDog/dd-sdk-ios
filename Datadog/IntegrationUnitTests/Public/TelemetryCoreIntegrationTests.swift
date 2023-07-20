@@ -29,6 +29,7 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: .mockAny())
         config.telemetrySampleRate = 100
+        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -59,6 +60,7 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         // Given & When
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
+        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // Then
@@ -92,6 +94,7 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
+        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When
@@ -128,6 +131,7 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
+        config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
         // When

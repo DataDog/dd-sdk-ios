@@ -170,21 +170,22 @@ class TelemetryReceiverTests: XCTestCase {
 
     func testSendTelemetry_toSessionLimit() throws {
         // Given
-        core.messageReceiver = TelemetryReceiver.mockAny()
+        core.messageReceiver = TelemetryReceiver.mockWith(sampler: .mockKeepAll())
 
         // When
         // sends 101 telemetry events
-        for index in 0...TelemetryReceiver.maxEventsPerSessions {
-            if index % 2 == 0 {
-                telemetry.debug(id: "\(index)", message: "telemetry debug")
-            } else {
-                telemetry.metric(name: "metric name", attributes: mockRandomAttributes())
-            }
+        for index in 0..<(TelemetryReceiver.maxEventsPerSessions * 2) {
+            oneOf([
+                { self.telemetry.debug(id: "\(index)", message: .mockAny()) },
+                { self.telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
+                { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
+            ])
         }
 
         // Then
-        let events = core.events(ofType: TelemetryDebugEvent.self)
-        XCTAssertEqual(events.count, 100)
+        let debugEvents = core.events(ofType: TelemetryDebugEvent.self)
+        let errorEvents = core.events(ofType: TelemetryErrorEvent.self)
+        XCTAssertEqual(debugEvents.count + errorEvents.count, 100)
     }
 
     func testSampledTelemetry_rejectAll() throws {
@@ -194,11 +195,12 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         // sends 10 telemetry events
         for index in 0..<10 {
-            if index % 2 == 0 {
-                telemetry.debug(id: "\(index)", message: "telemetry debug")
-            } else {
-                telemetry.metric(name: "metric name", attributes: mockRandomAttributes())
-            }
+            oneOf([
+                { self.telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
+                { self.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
+                { self.telemetry.configuration(batchSize: .mockAny()) },
+                { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
+            ])
         }
 
         // Then
@@ -214,14 +216,38 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
-        // sends 10 telemetry events
-        for _ in 0..<10 {
+        for index in 0..<10 {
+            telemetry.debug(id: "debug-\(index)", message: .mockAny())
+            telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
+            telemetry.metric(name: .mockAny(), attributes: [:])
             telemetry.configuration(batchSize: .mockAny())
         }
 
         // Then
-        let events = core.events(ofType: TelemetryDebugEvent.self)
-        XCTAssertEqual(events.count, 0)
+        XCTAssertEqual(core.events(ofType: TelemetryDebugEvent.self).count, 20, "It should keep 10 debug events and 10 metrics")
+        XCTAssertEqual(core.events(ofType: TelemetryErrorEvent.self).count, 10, "It should keep 10 error events")
+        XCTAssertTrue(core.events(ofType: TelemetryConfigurationEvent.self).isEmpty, "It should reject all configuration events")
+    }
+
+    func testSampledTelemetry_rejectAllMetrics() throws {
+        // Given
+        core.messageReceiver = TelemetryReceiver.mockWith(
+            sampler: .mockKeepAll(),
+            metricsExtraSampler: .mockRejectAll()
+        )
+
+        // When
+        for index in 0..<10 {
+            telemetry.debug(id: "debug-\(index)", message: .mockAny())
+            telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
+            telemetry.metric(name: .mockAny(), attributes: [:])
+            telemetry.configuration(batchSize: .mockAny())
+        }
+
+        // Then
+        XCTAssertEqual(core.events(ofType: TelemetryDebugEvent.self).count, 10, "It should keep 10 debug events but no metrics")
+        XCTAssertEqual(core.events(ofType: TelemetryErrorEvent.self).count, 10, "It should keep 10 error events")
+        XCTAssertEqual(core.events(ofType: TelemetryConfigurationEvent.self).count, 1, "It should keep 1 configuration event")
     }
 
     func testSendTelemetry_resetAfterSessionExpire() throws {

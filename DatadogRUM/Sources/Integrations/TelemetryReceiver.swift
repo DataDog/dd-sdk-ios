@@ -16,6 +16,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let sampler: Sampler
 
     let configurationExtraSampler: Sampler
+    let metricsExtraSampler: Sampler
 
     /// Keeps track of current session
     @ReadWriteLock
@@ -34,14 +35,18 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
+    ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
+    ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler = Sampler(samplingRate: 20.0) // Extra sample of 20% for configuration events
+        configurationExtraSampler: Sampler,
+        metricsExtraSampler: Sampler
     ) {
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
+        self.metricsExtraSampler = metricsExtraSampler
     }
 
     /// Receives a message from the bus.
@@ -201,6 +206,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 
     private func metric(name: String, attributes: [String: Encodable], in core: DatadogCoreProtocol) {
+        guard metricsExtraSampler.sample() else {
+            return
+        }
+
         let date = dateProvider.now
 
         record(event: nil, in: core) { context, writer in
