@@ -6,7 +6,7 @@ project_type: other
 app:
   envs:
   - PROJECT_PATH: Datadog.xcworkspace
-  - PROJECT_SCHEME: Datadog iOS
+  - PROJECT_SCHEME: DatadogCore iOS
 
 workflows:
   run_all:
