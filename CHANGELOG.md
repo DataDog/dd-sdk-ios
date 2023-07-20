@@ -1,8 +1,10 @@
 # Unreleased
 
+# 1.22.0 / 21-07-2023
+- [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
 
-# 1.21.0 / 27-07-2023
+# 1.21.0 / 27-06-2023
 - [BUGFIX] Fix TracingUUID string format. See [#1311][] (Thanks [@changm4n][])
 - [BUGFIX] Rename _Datadog_Private to DatadogPrivate. See [#1331] (Thanks [@alexfanatics][])
 - [IMPROVEMENT] Add context to crash when there's an active view. See [#1315][]
@@ -476,6 +478,7 @@
 [#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
 [#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
+[#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
