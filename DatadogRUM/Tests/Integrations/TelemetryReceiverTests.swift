@@ -175,11 +175,13 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         // sends 101 telemetry events
         for index in 0..<(TelemetryReceiver.maxEventsPerSessions * 2) {
+            // swiftlint:disable opening_brace
             oneOf([
                 { self.telemetry.debug(id: "\(index)", message: .mockAny()) },
                 { self.telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
                 { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
             ])
+            // swiftlint:enable opening_brace
         }
 
         // Then
@@ -195,12 +197,14 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         // sends 10 telemetry events
         for index in 0..<10 {
+            // swiftlint:disable opening_brace
             oneOf([
                 { self.telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
                 { self.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
                 { self.telemetry.configuration(batchSize: .mockAny()) },
                 { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
             ])
+            // swiftlint:enable opening_brace
         }
 
         // Then
