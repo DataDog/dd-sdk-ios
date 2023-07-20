@@ -118,11 +118,6 @@ def generate_bitrise_yml(test_plan: TestPlan, dry_run: bool):
 
     print('\n⚙️ Saving `bitrise.yml`...')
     bitrise_yml.write(path='bitrise.yml')
-
-    print('\n⚙️ `bitrise.yml` content:')
-    saved_bitrise_yml = open('bitrise.yml', 'r')
-    print(saved_bitrise_yml.read())
-
     print('\n⚙️ All good 👍')
 
 
