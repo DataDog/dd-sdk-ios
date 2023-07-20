@@ -19,7 +19,7 @@ internal struct RUMViewEventsFilter {
         var skipped: [String: [Int64]] = [:]
 
         // reversed is O(1) and no copy because it is view on the original array
-        let filtered = events.reversed().compactMap { event in
+        let filtered: [Event] = events.reversed().compactMap { event in
             guard let metadata = event.metadata else {
                 // If there is no metadata, we can't filter it.
                 return event
