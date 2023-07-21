@@ -15,7 +15,9 @@ class DiffSRWireframes: XCTestCase {
         let randomID: Int64 = .mockRandom()
         let wireframes: [SRWireframe] = [
             .shapeWireframe(value: .mockWith(id: randomID)),
-            .textWireframe(value: .mockWith(id: randomID))
+            .textWireframe(value: .mockWith(id: randomID)),
+            .imageWireframe(value: .mockWith(id: randomID)),
+            .placeholderWireframe(value: .mockWith(id: randomID))
         ]
 
         wireframes.forEach { XCTAssertEqual($0.id, randomID) }
@@ -46,6 +48,32 @@ class DiffSRWireframes: XCTestCase {
         // Given
         let originalWireframe: SRWireframe = .textWireframe(value: .mockRandom())
         let otherWireframe: SRWireframe = .textWireframe(value: .mockRandomWith(id: originalWireframe.id))
+
+        // When
+        let mutations = try XCTUnwrap(otherWireframe.mutations(from: originalWireframe), "Failed to compute mutations")
+
+        // Then
+        let result = try XCTUnwrap(originalWireframe.merge(mutation: mutations), "Failed to merge mutations")
+        DDAssertReflectionEqual(result, otherWireframe)
+    }
+
+    func testsWhenMergingMutationsToTheOriginalImageWireframe_itShouldProduceTheOtherOne() throws {
+        // Given
+        let originalWireframe: SRWireframe = .imageWireframe(value: .mockRandom())
+        let otherWireframe: SRWireframe = .imageWireframe(value: .mockRandomWith(id: originalWireframe.id))
+
+        // When
+        let mutations = try XCTUnwrap(otherWireframe.mutations(from: originalWireframe), "Failed to compute mutations")
+
+        // Then
+        let result = try XCTUnwrap(originalWireframe.merge(mutation: mutations), "Failed to merge mutations")
+        DDAssertReflectionEqual(result, otherWireframe)
+    }
+
+    func testsWhenMergingMutationsToTheOriginalPlaceholderWireframe_itShouldProduceTheOtherOne() throws {
+        // Given
+        let originalWireframe: SRWireframe = .placeholderWireframe(value: .mockRandom())
+        let otherWireframe: SRWireframe = .placeholderWireframe(value: .mockRandomWith(id: originalWireframe.id))
 
         // When
         let mutations = try XCTUnwrap(otherWireframe.mutations(from: originalWireframe), "Failed to compute mutations")
@@ -97,6 +125,8 @@ class DiffSRWireframes: XCTestCase {
 
 private typealias TextWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate
 private typealias ShapeWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate
+private typealias ImageWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.ImageWireframeUpdate
+private typealias PlaceholderWireframeUpdate = SRIncrementalSnapshotRecord.Data.MutationData.Updates.PlaceholderWireframeUpdate
 
 extension SRWireframe {
     func merge(mutation: WireframeMutation) -> SRWireframe? {
@@ -105,6 +135,10 @@ extension SRWireframe {
             return .shapeWireframe(value: merge(update: update, into: wireframe))
         case let (.textWireframe(wireframe), .textWireframeUpdate(update)):
             return .textWireframe(value: merge(update: update, into: wireframe))
+        case let (.imageWireframe(wireframe), .imageWireframeUpdate(update)):
+            return .imageWireframe(value: merge(update: update, into: wireframe))
+        case let (.placeholderWireframe(wireframe), .placeholderWireframeUpdate(update)):
+            return .placeholderWireframe(value: merge(update: update, into: wireframe))
         default:
             return nil
         }
@@ -133,6 +167,34 @@ extension SRWireframe {
             text: update.text ?? wireframe.text,
             textPosition: update.textPosition ?? wireframe.textPosition,
             textStyle: update.textStyle ?? wireframe.textStyle,
+            width: update.width ?? wireframe.width,
+            x: update.x ?? wireframe.x,
+            y: update.y ?? wireframe.y
+        )
+    }
+
+    private func merge(update: ImageWireframeUpdate, into wireframe: SRImageWireframe) -> SRImageWireframe {
+        return SRImageWireframe(
+            base64: update.base64 ?? wireframe.base64,
+            border: update.border ?? wireframe.border,
+            clip: update.clip ?? wireframe.clip,
+            height: update.height ?? wireframe.height,
+            id: update.id,
+            isEmpty: update.isEmpty ?? wireframe.isEmpty,
+            mimeType: update.mimeType ?? wireframe.mimeType,
+            shapeStyle: update.shapeStyle ?? wireframe.shapeStyle,
+            width: update.width ?? wireframe.width,
+            x: update.x ?? wireframe.x,
+            y: update.y ?? wireframe.y
+        )
+    }
+
+    private func merge(update: PlaceholderWireframeUpdate, into wireframe: SRPlaceholderWireframe) -> SRPlaceholderWireframe {
+        return SRPlaceholderWireframe(
+            clip: update.clip ?? wireframe.clip,
+            height: update.height ?? wireframe.height,
+            id: update.id,
+            label: update.label ?? wireframe.label,
             width: update.width ?? wireframe.width,
             x: update.x ?? wireframe.x,
             y: update.y ?? wireframe.y

@@ -89,9 +89,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private let vitalInfoSampler: VitalInfoSampler?
 
-    /// Samples view update events, so we can minimize the number of events in payload.
-    private let viewUpdatesThrottler: RUMViewUpdatesThrottlerType
-
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
@@ -126,7 +123,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
-        self.viewUpdatesThrottler = dependencies.viewUpdatesThrottlerFactory()
     }
 
     // MARK: - RUMContextProvider
@@ -394,7 +390,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -441,6 +437,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 browserSdkVersion: nil,
                 documentVersion: version.toInt64,
+                pageStates: nil,
+                replayStats: .init(
+                    recordsCount: context.srBaggage?.recordsCountByViewID[viewUUID.toRUMDataFormat],
+                    segmentsCount: nil,
+                    segmentsTotalRawSize: nil
+                ),
                 session: .init(plan: .plan1)
             ),
             application: .init(id: self.context.rumApplicationID),
@@ -452,12 +454,14 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
+            privacy: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
-                startReason: nil,
+                sampledForReplay: nil,
+                startPrecondition: nil,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
             source: .init(rawValue: context.source) ?? .ios,
@@ -508,11 +512,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            if viewUpdatesThrottler.accept(event: event) {
-                writer.write(value: event)
-            } else { // if event was dropped by sampler
-                version -= 1
-            }
+            writer.write(value: event, metadata: event.metadata())
 
             // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
             // have recent information if process is interrupted by crash):
@@ -563,7 +563,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -614,7 +614,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

@@ -163,7 +163,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.isReplayBeingRecorded,
+                hasReplay: context.srBaggage?.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

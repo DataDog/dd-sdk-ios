@@ -252,6 +252,13 @@ public struct FeatureBaggage {
         get { try? value(forKey: key, type: T.self) }
         set { try? updateValue(newValue, forKey: key) }
     }
+
+    /// Merges with the values of another FeatureBaggage.
+    ///
+    /// - Parameter baggage: The FeatureBaggage to merge.
+    public mutating func merge(with baggage: FeatureBaggage) {
+        attributes.merge(baggage.attributes) { $1 }
+    }
 }
 
 extension FeatureBaggage: ExpressibleByDictionaryLiteral {

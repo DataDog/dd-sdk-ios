@@ -35,7 +35,7 @@ class DataUploaderBenchmarkTests: BenchmarkTests {
         measure(metrics: [XCTMemoryMetric()]) {
             // in each, 10 requests are done:
             try? (0..<10).forEach { _ in
-                let events = [Data(repeating: 0x41, count: 10 * 1_024 * 1_024)]
+                let events = [Event(data: Data(repeating: 0x41, count: 10 * 1_024 * 1_024))]
                 _ = try dataUploader.upload(events: events, context: context)
             }
             // After all, the baseline asserts `0kB` or less grow in Physical Memory.

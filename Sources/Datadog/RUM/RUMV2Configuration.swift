@@ -13,7 +13,10 @@ import Foundation
 internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -> DatadogFeatureConfiguration {
     return DatadogFeatureConfiguration(
         name: "rum",
-        requestBuilder: RUMRequestBuilder(intake: configuration.uploadURL),
+        requestBuilder: RUMRequestBuilder(
+            intake: configuration.uploadURL,
+            eventsFilter: RUMViewEventsFilter()
+        ),
         messageReceiver: CombinedFeatureMessageReceiver(
             ErrorMessageReceiver(),
             WebViewEventReceiver(
@@ -30,6 +33,50 @@ internal func createRUMConfiguration(configuration: FeaturesConfiguration.RUM) -
     )
 }
 
+internal struct RUMViewEventsFilter {
+    let decoder: JSONDecoder
+
+    init(decoder: JSONDecoder = JSONDecoder()) {
+        self.decoder = decoder
+    }
+
+    func filter(events: [Event]) -> [Event] {
+        var seen = Set<String>()
+        var skipped: [String: [Int64]] = [:]
+
+        // reversed is O(1) and no copy because it is view on the original array
+        let filtered = events.reversed().compactMap { event in
+            guard let metadata = event.metadata else {
+                // If there is no metadata, we can't filter it.
+                return event
+            }
+
+            guard let viewMetadata = try? decoder.decode(RUMViewEvent.Metadata.self, from: metadata) else {
+                // If we can't decode the metadata, we can't filter it.
+                return event
+            }
+
+            guard seen.contains(viewMetadata.id) == false else {
+                // If we've already seen this view, we can skip this
+                if skipped[viewMetadata.id] == nil {
+                    skipped[viewMetadata.id] = []
+                }
+                skipped[viewMetadata.id]?.append(viewMetadata.documentVersion)
+                return nil
+            }
+
+            seen.insert(viewMetadata.id)
+            return event
+        }
+
+        for (id, versions) in skipped {
+            DD.logger.debug("Skipping RUMViewEvent with id: \(id) and versions: \(versions.reversed().map(String.init).joined(separator: ", "))")
+        }
+
+        return filtered.reversed()
+    }
+}
+
 /// The RUM URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload RUM data.
 internal struct RUMRequestBuilder: FeatureRequestBuilder {
@@ -39,7 +86,9 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
     /// The RUM request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    let eventsFilter: RUMViewEventsFilter
+
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         var tags = [
             "service:\(context.service)",
             "version:\(context.version)",
@@ -71,7 +120,8 @@ internal struct RUMRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let filteredEvents = eventsFilter.filter(events: events)
+        let data = format.format(filteredEvents.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }

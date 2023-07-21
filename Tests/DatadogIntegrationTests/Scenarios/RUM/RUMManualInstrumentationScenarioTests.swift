@@ -79,8 +79,9 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
         XCTAssertEqual(view1.resourceEvents[0].resource.statusCode, 200)
         XCTAssertEqual(view1.resourceEvents[0].resource.type, .image)
-        XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration, 100_000_000 - 1) // ~0.1s
-        XCTAssertLessThan(view1.resourceEvents[0].resource.duration, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
+        XCTAssertNotNil(view1.resourceEvents[0].resource.duration) // ~0.1s
+        XCTAssertGreaterThan(view1.resourceEvents[0].resource.duration!, 100_000_000 - 1) // ~0.1s
+        XCTAssertLessThan(view1.resourceEvents[0].resource.duration!, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
         XCTAssertEqual(view1.errorEvents[0].error.type, "NSURLErrorDomain - -1011")
         XCTAssertEqual(view1.errorEvents[0].error.message, "Bad response.")
         XCTAssertEqual(

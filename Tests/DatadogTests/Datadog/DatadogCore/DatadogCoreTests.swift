@@ -72,7 +72,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(uploadedEvents, [#"{"event":"granted"}"#], "Only `.granted` events should be uploaded")
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
@@ -121,7 +121,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,
@@ -175,7 +175,7 @@ class DatadogCoreTests: XCTestCase {
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
-            .map { $0.utf8String }
+            .map { $0.data.utf8String }
 
         XCTAssertEqual(
             uploadedEvents,
@@ -214,11 +214,49 @@ class DatadogCoreTests: XCTestCase {
         try core.register(
             feature: FeatureMock(
                 name: name,
-                performanceOverride: PerformancePresetOverride(maxFileSize: 123, maxObjectSize: 456)
+                performanceOverride: PerformancePresetOverride(
+                    maxFileSize: 123,
+                    maxObjectSize: 456,
+                    meanFileAge: 100,
+                    minUploadDelay: nil
+                )
             )
         )
         feature = core.v2Features.values.first
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
         XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
+        XCTAssertEqual(feature?.storage.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+    }
+
+    func testItUpdatesTheFeatureBaggage() throws {
+        // Given
+        let contextProvider: DatadogContextProvider = .mockAny()
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            userInfoProvider: .mockAny(),
+            performance: .mockRandom(),
+            httpClient: .mockAny(),
+            encryption: nil,
+            contextProvider: contextProvider,
+            applicationVersion: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+        try core.register(feature: FeatureMock(name: "mock"))
+
+        // When
+        core.update(feature: "mock") {
+            return ["foo": "bar"]
+        }
+        core.update(feature: "mock") {
+            return ["bizz": "bazz"]
+        }
+
+        // Then
+        let context = contextProvider.read()
+        XCTAssertEqual(context.featuresAttributes["mock"]?.foo, "bar")
+        XCTAssertEqual(context.featuresAttributes["mock"]?.bizz, "bazz")
     }
 }

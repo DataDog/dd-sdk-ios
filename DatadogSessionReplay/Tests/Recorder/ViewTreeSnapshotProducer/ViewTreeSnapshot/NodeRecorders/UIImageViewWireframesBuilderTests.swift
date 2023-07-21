@@ -50,10 +50,10 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
 
     func test_BuildCorrectWireframes_whenContentImageIsIgnored() {
         let wireframeID = WireframeID.mockRandom()
-        let imageWireframeID = WireframeID.mockRandom()
+        let placeholderWireframeID = WireframeID.mockRandom()
         let builder = UIImageViewWireframesBuilder(
             wireframeID: wireframeID,
-            imageWireframeID: imageWireframeID,
+            imageWireframeID: placeholderWireframeID,
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
@@ -73,9 +73,9 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             XCTFail("First wireframe needs to be shapeWireframe case")
         }
 
-        if case let .imageWireframe(imageWireframe) = wireframes[1] {
-            XCTAssertEqual(imageWireframe.id, imageWireframeID)
-            XCTAssertEqual(imageWireframe.base64, "")
+        if case let .placeholderWireframe(placeholderWireframe) = wireframes[1] {
+            XCTAssertEqual(placeholderWireframe.id, placeholderWireframeID)
+            XCTAssertEqual(placeholderWireframe.label, "Content Image")
         } else {
             XCTFail("Second wireframe needs to be imageWireframe case")
         }

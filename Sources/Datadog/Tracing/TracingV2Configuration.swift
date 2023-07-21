@@ -18,6 +18,21 @@ internal func createTracingConfiguration(intake: URL) -> DatadogFeatureConfigura
     )
 }
 
+internal func mapInternalTags(_ originalTag: String) -> String {
+    switch originalTag {
+    case "application.id":
+        return "_dd.application.id"
+    case "session.id":
+        return "_dd.session.id"
+    case "view.id":
+        return "_dd.view.id"
+    case "user_action.id":
+        return "_dd.action.id"
+    default:
+        return originalTag
+    }
+}
+
 /// The Tracing URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload traces data.
 internal struct TracingRequestBuilder: FeatureRequestBuilder {
@@ -27,7 +42,7 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
     /// The tracing request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [],
@@ -45,7 +60,7 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let data = format.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }
@@ -72,8 +87,11 @@ internal struct TracingMessageReceiver: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) -> Bool {
-        if let attributes: [String: String] = context.featuresAttributes["rum"]?.ids {
-            rum.attributes = attributes
+        if let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids {
+            let attributes = attributes.compactMapValues { $0 }
+            let mappedAttribues = Dictionary(uniqueKeysWithValues: attributes.map { key, value in (mapInternalTags(key), value) })
+
+            rum.attributes = mappedAttribues
             return true
         }
         return false

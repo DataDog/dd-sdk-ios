@@ -17,6 +17,8 @@ extension SRWireframe: Diffable {
             return wireframe.id
         case .textWireframe(let wireframe):
             return wireframe.id
+        case .placeholderWireframe(let wireframe):
+            return wireframe.id
         }
     }
 
@@ -27,6 +29,8 @@ extension SRWireframe: Diffable {
         case let (.textWireframe(this), .textWireframe(other)):
             return this.hashValue != other.hashValue
         case let (.imageWireframe(this), .imageWireframe(other)):
+            return this.hashValue != other.hashValue
+        case let (.placeholderWireframe(this), .placeholderWireframe(other)):
             return this.hashValue != other.hashValue
         default:
             return true
@@ -64,6 +68,8 @@ extension SRWireframe: MutableWireframe {
             return try this.mutations(from: otherWireframe)
         case .textWireframe(let this):
             return try this.mutations(from: otherWireframe)
+        case .placeholderWireframe(let this):
+            return try this.mutations(from: otherWireframe)
         }
     }
 }
@@ -92,6 +98,28 @@ extension SRShapeWireframe: MutableWireframe {
     }
 }
 
+extension SRPlaceholderWireframe: MutableWireframe {
+    func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
+        guard case .placeholderWireframe(let other) = otherWireframe else {
+            throw WireframeMutationError.typeMismatch
+        }
+        guard other.id == id else {
+            throw WireframeMutationError.idMismatch
+        }
+
+        return .placeholderWireframeUpdate(
+            value: .init(
+                clip: use(clip, ifDifferentThan: other.clip),
+                height: use(height, ifDifferentThan: other.height),
+                id: id,
+                width: use(width, ifDifferentThan: other.width),
+                x: use(x, ifDifferentThan: other.x),
+                y: use(y, ifDifferentThan: other.y)
+            )
+        )
+    }
+}
+
 extension SRImageWireframe: MutableWireframe {
     func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
         guard case .imageWireframe(let other) = otherWireframe else {
@@ -108,6 +136,7 @@ extension SRImageWireframe: MutableWireframe {
                 clip: use(clip, ifDifferentThan: other.clip),
                 height: use(height, ifDifferentThan: other.height),
                 id: id,
+                isEmpty: use(isEmpty, ifDifferentThan: other.isEmpty),
                 mimeType: use(mimeType, ifDifferentThan: other.mimeType),
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
                 width: use(width, ifDifferentThan: other.width),

@@ -27,7 +27,7 @@ internal enum RUMDependency {
     ///
     /// SR expects:
     /// - `nil` if current RUM session is not sampled,
-    /// - baggage with `application_id`, `session_id` and `view.id` keys if RUM session is sampled.
+    /// - baggage with `application.id`, `session.id` and `view.id` keys if RUM session is sampled.
     static let ids = "ids"
 
     // MARK: Contract from SR to RUM (mirror of `SessionReplayDependency` in RUM):
@@ -41,4 +41,7 @@ internal enum RUMDependency {
 
     /// The key referencing a `Bool` value that indicates if replay is being recorded.
     static let hasReplay = "has_replay"
+
+    /// They key referencing a `[String: Int64]` dictionary of viewIDs and associated records count.
+    static let recordsCountByViewID = "records_count_by_view_id"
 }

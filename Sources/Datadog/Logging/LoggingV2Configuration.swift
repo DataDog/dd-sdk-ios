@@ -27,6 +27,17 @@ internal func createLoggingConfiguration(
     )
 }
 
+internal func mapInternalAttributeKey(_ originalAttribute: String) -> String {
+    switch originalAttribute {
+    case "application.id":
+        return "application_id"
+    case "session.id":
+        return "session_id"
+    default:
+        return originalAttribute
+    }
+}
+
 /// The Logging URL Request Builder for formatting and configuring the `URLRequest`
 /// to upload logs data.
 internal struct LoggingRequestBuilder: FeatureRequestBuilder {
@@ -36,7 +47,7 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
-    func request(for events: [Data], with context: DatadogContext) -> URLRequest {
+    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
             url: intake,
             queryItems: [
@@ -56,7 +67,7 @@ internal struct LoggingRequestBuilder: FeatureRequestBuilder {
             ]
         )
 
-        let data = format.format(events)
+        let data = format.format(events.map { $0.data })
         return builder.uploadRequest(with: data)
     }
 }
@@ -286,7 +297,8 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             }
 
             if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                event.merge(baggage as [String: Any]) { $1 }
+                let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapInternalAttributeKey(key), value) })
+                event.merge(mappedBaggage as [String: Any]) { $1 }
             }
 
             writer.write(value: AnyEncodable(event))

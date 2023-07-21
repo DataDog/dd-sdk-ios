@@ -84,7 +84,7 @@ class FeatureStorageTests: XCTestCase {
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
         let batch = try XCTUnwrap(storage.reader.readNextBatch())
-        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
         XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
@@ -103,11 +103,11 @@ class FeatureStorageTests: XCTestCase {
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
         var batch = try XCTUnwrap(storage.reader.readNextBatch())
-        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
         batch = try XCTUnwrap(storage.reader.readNextBatch())
-        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"pending"}"#])
+        XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"pending"}"#])
         storage.reader.markBatchAsRead(batch)
 
         XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
@@ -126,7 +126,7 @@ class FeatureStorageTests: XCTestCase {
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
         let batch = try XCTUnwrap(storage.reader.readNextBatch())
-        XCTAssertEqual(batch.events.map { $0.utf8String }, [#"{"event.consent":"granted"}"#])
+        XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
         XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")

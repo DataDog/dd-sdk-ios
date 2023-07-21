@@ -373,6 +373,16 @@ extension DatadogCore: DatadogCoreProtocol {
         contextProvider.write { $0.featuresAttributes[feature] = attributes() }
     }
 
+    /* public */ func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        contextProvider.write {
+            if $0.featuresAttributes[feature] != nil {
+                $0.featuresAttributes[feature]?.merge(with: attributes())
+            } else {
+                $0.featuresAttributes[feature] = attributes()
+            }
+        }
+    }
+
     /* public */ func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
         messageBusQueue.async {
             let receivers = self.messageBus.values.filter {

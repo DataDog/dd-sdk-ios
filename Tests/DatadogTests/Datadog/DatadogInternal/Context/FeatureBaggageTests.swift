@@ -47,4 +47,14 @@ class FeatureBaggageTests: XCTestCase {
         attributes.int = 2
         XCTAssertEqual(attributes.int, 2)
     }
+
+    func testMerge() {
+        var attributes = attributes
+        attributes.merge(with: ["string": "test2"])
+
+        XCTAssertEqual(attributes.int, 1)
+        XCTAssertEqual(attributes.double, 2.0)
+        XCTAssertEqual(attributes.string, "test2")
+        XCTAssertEqual(attributes.enum, EnumAttribute.test)
+    }
 }

@@ -676,12 +676,6 @@ extension RUMSessionState: AnyMockable, RandomMockable {
 
 // MARK: - RUMScope Mocks
 
-internal struct NoOpRUMViewUpdatesThrottler: RUMViewUpdatesThrottlerType {
-    func accept(event: RUMViewEvent) -> Bool {
-        return true // always send view update
-    }
-}
-
 func mockNoOpSessionListener() -> RUMSessionListener {
     return { _, _ in }
 }
@@ -701,7 +695,6 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
-        viewUpdatesThrottlerFactory: @escaping () -> RUMViewUpdatesThrottlerType = { NoOpRUMViewUpdatesThrottler() },
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUMSessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
@@ -715,7 +708,6 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             ciTest: ciTest,
-            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart
         )
@@ -731,7 +723,6 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         ciTest: RUMCITest? = nil,
-        viewUpdatesThrottlerFactory: (() -> RUMViewUpdatesThrottlerType)? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUMSessionListener? = nil
     ) -> RUMScopeDependencies {
@@ -745,7 +736,6 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             ciTest: ciTest ?? self.ciTest,
-            viewUpdatesThrottlerFactory: viewUpdatesThrottlerFactory ?? self.viewUpdatesThrottlerFactory,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart
         )
@@ -769,14 +759,14 @@ extension RUMSessionScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        isReplayBeingRecorded: Bool? = .mockAny()
+        hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
             dependencies: dependencies,
-            isReplayBeingRecorded: isReplayBeingRecorded
+            hasReplay: hasReplay
         )
     }
 }
@@ -1039,10 +1029,11 @@ class ContinuousVitalReaderMock: ContinuousVitalReader {
 // MARK: - Dependency on Session Replay
 
 extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) -> Self {
         return [
             SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
+                SessionReplayDependency.hasReplay: hasReplay,
+                SessionReplayDependency.recordsCountByViewID: recordsCountByViewID
             ]
         ]
     }

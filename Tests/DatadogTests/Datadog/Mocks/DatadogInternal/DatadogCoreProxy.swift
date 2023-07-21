@@ -87,6 +87,10 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         core.set(feature: feature, attributes: attributes)
     }
 
+    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
+        core.update(feature: feature, attributes: attributes)
+    }
+
     func send(message: FeatureMessage, sender: DatadogCoreProtocol, else fallback: @escaping () -> Void) {
         core.send(message: message, sender: self, else: fallback)
     }
@@ -149,8 +153,8 @@ private class FeatureScopeInterceptor {
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
 
-        func write<T>(value: T) where T: Encodable {
-            actualWriter.write(value: value)
+        func write<T: Encodable, M: Encodable>(value: T, metadata: M) {
+            actualWriter.write(value: value, metadata: metadata)
 
             let event = value
             let data = try! InterceptingWriter.jsonEncoder.encode(value)

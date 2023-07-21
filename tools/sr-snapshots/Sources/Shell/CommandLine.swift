@@ -6,8 +6,10 @@
 
 import Foundation
 
-public struct CommandLineError: Error, CustomStringConvertible {
-    let result: CommandLineResult
+/// An error thrown when shell command exited with non-zero code.
+public struct CommandError: Error, CustomStringConvertible {
+    /// The full result of command.
+    let result: CommandResult
 
     public var description: String {
         return """
@@ -19,10 +21,10 @@ public struct CommandLineError: Error, CustomStringConvertible {
 }
 
 /// Result of executing shell command.
-public struct CommandLineResult {
-    /// Command's STDOUT value.
+public struct CommandResult {
+    /// Command's STDOUT.
     public let output: String?
-    /// Command's STDERR value.
+    /// Command's STDERR.
     public let error: String?
     /// Exit code of the command.
     public let status: Int32
@@ -31,9 +33,9 @@ public struct CommandLineResult {
 /// Protocol for running command line commands
 public protocol CommandLine {
     /// Executes given shell command.
-    /// - Parameter command: command to run
-    /// - Returns: result of the command
-    func shellResult(_ command: String) throws -> CommandLineResult
+    /// - Parameter command: The command to run.
+    /// - Returns: The result of the command.
+    func shellResult(_ command: String) throws -> CommandResult
 }
 
 public extension CommandLine {
@@ -45,7 +47,7 @@ public extension CommandLine {
     func shell(_ command: String) throws -> String {
         let result = try shellResult(command)
         if result.status != 0 {
-            throw CommandLineError(result: result)
+            throw CommandError(result: result)
         } else if let output = result.output, !output.isEmpty {
             return output
         } else if let error = result.error, !error.isEmpty {

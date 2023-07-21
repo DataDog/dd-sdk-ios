@@ -288,3 +288,29 @@ internal class JSONSchema: Decodable {
         }
     }
 }
+
+extension Array where Element == JSONSchema.EnumValue {
+    func inferrSchemaType() -> JSONSchema.SchemaType? {
+        let hasOnlyStrings = allSatisfy { element in
+            if case .string = element {
+                return true
+            }
+            return false
+        }
+        if hasOnlyStrings {
+            return .string
+        }
+
+        let hasOnlyIntegers = allSatisfy { element in
+            if case .integer = element {
+                return true
+            }
+            return false
+        }
+        if hasOnlyIntegers {
+            return .number
+        }
+
+        return nil
+    }
+}

@@ -7,9 +7,18 @@
 import Foundation
 
 internal struct Batch {
-    let events: [Data]
+    /// Data blocks in the batch.
+    let dataBlocks: [DataBlock]
     /// File from which `data` was read.
     let file: ReadableFile
+}
+
+extension Batch {
+    /// Events contained in the batch.
+    var events: [Event] {
+        let generator = EventGenerator(dataBlocks: dataBlocks)
+        return generator.map { $0 }
+    }
 }
 
 /// A type, reading batched data.

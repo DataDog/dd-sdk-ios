@@ -10,14 +10,16 @@ import XCTest
 class SessionReplayDependencyTests: XCTestCase {
     func testWhenSessionReplayIsConfigured_itReadsReplayBeingRecorded() {
         let hasReplay: Bool = .random()
+        let recordsCountByViewID: [String: Int64] = [.mockRandom(): .mockRandom()]
 
         // When
         let context: DatadogContext = .mockWith(
-            featuresAttributes: .mockSessionReplayAttributes(hasReplay: hasReplay)
+            featuresAttributes: .mockSessionReplayAttributes(hasReplay: hasReplay, recordsCountByViewID: recordsCountByViewID)
         )
 
         // Then
-        XCTAssertEqual(context.srBaggage?.isReplayBeingRecorded, hasReplay)
+        XCTAssertEqual(context.srBaggage?.hasReplay, hasReplay)
+        XCTAssertEqual(context.srBaggage?.recordsCountByViewID, recordsCountByViewID)
     }
 
     func testWhenSessionReplayIsNotConfigured_itReadsNoSRBaggage() {
