@@ -98,13 +98,13 @@ class ServerDateProviderMock: ServerDateProvider {
 // MARK: - PerformancePreset Mocks
 
 struct StoragePerformanceMock: StoragePerformancePreset {
-    let maxFileSize: UInt64
-    let maxDirectorySize: UInt64
-    let maxFileAgeForWrite: TimeInterval
-    let minFileAgeForRead: TimeInterval
-    let maxFileAgeForRead: TimeInterval
-    let maxObjectsInFile: Int
-    let maxObjectSize: UInt64
+    var maxFileSize: UInt64
+    var maxDirectorySize: UInt64
+    var maxFileAgeForWrite: TimeInterval
+    var minFileAgeForRead: TimeInterval
+    var maxFileAgeForRead: TimeInterval
+    var maxObjectsInFile: Int
+    var maxObjectSize: UInt64
 
     static let noOp = StoragePerformanceMock(
         maxFileSize: 0,
@@ -137,11 +137,23 @@ struct StoragePerformanceMock: StoragePerformancePreset {
     )
 }
 
+extension StoragePerformanceMock {
+    init(other: StoragePerformancePreset) {
+        maxFileSize = other.maxFileSize
+        maxDirectorySize = other.maxDirectorySize
+        maxFileAgeForWrite = other.maxFileAgeForWrite
+        minFileAgeForRead = other.minFileAgeForRead
+        maxFileAgeForRead = other.maxFileAgeForRead
+        maxObjectsInFile = other.maxObjectsInFile
+        maxObjectSize = other.maxObjectSize
+    }
+}
+
 struct UploadPerformanceMock: UploadPerformancePreset {
-    let initialUploadDelay: TimeInterval
-    let minUploadDelay: TimeInterval
-    let maxUploadDelay: TimeInterval
-    let uploadDelayChangeRate: Double
+    var initialUploadDelay: TimeInterval
+    var minUploadDelay: TimeInterval
+    var maxUploadDelay: TimeInterval
+    var uploadDelayChangeRate: Double
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
@@ -165,6 +177,15 @@ struct UploadPerformanceMock: UploadPerformancePreset {
         maxUploadDelay: 60,
         uploadDelayChangeRate: 60 / 0.05
     )
+}
+
+extension UploadPerformanceMock {
+    init(other: UploadPerformancePreset) {
+        initialUploadDelay = other.initialUploadDelay
+        minUploadDelay = other.minUploadDelay
+        maxUploadDelay = other.maxUploadDelay
+        uploadDelayChangeRate = other.uploadDelayChangeRate
+    }
 }
 
 extension BundleType: AnyMockable, RandomMockable {

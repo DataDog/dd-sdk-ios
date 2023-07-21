@@ -29,14 +29,17 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
-    /// Tracks number of times the file at `lastWritableFileURL` was returned from `getWritableFile()`.
+    /// Tracks number of times the last file was returned from `getWritableFile(writeSize:)`.
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
-    private var lastWritableFileUsesCount: Int = 0
+    private var lastWritableFileObjectsCount: UInt64 = 0
+    /// Tracks the size of last writable file by accumulating the total `writeSize:` requested in `getWritableFile(writeSize:)`
+    /// This is approximated value as it assumes that all requested writes succed. The actual difference should be negligible.
+    private var lastWritableFileApproximatedSize: UInt64 = 0
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
-        /// The name of the `DatadogRemoteFeature` that uses this orchestrator.
-        let featureName: String
+        /// The name of the track reported for this orchestrator.
+        let trackName: String
         /// The preset for uploader performance in this feature to include in metric.
         let uploaderPerformance: UploadPerformancePreset
     }
@@ -67,7 +70,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// - Returns: `WritableFile` capable of writing data of given size
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile {
         try validate(writeSize: writeSize)
-        return try createNewWritableFile()
+        if let closedBatchName = lastWritableFileName {
+            sendBatchClosedMetric(fileName: closedBatchName, forcedNew: true)
+        }
+        return try createNewWritableFile(writeSize: writeSize)
     }
 
     /// Returns writable file accordingly to default heuristic of creating and reusing files.
@@ -78,10 +84,14 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         try validate(writeSize: writeSize)
 
         if let lastWritableFile = reuseLastWritableFileIfPossible(writeSize: writeSize) { // if last writable file can be reused
-            lastWritableFileUsesCount += 1
+            lastWritableFileObjectsCount += 1
+            lastWritableFileApproximatedSize += writeSize
             return lastWritableFile
         } else {
-            return try createNewWritableFile()
+            if let closedBatchName = lastWritableFileName {
+                sendBatchClosedMetric(fileName: closedBatchName, forcedNew: false)
+            }
+            return try createNewWritableFile(writeSize: writeSize)
         }
     }
 
@@ -91,7 +101,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
     }
 
-    private func createNewWritableFile() throws -> WritableFile {
+    private func createNewWritableFile(writeSize: UInt64) throws -> WritableFile {
         // NOTE: RUMM-610 Because purging files directory is a memory-expensive operation, do it only when a new file
         // is created (we assume here that this won't happen too often). In details, this is to avoid over-allocating
         // internal `_FileCache` and `_NSFastEnumerationEnumerator` objects in downstream `FileManager` routines.
@@ -102,7 +112,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         let newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
         let newFile = try directory.createFile(named: newFileName)
         lastWritableFileName = newFile.name
-        lastWritableFileUsesCount = 1
+        lastWritableFileObjectsCount = 1
+        lastWritableFileApproximatedSize = writeSize
         return newFile
     }
 
@@ -119,7 +130,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
                 let fileIsRecentEnough = lastFileAge <= performance.maxFileAgeForWrite
                 let fileHasRoomForMore = (try lastFile.size() + writeSize) <= performance.maxFileSize
-                let fileCanBeUsedMoreTimes = (lastWritableFileUsesCount + 1) <= performance.maxObjectsInFile
+                let fileCanBeUsedMoreTimes = (lastWritableFileObjectsCount + 1) <= performance.maxObjectsInFile
 
                 if fileIsRecentEnough && fileHasRoomForMore && fileCanBeUsedMoreTimes {
                     return lastFile
@@ -226,18 +237,14 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         guard let metricsData = metricsData, deletionReason.includeInMetric else {
             return // do not track metrics for this orchestrator or deletion reason
         }
-        guard let trackValue = BatchDeletedMetric.trackValue(for: metricsData.featureName) else {
-            DD.logger.error("Can't determine track name for feature named '\(metricsData.featureName)'")
-            return
-        }
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
 
         DD.telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
-                BatchDeletedMetric.typeKey: BatchDeletedMetric.typeValue,
-                BatchDeletedMetric.trackKey: trackValue,
+                BatchMetric.typeKey: BatchDeletedMetric.typeValue,
+                BatchMetric.trackKey: metricsData.trackName,
                 BatchDeletedMetric.uploaderDelayKey: [
                     BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
                     BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
@@ -246,6 +253,31 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.asString,
                 BatchDeletedMetric.inBackgroundKey: false,
+            ]
+        )
+    }
+
+    /// Sends "Batch Closed" telemetry log.
+    /// - Parameters:
+    ///   - fileName: The name of the batch that was closed.
+    ///   - forcedNew: If the batch was closed due to default heuristic or because a new batch was forced by feature.
+    private func sendBatchClosedMetric(fileName: String, forcedNew: Bool) {
+        guard let metricsData = metricsData else {
+            return // do not track metrics for this orchestrator
+        }
+
+        let batchDuration = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: fileName))
+
+        DD.telemetry.metric(
+            name: BatchClosedMetric.name,
+            attributes: [
+                BatchMetric.typeKey: BatchClosedMetric.typeValue,
+                BatchMetric.trackKey: metricsData.trackName,
+                BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
+                BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
+                BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,
+                BatchClosedMetric.batchDurationKey: batchDuration.toMilliseconds,
+                BatchClosedMetric.forcedNewKey: forcedNew
             ]
         )
     }

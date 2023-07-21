@@ -12,9 +12,9 @@ import XCTest
 
 class CoreMetricsIntegrationTests: XCTestCase {
     func testResolvingTrackValueFromFeatureName() {
-        XCTAssertEqual(BatchDeletedMetric.trackValue(for: RUMFeature.name), "rum")
-        XCTAssertEqual(BatchDeletedMetric.trackValue(for: TraceFeature.name), "trace")
-        XCTAssertEqual(BatchDeletedMetric.trackValue(for: LogsFeature.name), "logs")
+        XCTAssertEqual(BatchMetric.trackValue(for: RUMFeature.name), "rum")
+        XCTAssertEqual(BatchMetric.trackValue(for: TraceFeature.name), "trace")
+        XCTAssertEqual(BatchMetric.trackValue(for: LogsFeature.name), "logs")
         // TODO: REPLAY-1869 Assert `sr` track name after Session Replay is available for integration testing
     }
 }
