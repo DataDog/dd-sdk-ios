@@ -76,7 +76,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
             XCTAssertNotNil(batch, "Not enough batch files were created for this benchmark.")
 
             if let batch = batch {
-                reader.markBatchAsRead(batch)
+                reader.markBatchAsRead(batch, reason: .flushed)
             }
         }
     }
