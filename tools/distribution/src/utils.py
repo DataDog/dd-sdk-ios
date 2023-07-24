@@ -11,7 +11,7 @@ import re
 import os
 import subprocess
 import contextlib
-
+from packaging.version import VERSION_PATTERN
 
 @contextlib.contextmanager
 def remember_cwd():
@@ -71,9 +71,11 @@ def read_sdk_version() -> str:
     Reads SDK version from 'Sources/Datadog/Versioning.swift'.
     """
     file = 'DatadogCore/Sources/Versioning.swift'
-    version_regex = r'^.+\"([0-9]+\.[0-9]+\.[0-9]+[\-a-z0-9]*)\"'  # e.g. 'internal let __sdkVersion = "1.8.0-beta1"'
 
-    versions: [str] = []
+    # https://packaging.pypa.io/en/latest/version.html#packaging.version.VERSION_PATTERN
+    version_regex = re.compile(r'^.+\"' + VERSION_PATTERN + r'\"$', re.VERBOSE | re.IGNORECASE) # e.g. 'internal let __sdkVersion = "1.8.0-beta.1"
+
+    versions: list[str] = []
     with open(file) as version_file:
         for line in version_file.readlines():
             if match := re.match(version_regex, line):
