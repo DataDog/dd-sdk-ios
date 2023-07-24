@@ -66,7 +66,7 @@ internal enum BatchDeletedMetric {
         case flushed
 
         /// Converts the removal reason to the string value expected for `batchRemovalReasonKey`.
-        var asString: String {
+        func toString() -> String {
             switch self {
             case .intakeCode(let responseCode):
                 return "intake-code-\(responseCode)"

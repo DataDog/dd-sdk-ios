@@ -35,8 +35,16 @@ internal protocol StoragePerformancePreset {
 }
 
 internal extension StoragePerformancePreset {
-    /// The default duration since last write after which the uploader will consider the file to be  “ready for upload”.
-    /// Added for computing batching & upload metrics in RUMM-3459.
+    /// The uploader window duration determines when a file is considered "ready for upload" by the uploader after the last write.
+    ///
+    /// This value is crucial for computing batching and upload metrics within the SDK (see RUMM-3459). The uploader window is derived from the
+    /// original `batchSize` value, which is either configured by the user or set as an internal override. The `batchSize` represents the age of
+    /// "batch maturity" for uploads and is specified in seconds.
+    ///
+    /// The uploader window is calculated as the average of two key parameters: `minFileAgeForRead` and `maxFileAgeForWrite`. Batches younger
+    /// than `maxFileAgeForWrite` are considered "writable" (available for the writer), while batches older than `minFileAgeForRead` are
+    /// meant to be "readable" (available for the uploader). To ensure that the writer and uploader don't access the same batch simultaneously,
+    /// a safe-guard window (10% of `batchSize`) is implemented within which the batch is neither writable nor readable.
     var uploaderWindow: TimeInterval { (minFileAgeForRead + maxFileAgeForWrite) * 0.5 }
 }
 

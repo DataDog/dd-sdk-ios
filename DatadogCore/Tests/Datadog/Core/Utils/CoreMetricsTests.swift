@@ -11,11 +11,11 @@ class CoreMetricsTests: XCTestCase {
     func testBatchRemovalReasonFormatting() {
         typealias RemovalReason = BatchDeletedMetric.RemovalReason
 
-        XCTAssertEqual(RemovalReason.intakeCode(responseCode: 202).asString, "intake-code-202")
-        XCTAssertEqual(RemovalReason.obsolete.asString, "obsolete")
-        XCTAssertEqual(RemovalReason.purged.asString, "purged")
-        XCTAssertEqual(RemovalReason.invalid.asString, "invalid")
-        XCTAssertEqual(RemovalReason.flushed.asString, "flushed")
+        XCTAssertEqual(RemovalReason.intakeCode(responseCode: 202).toString(), "intake-code-202")
+        XCTAssertEqual(RemovalReason.obsolete.toString(), "obsolete")
+        XCTAssertEqual(RemovalReason.purged.toString(), "purged")
+        XCTAssertEqual(RemovalReason.invalid.toString(), "invalid")
+        XCTAssertEqual(RemovalReason.flushed.toString(), "flushed")
     }
 
     func testOnlyCertainBatchRemovalReasonsAreIncludedInMetric() {

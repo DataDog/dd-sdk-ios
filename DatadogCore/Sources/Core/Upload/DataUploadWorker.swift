@@ -124,8 +124,18 @@ internal class DataUploadWorker: DataUploadWorkerType {
     internal func flushSynchronously() {
         queue.sync {
             while let nextBatch = self.fileReader.readNextBatch() {
-                _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
-                self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                defer {
+                    // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
+                    // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
+                    // purposes and never run in production apps.
+                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                }
+                do {
+                    // Try uploading the batch and do one more retry on failure.
+                    _ = try self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                } catch {
+                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                }
             }
         }
     }
