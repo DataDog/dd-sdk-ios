@@ -94,6 +94,8 @@
 		6134CDB12A691E850061CCD9 /* CoreMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6134CDB02A691E850061CCD9 /* CoreMetricsTests.swift */; };
 		6134CDB22A691E850061CCD9 /* CoreMetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6134CDB02A691E850061CCD9 /* CoreMetricsTests.swift */; };
 		61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */; };
+		6136CB4A2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6136CB492A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift */; };
+		6136CB4B2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6136CB492A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift */; };
 		6139CD712589FAFD007E8BB7 /* Retrying.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6139CD702589FAFD007E8BB7 /* Retrying.swift */; };
 		6139CD772589FEE3007E8BB7 /* RetryingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6139CD762589FEE3007E8BB7 /* RetryingTests.swift */; };
 		613BE0432563FB9E0015216C /* RUMBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613BE0422563FB9E0015216C /* RUMBenchmarkTests.swift */; };
@@ -1755,6 +1757,7 @@
 		61345612244756E300E7DA6B /* PerformancePresetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformancePresetTests.swift; sourceTree = "<group>"; };
 		6134CDB02A691E850061CCD9 /* CoreMetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreMetricsTests.swift; sourceTree = "<group>"; };
 		61363D9E24D99BAA0084CD6F /* DDErrorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorTests.swift; sourceTree = "<group>"; };
+		6136CB492A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FilesOrchestrator+MetricsTests.swift"; sourceTree = "<group>"; };
 		61378BA72555329E00F28837 /* DatadogTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogTests.xcconfig; sourceTree = "<group>"; };
 		61378BB22555337900F28837 /* DatadogSDKTesting.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DatadogSDKTesting.local.xcconfig; sourceTree = "<group>"; };
 		6139CD702589FAFD007E8BB7 /* Retrying.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Retrying.swift; sourceTree = "<group>"; };
@@ -3049,6 +3052,7 @@
 			children = (
 				3C0D5DDF2A543DAE00446CF9 /* EventGeneratorTests.swift */,
 				61133C2A2423990D00786299 /* FilesOrchestratorTests.swift */,
+				6136CB492A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift */,
 				D2B3F0432823EE8300C2B5EE /* DataBlockTests.swift */,
 				619E16D42577C11B00B2516B /* Writing */,
 				619E16D52577C12100B2516B /* Reading */,
@@ -6412,6 +6416,7 @@
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
 				61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */,
 				3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */,
+				6136CB4A2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */,
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
 				D26C49AF2886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */,
 				6147989C2A459E2B0095CB02 /* DDTrace+apiTests.m in Sources */,
@@ -7376,6 +7381,7 @@
 				D2CB6F2C27C520D400A62B57 /* JSONEncoderTests.swift in Sources */,
 				D2CB6F3027C520D400A62B57 /* DatadogExtensions.swift in Sources */,
 				D2CB6F3227C520D400A62B57 /* JSONDataMatcher.swift in Sources */,
+				6136CB4B2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */,
 				D25085112976E30000E931C3 /* DatadogRemoteFeatureMock.swift in Sources */,
 				D2CB6F3327C520D400A62B57 /* FilesOrchestratorTests.swift in Sources */,
 				D2FB1258292E0F10005B13F8 /* TrackingConsentPublisherTests.swift in Sources */,

@@ -6,17 +6,10 @@
 
 import Foundation
 
-/// Definition of "Batch Deleted" telemetry.
-internal enum BatchDeletedMetric {
-    /// The name of this metric, included in telemetry log.
-    /// Note: the "[Mobile Metric]" prefix is added when sending this telemetry in RUM.
-    static let name = "Batch Deleted"
-
+/// Common definitions for batch telemetries.
+internal enum BatchMetric {
     /// Metric type key.
     static let typeKey = "metric_type"
-    /// Metric type value.
-    static let typeValue = "batch deleted"
-
     /// Track name key
     static let trackKey = "track"
     /// Track name value.
@@ -30,7 +23,15 @@ internal enum BatchDeletedMetric {
         default:                return nil
         }
     }
+}
 
+/// Definition of "Batch Deleted" telemetry.
+internal enum BatchDeletedMetric {
+    /// The name of this metric, included in telemetry log.
+    /// Note: the "[Mobile Metric]" prefix is added when sending this telemetry in RUM.
+    static let name = "Batch Deleted"
+    /// Metric type value.
+    static let typeValue = "batch deleted"
     /// The key for uploader's delay options.
     static let uploaderDelayKey = "uploader_delay"
     /// The min delay of uploads for this track (in ms).
@@ -91,4 +92,24 @@ internal enum BatchDeletedMetric {
             }
         }
     }
+}
+
+/// Definition of "Batch Closed" telemetry.
+internal enum BatchClosedMetric {
+    /// The name of this metric, included in telemetry log.
+    /// Note: the "[Mobile Metric]" prefix is added when sending this telemetry in RUM.
+    static let name = "Batch Closed"
+    /// Metric type value.
+    static let typeValue = "batch closed"
+    /// The default duration since last write (in ms) after which the uploader considers the file to be "ready for upload".
+    static let uploaderWindowKey = "uploader_window"
+
+    /// The size of batch at closing (in bytes).
+    static let batchSizeKey = "batch_size"
+    /// The number of events written to this batch before closing.
+    static let batchEventsCountKey = "batch_events_count"
+    /// The duration from batch creation to batch closing (in ms).
+    static let batchDurationKey = "batch_duration"
+    /// If the batch was closed by core or after new batch was forced by the feature.
+    static let forcedNewKey = "forced_new"
 }
