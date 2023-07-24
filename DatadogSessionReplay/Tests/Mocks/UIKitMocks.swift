@@ -105,3 +105,34 @@ extension UITextContentType: RandomMockable {
 
     public static func mockRandom() -> UITextContentType { allCases.randomElement()! }
 }
+
+extension UIImage: RandomMockable {
+    /// Creates bitmap by randomising the value of each pixel.
+    public static func mockRandom() -> Self {
+        return mockRandom(width: .mockRandom(min: 10, max: 100), height: .mockRandom(min: 10, max: 100))
+    }
+
+    /// Creates bitmap of certain size by randomising the value of each pixel.
+    public static func mockRandom(width: Int, height: Int) -> Self {
+        let bytesPerPixel: Int = 4
+        let bitsPerComponent: Int = 8
+        let bytesPerRow = bytesPerPixel * width
+        let totalBytes = bytesPerRow * height
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+
+        var bitmapBytes = [UInt8].mockRandom(count: totalBytes)
+        let bitmapData = Data(bytes: &bitmapBytes, count: totalBytes)
+
+        let bitmapContext = CGContext(
+            data: UnsafeMutableRawPointer(mutating: (bitmapData as NSData).bytes),
+            width: width,
+            height: height,
+            bitsPerComponent: bitsPerComponent,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        )
+        let cgImage = bitmapContext!.makeImage()!
+        return UIImage(cgImage: cgImage) as! Self
+    }
+}

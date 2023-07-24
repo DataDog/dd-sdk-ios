@@ -24,7 +24,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil),
+            image: .mockRandom(),
             imageDataProvider: MockImageDataProvider(),
             tintColor: UIColor.mockRandom(),
             shouldRecordImage: true
@@ -57,7 +57,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil),
+            image: .mockRandom(),
             imageDataProvider: mockRandomImageDataProvider(),
             tintColor: UIColor.mockRandom(),
             shouldRecordImage: false
