@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 internal final class TelemetryReceiver: FeatureMessageReceiver {
-    /// Maximum number of telemetry events allowed per user sessions.
+    /// Maximum number of telemetry events allowed per RUM  sessions.
     static let maxEventsPerSessions: Int = 100
 
     let dateProvider: DateProvider
@@ -16,28 +16,37 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     let sampler: Sampler
 
     let configurationExtraSampler: Sampler
+    let metricsExtraSampler: Sampler
 
     /// Keeps track of current session
     @ReadWriteLock
     private var currentSessionID: String?
 
-    /// Keeps track of event's ids recorded during a user session.
+    /// Keeps track of event's ids recorded in current RUM session.
     @ReadWriteLock
     private var eventIDs: Set<String> = []
+
+    /// Number of events recorded in current  RUM session.
+    @ReadWriteLock
+    private var eventsCount: Int = 0
 
     /// Creates a RUM Telemetry instance.
     ///
     /// - Parameters:
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
+    ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
+    ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
         dateProvider: DateProvider,
         sampler: Sampler,
-        configurationExtraSampler: Sampler = Sampler(samplingRate: 20.0) // Extra sample of 20% for configuration events
+        configurationExtraSampler: Sampler,
+        metricsExtraSampler: Sampler
     ) {
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
+        self.metricsExtraSampler = metricsExtraSampler
     }
 
     /// Receives a message from the bus.
@@ -68,6 +77,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             error(id: id, message: message, kind: kind, stack: stack, in: core)
         case .configuration(let configuration):
             send(configuration: configuration, in: core)
+        case let .metric(name, attributes):
+            metric(name: name, attributes: attributes, in: core)
         }
 
         return true
@@ -83,7 +94,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     ///   - attributes: Custom attributes attached to the log (optional).
-    func debug(id: String, message: String, attributes: [String: Encodable]?, in core: DatadogCoreProtocol) {
+    private func debug(id: String, message: String, attributes: [String: Encodable]?, in core: DatadogCoreProtocol) {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
@@ -126,7 +137,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - message: Body of the log
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
-    func error(id: String, message: String, kind: String?, stack: String?, in core: DatadogCoreProtocol) {
+    private func error(id: String, message: String, kind: String?, stack: String?, in core: DatadogCoreProtocol) {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
@@ -194,7 +205,43 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func record(event id: String, in core: DatadogCoreProtocol, operation: @escaping (DatadogContext, Writer) -> Void) {
+    private func metric(name: String, attributes: [String: Encodable], in core: DatadogCoreProtocol) {
+        guard metricsExtraSampler.sample() else {
+            return
+        }
+
+        let date = dateProvider.now
+
+        record(event: nil, in: core) { context, writer in
+            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
+            let rum = rumAttributes?.compactMapValues { $0 }
+            let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
+            let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
+            let viewId = rum?[RUMContextAttributes.IDs.viewID]
+            let actionId = rum?[RUMContextAttributes.IDs.userActionID]
+
+            let event = TelemetryDebugEvent(
+                dd: .init(),
+                action: actionId.map { .init(id: $0) },
+                application: applicationId.map { .init(id: $0) },
+                date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
+                experimentalFeatures: nil,
+                service: "dd-sdk-ios",
+                session: sessionId.map { .init(id: $0) },
+                source: .init(rawValue: context.source) ?? .ios,
+                telemetry: .init(
+                    message: "[Mobile Metric] \(name)",
+                    telemetryInfo: attributes
+                ),
+                version: context.sdkVersion,
+                view: viewId.map { .init(id: $0) }
+            )
+
+            writer.write(value: event)
+        }
+    }
+
+    private func record(event id: String?, in core: DatadogCoreProtocol, operation: @escaping (DatadogContext, Writer) -> Void) {
         guard
             let rum = core.scope(for: RUMFeature.name),
             sampler.sample()
@@ -211,12 +258,19 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             if sessionId != self.currentSessionID {
                 self.currentSessionID = sessionId
                 self.eventIDs = []
+                self.eventsCount = 0
             }
 
-            // record up to `maxEventsPerSessions`, discard duplicates
-            if self.eventIDs.count < TelemetryReceiver.maxEventsPerSessions, !self.eventIDs.contains(id) {
-                self.eventIDs.insert(id)
-                operation(context, writer)
+            // record up to `maxEventsPerSessions`, discard duplicates for events with `id`
+            if self.eventsCount < TelemetryReceiver.maxEventsPerSessions {
+                if id == nil {
+                    self.eventsCount += 1
+                    operation(context, writer)
+                } else if let eventID = id, !self.eventIDs.contains(eventID) {
+                    self.eventIDs.insert(eventID)
+                    self.eventsCount += 1
+                    operation(context, writer)
+                }
             }
         }
     }

@@ -14,16 +14,19 @@ class PerformancePresetTests: XCTestCase {
         let smallBatchAnyFrequency = PerformancePreset(batchSize: .small, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
         XCTAssertEqual(smallBatchAnyFrequency.maxFileAgeForWrite, 4.75)
         XCTAssertEqual(smallBatchAnyFrequency.minFileAgeForRead, 5.25)
+        XCTAssertEqual(smallBatchAnyFrequency.uploaderWindow, 5)
         assertPresetCommonValues(in: smallBatchAnyFrequency)
 
         let mediumBatchAnyFrequency = PerformancePreset(batchSize: .medium, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
         XCTAssertEqual(mediumBatchAnyFrequency.maxFileAgeForWrite, 14.25)
         XCTAssertEqual(mediumBatchAnyFrequency.minFileAgeForRead, 15.75)
+        XCTAssertEqual(mediumBatchAnyFrequency.uploaderWindow, 15)
         assertPresetCommonValues(in: mediumBatchAnyFrequency)
 
         let largeBatchAnyFrequency = PerformancePreset(batchSize: .large, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
         XCTAssertEqual(largeBatchAnyFrequency.maxFileAgeForWrite, 57.0)
         XCTAssertEqual(largeBatchAnyFrequency.minFileAgeForRead, 63.0)
+        XCTAssertEqual(largeBatchAnyFrequency.uploaderWindow, 60)
         assertPresetCommonValues(in: largeBatchAnyFrequency)
 
         let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSApp)
@@ -52,16 +55,19 @@ class PerformancePresetTests: XCTestCase {
         let smallBatchAnyFrequency = PerformancePreset(batchSize: .small, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
         XCTAssertEqual(smallBatchAnyFrequency.maxFileAgeForWrite, 0.95)
         XCTAssertEqual(smallBatchAnyFrequency.minFileAgeForRead, 1.05)
+        XCTAssertEqual(smallBatchAnyFrequency.uploaderWindow, 1)
         assertPresetCommonValues(in: smallBatchAnyFrequency)
 
         let mediumBatchAnyFrequency = PerformancePreset(batchSize: .medium, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
         XCTAssertEqual(mediumBatchAnyFrequency.maxFileAgeForWrite, 2.85, accuracy: 0.01)
         XCTAssertEqual(mediumBatchAnyFrequency.minFileAgeForRead, 3.15, accuracy: 0.01)
+        XCTAssertEqual(mediumBatchAnyFrequency.uploaderWindow, 3)
         assertPresetCommonValues(in: mediumBatchAnyFrequency)
 
         let largeBatchAnyFrequency = PerformancePreset(batchSize: .large, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
         XCTAssertEqual(largeBatchAnyFrequency.maxFileAgeForWrite, 11.4, accuracy: 0.01)
         XCTAssertEqual(largeBatchAnyFrequency.minFileAgeForRead, 12.6, accuracy: 0.01)
+        XCTAssertEqual(largeBatchAnyFrequency.uploaderWindow, 12)
         assertPresetCommonValues(in: largeBatchAnyFrequency)
 
         let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSAppExtension)
@@ -143,7 +149,7 @@ class PerformancePresetTests: XCTestCase {
         // Given
         let maxFileSizeOverride: UInt64 = .mockRandom()
         let maxObjectSizeOverride: UInt64 = .mockRandom()
-        let meanFileAgeOverride: TimeInterval = .mockRandom()
+        let meanFileAgeOverride: TimeInterval = .mockRandom(min: 1, max: 100)
         let uploadDelayOverride: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double) = (
             initial: .mockRandom(),
             range: (TimeInterval.mockRandom(min: 1, max: 10)..<TimeInterval.mockRandom(min: 11, max: 100)),
@@ -166,6 +172,7 @@ class PerformancePresetTests: XCTestCase {
         XCTAssertEqual(updatedPreset.maxObjectSize, maxObjectSizeOverride)
         XCTAssertEqual(updatedPreset.maxFileAgeForWrite, meanFileAgeOverride * 0.95, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.minFileAgeForRead, meanFileAgeOverride * 1.05, accuracy: 0.01)
+        XCTAssertEqual(updatedPreset.uploaderWindow, meanFileAgeOverride, accuracy: 0.01)
         XCTAssertEqual(updatedPreset.initialUploadDelay, uploadDelayOverride.initial)
         XCTAssertEqual(updatedPreset.minUploadDelay, uploadDelayOverride.range.lowerBound)
         XCTAssertEqual(updatedPreset.maxUploadDelay, uploadDelayOverride.range.upperBound)

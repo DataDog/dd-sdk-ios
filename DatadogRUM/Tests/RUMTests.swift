@@ -75,6 +75,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
+        XCTAssertEqual(telemetryReceiver?.metricsExtraSampler.samplingRate, 15)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 

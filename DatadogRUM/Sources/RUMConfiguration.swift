@@ -244,6 +244,11 @@ extension RUM {
         /// It can be overwritten by `InternalConfiguration`.
         internal var configurationTelemetrySampleRate: Float = 20.0
 
+        /// An extra sampling rate for metric events.
+        ///
+        /// It is applied on top of the value configured in public `telemetrySampleRate`.
+        internal var metricsTelemetrySampleRate: Float = 15
+
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()

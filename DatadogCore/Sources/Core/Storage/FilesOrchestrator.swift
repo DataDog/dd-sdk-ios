@@ -13,7 +13,7 @@ internal protocol FilesOrchestratorType: AnyObject {
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
-    func delete(readableFile: ReadableFile)
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
 }
@@ -33,14 +33,27 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// This should correspond with number of objects stored in file, assuming that majority of writes succeed (the difference is negligible).
     private var lastWritableFileUsesCount: Int = 0
 
+    /// Extra information for metrics set from this orchestrator.
+    struct MetricsData {
+        /// The name of the `DatadogRemoteFeature` that uses this orchestrator.
+        let featureName: String
+        /// The preset for uploader performance in this feature to include in metric.
+        let uploaderPerformance: UploadPerformancePreset
+    }
+
+    /// An extra information to include in metrics or `nil` if metrics should not be reported for this orchestrator.
+    let metricsData: MetricsData?
+
     init(
         directory: Directory,
         performance: StoragePerformancePreset,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        metricsData: MetricsData? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.metricsData = metricsData
     }
 
     // MARK: - `WritableFile` orchestration
@@ -151,9 +164,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
     }
 
-    func delete(readableFile: ReadableFile) {
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
         do {
             try readableFile.delete()
+            sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
         } catch {
             DD.telemetry.error("Failed to delete file", error: error)
         }
@@ -182,6 +196,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
                 let fileWithSize = filesWithSizeSortedByCreationDate.removeFirst()
                 try fileWithSize.file.delete()
+                sendBatchDeletedMetric(batchFile: fileWithSize.file, deletionReason: .purged)
                 sizeFreed += fileWithSize.size
             }
         }
@@ -192,10 +207,47 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         if fileAge > performance.maxFileAgeForRead {
             try file.delete()
+            sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete)
             return nil
         } else {
             return (file: file, creationDate: fileCreationDate)
         }
+    }
+
+    // MARK: - Metrics
+
+    /// Sends "Batch Deleted" telemetry log.
+    /// - Parameters:
+    ///   - batchFile: The batch file that was deleted.
+    ///   - deletionReason: The reason of deleting this file.
+    ///
+    /// Note: The `batchFile` doesn't exist at this point.
+    private func sendBatchDeletedMetric(batchFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
+        guard let metricsData = metricsData, deletionReason.includeInMetric else {
+            return // do not track metrics for this orchestrator or deletion reason
+        }
+        guard let trackValue = BatchDeletedMetric.trackValue(for: metricsData.featureName) else {
+            DD.logger.error("Can't determine track name for feature named '\(metricsData.featureName)'")
+            return
+        }
+
+        let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
+
+        DD.telemetry.metric(
+            name: BatchDeletedMetric.name,
+            attributes: [
+                BatchDeletedMetric.typeKey: BatchDeletedMetric.typeValue,
+                BatchDeletedMetric.trackKey: trackValue,
+                BatchDeletedMetric.uploaderDelayKey: [
+                    BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
+                    BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
+                ],
+                BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
+                BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
+                BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
+                BatchDeletedMetric.inBackgroundKey: false,
+            ]
+        )
     }
 }
 

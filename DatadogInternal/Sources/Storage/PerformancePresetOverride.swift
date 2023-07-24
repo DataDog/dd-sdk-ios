@@ -48,7 +48,6 @@ public struct PerformancePresetOverride {
     ///   - maxFileSize: The maximum allowed file size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - maxObjectSize: The maximum allowed object size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - meanFileAge: The mean age qualifying a file for reuse, or `nil` to use the default value from `PerformancePreset`.
-    ///   - minUploadDelay: The mininum interval of data uploads, or `nil` to use the default value from `PerformancePreset`.
     ///   - uploadDelay: The configuration of time interval for data uploads (initial, minimum, maximum and change rate). Set `nil` to use the default value from `PerformancePreset`.
     public init(
         maxFileSize: UInt64?,

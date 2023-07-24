@@ -35,6 +35,7 @@ public enum TelemetryMessage {
     case debug(id: String, message: String, attributes: [String: Encodable]?)
     case error(id: String, message: String, kind: String?, stack: String?)
     case configuration(ConfigurationTelemetry)
+    case metric(name: String, attributes: [String: Encodable])
 }
 
 /// The `Telemetry` protocol defines methods to collect debug information
@@ -196,6 +197,18 @@ extension Telemetry {
             useProxy: useProxy,
             useTracing: useTracing
         ))
+    }
+
+    /// Collect metric value.
+    ///
+    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicates filtering and
+    /// are get sampled with a different rate. Metric attributes are used to create facets for later querying and graphing.
+    ///
+    /// - Parameters:
+    ///   - name: The name of this metric.
+    ///   - attributes: Parameters associated with this metric.
+    public func metric(name: String, attributes: [String: Encodable]) {
+        send(telemetry: .metric(name: name, attributes: attributes))
     }
 }
 
