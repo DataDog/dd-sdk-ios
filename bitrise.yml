@@ -258,6 +258,13 @@ workflows:
             #!/usr/bin/env zsh
             set -e
             make sr-pull-snapshots
+    - script:
+        title: Configure SRSnapshotTests project launch
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - content: |
+            #!/usr/bin/env zsh
+            envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
     - xcode-test:
         title: Run snapshot tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'

@@ -21,11 +21,11 @@
 		61B3BC522993BE2E0032C78A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61B3BC502993BE2E0032C78A /* Main.storyboard */; };
 		61B3BC572993BE2F0032C78A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61B3BC552993BE2F0032C78A /* LaunchScreen.storyboard */; };
 		61B3BC652993BEAF0032C78A /* SRSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */; };
-		61B3BC6D2993C06D0032C78A /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */; };
 		61B634EB299A5DB3002BEABE /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B634EA299A5DB3002BEABE /* Fixtures.swift */; };
 		61BB975F2A5D675400AFFF86 /* ImageComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB975E2A5D675400AFFF86 /* ImageComposition.swift */; };
 		61BB976D2A5E878000AFFF86 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB976C2A5E878000AFFF86 /* UIViewController+KeyboardControlling.swift */; };
 		61C06D6029D487E7007521D8 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 61C06D5F29D487E7007521D8 /* Framer */; };
+		61E4305A2A6FE3B000B71899 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61E430592A6FE3B000B71899 /* DatadogSessionReplay */; };
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
 		61E7DFB9299A5A3E001D7A3A /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61E7DFB8299A5A3E001D7A3A /* Basic.storyboard */; };
 		61E7DFBB299A5C9D001D7A3A /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFBA299A5C9D001D7A3A /* BasicViewControllers.swift */; };
@@ -90,8 +90,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61B3BC6D2993C06D0032C78A /* DatadogSessionReplay in Frameworks */,
 				61C06D6029D487E7007521D8 /* Framer in Frameworks */,
+				61E4305A2A6FE3B000B71899 /* DatadogSessionReplay in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,8 +229,8 @@
 			);
 			name = SRHost;
 			packageProductDependencies = (
-				61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */,
 				61C06D5F29D487E7007521D8 /* Framer */,
+				61E430592A6FE3B000B71899 /* DatadogSessionReplay */,
 			);
 			productName = SRHost;
 			productReference = 61B3BC472993BE2E0032C78A /* SRHost.app */;
@@ -637,14 +637,14 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		61B3BC6C2993C06D0032C78A /* DatadogSessionReplay */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DatadogSessionReplay;
-		};
 		61C06D5F29D487E7007521D8 /* Framer */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */;
 			productName = Framer;
+		};
+		61E430592A6FE3B000B71899 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
 		};
 		D2F37BFA2A40A2CF004A28A4 /* TestUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
