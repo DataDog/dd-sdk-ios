@@ -243,13 +243,13 @@ workflows:
         title: Run unit tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogSessionReplay-Package
+        - scheme: DatadogSessionReplay iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: DatadogSessionReplay/Package.swift
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-unit-tests.html"
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-ios-unit-tests.html"
     - script:
         title: Pull Session Replay snapshots
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
