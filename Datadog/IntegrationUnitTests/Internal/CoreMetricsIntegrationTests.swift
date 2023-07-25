@@ -9,12 +9,17 @@ import XCTest
 @testable import DatadogRUM
 @testable import DatadogLogs
 @testable import DatadogTrace
+#if !os(tvOS)
+@testable import DatadogSessionReplay
+#endif
 
 class CoreMetricsIntegrationTests: XCTestCase {
     func testResolvingTrackValueFromFeatureName() {
         XCTAssertEqual(BatchMetric.trackValue(for: RUMFeature.name), "rum")
         XCTAssertEqual(BatchMetric.trackValue(for: TraceFeature.name), "trace")
         XCTAssertEqual(BatchMetric.trackValue(for: LogsFeature.name), "logs")
-        // TODO: REPLAY-1869 Assert `sr` track name after Session Replay is available for integration testing
+        #if !os(tvOS)
+        XCTAssertEqual(BatchMetric.trackValue(for: SessionReplayFeature.name), "sr")
+        #endif
     }
 }

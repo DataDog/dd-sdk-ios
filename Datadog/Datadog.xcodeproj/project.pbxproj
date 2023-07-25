@@ -293,6 +293,8 @@
 		6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6172472625D673D7007085B3 /* CrashContextTests.swift */; };
 		617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */; };
 		617247B825DAB0E2007085B3 /* DDCrashReportBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617247B725DAB0E2007085B3 /* DDCrashReportBuilder.swift */; };
+		6175922B2A6FA8EE0073F431 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
+		6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
 		61776CED273BEA5500F93802 /* DebugRUMSessionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */; };
 		61776D4E273E6D9F00F93802 /* SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776D4D273E6D9F00F93802 /* SwiftUI.swift */; };
 		6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */; };
@@ -2636,6 +2638,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6175922B2A6FA8EE0073F431 /* DatadogSessionReplay.framework in Frameworks */,
 				614798A32A45A4980095CB02 /* DatadogTrace.framework in Frameworks */,
 				61A2CC302A4449CB0000FF25 /* DatadogRUM.framework in Frameworks */,
 				D2D3199729E982A30004F169 /* DatadogCrashReporting.framework in Frameworks */,
@@ -2678,6 +2681,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */,
 				61A2CC332A44A5F60000FF25 /* DatadogRUM.framework in Frameworks */,
 				3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */,
 				D25CFA9C29C4FC6900E3A43D /* DatadogTrace.framework in Frameworks */,
