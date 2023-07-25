@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		617803D52A701052005FE258 /* DatadogSessionReplay.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */; };
+		617803D62A701052005FE258 /* DatadogSessionReplay.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
 		61C3641B243752A500C4D4E6 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641A243752A500C4D4E6 /* SceneDelegate.swift */; };
 		61C3641D243752A500C4D4E6 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3641C243752A500C4D4E6 /* ViewController.swift */; };
@@ -93,6 +95,7 @@
 			files = (
 				D2F9244D29A4B9A4006733B2 /* DatadogCore.xcframework in Embed Frameworks */,
 				D2EBEDAA29B7862C00B15732 /* DatadogLogs.xcframework in Embed Frameworks */,
+				617803D62A701052005FE258 /* DatadogSessionReplay.xcframework in Embed Frameworks */,
 				D2F9244F29A4B9A4006733B2 /* DatadogObjc.xcframework in Embed Frameworks */,
 				D2966C2A29CA1E1600FC6B3C /* DatadogTrace.xcframework in Embed Frameworks */,
 				D2F09A2629F6C65B0036B910 /* DatadogRUM.xcframework in Embed Frameworks */,
@@ -128,6 +131,7 @@
 		3C4C2BB629F6B9C100152C4B /* DatadogWebViewTracking.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogWebViewTracking.xcframework; path = "dd-sdk-ios/build/xcframeworks/DatadogWebViewTracking.xcframework"; sourceTree = "<group>"; };
 		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519332461CDB4002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
+		617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogSessionReplay.xcframework; path = "dd-sdk-ios/build/xcframeworks/DatadogSessionReplay.xcframework"; sourceTree = "<group>"; };
 		61C36415243752A500C4D4E6 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		61C36418243752A500C4D4E6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61C3641A243752A500C4D4E6 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -159,6 +163,7 @@
 			files = (
 				D2F9244C29A4B9A4006733B2 /* DatadogCore.xcframework in Frameworks */,
 				D2EBEDA929B7862C00B15732 /* DatadogLogs.xcframework in Frameworks */,
+				617803D52A701052005FE258 /* DatadogSessionReplay.xcframework in Frameworks */,
 				D2F9244E29A4B9A4006733B2 /* DatadogObjc.xcframework in Frameworks */,
 				D2966C2929CA1E1600FC6B3C /* DatadogTrace.xcframework in Frameworks */,
 				D2F09A2529F6C65B0036B910 /* DatadogRUM.xcframework in Frameworks */,
@@ -282,6 +287,7 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */,
 				D2F09A2429F6C65A0036B910 /* DatadogRUM.xcframework */,
 				D2966C2829CA1E1600FC6B3C /* DatadogTrace.xcframework */,
 				D2EBEDAD29B7867600B15732 /* DatadogInternal.xcframework */,
