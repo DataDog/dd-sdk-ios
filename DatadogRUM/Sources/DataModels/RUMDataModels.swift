@@ -95,6 +95,9 @@ public struct RUMActionEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -104,6 +107,7 @@ public struct RUMActionEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case action = "action"
             case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case formatVersion = "format_version"
             case session = "session"
         }
@@ -151,6 +155,20 @@ public struct RUMActionEvent: RUMDataModel {
                     case selector = "selector"
                     case width = "width"
                 }
+            }
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
             }
         }
 
@@ -496,6 +514,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the RUM event format
         public let formatVersion: Int64 = 2
 
@@ -504,8 +525,23 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case formatVersion = "format_version"
             case session = "session"
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
         }
 
         /// Session-related internal properties
@@ -938,6 +974,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Whether the long task should be discarded or indexed
         public let discarded: Bool?
 
@@ -949,9 +988,24 @@ public struct RUMLongTaskEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
             case session = "session"
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
         }
 
         /// Session-related internal properties
@@ -1195,6 +1249,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Whether the resource should be discarded or indexed
         public let discarded: Bool?
 
@@ -1215,12 +1272,27 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case discarded = "discarded"
             case formatVersion = "format_version"
             case rulePsr = "rule_psr"
             case session = "session"
             case spanId = "span_id"
             case traceId = "trace_id"
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
         }
 
         /// Session-related internal properties
@@ -1643,6 +1715,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Browser SDK version
         public let browserSdkVersion: String?
 
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
         /// Version of the update of the view event
         public let documentVersion: Int64
 
@@ -1660,11 +1735,26 @@ public struct RUMViewEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
             case documentVersion = "document_version"
             case formatVersion = "format_version"
             case pageStates = "page_states"
             case replayStats = "replay_stats"
             case session = "session"
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
         }
 
         /// Properties of the page state
@@ -2398,7 +2488,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
     public let source: Source
 
     /// The telemetry log information
-    public let telemetry: Telemetry
+    public internal(set) var telemetry: Telemetry
 
     /// Telemetry event type. Should specify telemetry only.
     public let type: String = "telemetry"
@@ -2484,7 +2574,9 @@ public struct TelemetryDebugEvent: RUMDataModel {
         /// Telemetry type
         public let type: String? = "log"
 
-        enum CodingKeys: String, CodingKey {
+        public internal(set) var telemetryInfo: [String: Encodable]
+
+        enum StaticCodingKeys: String, CodingKey {
             case message = "message"
             case status = "status"
             case type = "type"
@@ -2499,6 +2591,39 @@ public struct TelemetryDebugEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case id = "id"
         }
+    }
+}
+
+extension TelemetryDebugEvent.Telemetry {
+    public func encode(to encoder: Encoder) throws {
+        // Encode static properties:
+        var staticContainer = encoder.container(keyedBy: StaticCodingKeys.self)
+        try staticContainer.encodeIfPresent(message, forKey: .message)
+
+        // Encode dynamic properties:
+        var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        try telemetryInfo.forEach {
+            let key = DynamicCodingKey($0)
+            try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+        }
+    }
+
+    public init(from decoder: Decoder) throws {
+        // Decode static properties:
+        let staticContainer = try decoder.container(keyedBy: StaticCodingKeys.self)
+        self.message = try staticContainer.decode(String.self, forKey: .message)
+
+        // Decode other properties into [String: Codable] dictionary:
+        let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+        let allStaticKeys = Set(staticContainer.allKeys.map { $0.stringValue })
+        let dynamicKeys = dynamicContainer.allKeys.filter { !allStaticKeys.contains($0.stringValue) }
+        var dictionary: [String: Codable] = [:]
+
+        try dynamicKeys.forEach { codingKey in
+            dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+        }
+
+        self.telemetryInfo = dictionary
     }
 }
 
@@ -2664,7 +2789,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// A list of selected tracing propagators
             public let selectedTracingPropagators: [SelectedTracingPropagators]?
 
-            /// The percentage of sessions with Browser RUM & Session Replay pricing tracked
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
             public var sessionReplaySampleRate: Int64?
 
             /// The percentage of sessions tracked
@@ -3184,4 +3309,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/1c5eaa897c065e5f790a5f8aaf6fc8782d706051
+// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00

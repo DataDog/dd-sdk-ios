@@ -66,13 +66,34 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
         messages.append(telemetry)
 
         switch telemetry {
-        case .debug(_, let message):
-            description.append("\n- [debug] \(message)")
+        case .debug(_, let message, let attributes):
+            let attributesString = attributes.map({ ", \($0)" }) ?? ""
+            description.append("\n- [debug] \(message)" + attributesString)
         case .error(_, let message, let kind, let stack):
             description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
         case .configuration(let configuration):
             description.append("\n- [configuration] \(configuration)")
+        case let .metric(name, attributes):
+            let attributesString = attributes.map({ "\($0.key): \($0.value)" }).joined(separator: ", ")
+            description.append("\n- [metric] '\(name)' (" + attributesString + ")")
         }
+    }
+}
+
+public extension Array where Element == TelemetryMessage {
+    /// Returns properties of the first metric message of given name.
+    func firstMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
+        return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).first
+    }
+}
+
+public extension TelemetryMessage {
+    /// Extracts metric attributes if this is metric message.
+    var asMetric: (name: String, attributes: [String: Encodable])? {
+        guard case let .metric(metricName, metricAttributes) = self else {
+            return nil
+        }
+        return (name: metricName, attributes: metricAttributes)
     }
 }
 

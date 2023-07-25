@@ -13,14 +13,14 @@ class TelemetryTests: XCTestCase {
     func testTelemetryDebug() {
         // Given
         class TelemetryTest: Telemetry {
-            var debug: (id: String, message: String)?
+            var debug: (id: String, message: String, attributes: [String: Encodable]?)?
 
             func send(telemetry: DatadogInternal.TelemetryMessage) {
-                guard case .debug(let id, let message) = telemetry else {
+                guard case let .debug(id, message, attributes) = telemetry else {
                     return
                 }
 
-                debug = (id: id, message: message)
+                debug = (id: id, message: message, attributes: attributes)
             }
         }
 
@@ -32,12 +32,13 @@ class TelemetryTests: XCTestCase {
 
         // When
         #sourceLocation(file: "File.swift", line: 1)
-        telemetry.debug("debug message")
+        telemetry.debug("debug message", attributes: ["foo": "bar"])
         #sourceLocation()
 
         // Then
         XCTAssertEqual(telemetry.debug?.id, "File.swift:1:debug message")
         XCTAssertEqual(telemetry.debug?.message, "debug message")
+        XCTAssertEqual(telemetry.debug?.attributes as? [String: String], ["foo": "bar"])
     }
 
     func testTelemetryErrorFormatting() {
@@ -46,7 +47,7 @@ class TelemetryTests: XCTestCase {
             var error: (id: String, message: String, kind: String?, stack: String?)?
 
             func send(telemetry: DatadogInternal.TelemetryMessage) {
-                guard case .error(let id, let message, let kind, let stack) = telemetry else {
+                guard case let .error(id, message, kind, stack) = telemetry else {
                     return
                 }
 
@@ -202,7 +203,7 @@ class TelemetryTests: XCTestCase {
         telemetry.debug("debug")
 
         // Then
-        guard case .debug(_, let message) = receiver.telemetry else {
+        guard case .debug(_, let message, _) = receiver.telemetry else {
             return XCTFail("A debug should be send to core.")
         }
         XCTAssertEqual(message, "debug")

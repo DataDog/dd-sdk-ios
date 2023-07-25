@@ -30,27 +30,43 @@ class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesRUMContext() throws {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
-        var ids: [String: String] = .mockRandom()
+        var ids: [String: String?] = [
+            "application.id": "app-id",
+            "session.id": "session-id",
+            "view.id": "view-id",
+            "user_action.id": "action-id"
+        ]
 
         let core = PassthroughCoreMock(
             context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),
             messageReceiver: receiver
         )
 
-        XCTAssertEqual(receiver.context.rum, ids)
+        XCTAssertEqual(receiver.context.rum!["_dd.application.id"] as? String?, "app-id")
+        XCTAssertEqual(receiver.context.rum!["_dd.session.id"] as? String?, "session-id")
+        XCTAssertEqual(receiver.context.rum!["_dd.view.id"] as? String?, "view-id")
+        XCTAssertEqual(receiver.context.rum!["_dd.action.id"] as? String?, "action-id")
 
         // When
-        ids = .mockRandom()
+        ids = [
+            "application.id": "app-id",
+            "session.id": "session-id",
+            "view.id": nil,
+            "user_action.id": nil
+        ]
         core.set(feature: "rum", attributes: { ["ids": ids] })
 
         // Then
-        XCTAssertEqual(receiver.context.rum, ids)
+        XCTAssertEqual(receiver.context.rum!["_dd.application.id"] as? String?, "app-id")
+        XCTAssertEqual(receiver.context.rum!["_dd.session.id"] as? String?, "session-id")
+        XCTAssertNil(receiver.context.rum!["_dd.view.id"])
+        XCTAssertNil(receiver.context.rum!["_dd.action.id"])
     }
 
     func testItIngnoresRUMContext() throws {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRumEnabled: false)
-        var ids: [String: String] = .mockRandom()
+        var ids: [String: String?] = .mockRandom()
 
         let core = PassthroughCoreMock(
             context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),

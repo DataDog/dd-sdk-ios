@@ -76,7 +76,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             XCTAssertNotNil(batch, "Not enough batch files were created for this benchmark.")
 
             if let batch = batch {
-                reader.markBatchAsRead(batch)
+                reader.markBatchAsRead(batch, reason: .flushed)
             }
         }
     }
@@ -100,6 +100,11 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             threadName: "main",
             applicationVersion: "0.0.0",
             dd: .init(device: .init(architecture: "testArch")),
+            os: .init(
+                name: "OS",
+                version: "1.0.0",
+                build: "FFFFF"
+            ),
             userInfo: .init(id: "abc-123", name: "foo", email: "foo@bar.com", extraInfo: ["str": "value", "int": 11_235, "bool": true]),
             networkConnectionInfo: .init(
                 reachability: .yes,

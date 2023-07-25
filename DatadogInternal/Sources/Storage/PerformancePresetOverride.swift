@@ -48,17 +48,17 @@ public struct PerformancePresetOverride {
     ///   - maxFileSize: The maximum allowed file size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - maxObjectSize: The maximum allowed object size in bytes, or `nil` to use the default value from `PerformancePreset`.
     ///   - meanFileAge: The mean age qualifying a file for reuse, or `nil` to use the default value from `PerformancePreset`.
-    ///   - minUploadDelay: The mininum interval of data uploads, or `nil` to use the default value from `PerformancePreset`.
+    ///   - uploadDelay: The configuration of time interval for data uploads (initial, minimum, maximum and change rate). Set `nil` to use the default value from `PerformancePreset`.
     public init(
         maxFileSize: UInt64?,
         maxObjectSize: UInt64?,
         meanFileAge: TimeInterval?,
-        minUploadDelay: TimeInterval?
+        uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)?
     ) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize
 
-        if let meanFileAge {
+        if let meanFileAge = meanFileAge {
             // Following constants are the same as in `DatadogCore.PerformancePreset`
             self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
             self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
@@ -67,12 +67,11 @@ public struct PerformancePresetOverride {
             self.minFileAgeForRead = nil
         }
 
-        if let minUploadDelay {
-            // Following constants are the same as in `DatadogCore.PerformancePreset`
-            self.initialUploadDelay = minUploadDelay * 5
-            self.minUploadDelay = minUploadDelay
-            self.maxUploadDelay = minUploadDelay * 10
-            self.uploadDelayChangeRate = 0.1
+        if let uploadDelay = uploadDelay {
+            self.initialUploadDelay = uploadDelay.initial
+            self.minUploadDelay = uploadDelay.range.lowerBound
+            self.maxUploadDelay = uploadDelay.range.upperBound
+            self.uploadDelayChangeRate = uploadDelay.changeRate
         } else {
             self.initialUploadDelay = nil
             self.minUploadDelay = nil

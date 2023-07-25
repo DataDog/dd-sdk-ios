@@ -30,66 +30,116 @@ internal struct ImageLocation {
     }
 }
 
-/// Compares `newImage` against the snapshot saved in `snapshotLocation` OR updates stored snapshot image data (if `record == true`).
-internal func DDAssertSnapshotTest(
-    newImage: UIImage,
-    snapshotLocation: ImageLocation,
-    record: Bool,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    DDAssertSimulatorDevice("iPhone14,7", "16.2", file: file, line: line)
+internal extension XCTestCase {
+    /// Compares `newImage` against the snapshot saved in `snapshotLocation` OR updates stored snapshot image data (if `record == true`).
+    func DDAssertSnapshotTest(
+        newImage: UIImage,
+        snapshotLocation: ImageLocation,
+        record: Bool,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        DDAssertSimulatorDevice("iPhone14,7", "16.2", file: file, line: line)
 
-    if record {
-        DDSaveSnapshot(image: newImage, into: snapshotLocation, file: file, line: line)
-    } else {
-        DDAssertSnapshotEquals(snapshotLocation: snapshotLocation, image: newImage, file: file, line: line)
-    }
-}
-
-/// Asserts that tests are executed on given iOS Simulator.
-private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
-    _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator with iOS \(expectedModel)", file: file, line: line) {
-        guard let actualModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
-            throw DDAssertError.expectedFailure("Not running in Simulator")
-        }
-        guard actualModel == expectedModel else {
-            throw DDAssertError.expectedFailure("Running in \(actualModel) Simulator")
-        }
-        let actualOSVersion = UIDevice.current.systemVersion
-        guard actualOSVersion == expectedOSVersion else {
-            throw DDAssertError.expectedFailure("Running on iOS \(actualOSVersion)")
+        if record {
+            DDSaveSnapshotIfDifferent(image: newImage, into: snapshotLocation, file: file, line: line)
+            XCTFail(
+                "✅ All OK, we fail tests deliberately to prevent accidentally leaving recording mode enabled",
+                file: file,
+                line: line
+            )
+        } else {
+            DDAssertSnapshotEquals(snapshotLocation: snapshotLocation, image: newImage, file: file, line: line)
         }
     }
-}
 
-/// Writes image PNG data into given location.
-private func DDSaveSnapshot(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
-    _DDEvaluateAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
-        guard let data = image.pngData() else {
-            throw DDAssertError.expectedFailure("Failed to create PNG data for `image`")
+    /// Asserts that tests are executed on given iOS Simulator.
+    private func DDAssertSimulatorDevice(_ expectedModel: String, _ expectedOSVersion: String, file: StaticString = #filePath, line: UInt = #line) {
+        _DDEvaluateAssertion(message: "Snapshots must be compared on \(expectedModel) Simulator with iOS \(expectedModel)", file: file, line: line) {
+            guard let actualModel = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] else {
+                throw DDAssertError.expectedFailure("Not running in Simulator")
+            }
+            guard actualModel == expectedModel else {
+                throw DDAssertError.expectedFailure("Running in \(actualModel) Simulator")
+            }
+            let actualOSVersion = UIDevice.current.systemVersion
+            guard actualOSVersion == expectedOSVersion else {
+                throw DDAssertError.expectedFailure("Running on iOS \(actualOSVersion)")
+            }
         }
-        let directoryURL = location.url.deletingLastPathComponent()
-        try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
-        try data.write(to: location.url)
     }
-}
 
-/// Compares image against the snapshot saved in given location.
-private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
-    let imageName = snapshotLocation.url.lastPathComponent
-    _DDEvaluateAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
+    /// Writes image PNG data into given location when:
+    /// - image at `location` doesn't exist;
+    /// - the difference between `image` and the image at `location` is higher than threshold.
+    private func DDSaveSnapshotIfDifferent(image: UIImage, into location: ImageLocation, file: StaticString = #filePath, line: UInt = #line) {
+        _DDEvaluateAssertion(message: "Failed to write recorded image into \(location.url)", file: file, line: line) {
+            let oldFileExists = FileManager.default.fileExists(atPath: location.url.path)
+            guard try !oldFileExists || difference(for: image, againstReference: location) != nil else {
+                print("🎬 ⏩ Skips saving `\(location.url.lastPathComponent)` as it has no significant difference with existing file")
+                return
+            }
+
+            print("🎬 📸 Saving `\(location.url.lastPathComponent)`")
+            guard let data = image.pngData() else {
+                throw DDAssertError.expectedFailure("Failed to create PNG data for `image`")
+            }
+            let directoryURL = location.url.deletingLastPathComponent()
+            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true)
+            try data.write(to: location.url)
+        }
+    }
+
+    /// Compares image against the snapshot saved in given location.
+    private func DDAssertSnapshotEquals(snapshotLocation: ImageLocation, image: UIImage, file: StaticString = #filePath, line: UInt = #line) {
+        let imageName = snapshotLocation.url.lastPathComponent
+        _DDEvaluateAssertion(message: "Image '\(imageName)' is visibly different than snapshot", file: file, line: line) {
+            if let differenceExplained = try difference(for: image, againstReference: snapshotLocation) {
+                throw DDAssertError.expectedFailure(differenceExplained)
+            }
+        }
+    }
+
+    /// Returns the difference from `image` to the reference image stored at certain `snapshotLocation`.
+    /// - it returns `nil` if no difference is found (considering the threshold);
+    /// - it returns human readable string denoting the difference if some is found;
+    private func difference(for image: UIImage, againstReference snapshotLocation: ImageLocation) throws -> String? {
+        let imageName = snapshotLocation.url.lastPathComponent
         let oldImageData = try Data(contentsOf: snapshotLocation.url)
-        guard let oldImage = UIImage(data: oldImageData) else {
+        guard let oldImage = UIImage(data: oldImageData, scale: image.scale) else {
             throw DDAssertError.expectedFailure("Failed to create `UIImage()` from '\(imageName)' snapshot data")
         }
 
-        // Check if both images are identical (precission: 1) or their difference is not
+        // Extract "Actual UI" and "Wireframes" images from new and reference snapshots:
+        let newImages = extractSideBySideImages(image: image)
+        let oldImages = extractSideBySideImages(image: oldImage)
+
+        // Add XCTest attachements for debugging and troubleshooting:
+        // - attach both snapshot images (reference one and the one just created):
+        let snapshotAttachement = XCTAttachment(
+            image: createSideBySideImage(
+                leftImage: oldImage,
+                rightImage: image,
+                leftTitle: "Reference snapshot:",
+                rightTitle: "Newly taken snapshot:"
+            )
+        )
+        snapshotAttachement.name = "comparison-" + imageName
+        snapshotAttachement.lifetime = .deleteOnSuccess
+        add(snapshotAttachement)
+
+        // - attach diff image emphasizing the difference between reference and new wireframes:
+        let diffAttachement = XCTAttachment(
+            image: overlayImages(image1: oldImages.rightImage, image2: newImages.rightImage)
+        )
+        diffAttachement.name = "diff-" + imageName
+        diffAttachement.lifetime = .deleteOnSuccess
+        add(diffAttachement)
+
+        // Check if both wireframe images are identical (precission: 1) or their difference is not
         // noticable for the human eye (perceptualPrecision: 0.98).
         // Ref.: http://zschuessler.github.io/DeltaE/learn/#toc-defining-delta-e
-        if let difference = compare(oldImage, image, precision: 1, perceptualPrecision: 0.98) {
-            throw DDAssertError.expectedFailure(difference)
-        }
+        return compare(oldImages.rightImage, newImages.rightImage, precision: 1, perceptualPrecision: 0.98)
     }
 }
 

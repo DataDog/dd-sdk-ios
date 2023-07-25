@@ -63,11 +63,16 @@ internal struct Sysctl {
 
     /// e.g. "MacPro4,1" or "iPhone8,1"
     /// NOTE: this is *corrected* on iOS devices to fetch hw.machine
-    static func getModel() throws -> String {
+    static func model() throws -> String {
         #if os(iOS) && !arch(x86_64) && !arch(i386) // iOS device && not Simulator
             return try Sysctl.string(for: [CTL_HW, HW_MACHINE])
         #else
             return try Sysctl.string(for: [CTL_HW, HW_MODEL])
         #endif
+    }
+
+    /// e.g. "15D21" or "13D20"
+    static func osVersion() throws -> String {
+        try Sysctl.string(for: [CTL_KERN, KERN_OSVERSION])
     }
 }

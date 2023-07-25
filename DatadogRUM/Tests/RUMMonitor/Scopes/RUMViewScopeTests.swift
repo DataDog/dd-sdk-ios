@@ -15,7 +15,9 @@ class RUMViewScopeTests: XCTestCase {
         service: "test-service",
         device: .mockWith(
             name: "device-name",
-            osName: "device-os"
+            osName: "device-os",
+            osVersion: "os-version",
+            osBuildNumber: "os-build"
         ),
         networkConnectionInfo: nil,
         carrierInfo: nil
@@ -232,6 +234,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
     }
 
@@ -309,6 +313,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
     }
 
     func testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope() throws {
@@ -374,6 +380,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -869,6 +877,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
+        XCTAssertEqual(firstActionEvent.os?.version, "os-version")
+        XCTAssertEqual(firstActionEvent.os?.build, "os-build")
     }
 
     func testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly() throws {
@@ -915,6 +925,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
+        XCTAssertEqual(firstActionEvent.os?.version, "os-version")
+        XCTAssertEqual(firstActionEvent.os?.build, "os-build")
     }
 
     func testWhenDiscreteUserActionHasFrustration_itSendsFrustrationCount() throws {
@@ -1039,6 +1051,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.service, "test-service")
         XCTAssertEqual(error.device?.name, "device-name")
         XCTAssertEqual(error.os?.name, "device-os")
+        XCTAssertEqual(error.os?.version, "os-version")
+        XCTAssertEqual(error.os?.build, "os-build")
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.error.count, 1)
@@ -1243,6 +1257,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)

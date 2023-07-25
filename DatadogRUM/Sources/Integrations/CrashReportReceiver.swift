@@ -325,6 +325,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let event = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: nil,
@@ -377,6 +378,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
@@ -453,6 +455,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,

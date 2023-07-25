@@ -141,6 +141,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(

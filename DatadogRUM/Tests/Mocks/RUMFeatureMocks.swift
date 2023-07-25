@@ -73,12 +73,14 @@ extension TelemetryReceiver: AnyMockable {
     static func mockWith(
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler = .mockKeepAll(),
-        configurationExtraSampler: Sampler = .mockKeepAll()
+        configurationExtraSampler: Sampler = .mockKeepAll(),
+        metricsExtraSampler: Sampler = .mockKeepAll()
     ) -> Self {
         .init(
             dateProvider: dateProvider,
             sampler: sampler,
-            configurationExtraSampler: configurationExtraSampler
+            configurationExtraSampler: configurationExtraSampler,
+            metricsExtraSampler: metricsExtraSampler
         )
     }
 }

@@ -56,6 +56,9 @@ internal struct DataUploadStatus {
 
     // MARK: - Debug Info
 
+    /// The actual HTTP status code received in response (`nil` if transport error).
+    let responseCode: Int?
+
     /// Upload status description printed to the console if SDK `.debug` verbosity is enabled.
     let userDebugDescription: String
 
@@ -70,6 +73,7 @@ extension DataUploadStatus {
 
         self.init(
             needsRetry: statusCode.needsRetry,
+            responseCode: httpResponse.statusCode,
             userDebugDescription: "[response code: \(httpResponse.statusCode) (\(statusCode)), request ID: \(ddRequestID ?? "(???)")]",
             error: DataUploadError(status: httpResponse.statusCode)
         )
@@ -78,6 +82,7 @@ extension DataUploadStatus {
     init(networkError: Error) {
         self.init(
             needsRetry: true, // retry this upload as it failed due to network transport isse
+            responseCode: nil,
             userDebugDescription: "[error: \(DDError(error: networkError).message)]", // e.g. "[error: A data connection is not currently allowed]"
             error: DataUploadError(networkError: networkError)
         )

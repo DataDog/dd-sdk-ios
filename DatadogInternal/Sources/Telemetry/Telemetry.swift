@@ -32,9 +32,10 @@ public struct ConfigurationTelemetry: Equatable {
 }
 
 public enum TelemetryMessage {
-    case debug(id: String, message: String)
+    case debug(id: String, message: String, attributes: [String: Encodable]?)
     case error(id: String, message: String, kind: String?, stack: String?)
     case configuration(ConfigurationTelemetry)
+    case metric(name: String, attributes: [String: Encodable])
 }
 
 /// The `Telemetry` protocol defines methods to collect debug information
@@ -52,8 +53,9 @@ extension Telemetry {
     /// - Parameters:
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
-    public func debug(id: String, message: String) {
-        send(telemetry: .debug(id: id, message: message))
+    ///   - attributes: Custom attributes attached to the log (optional).
+    public func debug(id: String, message: String, attributes: [String: Encodable]? = nil) {
+        send(telemetry: .debug(id: id, message: message, attributes: attributes))
     }
 
     /// Collect execution error.
@@ -81,10 +83,11 @@ extension Telemetry {
     ///
     /// - Parameters:
     ///   - message: The debug message.
+    ///   - attributes: Custom attributes attached to the log (optional).
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func debug(_ message: String, file: String = #file, line: Int = #line) {
-        debug(id: "\(file):\(line):\(message)", message: message)
+    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #file, line: Int = #line) {
+        debug(id: "\(file):\(line):\(message)", message: message, attributes: attributes)
     }
 
     /// Collect execution error.
@@ -194,6 +197,18 @@ extension Telemetry {
             useProxy: useProxy,
             useTracing: useTracing
         ))
+    }
+
+    /// Collect metric value.
+    ///
+    /// Metrics are reported as debug telemetry. Unlike regular events, they are not subject to duplicates filtering and
+    /// are get sampled with a different rate. Metric attributes are used to create facets for later querying and graphing.
+    ///
+    /// - Parameters:
+    ///   - name: The name of this metric.
+    ///   - attributes: Parameters associated with this metric.
+    public func metric(name: String, attributes: [String: Encodable]) {
+        send(telemetry: .metric(name: name, attributes: attributes))
     }
 }
 

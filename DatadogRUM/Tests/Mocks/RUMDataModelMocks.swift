@@ -108,6 +108,7 @@ extension RUMViewEvent: RandomMockable {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 documentVersion: .mockRandom(),
                 pageStates: nil,
                 replayStats: nil,
@@ -188,6 +189,7 @@ extension RUMResourceEvent: RandomMockable {
         return RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 discarded: nil,
                 rulePsr: nil,
                 session: .init(plan: .plan1),
@@ -255,6 +257,7 @@ extension RUMActionEvent: RandomMockable {
                     )
                 ),
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -307,6 +310,7 @@ extension RUMErrorEvent: RandomMockable {
         return RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 session: .init(plan: .plan1)
             ),
             action: .init(id: .mockRandom()),
@@ -377,6 +381,7 @@ extension RUMLongTaskEvent: RandomMockable {
         return RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
+                configuration: nil,
                 discarded: nil,
                 session: .init(plan: .plan1)
             ),

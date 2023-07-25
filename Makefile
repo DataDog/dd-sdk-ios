@@ -55,11 +55,11 @@ dependencies:
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+		@brew list gh &>/dev/null || brew install gh
 ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
@@ -122,6 +122,20 @@ sr-models-verify:
 		@echo "🧪  Verifying Session Replay models..."
 		./tools/rum-models-generator/run.py verify sr
 		@echo "OK 👌"
+
+sr-push-snapshots:
+		@echo "🎬 ↗️  Pushing SR snapshots to remote repo..."
+		@cd tools/sr-snapshots && swift run sr-snapshots push \
+			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
+			--remote-folder ../../../dd-mobile-session-replay-snapshots \
+			--remote-branch "main"
+
+sr-pull-snapshots:
+		@echo "🎬 ↙️  Pulling SR snapshots from remote repo..."
+		@cd tools/sr-snapshots && swift run sr-snapshots pull \
+			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
+			--remote-folder ../../../dd-mobile-session-replay-snapshots \
+			--remote-branch "main"
 
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:

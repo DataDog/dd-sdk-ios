@@ -109,12 +109,20 @@ extension FeatureStorage {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            metricsData: {
+                guard let trackName = BatchMetric.trackValue(for: featureName) else {
+                    DD.logger.error("Can't determine track name for feature named '\(featureName)'")
+                    return nil
+                }
+                return FilesOrchestrator.MetricsData(trackName: trackName, uploaderPerformance: performance)
+            }()
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            metricsData: nil // do not send metrics for unauthorized orchestrator
         )
 
         self.init(

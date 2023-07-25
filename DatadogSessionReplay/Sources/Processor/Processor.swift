@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// A type turning succeeding view-tree and touch snapshots into sequence of Mobile Session Replay records.
 ///
@@ -34,12 +35,14 @@ internal class Processor: Processing {
     /// Builds SR wireframes to describe UI elements.
     private let wireframesBuilder = WireframesBuilder()
     /// Builds SR records to transport SR wireframes.
-    private let recordsBuilder = RecordsBuilder()
+    private let recordsBuilder: RecordsBuilder
 
     /// The background queue for executing all logic.
     private let queue: Queue
     /// Writes records to `DatadogCore`.
     private let writer: Writing
+    /// Sends telemetry through sdk core.
+    private let telemetry: Telemetry
 
     /// Last processed snapshot.
     private var lastSnapshot: ViewTreeSnapshot? = nil
@@ -59,11 +62,14 @@ internal class Processor: Processing {
     init(
         queue: Queue,
         writer: Writing,
-        srContextPublisher: SRContextPublisher
+        srContextPublisher: SRContextPublisher,
+        telemetry: Telemetry
     ) {
         self.queue = queue
         self.writer = writer
         self.srContextPublisher = srContextPublisher
+        self.telemetry = telemetry
+        self.recordsBuilder = RecordsBuilder(telemetry: telemetry)
     }
 
     // MARK: - Processing
@@ -108,7 +114,7 @@ internal class Processor: Processing {
                 .flatMap { records.append($0) }
             }
         } else {
-            // unexpected, TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+            telemetry.error("[SR] Unexpected flow in `Processor`: no previous wireframes and no previous RUM context")
             records.append(recordsBuilder.createFullSnapshotRecord(from: viewTreeSnapshot, wireframes: wireframes))
         }
 

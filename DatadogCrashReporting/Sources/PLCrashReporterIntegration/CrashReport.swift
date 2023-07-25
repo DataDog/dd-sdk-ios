@@ -42,6 +42,8 @@ internal struct SystemInfo {
 internal struct CrashedProcessInfo {
     /// The name of the process.
     var processName: String?
+    /// The process ID.
+    var processID: UInt
     /// The path to the process executable.
     var processPath: String?
     /// The parent process ID.
@@ -175,6 +177,7 @@ extension CrashedProcessInfo {
         }
 
         self.processName = processInfo.processName
+        self.processID = processInfo.processID
         self.processPath = processInfo.processPath
         self.parentProcessID = processInfo.parentProcessID
         self.parentProcessName = processInfo.parentProcessName

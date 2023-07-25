@@ -6,8 +6,19 @@
 
 import Foundation
 
+internal protocol MultipartFormDataBuilder {
+    /// The boundary UUID of this multipart form.
+    var boundary: UUID { get }
+    /// Adds a field.
+    mutating func addFormField(name: String, value: String)
+    /// Adds a file.
+    mutating func addFormData(name: String, filename: String, data: Data, mimeType: String)
+    /// Returns the entire multipart body data (as it should be applied to request).
+    var data: Data { get }
+}
+
 /// A helper facilitating creation of `multipart/form-data` body.
-internal struct MultipartFormData {
+internal struct MultipartFormData: MultipartFormDataBuilder {
     let boundary: UUID
     private var body = Data()
 

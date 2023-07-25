@@ -59,11 +59,13 @@ internal class PopupsViewController: UIViewController {
             print("Custom action selected")
         }
         alertController.addAction(customAction)
-        present(alertController, animated: false)
+        present(alertController, animated: false) {
+            alertController.dismissKeyboard()
+        }
     }
 
     @IBAction func showActivity() {
         let activityViewController = UIActivityViewController(activityItems: [], applicationActivities: nil)
-        present(activityViewController, animated: true, completion: nil)
+        present(activityViewController, animated: false, completion: nil)
     }
 }

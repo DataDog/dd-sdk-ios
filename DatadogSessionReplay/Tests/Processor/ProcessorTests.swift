@@ -29,7 +29,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -61,7 +61,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -108,7 +108,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
         let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
@@ -147,7 +147,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -201,7 +201,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
@@ -246,7 +246,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When

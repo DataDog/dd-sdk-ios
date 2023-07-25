@@ -23,9 +23,9 @@ internal final class DataReader: Reader {
         }
     }
 
-    func markBatchAsRead(_ batch: Batch) {
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
         queue.sync {
-            self.fileReader.markBatchAsRead(batch)
+            self.fileReader.markBatchAsRead(batch, reason: reason)
         }
     }
 }

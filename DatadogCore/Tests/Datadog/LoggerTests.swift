@@ -37,7 +37,12 @@ class LoggerTests: XCTestCase {
             version: "1.0.0",
             sdkVersion: "1.2.3",
             applicationBundleIdentifier: "com.datadoghq.ios-sdk",
-            device: .mockWith(architecture: "testArch")
+            device: .mockWith(
+                name: "testOS",
+                osVersion: "1.0",
+                osBuildNumber: "FFFFFF",
+                architecture: "testArch"
+            )
         )
 
         let feature: LogsFeature = .mockWith(
@@ -53,6 +58,11 @@ class LoggerTests: XCTestCase {
         {
           "status" : "debug",
           "message" : "message",
+          "os": {
+            "build": "FFFFFF",
+            "name": "testOS",
+            "version": "1.0"
+          },
           "service" : "default-service-name",
           "logger.name" : "com.datadoghq.ios-sdk",
           "logger.version": "1.2.3",
@@ -557,7 +567,7 @@ class LoggerTests: XCTestCase {
 
         logMatchers.forEach {
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                forKeyPath: "session_id",
                 isTypeOf: String.self
             )
         }
@@ -590,25 +600,25 @@ class LoggerTests: XCTestCase {
 
         logMatchers.forEach {
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.applicationID,
+                forKeyPath: "application_id",
                 equals: applicationID
             )
 
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.sessionID,
+                forKeyPath: "session_id",
                 isTypeOf: String.self
             )
 
             $0.assertValue(
-                forKeyPath: RUMContextAttributes.IDs.viewID,
+                forKeyPath: "view.id",
                 isTypeOf: String.self
             )
         }
 
-        logMatchers.first?.assertNoValue(forKeyPath: RUMContextAttributes.IDs.userActionID)
+        logMatchers.first?.assertNoValue(forKeyPath: "user_action.id")
 
         logMatchers.last?.assertValue(
-            forKeyPath: RUMContextAttributes.IDs.userActionID,
+            forKeyPath: "user_action.id",
             isTypeOf: String.self
         )
     }

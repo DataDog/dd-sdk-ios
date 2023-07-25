@@ -230,6 +230,11 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             dd: .init(
                 device: .init(architecture: deviceInfo.architecture)
             ),
+            os: .init(
+                name: context.device.name,
+                version: context.device.osVersion,
+                build: context.device.osBuildNumber
+            ),
             userInfo: .init(
                 id: user?.id,
                 name: user?.name,
@@ -287,7 +292,8 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             }
 
             if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                event.merge(baggage as [String: Any]) { $1 }
+                let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
+                event.merge(mappedBaggage as [String: Any]) { $1 }
             }
 
             writer.write(value: AnyEncodable(event))

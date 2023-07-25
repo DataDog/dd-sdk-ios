@@ -30,11 +30,11 @@ internal struct FileWriter: Writer {
         do {
             var encoded: Data = .init()
             if let metadata = metadata {
-                let encodedMetadata = try encode(encodable: metadata, blockType: .eventMetadata)
+                let encodedMetadata = try encode(value: metadata, blockType: .eventMetadata)
                 encoded.append(encodedMetadata)
             }
 
-            let encodedValue = try encode(encodable: value, blockType: .event)
+            let encodedValue = try encode(value: value, blockType: .event)
             encoded.append(encodedValue)
 
             // Make sure both event and event metadata are written to the same file.
@@ -62,8 +62,8 @@ internal struct FileWriter: Writer {
     ///
     /// - Parameter event: The value to encode.
     /// - Returns: Data representation of the value.
-    private func encode(encodable: Encodable, blockType: BlockType) throws -> Data {
-        let data = try jsonEncoder.encode(encodable)
+    private func encode<T: Encodable>(value: T, blockType: BlockType) throws -> Data {
+        let data = try jsonEncoder.encode(value)
         return try DataBlock(
             type: blockType,
             data: encrypt(data: data)

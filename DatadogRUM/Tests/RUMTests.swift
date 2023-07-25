@@ -75,6 +75,7 @@ class RUMTests: XCTestCase {
         XCTAssertEqual(monitor.scopes.dependencies.rumApplicationID, applicationID)
         XCTAssertEqual(monitor.scopes.dependencies.sessionSampler.samplingRate, 100)
         XCTAssertEqual(telemetryReceiver?.configurationExtraSampler.samplingRate, 20)
+        XCTAssertEqual(telemetryReceiver?.metricsExtraSampler.samplingRate, 15)
         XCTAssertEqual(crashReportReceiver?.sessionSampler.samplingRate, 100)
     }
 
@@ -367,8 +368,8 @@ class RUMTests: XCTestCase {
             FeatureBaggage(
                 [
                     "ids": [
-                        "application_id": applicationID,
-                        "session_id": sessionID.toRUMDataFormat,
+                        "application.id": applicationID,
+                        "session.id": sessionID.toRUMDataFormat,
                         "view.id": nil,
                         "user_action.id": nil
                     ]

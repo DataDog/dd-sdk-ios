@@ -98,13 +98,13 @@ class ServerDateProviderMock: ServerDateProvider {
 // MARK: - PerformancePreset Mocks
 
 struct StoragePerformanceMock: StoragePerformancePreset {
-    let maxFileSize: UInt64
-    let maxDirectorySize: UInt64
-    let maxFileAgeForWrite: TimeInterval
-    let minFileAgeForRead: TimeInterval
-    let maxFileAgeForRead: TimeInterval
-    let maxObjectsInFile: Int
-    let maxObjectSize: UInt64
+    var maxFileSize: UInt64
+    var maxDirectorySize: UInt64
+    var maxFileAgeForWrite: TimeInterval
+    var minFileAgeForRead: TimeInterval
+    var maxFileAgeForRead: TimeInterval
+    var maxObjectsInFile: Int
+    var maxObjectSize: UInt64
 
     static let noOp = StoragePerformanceMock(
         maxFileSize: 0,
@@ -137,11 +137,23 @@ struct StoragePerformanceMock: StoragePerformancePreset {
     )
 }
 
+extension StoragePerformanceMock {
+    init(other: StoragePerformancePreset) {
+        maxFileSize = other.maxFileSize
+        maxDirectorySize = other.maxDirectorySize
+        maxFileAgeForWrite = other.maxFileAgeForWrite
+        minFileAgeForRead = other.minFileAgeForRead
+        maxFileAgeForRead = other.maxFileAgeForRead
+        maxObjectsInFile = other.maxObjectsInFile
+        maxObjectSize = other.maxObjectSize
+    }
+}
+
 struct UploadPerformanceMock: UploadPerformancePreset {
-    let initialUploadDelay: TimeInterval
-    let minUploadDelay: TimeInterval
-    let maxUploadDelay: TimeInterval
-    let uploadDelayChangeRate: Double
+    var initialUploadDelay: TimeInterval
+    var minUploadDelay: TimeInterval
+    var maxUploadDelay: TimeInterval
+    var uploadDelayChangeRate: Double
 
     static let noOp = UploadPerformanceMock(
         initialUploadDelay: .distantFuture,
@@ -165,6 +177,15 @@ struct UploadPerformanceMock: UploadPerformancePreset {
         maxUploadDelay: 60,
         uploadDelayChangeRate: 60 / 0.05
     )
+}
+
+extension UploadPerformanceMock {
+    init(other: UploadPerformancePreset) {
+        initialUploadDelay = other.initialUploadDelay
+        minUploadDelay = other.minUploadDelay
+        maxUploadDelay = other.maxUploadDelay
+        uploadDelayChangeRate = other.uploadDelayChangeRate
+    }
 }
 
 extension BundleType: AnyMockable, RandomMockable {
@@ -222,9 +243,23 @@ extension FeatureUpload {
     }
 }
 
+extension Reader {
+    func markBatchAsRead(_ batch: Batch) {
+        // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
+        markBatchAsRead(batch, reason: .flushed)
+    }
+}
+
+extension FilesOrchestratorType {
+    func delete(readableFile: ReadableFile) {
+        // We can ignore `deletionReason` in most tests (used for sending metric), so we provide this convenience variant.
+        delete(readableFile: readableFile, deletionReason: .flushed)
+    }
+}
+
 class NOPReader: Reader {
     func readNextBatch() -> Batch? { nil }
-    func markBatchAsRead(_ batch: Batch) {}
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
 internal class NOPFilesOrchestrator: FilesOrchestratorType {
@@ -241,7 +276,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
-    func delete(readableFile: ReadableFile) { }
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
 
     var ignoreFilesAgeWhenReading = false
 }
@@ -290,6 +325,7 @@ extension DataUploadStatus: RandomMockable {
     public static func mockRandom() -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: .random(),
+            responseCode: .mockRandom(),
             userDebugDescription: .mockRandom(),
             error: nil
         )
@@ -297,11 +333,13 @@ extension DataUploadStatus: RandomMockable {
 
     static func mockWith(
         needsRetry: Bool = .mockAny(),
+        responseCode: Int = .mockAny(),
         userDebugDescription: String = .mockAny(),
         error: DataUploadError? = nil
     ) -> DataUploadStatus {
         return DataUploadStatus(
             needsRetry: needsRetry,
+            responseCode: responseCode,
             userDebugDescription: userDebugDescription,
             error: error
         )

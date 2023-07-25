@@ -82,7 +82,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             TelemetryReceiver(
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
-                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate)
+                configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate),
+                metricsExtraSampler: Sampler(samplingRate: configuration.metricsTelemetrySampleRate)
             ),
             ErrorMessageReceiver(monitor: monitor),
             WebViewEventReceiver(

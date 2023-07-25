@@ -136,6 +136,18 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertFalse(attributes.isTranslucent)
     }
 
+    func testItSanitizesInvalidRuntimeAttributes() {
+        // Given
+        let view = UIView(frame: .zero)
+        view.setValue("invalid color", forKeyPath: "layer.borderColor")
+
+        // When
+        let attributes = ViewAttributes(frameInRootView: view.frame, view: view)
+
+        // Then
+        XCTAssertNil(attributes.layerBorderColor)
+    }
+
     func testWhenCopy() {
         let view: UIView = .mockRandom()
         let rect: CGRect = .mockRandom()
