@@ -10,12 +10,13 @@
 import os
 import glob
 from tempfile import TemporaryDirectory, NamedTemporaryFile
+from packaging.version import Version
 from src.utils import remember_cwd, shell, read_sdk_version, read_xcode_version
 from src.release.directory_matcher import DirectoryMatcher
-from src.release.semver import Version
 
-min_cr_version = Version.parse('1.7.0')
-min_tvos_version = Version.parse('1.10.0')
+min_cr_version = Version('1.7.0')
+min_tvos_version = Version('1.10.0')
+v2 = Version('2.0.0-beta1')
 
 class XCFrameworkValidator:
     name: str
@@ -28,15 +29,14 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
     name = 'Datadog.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        max_version = Version.parse('2.0.0-beta1')
-        if in_version.is_newer_than_or_equal(max_version):
+        if in_version >= v2:
             return False # Datadog.xcframework no longer exist in `2.0`
 
         dir = zip_directory.get('Datadog.xcframework')
 
         # above 1.12.1: framework includes arm64e slices
-        min_arm64e_version = Version.parse('1.12.1')
-        if in_version.is_newer_than(min_arm64e_version):
+        min_arm64e_version = Version('1.12.1')
+        if in_version > min_arm64e_version:
             dir.assert_it_has_files([
                 'ios-arm64_arm64e',
                 'ios-arm64_arm64e/dSYMs/*.dSYM',
@@ -55,7 +55,7 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
-        if in_version.is_older_than(min_tvos_version):
+        if in_version < min_tvos_version:
             return True # Stop here: tvOS support was introduced in `1.10.0`
 
         dir.assert_it_has_files([
@@ -80,8 +80,8 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
         dir = zip_directory.get('DatadogObjc.xcframework')
 
         # above 1.12.1: framework includes arm64e slices
-        min_arm64e_version = Version.parse('1.12.1')
-        if in_version.is_newer_than(min_arm64e_version):
+        min_arm64e_version = Version('1.12.1')
+        if in_version > min_arm64e_version:
             dir.assert_it_has_files([
                 'ios-arm64_arm64e',
                 'ios-arm64_arm64e/dSYMs/*.dSYM',
@@ -100,7 +100,7 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
 
-        if in_version.is_older_than(min_tvos_version):
+        if in_version < min_tvos_version:
             return True # Stop here: tvOS support was introduced in `1.10.0`
 
         dir.assert_it_has_files([
@@ -119,14 +119,14 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
     name = 'DatadogCrashReporting.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        if in_version.is_older_than(min_cr_version):
+        if in_version < min_cr_version:
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('DatadogCrashReporting.xcframework')
 
         # above 1.12.1: framework includes arm64e slices
-        min_arm64e_version = Version.parse('1.12.1')
-        if in_version.is_newer_than(min_arm64e_version):
+        min_arm64e_version = Version('1.12.1')
+        if in_version > min_arm64e_version:
             dir.assert_it_has_files([
                 'ios-arm64_arm64e',
                 'ios-arm64_arm64e/dSYMs/*.dSYM',
@@ -145,7 +145,7 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
             'ios-arm64_x86_64-simulator/**/*.swiftinterface',
         ])
         
-        if in_version.is_older_than(min_tvos_version):
+        if in_version < min_tvos_version:
             return True # Stop here: tvOS support was introduced in `1.10.0`
 
         dir.assert_it_has_files([
@@ -164,13 +164,13 @@ class CrashReporterXCFrameworkValidator(XCFrameworkValidator):
     name = 'CrashReporter.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        if in_version.is_older_than(min_cr_version):
+        if in_version < min_cr_version:
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
         dir = zip_directory.get('CrashReporter.xcframework')
 
-        min_xc14_version = Version.parse('1.12.1')
-        if in_version.is_newer_than_or_equal(min_xc14_version):
+        min_xc14_version = Version('1.12.1')
+        if in_version >= min_xc14_version:
             # 1.12.1 depends on PLCR 1.11.1 which
             # no longer include armv7_armv7s slices
             # for Xcode 14 support
@@ -184,7 +184,7 @@ class CrashReporterXCFrameworkValidator(XCFrameworkValidator):
                 'ios-arm64_i386_x86_64-simulator',
             ])
 
-        if in_version.is_older_than(min_tvos_version):
+        if in_version < min_tvos_version:
             return True # Stop here: tvOS support was introduced in `1.10.0`
 
         dir.assert_it_has_files([
@@ -199,9 +199,9 @@ class KronosXCFrameworkValidator(XCFrameworkValidator):
     name = 'Kronos.xcframework'
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        min_version = Version.parse('1.5.0')  # First version that depends on Kronos
-        max_version = Version.parse('1.9.0')  # Version where Kronos dependency was removed
-        if in_version.is_older_than(min_version) or in_version.is_newer_than_or_equal(max_version):
+        min_version = Version('1.5.0')  # First version that depends on Kronos
+        max_version = Version('1.9.0')  # Version where Kronos dependency was removed
+        if in_version < min_version or in_version >= max_version:
             return False
             
         zip_directory.get('Kronos.xcframework').assert_it_has_files([
@@ -222,8 +222,7 @@ class DatadogModuleXCFrameworkValidator(XCFrameworkValidator):
         self.platforms = platforms
 
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
-        min_version = Version.parse('2.0.0-beta1')
-        if in_version.is_older_than(min_version):
+        if in_version < v2:
             return False # introduced in 2.0
         
         directory = zip_directory.get(self.name)
@@ -242,7 +241,6 @@ class DatadogModuleXCFrameworkValidator(XCFrameworkValidator):
 
         if "tvos" in self.platforms :
             directory.assert_it_has_files([
-
                 'tvos-arm64',
                 'tvos-arm64/dSYMs/*.dSYM',
                 'tvos-arm64/**/*.swiftinterface',
@@ -254,7 +252,7 @@ class DatadogModuleXCFrameworkValidator(XCFrameworkValidator):
 
         return True
 
-xcframeworks_validators: [XCFrameworkValidator] = [
+xcframeworks_validators: list[XCFrameworkValidator] = [
     DatadogXCFrameworkValidator(),
     KronosXCFrameworkValidator(),
 
@@ -280,24 +278,28 @@ class GHAsset:
     __git_tag: str # The git tag to build assets for
     __path: str  # The path to the asset `.zip` archive
 
-    def __init__(self, add_xcode_version: bool, git_tag: str):
+    def __init__(self, git_tag: str):
         print(f'⌛️️️ Creating the GH release asset from {os.getcwd()}')
+
+        this_version = Version(git_tag)
 
         with NamedTemporaryFile(mode='w+', prefix='dd-gh-distro-', suffix='.xcconfig') as xcconfig:
             os.environ['XCODE_XCCONFIG_FILE'] = xcconfig.name
 
-            this_version = Version.parse(git_tag)
-            platform = 'iOS' if this_version.is_older_than(min_tvos_version) else 'iOS,tvOS'
+            platform = 'iOS' if this_version < min_tvos_version else 'iOS,tvOS'
 
             # Produce XCFrameworks:
             shell(f'sh tools/distribution/build-xcframework.sh --platform {platform}')
 
         # Create `.zip` archive:
-        zip_archive_name = f'Datadog-{read_sdk_version()}.zip'
+        zip_archive_name = 'Datadog.xcframework.zip'
 
-        if add_xcode_version:
+        # Prior to v2, module stability was not enabled. Therefore, binaries are compiled for
+        # specific versions of Swift.
+        if this_version < v2:
             xc_version = read_xcode_version().replace(' ', '-')
             zip_archive_name = f'Datadog-{read_sdk_version()}-Xcode-{xc_version}.zip'
+            zip_archive_name = f'Datadog-{read_sdk_version()}.zip'     
 
         with remember_cwd():
             print(f'   → Creating GH asset: {zip_archive_name}')
@@ -332,7 +334,7 @@ class GHAsset:
                 print(f'      - {file_path.removeprefix(unzip_dir)}')
 
             dm = DirectoryMatcher(path=unzip_dir)
-            this_version = Version.parse(self.__git_tag)
+            this_version = Version(self.__git_tag)
 
             print(f'   → Validating each `XCFramework`:')
             validated_count = 0

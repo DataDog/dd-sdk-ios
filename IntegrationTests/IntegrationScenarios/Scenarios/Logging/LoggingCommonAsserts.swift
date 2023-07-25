@@ -39,7 +39,7 @@ extension LoggingCommonAsserts {
                 #"^User-Agent: .*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
                 #"^DD-API-KEY: ui-tests-client-token$"#,
                 #"^DD-EVP-ORIGIN: ios$"#,
-                #"^DD-EVP-ORIGIN-VERSION: [0-9]+.[0-9]+.[0-9]+([-a-z0-9])*$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta2"
+                #"^DD-EVP-ORIGIN-VERSION: \#(semverPattern)$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta.2"
                 #"^DD-REQUEST-ID: [0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"# // e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
             ]
             expectedHeadersRegexes.forEach { expectedHeaderRegex in

@@ -6,6 +6,10 @@
 
 import XCTest
 
+// https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+let semverPattern = #"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"#
+let semverRegex = "^\(semverPattern)$"
+
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
     /// Launches the app by providing mock server configuration.
