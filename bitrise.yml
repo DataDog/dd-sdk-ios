@@ -264,6 +264,10 @@ workflows:
         inputs:
         - content: |
             #!/usr/bin/env zsh
+
+            # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
+            # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
+            # variable respected by the main package. Here we export it so it is available in next CI steps:
             envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
     - xcode-test:
         title: Run snapshot tests for Session Replay - iOS Simulator
