@@ -24,6 +24,7 @@ internal final class DataUploader: DataUploaderType {
 
     private let httpClient: HTTPClient
     private let requestBuilder: FeatureRequestBuilder
+    private let benchmark = UploadSizeBenchmark()
 
     init(httpClient: HTTPClient, requestBuilder: FeatureRequestBuilder) {
         self.httpClient = httpClient
@@ -52,6 +53,10 @@ internal final class DataUploader: DataUploaderType {
         }
 
         _ = semaphore.wait(timeout: .distantFuture)
+
+        if request.url!.absoluteString.hasSuffix("/api/v2/replay") { // if SR request
+            benchmark.add(uploadSizeInBytes: UInt64(request.httpBody!.count))
+        }
 
         return uploadStatus ?? DataUploader.unreachableUploadStatus
     }

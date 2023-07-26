@@ -104,9 +104,12 @@ internal class Recorder: Recording {
 
     // MARK: - Recording
 
+    let benchmark = MainThreadTimeSpenBenchmark()
+
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     func captureNextRecord(_ recorderContext: Context) {
+        let startTime = DispatchTime.now()
         do {
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
@@ -117,5 +120,8 @@ internal class Recorder: Recording {
         } catch let error {
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }
+        let endTime = DispatchTime.now()
+        let msTime = Double(endTime.uptimeNanoseconds - startTime.uptimeNanoseconds) / 1_000_000 // convert ns to ms
+        benchmark.add(mainThreadTimeInMs: msTime)
     }
 }

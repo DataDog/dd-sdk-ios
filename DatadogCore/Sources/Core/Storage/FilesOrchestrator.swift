@@ -36,6 +36,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// This is approximated value as it assumes that all requested writes succed. The actual difference should be negligible.
     private var lastWritableFileApproximatedSize: UInt64 = 0
 
+    private let benchmark = DiskWritesBenchmark()
+
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
         /// The name of the track reported for this orchestrator.
@@ -98,6 +100,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     private func validate(writeSize: UInt64) throws {
         guard writeSize <= performance.maxObjectSize else {
             throw InternalError(description: "data exceeds the maximum size of \(performance.maxObjectSize) bytes.")
+        }
+
+        if metricsData?.trackName == "sr" {
+            benchmark.add(diskWriteSizeInBytes: writeSize)
         }
     }
 
