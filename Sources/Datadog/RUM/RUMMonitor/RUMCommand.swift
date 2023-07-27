@@ -86,7 +86,7 @@ internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttribut
     let identity: RUMViewIdentifiable
 }
 
-internal struct RUMAddCurrentViewErrorCommand: RUMCommand, RUMViewScopePropagatableAttributes {
+internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
