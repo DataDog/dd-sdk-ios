@@ -1045,7 +1045,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertTrue(error.error.isCrash == false)
         XCTAssertNil(error.error.resource)
         XCTAssertNil(error.action)
-        XCTAssertEqual(error.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(error.context?.contextInfo as? [String: String], [:])
         XCTAssertEqual(error.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(error.source, .ios)
         XCTAssertEqual(error.service, "test-service")
@@ -1151,6 +1151,61 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1)
         XCTAssertEqual(viewUpdate.source, RUMViewEvent.Source(rawValue: customSource))
         XCTAssertEqual(viewUpdate.service, "test-service")
+    }
+
+    func testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [
+                "test_attribute": "abc",
+                "other_attribute": "my attribute"
+            ],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: ["other_attribute": "overwritten", "foo": "bar"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.context?.contextInfo["other_attribute"] as? String, "overwritten")
+        XCTAssertEqual(error.context?.contextInfo["foo"] as? String, "bar")
+
+        XCTAssertEqual(scope.attributes["test_attribute"] as? String, "abc")
+        XCTAssertEqual(scope.attributes["other_attribute"] as? String, "my attribute")
+        XCTAssertNil(scope.attributes["foo"])
     }
 
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
@@ -1262,6 +1317,56 @@ class RUMViewScopeTests: XCTestCase {
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.longTask?.count, 1)
+    }
+
+    func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockView,
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [
+                "test_attribute": "abc",
+                "other_attribute": "my attribute"
+            ],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: mockView),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+        let duration: TimeInterval = 1.0
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddLongTaskCommand(
+                    time: currentTime,
+                    attributes: ["foo": "bar", "test_attribute": "overwritten"],
+                    duration: duration
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMLongTaskEvent.self).last)
+        DDAssertDictionariesEqual(event.context!.contextInfo, ["foo": "bar", "test_attribute": "overwritten"])
+        DDAssertDictionariesEqual(scope.attributes, ["test_attribute": "abc", "other_attribute": "my attribute"])
     }
 
     func testWhenLongTaskIsAddedWithConfiguredSource_itSendsLongTaskEventWithConfiguredSource() throws {
