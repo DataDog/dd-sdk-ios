@@ -8,27 +8,24 @@ import Foundation
 import XCTest
 @testable import DatadogSessionReplay
 
-@available(iOS 13.0, *)
 class UIImageScalingTests: XCTestCase {
-    var sut: (image: UIImage, pngData: Data) {
-        guard let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil), let imageData = image.pngData() else {
-            XCTFail("Failed to load image")
-            return (UIImage(), Data())
-        }
-        return (image, imageData)
-    }
+    func testScaledToApproximateSize_ReturnsOriginalImageData_IfSizeIsSmallerOrEqualToAnticipatedMaxSize() throws {
+        let image: UIImage = .mockRandom(width: 50, height: 50)
+        let pngData = try XCTUnwrap(image.pngData())
+        let dataSize = pngData.count
 
-    func testScaledToApproximateSize_ReturnsOriginalImageData_IfSizeIsSmallerOrEqualToAnticipatedMaxSize() {
-        let dataSize = sut.pngData.count
         let maxSize = dataSize + 100
-        let scaledData = sut.image.scaledDownToApproximateSize(maxSize)
-        XCTAssertEqual(scaledData, sut.pngData)
+        let scaledData = image.scaledDownToApproximateSize(maxSize)
+        XCTAssertEqual(scaledData, pngData)
     }
 
-    func testScaledToApproximateSize_ScalesImageToSmallerSize_IfSizeIsLargerThanAnticipatedMaxSize() {
-        let dataSize = sut.pngData.count
+    func testScaledToApproximateSize_ScalesImageToSmallerSize_IfSizeIsLargerThanAnticipatedMaxSize() throws {
+        let image: UIImage = .mockRandom(width: 50, height: 50)
+        let pngData = try XCTUnwrap(image.pngData())
+        let dataSize = pngData.count
+
         let maxSize = dataSize - 100
-        let scaledData = sut.image.scaledDownToApproximateSize(maxSize)
+        let scaledData = image.scaledDownToApproximateSize(maxSize)
         XCTAssertTrue(scaledData.count < dataSize)
     }
 }

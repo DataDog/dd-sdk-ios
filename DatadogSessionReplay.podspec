@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSessionReplay"
   s.version      = "2.0.0-beta.2"
-  s.summary      = "Official Datadog Session Replay SDK for iOS. This module is currently in beta - contact Datadog to request a try."
+  s.summary      = "Official Datadog Session Replay SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
@@ -10,7 +10,8 @@ Pod::Spec.new do |s|
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
     "Maciej Burda" => "maciej.burda@datadoghq.com",
-    "Maxime Epain" => "maxime.epain@datadoghq.com"
+    "Maxime Epain" => "maxime.epain@datadoghq.com",
+    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
   s.swift_version = '5.5'

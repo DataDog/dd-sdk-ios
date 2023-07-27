@@ -262,6 +262,7 @@ xcframeworks_validators: list[XCFrameworkValidator] = [
     DatadogModuleXCFrameworkValidator("DatadogLogs"),
     DatadogModuleXCFrameworkValidator("DatadogTrace"),
     DatadogModuleXCFrameworkValidator("DatadogRUM"),
+    DatadogModuleXCFrameworkValidator("DatadogSessionReplay", platforms=["ios"]),
     DatadogModuleXCFrameworkValidator("DatadogWebViewTracking", platforms=["ios"]),
 
     DatadogObjcXCFrameworkValidator(),

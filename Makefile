@@ -78,6 +78,12 @@ prepare-integration-tests:
 		@cd IntegrationTests/ && pod install
 		@echo "OK 👌"
 
+open-sr-snapshot-tests:
+		@echo "⚙️  Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
+		@pgrep -q Xcode && killall Xcode && echo "- Xcode killed" || echo "- Xcode not running"
+		@sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
+		@open --env DD_TEST_UTILITIES_ENABLED ./DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
+
 templates:
 		@echo "⚙️  Installing Xcode templates..."
 		./tools/xcode-templates/install-xcode-templates.sh
