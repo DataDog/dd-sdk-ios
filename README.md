@@ -26,7 +26,7 @@ See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring
 
 ### Alamofire
 
-If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`DatadogAlamofireExtension` library](Sources/DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
+If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`Datadog Alamofire Extension` library](DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
 
 ## Contributing
 
