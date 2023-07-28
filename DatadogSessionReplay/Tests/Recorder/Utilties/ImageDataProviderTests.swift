@@ -27,7 +27,7 @@ class ImageDataProviderTests: XCTestCase {
     @available(iOS 13.0, *)
     func test_returnsValidString_forSFSymbolIcon() throws {
         let sut = ImageDataProvider()
-        let image = UIImage(systemName: "apple.logo")
+        let image = UIImage(systemName: "square.and.arrow.up")
 
         let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageData.count, 0)
