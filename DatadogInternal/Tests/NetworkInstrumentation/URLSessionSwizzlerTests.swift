@@ -128,15 +128,20 @@ class URLSessionSwizzlerTests: XCTestCase {
         handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
 
         // Given
+        let url: URL = .mockRandom()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
         let delegate = DatadogURLSessionDelegate(in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
         session
-            .dataTask(with: URL.mockRandom()) { _, _, _ in completionHandlerCalled.fulfill() }
+            .dataTask(with: url) { _, _, _ in completionHandlerCalled.fulfill() }
             .resume()
 
         // Then
+        wait(for: [completionHandlerCalled], timeout: 1)
         wait(
             for: [
                 notifyRequestMutation,
@@ -146,8 +151,6 @@ class URLSessionSwizzlerTests: XCTestCase {
             timeout: 2,
             enforceOrder: true
         )
-
-        wait(for: [completionHandlerCalled], timeout: 0)
 
         let requestSent = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
         if #available(iOS 13.0, *) {
