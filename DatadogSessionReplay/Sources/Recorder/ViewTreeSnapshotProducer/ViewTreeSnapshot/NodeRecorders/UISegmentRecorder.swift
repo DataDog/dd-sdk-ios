@@ -92,7 +92,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
             segmentRects.append(segmentRect)
         }
 
-        let segments = (0..<numberOfSegments).map { idx in
+        let segments: [SRWireframe] = (0..<numberOfSegments).map { idx in
             let isSelected = idx == selectedSegmentIndex
             return builder.createTextWireframe(
                 id: segmentWireframeIDs[idx],
