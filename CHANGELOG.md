@@ -10,7 +10,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 - [BUGFIX] Module stability: fix name collision. 
 
 # 1.22.0 / 21-07-2023
-# 1.22.0 / 21-07-2023
 - [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
 
