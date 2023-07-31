@@ -5,7 +5,8 @@
  */
 
 import UIKit
-import Datadog
+import DatadogLogs
+import DatadogCore
 
 class DebugLoggingViewController: UIViewController {
     @IBOutlet weak var logLevelSegmentedControl: UISegmentedControl!
@@ -35,7 +36,7 @@ class DebugLoggingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        logServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
+        logServiceNameTextField.text = serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
     }
@@ -84,15 +85,18 @@ class DebugLoggingViewController: UIViewController {
     // MARK: - Stress testing
 
     var queues: [DispatchQueue] = []
-    var loggers: [Logger] = []
+    var loggers: [LoggerProtocol] = []
 
     @IBAction func didTapStressTest(_ sender: Any) {
         stressTestButton.disableFor(seconds: 10)
 
         loggers = (0..<5).map { index in
-            return Logger.builder.set(loggerName: "stress-logger-\(index)")
-                .sendNetworkInfo(true)
-                .build()
+            return Logger.create(
+                with: Logger.Configuration(
+                    name: "stress-logger-\(index)",
+                    networkInfoEnabled: true
+                )
+            )
         }
 
         queues = (0..<5).map { index in
@@ -105,7 +109,7 @@ class DebugLoggingViewController: UIViewController {
         }
     }
 
-    private func keepSendingLogs(on queue: DispatchQueue, using logger: Logger, every timeInterval: TimeInterval, until endDate: Date) {
+    private func keepSendingLogs(on queue: DispatchQueue, using logger: LoggerProtocol, every timeInterval: TimeInterval, until endDate: Date) {
         if Date() < endDate {
             queue.asyncAfter(deadline: .now() + timeInterval) { [weak self] in
                 logger.debug(self?.randomLogMessage() ?? "")

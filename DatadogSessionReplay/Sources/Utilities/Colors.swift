@@ -13,6 +13,13 @@ import UIKit
 ///   - color: the color
 /// - Returns: `#RRGGBBAA` string or `nil` if it cannot be constructed for given `color`.
 internal func hexString(from color: CGColor) -> String? {
+    guard let color = color.safeCast else {
+        // Because `CGColor` is dynamic CF type it is possible to get some other CFTypeRef here.
+        // To avoid crash on sending message to unexpected type, we sanitize here.
+        // For full context, see: https://github.com/DataDog/dd-sdk-ios/pull/1373
+        return nil
+    }
+
     let uiColor = UIColor(cgColor: color) // TODO: RUMM-2250 Check if there's a way without converting to `UIColor`
 
     var r: CGFloat = 0

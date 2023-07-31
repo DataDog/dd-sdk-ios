@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKObjc"
   s.module_name  = "DatadogObjc"
-  s.version      = "1.22.0"
+  s.version      = "2.0.0"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -10,16 +10,22 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Mert Buran" => "mert.buran@datadoghq.com",
-    "Maxime Epain" => "maxime.epain@datadoghq.com"
+    "Maciej Burda" => "maciej.burda@datadoghq.com",
+    "Maxime Epain" => "maxime.epain@datadoghq.com",
+    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version      = '5.1'
+  s.swift_version = '5.5'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 
+  s.deprecated_in_favor_of = 'DatadogObjc'
+
   s.source = { :git => 'https://github.com/DataDog/dd-sdk-ios.git', :tag => s.version.to_s }
 
-  s.source_files = "Sources/DatadogObjc/**/*.swift"
-  s.dependency 'DatadogSDK', '1.22.0'
+  s.source_files = "DatadogObjc/Sources/**/*.swift"
+  s.dependency 'DatadogCore', s.version.to_s
+  s.dependency 'DatadogRUM', s.version.to_s
+  s.dependency 'DatadogLogs', s.version.to_s
+  s.dependency 'DatadogTrace', s.version.to_s
 end

@@ -5,15 +5,16 @@
  */
 
 import Foundation
-import Datadog
+import TestUtilities
+import DatadogRUM
 
 class RUMMonitorE2ETests: E2ETests {
-    private lazy var rum = Global.rum.dd
+    private var rum: RUMMonitorProtocol { RUMMonitor.shared() }
 
-    let actionTypePool = [RUMUserActionType.swipe, .scroll, .tap, .custom]
-    let nonCustomActionTypePool = [RUMUserActionType.swipe, .scroll, .tap]
+    let actionTypePool = [RUMActionType.swipe, .scroll, .tap, .custom]
+    let nonCustomActionTypePool = [RUMActionType.swipe, .scroll, .tap]
 
-    /// - api-surface: DDRUMMonitor.startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     ///
     /// - data monitor:
     /// ```rum
@@ -41,7 +42,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopView(key: String,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -69,7 +70,7 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopView(key: String,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -92,16 +93,16 @@ class RUMMonitorE2ETests: E2ETests {
         let resourceKey = String.mockRandom()
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
-        rum.startResourceLoading(resourceKey: resourceKey, httpMethod: .get, urlString: resourceKey, attributes: DD.logAttributes())
+        rum.startResource(resourceKey: resourceKey, httpMethod: .get, urlString: resourceKey, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             rum.stopView(key: viewKey, attributes: [:])
         }
 
-        rum.stopResourceLoading(resourceKey: resourceKey, statusCode: (200...500).randomElement()!, kind: .other)
+        rum.stopResource(resourceKey: resourceKey, statusCode: (200...500).randomElement()!, kind: .other)
     }
 
-    /// - api-surface: DDRUMMonitor.stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopView(key: String,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -125,16 +126,16 @@ class RUMMonitorE2ETests: E2ETests {
         let actionType = actionTypePool.randomElement()!
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
-        rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             rum.stopView(key: viewKey, attributes: [:])
         }
 
-        rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
+        rum.stopAction(type: actionType, name: actionName, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addTiming(name: String)
+    /// - api-surface: RUMMonitorProtocol.addTiming(name: String)
     ///
     /// - data monitor:
     /// ```rum
@@ -178,7 +179,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -204,14 +205,14 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -232,18 +233,18 @@ class RUMMonitorE2ETests: E2ETests {
         let viewKey = String.mockRandom()
         let viewName = String.mockRandom()
         let actionName = String.mockRandom()
-        let actionType = RUMUserActionType.custom
+        let actionType = RUMActionType.custom
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -269,15 +270,15 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         rum.sendRandomActionOutcomeEvent()
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -302,9 +303,9 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
+            rum.stopAction(type: actionType, name: actionName, attributes: [:])
         }
 
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
@@ -312,8 +313,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -334,13 +335,13 @@ class RUMMonitorE2ETests: E2ETests {
         let viewKey = String.mockRandom()
         let viewName = String.mockRandom()
         let actionName = String.mockRandom()
-        let actionType = RUMUserActionType.custom
+        let actionType = RUMActionType.custom
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
+            rum.stopAction(type: actionType, name: actionName, attributes: [:])
         }
 
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
@@ -348,8 +349,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -374,9 +375,9 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
+            rum.stopAction(type: actionType, name: actionName, attributes: [:])
         }
 
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
@@ -384,7 +385,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -410,7 +411,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
 
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
@@ -418,7 +419,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -439,19 +440,19 @@ class RUMMonitorE2ETests: E2ETests {
         let viewKey = String.mockRandom()
         let viewName = String.mockRandom()
         let actionName = String.mockRandom()
-        let actionType = RUMUserActionType.custom
+        let actionType = RUMActionType.custom
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -477,7 +478,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         rum.sendRandomActionOutcomeEvent()
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
@@ -485,9 +486,9 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -513,19 +514,19 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startUserAction(type: actionType, name: activeActionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: activeActionName, attributes: DD.logAttributes())
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: .custom, name: customActionName, attributes: DD.logAttributes())
+            rum.addAction(type: .custom, name: customActionName, attributes: DD.logAttributes())
         }
         rum.sendRandomActionOutcomeEvent()
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
-        rum.stopUserAction(type: actionType, name: activeActionName, attributes: [:])
+        rum.stopAction(type: actionType, name: activeActionName, attributes: [:])
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
-    /// - api-surface: DDRUMMonitor.stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -547,16 +548,16 @@ class RUMMonitorE2ETests: E2ETests {
         let actionName = String.mockRandom()
         let actionType = actionTypePool.randomElement()!
 
-        rum.startUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+        rum.startAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         rum.sendRandomActionOutcomeEvent()
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopUserAction(type: actionType, name: actionName, attributes: [:])
+            rum.stopAction(type: actionType, name: actionName, attributes: [:])
         }
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -579,11 +580,11 @@ class RUMMonitorE2ETests: E2ETests {
         let actionType = nonCustomActionTypePool.randomElement()!
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -603,15 +604,15 @@ class RUMMonitorE2ETests: E2ETests {
     /// ```
     func test_rum_rummonitor_ignore_add_background_custom_action_with_no_outcome() {
         let actionName = String.mockRandom()
-        let actionType = RUMUserActionType.custom
+        let actionType = RUMActionType.custom
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -631,16 +632,16 @@ class RUMMonitorE2ETests: E2ETests {
     /// ```
     func test_rum_rummonitor_ignore_add_background_custom_action_with_outcome() {
         let actionName = String.mockRandom()
-        let actionType = RUMUserActionType.custom
+        let actionType = RUMActionType.custom
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
         rum.sendRandomActionOutcomeEvent()
     }
 
-    /// - api-surface: DDRUMMonitor.addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -663,13 +664,13 @@ class RUMMonitorE2ETests: E2ETests {
         let actionType = nonCustomActionTypePool.randomElement()!
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addUserAction(type: actionType, name: actionName, attributes: DD.logAttributes())
+            rum.addAction(type: actionType, name: actionName, attributes: DD.logAttributes())
         }
         Thread.sleep(forTimeInterval: RUMConstants.actionInactivityThreshold)
         rum.sendRandomActionOutcomeEvent()
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
     ///
     /// - data monitor:
     /// ```rum
@@ -694,7 +695,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.startResourceLoading(
+            rum.startResource(
                 resourceKey: resourceKey,
                 httpMethod: .get,
                 urlString: String.mockRandom(),
@@ -705,8 +706,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
-    /// - api-surface: DDRUMMonitor.stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.stopResource(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     ///
     /// - data monitor:
     /// ```rum
@@ -730,21 +731,21 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
             attributes: DD.logAttributes()
         )
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopResourceLoading(resourceKey: resourceKey, statusCode: 200, kind: .other)
+            rum.stopResource(resourceKey: resourceKey, statusCode: 200, kind: .other)
         }
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
-    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -768,16 +769,16 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
             attributes: DD.logAttributes()
         )
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopResourceLoadingWithError(
+            rum.stopResourceWithError(
                 resourceKey: resourceKey,
-                errorMessage: String.mockRandom(),
+                message: String.mockRandom(),
                 response: HTTPURLResponse(
                     url: URL.mockRandom(),
                     statusCode: (400...511).randomElement()!,
@@ -791,8 +792,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
-    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -816,16 +817,16 @@ class RUMMonitorE2ETests: E2ETests {
 
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
             attributes: DD.logAttributes()
         )
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopResourceLoadingWithError(
+            rum.stopResourceWithError(
                 resourceKey: resourceKey,
-                errorMessage: String.mockRandom(),
+                message: String.mockRandom(),
                 response: nil,
                 attributes: DD.logAttributes()
             )
@@ -834,8 +835,8 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
-    /// - api-surface: DDRUMMonitor.stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.stopResource(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     ///
     /// - data monitor:
     /// ```rum
@@ -856,19 +857,19 @@ class RUMMonitorE2ETests: E2ETests {
     func test_rum_rummonitor_ignore_stop_background_resource() {
         let resourceKey = String.mockRandom()
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
             attributes: DD.logAttributes()
         )
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopResourceLoading(resourceKey: resourceKey, statusCode: 200, kind: .other)
+            rum.stopResource(resourceKey: resourceKey, statusCode: 200, kind: .other)
         }
     }
 
-    /// - api-surface: DDRUMMonitor.startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
-    /// - api-surface: DDRUMMonitor.stopResourceLoadingWithError(resourceKey: String,errorMessage: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    /// - api-surface: RUMMonitorProtocol.startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.stopResourceWithError(resourceKey: String,message: String,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
     ///
     /// - data monitor:
     /// ```rum
@@ -889,16 +890,16 @@ class RUMMonitorE2ETests: E2ETests {
     func test_rum_rummonitor_ignore_stop_background_resource_with_error() {
         let resourceKey = String.mockRandom()
 
-        rum.startResourceLoading(
+        rum.startResource(
             resourceKey: resourceKey,
             httpMethod: .get,
             urlString: String.mockRandom(),
             attributes: DD.logAttributes()
         )
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.stopResourceLoadingWithError(
+            rum.stopResourceWithError(
                 resourceKey: resourceKey,
-                errorMessage: String.mockRandom(),
+                message: String.mockRandom(),
                 response: HTTPURLResponse(
                     url: URL.mockRandom(),
                     statusCode: (400...511).randomElement()!,
@@ -910,7 +911,7 @@ class RUMMonitorE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    /// - api-surface: RUMMonitorProtocol.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     ///
     /// - data monitor:
     /// ```rum
@@ -935,13 +936,13 @@ class RUMMonitorE2ETests: E2ETests {
         rum.startView(key: viewKey, name: viewName, attributes: DD.logAttributes())
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addError(message: errorMessage, source: .custom, stack: nil, attributes: DD.logAttributes(), file: nil, line: nil)
+            rum.addError(message: errorMessage, stack: nil, source: .custom, attributes: DD.logAttributes(), file: nil, line: nil)
         }
 
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    /// - api-surface: RUMMonitorProtocol.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     ///
     /// - data monitor:
     /// ```rum
@@ -968,8 +969,8 @@ class RUMMonitorE2ETests: E2ETests {
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             rum.addError(
                 message: errorMessage,
-                source: .custom,
                 stack: String.mockRandom(),
+                source: .custom,
                 attributes: DD.logAttributes(),
                 file: nil,
                 line: nil
@@ -979,7 +980,7 @@ class RUMMonitorE2ETests: E2ETests {
         rum.stopView(key: viewKey, attributes: [:])
     }
 
-    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    /// - api-surface: RUMMonitorProtocol.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     ///
     /// - data monitor:
     /// ```rum
@@ -1001,11 +1002,11 @@ class RUMMonitorE2ETests: E2ETests {
         let errorMessage = String.mockRandom()
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addError(message: errorMessage, source: .custom, stack: nil, attributes: DD.logAttributes(), file: nil, line: nil)
+            rum.addError(message: errorMessage, stack: nil, source: .custom, attributes: DD.logAttributes(), file: nil, line: nil)
         }
     }
 
-    /// - api-surface: DDRUMMonitor.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    /// - api-surface: RUMMonitorProtocol.addError(message: String,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
     ///
     /// - data monitor:
     /// ```rum
@@ -1027,7 +1028,7 @@ class RUMMonitorE2ETests: E2ETests {
         let errorMessage = String.mockRandom()
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
-            rum.addError(message: errorMessage, source: .custom, stack: String.mockRandom(), attributes: DD.logAttributes(), file: nil, line: nil)
+            rum.addError(message: errorMessage, stack: String.mockRandom(), source: .custom, attributes: DD.logAttributes(), file: nil, line: nil)
         }
     }
 }

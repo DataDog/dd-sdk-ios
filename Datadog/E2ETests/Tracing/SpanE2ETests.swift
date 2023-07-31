@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Datadog
+import DatadogTrace
 
 class SpanE2ETests: E2ETests {
     /// - api-surface: OTSpan.setOperationName(_ operationName: String)
@@ -26,7 +26,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_set_operation_name,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_set_operation_name() {
-        let span = Global.sharedTracer.startSpan(operationName: .mockRandom())
+        let span = Tracer.shared().startSpan(operationName: .mockRandom())
         let knownOperationName = "trace_span_set_operation_name_new_operation_name" // asserted in monitor
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -55,7 +55,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_set_tag,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_set_tag() {
-        let span = Global.sharedTracer.startSpan(operationName: "ios_trace_span_set_tag")
+        let span = Tracer.shared().startSpan(operationName: "ios_trace_span_set_tag")
         let knownTag = DD.specialTag()
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -84,7 +84,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_set_baggage_item,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_set_baggage_item() {
-        let span = Global.sharedTracer.startSpan(operationName: "ios_trace_span_set_baggage_item")
+        let span = Tracer.shared().startSpan(operationName: "ios_trace_span_set_baggage_item")
         let knownTag = DD.specialTag()
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
@@ -113,7 +113,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_set_active,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_set_active() {
-        let span = Global.sharedTracer.startSpan(operationName: "trace_span_set_active_measured_span")
+        let span = Tracer.shared().startSpan(operationName: "trace_span_set_active_measured_span")
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             span.setActive()
@@ -140,7 +140,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_log,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_log() {
-        let span = Global.sharedTracer.startSpan(operationName: "trace_span_log_measured_span")
+        let span = Tracer.shared().startSpan(operationName: "trace_span_log_measured_span")
         let log = DD.specialStringAttribute()
 
         var fields = DD.logAttributes()
@@ -172,7 +172,7 @@ class SpanE2ETests: E2ETests {
     /// $monitor_query = "avg(last_1d):p50:trace.perf_measure{env:instrumentation,resource_name:trace_span_finish,service:com.datadog.ios.nightly} > 0.024"
     /// ```
     func test_trace_span_finish() {
-        let span = Global.sharedTracer.startSpan(operationName: "trace_span_finish_measured_span")
+        let span = Tracer.shared().startSpan(operationName: "trace_span_finish_measured_span")
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             span.finish()

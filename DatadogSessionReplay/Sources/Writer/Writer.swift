@@ -5,26 +5,20 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 /// A type writing Session Replay records to `DatadogCore`.
 internal protocol Writing {
-    /// Connects writer to the `FeatureScope` managed by `DatadogCore`.
-    func startWriting(to featureScope: FeatureScope)
+    /// Connects writer to SDK core.
+    func startWriting(to core: DatadogCoreProtocol)
 
-    /// Writes next records to `DatadogCore`.
+    /// Writes next records to SDK core.
     func write(nextRecord: EnrichedRecord)
 }
 
 internal class Writer: Writing {
-    /// The `FeatureScope` created for Session Replay and managed by `DatadogCore`.
-    ///
-    /// The thread-safety of this property is guaranteed by convention:
-    /// - it is set right after registration of Session Replay Feature in `DatadogCore`,
-    /// - it is then frequently accessed from `Processor` thread only after SR is started.
-    ///
-    /// Because SR is started after SF Feature gets registered, no other thread-safety measures are required.
-    private var scope: FeatureScope?
+    /// An instance of SDK core the SR feature is registered to.
+    private weak var core: DatadogCoreProtocol?
 
     /// The `viewID`  of last group of records written to core. If that ID changes, we request the core
     /// to write new events to separate batch, so we receive them separately in `RequestBuilder`.
@@ -34,15 +28,19 @@ internal class Writer: Writing {
 
     // MARK: - Writing
 
-    func startWriting(to featureScope: FeatureScope) {
-        scope = featureScope
+    func startWriting(to core: DatadogCoreProtocol) {
+        self.core = core
     }
 
     func write(nextRecord: EnrichedRecord) {
         let forceNewBatch = lastViewID != nextRecord.viewID
         lastViewID = nextRecord.viewID
 
-        scope?.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, writer in
+        guard let scope = core?.scope(for: SessionReplayFeature.name) else {
+            return
+        }
+
+        scope.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, writer in
             writer.write(value: nextRecord)
         }
     }

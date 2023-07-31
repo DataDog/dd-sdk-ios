@@ -5,12 +5,6 @@
       location = "group:Datadog/Datadog.xcodeproj">
    </FileRef>
    <FileRef
-      location = "group:DatadogSessionReplay">
-   </FileRef>
-   <FileRef
-      location = "group:TestUtilities">
-   </FileRef>
-   <FileRef
       location = "group:instrumented-tests/http-server-mock">
    </FileRef>
 </Workspace>

@@ -5,7 +5,8 @@
  */
 
 import SwiftUI
-import Datadog
+import DatadogRUM
+import DatadogTrace
 
 @available(iOS 13, *)
 internal class DebugRUMSessionViewController: UIHostingController<DebugRUMSessionView> {
@@ -60,13 +61,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
                     self?.modifySessionItem(type: .view, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopView(key: key)
+                        RUMMonitor.shared().stopView(key: key)
                     }
                 }
             )
         )
 
-        Global.rum.startView(key: key)
+        RUMMonitor.shared().startView(key: key)
         self.viewKey = ""
     }
 
@@ -79,12 +80,8 @@ private class DebugRUMSessionViewModel: ObservableObject {
             SessionItem(label: actionName, type: .action, isPending: false, stopAction: nil)
         )
 
-        Global.rum.addUserAction(type: .custom, name: actionName)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-            self.sendSpan()
-            self.actionName = ""
-        }
+        RUMMonitor.shared().addAction(type: .custom, name: actionName)
+        self.actionName = ""
     }
 
     func addError() {
@@ -96,7 +93,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
             SessionItem(label: errorMessage, type: .error, isPending: false, stopAction: nil)
         )
 
-        Global.rum.addError(message: errorMessage)
+        RUMMonitor.shared().addError(message: errorMessage)
         self.errorMessage = ""
     }
 
@@ -115,13 +112,13 @@ private class DebugRUMSessionViewModel: ObservableObject {
                     self?.modifySessionItem(type: .resource, label: key) { mutableSessionItem in
                         mutableSessionItem.isPending = false
                         mutableSessionItem.stopAction = nil
-                        Global.rum.stopResourceLoading(resourceKey: key, statusCode: nil, kind: .other)
+                        RUMMonitor.shared().stopResource(resourceKey: key, statusCode: nil, kind: .other)
                     }
                 }
             )
         )
 
-        Global.rum.startResourceLoading(resourceKey: key, url: mockURL())
+        RUMMonitor.shared().startResource(resourceKey: key, url: mockURL())
         self.resourceKey = ""
     }
 
@@ -131,7 +128,7 @@ private class DebugRUMSessionViewModel: ObservableObject {
     }
 
     func sendSpan() {
-        let span = Global.sharedTracer.startRootSpan(operationName: spanOperationName, tags: [:])
+        let span = Tracer.shared().startRootSpan(operationName: spanOperationName, tags: [:])
         Thread.sleep(forTimeInterval: 0.1)
         span.finish()
         spanOperationName = ""

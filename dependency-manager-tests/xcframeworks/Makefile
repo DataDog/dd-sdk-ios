@@ -18,7 +18,11 @@ test:
 		@echo "🧪 Build xcframeworks"
 		@cd dd-sdk-ios && tools/distribution/build-xcframework.sh
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/dd-sdk-ios/build/xcframeworks"
-		@[ -e "dd-sdk-ios/build/xcframeworks/Datadog.xcframework" ] && echo "Datadog.xcframework - OK" || { echo "Datadog.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogCore.xcframework" ] && echo "DatadogCore.xcframework - OK" || { echo "DatadogCore.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogLogs.xcframework" ] && echo "DatadogLogs.xcframework - OK" || { echo "DatadogLogs.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogTrace.xcframework" ] && echo "DatadogTrace.xcframework - OK" || { echo "DatadogTrace.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogRUM.xcframework" ] && echo "DatadogRUM.xcframework - OK" || { echo "DatadogRUM.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogSessionReplay.xcframework" ] && echo "DatadogSessionReplay.xcframework - OK" || { echo "DatadogSessionReplay.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }

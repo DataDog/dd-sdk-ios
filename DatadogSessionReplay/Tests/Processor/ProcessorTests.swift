@@ -5,15 +5,16 @@
  */
 
 import XCTest
-import Datadog
+import DatadogInternal
+import TestUtilities
+
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 private class WriterMock: Writing {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
-    func startWriting(to featureScope: FeatureScope) {}
+    func startWriting(to core: DatadogCoreProtocol) {}
 }
 
 class ProcessorTests: XCTestCase {
@@ -28,7 +29,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -60,7 +61,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -107,7 +108,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
         let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
@@ -146,7 +147,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -200,7 +201,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
@@ -245,7 +246,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher)
+        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -281,7 +282,7 @@ class ProcessorTests: XCTestCase {
     private let snapshotBuilder = ViewTreeSnapshotBuilder()
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
-        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allowAll, rumContext: rumContext, date: date))
+        snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))
     }
 
     private func generateSimpleViewTree() -> UIView {

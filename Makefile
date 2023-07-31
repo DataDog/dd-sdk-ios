@@ -50,15 +50,16 @@ export DD_SDK_DATADOG_XCCONFIG_CI
 # Do not call 'brew update' and instead let Bitrise use its own brew bottle mirror.
 dependencies:
 		@echo "⚙️  Installing dependencies..."
+		@bundle install
 		@brew list swiftlint &>/dev/null || brew install swiftlint
 		@brew upgrade carthage
 		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+		@brew list gh &>/dev/null || brew install gh
 ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
-		@brew list gh &>/dev/null || brew install gh
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
@@ -71,6 +72,17 @@ xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
 		@echo "OK 👌"
+
+prepare-integration-tests:
+		@echo "⚙️  Prepare Integration Tests ..."
+		@cd IntegrationTests/ && pod install
+		@echo "OK 👌"
+
+open-sr-snapshot-tests:
+		@echo "⚙️  Opening SRSnapshotTests with DD_TEST_UTILITIES_ENABLED ..."
+		@pgrep -q Xcode && killall Xcode && echo "- Xcode killed" || echo "- Xcode not running"
+		@sleep 0.5 && echo "- launching" # Sleep, otherwise, if Xcode was running it often fails with "procNotFound: no eligible process with specified descriptor"
+		@open --env DD_TEST_UTILITIES_ENABLED ./DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
 
 templates:
 		@echo "⚙️  Installing Xcode templates..."
@@ -117,13 +129,42 @@ sr-models-verify:
 		./tools/rum-models-generator/run.py verify sr
 		@echo "OK 👌"
 
+sr-push-snapshots:
+		@echo "🎬 ↗️  Pushing SR snapshots to remote repo..."
+		@cd tools/sr-snapshots && swift run sr-snapshots push \
+			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
+			--remote-folder ../../../dd-mobile-session-replay-snapshots \
+			--remote-branch "main"
+
+sr-pull-snapshots:
+		@echo "🎬 ↙️  Pulling SR snapshots from remote repo..."
+		@cd tools/sr-snapshots && swift run sr-snapshots pull \
+			--local-folder ../../DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests/_snapshots_ \
+			--remote-folder ../../../dd-mobile-session-replay-snapshots \
+			--remote-branch "main"
+
 # Generate api-surface files for Datadog and DatadogObjc.
 api-surface:
-		@cd tools/api-surface/ && swift build --configuration release
 		@echo "Generating api-surface-swift"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "Datadog iOS" --path . > api-surface-swift
+		@cd tools/api-surface && \
+			swift run api-surface spm \
+			--path ../../ \
+			--library-name DatadogCore \
+			--library-name DatadogLogs \
+			--library-name DatadogTrace \
+			--library-name DatadogRUM \
+			--library-name DatadogCrashReporting \
+			--library-name DatadogWebViewTracking \
+			> ../../api-surface-swift && \
+			cd -
+
 		@echo "Generating api-surface-objc"
-		./tools/api-surface/.build/x86_64-apple-macosx/release/api-surface workspace --workspace-name Datadog.xcworkspace --scheme "DatadogObjc iOS" --path . > api-surface-objc
+		@cd tools/api-surface && \
+			swift run api-surface spm \
+			--path ../../ \
+			--library-name DatadogObjc \
+			> ../../api-surface-objc && \
+			cd -
 
 # Generate Datadog monitors terraform definition for E2E tests:
 e2e-monitors-generate:
@@ -138,12 +179,8 @@ e2e-monitors-generate:
 
 bump:
 		@read -p "Enter version number: " version;  \
-		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > Sources/Datadog/Versioning.swift; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDK.podspec.src > DatadogSDK.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKObjc.podspec.src > DatadogSDKObjc.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKAlamofireExtension.podspec.src > DatadogSDKAlamofireExtension.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKCrashReporting.podspec.src > DatadogSDKCrashReporting.podspec; \
-		sed "s/__DATADOG_VERSION__/$$version/g" DatadogSDKSessionReplay.podspec.src > DatadogSDKSessionReplay.podspec; \
+		echo "// GENERATED FILE: Do not edit directly\n\ninternal let __sdkVersion = \"$$version\"" > DatadogCore/Sources/Versioning.swift; \
+		./tools/podspec_bump_version.sh $$version; \
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version

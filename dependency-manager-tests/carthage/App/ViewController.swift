@@ -5,36 +5,59 @@
 */
 
 import UIKit
-import Datadog
+import DatadogCore
+import DatadogLogs
+import DatadogTrace
+import DatadogRUM
 import DatadogObjc
 import DatadogCrashReporting
+#if os(iOS)
+import DatadogSessionReplay
+#endif
 
 internal class ViewController: UIViewController {
-    private var logger: Logger! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         Datadog.initialize(
-            appContext: .init(),
-            trackingConsent: .granted,
-            configuration: Datadog.Configuration
-                .builderUsing(clientToken: "abc", environment: "tests")
-                .enableCrashReporting(using: DDCrashReportingPlugin())
-                .build()
+            with: Datadog.Configuration(clientToken: "abc", env: "tests"),
+            trackingConsent: .granted
         )
 
-        self.logger = Logger.builder
-            .sendLogsToDatadog(false)
-            .printLogsToConsole(true)
-            .build()
+        Logs.enable()
 
-        Global.sharedTracer = Tracer.initialize(configuration: .init())
+        CrashReporting.enable()
+
+        self.logger = Logger.create(
+            with: Logger.Configuration(
+                remoteSampleRate: 0,
+                consoleLogFormat: .short
+            )
+        )
+
+        // RUM APIs must be visible:
+        RUM.enable(with: .init(applicationID: "app-id"))
+        RUMMonitor.shared().startView(viewController: self)
+
+        // DDURLSessionDelegate APIs must be visible:
+        _ = DDURLSessionDelegate()
+        _ = DatadogURLSessionDelegate()
+        class CustomDelegate: NSObject, __URLSessionDelegateProviding {
+            var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
+        }
+
+        // Trace APIs must be visible:
+        Trace.enable()
 
         logger.info("It works")
+        _ = Tracer.shared().startSpan(operationName: "this too")
 
-        // Start span, but never finish it (no upload)
-        _ = Global.sharedTracer.startSpan(operationName: "This too")
+        #if os(iOS)
+        // Session Replay API must be visible:
+        SessionReplay.enable(with: .init(replaySampleRate: 0))
+        #endif
 
         addLabel()
     }

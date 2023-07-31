@@ -27,15 +27,7 @@ class ImageDataProviderTests: XCTestCase {
     @available(iOS 13.0, *)
     func test_returnsValidString_forSFSymbolIcon() throws {
         let sut = ImageDataProvider()
-        let image = UIImage(systemName: "apple.logo")
-
-        let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
-        XCTAssertGreaterThan(imageData.count, 0)
-    }
-
-    func test_returnsValidString_forAssetImage() throws {
-        let sut = ImageDataProvider()
-        let image = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)
+        let image = UIImage(systemName: "square.and.arrow.up")
 
         let imageData = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageData.count, 0)
@@ -43,10 +35,9 @@ class ImageDataProviderTests: XCTestCase {
 
     func test_imageIdentifierConsistency() {
         var ids = Set<String>()
+        let image: UIImage = .mockRandom()
         for _ in 0..<100 {
-            if let imageIdentifier = UIImage(named: "dd_logo_v_rgb", in: Bundle.module, compatibleWith: nil)?.srIdentifier {
-                ids.insert(imageIdentifier)
-            }
+            ids.insert(image.srIdentifier)
         }
         XCTAssertEqual(ids.count, 1)
     }
@@ -59,28 +50,3 @@ class ImageDataProviderTests: XCTestCase {
         XCTAssertEqual(ids.count, 1)
     }
 }
-
-#if XCODE_BUILD
-extension Foundation.Bundle {
-    /// Returns resource bundle as a `Bundle`.
-    /// Requires Xcode copy phase to locate files into `ExecutableName.bundle`;
-    /// or `ExecutableNameTests.bundle` for test resources
-    static var module: Bundle = {
-        var thisModuleName = "DatadogSessionReplay"
-        var url = Bundle.main.bundleURL
-
-        for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
-            url = bundle.bundleURL.deletingLastPathComponent()
-            thisModuleName = thisModuleName.appending("Tests")
-        }
-
-        url = url.appendingPathComponent("\(thisModuleName).bundle")
-
-        guard let bundle = Bundle(url: url) else {
-            fatalError("Foundation.Bundle.module could not load resource bundle: \(url.path)")
-        }
-
-        return bundle
-    }()
-}
-#endif

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1410"
+   version = "1.3">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61133B81242393DE00786299"
+               BuildableName = "DatadogCore.framework"
+               BlueprintName = "DatadogCore iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61133B8A242393DE00786299"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61B7885B25C180CB002675B5"
+               BuildableName = "DatadogCrashReportingTests.xctest"
+               BlueprintName = "DatadogCrashReportingTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "NO"
+      enableThreadSanitizer = "YES"
+      codeCoverageEnabled = "YES"
+      onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "IS_RUNNING_UNIT_TESTS"
+            isEnabled = "YES">
+         </CommandLineArgument>
+      </CommandLineArguments>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "DD_TEST_RUNNER"
+            value = "$(DD_TEST_RUNNER)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_API_KEY"
+            value = "$(DD_SDK_SWIFT_TESTING_APIKEY)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENV"
+            value = "$(DD_SDK_SWIFT_TESTING_ENV)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_SERVICE"
+            value = "$(DD_SDK_SWIFT_TESTING_SERVICE)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_SDKIOS_INTEGRATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_HEADERS_INJECTION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "SRCROOT"
+            value = "$(SRCROOT)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_SOURCE_DIR"
+            value = "$(BITRISE_SOURCE_DIR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_TRIGGERED_WORKFLOW_ID"
+            value = "$(BITRISE_TRIGGERED_WORKFLOW_ID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_BUILD_SLUG"
+            value = "$(BITRISE_BUILD_SLUG)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_BUILD_NUMBER"
+            value = "$(BITRISE_BUILD_NUMBER)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_BUILD_URL"
+            value = "$(BITRISE_BUILD_URL)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDOUT_INSTRUMENTATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_ENABLE_STDERR_INSTRUMENTATION"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_APPLICATION_KEY"
+            value = "$(DD_SDK_SWIFT_TESTING_APPLICATION_KEY)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_GIT_UPLOAD_ENABLED"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_ITR_ENABLED"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "DD_CIVISIBILITY_EXCLUDED_BRANCHES"
+            value = "develop,release/*,hotfix/*"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
+      <CodeCoverageTargets>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133BEF242397DA00786299"
+            BuildableName = "DatadogObjc.framework"
+            BlueprintName = "DatadogObjc iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </CodeCoverageTargets>
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61133B8A242393DE00786299"
+               BuildableName = "DatadogCoreTests.xctest"
+               BlueprintName = "DatadogCoreTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D2DA2389298D588800C6C7E6"
+               BuildableName = "DatadogInternalTests iOS.xctest"
+               BlueprintName = "DatadogInternalTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D207318229A5226A00ECBF94"
+               BuildableName = "DatadogLogsTests iOS.xctest"
+               BlueprintName = "DatadogLogsTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D25EE93A29C4C3C300CE3839"
+               BuildableName = "DatadogTraceTests iOS.xctest"
+               BlueprintName = "DatadogTraceTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
+               BuildableName = "DatadogRUMTests iOS.xctest"
+               BlueprintName = "DatadogRUMTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "61B7885B25C180CB002675B5"
+               BuildableName = "DatadogCrashReportingTests.xctest"
+               BlueprintName = "DatadogCrashReportingTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "3CE11A0429F7BE0300202522"
+               BuildableName = "DatadogWebViewTrackingTests.xctest"
+               BlueprintName = "DatadogWebViewTrackingTests iOS"
+               ReferencedContainer = "container:Datadog.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+   </LaunchAction>
+   <ProfileAction
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      savedToolIdentifier = ""
+      useCustomWorkingDirectory = "NO"
+      debugDocumentVersioning = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B81242393DE00786299"
+            BuildableName = "DatadogCore.framework"
+            BlueprintName = "DatadogCore iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>

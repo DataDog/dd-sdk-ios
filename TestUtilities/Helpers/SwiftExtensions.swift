@@ -86,6 +86,14 @@ extension InputStream {
     }
 }
 
+public extension URL {
+    var absoluteStringWithoutQuery: String? {
+        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+        components?.query = nil // drop query params
+        return components?.url?.absoluteString
+    }
+}
+
 extension URLRequest {
     public func removing(httpHeaderField: String) -> URLRequest {
         var request = self
@@ -143,8 +151,27 @@ extension URLSessionTask.State {
 
 /// Combines two arrays together, e.g. `["a", "b"].combined(with: [1, 2, 3])` gives
 /// `[("a", 1), ("a", 2), ("a", 3), ("b", 1), ("b", 2), ("b", 3)]`.
-extension Array {
-    public func combined<B>(with other: [B]) -> [(Element, B)] {
+public extension Array {
+    func combined<B>(with other: [B]) -> [(Element, B)] {
         return self.flatMap { a in other.map { b in (a, b) } }
+    }
+
+    /// Returns first element of the array which is of type `T`.
+    /// - Parameters:
+    ///   - type: the type of element to lookup
+    ///   - unique: if `true` it will fail if there is more than one element of `T` in this array (`true` by default)
+    /// - Returns: the first element of `T` in this array
+    func firstElement<T>(of type: T.Type, unique: Bool = true, file: StaticString = #filePath, line: UInt = #line) -> T? {
+        let all = compactMap { $0 as? T }
+        if unique && all.count > 1 {
+            XCTFail("""
+                The array has more than one element of type \(T.self).
+                Use `unique: false` if this is expected.
+                """,
+                file: file,
+                line: line
+            )
+        }
+        return all.first
     }
 }

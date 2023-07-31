@@ -1,0 +1,7 @@
+// Add common settings from Base.xcconfig
+#include "Base.xcconfig"
+
+// Add server mock instrumentation settings (generated from pre-action)
+#include "../xcconfigs/MockServerAddress.local.xcconfig"
+
+#include "Pods/Target Support Files/Pods-Runner iOS-IntegrationScenarios/Pods-Runner iOS-IntegrationScenarios.integration.xcconfig"

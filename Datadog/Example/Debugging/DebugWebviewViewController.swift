@@ -6,7 +6,9 @@
 
 import UIKit
 import WebKit
-import Datadog
+import DatadogInternal
+import DatadogRUM
+import DatadogWebViewTracking
 
 class DebugWebviewViewController: UIViewController {
     @IBOutlet weak var rumServiceNameTextField: UITextField!
@@ -16,21 +18,22 @@ class DebugWebviewViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        rumServiceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
-
+        rumServiceNameTextField.text = serviceName
         webviewURLTextField.placeholder = webviewURL
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if useNativeRUMSession {
-            Global.rum.startView(viewController: self)
+            RUMMonitor.shared()
+                .startView(viewController: self)
         }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         if useNativeRUMSession {
-            Global.rum.stopView(viewController: self)
+            RUMMonitor.shared()
+                .stopView(viewController: self)
         }
     }
 
@@ -38,7 +41,8 @@ class DebugWebviewViewController: UIViewController {
 
     @IBAction func didTapStartNativeRUMSession(_ sender: Any) {
         useNativeRUMSession = true
-        Global.rum.startView(viewController: self)
+        RUMMonitor.shared()
+            .startView(viewController: self)
     }
 
     // MARK: - Starting webview
@@ -85,11 +89,12 @@ class WebviewViewController: UIViewController {
         super.viewDidLoad()
 
         let controller = WKUserContentController()
-        controller.trackDatadogEvents(in: [request.url!.host!])
         let config = WKWebViewConfiguration()
         config.userContentController = controller
-
         webView = WKWebView(frame: UIScreen.main.bounds, configuration: config)
+
+        WebViewTracking.enable(webView: webView)
+
         view.addSubview(webView)
     }
 
@@ -101,13 +106,15 @@ class WebviewViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         if useNativeRUMSession {
-            Global.rum.startView(viewController: self)
+            RUMMonitor.shared()
+                .startView(viewController: self)
         }
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         if useNativeRUMSession {
-            Global.rum.stopView(viewController: self)
+            RUMMonitor.shared()
+                .stopView(viewController: self)
         }
     }
 }

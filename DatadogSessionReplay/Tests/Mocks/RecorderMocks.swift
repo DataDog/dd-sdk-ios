@@ -10,6 +10,16 @@ import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
+extension PrivacyLevel: AnyMockable, RandomMockable {
+    public static func mockAny() -> PrivacyLevel {
+        return .allow
+    }
+
+    public static func mockRandom() -> PrivacyLevel {
+        return [.allow, .mask, .maskUserInput].randomElement()!
+    }
+}
+
 // MARK: - ViewTreeSnapshot Mocks
 
 extension ViewTreeSnapshot: AnyMockable, RandomMockable {
@@ -426,7 +436,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
 
     static func mockWith(
         date: Date = .mockAny(),
-        privacy: SessionReplayPrivacy = .mockAny(),
+        privacy: PrivacyLevel = .mockAny(),
         rumContext: RUMContext = .mockAny()
     ) -> Recorder.Context {
         return Recorder.Context(
@@ -437,7 +447,7 @@ extension Recorder.Context: AnyMockable, RandomMockable {
     }
 
     init(
-        privacy: SessionReplayPrivacy,
+        privacy: PrivacyLevel,
         rumContext: RUMContext,
         date: Date = Date()
     ) {

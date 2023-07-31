@@ -61,7 +61,8 @@ internal class PickersViewController: UIViewController {
 internal class DatePickersInlineViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date) {
+    func set(date: Date, timeZone: TimeZone) {
+        datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }
@@ -69,7 +70,8 @@ internal class DatePickersInlineViewController: UIViewController {
 internal class DatePickersCompactViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date) {
+    func set(date: Date, timeZone: TimeZone) {
+        datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 
@@ -104,7 +106,8 @@ internal class DatePickersCompactViewController: UIViewController {
 internal class DatePickersWheelsViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date) {
+    func set(date: Date, timeZone: TimeZone) {
+        datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }
@@ -114,7 +117,8 @@ internal class TimePickersCountDownViewController: UIViewController {}
 internal class TimePickersWheelViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date) {
+    func set(date: Date, timeZone: TimeZone) {
+        datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }

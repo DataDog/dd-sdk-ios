@@ -61,11 +61,10 @@ only_rules: # we enable lint rules explicitly - only the ones listed below are a
   - vertical_whitespace_closing_braces
   - vertical_whitespace_opening_braces
   - void_return
-  - xct_specific_matcher
 attributes:
   always_on_line_above:
     - "@ReadWriteLock"
-    
+
 custom_rules:
   todo_without_jira: # enforces that all TODO comments must be followed by JIRA reference
     name: "TODO without JIRA"
@@ -86,7 +85,14 @@ custom_rules:
 included:
   - ../../Tests
   - ../../TestUtilities/Sources
+  - ../../DatadogInternal/Tests
+  - ../../DatadogCore/Tests
+  - ../../DatadogLogs/Tests
+  - ../../DatadogTrace/Tests
+  - ../../DatadogRUM/Tests
   - ../../DatadogSessionReplay/Tests
+  - ../../DatadogCrashReporting/Tests
+  - ../../DatadogWebViewTracking/Tests
   - ../../Datadog/E2ETests
   - ../../Datadog/E2EInstrumentationTests
   - ../../instrumented-tests/http-server-mock/Tests

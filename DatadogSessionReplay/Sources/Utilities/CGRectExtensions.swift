@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import CoreGraphics
 
 internal extension CGRect {
     enum HorizontalAlignment {

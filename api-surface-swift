@@ -1,428 +1,190 @@
-public typealias AttributeKey = String
-public typealias AttributeValue = Encodable
-public class DDCrashReport: NSObject
- public struct Thread: Encodable
-  public init(name: String,stack: String,crashed: Bool,state: String?)
- public struct BinaryImage: Encodable
-  public init(libraryName: String,uuid: String,architecture: String,isSystemLibrary: Bool,loadAddress: String,maxAddress: String)
- public struct Meta: Encodable
-  public init(incidentIdentifier: String?,processName: String?,parentProcess: String?,path: String?,codeType: String?,exceptionType: String?,exceptionCodes: String?)
- public init(date: Date?,type: String,message: String,stack: String,threads: [Thread],binaryImages: [BinaryImage],meta: Meta,wasTruncated: Bool,context: Data?)
-public protocol DDCrashReportingPluginType: AnyObject
- func readPendingCrashReport(completion: (DDCrashReport?) -> Bool)
- func inject(context: Data)
- public func addLongTask(at: Date, duration: TimeInterval, attributes: [AttributeKey: AttributeValue] = [:])
- public func updatePerformanceMetric(at: Date,metric: PerformanceMetric,value: Double,attributes: [AttributeKey: AttributeValue] = [:])
-public class DDRUMMonitor
- public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue] = [:])
- public func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
- public func startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
- public func addTiming(name: String)
- public func addError(message: String,type: String? = nil,source: RUMErrorSource = .custom,stack: String? = nil,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #file,line: UInt? = #line)
- public func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
- public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
- public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
- public func startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
- public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue] = [:])
- public func addResourceMetrics(resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,type: String? = nil,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func startUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
- public func stopUserAction(type: RUMUserActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- public func addUserAction(type: RUMUserActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
- public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
- public func removeAttribute(forKey key: AttributeKey)
- public static var telemetry: _TelemetryProxy
- public static func set(customVersion: String)
-public struct _TelemetryProxy
- public func setConfigurationMapper(mapper: @escaping (TelemetryConfigurationEvent) -> TelemetryConfigurationEvent)
- public func debug(id: String, message: String)
- public func error(id: String, message: String, kind: String?, stack: String?)
- public func setLogEventMapper(_ mapper: LogEventMapper) -> ExtendedType
-public class Datadog
- public struct AppContext
-  public init(mainBundle: Bundle = Bundle.main, processInfo: ProcessInfo = ProcessInfo.processInfo)
- public static func initialize(appContext: AppContext, configuration: Configuration)
- public static func initialize(appContext: AppContext,trackingConsent: TrackingConsent,configuration: Configuration)
- public static var verbosityLevel: LogLevel? = nil
- public static var debugRUM = false
- public static var isInitialized: Bool
- public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:])
- public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?])
- public static func set(trackingConsent: TrackingConsent)
- public static func clearAllData()
- public static func flushAndDeinitialize()
- public struct Configuration
-  public enum BatchSize
-   case small
-   case medium
-   case large
-  public enum UploadFrequency
-   case frequent
-   case average
-   case rare
-  public enum VitalsFrequency: String
-   case frequent
-   case average
-   case rare
-   case never
-  public enum DatadogEndpoint: String
-   case us1
-   case us3
-   case us5
-   case eu1
-   case us1_fed
-   public static let us: DatadogEndpoint = .us1
-   public static let eu: DatadogEndpoint = .eu1
-   public static let gov: DatadogEndpoint = .us1_fed
-  public enum LogsEndpoint
-   case us1
-   case us3
-   case us5
-   case eu1
-   case us1_fed
-   case us
-   case eu
-   case gov
-   case custom(url: String)
-  public enum TracesEndpoint
-   case us1
-   case us3
-   case us5
-   case eu1
-   case us1_fed
-   case us
-   case eu
-   case gov
-   case custom(url: String)
-  public enum RUMEndpoint
-   case us1
-   case us3
-   case us5
-   case eu1
-   case us1_fed
-   case us
-   case eu
-   case gov
-   case custom(url: String)
-  public static func builderUsing(rumApplicationID: String, clientToken: String, environment: String) -> Builder
-  public static func builderUsing(clientToken: String, environment: String) -> Builder
-  public class Builder
-   public func set(endpoint: DatadogEndpoint) -> Builder
-   public func set(customLogsEndpoint: URL) -> Builder
-   public func set(customTracesEndpoint: URL) -> Builder
-   public func set(customRUMEndpoint: URL) -> Builder
-   public func set(serverDateProvider: ServerDateProvider) -> Builder
-   public func enableLogging(_ enabled: Bool) -> Builder
-   public func setLogEventMapper(_ mapper: @escaping (LogEvent) -> LogEvent?) -> Builder
-   public func set(logsEndpoint: LogsEndpoint) -> Builder
-   public func set(loggingSamplingRate: Float) -> Builder
-   public func enableTracing(_ enabled: Bool) -> Builder
-   public func set(tracesEndpoint: TracesEndpoint) -> Builder
-   public func set(tracedHosts: Set<String>) -> Builder
-   public func track(firstPartyHosts: Set<String>) -> Builder
-   public func trackURLSession(firstPartyHosts: Set<String> = []) -> Builder
-   public func trackURLSession(firstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>]) -> Builder
-   public func setSpanEventMapper(_ mapper: @escaping (SpanEvent) -> SpanEvent) -> Builder
-   public func set(tracingSamplingRate: Float) -> Builder
-   public func enableRUM(_ enabled: Bool) -> Builder
-   public func set(rumEndpoint: RUMEndpoint) -> Builder
-   public func set(rumSessionsSamplingRate: Float) -> Builder
-   public func onRUMSessionStart(_ handler: @escaping (String, Bool) -> Void) -> Builder
-   public func trackUIKitRUMViews(using predicate: UIKitRUMViewsPredicate = DefaultUIKitRUMViewsPredicate()) -> Builder
-   public func trackUIKitActions(_ enabled: Bool = true) -> Builder
-   public func trackUIKitRUMActions(using predicate: UIKitRUMUserActionsPredicate = DefaultUIKitRUMUserActionsPredicate()) -> Builder
-   public func trackRUMLongTasks(threshold: TimeInterval = 0.1) -> Builder
-   public func setRUMViewEventMapper(_ mapper: @escaping (RUMViewEvent) -> RUMViewEvent) -> Builder
-   public func setRUMResourceEventMapper(_ mapper: @escaping (RUMResourceEvent) -> RUMResourceEvent?) -> Builder
-   public func setRUMActionEventMapper(_ mapper: @escaping (RUMActionEvent) -> RUMActionEvent?) -> Builder
-   public func setRUMErrorEventMapper(_ mapper: @escaping (RUMErrorEvent) -> RUMErrorEvent?) -> Builder
-   public func setRUMLongTaskEventMapper(_ mapper: @escaping (RUMLongTaskEvent) -> RUMLongTaskEvent?) -> Builder
-   public func setRUMResourceAttributesProvider(_ provider: @escaping (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?) -> Builder
-   public func trackBackgroundEvents(_ enabled: Bool = true) -> Builder
-   public func trackFrustrations(_ enabled: Bool = true) -> Builder
-   public func set(sampleTelemetry rate: Float) -> Builder
-   public func set(mobileVitalsFrequency: VitalsFrequency) -> Builder
-   public func enableCrashReporting(using crashReportingPlugin: DDCrashReportingPluginType) -> Builder
-   public func set(serviceName: String) -> Builder
-   public func set(batchSize: BatchSize) -> Builder
-   public func set(uploadFrequency: UploadFrequency) -> Builder
-   public func set(proxyConfiguration: [AnyHashable: Any]?) -> Builder
-   public func set(additionalConfiguration: [String: Any]) -> Builder
-   public func set(encryption: DataEncryption) -> Builder
-   public func build() -> Configuration
+# ----------------------------------
+# API surface for DatadogCore:
+# ----------------------------------
+
 public let DatadogNTPServers = ["0.datadog.pool.ntp.org","1.datadog.pool.ntp.org","2.datadog.pool.ntp.org","3.datadog.pool.ntp.org"]
 public protocol ServerDateProvider
- func synchronize(update: @escaping (TimeInterval) -> Void)
+    func synchronize(update: @escaping (TimeInterval) -> Void)
 public protocol DataEncryption
- func encrypt(data: Data) throws -> Data
- func decrypt(data: Data) throws -> Data
-public protocol Writer
- func write<T: Encodable>(value: T)
-public struct DDAnyCodable: Codable
- public let value: Any
- public init<T>(_ value: T?)
- public static func == (lhs: DDAnyCodable, rhs: DDAnyCodable) -> Bool
-public struct DDAnyDecodable: Decodable
- public let value: Any
- public init<T>(_ value: T?)
- public init(from decoder: Decoder) throws
- public static func == (lhs: DDAnyDecodable, rhs: DDAnyDecodable) -> Bool
-public struct DDAnyEncodable: Encodable
- public let value: Any
- public init<T>(_ value: T?)
- public func encode(to encoder: Encoder) throws
- public static func == (lhs: DDAnyEncodable, rhs: DDAnyEncodable) -> Bool
-public struct CarrierInfo: Codable, Equatable
- public enum RadioAccessTechnology: String, Codable, CaseIterable
-  case GPRS
-  case Edge
-  case WCDMA
-  case HSDPA
-  case HSUPA
-  case CDMA1x
-  case CDMAEVDORev0
-  case CDMAEVDORevA
-  case CDMAEVDORevB
-  case eHRPD
-  case LTE
-  case unknown
- public let carrierName: String?
- public let carrierISOCountryCode: String?
- public let carrierAllowsVOIP: Bool
- public let radioAccessTechnology: RadioAccessTechnology
-public typealias DatadogSite = Datadog.Configuration.DatadogEndpoint
-public struct DatadogContext
- public let site: DatadogSite?
- public let clientToken: String
- public internal(set) var version: String
- public let source: String
- public let sdkVersion: String
- public let applicationName: String
- public let device: DeviceInfo
- public internal(set) var featuresAttributes: [String: FeatureBaggage] = [:]
-public struct DeviceInfo: Codable, Equatable
-public struct NetworkConnectionInfo: Codable, Equatable
- public enum Reachability: String, Codable, CaseIterable
-  case yes
-  case maybe
-  case no
- public enum Interface: String, Codable, CaseIterable
-  case wifi
-  case wiredEthernet
-  case cellular
-  case loopback
-  case other
- public let reachability: Reachability
- public let availableInterfaces: [Interface]?
- public let supportsIPv4: Bool?
- public let supportsIPv6: Bool?
- public let isExpensive: Bool?
- public let isConstrained: Bool?
-public enum TrackingConsent: Codable
- case granted
- case notGranted
- case pending
-public internal(set) var defaultDatadogCore: DatadogCoreProtocol = NOPDatadogCore()
-public protocol DatadogCoreProtocol: AnyObject
- func register(feature: DatadogFeature) throws
- func feature<T>(named name: String, type: T.Type) -> T? where T: DatadogFeature
- func register(integration: DatadogFeatureIntegration) throws
- func integration<T>(named name: String, type: T.Type) -> T? where T: DatadogFeatureIntegration
- func scope(for feature: String) -> FeatureScope?
- func set(feature: String, attributes: @escaping () -> FeatureBaggage)
- func send(message: FeatureMessage, else fallback: @escaping () -> Void)
-public protocol FeatureScope
- func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void)
-public extension FeatureScope
- func eventWriteContext(_ block: @escaping (DatadogContext, Writer) throws -> Void)
-public protocol DatadogFeature
- var name: String
- var requestBuilder: FeatureRequestBuilder
- var messageReceiver: FeatureMessageReceiver
-public protocol DatadogFeatureIntegration
- var name: String
- var messageReceiver: FeatureMessageReceiver
-public struct DatadogExtension<ExtendedType>
- public private(set) var type: ExtendedType
- public init(_ type: ExtendedType)
-public protocol DatadogExtended
- associatedtype ExtendedType
- static var dd: DatadogExtension<ExtendedType>.Type
- var dd: DatadogExtension<ExtendedType>
- public static var dd: DatadogExtension<Self>.Type
- public var dd: DatadogExtension<Self>
-public protocol DatadogInternal
- associatedtype ExtendedType
- static var _internal: DatadogExtension<ExtendedType>.Type
- var _internal: DatadogExtension<ExtendedType>
- public static var _internal: DatadogExtension<Self>.Type
- public var _internal: DatadogExtension<Self>
- public var name: String
-public struct FeatureBaggage
- public var isEmpty: Bool
- public init(_ attributes: [String: Any?])
- public func all<T>(of type: T.Type = T.self) -> [String: T]
- public subscript<T>(key: String, type t: T.Type = T.self) -> T?
- public subscript<T>(key: String, type t: T.Type = T.self) -> T? where T: RawRepresentable
- public subscript<T>(dynamicMember key: String) -> T?
- public subscript<T>(dynamicMember key: String) -> T? where T: RawRepresentable
- public init(dictionaryLiteral elements: (String, Any?)...)
-public enum FeatureMessage
- case error(message: String,baggage: FeatureBaggage)
- case event(target: String,event: DDAnyEncodable)
- case custom(key: String,baggage: FeatureBaggage)
- case context(DatadogContext)
-public protocol FeatureMessageReceiver
- func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
-public struct NOPFeatureMessageReceiver: FeatureMessageReceiver
- public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
-public protocol FeatureRequestBuilder
- func request(for events: [Data], with context: DatadogContext) throws -> URLRequest
-public struct DDURLRequestBuilder
- public enum QueryItem
-  case ddsource(source: String)
-  case ddtags(tags: [String])
- public struct HTTPHeader
-  public enum ContentType
-   case applicationJSON
-   case textPlainUTF8
-   case multipartFormData(boundary: String)
-  public static func contentTypeHeader(contentType: ContentType) -> HTTPHeader
-  public static func userAgentHeader(appName: String, appVersion: String, device: DeviceInfo) -> HTTPHeader
-  public static func ddAPIKeyHeader(clientToken: String) -> HTTPHeader
-  public static func ddEVPOriginHeader(source: String) -> HTTPHeader
-  public static func ddEVPOriginVersionHeader(sdkVersion: String) -> HTTPHeader
-  public static func ddRequestIDHeader() -> HTTPHeader
- public init(url: URL,queryItems: [QueryItem],headers: [HTTPHeader])
- public func uploadRequest(with body: Data, compress: Bool = true) -> URLRequest
-public extension WKUserContentController
- func trackDatadogEvents(in hosts: Set<String>, sdk core: DatadogCoreProtocol = defaultDatadogCore)
- func stopTrackingDatadogEvents()
-public typealias DDGlobal = Global
-public struct Global
- public static var sharedTracer: OTTracer = DDNoopGlobals.tracer
- public static var rum: DDRUMMonitor = DDNoopRUMMonitor()
-public enum LogLevel: Int, Codable
- case debug
- case info
- case notice
- case warn
- case error
- case critical
-public typealias DDLogger = Logger
-public protocol LoggerProtocol
- func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
- func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
- func addAttribute(forKey key: AttributeKey, value: AttributeValue)
- func removeAttribute(forKey key: AttributeKey)
- func addTag(withKey key: String, value: String)
- func removeTag(withKey key: String)
- func add(tag: String)
- func remove(tag: String)
-public extension LoggerProtocol
- func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
- func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
-public class Logger: LoggerProtocol
- public func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
- public func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
- public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
- public func removeAttribute(forKey key: AttributeKey)
- public func addTag(withKey key: String, value: String)
- public func removeTag(withKey key: String)
- public func add(tag: String)
- public func remove(tag: String)
- public static var builder: Builder
- public class Builder
-  public func set(serviceName: String) -> Self
-  public func set(loggerName: String) -> Self
-  public func sendNetworkInfo(_ enabled: Bool) -> Self
-  public func bundleWithRUM(_ enabled: Bool) -> Self
-  public func bundleWithTrace(_ enabled: Bool) -> Self
-  public func sendLogsToDatadog(_ enabled: Bool) -> Self
-  public func set(datadogReportingThreshold: LogLevel) -> Self
-  public enum ConsoleLogFormat
-   case short
-   case shortWith(prefix: String)
-   public static let json: ConsoleLogFormat = .short
-   public static func jsonWith(prefix: String) -> ConsoleLogFormat
-  public func printLogsToConsole(_ enabled: Bool, usingFormat format: ConsoleLogFormat = .short) -> Self
-  public func build(in core: DatadogCoreProtocol = defaultDatadogCore) -> Logger
+    func encrypt(data: Data) throws -> Data
+    func decrypt(data: Data) throws -> Data
+[?] extension InternalExtension where ExtendedType == Datadog
+    public static var telemetry: _TelemetryProxy
+    public static func set(customVersion: String)
+public struct _TelemetryProxy
+    public func debug(id: String, message: String)
+    public func error(id: String, message: String, kind: String?, stack: String?)
+[?] extension InternalExtension where ExtendedType == Datadog.Configuration
+    public var additionalConfiguration: [String: Any]
+public struct Datadog
+    public struct Configuration
+        public enum BatchSize
+            case small
+            case medium
+            case large
+        public enum UploadFrequency
+            case frequent
+            case average
+            case rare
+        public var clientToken: String
+        public var env: String
+        public var site: DatadogSite
+        public var service: String?
+        public var batchSize: BatchSize
+        public var uploadFrequency: UploadFrequency
+        public var proxyConfiguration: [AnyHashable: Any]?
+        public var encryption: DataEncryption?
+        public var serverDateProvider: ServerDateProvider
+        public var bundle: Bundle
+        public init(clientToken: String,env: String,site: DatadogSite = .us1,service: String? = nil,bundle: Bundle = .main,batchSize: BatchSize = .medium,uploadFrequency: UploadFrequency = .average,proxyConfiguration: [AnyHashable: Any]? = nil,encryption: DataEncryption? = nil,serverDateProvider: ServerDateProvider? = nil)
+    public static var verbosityLevel: CoreLoggerLevel? = nil
+    public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool
+    public static func sdkInstance(named name: String) -> DatadogCoreProtocol
+    public static func setUserInfo(id: String? = nil,name: String? = nil,email: String? = nil,extraInfo: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func addUserExtraInfo(_ extraInfo: [AttributeKey: AttributeValue?],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func set(trackingConsent: TrackingConsent, in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func clearAllData(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func initialize(with configuration: Configuration,trackingConsent: TrackingConsent,instanceName: String = CoreRegistry.defaultInstanceName) -> DatadogCoreProtocol
+
+
+# ----------------------------------
+# API surface for DatadogLogs:
+# ----------------------------------
+
 public struct LogEvent: Encodable
- public enum Status: String, Encodable, CaseIterable, Equatable
-  case debug
-  case info
-  case notice
-  case warn
-  case error
-  case critical
-  case emergency
- public struct Attributes
-  public var userAttributes: [String: Encodable]
- public struct UserInfo
-  public let id: String?
-  public let name: String?
-  public let email: String?
-  public var extraInfo: [String: Encodable]
- public struct Error
-  public var kind: String?
-  public var message: String?
-  public var stack: String?
- public struct DeviceInfo: Codable
-  public let architecture: String
- public struct Dd: Codable
-  public let device: DeviceInfo
- public let date: Date
- public let status: Status
- public var message: String
- public var error: Error?
- public let serviceName: String
- public let environment: String
- public let loggerName: String
- public let loggerVersion: String
- public let threadName: String?
- public let applicationVersion: String
- public let dd: Dd
- public var userInfo: UserInfo
- public let networkConnectionInfo: NetworkConnectionInfo?
- public let mobileCarrierInfo: CarrierInfo?
- public var attributes: LogEvent.Attributes
- public var tags: [String]?
- public func encode(to encoder: Encoder) throws
+    public enum Status: String, Encodable, CaseIterable, Equatable
+        case debug
+        case info
+        case notice
+        case warn
+        case error
+        case critical
+        case emergency
+    public struct Attributes
+        public var userAttributes: [String: Encodable]
+    public struct UserInfo
+        public let id: String?
+        public let name: String?
+        public let email: String?
+        public var extraInfo: [String: Encodable]
+    public struct Error
+        public var kind: String?
+        public var message: String?
+        public var stack: String?
+    public struct DeviceInfo: Codable
+        public let architecture: String
+    public struct Dd: Codable
+        public let device: DeviceInfo
+    public let date: Date
+    public let status: Status
+    public var message: String
+    public var error: Error?
+    public let serviceName: String
+    public let environment: String
+    public let loggerName: String
+    public let loggerVersion: String
+    public let threadName: String?
+    public let applicationVersion: String
+    public let dd: Dd
+    public var userInfo: UserInfo
+    public let networkConnectionInfo: NetworkConnectionInfo?
+    public let mobileCarrierInfo: CarrierInfo?
+    public var attributes: LogEvent.Attributes
+    public var tags: [String]?
+    public func encode(to encoder: Encoder) throws
+public struct Logger
+    public struct Configuration
+        public enum ConsoleLogFormat
+            case short
+            case shortWith(prefix: String)
+        public var service: String?
+        public var name: String?
+        public var networkInfoEnabled: Bool
+        public var bundleWithRumEnabled: Bool
+        public var bundleWithTraceEnabled: Bool
+        public var remoteSampleRate: Float
+        public var remoteLogThreshold: LogLevel
+        public var consoleLogFormat: ConsoleLogFormat?
+        public init(service: String? = nil,name: String? = nil,networkInfoEnabled: Bool = false,bundleWithRumEnabled: Bool = true,bundleWithTraceEnabled: Bool = true,remoteSampleRate: Float = 100,remoteLogThreshold: LogLevel = .debug,consoleLogFormat: ConsoleLogFormat? = nil)
+    public static func create(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default) -> LoggerProtocol
+public protocol InternalLoggerProtocol
+    func log(level: LogLevel,message: String,errorKind: String?,errorMessage: String?,stackTrace: String?,attributes: [String: Encodable]?)
+[?] extension LoggerProtocol
+    public var _internal: InternalLoggerProtocol
+public enum LogLevel: Int, Codable
+    case debug
+    case info
+    case notice
+    case warn
+    case error
+    case critical
+public protocol LoggerProtocol
+    func log(level: LogLevel, message: String, error: Error?, attributes: [String: Encodable]?)
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func removeAttribute(forKey key: AttributeKey)
+    func addTag(withKey key: String, value: String)
+    func removeTag(withKey key: String)
+    func add(tag: String)
+    func remove(tag: String)
+public extension LoggerProtocol
+    func debug(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    func info(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    func notice(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    func warn(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    func error(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+    func critical(_ message: String, error: Error? = nil, attributes: [AttributeKey: AttributeValue]? = nil)
+public struct Logs
+    public struct Configuration
+        public typealias EventMapper = (LogEvent) -> LogEvent?
+        public var eventMapper: EventMapper?
+        public var customEndpoint: URL?
+        public init(eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+    public static func enable(with configuration: Configuration = .init(),in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension InternalExtension where ExtendedType == Logs.Configuration
+    public mutating func setLogEventMapper(_ mapper: LogEventMapper)
 public protocol LogEventMapper
- func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
+    func map(event: LogEvent, callback: @escaping (LogEvent) -> Void)
+
+
+# ----------------------------------
+# API surface for DatadogTrace:
+# ----------------------------------
+
+[?] extension TracePropagationHeadersWriter where Self: OTFormatWriter
+    public func inject(spanContext: OTSpanContext)
+[?] extension TracePropagationHeadersReader where Self: OTFormatReader
+    public func extract() -> OTSpanContext?
+    public enum LogLevel: Int, Codable
+        case debug
+        case info
+        case notice
+        case warn
+        case error
+        case critical
 public struct OTTags
- public static let component = "component"
- public static let dbInstance = "db.instance"
- public static let dbStatement = "db.statement"
- public static let dbType = "db.type"
- public static let dbUser = "db.user"
- public static let error = "error"
- public static let httpMethod = "http.method"
- public static let httpStatusCode = "http.status_code"
- public static let httpUrl = "http.url"
- public static let messageBusDestination = "message_bus.destination"
- public static let peerAddress = "peer.address"
- public static let peerHostname = "peer.hostname"
- public static let peerIPv4 = "peer.ipv4"
- public static let peerIPv6 = "peer.ipv6"
- public static let peerPort = "peer.port"
- public static let peerService = "peer.service"
- public static let samplingPriority = "sampling.priority"
- public static let spanKind = "span.kind"
+    public static let component = "component"
+    public static let dbInstance = "db.instance"
+    public static let dbStatement = "db.statement"
+    public static let dbType = "db.type"
+    public static let dbUser = "db.user"
+    public static let error = "error"
+    public static let httpMethod = "http.method"
+    public static let httpStatusCode = "http.status_code"
+    public static let httpUrl = "http.url"
+    public static let messageBusDestination = "message_bus.destination"
+    public static let peerAddress = "peer.address"
+    public static let peerHostname = "peer.hostname"
+    public static let peerIPv4 = "peer.ipv4"
+    public static let peerIPv6 = "peer.ipv6"
+    public static let peerPort = "peer.port"
+    public static let peerService = "peer.service"
+    public static let samplingPriority = "sampling.priority"
+    public static let spanKind = "span.kind"
 public struct OTLogFields
- public static let errorKind = "error.kind"
- public static let event = "event"
- public static let message = "message"
- public static let stack = "stack"
+    public static let errorKind = "error.kind"
+    public static let event = "event"
+    public static let message = "message"
+    public static let stack = "stack"
 public protocol OTFormatReader: OTCustomFormatReader
 public protocol OTFormatWriter: OTCustomFormatWriter
 public protocol OTTextMapReader: OTFormatReader
@@ -430,969 +192,1112 @@ public protocol OTTextMapWriter: OTFormatWriter
 public protocol OTHTTPHeadersReader: OTTextMapReader
 public protocol OTHTTPHeadersWriter: OTTextMapWriter
 public protocol OTCustomFormatReader
- func extract() -> OTSpanContext?
+    func extract() -> OTSpanContext?
 public protocol OTCustomFormatWriter
- func inject(spanContext: OTSpanContext)
+    func inject(spanContext: OTSpanContext)
 public struct OTReference
- public let type: OTReferenceType
- public let context: OTSpanContext
- public static func child(of parent: OTSpanContext) -> OTReference
- public static func follows(from precedingContext: OTSpanContext) -> OTReference
+    public let type: OTReferenceType
+    public let context: OTSpanContext
+    public static func child(of parent: OTSpanContext) -> OTReference
+    public static func follows(from precedingContext: OTSpanContext) -> OTReference
 public enum OTReferenceType: String
- case childOf = "CHILD_OF"
- case followsFrom = "FOLLOWS_FROM"
+    case childOf = "CHILD_OF"
+    case followsFrom = "FOLLOWS_FROM"
 public protocol OTSpan
- var context: OTSpanContext
- func tracer() -> OTTracer
- func setOperationName(_ operationName: String)
- func setTag(key: String, value: Encodable)
- func log(fields: [String: Encodable], timestamp: Date)
- func setBaggageItem(key: String, value: String)
- func baggageItem(withKey key: String) -> String?
- func finish(at time: Date)
- func setActive() -> OTSpan
+    var context: OTSpanContext
+    func tracer() -> OTTracer
+    func setOperationName(_ operationName: String)
+    func setTag(key: String, value: Encodable)
+    func log(fields: [String: Encodable], timestamp: Date)
+    func setBaggageItem(key: String, value: String)
+    func baggageItem(withKey key: String) -> String?
+    func finish(at time: Date)
+    func setActive() -> OTSpan
 public extension OTSpan
- func log(fields: [String: Encodable])
- func finish()
+    func log(fields: [String: Encodable])
+    func finish()
 public extension OTSpan
- func setError(_ error: Error,file: StaticString = #fileID,line: UInt = #line)
- func setError(kind: String,message: String,stack: String = "",file: StaticString = #fileID,line: UInt = #line)
+    func setError(_ error: Error,file: StaticString = #fileID,line: UInt = #line)
+    func setError(kind: String,message: String,stack: String = "",file: StaticString = #fileID,line: UInt = #line)
 public protocol OTSpanContext
- func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
+    func forEachBaggageItem(callback: (_ key: String, _ value: String) -> Bool)
 public protocol OTTracer
- func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
- func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
- func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
- func extract(reader: OTFormatReader) -> OTSpanContext?
- var activeSpan: OTSpan?
+    func startSpan(operationName: String,references: [OTReference]?,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]?,startTime: Date?) -> OTSpan
+    func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
+    func extract(reader: OTFormatReader) -> OTSpanContext?
+    var activeSpan: OTSpan?
 public extension OTTracer
- func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
- func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
-public struct RUMActionEvent: RUMDataModel
- public let dd: DD
- public var action: Action
- public let application: Application
- public let ciTest: RUMCITest?
- public let connectivity: RUMConnectivity?
- public internal(set) var context: RUMEventAttributes?
- public let date: Int64
- public let device: RUMDevice?
- public let display: RUMDisplay?
- public let os: RUMOperatingSystem?
- public let service: String?
- public let session: Session
- public let source: Source?
- public let synthetics: Synthetics?
- public let type: String = "action"
- public internal(set) var usr: RUMUser?
- public let version: String?
- public var view: View
- public struct DD: Codable
-  public let action: Action?
-  public let browserSdkVersion: String?
-  public let formatVersion: Int64 = 2
-  public let session: Session?
-  public struct Action: Codable
-   public let position: Position?
-   public let target: Target?
-   public struct Position: Codable
-    public let x: Int64
-    public let y: Int64
-   public struct Target: Codable
-    public let height: Int64?
-    public let selector: String?
-    public let width: Int64?
-  public struct Session: Codable
-   public let plan: Plan
-   public enum Plan: Int, Codable
-    case plan1 = 1
-    case plan2 = 2
- public struct Action: Codable
-  public let crash: Crash?
-  public let error: Error?
-  public let frustration: Frustration?
-  public let id: String?
-  public let loadingTime: Int64?
-  public let longTask: LongTask?
-  public let resource: Resource?
-  public var target: Target?
-  public let type: ActionType
-  public struct Crash: Codable
-   public let count: Int64
-  public struct Error: Codable
-   public let count: Int64
-  public struct Frustration: Codable
-   public let type: [FrustrationType]
-   public enum FrustrationType: String, Codable
-    case rageClick = "rage_click"
-    case deadClick = "dead_click"
-    case errorClick = "error_click"
-    case rageTap = "rage_tap"
-    case errorTap = "error_tap"
-  public struct LongTask: Codable
-   public let count: Int64
-  public struct Resource: Codable
-   public let count: Int64
-  public struct Target: Codable
-   public var name: String
-  public enum ActionType: String, Codable
-   case custom = "custom"
-   case click = "click"
-   case tap = "tap"
-   case scroll = "scroll"
-   case swipe = "swipe"
-   case applicationStart = "application_start"
-   case back = "back"
- public struct Application: Codable
-  public let id: String
- public struct Session: Codable
-  public let hasReplay: Bool?
-  public let id: String
-  public let type: SessionType
-  public enum SessionType: String, Codable
-   case user = "user"
-   case synthetics = "synthetics"
-   case ciTest = "ci_test"
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
-  case roku = "roku"
- public struct Synthetics: Codable
-  public let injected: Bool?
-  public let resultId: String
-  public let testId: String
- public struct View: Codable
-  public let id: String
-  public let inForeground: Bool?
-  public var name: String?
-  public var referrer: String?
-  public var url: String
-public struct RUMErrorEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application
- public let ciTest: RUMCITest?
- public let connectivity: RUMConnectivity?
- public internal(set) var context: RUMEventAttributes?
- public let date: Int64
- public let device: RUMDevice?
- public let display: RUMDisplay?
- public var error: Error
- public internal(set) var featureFlags: FeatureFlags?
- public let os: RUMOperatingSystem?
- public let service: String?
- public let session: Session
- public let source: Source?
- public let synthetics: Synthetics?
- public let type: String = "error"
- public internal(set) var usr: RUMUser?
- public let version: String?
- public var view: View
- public struct DD: Codable
-  public let browserSdkVersion: String?
-  public let formatVersion: Int64 = 2
-  public let session: Session?
-  public struct Session: Codable
-   public let plan: Plan
-   public enum Plan: Int, Codable
-    case plan1 = 1
-    case plan2 = 2
- public struct Action: Codable
-  public let id: RUMActionID
- public struct Application: Codable
-  public let id: String
- public struct Error: Codable
-  public var causes: [Causes]?
-  public let handling: Handling?
-  public let handlingStack: String?
-  public let id: String?
-  public let isCrash: Bool?
-  public var message: String
-  public var resource: Resource?
-  public let source: Source
-  public let sourceType: SourceType?
-  public var stack: String?
-  public let type: String?
-  public struct Causes: Codable
-   public var message: String
-   public let source: Source
-   public var stack: String?
-   public let type: String?
-   public enum Source: String, Codable
-    case network = "network"
-    case source = "source"
-    case console = "console"
-    case logger = "logger"
-    case agent = "agent"
-    case webview = "webview"
-    case custom = "custom"
-    case report = "report"
-  public enum Handling: String, Codable
-   case handled = "handled"
-   case unhandled = "unhandled"
-  public struct Resource: Codable
-   public let method: RUMMethod
-   public let provider: Provider?
-   public let statusCode: Int64
-   public var url: String
-   public struct Provider: Codable
-    public let domain: String?
-    public let name: String?
-    public let type: ProviderType?
-    public enum ProviderType: String, Codable
-     case ad = "ad"
-     case advertising = "advertising"
-     case analytics = "analytics"
-     case cdn = "cdn"
-     case content = "content"
-     case customerSuccess = "customer-success"
-     case firstParty = "first party"
-     case hosting = "hosting"
-     case marketing = "marketing"
-     case other = "other"
-     case social = "social"
-     case tagManager = "tag-manager"
-     case utility = "utility"
-     case video = "video"
-  public enum Source: String, Codable
-   case network = "network"
-   case source = "source"
-   case console = "console"
-   case logger = "logger"
-   case agent = "agent"
-   case webview = "webview"
-   case custom = "custom"
-   case report = "report"
-  public enum SourceType: String, Codable
-   case android = "android"
-   case browser = "browser"
-   case ios = "ios"
-   case reactNative = "react-native"
-   case flutter = "flutter"
-   case roku = "roku"
- public struct FeatureFlags: Codable
-  public internal(set) var featureFlagsInfo: [String: Encodable]
- public struct Session: Codable
-  public let hasReplay: Bool?
-  public let id: String
-  public let type: SessionType
-  public enum SessionType: String, Codable
-   case user = "user"
-   case synthetics = "synthetics"
-   case ciTest = "ci_test"
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
-  case roku = "roku"
- public struct Synthetics: Codable
-  public let injected: Bool?
-  public let resultId: String
-  public let testId: String
- public struct View: Codable
-  public let id: String
-  public let inForeground: Bool?
-  public var name: String?
-  public var referrer: String?
-  public var url: String
- public func encode(to encoder: Encoder) throws
- public init(from decoder: Decoder) throws
-public struct RUMLongTaskEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application
- public let ciTest: RUMCITest?
- public let connectivity: RUMConnectivity?
- public internal(set) var context: RUMEventAttributes?
- public let date: Int64
- public let device: RUMDevice?
- public let display: RUMDisplay?
- public let longTask: LongTask
- public let os: RUMOperatingSystem?
- public let service: String?
- public let session: Session
- public let source: Source?
- public let synthetics: Synthetics?
- public let type: String = "long_task"
- public internal(set) var usr: RUMUser?
- public let version: String?
- public var view: View
- public struct DD: Codable
-  public let browserSdkVersion: String?
-  public let discarded: Bool?
-  public let formatVersion: Int64 = 2
-  public let session: Session?
-  public struct Session: Codable
-   public let plan: Plan
-   public enum Plan: Int, Codable
-    case plan1 = 1
-    case plan2 = 2
- public struct Action: Codable
-  public let id: RUMActionID
- public struct Application: Codable
-  public let id: String
- public struct LongTask: Codable
-  public let duration: Int64
-  public let id: String?
-  public let isFrozenFrame: Bool?
- public struct Session: Codable
-  public let hasReplay: Bool?
-  public let id: String
-  public let type: SessionType
-  public enum SessionType: String, Codable
-   case user = "user"
-   case synthetics = "synthetics"
-   case ciTest = "ci_test"
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
-  case roku = "roku"
- public struct Synthetics: Codable
-  public let injected: Bool?
-  public let resultId: String
-  public let testId: String
- public struct View: Codable
-  public let id: String
-  public var name: String?
-  public var referrer: String?
-  public var url: String
-public struct RUMResourceEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application
- public let ciTest: RUMCITest?
- public let connectivity: RUMConnectivity?
- public internal(set) var context: RUMEventAttributes?
- public let date: Int64
- public let device: RUMDevice?
- public let display: RUMDisplay?
- public let os: RUMOperatingSystem?
- public var resource: Resource
- public let service: String?
- public let session: Session
- public let source: Source?
- public let synthetics: Synthetics?
- public let type: String = "resource"
- public internal(set) var usr: RUMUser?
- public let version: String?
- public var view: View
- public struct DD: Codable
-  public let browserSdkVersion: String?
-  public let discarded: Bool?
-  public let formatVersion: Int64 = 2
-  public let rulePsr: Double?
-  public let session: Session?
-  public let spanId: String?
-  public let traceId: String?
-  public struct Session: Codable
-   public let plan: Plan
-   public enum Plan: Int, Codable
-    case plan1 = 1
-    case plan2 = 2
- public struct Action: Codable
-  public let id: RUMActionID
- public struct Application: Codable
-  public let id: String
- public struct Resource: Codable
-  public let connect: Connect?
-  public let dns: DNS?
-  public let download: Download?
-  public let duration: Int64
-  public let firstByte: FirstByte?
-  public let id: String?
-  public let method: RUMMethod?
-  public let provider: Provider?
-  public let redirect: Redirect?
-  public let size: Int64?
-  public let ssl: SSL?
-  public let statusCode: Int64?
-  public let type: ResourceType
-  public var url: String
-  public struct Connect: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct DNS: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct Download: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct FirstByte: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct Provider: Codable
-   public let domain: String?
-   public let name: String?
-   public let type: ProviderType?
-   public enum ProviderType: String, Codable
-    case ad = "ad"
-    case advertising = "advertising"
-    case analytics = "analytics"
-    case cdn = "cdn"
-    case content = "content"
-    case customerSuccess = "customer-success"
-    case firstParty = "first party"
-    case hosting = "hosting"
-    case marketing = "marketing"
-    case other = "other"
-    case social = "social"
-    case tagManager = "tag-manager"
-    case utility = "utility"
-    case video = "video"
-  public struct Redirect: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct SSL: Codable
-   public let duration: Int64
-   public let start: Int64
-  public enum ResourceType: String, Codable
-   case document = "document"
-   case xhr = "xhr"
-   case beacon = "beacon"
-   case fetch = "fetch"
-   case css = "css"
-   case js = "js"
-   case image = "image"
-   case font = "font"
-   case media = "media"
-   case other = "other"
-   case native = "native"
- public struct Session: Codable
-  public let hasReplay: Bool?
-  public let id: String
-  public let type: SessionType
-  public enum SessionType: String, Codable
-   case user = "user"
-   case synthetics = "synthetics"
-   case ciTest = "ci_test"
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
-  case roku = "roku"
- public struct Synthetics: Codable
-  public let injected: Bool?
-  public let resultId: String
-  public let testId: String
- public struct View: Codable
-  public let id: String
-  public var name: String?
-  public var referrer: String?
-  public var url: String
-public struct RUMViewEvent: RUMDataModel
- public let dd: DD
- public let application: Application
- public let ciTest: RUMCITest?
- public let connectivity: RUMConnectivity?
- public internal(set) var context: RUMEventAttributes?
- public let date: Int64
- public let device: RUMDevice?
- public let display: RUMDisplay?
- public internal(set) var featureFlags: FeatureFlags?
- public let os: RUMOperatingSystem?
- public let service: String?
- public let session: Session
- public let source: Source?
- public let synthetics: Synthetics?
- public let type: String = "view"
- public internal(set) var usr: RUMUser?
- public let version: String?
- public var view: View
- public struct DD: Codable
-  public let browserSdkVersion: String?
-  public let documentVersion: Int64
-  public let formatVersion: Int64 = 2
-  public let session: Session?
-  public struct Session: Codable
-   public let plan: Plan
-   public enum Plan: Int, Codable
-    case plan1 = 1
-    case plan2 = 2
- public struct Application: Codable
-  public let id: String
- public struct FeatureFlags: Codable
-  public internal(set) var featureFlagsInfo: [String: Encodable]
- public struct Session: Codable
-  public let hasReplay: Bool?
-  public let id: String
-  public let type: SessionType
-  public enum SessionType: String, Codable
-   case user = "user"
-   case synthetics = "synthetics"
-   case ciTest = "ci_test"
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
-  case roku = "roku"
- public struct Synthetics: Codable
-  public let injected: Bool?
-  public let resultId: String
-  public let testId: String
- public struct View: Codable
-  public let action: Action
-  public let cpuTicksCount: Double?
-  public let cpuTicksPerSecond: Double?
-  public let crash: Crash?
-  public let cumulativeLayoutShift: Double?
-  public let customTimings: [String: Int64]?
-  public let domComplete: Int64?
-  public let domContentLoaded: Int64?
-  public let domInteractive: Int64?
-  public let error: Error
-  public let firstByte: Int64?
-  public let firstContentfulPaint: Int64?
-  public let firstInputDelay: Int64?
-  public let firstInputTime: Int64?
-  public let flutterBuildTime: FlutterBuildTime?
-  public let flutterRasterTime: FlutterRasterTime?
-  public let frozenFrame: FrozenFrame?
-  public let frustration: Frustration?
-  public let id: String
-  public let inForegroundPeriods: [InForegroundPeriods]?
-  public let isActive: Bool?
-  public let isSlowRendered: Bool?
-  public let jsRefreshRate: JsRefreshRate?
-  public let largestContentfulPaint: Int64?
-  public let loadEvent: Int64?
-  public let loadingTime: Int64?
-  public let loadingType: LoadingType?
-  public let longTask: LongTask?
-  public let memoryAverage: Double?
-  public let memoryMax: Double?
-  public var name: String?
-  public var referrer: String?
-  public let refreshRateAverage: Double?
-  public let refreshRateMin: Double?
-  public let resource: Resource
-  public let timeSpent: Int64
-  public var url: String
-  public struct Action: Codable
-   public let count: Int64
-  public struct Crash: Codable
-   public let count: Int64
-  public struct Error: Codable
-   public let count: Int64
-  public struct FlutterBuildTime: Codable
-   public let average: Double
-   public let max: Double
-   public let metricMax: Double?
-   public let min: Double
-  public struct FlutterRasterTime: Codable
-   public let average: Double
-   public let max: Double
-   public let metricMax: Double?
-   public let min: Double
-  public struct FrozenFrame: Codable
-   public let count: Int64
-  public struct Frustration: Codable
-   public let count: Int64
-  public struct InForegroundPeriods: Codable
-   public let duration: Int64
-   public let start: Int64
-  public struct JsRefreshRate: Codable
-   public let average: Double
-   public let max: Double
-   public let metricMax: Double?
-   public let min: Double
-  public enum LoadingType: String, Codable
-   case initialLoad = "initial_load"
-   case routeChange = "route_change"
-   case activityDisplay = "activity_display"
-   case activityRedisplay = "activity_redisplay"
-   case fragmentDisplay = "fragment_display"
-   case fragmentRedisplay = "fragment_redisplay"
-   case viewControllerDisplay = "view_controller_display"
-   case viewControllerRedisplay = "view_controller_redisplay"
-  public struct LongTask: Codable
-   public let count: Int64
-  public struct Resource: Codable
-   public let count: Int64
- public func encode(to encoder: Encoder) throws
- public init(from decoder: Decoder) throws
-public struct TelemetryErrorEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application?
- public let date: Int64
- public let experimentalFeatures: [String]?
- public let service: String
- public let session: Session?
- public let source: Source
- public let telemetry: Telemetry
- public let type: String = "telemetry"
- public let version: String
- public let view: View?
- public struct DD: Codable
-  public let formatVersion: Int64 = 2
- public struct Action: Codable
-  public let id: String
- public struct Application: Codable
-  public let id: String
- public struct Session: Codable
-  public let id: String
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
- public struct Telemetry: Codable
-  public let error: Error?
-  public let message: String
-  public let status: String = "error"
-  public let type: String? = "log"
-  public struct Error: Codable
-   public let kind: String?
-   public let stack: String?
- public struct View: Codable
-  public let id: String
-public struct TelemetryDebugEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application?
- public let date: Int64
- public let experimentalFeatures: [String]?
- public let service: String
- public let session: Session?
- public let source: Source
- public let telemetry: Telemetry
- public let type: String = "telemetry"
- public let version: String
- public let view: View?
- public struct DD: Codable
-  public let formatVersion: Int64 = 2
- public struct Action: Codable
-  public let id: String
- public struct Application: Codable
-  public let id: String
- public struct Session: Codable
-  public let id: String
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
- public struct Telemetry: Codable
-  public let message: String
-  public let status: String = "debug"
-  public let type: String? = "log"
- public struct View: Codable
-  public let id: String
-public struct TelemetryConfigurationEvent: RUMDataModel
- public let dd: DD
- public let action: Action?
- public let application: Application?
- public let date: Int64
- public let experimentalFeatures: [String]?
- public let service: String
- public let session: Session?
- public let source: Source
- public var telemetry: Telemetry
- public let type: String = "telemetry"
- public let version: String
- public let view: View?
- public struct DD: Codable
-  public let formatVersion: Int64 = 2
- public struct Action: Codable
-  public let id: String
- public struct Application: Codable
-  public let id: String
- public struct Session: Codable
-  public let id: String
- public enum Source: String, Codable
-  case android = "android"
-  case ios = "ios"
-  case browser = "browser"
-  case flutter = "flutter"
-  case reactNative = "react-native"
- public struct Telemetry: Codable
-  public var configuration: Configuration
-  public let type: String = "configuration"
-  public struct Configuration: Codable
-   public let actionNameAttribute: String?
-   public let batchSize: Int64?
-   public let batchUploadFrequency: Int64?
-   public var defaultPrivacyLevel: String?
-   public let forwardConsoleLogs: ForwardConsoleLogs?
-   public let forwardErrorsToLogs: Bool?
-   public let forwardReports: ForwardReports?
-   public var initializationType: String?
-   public var mobileVitalsUpdatePeriod: Int64?
-   public let premiumSampleRate: Int64?
-   public let replaySampleRate: Int64?
-   public var sessionReplaySampleRate: Int64?
-   public let sessionSampleRate: Int64?
-   public let silentMultipleInit: Bool?
-   public let telemetryConfigurationSampleRate: Int64?
-   public let telemetrySampleRate: Int64?
-   public let traceSampleRate: Int64?
-   public var trackBackgroundEvents: Bool?
-   public var trackCrossPlatformLongTasks: Bool?
-   public var trackErrors: Bool?
-   public var trackFlutterPerformance: Bool?
-   public var trackFrustrations: Bool?
-   public var trackInteractions: Bool?
-   public var trackLongTask: Bool?
-   public var trackNativeErrors: Bool?
-   public var trackNativeLongTasks: Bool?
-   public var trackNativeViews: Bool?
-   public var trackNetworkRequests: Bool?
-   public var trackResources: Bool?
-   public let trackSessionAcrossSubdomains: Bool?
-   public var trackViewsManually: Bool?
-   public let useAllowedTracingOrigins: Bool?
-   public let useBeforeSend: Bool?
-   public let useCrossSiteSessionCookie: Bool?
-   public let useExcludedActivityUrls: Bool?
-   public var useFirstPartyHosts: Bool?
-   public let useLocalEncryption: Bool?
-   public var useProxy: Bool?
-   public let useSecureSessionCookie: Bool?
-   public let useTracing: Bool?
-   public let viewTrackingStrategy: ViewTrackingStrategy?
-   public enum ForwardConsoleLogs: Codable
-    case stringsArray(value: [String])
-    case string(value: String)
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-   public enum ForwardReports: Codable
-    case stringsArray(value: [String])
-    case string(value: String)
-    public func encode(to encoder: Encoder) throws
-    public init(from decoder: Decoder) throws
-   public enum ViewTrackingStrategy: String, Codable
-    case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
-    case fragmentViewTrackingStrategy = "FragmentViewTrackingStrategy"
-    case mixedViewTrackingStrategy = "MixedViewTrackingStrategy"
-    case navigationViewTrackingStrategy = "NavigationViewTrackingStrategy"
- public struct View: Codable
-  public let id: String
-public struct RUMCITest: Codable
- public let testExecutionId: String
-public struct RUMConnectivity: Codable
- public let cellular: Cellular?
- public let interfaces: [Interfaces]
- public let status: Status
- public struct Cellular: Codable
-  public let carrierName: String?
-  public let technology: String?
- public enum Interfaces: String, Codable
-  case bluetooth = "bluetooth"
-  case cellular = "cellular"
-  case ethernet = "ethernet"
-  case wifi = "wifi"
-  case wimax = "wimax"
-  case mixed = "mixed"
-  case other = "other"
-  case unknown = "unknown"
-  case none = "none"
- public enum Status: String, Codable
-  case connected = "connected"
-  case notConnected = "not_connected"
-  case maybe = "maybe"
-public struct RUMEventAttributes: Codable
- public internal(set) var contextInfo: [String: Encodable]
- public func encode(to encoder: Encoder) throws
- public init(from decoder: Decoder) throws
-public struct RUMDevice: Codable
- public let architecture: String?
- public let brand: String?
- public let model: String?
- public let name: String?
- public let type: RUMDeviceType
- public enum RUMDeviceType: String, Codable
-  case mobile = "mobile"
-  case desktop = "desktop"
-  case tablet = "tablet"
-  case tv = "tv"
-  case gamingConsole = "gaming_console"
-  case bot = "bot"
-  case other = "other"
-public struct RUMDisplay: Codable
- public let viewport: Viewport?
- public struct Viewport: Codable
-  public let height: Double
-  public let width: Double
-public struct RUMOperatingSystem: Codable
- public let name: String
- public let version: String
- public let versionMajor: String
-public struct RUMUser: Codable
- public let email: String?
- public let id: String?
- public let name: String?
- public internal(set) var usrInfo: [String: Encodable]
- public func encode(to encoder: Encoder) throws
- public init(from decoder: Decoder) throws
-public enum RUMActionID: Codable
- case string(value: String)
- case stringsArray(value: [String])
- public func encode(to encoder: Encoder) throws
- public init(from decoder: Decoder) throws
-public enum RUMMethod: String, Codable
- case post = "POST"
- case get = "GET"
- case head = "HEAD"
- case put = "PUT"
- case delete = "DELETE"
- case patch = "PATCH"
-public extension SwiftUI.View
- func trackRUMTapAction(name: String,attributes: [AttributeKey: AttributeValue] = [:],count: Int = 1) -> some View
-public struct RUMAction
- public var name: String
- public var attributes: [AttributeKey: AttributeValue]
- public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
-public typealias UIKitRUMUserActionsPredicate = UITouchRUMUserActionsPredicate
-public protocol UITouchRUMUserActionsPredicate
- func rumAction(targetView: UIView) -> RUMAction?
-public protocol UIPressRUMUserActionsPredicate
- func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
-public struct DefaultUIKitRUMUserActionsPredicate
- public init ()
- public func rumAction(targetView: UIView) -> RUMAction?
- public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
-public extension SwiftUI.View
- func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = defaultDatadogCore) -> some View
-public struct RUMView
- public var name: String
- public var path: String?
- public var attributes: [AttributeKey: AttributeValue]
- public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
- public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
-public protocol UIKitRUMViewsPredicate
- func rumView(for viewController: UIViewController) -> RUMView?
-public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
- public init ()
- public func rumView(for viewController: UIViewController) -> RUMView?
-public enum PerformanceMetric
- case flutterBuildTime
- case flutterRasterTime
- case jsFrameTimeSeconds
-public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
-public enum RUMUserActionType
- case tap
- case click
- case scroll
- case swipe
- case custom
-public enum RUMErrorSource
- case source
- case network
- case webview
- case console
- case custom
-public class RUMMonitor: DDRUMMonitor, RUMCommandSubscriber
- public static func initialize(in core: DatadogCoreProtocol = defaultDatadogCore) -> DDRUMMonitor
- override public func startView(viewController: UIViewController,path: String?,attributes: [AttributeKey: AttributeValue])
- override public func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- override public func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
- override public func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
- override public func stopView(key: String,attributes: [AttributeKey: AttributeValue])
- override public func addTiming(name: String)
- override public func addError(message: String,type: String? = nil,source: RUMErrorSource,stack: String?,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
- override public func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue])
- override public func startResourceLoading(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
- override public func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue])
- override public func addResourceMetrics(resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoading(resourceKey: String,response: URLResponse,size: Int64?,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoading(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
- override public func stopResourceLoadingWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
- override public func stopResourceLoadingWithError(resourceKey: String,errorMessage: String,type: String? = nil,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
- override public func startUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
- override public func stopUserAction(type: RUMUserActionType, name: String?, attributes: [AttributeKey: AttributeValue])
- override public func addUserAction(type: RUMUserActionType, name: String, attributes: [AttributeKey: AttributeValue])
- override public func addAttribute(forKey key: AttributeKey, value: AttributeValue)
- override public func removeAttribute(forKey key: AttributeKey)
- public func flush()
-public struct DDTags
- public static let resource = "resource.name"
-public typealias DDTracer = Tracer
-public class Tracer: OTTracer
- public static func initialize(configuration: Configuration, in core: DatadogCoreProtocol = defaultDatadogCore) -> OTTracer
- public func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan
- public func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan
- public func inject(spanContext: OTSpanContext, writer: OTFormatWriter)
- public func extract(reader: OTFormatReader) -> OTSpanContext?
- public var activeSpan: OTSpan?
- public struct Configuration
-  public var serviceName: String?
-  public var sendNetworkInfo: Bool
-  public var globalTags: [String: Encodable]?
-  public var bundleWithRUM: Bool
-  public init(serviceName: String? = nil,sendNetworkInfo: Bool = false,bundleWithRUM: Bool = true,globalTags: [String: Encodable]? = nil)
-public enum TracingHeaderType: Hashable
- case datadog
- case b3
- case b3multi
- case tracecontext
-public class OTelHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider
- public enum InjectEncoding
-  case multiple
-  case multiple, single
- public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
- public init(samplingRate: Float = 20,injectEncoding: InjectEncoding = .single)
- public func inject(spanContext: OTSpanContext)
-public class HTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider
- public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
- public init(samplingRate: Float = 20)
- public func inject(spanContext: OTSpanContext)
-public protocol TracePropagationHeadersExtractor
- func extract() -> OTSpanContext?
- func use(baggageItemQueue: DispatchQueue)
-public protocol TracePropagationHeadersProvider
- var tracePropagationHTTPHeaders: [String: String]
-public class W3CHTTPHeadersWriter: OTHTTPHeadersWriter, TracePropagationHeadersProvider
- public private(set) var tracePropagationHTTPHeaders: [String: String] = [:]
- public init(samplingRate: Float = 20)
- public func inject(spanContext: OTSpanContext)
+    func startSpan(operationName: String,childOf parent: OTSpanContext? = nil,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+    func startRootSpan(operationName: String,tags: [String: Encodable]? = nil,startTime: Date? = nil) -> OTSpan
+public typealias SpanEventMapper = (SpanEvent) -> SpanEvent
 public struct SpanEvent: Encodable
- public var operationName: String
- public let serviceName: String
- public var resource: String
- public let startTime: Date
- public let duration: TimeInterval
- public let isError: Bool
- public let tracerVersion: String
- public let applicationVersion: String
- public let networkConnectionInfo: NetworkConnectionInfo?
- public let mobileCarrierInfo: CarrierInfo?
- public struct UserInfo
-  public let id: String?
-  public let name: String?
-  public let email: String?
-  public var extraInfo: [String: String]
- public var userInfo: UserInfo
- public var tags: [String: String]
- public func encode(to encoder: Encoder) throws
-public protocol __URLSessionDelegateProviding: URLSessionDelegate
- var ddURLSessionDelegate: DDURLSessionDelegate
- public var ddURLSessionDelegate: DDURLSessionDelegate
- override public init()
- public convenience init(in core: DatadogCoreProtocol)
- public convenience init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>])
- public convenience init(additionalFirstPartyHosts: Set<String>)
- public init(in core: @autoclosure @escaping () -> DatadogCoreProtocol,additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>])
-public class URLSessionInterceptor: URLSessionInterceptorType
- public static var shared: URLSessionInterceptor?
- public func modify(request: URLRequest, session: URLSession? = nil) -> URLRequest
- public func taskCreated(task: URLSessionTask, session: URLSession? = nil)
- public func taskMetricsCollected(task: URLSessionTask, metrics: URLSessionTaskMetrics)
- public func taskReceivedData(task: URLSessionTask, data: Data)
- public func taskCompleted(task: URLSessionTask, error: Error?)
-public var consolePrint: (String) -> Void = { print($0) }
+    public var operationName: String
+    public let serviceName: String
+    public var resource: String
+    public let startTime: Date
+    public let duration: TimeInterval
+    public let isError: Bool
+    public let tracerVersion: String
+    public let applicationVersion: String
+    public let networkConnectionInfo: NetworkConnectionInfo?
+    public let mobileCarrierInfo: CarrierInfo?
+    public struct UserInfo
+        public let id: String?
+        public let name: String?
+        public let email: String?
+        public var extraInfo: [String: String]
+    public var userInfo: UserInfo
+    public var tags: [String: String]
+    public func encode(to encoder: Encoder) throws
+public struct Trace
+    public static func enable(with configuration: Trace.Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension Trace
+    public struct Configuration
+        public typealias EventMapper = (SpanEvent) -> SpanEvent
+        public var sampleRate: Float
+        public var service: String?
+        public var tags: [String: Encodable]?
+        public var urlSessionTracking: URLSessionTracking?
+        public var bundleWithRumEnabled: Bool
+        public var networkInfoEnabled: Bool
+        public var eventMapper: EventMapper?
+        public var customEndpoint: URL?
+        public struct URLSessionTracking
+            public var firstPartyHostsTracing: FirstPartyHostsTracing
+            public enum FirstPartyHostsTracing
+                case trace(hosts: Set<String>, sampleRate: Float = 20)
+                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
+            public init(firstPartyHostsTracing: FirstPartyHostsTracing)
+        public init(sampleRate: Float = 100,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
+public enum SpanTags
+    public static let resource = "resource.name"
+public class Tracer
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
+
+
+# ----------------------------------
+# API surface for DatadogRUM:
+# ----------------------------------
+
+public struct RUMActionEvent: RUMDataModel
+    public let dd: DD
+    public var action: Action
+    public let application: Application
+    public let ciTest: RUMCITest?
+    public let connectivity: RUMConnectivity?
+    public internal(set) var context: RUMEventAttributes?
+    public let date: Int64
+    public let device: RUMDevice?
+    public let display: Display?
+    public let os: RUMOperatingSystem?
+    public let service: String?
+    public let session: Session
+    public let source: Source?
+    public let synthetics: Synthetics?
+    public let type: String = "action"
+    public internal(set) var usr: RUMUser?
+    public let version: String?
+    public var view: View
+    public struct DD: Codable
+        public let action: Action?
+        public let browserSdkVersion: String?
+        public let formatVersion: Int64 = 2
+        public let session: Session?
+        public struct Action: Codable
+            public let position: Position?
+            public let target: Target?
+            public struct Position: Codable
+                public let x: Int64
+                public let y: Int64
+            public struct Target: Codable
+                public let height: Int64?
+                public let selector: String?
+                public let width: Int64?
+        public struct Session: Codable
+            public let plan: Plan?
+            public enum Plan: Int, Codable
+                case plan1 = 1
+                case plan2 = 2
+    public struct Action: Codable
+        public let crash: Crash?
+        public let error: Error?
+        public let frustration: Frustration?
+        public let id: String?
+        public let loadingTime: Int64?
+        public let longTask: LongTask?
+        public let resource: Resource?
+        public var target: Target?
+        public let type: ActionType
+        public struct Crash: Codable
+            public let count: Int64
+        public struct Error: Codable
+            public let count: Int64
+        public struct Frustration: Codable
+            public let type: [FrustrationType]
+            public enum FrustrationType: String, Codable
+                case rageClick = "rage_click"
+                case deadClick = "dead_click"
+                case errorClick = "error_click"
+                case rageTap = "rage_tap"
+                case errorTap = "error_tap"
+        public struct LongTask: Codable
+            public let count: Int64
+        public struct Resource: Codable
+            public let count: Int64
+        public struct Target: Codable
+            public var name: String
+        public enum ActionType: String, Codable
+            case custom = "custom"
+            case click = "click"
+            case tap = "tap"
+            case scroll = "scroll"
+            case swipe = "swipe"
+            case applicationStart = "application_start"
+            case back = "back"
+    public struct Application: Codable
+        public let id: String
+    public struct Display: Codable
+        public let viewport: Viewport?
+        public struct Viewport: Codable
+            public let height: Double
+            public let width: Double
+    public struct Session: Codable
+        public let hasReplay: Bool?
+        public let id: String
+        public let type: SessionType
+        public enum SessionType: String, Codable
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+    public struct Synthetics: Codable
+        public let injected: Bool?
+        public let resultId: String
+        public let testId: String
+    public struct View: Codable
+        public let id: String
+        public let inForeground: Bool?
+        public var name: String?
+        public var referrer: String?
+        public var url: String
+public struct RUMErrorEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application
+    public let ciTest: RUMCITest?
+    public let connectivity: RUMConnectivity?
+    public internal(set) var context: RUMEventAttributes?
+    public let date: Int64
+    public let device: RUMDevice?
+    public let display: Display?
+    public var error: Error
+    public internal(set) var featureFlags: FeatureFlags?
+    public let os: RUMOperatingSystem?
+    public let service: String?
+    public let session: Session
+    public let source: Source?
+    public let synthetics: Synthetics?
+    public let type: String = "error"
+    public internal(set) var usr: RUMUser?
+    public let version: String?
+    public var view: View
+    public struct DD: Codable
+        public let browserSdkVersion: String?
+        public let formatVersion: Int64 = 2
+        public let session: Session?
+        public struct Session: Codable
+            public let plan: Plan?
+            public enum Plan: Int, Codable
+                case plan1 = 1
+                case plan2 = 2
+    public struct Action: Codable
+        public let id: RUMActionID
+    public struct Application: Codable
+        public let id: String
+    public struct Display: Codable
+        public let viewport: Viewport?
+        public struct Viewport: Codable
+            public let height: Double
+            public let width: Double
+    public struct Error: Codable
+        public var causes: [Causes]?
+        public var fingerprint: String?
+        public let handling: Handling?
+        public let handlingStack: String?
+        public let id: String?
+        public let isCrash: Bool?
+        public var message: String
+        public var resource: Resource?
+        public let source: Source
+        public let sourceType: SourceType?
+        public var stack: String?
+        public let type: String?
+        public struct Causes: Codable
+            public var message: String
+            public let source: Source
+            public var stack: String?
+            public let type: String?
+            public enum Source: String, Codable
+                case network = "network"
+                case source = "source"
+                case console = "console"
+                case logger = "logger"
+                case agent = "agent"
+                case webview = "webview"
+                case custom = "custom"
+                case report = "report"
+        public enum Handling: String, Codable
+            case handled = "handled"
+            case unhandled = "unhandled"
+        public struct Resource: Codable
+            public let method: RUMMethod
+            public let provider: Provider?
+            public let statusCode: Int64
+            public var url: String
+            public struct Provider: Codable
+                public let domain: String?
+                public let name: String?
+                public let type: ProviderType?
+                public enum ProviderType: String, Codable
+                    case ad = "ad"
+                    case advertising = "advertising"
+                    case analytics = "analytics"
+                    case cdn = "cdn"
+                    case content = "content"
+                    case customerSuccess = "customer-success"
+                    case firstParty = "first party"
+                    case hosting = "hosting"
+                    case marketing = "marketing"
+                    case other = "other"
+                    case social = "social"
+                    case tagManager = "tag-manager"
+                    case utility = "utility"
+                    case video = "video"
+        public enum Source: String, Codable
+            case network = "network"
+            case source = "source"
+            case console = "console"
+            case logger = "logger"
+            case agent = "agent"
+            case webview = "webview"
+            case custom = "custom"
+            case report = "report"
+        public enum SourceType: String, Codable
+            case android = "android"
+            case browser = "browser"
+            case ios = "ios"
+            case reactNative = "react-native"
+            case flutter = "flutter"
+            case roku = "roku"
+    public struct FeatureFlags: Codable
+        public internal(set) var featureFlagsInfo: [String: Encodable]
+    public struct Session: Codable
+        public let hasReplay: Bool?
+        public let id: String
+        public let type: SessionType
+        public enum SessionType: String, Codable
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+    public struct Synthetics: Codable
+        public let injected: Bool?
+        public let resultId: String
+        public let testId: String
+    public struct View: Codable
+        public let id: String
+        public let inForeground: Bool?
+        public var name: String?
+        public var referrer: String?
+        public var url: String
+[?] extension RUMErrorEvent.FeatureFlags
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct RUMLongTaskEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application
+    public let ciTest: RUMCITest?
+    public let connectivity: RUMConnectivity?
+    public internal(set) var context: RUMEventAttributes?
+    public let date: Int64
+    public let device: RUMDevice?
+    public let display: Display?
+    public let longTask: LongTask
+    public let os: RUMOperatingSystem?
+    public let service: String?
+    public let session: Session
+    public let source: Source?
+    public let synthetics: Synthetics?
+    public let type: String = "long_task"
+    public internal(set) var usr: RUMUser?
+    public let version: String?
+    public var view: View
+    public struct DD: Codable
+        public let browserSdkVersion: String?
+        public let discarded: Bool?
+        public let formatVersion: Int64 = 2
+        public let session: Session?
+        public struct Session: Codable
+            public let plan: Plan?
+            public enum Plan: Int, Codable
+                case plan1 = 1
+                case plan2 = 2
+    public struct Action: Codable
+        public let id: RUMActionID
+    public struct Application: Codable
+        public let id: String
+    public struct Display: Codable
+        public let viewport: Viewport?
+        public struct Viewport: Codable
+            public let height: Double
+            public let width: Double
+    public struct LongTask: Codable
+        public let duration: Int64
+        public let id: String?
+        public let isFrozenFrame: Bool?
+    public struct Session: Codable
+        public let hasReplay: Bool?
+        public let id: String
+        public let type: SessionType
+        public enum SessionType: String, Codable
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+    public struct Synthetics: Codable
+        public let injected: Bool?
+        public let resultId: String
+        public let testId: String
+    public struct View: Codable
+        public let id: String
+        public var name: String?
+        public var referrer: String?
+        public var url: String
+public struct RUMResourceEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application
+    public let ciTest: RUMCITest?
+    public let connectivity: RUMConnectivity?
+    public internal(set) var context: RUMEventAttributes?
+    public let date: Int64
+    public let device: RUMDevice?
+    public let display: Display?
+    public let os: RUMOperatingSystem?
+    public var resource: Resource
+    public let service: String?
+    public let session: Session
+    public let source: Source?
+    public let synthetics: Synthetics?
+    public let type: String = "resource"
+    public internal(set) var usr: RUMUser?
+    public let version: String?
+    public var view: View
+    public struct DD: Codable
+        public let browserSdkVersion: String?
+        public let discarded: Bool?
+        public let formatVersion: Int64 = 2
+        public let rulePsr: Double?
+        public let session: Session?
+        public let spanId: String?
+        public let traceId: String?
+        public struct Session: Codable
+            public let plan: Plan?
+            public enum Plan: Int, Codable
+                case plan1 = 1
+                case plan2 = 2
+    public struct Action: Codable
+        public let id: RUMActionID
+    public struct Application: Codable
+        public let id: String
+    public struct Display: Codable
+        public let viewport: Viewport?
+        public struct Viewport: Codable
+            public let height: Double
+            public let width: Double
+    public struct Resource: Codable
+        public let connect: Connect?
+        public let dns: DNS?
+        public let download: Download?
+        public let duration: Int64?
+        public let firstByte: FirstByte?
+        public let id: String?
+        public let method: RUMMethod?
+        public let provider: Provider?
+        public let redirect: Redirect?
+        public let size: Int64?
+        public let ssl: SSL?
+        public let statusCode: Int64?
+        public let type: ResourceType
+        public var url: String
+        public struct Connect: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct DNS: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct Download: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct FirstByte: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct Provider: Codable
+            public let domain: String?
+            public let name: String?
+            public let type: ProviderType?
+            public enum ProviderType: String, Codable
+                case ad = "ad"
+                case advertising = "advertising"
+                case analytics = "analytics"
+                case cdn = "cdn"
+                case content = "content"
+                case customerSuccess = "customer-success"
+                case firstParty = "first party"
+                case hosting = "hosting"
+                case marketing = "marketing"
+                case other = "other"
+                case social = "social"
+                case tagManager = "tag-manager"
+                case utility = "utility"
+                case video = "video"
+        public struct Redirect: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct SSL: Codable
+            public let duration: Int64
+            public let start: Int64
+        public enum ResourceType: String, Codable
+            case document = "document"
+            case xhr = "xhr"
+            case beacon = "beacon"
+            case fetch = "fetch"
+            case css = "css"
+            case js = "js"
+            case image = "image"
+            case font = "font"
+            case media = "media"
+            case other = "other"
+            case native = "native"
+    public struct Session: Codable
+        public let hasReplay: Bool?
+        public let id: String
+        public let type: SessionType
+        public enum SessionType: String, Codable
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+    public struct Synthetics: Codable
+        public let injected: Bool?
+        public let resultId: String
+        public let testId: String
+    public struct View: Codable
+        public let id: String
+        public var name: String?
+        public var referrer: String?
+        public var url: String
+public struct RUMViewEvent: RUMDataModel
+    public let dd: DD
+    public let application: Application
+    public let ciTest: RUMCITest?
+    public let connectivity: RUMConnectivity?
+    public internal(set) var context: RUMEventAttributes?
+    public let date: Int64
+    public let device: RUMDevice?
+    public let display: Display?
+    public internal(set) var featureFlags: FeatureFlags?
+    public let os: RUMOperatingSystem?
+    public let privacy: Privacy?
+    public let service: String?
+    public let session: Session
+    public let source: Source?
+    public let synthetics: Synthetics?
+    public let type: String = "view"
+    public internal(set) var usr: RUMUser?
+    public let version: String?
+    public var view: View
+    public struct DD: Codable
+        public let browserSdkVersion: String?
+        public let documentVersion: Int64
+        public let formatVersion: Int64 = 2
+        public let pageStates: [PageStates]?
+        public let replayStats: ReplayStats?
+        public let session: Session?
+        public struct PageStates: Codable
+            public let start: Int64
+            public let state: State
+            public enum State: String, Codable
+                case active = "active"
+                case passive = "passive"
+                case hidden = "hidden"
+                case frozen = "frozen"
+                case terminated = "terminated"
+        public struct ReplayStats: Codable
+            public let recordsCount: Int64?
+            public let segmentsCount: Int64?
+            public let segmentsTotalRawSize: Int64?
+        public struct Session: Codable
+            public let plan: Plan?
+            public enum Plan: Int, Codable
+                case plan1 = 1
+                case plan2 = 2
+    public struct Application: Codable
+        public let id: String
+    public struct Display: Codable
+        public let scroll: Scroll?
+        public let viewport: Viewport?
+        public struct Scroll: Codable
+            public let maxDepth: Double
+            public let maxDepthScrollHeight: Double
+            public let maxDepthScrollTop: Double
+            public let maxDepthTime: Double
+        public struct Viewport: Codable
+            public let height: Double
+            public let width: Double
+    public struct FeatureFlags: Codable
+        public internal(set) var featureFlagsInfo: [String: Encodable]
+    public struct Privacy: Codable
+        public let replayLevel: ReplayLevel
+        public enum ReplayLevel: String, Codable
+            case allow = "allow"
+            case mask = "mask"
+            case maskUserInput = "mask-user-input"
+    public struct Session: Codable
+        public let hasReplay: Bool?
+        public let id: String
+        public let isActive: Bool?
+        public let sampledForReplay: Bool?
+        public let startPrecondition: StartPrecondition?
+        public let type: SessionType
+        public enum StartPrecondition: String, Codable
+            case appLaunch = "app_launch"
+            case inactivityTimeout = "inactivity_timeout"
+            case maxDuration = "max_duration"
+            case explicitStop = "explicit_stop"
+            case backgroundEvent = "background_event"
+        public enum SessionType: String, Codable
+            case user = "user"
+            case synthetics = "synthetics"
+            case ciTest = "ci_test"
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+    public struct Synthetics: Codable
+        public let injected: Bool?
+        public let resultId: String
+        public let testId: String
+    public struct View: Codable
+        public let action: Action
+        public let cpuTicksCount: Double?
+        public let cpuTicksPerSecond: Double?
+        public let crash: Crash?
+        public let cumulativeLayoutShift: Double?
+        public let customTimings: [String: Int64]?
+        public let domComplete: Int64?
+        public let domContentLoaded: Int64?
+        public let domInteractive: Int64?
+        public let error: Error
+        public let firstByte: Int64?
+        public let firstContentfulPaint: Int64?
+        public let firstInputDelay: Int64?
+        public let firstInputTime: Int64?
+        public let flutterBuildTime: FlutterBuildTime?
+        public let flutterRasterTime: FlutterRasterTime?
+        public let frozenFrame: FrozenFrame?
+        public let frustration: Frustration?
+        public let id: String
+        public let inForegroundPeriods: [InForegroundPeriods]?
+        public let isActive: Bool?
+        public let isSlowRendered: Bool?
+        public let jsRefreshRate: JsRefreshRate?
+        public let largestContentfulPaint: Int64?
+        public let loadEvent: Int64?
+        public let loadingTime: Int64?
+        public let loadingType: LoadingType?
+        public let longTask: LongTask?
+        public let memoryAverage: Double?
+        public let memoryMax: Double?
+        public var name: String?
+        public var referrer: String?
+        public let refreshRateAverage: Double?
+        public let refreshRateMin: Double?
+        public let resource: Resource
+        public let timeSpent: Int64
+        public var url: String
+        public struct Action: Codable
+            public let count: Int64
+        public struct Crash: Codable
+            public let count: Int64
+        public struct Error: Codable
+            public let count: Int64
+        public struct FlutterBuildTime: Codable
+            public let average: Double
+            public let max: Double
+            public let metricMax: Double?
+            public let min: Double
+        public struct FlutterRasterTime: Codable
+            public let average: Double
+            public let max: Double
+            public let metricMax: Double?
+            public let min: Double
+        public struct FrozenFrame: Codable
+            public let count: Int64
+        public struct Frustration: Codable
+            public let count: Int64
+        public struct InForegroundPeriods: Codable
+            public let duration: Int64
+            public let start: Int64
+        public struct JsRefreshRate: Codable
+            public let average: Double
+            public let max: Double
+            public let metricMax: Double?
+            public let min: Double
+        public enum LoadingType: String, Codable
+            case initialLoad = "initial_load"
+            case routeChange = "route_change"
+            case activityDisplay = "activity_display"
+            case activityRedisplay = "activity_redisplay"
+            case fragmentDisplay = "fragment_display"
+            case fragmentRedisplay = "fragment_redisplay"
+            case viewControllerDisplay = "view_controller_display"
+            case viewControllerRedisplay = "view_controller_redisplay"
+        public struct LongTask: Codable
+            public let count: Int64
+        public struct Resource: Codable
+            public let count: Int64
+[?] extension RUMViewEvent.FeatureFlags
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct TelemetryErrorEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application?
+    public let date: Int64
+    public let experimentalFeatures: [String]?
+    public let service: String
+    public let session: Session?
+    public let source: Source
+    public let telemetry: Telemetry
+    public let type: String = "telemetry"
+    public let version: String
+    public let view: View?
+    public struct DD: Codable
+        public let formatVersion: Int64 = 2
+    public struct Action: Codable
+        public let id: String
+    public struct Application: Codable
+        public let id: String
+    public struct Session: Codable
+        public let id: String
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    public struct Telemetry: Codable
+        public let error: Error?
+        public let message: String
+        public let status: String = "error"
+        public let type: String? = "log"
+        public struct Error: Codable
+            public let kind: String?
+            public let stack: String?
+    public struct View: Codable
+        public let id: String
+public struct TelemetryDebugEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application?
+    public let date: Int64
+    public let experimentalFeatures: [String]?
+    public let service: String
+    public let session: Session?
+    public let source: Source
+    public let telemetry: Telemetry
+    public let type: String = "telemetry"
+    public let version: String
+    public let view: View?
+    public struct DD: Codable
+        public let formatVersion: Int64 = 2
+    public struct Action: Codable
+        public let id: String
+    public struct Application: Codable
+        public let id: String
+    public struct Session: Codable
+        public let id: String
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    public struct Telemetry: Codable
+        public let message: String
+        public let status: String = "debug"
+        public let type: String? = "log"
+    public struct View: Codable
+        public let id: String
+public struct TelemetryConfigurationEvent: RUMDataModel
+    public let dd: DD
+    public let action: Action?
+    public let application: Application?
+    public let date: Int64
+    public let experimentalFeatures: [String]?
+    public let service: String
+    public let session: Session?
+    public let source: Source
+    public var telemetry: Telemetry
+    public let type: String = "telemetry"
+    public let version: String
+    public let view: View?
+    public struct DD: Codable
+        public let formatVersion: Int64 = 2
+    public struct Action: Codable
+        public let id: String
+    public struct Application: Codable
+        public let id: String
+    public struct Session: Codable
+        public let id: String
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    public struct Telemetry: Codable
+        public var configuration: Configuration
+        public let type: String = "configuration"
+        public struct Configuration: Codable
+            public let actionNameAttribute: String?
+            public let batchSize: Int64?
+            public let batchUploadFrequency: Int64?
+            public var dartVersion: String?
+            public var defaultPrivacyLevel: String?
+            public let forwardConsoleLogs: ForwardConsoleLogs?
+            public let forwardErrorsToLogs: Bool?
+            public let forwardReports: ForwardReports?
+            public var initializationType: String?
+            public var mobileVitalsUpdatePeriod: Int64?
+            public let premiumSampleRate: Int64?
+            public var reactNativeVersion: String?
+            public var reactVersion: String?
+            public let replaySampleRate: Int64?
+            public let selectedTracingPropagators: [SelectedTracingPropagators]?
+            public var sessionReplaySampleRate: Int64?
+            public let sessionSampleRate: Int64?
+            public let silentMultipleInit: Bool?
+            public var startSessionReplayRecordingManually: Bool?
+            public let telemetryConfigurationSampleRate: Int64?
+            public let telemetrySampleRate: Int64?
+            public let traceSampleRate: Int64?
+            public var trackBackgroundEvents: Bool?
+            public var trackCrossPlatformLongTasks: Bool?
+            public var trackErrors: Bool?
+            public var trackFlutterPerformance: Bool?
+            public var trackFrustrations: Bool?
+            public var trackInteractions: Bool?
+            public var trackLongTask: Bool?
+            public var trackNativeErrors: Bool?
+            public var trackNativeLongTasks: Bool?
+            public var trackNativeViews: Bool?
+            public var trackNetworkRequests: Bool?
+            public var trackResources: Bool?
+            public let trackSessionAcrossSubdomains: Bool?
+            public var trackUserInteractions: Bool?
+            public var trackViewsManually: Bool?
+            public let useAllowedTracingOrigins: Bool?
+            public let useAllowedTracingUrls: Bool?
+            public let useBeforeSend: Bool?
+            public let useCrossSiteSessionCookie: Bool?
+            public let useExcludedActivityUrls: Bool?
+            public var useFirstPartyHosts: Bool?
+            public let useLocalEncryption: Bool?
+            public var useProxy: Bool?
+            public let useSecureSessionCookie: Bool?
+            public let useTracing: Bool?
+            public let viewTrackingStrategy: ViewTrackingStrategy?
+            public enum ForwardConsoleLogs: Codable
+                case stringsArray(value: [String])
+                case string(value: String)
+                public func encode(to encoder: Encoder) throws
+                public init(from decoder: Decoder) throws
+            public enum ForwardReports: Codable
+                case stringsArray(value: [String])
+                case string(value: String)
+                public func encode(to encoder: Encoder) throws
+                public init(from decoder: Decoder) throws
+            public enum SelectedTracingPropagators: String, Codable
+                case datadog = "datadog"
+                case b3 = "b3"
+                case b3multi = "b3multi"
+                case tracecontext = "tracecontext"
+            public enum ViewTrackingStrategy: String, Codable
+                case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
+                case fragmentViewTrackingStrategy = "FragmentViewTrackingStrategy"
+                case mixedViewTrackingStrategy = "MixedViewTrackingStrategy"
+                case navigationViewTrackingStrategy = "NavigationViewTrackingStrategy"
+    public struct View: Codable
+        public let id: String
+public struct RUMCITest: Codable
+    public let testExecutionId: String
+public struct RUMConnectivity: Codable
+    public let cellular: Cellular?
+    public let interfaces: [Interfaces]
+    public let status: Status
+    public struct Cellular: Codable
+        public let carrierName: String?
+        public let technology: String?
+    public enum Interfaces: String, Codable
+        case bluetooth = "bluetooth"
+        case cellular = "cellular"
+        case ethernet = "ethernet"
+        case wifi = "wifi"
+        case wimax = "wimax"
+        case mixed = "mixed"
+        case other = "other"
+        case unknown = "unknown"
+        case none = "none"
+    public enum Status: String, Codable
+        case connected = "connected"
+        case notConnected = "not_connected"
+        case maybe = "maybe"
+public struct RUMEventAttributes: Codable
+    public internal(set) var contextInfo: [String: Encodable]
+[?] extension RUMEventAttributes
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct RUMDevice: Codable
+    public let architecture: String?
+    public let brand: String?
+    public let model: String?
+    public let name: String?
+    public let type: RUMDeviceType
+    public enum RUMDeviceType: String, Codable
+        case mobile = "mobile"
+        case desktop = "desktop"
+        case tablet = "tablet"
+        case tv = "tv"
+        case gamingConsole = "gaming_console"
+        case bot = "bot"
+        case other = "other"
+public struct RUMOperatingSystem: Codable
+    public let build: String?
+    public let name: String
+    public let version: String
+    public let versionMajor: String
+public struct RUMUser: Codable
+    public let email: String?
+    public let id: String?
+    public let name: String?
+    public internal(set) var usrInfo: [String: Encodable]
+[?] extension RUMUser
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public enum RUMActionID: Codable
+    case string(value: String)
+    case stringsArray(value: [String])
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public enum RUMMethod: String, Codable
+    case post = "POST"
+    case get = "GET"
+    case head = "HEAD"
+    case put = "PUT"
+    case delete = "DELETE"
+    case patch = "PATCH"
+public extension SwiftUI.View
+    func trackRUMTapAction(name: String,attributes: [String: Encodable] = [:],count: Int = 1,in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
+public struct RUMAction
+    public var name: String
+    public var attributes: [AttributeKey: AttributeValue]
+    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:])
+public typealias UIKitRUMActionsPredicate = UITouchRUMActionsPredicate
+public protocol UITouchRUMActionsPredicate
+    func rumAction(targetView: UIView) -> RUMAction?
+public protocol UIPressRUMActionsPredicate
+    func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+public struct DefaultUIKitRUMActionsPredicate
+    public init ()
+[?] extension DefaultUIKitRUMActionsPredicate: UITouchRUMActionsPredicate
+    public func rumAction(targetView: UIView) -> RUMAction?
+[?] extension DefaultUIKitRUMActionsPredicate: UIPressRUMActionsPredicate
+    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> RUMAction?
+public extension SwiftUI.View
+    func trackRUMView(name: String,attributes: [AttributeKey: AttributeValue] = [:],in core: DatadogCoreProtocol = CoreRegistry.default) -> some View
+public struct RUMView
+    public var name: String
+    public var path: String?
+    public var attributes: [AttributeKey: AttributeValue]
+    public var isUntrackedModal: Bool
+    public init(path: String, attributes: [AttributeKey: AttributeValue] = [:])
+    public init(name: String, attributes: [AttributeKey: AttributeValue] = [:], isUntrackedModal: Bool = false)
+public protocol UIKitRUMViewsPredicate
+    func rumView(for viewController: UIViewController) -> RUMView?
+public struct DefaultUIKitRUMViewsPredicate: UIKitRUMViewsPredicate
+    public init ()
+    public func rumView(for viewController: UIViewController) -> RUMView?
+public struct RUM
+    public static func enable(with configuration: RUM.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension RUM
+    public typealias ViewEventMapper = (RUMViewEvent) -> RUMViewEvent
+    public typealias ResourceEventMapper = (RUMResourceEvent) -> RUMResourceEvent?
+    public typealias ErrorEventMapper = (RUMErrorEvent) -> RUMErrorEvent?
+    public typealias ActionEventMapper = (RUMActionEvent) -> RUMActionEvent?
+    public typealias LongTaskEventMapper = (RUMLongTaskEvent) -> RUMLongTaskEvent?
+    public typealias SessionListener = (String, Bool) -> Void
+    public typealias ResourceAttributesProvider = (URLRequest, URLResponse?, Data?, Error?) -> [AttributeKey: AttributeValue]?
+    public struct Configuration
+        public let applicationID: String
+        public var sessionSampleRate: Float
+        public var uiKitViewsPredicate: UIKitRUMViewsPredicate?
+        public var uiKitActionsPredicate: UIKitRUMActionsPredicate?
+        public var urlSessionTracking: URLSessionTracking?
+        public var trackFrustrations: Bool
+        public var trackBackgroundEvents: Bool
+        public var longTaskThreshold: TimeInterval?
+        public var vitalsUpdateFrequency: VitalsFrequency?
+        public var viewEventMapper: RUM.ViewEventMapper?
+        public var resourceEventMapper: RUM.ResourceEventMapper?
+        public var actionEventMapper: RUM.ActionEventMapper?
+        public var errorEventMapper: RUM.ErrorEventMapper?
+        public var longTaskEventMapper: RUM.LongTaskEventMapper?
+        public var onSessionStart: RUM.SessionListener?
+        public var customEndpoint: URL?
+        public var telemetrySampleRate: Float
+        public struct URLSessionTracking
+            public var firstPartyHostsTracing: FirstPartyHostsTracing?
+            public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
+        public enum VitalsFrequency: String
+            case frequent
+            case average
+            case rare
+[?] extension RUM.Configuration.URLSessionTracking
+    public enum FirstPartyHostsTracing
+        case trace(hosts: Set<String>, sampleRate: Float = 20)
+        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
+    public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
+[?] extension RUM.Configuration
+    public init(applicationID: String,sessionSampleRate: Float = 100,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: Float = 20)
+[?] extension InternalExtension where ExtendedType == RUM.Configuration
+    public var configurationTelemetrySampleRate: Float
+public class RUMMonitor
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> RUMMonitorProtocol
+public extension RUMMonitorProtocol
+    func startView(viewController: UIViewController,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue] = [:])
+    func startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopView(key: String,attributes: [AttributeKey: AttributeValue] = [:])
+    func addError(message: String,type: String? = nil,stack: String? = nil,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:],file: StaticString? = #filePath,line: UInt? = #line)
+    func addError(error: Error,source: RUMErrorSource = .custom,attributes: [AttributeKey: AttributeValue] = [:])
+    func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue] = [:])
+    func startResource(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue] = [:])
+    func startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue] = [:])
+    func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopResource(resourceKey: String,response: URLResponse,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopResource(resourceKey: String,statusCode: Int? = nil,kind: RUMResourceType,size: Int64? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopResourceWithError(resourceKey: String,message: String,type: String? = nil,response: URLResponse? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
+    func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue] = [:])
+    func stopAction(type: RUMActionType,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+public extension RUMMonitorProtocol
+    var _internal: DatadogInternalInterface?
+public struct DatadogInternalInterface
+    public func addLongTask(at time: Date,duration: TimeInterval,attributes: [AttributeKey: AttributeValue] = [:])
+    public func updatePerformanceMetric(at time: Date,metric: PerformanceMetric,value: Double,attributes: [AttributeKey: AttributeValue] = [:])
+    public func addResourceMetrics(at time: Date,resourceKey: String,fetch: (start: Date, end: Date),redirection: (start: Date, end: Date)?,dns: (start: Date, end: Date)?,connect: (start: Date, end: Date)?,ssl: (start: Date, end: Date)?,firstByte: (start: Date, end: Date)?,download: (start: Date, end: Date)?,responseSize: Int64?,attributes: [AttributeKey: AttributeValue] = [:])
+public typealias RUMResourceType = RUMResourceEvent.Resource.ResourceType
+public enum RUMActionType
+    case tap
+    case click
+    case scroll
+    case swipe
+    case custom
+public enum RUMErrorSource
+    case source
+    case network
+    case webview
+    case console
+    case custom
+public protocol RUMMonitorProtocol: AnyObject
+    func addAttribute(forKey key: AttributeKey, value: AttributeValue)
+    func removeAttribute(forKey key: AttributeKey)
+    func stopSession()
+    func startView(viewController: UIViewController,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(viewController: UIViewController,attributes: [AttributeKey: AttributeValue])
+    func startView(key: String,name: String?,attributes: [AttributeKey: AttributeValue])
+    func stopView(key: String,attributes: [AttributeKey: AttributeValue])
+    func addTiming(name: String)
+    func addError(message: String,type: String?,stack: String?,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue],file: StaticString?,line: UInt?)
+    func addError(error: Error,source: RUMErrorSource,attributes: [AttributeKey: AttributeValue])
+    func startResource(resourceKey: String,request: URLRequest,attributes: [AttributeKey: AttributeValue])
+    func startResource(resourceKey: String,url: URL,attributes: [AttributeKey: AttributeValue])
+    func startResource(resourceKey: String,httpMethod: RUMMethod,urlString: String,attributes: [AttributeKey: AttributeValue])
+    func addResourceMetrics(resourceKey: String,metrics: URLSessionTaskMetrics,attributes: [AttributeKey: AttributeValue])
+    func stopResource(resourceKey: String,response: URLResponse,size: Int64?,attributes: [AttributeKey: AttributeValue])
+    func stopResource(resourceKey: String,statusCode: Int?,kind: RUMResourceType,size: Int64?,attributes: [AttributeKey: AttributeValue])
+    func stopResourceWithError(resourceKey: String,error: Error,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    func stopResourceWithError(resourceKey: String,message: String,type: String?,response: URLResponse?,attributes: [AttributeKey: AttributeValue])
+    func addAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
+    func startAction(type: RUMActionType,name: String,attributes: [AttributeKey: AttributeValue])
+    func stopAction(type: RUMActionType,name: String?,attributes: [AttributeKey: AttributeValue])
+    func addFeatureFlagEvaluation(name: String,value: Encodable)
+    var debug: Bool
+public enum PerformanceMetric
+    case flutterBuildTime
+    case flutterRasterTime
+    case jsFrameTimeSeconds
+
+
+# ----------------------------------
+# API surface for DatadogCrashReporting:
+# ----------------------------------
+
+public final class CrashReporting
+    public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default)
+public static func enable()
+
+
+# ----------------------------------
+# API surface for DatadogWebViewTracking:
+# ----------------------------------
+
+public enum WebViewTracking
+    public static func enable(webView: WKWebView,hosts: Set<String> = [],in core: DatadogCoreProtocol = CoreRegistry.default)
+    public static func disable(webView: WKWebView)
+[?] extension InternalExtension where ExtendedType == WebViewTracking
+    public class AbstractMessageEmitter
+        public func send(body: Any) throws
+    public static func messageEmitter(in core: DatadogCoreProtocol) -> AbstractMessageEmitter

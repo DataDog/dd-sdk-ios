@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import Datadog
+
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 

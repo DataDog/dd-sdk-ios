@@ -6,6 +6,7 @@
 
 import XCTest
 import UIKit
+import TestUtilities
 @testable import DatadogSessionReplay
 
 class UIKitExtensionsTests: XCTestCase {

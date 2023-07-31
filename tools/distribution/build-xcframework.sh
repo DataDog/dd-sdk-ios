@@ -88,9 +88,20 @@ function bundle {
 
 rm -rf $OUTPUT
 carthage bootstrap --platform $PLATFORM --use-xcframeworks
-mkdir -p "$XCFRAMEWORK_OUTPUT" 
+mkdir -p "$XCFRAMEWORK_OUTPUT"
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORK_OUTPUT"
 
-bundle Datadog
+bundle DatadogInternal
+bundle DatadogCore
+bundle DatadogLogs
+bundle DatadogTrace
+bundle DatadogRUM
 bundle DatadogObjc
 bundle DatadogCrashReporting
+
+# Build iOS-only XCFrameworks
+if [[ $PLATFORM == *"iOS"* ]]; then
+    PLATFORM="iOS"
+    bundle DatadogWebViewTracking
+    bundle DatadogSessionReplay
+fi

@@ -14,21 +14,38 @@ internal func renderImage(for window: UIWindow) -> UIImage {
     return renderer.image { _ in window.drawHierarchy(in: window.bounds, afterScreenUpdates: true) }
 }
 
-/// Renders wireframes into image.
-internal func renderImage(for wireframes: [SRWireframe]) -> UIImage {
-    guard !wireframes.isEmpty else {
-        return UIImage()
+/// Handful of debugging information from the process of rendering wireframes.
+/// It is attached as `XCTAttachment` to failed tests, making it easier to diagnose problems that occur on CI.
+internal struct WireframesRenderingDebugInfo {
+    /// The wireframes that will be rendered.
+    fileprivate let wireframes: [SRWireframe]
+    /// Blueprint that describes rendered wireframes. It is passed to `Framer` for constructing the final image.
+    fileprivate let blueprint: Blueprint
+
+    func dumpWireframesAsJSON() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        let data = try? encoder.encode(wireframes)
+        return data?.utf8String ?? "(JSON encoding failed)"
     }
 
+    func dumpImageAsBlueprint() -> String {
+        return String(describing: blueprint)
+    }
+}
+
+/// Renders wireframes into image.
+internal func renderImage(for wireframes: [SRWireframe]) -> (image: UIImage, debugInfo: WireframesRenderingDebugInfo) {
+    precondition(!wireframes.isEmpty)
     let frame = wireframes[0].toFrame()
     let canvas = FramerCanvas.create(size: CGSize(width: frame.width, height: frame.height))
-    canvas.draw(
-        blueprint: Blueprint(
-            id: "snapshot",
-            contents: wireframes.map { .frame($0.toFrame()) }
-        )
+    let blueprint = Blueprint(
+        id: "snapshot",
+        contents: wireframes.map { .frame($0.toFrame()) }
     )
-    return canvas.image
+    canvas.draw(blueprint: blueprint)
+    let debugInfo = WireframesRenderingDebugInfo(wireframes: wireframes, blueprint: blueprint)
+    return (canvas.image, debugInfo)
 }
 
 // MARK: - Wireframes Rendering with Framer

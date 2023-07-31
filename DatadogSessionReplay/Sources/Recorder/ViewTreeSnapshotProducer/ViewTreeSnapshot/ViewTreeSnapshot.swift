@@ -101,8 +101,8 @@ internal struct ViewAttributes: Equatable {
 extension ViewAttributes {
     init(frameInRootView: CGRect, view: UIView) {
         self.frame = frameInRootView
-        self.backgroundColor = view.backgroundColor?.cgColor
-        self.layerBorderColor = view.layer.borderColor
+        self.backgroundColor = view.backgroundColor?.cgColor.safeCast
+        self.layerBorderColor = view.layer.borderColor?.safeCast
         self.layerBorderWidth = view.layer.borderWidth
         self.layerCornerRadius = view.layer.cornerRadius
         self.alpha = view.alpha

@@ -5,17 +5,18 @@
  */
 
 import Foundation
-import Datadog
+import DatadogCore
+import DatadogRUM
 
 class RUMTrackingConsentE2ETests: E2ETests {
-    private lazy var rum = Global.rum.dd
+    private var rum: RUMMonitorProtocol { RUMMonitor.shared() }
 
     override func setUp() {
         skipSDKInitialization = true // we will initialize it in each test
         super.setUp()
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     ///
     /// - data monitor:
     /// ```rum
@@ -25,12 +26,17 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_pending() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            RUM.enable(with: .e2e)
         }
-        rum.dd.sendRandomRUMEvent()
+        rum.sendRandomRUMEvent()
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     ///
     /// - data monitor:
     /// ```rum
@@ -40,12 +46,17 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            RUM.enable(with: .e2e)
         }
-        rum.dd.sendRandomRUMEvent()
+        rum.sendRandomRUMEvent()
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     ///
     /// - data monitor:
     /// ```rum
@@ -55,12 +66,17 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_not_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            RUM.enable(with: .e2e)
         }
-        rum.dd.sendRandomRUMEvent()
+        rum.sendRandomRUMEvent()
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUMMonitorProtocol.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -71,7 +87,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_pending_to_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
@@ -79,7 +100,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -90,7 +111,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_pending_to_not_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .pending)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .pending
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
@@ -98,7 +124,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -109,7 +135,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_granted_to_not_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
@@ -117,7 +148,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -128,7 +159,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_granted_to_pending() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .granted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .granted
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
@@ -136,7 +172,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -147,7 +183,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_not_granted_to_granted() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {
@@ -155,7 +196,7 @@ class RUMTrackingConsentE2ETests: E2ETests {
         }
     }
 
-    /// - api-surface: DDRUMMonitor.initialize() -> DDRUMMonitor
+    /// - api-surface: RUM.enable() -> RUMMonitorProtocol
     /// - api-surface: Datadog.set(trackingConsent: TrackingConsent)
     ///
     /// - data monitor:
@@ -166,7 +207,12 @@ class RUMTrackingConsentE2ETests: E2ETests {
     /// ```
     func test_rum_config_consent_not_granted_to_pending() {
         measure(resourceName: DD.PerfSpanName.sdkInitialize) {
-            initializeSDK(trackingConsent: .notGranted)
+            Datadog.initialize(
+                with: .e2e,
+                trackingConsent: .notGranted
+            )
+
+            RUM.enable(with: .e2e)
         }
         rum.dd.sendRandomRUMEvent()
         measure(resourceName: DD.PerfSpanName.setTrackingConsent) {

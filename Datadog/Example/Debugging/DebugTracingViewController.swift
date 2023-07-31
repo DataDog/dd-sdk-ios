@@ -5,7 +5,8 @@
  */
 
 import UIKit
-import Datadog
+import DatadogCore
+import DatadogTrace
 
 class DebugTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!
@@ -23,7 +24,7 @@ class DebugTracingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        serviceNameTextField.text = (appConfiguration as? ExampleAppConfiguration)?.serviceName
+        serviceNameTextField.text = serviceName
         hideKeyboardWhenTapOutside()
         startDisplayingDebugInfo(in: consoleTextView)
     }
@@ -50,9 +51,9 @@ class DebugTracingViewController: UIViewController {
         let isError = self.isError
 
         queue1.async {
-            let span = Global.sharedTracer.startSpan(operationName: spanName)
+            let span = tracer.startSpan(operationName: spanName)
             if let resourceName = resourceName {
-                span.setTag(key: DDTags.resource, value: resourceName)
+                span.setTag(key: SpanTags.resource, value: resourceName)
             }
             if isError {
                 // To only mark the span as an error, use the Open Tracing `error` tag:
@@ -88,21 +89,21 @@ class DebugTracingViewController: UIViewController {
         queue1.async { [weak self] in
             guard let self = self else { return }
 
-            let rootSpan = Global.sharedTracer.startSpan(operationName: spanName)
+            let rootSpan = tracer.startSpan(operationName: spanName)
             wait(seconds: 0.5)
 
             self.queue2.sync {
-                let child1 = Global.sharedTracer.startSpan(operationName: "child operation 1", childOf: rootSpan.context)
+                let child1 = tracer.startSpan(operationName: "child operation 1", childOf: rootSpan.context)
                 wait(seconds: 0.5)
                 child1.finish()
 
                 wait(seconds: 0.1)
 
-                let child2 = Global.sharedTracer.startSpan(operationName: "child operation 2", childOf: rootSpan.context)
+                let child2 = tracer.startSpan(operationName: "child operation 2", childOf: rootSpan.context)
                 wait(seconds: 0.5)
 
                 self.queue3.sync {
-                    let grandChild = Global.sharedTracer.startSpan(operationName: "grandchild operation", childOf: child2.context)
+                    let grandChild = tracer.startSpan(operationName: "grandchild operation", childOf: child2.context)
                     wait(seconds: 1)
                     grandChild.finish()
                 }

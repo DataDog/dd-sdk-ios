@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import Datadog
+import DatadogInternal
 
 /// A type managing Session Replay recording.
 internal protocol Recording {
@@ -21,7 +21,7 @@ internal class Recorder: Recording {
     /// The context of recording next snapshot.
     struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
-        let privacy: SessionReplayPrivacy
+        let privacy: PrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -34,7 +34,7 @@ internal class Recorder: Recording {
         let date: Date
 
         internal init(
-            privacy: SessionReplayPrivacy,
+            privacy: PrivacyLevel,
             applicationID: String,
             sessionID: String,
             viewID: String,
@@ -58,9 +58,12 @@ internal class Recorder: Recording {
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: Processing
+    /// Sends telemetry through sdk core.
+    private let telemetry: Telemetry
 
     convenience init(
-        processor: Processing
+        processor: Processing,
+        telemetry: Telemetry
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
@@ -75,7 +78,8 @@ internal class Recorder: Recording {
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: processor
+            snapshotProcessor: processor,
+            telemetry: telemetry
         )
     }
 
@@ -83,12 +87,14 @@ internal class Recorder: Recording {
         uiApplicationSwizzler: UIApplicationSwizzler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
-        snapshotProcessor: Processing
+        snapshotProcessor: Processing,
+        telemetry: Telemetry
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
+        self.telemetry = telemetry
         uiApplicationSwizzler.swizzle()
     }
 
@@ -108,8 +114,8 @@ internal class Recorder: Recording {
             }
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
-        } catch {
-            print("Failed to capture the snapshot: \(error)") // TODO: RUMM-2410 Use `DD.logger` and / or `DD.telemetry`
+        } catch let error {
+            telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }
     }
 }

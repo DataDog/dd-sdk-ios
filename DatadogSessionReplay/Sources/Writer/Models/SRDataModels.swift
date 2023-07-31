@@ -4,6 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
+
 // This file was generated from JSON Schema. Do not modify it directly.
 
 internal protocol SRDataModel: Codable {}

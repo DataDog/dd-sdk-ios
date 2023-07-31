@@ -201,7 +201,7 @@ workflows:
         title: Run unit tests for Datadog - iOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog iOS
+        - scheme: DatadogCore iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
@@ -222,7 +222,7 @@ workflows:
         title: Run unit tests for Datadog - tvOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: Datadog tvOS
+        - scheme: DatadogCore tvOS
         - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
         - is_clean_build: 'yes'
         - test_repetition_mode: 'retry_on_failure'
@@ -243,25 +243,43 @@ workflows:
         title: Run unit tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogSessionReplay
+        - scheme: DatadogSessionReplay iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: DatadogSessionReplay/Package.swift
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-unit-tests.html"
-    # TODO: RUMM-3061 Enable snapshot tests after implementing solution for storing large files
-    # - xcode-test:
-    #     title: Run snapshot tests for Session Replay - iOS Simulator
-    #     run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-    #     inputs:
-    #     - scheme: SRSnapshotTests
-    #     - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
-    #     - should_build_before_test: 'no'
-    #     - is_clean_build: 'no'
-    #     - generate_code_coverage_files: 'yes'
-    #     - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
-    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-ios-unit-tests.html"
+    - script:
+        title: Pull Session Replay snapshots
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make sr-pull-snapshots
+    - script:
+        title: Configure SRSnapshotTests project launch
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - content: |
+            #!/usr/bin/env zsh
+
+            # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
+            # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
+            # variable respected by the main package. Here we export it so it is available in next CI steps:
+            envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
+    - xcode-test:
+        title: Run snapshot tests for Session Replay - iOS Simulator
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - scheme: SRSnapshotTests
+        - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
+        - should_build_before_test: 'no'
+        - is_clean_build: 'no'
+        - generate_code_coverage_files: 'yes'
+        - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
 
   run_integration_tests:
     description: |-
@@ -270,12 +288,13 @@ workflows:
         Only ran if 'DD_RUN_INTEGRATION_TESTS' is '1'.
     steps:
     - script:
-        title: Generate mock server address
+        title: Prepare Integration Tests
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - content: |-
             #!/usr/bin/env zsh
             set -e
+            make prepare-integration-tests
             ./tools/config/generate-http-server-mock-config.sh
     - xcode-test:
         title: Run benchmarks - DatadogBenchmarkTests on iOS Simulator
@@ -292,12 +311,12 @@ workflows:
         title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogIntegrationTests
+        - scheme: IntegrationScenarios
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
+        - project_path: IntegrationTests/IntegrationTests.xcworkspace
         - xcodebuild_options: -testPlan DatadogIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogIntegration-tests.html"
     - script:
@@ -313,12 +332,12 @@ workflows:
         title: Run integration tests for Crash Reporting (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogIntegrationTests
+        - scheme: IntegrationScenarios
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
+        - project_path: IntegrationTests/IntegrationTests.xcworkspace
         - xcodebuild_options: -testPlan DatadogCrashReportingIntegrationTests
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReportingIntegration-tests.html"
 
@@ -550,7 +569,7 @@ workflows:
         - environment_key_list: |-
             DD_RELEASE_GIT_TAG
             DD_RELEASE_DRY_RUN
-        
+
   publish_github_asset:
     before_run:
     - _make_dependencies  # install tooling
