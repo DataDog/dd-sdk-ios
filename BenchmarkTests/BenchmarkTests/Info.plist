@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>DatadogClientToken</key>
+	<string>$(DATADOG_CLIENT_TOKEN)</string>
+	<key>RUMApplicationID</key>
+	<string>$(RUM_APPLICATION_ID)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
