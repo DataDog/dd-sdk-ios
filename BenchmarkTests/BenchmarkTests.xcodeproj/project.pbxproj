@@ -15,6 +15,11 @@
 		6145501A2A796C0E00991762 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614550182A796C0E00991762 /* LaunchScreen.storyboard */; };
 		614550222A796D9F00991762 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550212A796D9F00991762 /* MenuViewController.swift */; };
 		614550242A79755800991762 /* GenericViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550232A79755800991762 /* GenericViewController.swift */; };
+		614550272A79760E00991762 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 614550262A79760E00991762 /* DatadogCore */; };
+		614550292A79760E00991762 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 614550282A79760E00991762 /* DatadogLogs */; };
+		6145502B2A79760E00991762 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 6145502A2A79760E00991762 /* DatadogRUM */; };
+		6145502D2A79760E00991762 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 6145502C2A79760E00991762 /* DatadogSessionReplay */; };
+		6145502F2A79760E00991762 /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = 6145502E2A79760E00991762 /* DatadogTrace */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -35,6 +40,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				614550292A79760E00991762 /* DatadogLogs in Frameworks */,
+				6145502F2A79760E00991762 /* DatadogTrace in Frameworks */,
+				6145502D2A79760E00991762 /* DatadogSessionReplay in Frameworks */,
+				6145502B2A79760E00991762 /* DatadogRUM in Frameworks */,
+				614550272A79760E00991762 /* DatadogCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -46,6 +56,7 @@
 			children = (
 				6145500C2A796C0D00991762 /* BenchmarkTests */,
 				6145500B2A796C0D00991762 /* Products */,
+				614550252A79760E00991762 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -73,6 +84,13 @@
 			path = BenchmarkTests;
 			sourceTree = "<group>";
 		};
+		614550252A79760E00991762 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -89,6 +107,13 @@
 			dependencies = (
 			);
 			name = "Runner iOS";
+			packageProductDependencies = (
+				614550262A79760E00991762 /* DatadogCore */,
+				614550282A79760E00991762 /* DatadogLogs */,
+				6145502A2A79760E00991762 /* DatadogRUM */,
+				6145502C2A79760E00991762 /* DatadogSessionReplay */,
+				6145502E2A79760E00991762 /* DatadogTrace */,
+			);
 			productName = BenchmarkTests;
 			productReference = 6145500A2A796C0D00991762 /* Runner iOS.app */;
 			productType = "com.apple.product-type.application";
@@ -368,6 +393,29 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		614550262A79760E00991762 /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCore;
+		};
+		614550282A79760E00991762 /* DatadogLogs */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogLogs;
+		};
+		6145502A2A79760E00991762 /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogRUM;
+		};
+		6145502C2A79760E00991762 /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
+		};
+		6145502E2A79760E00991762 /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogTrace;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 614550022A796C0D00991762 /* Project object */;
 }
