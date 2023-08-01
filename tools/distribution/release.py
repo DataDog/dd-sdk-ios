@@ -123,6 +123,7 @@ if __name__ == "__main__":
                     CPPodspec(name='DatadogCrashReporting'),
                     CPPodspec(name='DatadogWebViewTracking'),
                     CPPodspec(name='DatadogObjc'),
+                    CPPodspec(name='DatadogAlamofireExtension'),
                     CPPodspec(name='DatadogSDK'),
                     CPPodspec(name='DatadogSDKObjc'),
                     CPPodspec(name='DatadogSDKCrashReporting'),
