@@ -1185,8 +1185,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
-        XCTAssertEqual(error.context?.contextInfo["other_attribute"] as? String, "overwritten")
-        XCTAssertEqual(error.context?.contextInfo["foo"] as? String, "bar")
+        DDAssertDictionariesEqual(error.context!.contextInfo, ["other_attribute": "overwritten", "foo": "bar"])
 
         XCTAssertEqual(scope.attributes["test_attribute"] as? String, "abc")
         XCTAssertEqual(scope.attributes["other_attribute"] as? String, "my attribute")
