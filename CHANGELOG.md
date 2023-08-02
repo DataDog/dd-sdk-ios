@@ -1,5 +1,16 @@
 # Unreleased
 
+# 2.0.0 / 31-07-2023
+
+Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATION.md) to upgrade from `1.x` versions.
+
+- [FEATURE] Session Replay.
+- [FEATURE] Support multiple SDK instances.
+- [IMPROVEMENT] All relevant products (RUM, Trace, Logs, etc.) are now extracted into different modules.
+- [BUGFIX] Module stability: fix name collision. 
+
+# 1.22.0 / 21-07-2023
+- [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
 
 # 1.21.0 / 27-06-2023
@@ -476,6 +487,7 @@
 [#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
 [#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
+[#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
