@@ -1,5 +1,7 @@
 # Unreleased
 
+- [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
+
 # 2.0.0 / 31-07-2023
 
 Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATION.md) to upgrade from `1.x` versions.
@@ -12,7 +14,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 # 1.22.0 / 21-07-2023
 - [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
-- [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
 
 # 1.21.0 / 27-06-2023
 - [BUGFIX] Fix TracingUUID string format. See [#1311][] (Thanks [@changm4n][])
