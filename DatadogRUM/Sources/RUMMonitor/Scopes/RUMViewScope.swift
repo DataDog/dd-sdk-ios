@@ -532,7 +532,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
-        attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -546,7 +545,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             display: nil,
@@ -593,8 +592,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     }
 
     private func sendLongTaskEvent(on command: RUMAddLongTaskCommand, context: DatadogContext, writer: Writer) {
-        attributes.merge(rumCommandAttributes: command.attributes)
-
         let taskDurationInNs = command.duration.toInt64Nanoseconds
         let isFrozenFrame = taskDurationInNs > Constants.frozenFrameThresholdInNs
 
@@ -611,7 +608,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             application: .init(id: self.context.rumApplicationID),
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
-            context: .init(contextInfo: attributes),
+            context: .init(contextInfo: command.attributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context),
             display: nil,

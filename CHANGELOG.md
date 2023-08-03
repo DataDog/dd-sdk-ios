@@ -1,5 +1,7 @@
 # Unreleased
 
+- [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
+
 # 2.0.0 / 31-07-2023
 
 Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATION.md) to upgrade from `1.x` versions.
