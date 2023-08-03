@@ -6,29 +6,54 @@
 
 import UIKit
 
-//let uploader = MetricsUploader()
-
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-
-//        uploader.send()
-
-        benchmark = Benchmark(
-            configuration: .init(expectedDuration: 30),
-            instruments: [
-                MemoryUsageInstrument(samplingInterval: 2)
-            ]
-        )
-
         return true
     }
-
-    // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         return UISceneConfiguration(name: "Default Configuration", sessionRole: connectingSceneSession.role)
     }
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
+
+    /// Presents view controller for given fixture in full screen.
+    func show(viewController: UIViewController, afterPresented: @escaping () -> Void) {
+        viewController.modalPresentationStyle = .fullScreen
+
+        // Present it from the next run-loop to avoid "Unbalanced calls to begin/end appearance transitions" warning:
+        DispatchQueue.main.async {
+            self.keyWindow?.rootViewController?.dismiss(animated: false) {
+                self.keyWindow?.rootViewController?.present(viewController, animated: false) {
+                    afterPresented()
+                }
+            }
+        }
+    }
+
+    /// Goes back to menu screen.
+    func goBackToMenu(afterPresented: @escaping () -> Void) {
+        DispatchQueue.main.async {
+            self.keyWindow?.rootViewController?.dismiss(animated: false) {
+                afterPresented()
+            }
+        }
+    }
+
+    private var keyWindow: UIWindow? {
+        if #available(iOS 15.0, *) {
+            return UIApplication.shared
+                .connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .first { scene in scene.windows.contains { window in window.isKeyWindow } }?
+                .keyWindow
+        } else {
+            let application = UIApplication.value(forKeyPath: #keyPath(UIApplication.shared)) as? UIApplication // swiftlint:disable:this unsafe_uiapplication_shared
+            return application?
+                .connectedScenes
+                .flatMap { ($0 as? UIWindowScene)?.windows ?? [] }
+                .first { $0.isKeyWindow }
+        }
+    }
 }

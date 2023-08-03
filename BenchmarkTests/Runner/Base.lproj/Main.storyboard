@@ -4,6 +4,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -44,6 +45,63 @@
             </objects>
             <point key="canvasLocation" x="-1029" y="-2"/>
         </scene>
+        <!--Benchmark End View Controller-->
+        <scene sceneID="goC-Mu-qBG">
+            <objects>
+                <viewController storyboardIdentifier="BenchmarkEnd" id="by9-kx-Hk5" customClass="BenchmarkEndViewController" customModule="Runner_iOS" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="PHQ-qN-HhB">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Benchmark Has Ended" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SXA-UB-HDj">
+                                <rect key="frame" x="65.666666666666686" y="410" width="262" height="32"/>
+                                <fontDescription key="fontDescription" type="system" weight="medium" pointSize="26"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&lt;status&gt;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zlb-0X-kJu">
+                                <rect key="frame" x="153" y="452" width="87" height="28"/>
+                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="23"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y3r-zW-f03">
+                                <rect key="frame" x="164" y="771" width="65" height="35"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="close">
+                                    <color key="baseForegroundColor" name="DatadogPurple"/>
+                                </buttonConfiguration>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="didTapClose:" destination="by9-kx-Hk5" eventType="touchUpInside" id="TwF-du-4oY"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="VPa-FD-mM1"/>
+                        <color key="backgroundColor" name="DatadogPurple"/>
+                        <constraints>
+                            <constraint firstItem="Y3r-zW-f03" firstAttribute="bottom" secondItem="VPa-FD-mM1" secondAttribute="bottom" constant="-12" id="2N1-6L-Eia"/>
+                            <constraint firstItem="SXA-UB-HDj" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" id="4QV-p6-ypF"/>
+                            <constraint firstItem="SXA-UB-HDj" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="JaL-zt-J6v"/>
+                            <constraint firstItem="Y3r-zW-f03" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="W8k-J8-4U1"/>
+                            <constraint firstItem="zlb-0X-kJu" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" constant="40" id="wMl-iD-bGz"/>
+                            <constraint firstItem="zlb-0X-kJu" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="zQ9-yF-bpX"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="closeButton" destination="Y3r-zW-f03" id="aM5-yj-EZW"/>
+                        <outlet property="statusLabel" destination="zlb-0X-kJu" id="U5o-hn-9xe"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Xxe-bp-Z0R" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-1054" y="757"/>
+        </scene>
         <!--Generic View Controller-->
         <scene sceneID="E2V-GU-0hw">
             <objects>
@@ -67,6 +125,9 @@
         </scene>
     </scenes>
     <resources>
+        <namedColor name="DatadogPurple">
+            <color red="0.3880000114440918" green="0.17299999296665192" blue="0.65100002288818359" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

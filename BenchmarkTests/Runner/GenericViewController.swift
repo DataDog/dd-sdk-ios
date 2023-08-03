@@ -17,7 +17,7 @@ internal class HeapAllocation {
     }
 }
 
-internal class GenericViewController: BenchmarkViewController {
+internal class GenericViewController: UIViewController {
     var heaps: [HeapAllocation] = []
 
     override func viewDidAppear(_ animated: Bool) {
@@ -26,7 +26,7 @@ internal class GenericViewController: BenchmarkViewController {
     }
 
     func allocateMemory() {
-        guard !benchmark.isStarted else {
+        guard BenchmarkController.current?.isRunning == true else {
             return
         }
 

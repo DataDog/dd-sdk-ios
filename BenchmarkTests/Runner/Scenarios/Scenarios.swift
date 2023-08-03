@@ -6,9 +6,6 @@
 
 import Foundation
 
-internal protocol Instrument {
-    func beforeStart(scenario: BenchmarkScenario)
-    func start()
-    func stop()
-    func afterStop()
-}
+internal var allScenarios: [BenchmarkScenario] = [
+    DebugScenario(),
+]

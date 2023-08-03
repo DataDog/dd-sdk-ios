@@ -6,31 +6,13 @@
 
 import UIKit
 
-internal enum Fixture: CaseIterable {
-    case baseline
-
-    var menuItemTitle: String {
-        switch self {
-        case .baseline:
-            return "Baseline"
-        }
-    }
-
-    func instantiateViewController() -> UIViewController {
-        switch self {
-        case .baseline:
-            return UIStoryboard.main.instantiateViewController(withIdentifier: "Generic")
-        }
-    }
-}
-
 internal class MenuViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Fixture.allCases.count
+        return allScenarios.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -38,11 +20,11 @@ internal class MenuViewController: UITableViewController {
 
         if #available(iOS 14.0, *) {
             var content = cell.defaultContentConfiguration()
-            content.text = Fixture.allCases[indexPath.item].menuItemTitle
+            content.text = scenario(for: indexPath).title
             cell.contentConfiguration = content
         } else {
             let label = UILabel(frame: .init(x: 10, y: 0, width: tableView.bounds.width, height: 44))
-            label.text = Fixture.allCases[indexPath.item].menuItemTitle
+            label.text = scenario(for: indexPath).title
             cell.addSubview(label)
         }
 
@@ -51,7 +33,14 @@ internal class MenuViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        show(Fixture.allCases[indexPath.item].instantiateViewController(), sender: self)
+
+        let scenario = scenario(for: indexPath)
+        BenchmarkController.set(scenario: scenario)
+        BenchmarkController.run()
+    }
+
+    private func scenario(for indexPath: IndexPath) -> BenchmarkScenario {
+        return allScenarios[indexPath.item]
     }
 }
 

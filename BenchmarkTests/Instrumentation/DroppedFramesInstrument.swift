@@ -21,14 +21,9 @@ internal class DroppedFramesInstrument {
     func start() { displayLink.isPaused = false }
     func stop() { displayLink.isPaused = true }
 
-    private var previousTimestamp: CFTimeInterval? = nil
-
     @objc
     func step(displaylink: CADisplayLink) {
-        defer { previousTimestamp = displaylink.timestamp }
-        if let previous = previousTimestamp {
-            let remainingTime = displaylink.targetTimestamp - CACurrentMediaTime()
-            print("⏱️ frame duration: \(displaylink.duration.toMs), remaining: \(remainingTime.toMs)")
-        }
+        let remainingTime = displaylink.targetTimestamp - CACurrentMediaTime()
+        print("⏱️ frame duration: \(displaylink.duration.toMs), remaining: \(remainingTime.toMs)")
     }
 }

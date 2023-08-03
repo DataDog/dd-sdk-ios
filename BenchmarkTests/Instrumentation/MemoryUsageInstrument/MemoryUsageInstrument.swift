@@ -31,9 +31,9 @@ internal class MemoryUsageInstrument: Instrument {
         self.timer.tolerance = samplingInterval * timerTolerance
     }
 
-    func beforeStart(configuration: Benchmark.Configuration) {
+    func beforeStart(scenario: BenchmarkScenario) {
         // To not skew measures by instrument allocations too much, pre-allocate most memory before it starts.
-        let estimatedNumberOfSamples = Int(configuration.expectedDuration / samplingInterval)
+        let estimatedNumberOfSamples = Int(scenario.duration / samplingInterval)
         let now = Date()
         for i in (0..<estimatedNumberOfSamples) {
             // Pre-allocate each measure with distinct values to avoid skewing result due memory pages being significantly compressed.
