@@ -9,7 +9,7 @@ import UIKit
 /// Debug scenario, used mainly to debug and callibrate instrumentations.
 internal class DebugScenario: BenchmarkScenario {
     let title: String = "Debug"
-    let duration: TimeInterval = 5
+    let duration: TimeInterval = 10
     let instruments: [Instrument] = [
         MemoryUsageInstrument(samplingInterval: 0.5)
     ]
@@ -22,9 +22,5 @@ internal class DebugScenario: BenchmarkScenario {
         debug("DebugScenario.afterRun()")
     }
 
-    func instantiateInitialViewController() -> UIViewController {
-        let vc = UIViewController()
-        vc.view.backgroundColor = .lightGray
-        return vc
-    }
+    func instantiateInitialViewController() -> UIViewController { UIStoryboard.debug.instantiateInitialViewController()! }
 }

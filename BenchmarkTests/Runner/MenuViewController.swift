@@ -43,7 +43,3 @@ internal class MenuViewController: UITableViewController {
         return allScenarios[indexPath.item]
     }
 }
-
-internal extension UIStoryboard {
-    static var main: UIStoryboard { UIStoryboard(name: "Main", bundle: nil) }
-}

@@ -102,27 +102,6 @@
             </objects>
             <point key="canvasLocation" x="-1054" y="757"/>
         </scene>
-        <!--Generic View Controller-->
-        <scene sceneID="E2V-GU-0hw">
-            <objects>
-                <viewController storyboardIdentifier="Generic" id="avE-2G-f6y" customClass="GenericViewController" customModule="Runner_iOS" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="iCF-Y6-tdt">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" animating="YES" style="medium" translatesAutoresizingMaskIntoConstraints="NO" id="n7z-aW-EuW">
-                                <rect key="frame" x="186" y="416" width="20" height="20"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                            </activityIndicatorView>
-                        </subviews>
-                        <viewLayoutGuide key="safeArea" id="pD2-ho-J2h"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="coA-F1-nZG" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="1047" y="-2"/>
-        </scene>
     </scenes>
     <resources>
         <namedColor name="DatadogPurple">

@@ -4,8 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
+import UIKit
 
 internal var allScenarios: [BenchmarkScenario] = [
     DebugScenario(),
 ]
+
+extension UIStoryboard {
+    static var main: UIStoryboard { UIStoryboard(name: "Main", bundle: nil) }
+    static var debug: UIStoryboard { UIStoryboard(name: "Debug", bundle: nil) }
+}

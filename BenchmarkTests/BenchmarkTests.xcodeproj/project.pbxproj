@@ -14,7 +14,6 @@
 		614550172A796C0E00991762 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 614550162A796C0E00991762 /* Assets.xcassets */; };
 		6145501A2A796C0E00991762 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614550182A796C0E00991762 /* LaunchScreen.storyboard */; };
 		614550222A796D9F00991762 /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550212A796D9F00991762 /* MenuViewController.swift */; };
-		614550242A79755800991762 /* GenericViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550232A79755800991762 /* GenericViewController.swift */; };
 		614550272A79760E00991762 /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = 614550262A79760E00991762 /* DatadogCore */; };
 		614550292A79760E00991762 /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = 614550282A79760E00991762 /* DatadogLogs */; };
 		6145502B2A79760E00991762 /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = 6145502A2A79760E00991762 /* DatadogRUM */; };
@@ -36,6 +35,8 @@
 		619249C52A7BD40D0073AD6B /* BenchmarkScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C42A7BD40D0073AD6B /* BenchmarkScenario.swift */; };
 		619249C82A7BD7C00073AD6B /* DebugScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C72A7BD7C00073AD6B /* DebugScenario.swift */; };
 		619249CA2A7BD9330073AD6B /* Scenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Scenarios.swift */; };
+		619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249CC2A7C05AC0073AD6B /* DebugViewController.swift */; };
+		619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 619249CE2A7C06B20073AD6B /* Debug.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,7 +49,6 @@
 		614550192A796C0E00991762 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		6145501B2A796C0E00991762 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		614550212A796D9F00991762 /* MenuViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuViewController.swift; sourceTree = "<group>"; };
-		614550232A79755800991762 /* GenericViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericViewController.swift; sourceTree = "<group>"; };
 		6145503F2A7976DD00991762 /* BenchmarkTests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = BenchmarkTests.xcconfig; sourceTree = "<group>"; };
 		614550442A79788400991762 /* DatadogSDKTesting.local.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = DatadogSDKTesting.local.xcconfig; sourceTree = "<group>"; };
 		614550452A79788400991762 /* MockServerAddress.local.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = MockServerAddress.local.xcconfig; sourceTree = "<group>"; };
@@ -72,6 +72,8 @@
 		619249C42A7BD40D0073AD6B /* BenchmarkScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkScenario.swift; sourceTree = "<group>"; };
 		619249C72A7BD7C00073AD6B /* DebugScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScenario.swift; sourceTree = "<group>"; };
 		619249C92A7BD9330073AD6B /* Scenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scenarios.swift; sourceTree = "<group>"; };
+		619249CC2A7C05AC0073AD6B /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
+		619249CE2A7C06B20073AD6B /* Debug.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Debug.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,7 +122,6 @@
 				6145500F2A796C0D00991762 /* SceneDelegate.swift */,
 				614550212A796D9F00991762 /* MenuViewController.swift */,
 				614550112A796C0D00991762 /* ViewController.swift */,
-				614550232A79755800991762 /* GenericViewController.swift */,
 				614550132A796C0D00991762 /* Main.storyboard */,
 				614550162A796C0E00991762 /* Assets.xcassets */,
 				614550182A796C0E00991762 /* LaunchScreen.storyboard */,
@@ -198,9 +199,19 @@
 			isa = PBXGroup;
 			children = (
 				619249C92A7BD9330073AD6B /* Scenarios.swift */,
-				619249C72A7BD7C00073AD6B /* DebugScenario.swift */,
+				619249CB2A7C05990073AD6B /* Debug */,
 			);
 			path = Scenarios;
+			sourceTree = "<group>";
+		};
+		619249CB2A7C05990073AD6B /* Debug */ = {
+			isa = PBXGroup;
+			children = (
+				619249C72A7BD7C00073AD6B /* DebugScenario.swift */,
+				619249CC2A7C05AC0073AD6B /* DebugViewController.swift */,
+				619249CE2A7C06B20073AD6B /* Debug.storyboard */,
+			);
+			path = Debug;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -271,6 +282,7 @@
 			files = (
 				6145501A2A796C0E00991762 /* LaunchScreen.storyboard in Resources */,
 				614550172A796C0E00991762 /* Assets.xcassets in Resources */,
+				619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */,
 				614550152A796C0D00991762 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -294,9 +306,9 @@
 				619249CA2A7BD9330073AD6B /* Scenarios.swift in Sources */,
 				619249C52A7BD40D0073AD6B /* BenchmarkScenario.swift in Sources */,
 				6145505E2A7ABF0600991762 /* MemoryUsageInstrument.swift in Sources */,
-				614550242A79755800991762 /* GenericViewController.swift in Sources */,
 				6145506A2A7BADBC00991762 /* BenchmarkViewControllers.swift in Sources */,
 				614550682A7BA75000991762 /* MemorySample.swift in Sources */,
+				619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */,
 				6145505A2A7A6EEC00991762 /* DroppedFramesInstrument.swift in Sources */,
 				619249C82A7BD7C00073AD6B /* DebugScenario.swift in Sources */,
 				614550102A796C0D00991762 /* SceneDelegate.swift in Sources */,
