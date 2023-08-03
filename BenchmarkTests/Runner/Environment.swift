@@ -10,6 +10,7 @@ internal struct Environment {
     struct InfoPlistKey {
         static let clientToken      = "DatadogClientToken"
         static let rumApplicationID = "RUMApplicationID"
+        static let metricsAPIKey    = "MetricsAPIKey"
     }
 
     static func readClientToken() -> String {
@@ -34,5 +35,17 @@ internal struct Environment {
             """)
         }
         return rumApplicationID
+    }
+
+    static func readMetricsAPIKey() -> String {
+        guard let apiKey = Bundle.main.infoDictionary![InfoPlistKey.metricsAPIKey] as? String, !apiKey.isEmpty else {
+            fatalError("""
+            ✋⛔️ Cannot read `\(InfoPlistKey.metricsAPIKey)` from `Info.plist` dictionary.
+            Please update `Datadog.xcconfig` in the repository root with your own
+            RUM application id obtained on datadoghq.com.
+            You might need to run `Product > Clean Build Folder` before retrying.
+            """)
+        }
+        return apiKey
     }
 }

@@ -15,6 +15,10 @@ let package = Package(
             targets: ["DatadogCore"]
         ),
         .library(
+            name: "DatadogInternal",
+            targets: ["DatadogInternal"]
+        ),
+        .library(
             name: "DatadogObjc",
             targets: ["DatadogObjc"]
         ),

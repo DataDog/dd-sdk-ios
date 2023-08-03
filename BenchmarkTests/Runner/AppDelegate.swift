@@ -6,9 +6,21 @@
 
 import UIKit
 
+//let uploader = MetricsUploader()
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+//        uploader.send()
+
+        benchmark = Benchmark(
+            configuration: .init(expectedDuration: 30),
+            instruments: [
+                MemoryUsageInstrument(samplingInterval: 2)
+            ]
+        )
+
         return true
     }
 

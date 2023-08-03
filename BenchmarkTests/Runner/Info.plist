@@ -6,6 +6,8 @@
 	<string>$(DATADOG_CLIENT_TOKEN)</string>
 	<key>RUMApplicationID</key>
 	<string>$(RUM_APPLICATION_ID)</string>
+	<key>MetricsAPIKey</key>
+	<string>$(METRICS_API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

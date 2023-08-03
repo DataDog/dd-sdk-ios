@@ -25,6 +25,14 @@
 		6145505A2A7A6EEC00991762 /* DroppedFramesInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */; };
 		6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */; };
 		6145505E2A7ABF0600991762 /* MemoryUsageInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6145505D2A7ABF0600991762 /* MemoryUsageInstrument.swift */; };
+		614550612A7B8F0A00991762 /* MetricEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550602A7B8F0A00991762 /* MetricEvent.swift */; };
+		614550632A7B93FE00991762 /* MetricsUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550622A7B93FE00991762 /* MetricsUploader.swift */; };
+		614550652A7B991700991762 /* DatadogInternal in Frameworks */ = {isa = PBXBuildFile; productRef = 614550642A7B991700991762 /* DatadogInternal */; };
+		614550682A7BA75000991762 /* MemorySample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550672A7BA75000991762 /* MemorySample.swift */; };
+		6145506A2A7BADBC00991762 /* BenchmarkViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550692A7BADBC00991762 /* BenchmarkViewController.swift */; };
+		6145506F2A7BAF9A00991762 /* Benchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6145506E2A7BAF9A00991762 /* Benchmark.swift */; };
+		614550712A7BB99400991762 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550702A7BB99400991762 /* Utils.swift */; };
+		614550732A7BBA2E00991762 /* Instrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550722A7BBA2E00991762 /* Instrument.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +59,13 @@
 		614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DroppedFramesInstrument.swift; sourceTree = "<group>"; };
 		6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameDurationInstrument.swift; sourceTree = "<group>"; };
 		6145505D2A7ABF0600991762 /* MemoryUsageInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryUsageInstrument.swift; sourceTree = "<group>"; };
+		614550602A7B8F0A00991762 /* MetricEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricEvent.swift; sourceTree = "<group>"; };
+		614550622A7B93FE00991762 /* MetricsUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsUploader.swift; sourceTree = "<group>"; };
+		614550672A7BA75000991762 /* MemorySample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemorySample.swift; sourceTree = "<group>"; };
+		614550692A7BADBC00991762 /* BenchmarkViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkViewController.swift; sourceTree = "<group>"; };
+		6145506E2A7BAF9A00991762 /* Benchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Benchmark.swift; sourceTree = "<group>"; };
+		614550702A7BB99400991762 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		614550722A7BBA2E00991762 /* Instrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Instrument.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +75,7 @@
 			files = (
 				614550292A79760E00991762 /* DatadogLogs in Frameworks */,
 				6145502F2A79760E00991762 /* DatadogTrace in Frameworks */,
+				614550652A7B991700991762 /* DatadogInternal in Frameworks */,
 				6145502D2A79760E00991762 /* DatadogSessionReplay in Frameworks */,
 				6145502B2A79760E00991762 /* DatadogRUM in Frameworks */,
 				614550272A79760E00991762 /* DatadogCore in Frameworks */,
@@ -131,12 +147,43 @@
 		614550542A7A5CE500991762 /* Instrumentation */ = {
 			isa = PBXGroup;
 			children = (
+				6145506D2A7BAF8D00991762 /* Benchmark */,
+				614550662A7BA70C00991762 /* MemoryUsageInstrument */,
+				6145505F2A7B8EFD00991762 /* Metric */,
 				614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */,
 				614550552A7A5D1400991762 /* Profiler.swift */,
 				6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */,
-				6145505D2A7ABF0600991762 /* MemoryUsageInstrument.swift */,
+				614550702A7BB99400991762 /* Utils.swift */,
 			);
 			path = Instrumentation;
+			sourceTree = "<group>";
+		};
+		6145505F2A7B8EFD00991762 /* Metric */ = {
+			isa = PBXGroup;
+			children = (
+				614550602A7B8F0A00991762 /* MetricEvent.swift */,
+				614550622A7B93FE00991762 /* MetricsUploader.swift */,
+			);
+			path = Metric;
+			sourceTree = "<group>";
+		};
+		614550662A7BA70C00991762 /* MemoryUsageInstrument */ = {
+			isa = PBXGroup;
+			children = (
+				6145505D2A7ABF0600991762 /* MemoryUsageInstrument.swift */,
+				614550672A7BA75000991762 /* MemorySample.swift */,
+			);
+			path = MemoryUsageInstrument;
+			sourceTree = "<group>";
+		};
+		6145506D2A7BAF8D00991762 /* Benchmark */ = {
+			isa = PBXGroup;
+			children = (
+				614550692A7BADBC00991762 /* BenchmarkViewController.swift */,
+				6145506E2A7BAF9A00991762 /* Benchmark.swift */,
+				614550722A7BBA2E00991762 /* Instrument.swift */,
+			);
+			path = Benchmark;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +208,7 @@
 				6145502A2A79760E00991762 /* DatadogRUM */,
 				6145502C2A79760E00991762 /* DatadogSessionReplay */,
 				6145502E2A79760E00991762 /* DatadogTrace */,
+				614550642A7B991700991762 /* DatadogInternal */,
 			);
 			productName = BenchmarkTests;
 			productReference = 6145500A2A796C0D00991762 /* Runner iOS.app */;
@@ -218,15 +266,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				614550122A796C0D00991762 /* ViewController.swift in Sources */,
+				6145506F2A7BAF9A00991762 /* Benchmark.swift in Sources */,
 				6145500E2A796C0D00991762 /* AppDelegate.swift in Sources */,
+				614550612A7B8F0A00991762 /* MetricEvent.swift in Sources */,
 				6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */,
 				614550562A7A5D1400991762 /* Profiler.swift in Sources */,
 				614550532A7A5CB800991762 /* Environment.swift in Sources */,
+				614550732A7BBA2E00991762 /* Instrument.swift in Sources */,
+				614550712A7BB99400991762 /* Utils.swift in Sources */,
 				6145505E2A7ABF0600991762 /* MemoryUsageInstrument.swift in Sources */,
 				614550242A79755800991762 /* GenericViewController.swift in Sources */,
+				6145506A2A7BADBC00991762 /* BenchmarkViewController.swift in Sources */,
+				614550682A7BA75000991762 /* MemorySample.swift in Sources */,
 				6145505A2A7A6EEC00991762 /* DroppedFramesInstrument.swift in Sources */,
 				614550102A796C0D00991762 /* SceneDelegate.swift in Sources */,
 				614550222A796D9F00991762 /* MenuViewController.swift in Sources */,
+				614550632A7B93FE00991762 /* MetricsUploader.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -469,6 +524,10 @@
 		6145502E2A79760E00991762 /* DatadogTrace */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogTrace;
+		};
+		614550642A7B991700991762 /* DatadogInternal */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogInternal;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

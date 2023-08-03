@@ -17,40 +17,23 @@ internal class HeapAllocation {
     }
 }
 
-var heaps: [HeapAllocation] = []
+internal class GenericViewController: BenchmarkViewController {
+    var heaps: [HeapAllocation] = []
 
-internal class GenericViewController: UIViewController {
-    let droppedFramesInstrument: DroppedFramesInstrument? = nil
-//    let droppedFramesInstrument: DroppedFramesInstrument? = DroppedFramesInstrument()
-//    let frameDurationInstrument: FrameDurationInstrument? = FrameDurationInstrument()
-    let frameDurationInstrument: FrameDurationInstrument? = nil
-    let memoryUsageInstrument: MemoryUsageInstrument? = MemoryUsageInstrument()
-//    let memoryUsageInstrument: MemoryUsageInstrument? = nil
-
-    override func viewDidLoad() {
-        forceSleep()
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        allocateMemory()
     }
 
-    func forceSleep() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            print("⏱️😴 will sleep")
-            Thread.sleep(forTimeInterval: 0.1)
-
-            heaps.append(HeapAllocation(dataSize: 1_024 * 1_024 * 10))
-
-            self.forceSleep()
+    func allocateMemory() {
+        guard !benchmark.isStarted else {
+            return
         }
-    }
 
-    override func viewWillAppear(_ animated: Bool) {
-        droppedFramesInstrument?.start()
-        frameDurationInstrument?.start()
-        memoryUsageInstrument?.start()
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        droppedFramesInstrument?.stop()
-        frameDurationInstrument?.stop()
-        memoryUsageInstrument?.stop()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+            print("⏱️ +2MB")
+            self?.heaps.append(HeapAllocation(dataSize: 1_024 * 1_024 * 2))
+            self?.allocateMemory()
+        }
     }
 }
