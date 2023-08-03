@@ -37,7 +37,7 @@ internal class BenchmarkController {
 
     private func run() {
         let app = UIApplication.shared.delegate as! AppDelegate
-        let vc = BenchmarkNavigationViewController(rootViewController: scenario.instantiateInitialViewController())
+        let vc = scenario.instantiateInitialViewController()
 
         beforeStart()
         scenario.beforeRun()
