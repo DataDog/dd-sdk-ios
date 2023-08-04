@@ -37,11 +37,11 @@ internal class BenchmarkController {
 
     private func run() {
         let app = UIApplication.shared.delegate as! AppDelegate
-        let vc = scenario.instantiateInitialViewController()
-
         beforeStart()
         scenario.beforeRun()
-        app.show(viewController: vc) { [weak self] in
+
+        let scenarioVC = scenario.instantiateInitialViewController()
+        app.show(viewController: scenarioVC) { [weak self] in
             self?.start()
         }
 

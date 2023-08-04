@@ -22,12 +22,26 @@ internal class SessionReplayScenario: BenchmarkScenario {
         self.runType = runType
     }
 
+    private var rootViewController: UIViewController! = nil
+
     func beforeRun() {
         debug("SessionReplayScenario.beforeRun()")
+
+        // Pre-load all view controllers before test is started, to ease memory allocations during the test.
+        rootViewController = SessionReplayScenarioViewController(
+            fixtureViewControllers: Fixture.allCases.map { fixture in
+                let vc = fixture.instantiateViewController()
+                vc.loadView()
+                return vc
+            },
+            fixtureChangeInterval: fixtureChangeInterval
+        )
+
         guard runType == .instrumented else {
             return
         }
 
+        // Enable SDK, RUM and SR:
         let sdkConfig = Datadog.Configuration(clientToken: Environment.readClientToken(), env: Environment.readEnv())
         Datadog.initialize(with: sdkConfig, trackingConsent: .granted)
 
@@ -62,6 +76,6 @@ internal class SessionReplayScenario: BenchmarkScenario {
     }
 
     func instantiateInitialViewController() -> UIViewController {
-        SessionReplayScenarioViewController(fixtureChangeInterval: fixtureChangeInterval)
+        rootViewController
     }
 }

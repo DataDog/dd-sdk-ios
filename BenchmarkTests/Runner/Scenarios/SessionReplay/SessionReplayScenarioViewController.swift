@@ -6,24 +6,15 @@
 
 import UIKit
 
-private var currentFixtureIndex = 0
-
-private func nextFixture() -> Fixture {
-    currentFixtureIndex = (currentFixtureIndex + 1) % Fixture.allCases.count
-    return Fixture.allCases[currentFixtureIndex]
-}
-
-private func currentFixture() -> Fixture {
-    Fixture.allCases[currentFixtureIndex]
-}
-
 internal class SessionReplayScenarioViewController: UINavigationController {
-    private let fixtureChangeInterval: TimeInterval
+    private let fixtures: [UIViewController]
+    private let changeInterval: TimeInterval
+    private var current = 0
 
-    init(fixtureChangeInterval: TimeInterval) {
-        currentFixtureIndex = 0
-        self.fixtureChangeInterval = fixtureChangeInterval
-        super.init(rootViewController: currentFixture().instantiateViewController())
+    init(fixtureViewControllers: [UIViewController], fixtureChangeInterval: TimeInterval) {
+        self.fixtures = fixtureViewControllers
+        self.changeInterval = fixtureChangeInterval
+        super.init(rootViewController: fixtureViewControllers[0])
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -36,12 +27,13 @@ internal class SessionReplayScenarioViewController: UINavigationController {
     }
 
     private func keepChangingFixture() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + fixtureChangeInterval) { [weak self] in
-            if BenchmarkController.current?.isRunning == true {
-                let fixture = nextFixture()
-                self?.viewControllers = [fixture.instantiateViewController()]
-                self?.keepChangingFixture()
+        DispatchQueue.main.asyncAfter(deadline: .now() + changeInterval) { [weak self] in
+            guard let self = self, BenchmarkController.current?.isRunning == true else {
+                return
             }
+            self.current = (self.current + 1) % self.fixtures.count
+            self.viewControllers = [fixtures[self.current]]
+            self.keepChangingFixture()
         }
     }
 }
