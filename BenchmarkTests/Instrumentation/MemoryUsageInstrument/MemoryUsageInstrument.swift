@@ -11,24 +11,38 @@ internal class MemoryUsageInstrument: Instrument {
         /// POSIX time in seconds (since 1/1/1970).
         var timestamp: TimeInterval
         /// Memory footprint in bytes.
-        var footprint: Double?
+        var footprint: Double
     }
 
     private var measures: [Measure] = []
     private var currentMeasureIndex = 0
 
+    private let uploader: MetricUploader
     private let samplingInterval: TimeInterval
     private var timer: Timer!
 
-    init(samplingInterval: TimeInterval) {
+    init(samplingInterval: TimeInterval, metricUploader: MetricUploader) {
         // Ref.: https://developer.apple.com/documentation/foundation/timer
         // > A general rule, set the tolerance to at least 10% of the interval, for a repeating timer.
         // > Even a small amount of tolerance has significant positive impact on the power usage of the application.
         let timerTolerance: Double = 0.1
 
+        self.uploader = metricUploader
         self.samplingInterval = samplingInterval
         self.timer = Timer(timeInterval: samplingInterval, repeats: true) { [weak self] _ in self?.step() }
         self.timer.tolerance = samplingInterval * timerTolerance
+    }
+
+    private func step() {
+        defer { currentMeasureIndex += 1 }
+        guard currentMeasureIndex < measures.count else {
+            return
+        }
+
+        if let value = currentMemoryFootprint() {
+            measures[currentMeasureIndex].timestamp = Date().timeIntervalSince1970
+            measures[currentMeasureIndex].footprint = value
+        }
     }
 
     func beforeStart(scenario: BenchmarkScenario) {
@@ -49,19 +63,14 @@ internal class MemoryUsageInstrument: Instrument {
     func start() { RunLoop.main.add(timer, forMode: .common) }
     func stop() { timer.invalidate() }
 
-    func afterStop() {
+    func afterStop(scenario: BenchmarkScenario, completion: @escaping (Bool) -> Void) {
         for (idx, measure) in measures.enumerated() {
-            print("⏱️ Measure #\(idx): \(measure.footprint?.prettyKB ?? "???") -- \(Date(timeIntervalSince1970: measure.timestamp))")
-        }
-    }
-
-    private func step() {
-        defer { currentMeasureIndex += 1 }
-        guard currentMeasureIndex < measures.count else {
-            return
+            debug("Measure #\(idx): \(measure.footprint.prettyKB) -- \(Date(timeIntervalSince1970: measure.timestamp))")
         }
 
-        measures[currentMeasureIndex].timestamp = Date().timeIntervalSince1970
-        measures[currentMeasureIndex].footprint = currentMemoryFootprint()
+        uploader.send(
+            metricPoints: measures.map { .init(timestamp: UInt64($0.timestamp), value: $0.footprint) },
+            completion: completion
+        )
     }
 }

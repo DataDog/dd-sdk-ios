@@ -8,11 +8,9 @@ import UIKit
 
 /// Debug scenario, used mainly to debug and callibrate instrumentations.
 internal class DebugScenario: BenchmarkScenario {
-    let title: String = "Debug"
+    let title = "Debug"
+    let scenarioTagValue = "debug"
     let duration: TimeInterval = 10
-    let instruments: [Instrument] = [
-        MemoryUsageInstrument(samplingInterval: 0.5)
-    ]
 
     func beforeRun() {
         debug("DebugScenario.beforeRun()")
@@ -20,6 +18,19 @@ internal class DebugScenario: BenchmarkScenario {
 
     func afterRun() {
         debug("DebugScenario.afterRun()")
+    }
+
+    func instruments() -> [Instrument] {
+        let memoryMetric = MetricConfiguration(
+            name: "benchmark.ios.debug.memory",
+            tags: Environment.readCommonMetricTags() + ["run:\(ScenarioRunType.baseline)"],
+            type: .gauge
+        )
+        let memory = MemoryUsageInstrument(
+            samplingInterval: 0.5,
+            metricUploader: MetricUploader(metricConfiguration: memoryMetric)
+        )
+        return [memory]
     }
 
     func instantiateInitialViewController() -> UIViewController { UIStoryboard.debug.instantiateInitialViewController()! }

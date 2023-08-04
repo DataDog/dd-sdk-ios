@@ -6,8 +6,15 @@
 
 import UIKit
 
+internal enum ScenarioRunType: String {
+    case baseline = "baseline"
+    case instrumented = "instrumented"
+}
+
 internal var allScenarios: [BenchmarkScenario] = [
     DebugScenario(),
+    SessionReplayScenario(runType: .baseline),
+    SessionReplayScenario(runType: .instrumented),
 ]
 
 extension UIStoryboard {

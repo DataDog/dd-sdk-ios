@@ -8,12 +8,11 @@ import UIKit
 
 internal protocol BenchmarkScenario {
     var title: String { get }
-
     var duration: TimeInterval { get }
-    var instruments: [Instrument] { get }
 
     func beforeRun()
     func afterRun()
 
     func instantiateInitialViewController() -> UIViewController
+    func instruments() -> [Instrument]
 }

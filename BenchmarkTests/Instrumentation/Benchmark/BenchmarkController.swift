@@ -19,7 +19,7 @@ internal class BenchmarkController {
     private(set) var isRunning = false
 
     private init(scenario: BenchmarkScenario) {
-        self.instruments = scenario.instruments
+        self.instruments = scenario.instruments()
         self.scenario = scenario
     }
 
@@ -92,7 +92,23 @@ internal class BenchmarkController {
 
     private func afterStop(completion: @escaping (Bool) -> Void) {
         debug("Benchmark.afterStop()")
-        instruments.forEach { $0.afterStop() }
-        completion(true)
+
+        var instrumentResults: [Bool] = []
+
+        let group = DispatchGroup()
+        instruments.forEach { instrument in
+            group.enter()
+            instrument.afterStop(scenario: scenario) { result in
+                DispatchQueue.main.async {
+                    instrumentResults.append(result)
+                    group.leave()
+                }
+            }
+        }
+
+        group.notify(queue: .main) {
+            let result = instrumentResults.reduce(true, { current, next in current && next })
+            completion(result)
+        }
     }
 }

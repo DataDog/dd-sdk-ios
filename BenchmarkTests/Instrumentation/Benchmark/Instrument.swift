@@ -10,5 +10,5 @@ internal protocol Instrument {
     func beforeStart(scenario: BenchmarkScenario)
     func start()
     func stop()
-    func afterStop()
+    func afterStop(scenario: BenchmarkScenario, completion: @escaping (Bool) -> Void)
 }
