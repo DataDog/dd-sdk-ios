@@ -16,8 +16,6 @@ internal class BenchmarkController {
     private let instruments: [Instrument]
     internal let scenario: BenchmarkScenario
 
-    private(set) var isRunning = false
-
     private init(scenario: BenchmarkScenario) {
         self.instruments = scenario.instruments()
         self.scenario = scenario
@@ -26,28 +24,35 @@ internal class BenchmarkController {
     // MARK: - Control
 
     static func set(scenario: BenchmarkScenario) {
-        precondition((current?.isRunning ?? false) == false, "Previous benchmark must end before starting a new one")
+        precondition(current == nil, "Previous benchmark must end before starting a new one")
         current = BenchmarkController(scenario: scenario)
     }
 
     static func run() {
-        precondition((current?.isRunning ?? false) == false, "Previous benchmark must end before starting a new one")
         current?.run()
+    }
+
+    func startMeasurements() {
+        precondition(!scenario.startMeasurementsAutomatically, "Measurements for this scenario will start automatically")
+        startInstruments()
     }
 
     private func run() {
         let app = UIApplication.shared.delegate as! AppDelegate
-        beforeStart()
-        scenario.beforeRun()
+        setUpInstruments()
+        scenario.setUp()
 
         let scenarioVC = scenario.instantiateInitialViewController()
+        let autoStart = scenario.startMeasurementsAutomatically
         app.show(viewController: scenarioVC) { [weak self] in
-            self?.start()
+            if autoStart {
+                self?.startInstruments()
+            }
         }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + scenario.duration) { [weak self] in
-            self?.stop()
-            self?.scenario.afterRun()
+            self?.stopInstruments()
+            self?.scenario.tearDown()
 
             let endVC = UIStoryboard.main.instantiateViewController(withIdentifier: BenchmarkEndViewController.storyboardID) as! BenchmarkEndViewController
             endVC.loadViewIfNeeded()
@@ -60,7 +65,7 @@ internal class BenchmarkController {
                 }
             }
             app.show(viewController: endVC) { [weak self] in
-                self?.afterStop { success in
+                self?.tearDownInstruments { success in
                     DispatchQueue.main.async {
                         if success {
                             endVC.statusLabel.text = "Data upload succeeded."
@@ -74,25 +79,23 @@ internal class BenchmarkController {
         }
     }
 
-    private func beforeStart() {
-        debug("Benchmark.beforeStart()")
+    private func setUpInstruments() {
+        debug("Benchmark.setUpInstruments()")
         instruments.forEach { $0.beforeStart(scenario: scenario) }
     }
 
-    private func start() {
-        debug("Benchmark.start()")
-        isRunning = true
+    private func startInstruments() {
+        debug("Benchmark.startInstruments()")
         instruments.forEach { $0.start() }
     }
 
-    private func stop() {
-        debug("Benchmark.stop()")
-        isRunning = false
+    private func stopInstruments() {
+        debug("Benchmark.stopInstruments()")
         instruments.forEach { $0.stop() }
     }
 
-    private func afterStop(completion: @escaping (Bool) -> Void) {
-        debug("Benchmark.afterStop()")
+    private func tearDownInstruments(completion: @escaping (Bool) -> Void) {
+        debug("Benchmark.tearDownInstruments()")
 
         var instrumentResults: [Bool] = []
 

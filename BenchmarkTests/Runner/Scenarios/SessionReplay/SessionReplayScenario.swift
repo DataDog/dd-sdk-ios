@@ -15,27 +15,27 @@ internal class SessionReplayScenario: BenchmarkScenario {
 
     var title: String { "Session Replay (\(runType))" }
 
-    let duration: TimeInterval = Environment.isDebug ? 10 : Synthetics.testDuration
-    let fixtureChangeInterval: TimeInterval = Environment.isDebug ? 1 : 10
+    let duration: TimeInterval = Environment.isDebug ? 20 : Synthetics.testDuration
+    let fixtureChangeInterval: TimeInterval = Environment.isDebug ? 0.5 : 10
 
     init(runType: ScenarioRunType) {
         self.runType = runType
     }
 
-    private var rootViewController: UIViewController! = nil
+    private var rootViewController: SessionReplayScenarioViewController! = nil
 
-    func beforeRun() {
-        debug("SessionReplayScenario.beforeRun()")
+    func setUp() {
+        debug("SessionReplayScenario.setUp()")
 
         // Pre-load all view controllers before test is started, to ease memory allocations during the test.
         rootViewController = SessionReplayScenarioViewController(
-            fixtureViewControllers: Fixture.allCases.map { fixture in
-                let vc = fixture.instantiateViewController()
-                vc.loadView()
-                return vc
-            },
+            fixtureViewControllers: Fixture.allCases.map { $0.instantiateViewController() },
             fixtureChangeInterval: fixtureChangeInterval
         )
+        rootViewController.onceAfterAllFixturesLoaded = {
+            debug("All fixtures loaded and displayed, start measurements.")
+            BenchmarkController.current?.startMeasurements()
+        }
 
         guard runType == .instrumented else {
             return
@@ -60,8 +60,8 @@ internal class SessionReplayScenario: BenchmarkScenario {
         }
     }
 
-    func afterRun() {
-        debug("SessionReplayScenario.afterRun()")
+    func tearDown() {
+        debug("SessionReplayScenario.tearDown()")
         guard runType == .instrumented else {
             return
         }
@@ -80,6 +80,10 @@ internal class SessionReplayScenario: BenchmarkScenario {
         )
         return [memory]
     }
+
+    /// Measurements will be started after each fixture is displayed at least once.
+    /// This is to further ease memory allocations during the test.
+    let startMeasurementsAutomatically = false
 
     func instantiateInitialViewController() -> UIViewController {
         rootViewController

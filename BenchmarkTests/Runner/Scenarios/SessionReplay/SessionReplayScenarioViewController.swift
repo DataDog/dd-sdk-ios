@@ -12,6 +12,9 @@ internal class SessionReplayScenarioViewController: UINavigationController {
     private var schedule: Schedule!
     private var current = 0
 
+    /// Called once, after all fixtures were loaded and displayed.
+    var onceAfterAllFixturesLoaded: (() -> Void)? = nil
+
     init(fixtureViewControllers: [UIViewController], fixtureChangeInterval: TimeInterval) {
         self.fixtures = fixtureViewControllers
         self.changeInterval = fixtureChangeInterval
@@ -31,6 +34,11 @@ internal class SessionReplayScenarioViewController: UINavigationController {
     }
 
     private func changeFixture() {
+        if (current + 1) >= fixtures.count && onceAfterAllFixturesLoaded != nil {
+            onceAfterAllFixturesLoaded?()
+            onceAfterAllFixturesLoaded = nil
+        }
+
         current = (current + 1) % fixtures.count
         self.viewControllers = [fixtures[current]]
     }

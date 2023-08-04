@@ -21,6 +21,7 @@ internal class DebugViewController: UIViewController {
         }
     }
 
+    private var schedule: Schedule!
     @IBOutlet weak var allocatedMemoryLabel: UILabel!
 
     private var allocations: [HeapAllocation] = [] {
@@ -31,15 +32,12 @@ internal class DebugViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        keepAllocatingHeapMemory()
+        schedule = Schedule(interval: 0.5, operation: { [weak self] in
+            self?.allocateHeapMemory()
+        })
     }
 
-    private func keepAllocatingHeapMemory() {
+    private func allocateHeapMemory() {
         allocations.append(HeapAllocation())
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            if BenchmarkController.current?.isRunning == true {
-                self?.keepAllocatingHeapMemory()
-            }
-        }
     }
 }

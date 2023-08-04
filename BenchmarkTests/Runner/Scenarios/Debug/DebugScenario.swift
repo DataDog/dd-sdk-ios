@@ -11,12 +11,12 @@ internal class DebugScenario: BenchmarkScenario {
     let title = "Debug"
     let duration: TimeInterval = 10
 
-    func beforeRun() {
-        debug("DebugScenario.beforeRun()")
+    func setUp() {
+        debug("DebugScenario.setUp()")
     }
 
-    func afterRun() {
-        debug("DebugScenario.afterRun()")
+    func tearDown() {
+        debug("DebugScenario.tearDown()")
     }
 
     func instruments() -> [Instrument] {
@@ -31,6 +31,8 @@ internal class DebugScenario: BenchmarkScenario {
         )
         return [memory]
     }
+
+    let startMeasurementsAutomatically = true
 
     func instantiateInitialViewController() -> UIViewController { UIStoryboard.debug.instantiateInitialViewController()! }
 }

@@ -19,8 +19,8 @@ internal class RUMScenario: BenchmarkScenario {
         self.runType = runType
     }
 
-    func beforeRun() {
-        debug("RUMScenario.beforeRun()")
+    func setUp() {
+        debug("RUMScenario.setUp()")
         guard runType == .instrumented else {
             return
         }
@@ -39,8 +39,8 @@ internal class RUMScenario: BenchmarkScenario {
         }
     }
 
-    func afterRun() {
-        debug("RUMScenario.afterRun()")
+    func tearDown() {
+        debug("RUMScenario.tearDown()")
         guard runType == .instrumented else {
             return
         }
@@ -60,6 +60,8 @@ internal class RUMScenario: BenchmarkScenario {
         return [memory]
 
     }
+
+    let startMeasurementsAutomatically = true
 
     func instantiateInitialViewController() -> UIViewController { RUMScenarioViewController(labelText: "Sending RUM events...") }
 }

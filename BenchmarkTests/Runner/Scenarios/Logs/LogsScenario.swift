@@ -19,8 +19,8 @@ internal class LogsScenario: BenchmarkScenario {
         self.runType = runType
     }
 
-    func beforeRun() {
-        debug("LogsScenario.beforeRun()")
+    func setUp() {
+        debug("LogsScenario.setUp()")
         guard runType == .instrumented else {
             return
         }
@@ -37,8 +37,8 @@ internal class LogsScenario: BenchmarkScenario {
         }
     }
 
-    func afterRun() {
-        debug("LogsScenario.afterRun()")
+    func tearDown() {
+        debug("LogsScenario.tearDown()")
         guard runType == .instrumented else {
             return
         }
@@ -56,8 +56,9 @@ internal class LogsScenario: BenchmarkScenario {
             metricUploader: MetricUploader(metricConfiguration: memoryMetric)
         )
         return [memory]
-
     }
+
+    let startMeasurementsAutomatically = true
 
     func instantiateInitialViewController() -> UIViewController { LogsScenarioViewController(labelText: "Sending logs...") }
 }

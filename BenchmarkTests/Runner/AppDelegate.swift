@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
 
     /// Presents view controller for given fixture in full screen.
-    func show(viewController: UIViewController, afterPresented: @escaping () -> Void) {
+    func show(viewController: UIViewController, afterPresented: @escaping () -> Void = {}) {
         viewController.modalPresentationStyle = .fullScreen
 
         // Present it from the next run-loop to avoid "Unbalanced calls to begin/end appearance transitions" warning:
