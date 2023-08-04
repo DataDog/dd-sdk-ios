@@ -84,7 +84,7 @@ internal struct Environment {
     static func readCommonMetricTags() -> [String] {
         var tags = [
             "source:ios",
-            "service:ios-benchmark",
+            "service:\(service)",
         ]
 
         #if DEBUG
@@ -103,4 +103,6 @@ internal struct Environment {
         return false
         #endif
     }
+
+    static let service = "ios-benchmark"
 }

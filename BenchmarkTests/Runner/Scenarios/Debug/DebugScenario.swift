@@ -9,7 +9,6 @@ import UIKit
 /// Debug scenario, used mainly to debug and callibrate instrumentations.
 internal class DebugScenario: BenchmarkScenario {
     let title = "Debug"
-    let scenarioTagValue = "debug"
     let duration: TimeInterval = 10
 
     func beforeRun() {

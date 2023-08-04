@@ -42,7 +42,8 @@ internal class SessionReplayScenario: BenchmarkScenario {
         }
 
         // Enable SDK, RUM and SR:
-        let sdkConfig = Datadog.Configuration(clientToken: Environment.readClientToken(), env: Environment.readEnv())
+        var sdkConfig = Datadog.Configuration(clientToken: Environment.readClientToken(), env: Environment.readEnv())
+        sdkConfig.service = Environment.service
         Datadog.initialize(with: sdkConfig, trackingConsent: .granted)
 
         var rumConfig = RUM.Configuration(applicationID: Environment.readRUMApplicationID())
@@ -52,6 +53,11 @@ internal class SessionReplayScenario: BenchmarkScenario {
 
         let srConfig = SessionReplay.Configuration(replaySampleRate: 100)
         SessionReplay.enable(with: srConfig)
+
+        if Environment.isDebug {
+            Datadog.verbosityLevel = .debug
+            RUMMonitor.shared().debug = true
+        }
     }
 
     func afterRun() {
