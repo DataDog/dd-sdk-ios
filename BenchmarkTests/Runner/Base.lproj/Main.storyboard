@@ -81,11 +81,19 @@
                                     <action selector="didTapClose:" destination="by9-kx-Hk5" eventType="touchUpInside" id="TwF-du-4oY"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&lt;details&gt;" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9BK-vW-VXF">
+                                <rect key="frame" x="159.66666666666663" y="505" width="74" height="22"/>
+                                <fontDescription key="fontDescription" type="system" weight="light" pointSize="18"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="VPa-FD-mM1"/>
                         <color key="backgroundColor" name="DatadogPurple"/>
                         <constraints>
+                            <constraint firstItem="9BK-vW-VXF" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="1ru-hU-dWe"/>
                             <constraint firstItem="Y3r-zW-f03" firstAttribute="bottom" secondItem="VPa-FD-mM1" secondAttribute="bottom" constant="-12" id="2N1-6L-Eia"/>
+                            <constraint firstItem="9BK-vW-VXF" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" constant="90" id="3MD-26-jU6"/>
                             <constraint firstItem="SXA-UB-HDj" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" id="4QV-p6-ypF"/>
                             <constraint firstItem="SXA-UB-HDj" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="JaL-zt-J6v"/>
                             <constraint firstItem="Y3r-zW-f03" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="W8k-J8-4U1"/>
@@ -95,6 +103,7 @@
                     </view>
                     <connections>
                         <outlet property="closeButton" destination="Y3r-zW-f03" id="aM5-yj-EZW"/>
+                        <outlet property="detailsLabel" destination="9BK-vW-VXF" id="cZ6-LU-tBf"/>
                         <outlet property="statusLabel" destination="zlb-0X-kJu" id="U5o-hn-9xe"/>
                     </connections>
                 </viewController>

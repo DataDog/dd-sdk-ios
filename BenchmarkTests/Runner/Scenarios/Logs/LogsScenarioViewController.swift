@@ -8,27 +8,19 @@ import UIKit
 import DatadogLogs
 
 internal class LogsScenarioViewController: GenericViewController {
-    private let logInterval: TimeInterval = 1
     private var logger: LoggerProtocol!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         logger = Logger.create()
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        keepSendingLogs()
+        schedule(operation: { [weak self] in self?.sendLog() }, every: 1)
     }
 
-    private func keepSendingLogs() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + logInterval) { [weak self] in
-            guard let self = self, BenchmarkController.current?.isRunning == true else {
-                return
-            }
-            logger.debug("Benchmark debug message", attributes: ["attribute": "value"])
-            self.keepSendingLogs()
-        }
+    private func sendLog() {
+        logger.debug("Benchmark debug message", attributes: ["attribute": "value"])
     }
 }

@@ -48,6 +48,9 @@
 		614C80AD2A7D573A004AF448 /* LogsScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80AC2A7D573A004AF448 /* LogsScenario.swift */; };
 		614C80AF2A7D5947004AF448 /* GenericViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80AE2A7D5947004AF448 /* GenericViewController.swift */; };
 		614C80B12A7D5965004AF448 /* LogsScenarioViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80B02A7D5965004AF448 /* LogsScenarioViewController.swift */; };
+		614C80B42A7D6981004AF448 /* RUMScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80B32A7D6981004AF448 /* RUMScenario.swift */; };
+		614C80B62A7D6A3F004AF448 /* RUMScenarioViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80B52A7D6A3F004AF448 /* RUMScenarioViewController.swift */; };
+		614C80B82A7D79FA004AF448 /* Synthetics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80B72A7D79FA004AF448 /* Synthetics.swift */; };
 		619249C52A7BD40D0073AD6B /* BenchmarkScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C42A7BD40D0073AD6B /* BenchmarkScenario.swift */; };
 		619249C82A7BD7C00073AD6B /* DebugScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C72A7BD7C00073AD6B /* DebugScenario.swift */; };
 		619249CA2A7BD9330073AD6B /* Scenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Scenarios.swift */; };
@@ -101,6 +104,9 @@
 		614C80AC2A7D573A004AF448 /* LogsScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsScenario.swift; sourceTree = "<group>"; };
 		614C80AE2A7D5947004AF448 /* GenericViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenericViewController.swift; sourceTree = "<group>"; };
 		614C80B02A7D5965004AF448 /* LogsScenarioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsScenarioViewController.swift; sourceTree = "<group>"; };
+		614C80B32A7D6981004AF448 /* RUMScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScenario.swift; sourceTree = "<group>"; };
+		614C80B52A7D6A3F004AF448 /* RUMScenarioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScenarioViewController.swift; sourceTree = "<group>"; };
+		614C80B72A7D79FA004AF448 /* Synthetics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Synthetics.swift; sourceTree = "<group>"; };
 		619249C42A7BD40D0073AD6B /* BenchmarkScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkScenario.swift; sourceTree = "<group>"; };
 		619249C72A7BD7C00073AD6B /* DebugScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScenario.swift; sourceTree = "<group>"; };
 		619249C92A7BD9330073AD6B /* Scenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scenarios.swift; sourceTree = "<group>"; };
@@ -128,6 +134,7 @@
 		614550012A796C0D00991762 = {
 			isa = PBXGroup;
 			children = (
+				614C80B72A7D79FA004AF448 /* Synthetics.swift */,
 				614550522A7A5CB800991762 /* Environment.swift */,
 				6145503F2A7976DD00991762 /* BenchmarkTests.xcconfig */,
 				6145500C2A796C0D00991762 /* Runner */,
@@ -282,6 +289,15 @@
 			path = Logs;
 			sourceTree = "<group>";
 		};
+		614C80B22A7D6973004AF448 /* RUM */ = {
+			isa = PBXGroup;
+			children = (
+				614C80B32A7D6981004AF448 /* RUMScenario.swift */,
+				614C80B52A7D6A3F004AF448 /* RUMScenarioViewController.swift */,
+			);
+			path = RUM;
+			sourceTree = "<group>";
+		};
 		619249C62A7BD7990073AD6B /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
@@ -290,6 +306,7 @@
 				619249CB2A7C05990073AD6B /* Debug */,
 				614C80892A7CF3C4004AF448 /* SessionReplay */,
 				614C80AB2A7D572C004AF448 /* Logs */,
+				614C80B22A7D6973004AF448 /* RUM */,
 			);
 			path = Scenarios;
 			sourceTree = "<group>";
@@ -398,6 +415,7 @@
 				614C809F2A7CF420004AF448 /* BasicViewControllers.swift in Sources */,
 				6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */,
 				614C80B12A7D5965004AF448 /* LogsScenarioViewController.swift in Sources */,
+				614C80B62A7D6A3F004AF448 /* RUMScenarioViewController.swift in Sources */,
 				614550752A7BBBF500991762 /* BenchmarkController.swift in Sources */,
 				614550562A7A5D1400991762 /* Profiler.swift in Sources */,
 				614550532A7A5CB800991762 /* Environment.swift in Sources */,
@@ -409,7 +427,9 @@
 				619249C52A7BD40D0073AD6B /* BenchmarkScenario.swift in Sources */,
 				614C809E2A7CF420004AF448 /* ImagesViewControllers.swift in Sources */,
 				6145505E2A7ABF0600991762 /* MemoryUsageInstrument.swift in Sources */,
+				614C80B42A7D6981004AF448 /* RUMScenario.swift in Sources */,
 				6145506A2A7BADBC00991762 /* BenchmarkViewControllers.swift in Sources */,
+				614C80B82A7D79FA004AF448 /* Synthetics.swift in Sources */,
 				614550682A7BA75000991762 /* MemorySample.swift in Sources */,
 				614C80A82A7CF440004AF448 /* SessionReplayScenario.swift in Sources */,
 				619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */,

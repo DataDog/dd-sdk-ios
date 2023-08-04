@@ -9,6 +9,7 @@ import UIKit
 internal class SessionReplayScenarioViewController: UINavigationController {
     private let fixtures: [UIViewController]
     private let changeInterval: TimeInterval
+    private var schedule: Schedule!
     private var current = 0
 
     init(fixtureViewControllers: [UIViewController], fixtureChangeInterval: TimeInterval) {
@@ -23,17 +24,14 @@ internal class SessionReplayScenarioViewController: UINavigationController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        keepChangingFixture()
+
+        schedule = Schedule(interval: changeInterval, operation: { [weak self] in
+            self?.changeFixture()
+        })
     }
 
-    private func keepChangingFixture() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + changeInterval) { [weak self] in
-            guard let self = self, BenchmarkController.current?.isRunning == true else {
-                return
-            }
-            self.current = (self.current + 1) % self.fixtures.count
-            self.viewControllers = [fixtures[self.current]]
-            self.keepChangingFixture()
-        }
+    private func changeFixture() {
+        current = (current + 1) % fixtures.count
+        self.viewControllers = [fixtures[current]]
     }
 }

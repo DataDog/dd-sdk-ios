@@ -15,7 +15,7 @@ internal class SessionReplayScenario: BenchmarkScenario {
 
     var title: String { "Session Replay (\(runType))" }
 
-    let duration: TimeInterval = Environment.isDebug ? 10 : 5 * 60
+    let duration: TimeInterval = Environment.isDebug ? 10 : Synthetics.testDuration
     let fixtureChangeInterval: TimeInterval = Environment.isDebug ? 1 : 10
 
     init(runType: ScenarioRunType) {

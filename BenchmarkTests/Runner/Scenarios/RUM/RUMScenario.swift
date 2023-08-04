@@ -6,21 +6,21 @@
 
 import UIKit
 import DatadogCore
-import DatadogLogs
+import DatadogRUM
 
-internal class LogsScenario: BenchmarkScenario {
+internal class RUMScenario: BenchmarkScenario {
     let runType: ScenarioRunType
 
-    var title: String { "Logs (\(runType))" }
+    var title: String { "RUM (\(runType))" }
 
-    let duration: TimeInterval = Environment.isDebug ? 50 : Synthetics.testDuration
+    let duration: TimeInterval = Environment.isDebug ? 30 : Synthetics.testDuration
 
     init(runType: ScenarioRunType) {
         self.runType = runType
     }
 
     func beforeRun() {
-        debug("LogsScenario.beforeRun()")
+        debug("RUMScenario.beforeRun()")
         guard runType == .instrumented else {
             return
         }
@@ -30,15 +30,17 @@ internal class LogsScenario: BenchmarkScenario {
         sdkConfig.service = Environment.service
         Datadog.initialize(with: sdkConfig, trackingConsent: .granted)
 
-        Logs.enable()
+        let rumConfig = RUM.Configuration(applicationID: Environment.readRUMApplicationID())
+        RUM.enable(with: rumConfig)
 
         if Environment.isDebug {
             Datadog.verbosityLevel = .debug
+            RUMMonitor.shared().debug = true
         }
     }
 
     func afterRun() {
-        debug("LogsScenario.afterRun()")
+        debug("RUMScenario.afterRun()")
         guard runType == .instrumented else {
             return
         }
@@ -47,7 +49,7 @@ internal class LogsScenario: BenchmarkScenario {
 
     func instruments() -> [Instrument] {
         let memoryMetric = MetricConfiguration(
-            name: "benchmark.ios.logs.memory",
+            name: "benchmark.ios.rum.memory",
             tags: Environment.readCommonMetricTags() + ["run:\(runType)"],
             type: .gauge
         )
@@ -59,5 +61,5 @@ internal class LogsScenario: BenchmarkScenario {
 
     }
 
-    func instantiateInitialViewController() -> UIViewController { LogsScenarioViewController(labelText: "Sending logs...") }
+    func instantiateInitialViewController() -> UIViewController { RUMScenarioViewController(labelText: "Sending RUM events...") }
 }

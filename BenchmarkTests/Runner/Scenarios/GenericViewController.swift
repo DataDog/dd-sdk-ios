@@ -36,4 +36,24 @@ internal class GenericViewController: UIViewController {
             label.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
+
+    private var runningSchedules: [Schedule] = []
+
+    func schedule(operation: @escaping () -> Void, every interval: TimeInterval) {
+        runningSchedules.append(Schedule(interval: interval, operation: operation))
+    }
+}
+
+internal class Schedule {
+    private var timer: Timer!
+
+    init(interval: TimeInterval, operation: @escaping () -> Void) {
+        timer = Timer(timeInterval: interval, repeats: true) { _ in operation() }
+        timer.tolerance = interval * 0.1
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    deinit {
+        timer.invalidate()
+    }
 }

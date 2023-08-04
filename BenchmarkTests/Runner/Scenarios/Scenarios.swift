@@ -17,6 +17,8 @@ internal var allScenarios: [BenchmarkScenario] = [
     SessionReplayScenario(runType: .instrumented),
     LogsScenario(runType: .baseline),
     LogsScenario(runType: .instrumented),
+    RUMScenario(runType: .baseline),
+    RUMScenario(runType: .instrumented),
 ]
 
 extension UIStoryboard {

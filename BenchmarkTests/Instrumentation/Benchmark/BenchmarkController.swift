@@ -52,6 +52,7 @@ internal class BenchmarkController {
             let endVC = UIStoryboard.main.instantiateViewController(withIdentifier: BenchmarkEndViewController.storyboardID) as! BenchmarkEndViewController
             endVC.loadViewIfNeeded()
             endVC.statusLabel.text = "Uploading data..."
+            endVC.detailsLabel.text = "Scenario: \(self?.scenario.title ?? "???")"
             endVC.closeButton.isHidden = true
             endVC.onClose = {
                 app.goBackToMenu {

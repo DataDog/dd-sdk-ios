@@ -11,6 +11,7 @@ internal class BenchmarkEndViewController: UIViewController {
 
     @IBOutlet weak var statusLabel: UILabel!
     @IBOutlet weak var closeButton: UIButton!
+    @IBOutlet weak var detailsLabel: UILabel!
 
     var onClose: (() -> Void)? = nil
 
