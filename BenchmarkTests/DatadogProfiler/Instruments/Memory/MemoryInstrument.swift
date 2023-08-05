@@ -11,7 +11,7 @@ public struct MemoryInstrumentConfiguration: InstrumentConfiguration {
     public let metricName: String
     public let metricTags: [String]
 
-    init(
+    public init(
         samplingInterval: TimeInterval,
         metricName: String,
         metricTags: [String]

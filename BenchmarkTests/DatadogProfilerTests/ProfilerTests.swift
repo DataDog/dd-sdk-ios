@@ -102,7 +102,7 @@ final class ProfilerTests: XCTestCase {
         waitForExpectations(timeout: measurementDuration * 2)
     }
 
-    private func runProfiler(with instruments: [MockInstrument], completion: (ProfileUploadResult) -> Void) {
+    private func runProfiler(with instruments: [MockInstrument], completion: (ProfilerUploadResult) -> Void) {
         let setUpExpectation = self.expectation(description: "Instrument: setUpExpectation")
         let startExpectation = self.expectation(description: "Instrument: startExpectation")
         let stopExpectation = self.expectation(description: "Instrument: stopExpectation")
@@ -125,7 +125,7 @@ final class ProfilerTests: XCTestCase {
         }
 
         let instrumentConfigurations: [InstrumentConfiguration] = instruments.map { MockInstrumentConfiguration(instrument: $0) }
-        var result: ProfileUploadResult?
+        var result: ProfilerUploadResult?
 
         // Given
         Profiler.setUp(

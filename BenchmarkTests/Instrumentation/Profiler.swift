@@ -12,13 +12,13 @@ internal struct Span {
     let id: Int
     var parentID: Int?
 
-    weak var profiler: Profiler?
+    weak var profiler: CodeProfiler?
 
     var startTime: DispatchTime?
     var finishTime: DispatchTime?
 }
 
-internal class Profiler {
+internal class CodeProfiler {
     var currentID: Int = 0
     var spans: [Span] // indexed by ID
     var activeSpanID: Int? = nil

@@ -16,9 +16,25 @@ public struct ProfilerConfiguration {
     }
 }
 
-public enum ProfileUploadResult {
+public enum ProfilerUploadResult {
+    /// When all instruments succeeded uploading data.
     case success([String])
+    /// When at least one instrument failed to upload data.
     case failure([String])
+
+    public var isSuccess: Bool {
+        switch self {
+        case .success: return true
+        case .failure: return false
+        }
+    }
+
+    public var summary: [String] {
+        switch self {
+        case .success(let summary): return summary
+        case .failure(let summary): return summary
+        }
+    }
 }
 
 public class Profiler {
@@ -58,7 +74,7 @@ public class Profiler {
         instruments.forEach { $0.setUp(measurementDuration: expectedMeasurementDuration) }
     }
 
-    public func start(stopAndTearDownAutomatically automaticCompletion: ((ProfileUploadResult) -> Void)? = nil) {
+    public func start(stopAndTearDownAutomatically automaticCompletion: ((ProfilerUploadResult) -> Void)? = nil) {
         debug("Profiler.start(automaticCompletion: \(automaticCompletion != nil))")
         instruments.forEach { $0.start() }
 
@@ -75,7 +91,7 @@ public class Profiler {
         instruments.forEach { $0.stop() }
     }
 
-    public func tearDown(completion: @escaping (ProfileUploadResult) -> Void) {
+    public func tearDown(completion: @escaping (ProfilerUploadResult) -> Void) {
         debug("Profiler.tearDown()")
         var results: [(String, InstrumentUploadResult)] = []
 
@@ -92,7 +108,7 @@ public class Profiler {
         }
 
         group.notify(queue: mainQueue) {
-            let result = ProfileUploadResult(instrumentResults: results)
+            let result = ProfilerUploadResult(instrumentResults: results)
             debug("Profiler result: \(result)")
             completion(result)
             Profiler.instance = nil
@@ -100,7 +116,7 @@ public class Profiler {
     }
 }
 
-internal extension ProfileUploadResult {
+internal extension ProfilerUploadResult {
     init(instrumentResults: [(String, InstrumentUploadResult)]) {
         var summary: [String] = []
         var hasError = false

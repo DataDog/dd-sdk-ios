@@ -6,9 +6,12 @@
 
 import UIKit
 
+internal var benchmarkRunner: BenchmarkOrchestrator!
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        benchmarkRunner = BenchmarkOrchestrator(app: self)
         return true
     }
 
@@ -18,7 +21,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
 
-    /// Presents view controller for given fixture in full screen.
+    func setFullScreenModal(viewController: UIViewController, completion: @escaping () -> Void = {}) {
+        show(viewController: viewController, afterPresented: completion)
+    }
+
+    func dismissFullScreenModal(completion: @escaping () -> Void = {}) {
+        goBackToMenu(afterPresented: completion)
+    }
+
+    /// Presents given view controller in as full screen modal.
     func show(viewController: UIViewController, afterPresented: @escaping () -> Void = {}) {
         viewController.modalPresentationStyle = .fullScreen
 
@@ -32,7 +43,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    /// Goes back to menu screen.
+    /// Goes back to app's root screen.
     func goBackToMenu(afterPresented: @escaping () -> Void) {
         DispatchQueue.main.async {
             self.keyWindow?.rootViewController?.dismiss(animated: false) {

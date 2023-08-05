@@ -51,6 +51,10 @@ internal struct Environment {
         #endif
     }
 
+    static func apiKey() -> String {
+        return readMetricsAPIKey()
+    }
+
     static func readMetricsAPIKey() -> String {
         guard let apiKey = Bundle.main.infoDictionary![InfoPlistKey.metricsAPIKey] as? String, !apiKey.isEmpty else {
             fatalError("""

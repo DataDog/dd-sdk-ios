@@ -35,8 +35,19 @@ internal class MenuViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
 
         let scenario = scenario(for: indexPath)
-        BenchmarkController.set(scenario: scenario)
-        BenchmarkController.run()
+        // legacy:
+//        BenchmarkController.set(scenario: scenario)
+//        BenchmarkController.run()
+
+        // new:
+        let benchmark = Benchmark(
+            scenario: scenario,
+            duration: scenario.duration,
+            instruments: [
+                .memory(.init(samplingInterval: 0.5, metricName: "debug.metric.name", metricTags: ["foo:bar"]))
+            ]
+        )
+        benchmarkRunner.run(benchmark: benchmark)
     }
 
     private func scenario(for indexPath: IndexPath) -> BenchmarkScenario {
