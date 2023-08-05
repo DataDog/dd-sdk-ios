@@ -6,21 +6,6 @@
 
 import UIKit
 
-internal enum ScenarioRunType: String {
-    case baseline = "baseline"
-    case instrumented = "instrumented"
-}
-
-internal var allScenarios: [BenchmarkScenario] = [
-    DebugScenario(),
-    SessionReplayScenario(runType: .baseline),
-    SessionReplayScenario(runType: .instrumented),
-    LogsScenario(runType: .baseline),
-    LogsScenario(runType: .instrumented),
-    RUMScenario(runType: .baseline),
-    RUMScenario(runType: .instrumented),
-]
-
 extension UIStoryboard {
     static var main: UIStoryboard { UIStoryboard(name: "Main", bundle: nil) }
     static var debug: UIStoryboard { UIStoryboard(name: "Debug", bundle: nil) }

@@ -7,8 +7,8 @@
 import Foundation
 
 internal protocol Instrument {
-    func beforeStart(scenario: BenchmarkScenario)
+    func beforeStart(scenario: ScenarioConfiguration)
     func start()
     func stop()
-    func afterStop(scenario: BenchmarkScenario, completion: @escaping (Bool) -> Void)
+    func afterStop(scenario: ScenarioConfiguration, completion: @escaping (Bool) -> Void)
 }

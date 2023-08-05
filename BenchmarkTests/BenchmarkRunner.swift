@@ -7,23 +7,7 @@
 import UIKit
 import DatadogProfiler
 
-internal struct Benchmark {
-    var scenario: BenchmarkScenario
-    var duration: TimeInterval
-    var instruments: [Instrument]
-
-    enum Instrument {
-        case memory(MemoryInstrumentConfiguration)
-
-        var configuration: InstrumentConfiguration {
-            switch self {
-            case let .memory(configuration): return configuration
-            }
-        }
-    }
-}
-
-internal class BenchmarkOrchestrator {
+internal class BenchmarkRunner {
     private unowned var app: AppDelegate
 
     init(app: AppDelegate) {
@@ -31,19 +15,19 @@ internal class BenchmarkOrchestrator {
     }
 
     func run(benchmark: Benchmark) {
-        guard !benchmark.instruments.isEmpty else {
+        guard !benchmark.instruments.isEmpty, let scenario = benchmark.scenario else {
             debug("No instruments configured, skipping benchmark.")
             return
         }
 
         Profiler.setUp(
             with: ProfilerConfiguration(apiKey: Environment.apiKey()),
-            instruments: benchmark.instruments.map { $0.configuration },
+            instruments: benchmark.instrumentConfigurations,
             expectedMeasurementDuration: benchmark.duration
         )
         Profiler.skipUploads = Environment.skipUploadingBenchmarkResult
 
-        let scenarioVC = benchmark.scenario.instantiateInitialViewController()
+        let scenarioVC = scenario.configuration.instantiateInitialViewController()
         app.setFullScreenModal(viewController: scenarioVC) {
             Profiler.instance!.start(
                 stopAndTearDownAutomatically: { [unowned self] result in
@@ -57,7 +41,7 @@ internal class BenchmarkOrchestrator {
         let endVC = UIStoryboard.main.instantiateViewController(withIdentifier: BenchmarkEndViewController.storyboardID) as! BenchmarkEndViewController
         endVC.loadViewIfNeeded()
         endVC.statusLabel.text = result.isSuccess ? "Data upload succeeded." : "Data upload failed."
-        endVC.detailsLabel.text = "Scenario: \(benchmark.scenario.title)" + "\n" + result.summary.joined(separator: "\n")
+        endVC.detailsLabel.text = "Scenario: \(benchmark.scenario!.configuration.name)" + "\n" + result.summary.joined(separator: "\n")
         endVC.closeButton.isHidden = true
         endVC.onClose = { [weak app] in app?.dismissFullScreenModal() }
         app.setFullScreenModal(viewController: endVC)

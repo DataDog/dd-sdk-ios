@@ -6,12 +6,12 @@
 
 import UIKit
 
-internal var benchmarkRunner: BenchmarkOrchestrator!
+internal var benchmarkRunner: BenchmarkRunner!
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        benchmarkRunner = BenchmarkOrchestrator(app: self)
+        benchmarkRunner = BenchmarkRunner(app: self)
         return true
     }
 

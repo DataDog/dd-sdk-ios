@@ -30,6 +30,17 @@ public struct MemoryInstrumentConfiguration: InstrumentConfiguration {
             )
         )
     }
+
+    public var description: String {
+        """
+        Memory Instrument Configuration:
+        - samplingInterval: \(samplingInterval)s
+        - metricName:
+            - \(metricName)
+        - metricTags:
+        \(metricTags.map({ "    - \($0)" }).joined(separator: "\n"))
+        """
+    }
 }
 
 internal class MemoryInstrument: Instrument {

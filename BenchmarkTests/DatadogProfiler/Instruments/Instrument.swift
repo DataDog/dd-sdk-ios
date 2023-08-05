@@ -13,6 +13,7 @@ internal enum InstrumentUploadResult {
 
 public protocol InstrumentConfiguration {
     func createInstrument(with profilerConfiguration: ProfilerConfiguration) -> Any // as! Instrument
+    var description: String { get }
 }
 
 internal protocol Instrument {

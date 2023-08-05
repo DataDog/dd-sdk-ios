@@ -4,13 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
+import Foundation
+import DatadogProfiler
 
-internal struct RUMScenario: ScenarioConfiguration {
-    let id = "rum"
-    let name = "RUM"
-
-    func instantiateInitialViewController() -> UIViewController {
-        RUMScenarioViewController(labelText: "Sending RUM events...")
+extension Array {
+    func firstElement<T>(of type: T.Type = T.self) -> T? {
+        return compactMap({ $0 as? T }).first
     }
 }
