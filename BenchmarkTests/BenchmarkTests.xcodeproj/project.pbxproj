@@ -21,12 +21,8 @@
 		614550562A7A5D1400991762 /* Profiler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550552A7A5D1400991762 /* Profiler.swift */; };
 		6145505A2A7A6EEC00991762 /* DroppedFramesInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */; };
 		6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */; };
-		614550612A7B8F0A00991762 /* MetricEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550602A7B8F0A00991762 /* MetricEvent.swift */; };
-		614550632A7B93FE00991762 /* MetricUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550622A7B93FE00991762 /* MetricUploader.swift */; };
 		614550652A7B991700991762 /* DatadogInternal in Frameworks */ = {isa = PBXBuildFile; productRef = 614550642A7B991700991762 /* DatadogInternal */; };
-		6145506A2A7BADBC00991762 /* BenchmarkViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550692A7BADBC00991762 /* BenchmarkViewControllers.swift */; };
 		614550712A7BB99400991762 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550702A7BB99400991762 /* Utils.swift */; };
-		614550732A7BBA2E00991762 /* Instrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550722A7BBA2E00991762 /* Instrument.swift */; };
 		614C809C2A7CF420004AF448 /* UnsupportedViewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80902A7CF420004AF448 /* UnsupportedViewsViewController.swift */; };
 		614C809D2A7CF420004AF448 /* Images.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80912A7CF420004AF448 /* Images.storyboard */; };
 		614C809E2A7CF420004AF448 /* ImagesViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80922A7CF420004AF448 /* ImagesViewControllers.swift */; };
@@ -65,7 +61,7 @@
 		614C80FA2A80D75A004AF448 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80F92A80D75A004AF448 /* SummaryView.swift */; };
 		614C80FC2A80F449004AF448 /* HostingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80FB2A80F449004AF448 /* HostingViewController.swift */; };
 		619249C82A7BD7C00073AD6B /* DebugScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C72A7BD7C00073AD6B /* DebugScenario.swift */; };
-		619249CA2A7BD9330073AD6B /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Extensions.swift */; };
+		619249CA2A7BD9330073AD6B /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Helpers.swift */; };
 		619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249CC2A7C05AC0073AD6B /* DebugViewController.swift */; };
 		619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 619249CE2A7C06B20073AD6B /* Debug.storyboard */; };
 /* End PBXBuildFile section */
@@ -128,11 +124,7 @@
 		614550552A7A5D1400991762 /* Profiler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profiler.swift; sourceTree = "<group>"; };
 		614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DroppedFramesInstrument.swift; sourceTree = "<group>"; };
 		6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameDurationInstrument.swift; sourceTree = "<group>"; };
-		614550602A7B8F0A00991762 /* MetricEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricEvent.swift; sourceTree = "<group>"; };
-		614550622A7B93FE00991762 /* MetricUploader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricUploader.swift; sourceTree = "<group>"; };
-		614550692A7BADBC00991762 /* BenchmarkViewControllers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BenchmarkViewControllers.swift; sourceTree = "<group>"; };
 		614550702A7BB99400991762 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
-		614550722A7BBA2E00991762 /* Instrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Instrument.swift; sourceTree = "<group>"; };
 		614C80902A7CF420004AF448 /* UnsupportedViewsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnsupportedViewsViewController.swift; sourceTree = "<group>"; };
 		614C80912A7CF420004AF448 /* Images.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Images.storyboard; sourceTree = "<group>"; };
 		614C80922A7CF420004AF448 /* ImagesViewControllers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagesViewControllers.swift; sourceTree = "<group>"; };
@@ -170,7 +162,7 @@
 		614C80F92A80D75A004AF448 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		614C80FB2A80F449004AF448 /* HostingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingViewController.swift; sourceTree = "<group>"; };
 		619249C72A7BD7C00073AD6B /* DebugScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScenario.swift; sourceTree = "<group>"; };
-		619249C92A7BD9330073AD6B /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		619249C92A7BD9330073AD6B /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		619249CC2A7C05AC0073AD6B /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
 		619249CE2A7C06B20073AD6B /* Debug.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Debug.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -243,6 +235,7 @@
 				619249C62A7BD7990073AD6B /* Scenarios */,
 				6145500D2A796C0D00991762 /* AppDelegate.swift */,
 				6145500F2A796C0D00991762 /* SceneDelegate.swift */,
+				614550702A7BB99400991762 /* Utils.swift */,
 				614550132A796C0D00991762 /* Main.storyboard */,
 				614550162A796C0E00991762 /* Assets.xcassets */,
 				614550182A796C0E00991762 /* LaunchScreen.storyboard */,
@@ -276,32 +269,11 @@
 		614550542A7A5CE500991762 /* Instrumentation */ = {
 			isa = PBXGroup;
 			children = (
-				6145506D2A7BAF8D00991762 /* Benchmark */,
-				6145505F2A7B8EFD00991762 /* Metric */,
 				614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */,
 				614550552A7A5D1400991762 /* Profiler.swift */,
 				6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */,
-				614550702A7BB99400991762 /* Utils.swift */,
 			);
 			path = Instrumentation;
-			sourceTree = "<group>";
-		};
-		6145505F2A7B8EFD00991762 /* Metric */ = {
-			isa = PBXGroup;
-			children = (
-				614550602A7B8F0A00991762 /* MetricEvent.swift */,
-				614550622A7B93FE00991762 /* MetricUploader.swift */,
-			);
-			path = Metric;
-			sourceTree = "<group>";
-		};
-		6145506D2A7BAF8D00991762 /* Benchmark */ = {
-			isa = PBXGroup;
-			children = (
-				614550692A7BADBC00991762 /* BenchmarkViewControllers.swift */,
-				614550722A7BBA2E00991762 /* Instrument.swift */,
-			);
-			path = Benchmark;
 			sourceTree = "<group>";
 		};
 		614C80892A7CF3C4004AF448 /* SessionReplay */ = {
@@ -437,7 +409,7 @@
 		619249C62A7BD7990073AD6B /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
-				619249C92A7BD9330073AD6B /* Extensions.swift */,
+				619249C92A7BD9330073AD6B /* Helpers.swift */,
 				614C80AE2A7D5947004AF448 /* GenericViewController.swift */,
 				619249CB2A7C05990073AD6B /* Debug */,
 				614C80892A7CF3C4004AF448 /* SessionReplay */,
@@ -617,7 +589,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				6145500E2A796C0D00991762 /* AppDelegate.swift in Sources */,
-				614550612A7B8F0A00991762 /* MetricEvent.swift in Sources */,
 				614C80AD2A7D573A004AF448 /* LogsScenario.swift in Sources */,
 				614C80A62A7CF420004AF448 /* UIViewController+KeyboardControlling.swift in Sources */,
 				614C80A32A7CF420004AF448 /* Fixtures.swift in Sources */,
@@ -630,14 +601,12 @@
 				614C80FC2A80F449004AF448 /* HostingViewController.swift in Sources */,
 				614550562A7A5D1400991762 /* Profiler.swift in Sources */,
 				614550532A7A5CB800991762 /* Environment.swift in Sources */,
-				614550732A7BBA2E00991762 /* Instrument.swift in Sources */,
 				614C80AF2A7D5947004AF448 /* GenericViewController.swift in Sources */,
 				614C809C2A7CF420004AF448 /* UnsupportedViewsViewController.swift in Sources */,
 				614550712A7BB99400991762 /* Utils.swift in Sources */,
-				619249CA2A7BD9330073AD6B /* Extensions.swift in Sources */,
+				619249CA2A7BD9330073AD6B /* Helpers.swift in Sources */,
 				614C809E2A7CF420004AF448 /* ImagesViewControllers.swift in Sources */,
 				614C80B42A7D6981004AF448 /* RUMScenario.swift in Sources */,
-				6145506A2A7BADBC00991762 /* BenchmarkViewControllers.swift in Sources */,
 				614C80F52A7EC824004AF448 /* Benchmark.swift in Sources */,
 				614C80B82A7D79FA004AF448 /* Synthetics.swift in Sources */,
 				614C80A82A7CF440004AF448 /* SessionReplayScenario.swift in Sources */,
@@ -647,7 +616,6 @@
 				614C80F12A7E4F1C004AF448 /* BenchmarkRunner.swift in Sources */,
 				614550102A796C0D00991762 /* SceneDelegate.swift in Sources */,
 				614C80AA2A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift in Sources */,
-				614550632A7B93FE00991762 /* MetricUploader.swift in Sources */,
 				614C80A12A7CF420004AF448 /* InputViewControllers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

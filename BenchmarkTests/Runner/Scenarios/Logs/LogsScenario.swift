@@ -10,6 +10,13 @@ internal struct LogsScenario: ScenarioConfiguration {
     let id = "logs"
     let name = "Logs"
 
+    func prepareInstrumentedRun(for benchmark: Benchmark) {
+        enableDatadogCore(for: benchmark)
+        enableLogs(for: benchmark)
+    }
+
+    func prepareBaselineRun(for benchmark: Benchmark) {}
+
     func instantiateInitialViewController() -> UIViewController {
         LogsScenarioViewController(labelText: "Sending logs...")
     }

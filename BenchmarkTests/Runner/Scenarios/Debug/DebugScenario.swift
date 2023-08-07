@@ -10,6 +10,9 @@ internal struct DebugScenario: ScenarioConfiguration {
     let id = "debug"
     let name = "Debug"
 
+    func prepareInstrumentedRun(for benchmark: Benchmark) { /* nop */ }
+    func prepareBaselineRun(for benchmark: Benchmark) { /* nop */ }
+
     func instantiateInitialViewController() -> UIViewController {
         UIStoryboard.debug.instantiateInitialViewController()!
     }

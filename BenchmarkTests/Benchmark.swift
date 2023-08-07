@@ -12,20 +12,25 @@ internal protocol ScenarioConfiguration {
     var name: String { get }
     /// The ID used in metrics.
     var id: String { get }
+
+    func prepareInstrumentedRun(for benchmark: Benchmark)
+    func prepareBaselineRun(for benchmark: Benchmark)
+
     /// Creates the view controller that plays this scenario.
     func instantiateInitialViewController() -> UIViewController
 }
 
 internal struct Benchmark {
-    var duration: TimeInterval = 5 * 60
+    var duration: TimeInterval = Environment.isDebug ? 10 : 5 * 60
     var runType: RunType = .baseline
-    var skipUploads = false
-    var scenario: Scenario? = nil
+    var skipUploads = Environment.isDebug ? Environment.skipBenchmarkDataUpload : false
+    var scenario: Scenario? = Environment.isDebug ? .debug : nil
     var instruments: [Instrument] = []
 
-    var env: Env = .local
+    let service: String = "ios-benchmark"
+    var env: Env = Environment.isDebug ? .local : .synthetics
     var metricTags: [String] {
-        ["source:ios", "service:ios-benchmark", "run:\(runType.rawValue)", "env:\(env.rawValue)"]
+        ["source:ios", "service:\(service)", "run:\(runType.rawValue)", "env:\(env.rawValue)"]
     }
 
     enum RunType: String, CaseIterable {

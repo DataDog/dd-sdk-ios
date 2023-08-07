@@ -5,9 +5,6 @@
  */
 
 import UIKit
-import DatadogCore
-import DatadogRUM
-import DatadogSessionReplay
 
 /// Session Replay scenario - switches between SR snapshots with changing the RUM view each time.
 internal class SessionReplayScenario: ScenarioConfiguration {
@@ -16,21 +13,28 @@ internal class SessionReplayScenario: ScenarioConfiguration {
 
     private var rootViewController: SessionReplayScenarioViewController! = nil
 
-    func setUp() {
-        debug("SessionReplayScenario.setUp()")
+    func prepareInstrumentedRun(for benchmark: Benchmark) {
+        preloadViewControllers()
+        enableDatadogCore(for: benchmark)
+        enableRUM(for: benchmark)
+        enableSR(for: benchmark)
+    }
+
+    func prepareBaselineRun(for benchmark: Benchmark) {
+        preloadViewControllers()
+    }
+
+    private func preloadViewControllers() {
+        debug("SessionReplayScenario.preloadViewControllers()")
 
         // Pre-load all view controllers before test is started, to ease memory allocations during the test.
         rootViewController = SessionReplayScenarioViewController(
             fixtureViewControllers: Fixture.allCases.map { $0.instantiateViewController() },
             fixtureChangeInterval: 1
         )
-        rootViewController.onceAfterAllFixturesLoaded = {
-            debug("All fixtures loaded and displayed, start measurements.")
-            // start measurements()
-        }
     }
 
     func instantiateInitialViewController() -> UIViewController {
-        rootViewController
+        return rootViewController
     }
 }

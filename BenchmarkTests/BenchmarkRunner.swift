@@ -15,19 +15,25 @@ internal class BenchmarkRunner {
     }
 
     func run(benchmark: Benchmark) {
-        guard !benchmark.instruments.isEmpty, let scenario = benchmark.scenario else {
-            debug("No instruments configured, skipping benchmark.")
-            return
-        }
+        precondition(!benchmark.instruments.isEmpty)
+        precondition(benchmark.scenario != nil)
+        let scenarioConfiguration = benchmark.scenario!.configuration
 
         Profiler.setUp(
             with: ProfilerConfiguration(apiKey: Environment.apiKey()),
             instruments: benchmark.instrumentConfigurations,
             expectedMeasurementDuration: benchmark.duration
         )
-        Profiler.skipUploads = Environment.skipUploadingBenchmarkResult
+        Profiler.skipUploads = benchmark.skipUploads
 
-        let scenarioVC = scenario.configuration.instantiateInitialViewController()
+        switch benchmark.runType {
+        case .instrumented:
+            scenarioConfiguration.prepareInstrumentedRun(for: benchmark)
+        case .baseline:
+            scenarioConfiguration.prepareBaselineRun(for: benchmark)
+        }
+
+        let scenarioVC = scenarioConfiguration.instantiateInitialViewController()
         app.setRoot(viewController: scenarioVC) {
             Profiler.instance!.start(
                 stopAndTearDownAutomatically: { [unowned self] result in
@@ -45,3 +51,11 @@ internal class BenchmarkRunner {
         app.setRoot(viewController: endVC)
     }
 }
+
+internal class BenchmarkEndViewController: UIViewController {
+    static let storyboardID = "BenchmarkEnd"
+
+    @IBOutlet weak var statusLabel: UILabel!
+    @IBOutlet weak var detailsLabel: UILabel!
+}
+

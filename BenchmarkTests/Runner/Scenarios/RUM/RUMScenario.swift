@@ -10,6 +10,13 @@ internal struct RUMScenario: ScenarioConfiguration {
     let id = "rum"
     let name = "RUM"
 
+    func prepareInstrumentedRun(for benchmark: Benchmark) {
+        enableDatadogCore(for: benchmark)
+        enableRUM(for: benchmark)
+    }
+
+    func prepareBaselineRun(for benchmark: Benchmark) {}
+
     func instantiateInitialViewController() -> UIViewController {
         RUMScenarioViewController(labelText: "Sending RUM events...")
     }
