@@ -52,13 +52,17 @@ internal class BenchmarkViewModel: ObservableObject {
         self.metricEnvTag = benchmark.env.rawValue
 
         // Instruments:
-        if let memoryInstrument: MemoryInstrumentConfiguration = benchmark.instruments.firstElement() {
-            self.isMemoryInstrumentEnabled = true
-            self.memorySamplingInterval = memoryInstrument.samplingInterval
-        } else {
-            self.isMemoryInstrumentEnabled = false
-            self.memorySamplingInterval = 1
+        self.isMemoryInstrumentEnabled = false
+        self.memorySamplingInterval = 1
+
+        for instrument in benchmark.instruments {
+            switch instrument {
+            case let .memory(samplingInterval):
+                self.isMemoryInstrumentEnabled = true
+                self.memorySamplingInterval = samplingInterval
+            }
         }
+
         self.showSummary = false
     }
 

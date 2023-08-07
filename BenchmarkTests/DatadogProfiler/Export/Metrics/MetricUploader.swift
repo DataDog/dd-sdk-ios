@@ -58,6 +58,7 @@ internal class MetricUploader {
 
     private func createRequest(with body: Data) -> URLRequest {
         var request = URLRequest(url: URL(string: "https://api.datadoghq.com/api/v2/series")!)
+        request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue(apiKey, forHTTPHeaderField: "DD-API-KEY")
 

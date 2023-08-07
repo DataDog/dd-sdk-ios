@@ -9,5 +9,6 @@ import SwiftUI
 internal class HostingViewController: UIHostingController<BenchmarkConfigurationView> {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder, rootView: BenchmarkConfigurationView())
+        hideKeyboardWhenTapOutside()
     }
 }

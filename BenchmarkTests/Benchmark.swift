@@ -21,11 +21,11 @@ internal protocol ScenarioConfiguration {
 }
 
 internal struct Benchmark {
-    var duration: TimeInterval = Environment.isDebug ? 10 : 5 * 60
+    var duration: TimeInterval = Environment.isDebug ? 5 : 5 * 60
     var runType: RunType = .baseline
     var skipUploads = Environment.isDebug ? Environment.skipBenchmarkDataUpload : false
     var scenario: Scenario? = Environment.isDebug ? .debug : nil
-    var instruments: [Instrument] = []
+    var instruments: [Instrument] = [.memory(samplingInterval: 1)]
 
     let service: String = "ios-benchmark"
     var env: Env = Environment.isDebug ? .local : .synthetics
