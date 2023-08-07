@@ -1,49 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="p4f-Oq-lgW">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Jm3-YH-Yqb">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
-        <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Menu View Controller-->
-        <scene sceneID="E4E-mK-7it">
+        <!--Hosting View Controller-->
+        <scene sceneID="Pu0-QA-02o">
             <objects>
-                <tableViewController id="glP-wz-kLA" customClass="MenuViewController" customModule="Runner_iOS" customModuleProvider="target" sceneMemberID="viewController">
-                    <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" id="SZL-Ls-Tkp">
-                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
-                        <connections>
-                            <outlet property="dataSource" destination="glP-wz-kLA" id="qSU-NQ-ikL"/>
-                            <outlet property="delegate" destination="glP-wz-kLA" id="tqz-TN-CEl"/>
-                        </connections>
-                    </tableView>
-                    <navigationItem key="navigationItem" id="yQd-OW-iTW"/>
-                </tableViewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="WHT-Rc-nX0" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+                <hostingController id="Jm3-YH-Yqb" customClass="HostingViewController" customModule="Runner_iOS" customModuleProvider="target" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UXO-lo-T0w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-129" y="-2"/>
-        </scene>
-        <!--Navigation Controller-->
-        <scene sceneID="diK-vc-Xil">
-            <objects>
-                <navigationController id="p4f-Oq-lgW" sceneMemberID="viewController">
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="HkB-sk-FFE">
-                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
-                        <autoresizingMask key="autoresizingMask"/>
-                    </navigationBar>
-                    <connections>
-                        <segue destination="glP-wz-kLA" kind="relationship" relationship="rootViewController" id="Cgs-Zo-B0A"/>
-                    </connections>
-                </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="dmy-xQ-TYV" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="-1029" y="-2"/>
+            <point key="canvasLocation" x="-1975" y="756"/>
         </scene>
         <!--Benchmark End View Controller-->
         <scene sceneID="goC-Mu-qBG">
@@ -65,22 +37,6 @@
                                 <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y3r-zW-f03">
-                                <rect key="frame" x="164" y="771" width="65" height="35"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="close">
-                                    <color key="baseForegroundColor" name="DatadogPurple"/>
-                                </buttonConfiguration>
-                                <userDefinedRuntimeAttributes>
-                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                                        <integer key="value" value="8"/>
-                                    </userDefinedRuntimeAttribute>
-                                </userDefinedRuntimeAttributes>
-                                <connections>
-                                    <action selector="didTapClose:" destination="by9-kx-Hk5" eventType="touchUpInside" id="TwF-du-4oY"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="&lt;details&gt;" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="9BK-vW-VXF">
                                 <rect key="frame" x="159.66666666666666" y="505.33333333333331" width="73.666666666666657" height="21.666666666666686"/>
                                 <fontDescription key="fontDescription" type="system" weight="light" pointSize="18"/>
@@ -92,17 +48,14 @@
                         <color key="backgroundColor" name="DatadogPurple"/>
                         <constraints>
                             <constraint firstItem="9BK-vW-VXF" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="1ru-hU-dWe"/>
-                            <constraint firstItem="Y3r-zW-f03" firstAttribute="bottom" secondItem="VPa-FD-mM1" secondAttribute="bottom" constant="-12" id="2N1-6L-Eia"/>
                             <constraint firstItem="9BK-vW-VXF" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" constant="90" id="3MD-26-jU6"/>
                             <constraint firstItem="SXA-UB-HDj" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" id="4QV-p6-ypF"/>
                             <constraint firstItem="SXA-UB-HDj" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="JaL-zt-J6v"/>
-                            <constraint firstItem="Y3r-zW-f03" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="W8k-J8-4U1"/>
                             <constraint firstItem="zlb-0X-kJu" firstAttribute="centerY" secondItem="PHQ-qN-HhB" secondAttribute="centerY" constant="40" id="wMl-iD-bGz"/>
                             <constraint firstItem="zlb-0X-kJu" firstAttribute="centerX" secondItem="PHQ-qN-HhB" secondAttribute="centerX" id="zQ9-yF-bpX"/>
                         </constraints>
                     </view>
                     <connections>
-                        <outlet property="closeButton" destination="Y3r-zW-f03" id="aM5-yj-EZW"/>
                         <outlet property="detailsLabel" destination="9BK-vW-VXF" id="cZ6-LU-tBf"/>
                         <outlet property="statusLabel" destination="zlb-0X-kJu" id="U5o-hn-9xe"/>
                     </connections>
@@ -116,8 +69,5 @@
         <namedColor name="DatadogPurple">
             <color red="0.3880000114440918" green="0.17299999296665192" blue="0.65100002288818359" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>
-        <systemColor name="systemBackgroundColor">
-            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-        </systemColor>
     </resources>
 </document>

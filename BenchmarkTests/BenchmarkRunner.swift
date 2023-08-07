@@ -28,7 +28,7 @@ internal class BenchmarkRunner {
         Profiler.skipUploads = Environment.skipUploadingBenchmarkResult
 
         let scenarioVC = scenario.configuration.instantiateInitialViewController()
-        app.setFullScreenModal(viewController: scenarioVC) {
+        app.setRoot(viewController: scenarioVC) {
             Profiler.instance!.start(
                 stopAndTearDownAutomatically: { [unowned self] result in
                     self.onBenchmarkCompleted(benchmark: benchmark, result: result)
@@ -42,8 +42,6 @@ internal class BenchmarkRunner {
         endVC.loadViewIfNeeded()
         endVC.statusLabel.text = result.isSuccess ? "Data upload succeeded." : "Data upload failed."
         endVC.detailsLabel.text = "Scenario: \(benchmark.scenario!.configuration.name)" + "\n" + result.summary.joined(separator: "\n")
-        endVC.closeButton.isHidden = true
-        endVC.onClose = { [weak app] in app?.dismissFullScreenModal() }
-        app.setFullScreenModal(viewController: endVC)
+        app.setRoot(viewController: endVC)
     }
 }

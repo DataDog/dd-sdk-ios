@@ -4,11 +4,10 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import UIKit
+import SwiftUI
 
-class ViewController: UIViewController {
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        // Do any additional setup after loading the view.
+internal class HostingViewController: UIHostingController<BenchmarkConfigurationView> {
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder, rootView: BenchmarkConfigurationView())
     }
 }

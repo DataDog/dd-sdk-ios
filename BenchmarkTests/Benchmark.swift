@@ -17,7 +17,7 @@ internal protocol ScenarioConfiguration {
 }
 
 internal struct Benchmark {
-    var duration: TimeInterval = 60
+    var duration: TimeInterval = 5 * 60
     var runType: RunType = .baseline
     var skipUploads = false
     var scenario: Scenario? = nil

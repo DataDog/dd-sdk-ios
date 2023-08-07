@@ -7,10 +7,13 @@
 import SwiftUI
 
 internal class SummaryViewModel: ObservableObject {
+    let benchmark: Benchmark
+
     @Published var scenarioDescription: String
     @Published var instrumentDescriptions: [String]
 
     init(with benchmark: Benchmark) {
+        self.benchmark = benchmark
         self.scenarioDescription = """
         - Scenario: \(benchmark.scenario?.configuration.name ?? "???")
         - Run type: \(benchmark.runType.rawValue)
@@ -45,13 +48,13 @@ struct SummaryView: View {
                     }
                 }
 
-                Spacer() // Add spacer to push the RUN button to the bottom
+                Spacer()
 
                 HStack {
                     Button(action: {
-                        // Handle the RUN button action here
+                        benchmarkRunner.run(benchmark: vm.benchmark)
                     }) {
-                        Text("START")
+                        Text("RUN BENCHMARK")
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                     }

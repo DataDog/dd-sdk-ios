@@ -27,6 +27,12 @@ internal class BenchmarkViewModel: ObservableObject {
 
     @Published var showSummary: Bool
 
+    var canGoNext: Bool {
+        let hasScenario = selectedScenario != nil
+        let hasAnyInstrument = isMemoryInstrumentEnabled
+        return hasScenario && hasAnyInstrument
+    }
+
     init(with benchmark: Benchmark = Benchmark()) {
         // Scenario:
         self.runDuration = String(benchmark.duration)
@@ -86,11 +92,7 @@ struct BenchmarkConfigurationView: View {
                     Section(header: Text("Scenario")) {
                         HStack {
                             Text("Duration [s]:")
-                            TextField("Enter duration", text: $vm.runDuration, onEditingChanged: { editing in
-                                if editing {
-                                    vm.runDuration = ""
-                                }
-                            })
+                            TextField("Enter duration", text: $vm.runDuration)
                                 .keyboardType(.numberPad)
                         }
                         HStack {
@@ -157,10 +159,10 @@ struct BenchmarkConfigurationView: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(vm.selectedScenario == nil ? Color.gray : Color("DatadogPurple"))
+                        .background(vm.canGoNext ? Color("DatadogPurple") : Color.gray)
                         .cornerRadius(10)
-                        .disabled(vm.selectedScenario == nil)
                     }
+                    .disabled(!vm.canGoNext)
                 }
                 .padding()
             }
@@ -200,5 +202,11 @@ struct ScenarioSelectionView: View {
 struct BenchmarkConfigurationView_Previews: PreviewProvider {
     static var previews: some View {
         BenchmarkConfigurationView()
+    }
+}
+
+extension Array {
+    func firstElement<T>(of type: T.Type = T.self) -> T? {
+        return compactMap({ $0 as? T }).first
     }
 }

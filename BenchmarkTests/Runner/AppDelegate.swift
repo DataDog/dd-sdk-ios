@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SwiftUI
 
 internal var benchmarkRunner: BenchmarkRunner!
 
@@ -21,34 +22,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {}
 
-    func setFullScreenModal(viewController: UIViewController, completion: @escaping () -> Void = {}) {
-        show(viewController: viewController, afterPresented: completion)
-    }
-
-    func dismissFullScreenModal(completion: @escaping () -> Void = {}) {
-        goBackToMenu(afterPresented: completion)
-    }
-
-    /// Presents given view controller in as full screen modal.
-    func show(viewController: UIViewController, afterPresented: @escaping () -> Void = {}) {
-        viewController.modalPresentationStyle = .fullScreen
-
-        // Present it from the next run-loop to avoid "Unbalanced calls to begin/end appearance transitions" warning:
+    func setRoot(viewController: UIViewController, completion: @escaping () -> Void = {}) {
         DispatchQueue.main.async {
-            self.keyWindow?.rootViewController?.dismiss(animated: false) {
-                self.keyWindow?.rootViewController?.present(viewController, animated: false) {
-                    afterPresented()
-                }
-            }
-        }
-    }
-
-    /// Goes back to app's root screen.
-    func goBackToMenu(afterPresented: @escaping () -> Void) {
-        DispatchQueue.main.async {
-            self.keyWindow?.rootViewController?.dismiss(animated: false) {
-                afterPresented()
-            }
+            self.keyWindow?.rootViewController = viewController
+            completion()
         }
     }
 

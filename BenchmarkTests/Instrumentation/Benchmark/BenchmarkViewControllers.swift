@@ -10,10 +10,5 @@ internal class BenchmarkEndViewController: UIViewController {
     static let storyboardID = "BenchmarkEnd"
 
     @IBOutlet weak var statusLabel: UILabel!
-    @IBOutlet weak var closeButton: UIButton!
     @IBOutlet weak var detailsLabel: UILabel!
-
-    var onClose: (() -> Void)? = nil
-
-    @IBAction func didTapClose(_ sender: Any) { onClose?() }
 }
