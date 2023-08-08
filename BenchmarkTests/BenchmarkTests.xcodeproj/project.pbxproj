@@ -60,6 +60,7 @@
 		614C80F52A7EC824004AF448 /* Benchmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80F42A7EC824004AF448 /* Benchmark.swift */; };
 		614C80FA2A80D75A004AF448 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80F92A80D75A004AF448 /* SummaryView.swift */; };
 		614C80FC2A80F449004AF448 /* HostingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80FB2A80F449004AF448 /* HostingViewController.swift */; };
+		614C80FF2A816338004AF448 /* CodeProfilingInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80FE2A816338004AF448 /* CodeProfilingInstrument.swift */; };
 		619249C82A7BD7C00073AD6B /* DebugScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C72A7BD7C00073AD6B /* DebugScenario.swift */; };
 		619249CA2A7BD9330073AD6B /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Helpers.swift */; };
 		619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249CC2A7C05AC0073AD6B /* DebugViewController.swift */; };
@@ -161,6 +162,7 @@
 		614C80F42A7EC824004AF448 /* Benchmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Benchmark.swift; sourceTree = "<group>"; };
 		614C80F92A80D75A004AF448 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		614C80FB2A80F449004AF448 /* HostingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostingViewController.swift; sourceTree = "<group>"; };
+		614C80FE2A816338004AF448 /* CodeProfilingInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeProfilingInstrument.swift; sourceTree = "<group>"; };
 		619249C72A7BD7C00073AD6B /* DebugScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScenario.swift; sourceTree = "<group>"; };
 		619249C92A7BD9330073AD6B /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		619249CC2A7C05AC0073AD6B /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
@@ -363,6 +365,7 @@
 		614C80DA2A7E17C5004AF448 /* Instruments */ = {
 			isa = PBXGroup;
 			children = (
+				614C80FD2A815EDD004AF448 /* CodeProfiler */,
 				614C80E92A7E2016004AF448 /* Memory */,
 				614C80EC2A7E2305004AF448 /* Instrument.swift */,
 			);
@@ -404,6 +407,14 @@
 				614C80FB2A80F449004AF448 /* HostingViewController.swift */,
 			);
 			path = BenchmarkConfiguration;
+			sourceTree = "<group>";
+		};
+		614C80FD2A815EDD004AF448 /* CodeProfiler */ = {
+			isa = PBXGroup;
+			children = (
+				614C80FE2A816338004AF448 /* CodeProfilingInstrument.swift */,
+			);
+			path = CodeProfiler;
 			sourceTree = "<group>";
 		};
 		619249C62A7BD7990073AD6B /* Scenarios */ = {
@@ -629,6 +640,7 @@
 				614C80DC2A7E17E4004AF448 /* MemoryInstrument.swift in Sources */,
 				614C80E42A7E18EE004AF448 /* Utils.swift in Sources */,
 				614C80ED2A7E2305004AF448 /* Instrument.swift in Sources */,
+				614C80FF2A816338004AF448 /* CodeProfilingInstrument.swift in Sources */,
 				614C80E82A7E1C5C004AF448 /* DataCompression.swift in Sources */,
 				614C80EB2A7E203F004AF448 /* MemorySampling.swift in Sources */,
 				614C80E62A7E1A11004AF448 /* Profiler.swift in Sources */,

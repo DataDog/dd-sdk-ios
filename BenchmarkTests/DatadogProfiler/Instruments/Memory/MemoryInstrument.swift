@@ -101,11 +101,13 @@ internal class MemoryInstrument: Instrument {
     func stop() { timer.invalidate() }
 
     func uploadResults(completion: @escaping (InstrumentUploadResult) -> Void) {
-        for (idx, sample) in samples.enumerated() {
+        let measuredSamples = samples[0..<currentSampleIndex]
+
+        for (idx, sample) in measuredSamples.enumerated() {
             debug("Measure #\(idx): \(sample.footprint.bytesAsPrettyKB) -- \(Date(timeIntervalSince1970: sample.timestamp))")
         }
 
-        let dataPoints = samples.map { MetricDataPoint(timestamp: UInt64($0.timestamp), value: $0.footprint) }
+        let dataPoints = measuredSamples.map { MetricDataPoint(timestamp: UInt64($0.timestamp), value: $0.footprint) }
         uploader.send(metricPoints: dataPoints, completion: completion)
     }
 
