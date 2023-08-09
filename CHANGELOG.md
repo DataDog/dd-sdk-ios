@@ -1,5 +1,8 @@
 # Unreleased
 
+# 1.23.0 / 09-08-2023
+- [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
+
 # 1.22.0 / 21-07-2023
 - [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
