@@ -1,5 +1,6 @@
 # Unreleased
 
+# 1.23.0 / 09-08-2023
 - [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
 
 # 1.22.0 / 21-07-2023
