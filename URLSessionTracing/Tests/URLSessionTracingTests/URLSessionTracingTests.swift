@@ -39,6 +39,7 @@ final class URLSessionTracingTests: XCTestCase {
         }
         task.resume()
         wait(for: [start, stop], timeout: 10)
+        XCTAssertNil(session.delegate)
     }
 
     func testGet_init1() throws {
@@ -59,6 +60,7 @@ final class URLSessionTracingTests: XCTestCase {
         }
         task.resume()
         wait(for: [start, stop], timeout: 10)
+        XCTAssertNil(session.delegate)
     }
 
     func testGet_init2() throws {
@@ -79,6 +81,7 @@ final class URLSessionTracingTests: XCTestCase {
         }
         task.resume()
         wait(for: [start, stop], timeout: 10)
+        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
     }
 
     @available(macOS 12.0, iOS 15.0, *)
@@ -98,6 +101,7 @@ final class URLSessionTracingTests: XCTestCase {
         let (data, response) = try await session.data(from: url)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
+        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
     }
 
     @available(macOS 12.0, iOS 15.0, *)
