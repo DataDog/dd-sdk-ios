@@ -99,7 +99,7 @@ final class URLSessionTracingTests: XCTestCase {
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
     }
-    
+
     @available(macOS 12.0, iOS 15.0, *)
     func testAsyncAwaitGet_URL_Delegate() async throws {
         let start = XCTestExpectation(description: "onResume")
@@ -117,6 +117,7 @@ final class URLSessionTracingTests: XCTestCase {
         let (data, response) = try await session.data(from: url, delegate: MyURLSessionTaskDelegate())
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
+        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
     }
 
     @available(macOS 12.0, iOS 15.0, *)
@@ -136,8 +137,9 @@ final class URLSessionTracingTests: XCTestCase {
         let (data, response) = try await session.data(for: request)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
+        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
     }
-    
+
     @available(macOS 12.0, iOS 15.0, *)
     func testAsyncAwaitGet_Request_Delegate() async throws {
         let start = XCTestExpectation(description: "onResume")
@@ -155,5 +157,6 @@ final class URLSessionTracingTests: XCTestCase {
         let (data, response) = try await session.data(for: request, delegate: MyURLSessionTaskDelegate())
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
+        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
     }
 }

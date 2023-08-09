@@ -60,7 +60,9 @@ class URLSessionDelegateSwizzler {
         }
     }
 
-    class DidFinishCollecting: MethodSwizzler<@convention(c) (_URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void, @convention(block) (_URLSessionTaskDelegate, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void> {
+    class DidFinishCollecting: MethodSwizzler<
+        @convention(c) (_URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
+        @convention(block) (_URLSessionTaskDelegate, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void> {
         private static let selector = #selector(_URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:))
 
         private let method: FoundMethod
