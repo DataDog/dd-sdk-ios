@@ -25,7 +25,7 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -46,7 +46,7 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -67,7 +67,8 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
+            XCTAssertEqual(task.firstPartyHosts, ["datadoghq.com"])
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -75,13 +76,15 @@ final class URLSessionTracingTests: XCTestCase {
 
         let _ = try NetworkInstrumentation(interceptor: interceptor)
         let url = URL(string: "https://www.datadoghq.com/")!
-        let session = URLSession(configuration: .default, delegate: MyURLSessionTaskDelegate(), delegateQueue: OperationQueue.main)
+        let sessionDelegate = MyURLSessionDelegate()
+        sessionDelegate.firstPartyHosts = ["datadoghq.com"]
+        let session = URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: OperationQueue.main)
         let task = session.dataTask(with: url) { data, response, error in
             print(response)
         }
         task.resume()
         wait(for: [start, stop], timeout: 10)
-        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
+        XCTAssertNotNil(session.delegate as? MyURLSessionDelegate)
     }
 
     @available(macOS 12.0, iOS 15.0, *)
@@ -97,7 +100,9 @@ final class URLSessionTracingTests: XCTestCase {
 
         let _ = try NetworkInstrumentation(interceptor: interceptor)
         let url = URL(string: "https://www.datadoghq.com/")!
-        let session = URLSession(configuration: .default, delegate: MyURLSessionTaskDelegate(), delegateQueue: OperationQueue.main)
+        let sessionDelegate = MyURLSessionTaskDelegate()
+        sessionDelegate.firstPartyHosts = ["datadoghq.com"]
+        let session = URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: OperationQueue.main)
         let (data, response) = try await session.data(from: url)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
@@ -109,7 +114,8 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
+            XCTAssertEqual(task.delegate?.firstPartyHosts, ["datadoghq.com"])
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -118,7 +124,9 @@ final class URLSessionTracingTests: XCTestCase {
         let _ = try NetworkInstrumentation(interceptor: interceptor)
         let url = URL(string: "https://www.datadoghq.com/")!
         let session = URLSession(configuration: .default, delegate: MyURLSessionTaskDelegate(), delegateQueue: OperationQueue.main)
-        let (data, response) = try await session.data(from: url, delegate: MyURLSessionTaskDelegate())
+        let taskDelegate = MyURLSessionTaskDelegate()
+        taskDelegate.firstPartyHosts = ["datadoghq.com"]
+        let (data, response) = try await session.data(from: url, delegate: taskDelegate)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
         XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
@@ -129,7 +137,8 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
+            XCTAssertNil(task.firstPartyHosts)
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -137,7 +146,9 @@ final class URLSessionTracingTests: XCTestCase {
 
         let _ = try NetworkInstrumentation(interceptor: interceptor)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
-        let session = URLSession(configuration: .default, delegate: MyURLSessionTaskDelegate(), delegateQueue: OperationQueue.main)
+        let sessionDelegate = MyURLSessionTaskDelegate()
+        sessionDelegate.firstPartyHosts = ["example.com"]
+        let session = URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: OperationQueue.main)
         let (data, response) = try await session.data(for: request)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
@@ -149,7 +160,8 @@ final class URLSessionTracingTests: XCTestCase {
         let start = XCTestExpectation(description: "onResume")
         let stop = XCTestExpectation(description: "onURLSession")
 
-        let interceptor = try MockInterceptor { _ in
+        let interceptor = try MockInterceptor { task in
+            XCTAssertEqual(task.delegate?.firstPartyHosts, ["datadoghq.com"])
             start.fulfill()
         } onURLSession: { _, _, _ in
             stop.fulfill()
@@ -157,10 +169,14 @@ final class URLSessionTracingTests: XCTestCase {
 
         let _ = try NetworkInstrumentation(interceptor: interceptor)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
-        let session = URLSession(configuration: .default, delegate: MyURLSessionTaskDelegate(), delegateQueue: OperationQueue.main)
-        let (data, response) = try await session.data(for: request, delegate: MyURLSessionTaskDelegate())
+        let sessionDelegate = MyURLSessionDelegate()
+        sessionDelegate.firstPartyHosts = ["example.com"]
+        let session = URLSession(configuration: .default, delegate: sessionDelegate, delegateQueue: OperationQueue.main)
+        let taskDelegate = MyURLSessionTaskDelegate()
+        taskDelegate.firstPartyHosts = ["datadoghq.com"]
+        let (data, response) = try await session.data(for: request, delegate: taskDelegate)
         print(response)
         await fulfillment(of: [start, stop], timeout: 10)
-        XCTAssertNotNil(session.delegate as? MyURLSessionTaskDelegate)
+        XCTAssertNotNil(session.delegate as? MyURLSessionDelegate)
     }
 }

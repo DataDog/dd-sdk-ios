@@ -4,6 +4,10 @@ class MyURLSessionTaskDelegate: NSObject, URLSessionTaskDelegate {
     
 }
 
+class MyURLSessionDelegate: NSObject, URLSessionDelegate {
+    
+}
+
 @objc
 class _URLSessionTaskDelegate: NSObject, URLSessionTaskDelegate {
     weak var delegate: URLSessionDelegate?
