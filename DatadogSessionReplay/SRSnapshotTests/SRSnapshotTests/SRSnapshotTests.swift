@@ -17,6 +17,12 @@ final class SRSnapshotTests: SnapshotTestCase {
     /// - `false` - do not overwrite PNGs, no matter the difference.
     private var recordingMode = false
 
+    func testDemo() throws {
+        show(fixture: .demo)
+        let image = try takeSnapshot(with: .mask)
+        _ = image
+    }
+
     func testBasicShapes() throws {
         show(fixture: .basicShapes)
         let image = try takeSnapshot()

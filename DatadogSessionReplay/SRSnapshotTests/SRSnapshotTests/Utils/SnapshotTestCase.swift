@@ -72,7 +72,7 @@ internal class SnapshotTestCase: XCTestCase {
         // - attach recorded wireframes as JSON
         let wireframesAttachement = XCTAttachment(string: renderedWireframes.debugInfo.dumpWireframesAsJSON())
         wireframesAttachement.name = "recorded-wireframes-(\(privacyLevel)).json"
-        wireframesAttachement.lifetime = .deleteOnSuccess
+        wireframesAttachement.lifetime = .keepAlways
         add(wireframesAttachement)
 
         // - attach rendered as blueprint text

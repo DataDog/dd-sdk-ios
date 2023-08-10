@@ -3,7 +3,7 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -225,6 +225,50 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="geZ-kh-a5V" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2117" y="4"/>
+        </scene>
+        <!--View Controller-->
+        <scene sceneID="fn6-ZF-GE5">
+            <objects>
+                <viewController storyboardIdentifier="Demo" id="QV0-ti-Kg6" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ZyG-ng-LMi">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QgM-ue-WDU">
+                                <rect key="frame" x="16" y="413" width="361" height="84"/>
+                                <subviews>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Button" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nqm-e8-Ies">
+                                        <rect key="frame" x="132" y="22" width="97" height="41"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="34"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <color key="backgroundColor" name="EB455F"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="84" id="IXF-C4-OxM"/>
+                                    <constraint firstAttribute="width" constant="361" id="Ivd-2d-piK"/>
+                                    <constraint firstItem="nqm-e8-Ies" firstAttribute="centerY" secondItem="QgM-ue-WDU" secondAttribute="centerY" constant="0.3333333333333286" id="dbx-hc-ng1"/>
+                                    <constraint firstItem="nqm-e8-Ies" firstAttribute="centerX" secondItem="QgM-ue-WDU" secondAttribute="centerX" id="pAS-34-huF"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                                        <integer key="value" value="8"/>
+                                    </userDefinedRuntimeAttribute>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="jQM-vg-sPd"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="QgM-ue-WDU" firstAttribute="centerY" secondItem="ZyG-ng-LMi" secondAttribute="centerY" constant="29" id="BJA-J3-uh8"/>
+                            <constraint firstItem="QgM-ue-WDU" firstAttribute="centerX" secondItem="ZyG-ng-LMi" secondAttribute="centerX" id="tdo-wO-Ls3"/>
+                        </constraints>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7oQ-bA-O5D" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-799.23664122137404" y="3.5211267605633805"/>
         </scene>
     </scenes>
     <resources>

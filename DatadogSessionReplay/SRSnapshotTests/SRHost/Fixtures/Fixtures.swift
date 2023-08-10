@@ -8,6 +8,7 @@ import UIKit
 import SwiftUI
 
 internal enum Fixture: CaseIterable {
+    case demo
     case basicShapes
     case basicTexts
     case sliders
@@ -29,6 +30,8 @@ internal enum Fixture: CaseIterable {
 
     var menuItemTitle: String {
         switch self {
+        case .demo:
+            return "Demo"
         case .basicShapes:
             return "Basic Shapes"
         case .basicTexts:
@@ -70,6 +73,8 @@ internal enum Fixture: CaseIterable {
 
     func instantiateViewController() -> UIViewController {
         switch self {
+        case .demo:
+            return UIStoryboard.basic.instantiateViewController(withIdentifier: "Demo")
         case .basicShapes:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Shapes")
         case .basicTexts:
