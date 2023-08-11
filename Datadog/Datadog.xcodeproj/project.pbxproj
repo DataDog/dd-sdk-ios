@@ -4360,6 +4360,25 @@
 			path = ../DatadogCrashReporting/Tests;
 			sourceTree = "<group>";
 		};
+		617699162A8608C20030022B /* Context */ = {
+			isa = PBXGroup;
+			children = (
+				614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */,
+				D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */,
+				D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */,
+				D2A1EE34287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift */,
+				D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */,
+				D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */,
+				D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */,
+				D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */,
+				D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */,
+				D26C49AE2886DC7B00802B2D /* ApplicationStatePublisherTests.swift */,
+				D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */,
+				D234613028B7712F00055D4C /* FeatureContextTests.swift */,
+			);
+			path = Context;
+			sourceTree = "<group>";
+		};
 		61776D4C273E6D8100F93802 /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
@@ -5665,20 +5684,9 @@
 		D2EFA873286E010100F1FAA6 /* DatadogCore */ = {
 			isa = PBXGroup;
 			children = (
+				617699162A8608C20030022B /* Context */,
 				614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */,
-				614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */,
-				D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */,
-				D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */,
-				D2A1EE34287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift */,
-				D2A1EE3A287EECA800D28DFB /* CarrierInfoPublisherTests.swift */,
-				D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */,
-				D2A1EE37287EBE4200D28DFB /* NetworkConnectionInfoPublisherTests.swift */,
-				D2A1EE3D2885D7EC00D28DFB /* LaunchTimePublisherTests.swift */,
-				D2A1EE432886B8B400D28DFB /* UserInfoPublisherTests.swift */,
-				D26C49AE2886DC7B00802B2D /* ApplicationStatePublisherTests.swift */,
-				D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */,
 				D21C26D028A64599005DD405 /* MessageBusTests.swift */,
-				D234613028B7712F00055D4C /* FeatureContextTests.swift */,
 			);
 			path = DatadogCore;
 			sourceTree = "<group>";
