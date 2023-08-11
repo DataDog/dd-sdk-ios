@@ -10,7 +10,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 - [FEATURE] Session Replay.
 - [FEATURE] Support multiple SDK instances.
 - [IMPROVEMENT] All relevant products (RUM, Trace, Logs, etc.) are now extracted into different modules.
-- [BUGFIX] Module stability: fix name collision. 
+- [BUGFIX] Module stability: fix name collision.
 
 # 1.22.0 / 21-07-2023
 - [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
