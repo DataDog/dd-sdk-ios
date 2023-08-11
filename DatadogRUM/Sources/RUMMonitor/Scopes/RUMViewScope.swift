@@ -368,7 +368,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(plan: .plan1)
             ),
             action: .init(
@@ -438,7 +438,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 documentVersion: version.toInt64,
                 pageStates: nil,
                 replayStats: .init(
@@ -494,6 +494,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frustration: .init(count: frustrationCount),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
+                interactionToNextPaint: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
@@ -536,7 +537,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(plan: .plan1)
             ),
             action: self.context.activeUserActionID.map { rumUUID in
@@ -598,7 +599,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let longTaskEvent = RUMLongTaskEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 discarded: nil,
                 session: .init(plan: .plan1)
             ),

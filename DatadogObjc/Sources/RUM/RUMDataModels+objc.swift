@@ -185,8 +185,8 @@ public class DDRUMActionEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -958,8 +958,8 @@ public class DDRUMErrorEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -1953,8 +1953,8 @@ public class DDRUMLongTaskEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -2603,8 +2603,8 @@ public class DDRUMResourceEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -3558,8 +3558,8 @@ public class DDRUMViewEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -4264,6 +4264,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var inForegroundPeriods: [DDRUMViewEventViewInForegroundPeriods]? {
         root.swiftModel.view.inForegroundPeriods?.map { DDRUMViewEventViewInForegroundPeriods(swiftModel: $0) }
+    }
+
+    @objc public var interactionToNextPaint: NSNumber? {
+        root.swiftModel.view.interactionToNextPaint as NSNumber?
     }
 
     @objc public var isActive: NSNumber? {
@@ -5102,6 +5106,14 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.actionNameAttribute
     }
 
+    @objc public var allowFallbackToLocalStorage: NSNumber? {
+        root.swiftModel.telemetry.configuration.allowFallbackToLocalStorage as NSNumber?
+    }
+
+    @objc public var allowUntrustedEvents: NSNumber? {
+        root.swiftModel.telemetry.configuration.allowUntrustedEvents as NSNumber?
+    }
+
     @objc public var batchSize: NSNumber? {
         root.swiftModel.telemetry.configuration.batchSize as NSNumber?
     }
@@ -5310,6 +5322,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
 
+    @objc public var useWorkerUrl: NSNumber? {
+        root.swiftModel.telemetry.configuration.useWorkerUrl as NSNumber?
+    }
+
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
         .init(swift: root.swiftModel.telemetry.configuration.viewTrackingStrategy)
     }
@@ -5434,4 +5450,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00
+// Generated from https://github.com/DataDog/rum-events-format/tree/f21e8badee23a4d3204440d55a5ac7b5d9fadc81
