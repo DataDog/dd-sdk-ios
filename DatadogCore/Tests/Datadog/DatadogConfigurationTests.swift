@@ -174,7 +174,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK is already initialized."
+            "🔥 Datadog SDK usage error: The 'main' instance of SDK is already initialized."
         )
 
         Datadog.flushAndDeinitialize()

@@ -315,8 +315,8 @@ public struct Datadog {
         trackingConsent: TrackingConsent,
         instanceName: String
     ) throws -> DatadogCoreProtocol {
-        if CoreRegistry.default is DatadogCore {
-            throw ProgrammerError(description: "SDK is already initialized.")
+        guard !CoreRegistry.isRegistered(instanceName: instanceName) else {
+            throw ProgrammerError(description: "The '\(instanceName)' instance of SDK is already initialized.")
         }
 
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)

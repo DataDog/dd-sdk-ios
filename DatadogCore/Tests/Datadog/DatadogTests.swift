@@ -175,7 +175,7 @@ class DatadogTests: XCTestCase {
 
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK is already initialized."
+            "🔥 Datadog SDK usage error: The 'main' instance of SDK is already initialized."
         )
 
         Datadog.flushAndDeinitialize()
@@ -414,5 +414,29 @@ class DatadogTests: XCTestCase {
         // Then
         XCTAssertTrue(CoreRegistry.default is NOPDatadogCore)
         XCTAssertTrue(CoreRegistry.instance(named: "test") is DatadogCore)
+    }
+
+    func testGivenDefaultSDKInstanceInitialized_customOneCanBeInitializedAfterIt() throws {
+        let defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "default")
+        let customConfig = Datadog.Configuration(clientToken: "def-456", env: "custom")
+
+        // Given
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom()
+        )
+        defer { Datadog.flushAndDeinitialize() }
+
+        // When
+        Datadog.initialize(
+            with: customConfig,
+            trackingConsent: .mockRandom(),
+            instanceName: "custom-instance"
+        )
+        defer { Datadog.flushAndDeinitialize(instanceName: "custom-instance") }
+
+        // Then
+        XCTAssertTrue(CoreRegistry.default is DatadogCore)
+        XCTAssertTrue(CoreRegistry.instance(named: "custom-instance") is DatadogCore)
     }
 }
