@@ -1,6 +1,7 @@
 # Unreleased
 
-- [BUGFIX / BREAKING] Do not propagate attributes from Errors and LongTasks to Views.
+- [BUGFIX] Do not propagate attributes from Errors and LongTasks to Views.
+- [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.1.
 
 # 2.0.0 / 31-07-2023
 
