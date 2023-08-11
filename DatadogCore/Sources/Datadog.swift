@@ -353,7 +353,7 @@ public struct Datadog {
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.proxyConfiguration),
+            httpClient: URLSessionClient(proxyConfiguration: configuration.proxyConfiguration),
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,

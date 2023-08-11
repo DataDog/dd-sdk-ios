@@ -542,7 +542,7 @@ extension URLResponse {
 
 extension URLRequest: AnyMockable {
     public static func mockAny() -> URLRequest {
-        return URLRequest(url: .mockAny())
+        return .mockWith()
     }
 
     public static func mockWith(httpMethod: String) -> URLRequest {
@@ -554,11 +554,24 @@ extension URLRequest: AnyMockable {
     public static func mockWith(
         url: String,
         queryParams: [URLQueryItem]? = nil,
-        httpMethod: String = "GET"
+        httpMethod: String = "GET",
+        headers: [String: String]? = nil,
+        body: Data? = nil
     ) -> URLRequest {
         let url: URL = .mockWith(url: url, queryParams: queryParams)
+        return mockWith(url: url, httpMethod: httpMethod, headers: headers, body: body)
+    }
+
+    public static func mockWith(
+        url: URL = .mockAny(),
+        httpMethod: String = "GET",
+        headers: [String: String]? = nil,
+        body: Data? = nil
+    ) -> URLRequest {
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
+        request.allHTTPHeaderFields = headers
+        request.httpBody = body
         return request
     }
 }

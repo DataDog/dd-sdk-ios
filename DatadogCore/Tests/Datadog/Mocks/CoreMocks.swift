@@ -299,12 +299,6 @@ extension DataFormat {
     }
 }
 
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: .mockAny())
-    }
-}
-
 class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}

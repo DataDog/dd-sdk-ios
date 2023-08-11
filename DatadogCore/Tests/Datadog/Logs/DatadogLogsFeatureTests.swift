@@ -38,7 +38,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -105,7 +105,7 @@ class DatadogLogsFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,

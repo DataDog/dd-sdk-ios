@@ -33,15 +33,13 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
@@ -70,7 +68,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 1)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -81,15 +78,13 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
@@ -118,7 +113,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 1)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -137,15 +131,13 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithForcingNewBatch_itUploadsEachEventInSeparateRequest() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
@@ -171,7 +163,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 3)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -195,11 +186,12 @@ class DatadogCoreTests: XCTestCase {
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
             performance: .mockRandom(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()
         )
+        defer { core.flushAndTearDown() }
         try core.register(
             feature: FeatureMock(performanceOverride: nil)
         )
@@ -231,7 +223,7 @@ class DatadogCoreTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: contextProvider,
             applicationVersion: .mockAny()

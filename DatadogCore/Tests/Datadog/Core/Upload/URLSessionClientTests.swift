@@ -8,11 +8,11 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
-class HTTPClientTests: XCTestCase {
+class URLSessionClientTests: XCTestCase {
     func testWhenRequestIsDelivered_itReturnsHTTPResponse() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(session: server.getInterceptedURLSession())
+        let client = URLSessionClient(session: server.getInterceptedURLSession())
 
         client.send(request: .mockAny()) { result in
             switch result {
@@ -32,7 +32,7 @@ class HTTPClientTests: XCTestCase {
         let mockError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "no internet connection"])
         let server = ServerMock(delivery: .failure(error: mockError))
         let expectation = self.expectation(description: "receive response")
-        let client = HTTPClient(session: server.getInterceptedURLSession())
+        let client = URLSessionClient(session: server.getInterceptedURLSession())
 
         client.send(request: .mockAny()) { result in
             switch result {
@@ -57,7 +57,7 @@ class HTTPClientTests: XCTestCase {
             kCFProxyPasswordKey: "proxypass",
         ]
 
-        let client = HTTPClient(proxyConfiguration: proxyConfiguration)
+        let client = URLSessionClient(proxyConfiguration: proxyConfiguration)
 
         let actualProxy: [AnyHashable: Any] = client.session.configuration.connectionProxyDictionary!
         XCTAssertEqual(actualProxy[kCFNetworkProxiesHTTPEnable] as? Bool, true)

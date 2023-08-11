@@ -42,7 +42,7 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testItUploadsAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
         let dataUploader = DataUploader(
             httpClient: httpClient,
             requestBuilder: FeatureRequestBuilderMock()
@@ -177,7 +177,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -213,7 +213,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -249,7 +249,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -468,7 +468,7 @@ class DataUploadWorkerTests: XCTestCase {
     func testWhenCancelled_itPerformsNoMoreUploads() {
         // Given
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -495,7 +495,7 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testItFlushesAllData() {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
