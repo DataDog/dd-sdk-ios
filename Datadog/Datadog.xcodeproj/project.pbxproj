@@ -299,6 +299,8 @@
 		617699192A860D9D0030022B /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617699172A860D9D0030022B /* HTTPClient.swift */; };
 		6176991B2A86121B0030022B /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991A2A86121B0030022B /* HTTPClientMock.swift */; };
 		6176991C2A86121B0030022B /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991A2A86121B0030022B /* HTTPClientMock.swift */; };
+		6176991E2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */; };
+		6176991F2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */; };
 		61776CED273BEA5500F93802 /* DebugRUMSessionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */; };
 		61776D4E273E6D9F00F93802 /* SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776D4D273E6D9F00F93802 /* SwiftUI.swift */; };
 		6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */; };
@@ -2151,6 +2153,7 @@
 		617247B725DAB0E2007085B3 /* DDCrashReportBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportBuilder.swift; sourceTree = "<group>"; };
 		617699172A860D9D0030022B /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		6176991A2A86121B0030022B /* HTTPClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientMock.swift; sourceTree = "<group>"; };
+		6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+MultipleInstancesIntegrationTests.swift"; sourceTree = "<group>"; };
 		61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMSessionViewController.swift; sourceTree = "<group>"; };
 		61776D4D273E6D9F00F93802 /* SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUI.swift; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
@@ -3546,6 +3549,7 @@
 		610ABD4A2A6930AB00AFEA34 /* Public */ = {
 			isa = PBXGroup;
 			children = (
+				6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */,
 				610ABD4B2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift */,
 			);
 			path = Public;
@@ -7331,6 +7335,7 @@
 				61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
 				D22743DC29DEB8B4001A7EF9 /* VitalRefreshRateReaderTests.swift in Sources */,
+				6176991E2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
 				61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */,
 				3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */,
@@ -8469,6 +8474,7 @@
 				D2B3F0452823EE8400C2B5EE /* DataBlockTests.swift in Sources */,
 				D2CB6F5327C520D400A62B57 /* DirectoryTests.swift in Sources */,
 				618353BD2A69470A0085F84A /* CoreMetricsIntegrationTests.swift in Sources */,
+				6176991F2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
 				D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				D20605BA2875729E0047275C /* ContextValuePublisherMock.swift in Sources */,
 				D22743E729DEB953001A7EF9 /* UIApplicationSwizzlerTests.swift in Sources */,

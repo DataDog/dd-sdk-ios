@@ -75,7 +75,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         let logMatchers = try LogMatcher.from(requests: recordedRequests)
 
         let browserLog = logMatchers[0]
-        browserLog.assertServiceName(equals: expectedBrowserServiceName)
+        browserLog.assertService(equals: expectedBrowserServiceName)
         browserLog.assertAttributes(equal: [
             "application_id": expectedBrowserRUMApplicationID,
             "session_id": expectedBrowserSessionID,

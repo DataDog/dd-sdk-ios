@@ -99,7 +99,7 @@ class LoggerTests: XCTestCase {
 
         let logMatcher = try core.waitAndReturnLogMatchers()[0]
 
-        logMatcher.assertServiceName(equals: "custom-service-name")
+        logMatcher.assertService(equals: "custom-service-name")
         logMatcher.assertLoggerName(equals: "custom-logger-name")
         logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.name", isTypeOf: String.self)
         logMatcher.assertValue(forKeyPath: "network.client.sim_carrier.iso_country", isTypeOf: String.self)
