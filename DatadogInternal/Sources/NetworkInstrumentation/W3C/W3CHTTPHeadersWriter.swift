@@ -47,8 +47,13 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// to network request.
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
-    public init(samplingRate: Float = 20) {
-        self.sampler = Sampler(samplingRate: samplingRate)
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
+    public convenience init(samplingRate: Float) {
+        self.init(sampleRate: samplingRate)
+    }
+
+    public convenience init(sampleRate: Float = 20) {
+        self.init(sampler: Sampler(samplingRate: sampleRate))
     }
 
     /// Creates a `W3CHTTPHeadersWriter` to inject traces propagation headers

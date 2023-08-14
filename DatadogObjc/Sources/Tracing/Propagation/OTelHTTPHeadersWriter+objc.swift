@@ -33,12 +33,21 @@ public class DDOTelHTTPHeadersWriter: NSObject {
     }
 
     @objc
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:injectEncoding:)` instead.")
+    public convenience init(
+        samplingRate: Float,
+        injectEncoding: DDInjectEncoding = .single
+    ) {
+        self.init(sampleRate: samplingRate, injectEncoding: injectEncoding)
+    }
+
+    @objc
     public init(
-        samplingRate: Float = 20,
+        sampleRate: Float = 20,
         injectEncoding: DDInjectEncoding = .single
     ) {
         swiftOTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
-            samplingRate: samplingRate,
+            sampleRate: sampleRate,
             injectEncoding: .init(injectEncoding)
         )
     }

@@ -16,7 +16,13 @@ public class DDHTTPHeadersWriter: NSObject {
     }
 
     @objc
-    public init(samplingRate: Float = 20) {
-        swiftHTTPHeadersWriter = HTTPHeadersWriter(samplingRate: samplingRate)
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
+    public convenience init(samplingRate: Float) {
+        self.init(sampleRate: samplingRate)
+    }
+
+    @objc
+    public init(sampleRate: Float = 20) {
+        swiftHTTPHeadersWriter = HTTPHeadersWriter(sampleRate: sampleRate)
     }
 }

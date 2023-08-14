@@ -64,12 +64,22 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
     /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
-    public init(
-        samplingRate: Float = 20,
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:injectEncoding:)` instead.")
+    public convenience init(
+        samplingRate: Float,
         injectEncoding: InjectEncoding = .single
     ) {
-        self.sampler = Sampler(samplingRate: samplingRate)
-        self.injectEncoding = injectEncoding
+        self.init(sampleRate: samplingRate, injectEncoding: injectEncoding)
+    }
+
+    public convenience init(
+        sampleRate: Float = 20,
+        injectEncoding: InjectEncoding = .single
+    ) {
+        self.init(
+            sampler: Sampler(samplingRate: sampleRate),
+            injectEncoding: injectEncoding
+        )
     }
 
     /// Creates a `OTelHTTPHeadersWriter` to inject traces propagation headers
