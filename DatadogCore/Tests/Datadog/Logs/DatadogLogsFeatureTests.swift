@@ -70,12 +70,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: randomUploadURL
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(customEndpoint: randomUploadURL), in: core)
 
         // When
         let logger = Logger.create(in: core)
@@ -136,12 +131,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: .mockAny()
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(), in: core)
 
         let logger = Logger.create(in: core)
         logger.debug("log 1")

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 
 /// Provides set of assertions for single `Log` JSON object and collection of `[Log]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced.
