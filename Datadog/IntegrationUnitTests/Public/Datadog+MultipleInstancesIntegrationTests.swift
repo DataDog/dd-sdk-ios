@@ -61,8 +61,8 @@ class Datadog_MultipleInstancesIntegrationTests: XCTestCase {
         Datadog.flushAndDeinitialize()
         Datadog.flushAndDeinitialize(instanceName: customInstanceName)
 
-        let defaultInstanceRequests = try defaultHTTPClient.requestsSent(decompressed: true)
-        let customInstanceRequests = try customHTTPClient.requestsSent(decompressed: true)
+        let defaultInstanceRequests = defaultHTTPClient.requestsSent()
+        let customInstanceRequests = customHTTPClient.requestsSent()
         XCTAssertGreaterThan(defaultInstanceRequests.count, 0, "Default instance should send some data")
         XCTAssertGreaterThan(customInstanceRequests.count, 0, "Custom instance should send some data")
 

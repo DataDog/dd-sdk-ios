@@ -1374,8 +1374,8 @@
 		D2EFA876286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */; };
 		D2F44FB8299AA1DA0074B0D9 /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
 		D2F44FB9299AA1DB0074B0D9 /* DataCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D213532F270CA722000315AD /* DataCompressionTests.swift */; };
-		D2F44FBC299AA36D0074B0D9 /* zlib.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FBB299AA36D0074B0D9 /* zlib.swift */; };
-		D2F44FBD299AA36D0074B0D9 /* zlib.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FBB299AA36D0074B0D9 /* zlib.swift */; };
+		D2F44FBC299AA36D0074B0D9 /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FBB299AA36D0074B0D9 /* Decompression.swift */; };
+		D2F44FBD299AA36D0074B0D9 /* Decompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FBB299AA36D0074B0D9 /* Decompression.swift */; };
 		D2F44FC2299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */; };
 		D2F44FC3299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */; };
 		D2F8235329915E12003C7E99 /* DatadogSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F8235229915E12003C7E99 /* DatadogSite.swift */; };
@@ -2606,7 +2606,7 @@
 		D2EFA874286E011900F1FAA6 /* DatadogContextProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogContextProviderTests.swift; sourceTree = "<group>"; };
 		D2EFF3D22731822A00D09F33 /* RUMViewsHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMViewsHandler.swift; sourceTree = "<group>"; };
 		D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNoopTracerTests.swift; sourceTree = "<group>"; };
-		D2F44FBB299AA36D0074B0D9 /* zlib.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = zlib.swift; sourceTree = "<group>"; };
+		D2F44FBB299AA36D0074B0D9 /* Decompression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Decompression.swift; sourceTree = "<group>"; };
 		D2F44FC1299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
 		D2F8235229915E12003C7E99 /* DatadogSite.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogSite.swift; sourceTree = "<group>"; };
 		D2FB1253292E0E92005B13F8 /* TrackingConsentPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentPublisher.swift; sourceTree = "<group>"; };
@@ -5353,7 +5353,7 @@
 				D257954F298ABB04008A1BE5 /* DDAssert.swift */,
 				D2579550298ABB04008A1BE5 /* SwiftExtensions.swift */,
 				D2579551298ABB04008A1BE5 /* XCTestCase.swift */,
-				D2F44FBB299AA36D0074B0D9 /* zlib.swift */,
+				D2F44FBB299AA36D0074B0D9 /* Decompression.swift */,
 				61133C462423990D00786299 /* TestsDirectory.swift */,
 				61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */,
 			);
@@ -8025,7 +8025,7 @@
 				D2579554298ABB04008A1BE5 /* FeatureBaggageMock.swift in Sources */,
 				3C85D42C29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */,
 				D2160CF729C0EE2B00FAA9A5 /* UploadMocks.swift in Sources */,
-				D2F44FBC299AA36D0074B0D9 /* zlib.swift in Sources */,
+				D2F44FBC299AA36D0074B0D9 /* Decompression.swift in Sources */,
 				D24C9C5229A7BD12002057CF /* SamplerMock.swift in Sources */,
 				D2579557298ABB04008A1BE5 /* AttributesMocks.swift in Sources */,
 				D2DA23C7298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,
@@ -8059,7 +8059,7 @@
 				D257957E298ABB83008A1BE5 /* FeatureBaggageMock.swift in Sources */,
 				3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */,
 				D2160CF829C0EE2B00FAA9A5 /* UploadMocks.swift in Sources */,
-				D2F44FBD299AA36D0074B0D9 /* zlib.swift in Sources */,
+				D2F44FBD299AA36D0074B0D9 /* Decompression.swift in Sources */,
 				D24C9C5329A7BD12002057CF /* SamplerMock.swift in Sources */,
 				D257957F298ABB83008A1BE5 /* AttributesMocks.swift in Sources */,
 				D2DA23C8298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,

@@ -8,15 +8,11 @@ import Foundation
 import TestUtilities
 @testable import DatadogCore
 
-internal struct HTTPClientMockError: Error, CustomStringConvertible {
-    var description: String
-}
-
 internal class HTTPClientMock: HTTPClient {
     /// The queue to synchronise access to tracked requests.
     private let queue = DispatchQueue(label: "com.datadoghq.HTTPClientMock-\(UUID().uuidString)")
     /// Keeps track of sent requests.
-    private var requestsSent: [URLRequest] = []
+    private var requests: [URLRequest] = []
     /// Closure providing the result for each request.
     private let result: (URLRequest) -> Result<HTTPURLResponse, Error>
 
@@ -49,37 +45,18 @@ internal class HTTPClientMock: HTTPClient {
     func send(request: URLRequest, completion: @escaping (Result<HTTPURLResponse, Error>) -> Void) {
         queue.async {
             completion(self.result(request))
-            self.requestsSent.append(request)
+            self.requests.append(request)
         }
     }
 
     // MARK: - Tracked requests retrieval
 
-    /// Retrieves the tracked requests, optionally decompressing their bodies.
-    /// - Parameter decompressed: A flag indicating whether to return decompressed requests (default is `false`).
+    /// Retrieves the tracked requests.
     /// - Returns: An array of tracked URLRequest instances.
     /// - Throws: An error if decompression fails.
-    func requestsSent(decompressed: Bool = false) throws -> [URLRequest] {
-        try queue.sync {
-            let requests = self.requestsSent
-            return decompressed ? try requests.map(decompressIfNeeded(_:)) : requests
+    func requestsSent() -> [URLRequest] {
+        queue.sync {
+            self.requests
         }
-    }
-
-    /// Decompresses the body of the given request if needed.
-    /// - Parameter request: The request to potentially decompress.
-    /// - Returns: The original request or a decompressed request if applicable.
-    /// - Throws: An error if decompression fails.
-    private func decompressIfNeeded(_ request: URLRequest) throws -> URLRequest {
-        let isCompressed = request.allHTTPHeaderFields?["Content-Encoding"] == "deflate"
-        guard isCompressed, let body = request.httpBody else {
-            return request
-        }
-        guard let decompressedBody = zlib.decode(body) else {
-            throw HTTPClientMockError(description: "Failed to decompress request body: \(request)")
-        }
-        var request = request
-        request.httpBody = decompressedBody
-        return request
     }
 }

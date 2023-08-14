@@ -78,7 +78,7 @@ internal class LogMatcher: JSONDataMatcher {
     }
 
     class func fromLogsRequest(_ request: URLRequest, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
-        guard let body = request.httpBody else {
+        guard let body = try request.decompressed().httpBody else {
             XCTFail("Request has no body", file: file, line: line)
             return []
         }
