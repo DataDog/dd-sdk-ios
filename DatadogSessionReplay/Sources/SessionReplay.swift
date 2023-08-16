@@ -66,7 +66,7 @@ public final class SessionReplay: NSObject {
         sessionReplay.writer.startWriting(to: core)
     }
 
-    private override init() {
+    override private init() {
         super.init()
     }
 }

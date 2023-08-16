@@ -10,7 +10,6 @@ import DatadogInternal
 /// Session Replay feature configuration.
 @objc(DDSessionReplayConfiguration)
 public final class SessionReplayConfiguration: NSObject {
-
     /// The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
     ///
     /// It must be a number between 0.0 and 100.0, where 0 means no replays will be recorded
