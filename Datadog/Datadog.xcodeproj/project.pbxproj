@@ -561,6 +561,8 @@
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
 		D21C26D228A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
+		D21D32AD2A8D1DC500DC81E4 /* SessionReplayTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D21D32AC2A8D1DC500DC81E4 /* SessionReplayTests.m */; };
+		D21D32AE2A8D1DC500DC81E4 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; platformFilter = ios; };
 		D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* MessageBus.swift */; };
@@ -1568,6 +1570,13 @@
 			remoteGlobalIDString = D23039A4298D513C001A1FA3;
 			remoteInfo = "DatadogInternal iOS";
 		};
+		D21D32AF2A8D1DC500DC81E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6133D1E52A6ED9E100384BEF;
+			remoteInfo = "DatadogSessionReplay iOS";
+		};
 		D22A031A29F7DAA9002C02C6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -2417,6 +2426,8 @@
 		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
+		D21D32AA2A8D1DC400DC81E4 /* DatadogSessionReplayTests-Objc.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogSessionReplayTests-Objc.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D21D32AC2A8D1DC500DC81E4 /* SessionReplayTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SessionReplayTests.m; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
@@ -2797,6 +2808,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C74305C29FBC0480053B80F /* DatadogInternal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D21D32A72A8D1DC400DC81E4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D21D32AE2A8D1DC500DC81E4 /* DatadogSessionReplay.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3574,6 +3593,7 @@
 				D29A9F3F29DD84AB005C54A4 /* DatadogRUMTests */,
 				61054E012A6EE0A400AAA894 /* DatadogSessionReplay */,
 				61054E022A6EE0DB00AAA894 /* DatadogSessionReplayTests */,
+				D21D32AB2A8D1DC500DC81E4 /* DatadogSessionReplayTests-Objc */,
 				6170DC1325C1864B003AED5C /* DatadogCrashReporting */,
 				6170DC1425C18663003AED5C /* DatadogCrashReportingTests */,
 				3CE11A3B29F7BEE700202522 /* DatadogWebViewTracking */,
@@ -3631,6 +3651,7 @@
 				3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests.xctest */,
 				6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */,
 				6133D2082A6EDB7700384BEF /* DatadogSessionReplayTests.xctest */,
+				D21D32AA2A8D1DC400DC81E4 /* DatadogSessionReplayTests-Objc.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -5088,6 +5109,15 @@
 			path = Integrations;
 			sourceTree = "<group>";
 		};
+		D21D32AB2A8D1DC500DC81E4 /* DatadogSessionReplayTests-Objc */ = {
+			isa = PBXGroup;
+			children = (
+				D21D32AC2A8D1DC500DC81E4 /* SessionReplayTests.m */,
+			);
+			name = "DatadogSessionReplayTests-Objc";
+			path = "../DatadogSessionReplay/Tests-Objc";
+			sourceTree = "<group>";
+		};
 		D22C1F5A2714849700922024 /* Scrubbing */ = {
 			isa = PBXGroup;
 			children = (
@@ -6178,6 +6208,24 @@
 			productReference = D20731B429A5279D00ECBF94 /* DatadogLogs.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		D21D32A92A8D1DC400DC81E4 /* DatadogSessionReplayTests-Objc */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D21D32B12A8D1DC500DC81E4 /* Build configuration list for PBXNativeTarget "DatadogSessionReplayTests-Objc" */;
+			buildPhases = (
+				D21D32A62A8D1DC400DC81E4 /* Sources */,
+				D21D32A72A8D1DC400DC81E4 /* Frameworks */,
+				D21D32A82A8D1DC400DC81E4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D21D32B02A8D1DC500DC81E4 /* PBXTargetDependency */,
+			);
+			name = "DatadogSessionReplayTests-Objc";
+			productName = "DatadogSessionReplayTests-Objc";
+			productReference = D21D32AA2A8D1DC400DC81E4 /* DatadogSessionReplayTests-Objc.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		D23039A4298D513C001A1FA3 /* DatadogInternal iOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = D23039AC298D513D001A1FA3 /* Build configuration list for PBXNativeTarget "DatadogInternal iOS" */;
@@ -6645,6 +6693,9 @@
 					D207318229A5226A00ECBF94 = {
 						CreatedOnToolsVersion = 14.2;
 					};
+					D21D32A92A8D1DC400DC81E4 = {
+						CreatedOnToolsVersion = 14.3.1;
+					};
 					D23039A4298D513C001A1FA3 = {
 						CreatedOnToolsVersion = 14.2;
 						LastSwiftMigration = 1420;
@@ -6724,6 +6775,7 @@
 				3CE11A0429F7BE0300202522 /* DatadogWebViewTrackingTests iOS */,
 				6133D1E52A6ED9E100384BEF /* DatadogSessionReplay iOS */,
 				6133D1F62A6EDB7700384BEF /* DatadogSessionReplayTests iOS */,
+				D21D32A92A8D1DC400DC81E4 /* DatadogSessionReplayTests-Objc */,
 			);
 		};
 /* End PBXProject section */
@@ -6847,6 +6899,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		D20731AF29A5279D00ECBF94 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D21D32A82A8D1DC400DC81E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -7777,6 +7836,14 @@
 				D20731B629A528DA00ECBF94 /* LogEventBuilder.swift in Sources */,
 				D20731C629A528ED00ECBF94 /* LogOutput.swift in Sources */,
 				D243BBF629A620CC000B9CEC /* MessageReceivers.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D21D32A62A8D1DC400DC81E4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D21D32AD2A8D1DC500DC81E4 /* SessionReplayTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8842,6 +8909,12 @@
 			isa = PBXTargetDependency;
 			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
 			targetProxy = D207319929A5232A00ECBF94 /* PBXContainerItemProxy */;
+		};
+		D21D32B02A8D1DC500DC81E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = 6133D1E52A6ED9E100384BEF /* DatadogSessionReplay iOS */;
+			targetProxy = D21D32AF2A8D1DC500DC81E4 /* PBXContainerItemProxy */;
 		};
 		D22A031B29F7DAA9002C02C6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -10604,6 +10677,63 @@
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Integration;
+		};
+		D21D32B22A8D1DC500DC81E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.DatadogSessionReplayTests-Objc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D21D32B32A8D1DC500DC81E4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.DatadogSessionReplayTests-Objc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D21D32B42A8D1DC500DC81E4 /* Integration */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.datadoghq.DatadogSessionReplayTests-Objc";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Integration;
 		};
@@ -12633,6 +12763,16 @@
 				D20731B129A5279D00ECBF94 /* Debug */,
 				D20731B229A5279D00ECBF94 /* Release */,
 				D20731B329A5279D00ECBF94 /* Integration */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D21D32B12A8D1DC500DC81E4 /* Build configuration list for PBXNativeTarget "DatadogSessionReplayTests-Objc" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D21D32B22A8D1DC500DC81E4 /* Debug */,
+				D21D32B32A8D1DC500DC81E4 /* Release */,
+				D21D32B42A8D1DC500DC81E4 /* Integration */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

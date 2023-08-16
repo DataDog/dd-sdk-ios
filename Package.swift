@@ -178,6 +178,13 @@ let package = Package(
             ],
             path: "DatadogSessionReplay/Tests"
         ),
+        .testTarget(
+            name: "DatadogSessionReplayTests-Objc",
+            dependencies: [
+                .target(name: "DatadogSessionReplay"),
+            ],
+            path: "DatadogSessionReplay/Tests-Objc"
+        ),
 
         .target(
             name: "TestUtilities",

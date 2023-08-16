@@ -1,0 +1,24 @@
+/*
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
+
+#import <XCTest/XCTest.h>
+
+@import DatadogSessionReplay;
+
+@interface SessionReplayTests : XCTestCase
+@end
+
+@implementation SessionReplayTests
+
+- (void)testConfiguration {
+    DDSessionReplayConfiguration *configuration = [[DDSessionReplayConfiguration alloc] initWithReplaySampleRate:100];
+    configuration.defaultPrivacyLevel = DDSessionReplayConfigurationPrivacyLevelAllow;
+    configuration.customEndpoint = [NSURL new];
+
+    [DDSessionReplay enableWith:configuration];
+}
+
+@end
