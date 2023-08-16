@@ -43,3 +43,15 @@ public struct SessionReplay {
         sessionReplay.writer.startWriting(to: core)
     }
 }
+
+/// An entry point to Datadog Session Replay feature.
+@objc(DDSessionReplay) @available(swift, obsoleted: 1)
+public final class objc_SessionReplay: NSObject {
+    private override init() { }
+
+    /// Initializes the Datadog Crash Reporter.
+    @objc @available(swift, obsoleted: 1)
+    public static func enable(with configuration: objc_SessionReplayConfiguration) {
+        SessionReplay.enable(with: configuration._swift)
+    }
+}

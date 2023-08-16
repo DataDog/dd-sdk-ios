@@ -3032,7 +3032,6 @@
 			isa = PBXGroup;
 			children = (
 				61054E3B2A6EE10A00AAA894 /* Feature */,
-				61054E0A2A6EE10A00AAA894 /* Metrics */,
 				61054E482A6EE10A00AAA894 /* Processor */,
 				61054E0D2A6EE10A00AAA894 /* Recorder */,
 				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
@@ -3051,7 +3050,6 @@
 				61054F922A6EE1BA00AAA894 /* Helpers */,
 				61054F7D2A6EE1BA00AAA894 /* Mocks */,
 				61054F4E2A6EE1BA00AAA894 /* Processor */,
-				61054F942A6EE1BA00AAA894 /* Public */,
 				61054F592A6EE1BA00AAA894 /* Recorder */,
 				61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */,
 				61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */,
@@ -3080,13 +3078,6 @@
 				61054E072A6EE10A00AAA894 /* SRDataModels+UIKit.swift */,
 			);
 			path = Models;
-			sourceTree = "<group>";
-		};
-		61054E0A2A6EE10A00AAA894 /* Metrics */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Metrics;
 			sourceTree = "<group>";
 		};
 		61054E0D2A6EE10A00AAA894 /* Recorder */ = {
@@ -3528,13 +3519,6 @@
 				61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */,
 			);
 			path = Helpers;
-			sourceTree = "<group>";
-		};
-		61054F942A6EE1BA00AAA894 /* Public */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Public;
 			sourceTree = "<group>";
 		};
 		610ABD492A69309900AFEA34 /* IntegrationUnitTests */ = {
