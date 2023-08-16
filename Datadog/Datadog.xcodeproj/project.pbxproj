@@ -301,6 +301,7 @@
 		6176991C2A86121B0030022B /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991A2A86121B0030022B /* HTTPClientMock.swift */; };
 		6176991E2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */; };
 		6176991F2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */; };
+		617699212A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617699202A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift */; };
 		61776CED273BEA5500F93802 /* DebugRUMSessionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */; };
 		61776D4E273E6D9F00F93802 /* SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776D4D273E6D9F00F93802 /* SwiftUI.swift */; };
 		6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */; };
@@ -2154,6 +2155,7 @@
 		617699172A860D9D0030022B /* HTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClient.swift; sourceTree = "<group>"; };
 		6176991A2A86121B0030022B /* HTTPClientMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPClientMock.swift; sourceTree = "<group>"; };
 		6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+MultipleInstancesIntegrationTests.swift"; sourceTree = "<group>"; };
+		617699202A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugManualTraceInjectionViewController.swift; sourceTree = "<group>"; };
 		61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMSessionViewController.swift; sourceTree = "<group>"; };
 		61776D4D273E6D9F00F93802 /* SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUI.swift; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
@@ -4214,6 +4216,7 @@
 			children = (
 				61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */,
 				61441C932461A649003D8BB8 /* DebugTracingViewController.swift */,
+				617699202A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift */,
 				61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */,
 				61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */,
 				618236882710560900125326 /* DebugWebviewViewController.swift */,
@@ -7631,6 +7634,7 @@
 				61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */,
 				D2F44FC2299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */,
 				61441C992461A649003D8BB8 /* DebugLoggingViewController.swift in Sources */,
+				617699212A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
 				61776CED273BEA5500F93802 /* DebugRUMSessionViewController.swift in Sources */,
 				61776D4E273E6D9F00F93802 /* SwiftUI.swift in Sources */,
