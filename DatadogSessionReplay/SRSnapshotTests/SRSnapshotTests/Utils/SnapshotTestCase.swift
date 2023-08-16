@@ -9,7 +9,7 @@ import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost
 
-private var defaultPrivacyLevel: SessionReplay.Configuration.PrivacyLevel {
+private var defaultPrivacyLevel: PrivacyLevel {
     return SessionReplay.Configuration(replaySampleRate: 100).defaultPrivacyLevel
 }
 
@@ -34,7 +34,7 @@ internal class SnapshotTestCase: XCTestCase {
     }
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
-    func takeSnapshot(with privacyLevel: SessionReplay.Configuration.PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
+    func takeSnapshot(with privacyLevel: PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
         let expectation = self.expectation(description: "Wait for wireframes")
 
         // Set up SR recorder:
@@ -95,8 +95,8 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: seconds * 2)
     }
 
-    func forEachPrivacyMode(do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
-        let modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput]
+    func forEachPrivacyMode(do work: (PrivacyLevel) throws -> Void) rethrows {
+        let modes: [PrivacyLevel] = [.mask, .allow, .maskUserInput]
         try modes.forEach { try work($0) }
     }
 }
