@@ -325,7 +325,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let event = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 session: .init(plan: .plan1)
             ),
             action: nil,
@@ -378,7 +378,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
@@ -420,6 +420,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 frustration: .init(count: 0),
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
+                interactionToNextPaint: nil,
                 isActive: false,
                 isSlowRendered: false,
                 jsRefreshRate: nil,
@@ -455,7 +456,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,
@@ -513,6 +514,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 frustration: .init(count: 0),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
+                interactionToNextPaint: nil,
                 isActive: false, // we know it won't receive updates
                 isSlowRendered: false,
                 jsRefreshRate: nil,

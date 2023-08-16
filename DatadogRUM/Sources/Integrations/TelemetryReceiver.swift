@@ -280,6 +280,8 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
     init(_ configuration: DatadogInternal.ConfigurationTelemetry) {
         self.init(
             actionNameAttribute: nil,
+            allowFallbackToLocalStorage: nil,
+            allowUntrustedEvents: nil,
             batchSize: configuration.batchSize,
             batchUploadFrequency: configuration.batchUploadFrequency,
             dartVersion: configuration.dartVersion,
@@ -324,6 +326,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useProxy: configuration.useProxy,
             useSecureSessionCookie: nil,
             useTracing: configuration.useTracing,
+            useWorkerUrl: nil,
             viewTrackingStrategy: nil
         )
     }

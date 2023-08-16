@@ -161,7 +161,7 @@ public struct RUMActionEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -533,7 +533,7 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -997,7 +997,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1284,7 +1284,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1746,7 +1746,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -2033,6 +2033,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the periods of time the user had the view in foreground (focused in the browser)
         public let inForegroundPeriods: [InForegroundPeriods]?
 
+        /// Longest duration in ns between an interaction and the next paint
+        public let interactionToNextPaint: Int64?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -2105,6 +2108,7 @@ public struct RUMViewEvent: RUMDataModel {
             case frustration = "frustration"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
+            case interactionToNextPaint = "interaction_to_next_paint"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
@@ -2747,6 +2751,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
+            /// Whether it is allowed to use LocalStorage when cookies are not available
+            public let allowFallbackToLocalStorage: Bool?
+
+            /// Whether untrusted events are allowed
+            public let allowUntrustedEvents: Bool?
+
             /// The window duration for batches sent by the SDK (in milliseconds)
             public let batchSize: Int64?
 
@@ -2876,7 +2886,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether local encryption is used
             public let useLocalEncryption: Bool?
 
-            /// Whether a proxy configured is used
+            /// Whether a proxy is used
             public var useProxy: Bool?
 
             /// Whether a secure session cookie is used
@@ -2885,11 +2895,16 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether tracing features are enabled
             public let useTracing: Bool?
 
+            /// Whether the Worker is loaded from an external URL
+            public let useWorkerUrl: Bool?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
             enum CodingKeys: String, CodingKey {
                 case actionNameAttribute = "action_name_attribute"
+                case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
+                case allowUntrustedEvents = "allow_untrusted_events"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
                 case dartVersion = "dart_version"
@@ -2936,6 +2951,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
+                case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -3309,4 +3325,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00
+// Generated from https://github.com/DataDog/rum-events-format/tree/f21e8badee23a4d3204440d55a5ac7b5d9fadc81
