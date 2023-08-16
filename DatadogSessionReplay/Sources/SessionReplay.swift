@@ -8,7 +8,10 @@ import Foundation
 import DatadogInternal
 
 /// An entry point to Datadog Session Replay feature.
-public struct SessionReplay {
+@objc(DDSessionReplay)
+public final class SessionReplay: NSObject {
+    public typealias Configuration = SessionReplayConfiguration
+
     /// Enables Datadog Session Replay feature.
     ///
     /// Recording will start automatically after enabling Session Replay.
@@ -19,13 +22,26 @@ public struct SessionReplay {
     ///   - configuration: Configuration of the feature.
     ///   - core: The instance of Datadog SDK to enable Session Replay in (global instance by default).
     public static func enable(
-        with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default
+        with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol
     ) {
         do {
             try enableOrThrow(with: configuration, in: core)
         } catch let error {
            consolePrint("\(error)")
        }
+    }
+
+    /// Enables Datadog Session Replay feature.
+    ///
+    /// Recording will start automatically after enabling Session Replay.
+    ///
+    /// Note: Session Replay requires the RUM feature to be enabled.
+    ///
+    /// - Parameters:
+    ///   - configuration: Configuration of the feature.
+    @objc
+    public static func enable(with configuration: SessionReplay.Configuration) {
+        enable(with: configuration, in: CoreRegistry.default)
     }
 
     internal static func enableOrThrow(
@@ -37,21 +53,20 @@ public struct SessionReplay {
             )
         }
 
-        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
-        try core.register(feature: sessionReplay)
+        let sampleRate = configuration.debugSDK ? 100 : configuration.replaySampleRate
 
+        let sessionReplay = try SessionReplayFeature(
+            core: core,
+            sampleRate: sampleRate,
+            privacy: configuration.defaultPrivacyLevel,
+            customEndpoint: configuration.customEndpoint
+        )
+
+        try core.register(feature: sessionReplay)
         sessionReplay.writer.startWriting(to: core)
     }
-}
 
-/// An entry point to Datadog Session Replay feature.
-@objc(DDSessionReplay) @available(swift, obsoleted: 1)
-public final class objc_SessionReplay: NSObject {
-    private override init() { }
-
-    /// Initializes the Datadog Crash Reporter.
-    @objc @available(swift, obsoleted: 1)
-    public static func enable(with configuration: objc_SessionReplayConfiguration) {
-        SessionReplay.enable(with: configuration._swift)
+    private override init() {
+        super.init()
     }
 }

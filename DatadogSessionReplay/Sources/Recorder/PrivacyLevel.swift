@@ -4,10 +4,8 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-internal typealias PrivacyLevel = SessionReplay.Configuration.PrivacyLevel
-
 /// Text obfuscation strategies for different text types.
-internal extension SessionReplay.Configuration.PrivacyLevel {
+internal extension PrivacyLevel {
     /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Sensitive Text" is:
@@ -54,7 +52,7 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
 }
 
 /// Other convenience helpers.
-internal extension SessionReplay.Configuration.PrivacyLevel {
+internal extension PrivacyLevel {
     /// If input elements should be masked in this privacy mode.
     var shouldMaskInputElements: Bool {
         switch self {

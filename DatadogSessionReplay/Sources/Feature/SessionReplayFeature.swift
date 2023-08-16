@@ -28,7 +28,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
     init(
         core: DatadogCoreProtocol,
-        configuration: SessionReplay.Configuration
+        sampleRate: Float,
+        privacy: PrivacyLevel,
+        customEndpoint: URL?
     ) throws {
         let writer = Writer()
         let telemetry = TelemetryCore(core: core)
@@ -49,11 +51,11 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
-            privacy: configuration.defaultPrivacyLevel,
+            privacy: privacy,
             rumContextObserver: messageReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
-            sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)
+            sampler: Sampler(samplingRate: sampleRate)
         )
 
         self.messageReceiver = messageReceiver
@@ -61,7 +63,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.processor = processor
         self.writer = writer
         self.requestBuilder = RequestBuilder(
-            customUploadURL: configuration.customEndpoint,
+            customUploadURL: customEndpoint,
             telemetry: telemetry
         )
         self.performanceOverride = PerformancePresetOverride(
