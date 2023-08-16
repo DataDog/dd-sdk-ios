@@ -23,19 +23,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     /// A list of checks ensuring global state integrity before and after each tests.
     private let checks: [TestIntegrityCheck] = [
         .init(
-            assert: { !Datadog.isInitialized() },
-            problem: "`Datadog` must not be initialized.",
+            assert: { CoreRegistry.instances.isEmpty },
+            problem: "No instance of `DatadogCore` must be left initialized after test completion.",
             solution: """
-            Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.
-            """
-        ),
-        .init(
-            assert: {
-                CoreRegistry.default is NOPDatadogCore
-            },
-            problem: "`CoreRegistry.default` must be reset after each test.",
-            solution: """
-            Make sure `CoreRegistry.unregisterDefault()` is called after the end of test that register a default core.
+            Make sure deinitialization APIs are called before the end of test that registers `DatadogCore`.
+            If registering directly to `CoreRegistry`, make sure the test cleans it up properly.
+
+            `DatadogTestsObserver` found following instances still being registered: \(CoreRegistry.instances.map({ "'\($0.key)'" }))
             """
         ),
         .init(

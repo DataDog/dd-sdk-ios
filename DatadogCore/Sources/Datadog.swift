@@ -7,8 +7,10 @@
 import Foundation
 import DatadogInternal
 
-//swiftlint:disable:next duplicate_imports
+//swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.TrackingConsent
+@_exported import protocol DatadogInternal.DatadogCoreProtocol
+//swiftlint:enable duplicate_imports
 
 /// An entry point to Datadog SDK.
 ///
@@ -84,6 +86,8 @@ public struct Datadog {
 
         /// Proxy configuration attributes.
         /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        /// Ref.: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary
         public var proxyConfiguration: [AnyHashable: Any]?
 
         /// SeData encryption to use for on-disk data persistency by providing an object
@@ -100,16 +104,6 @@ public struct Datadog {
 
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
-
-        /// Overrides the default process information.
-        internal var processInfo: ProcessInfo = .processInfo
-
-        /// Sets additional configuration attributes.
-        /// This can be used to tweak internal features of the SDK.
-        internal var additionalConfiguration: [String: Any] = [:]
-
-        /// Overrides the date provider.
-        internal var dateProvider: DateProvider = SystemDateProvider()
 
         /// Creates a Datadog SDK Configuration object.
         ///
@@ -168,6 +162,27 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+        }
+
+        // MARK: - Internal
+
+        /// Obtains OS directory where SDK creates its root folder.
+        /// All instances of the SDK use the same root folder, but each creates its own subdirectory.
+        internal var systemDirectory: () throws -> Directory = { try Directory.cache() }
+
+        /// Default process information.
+        internal var processInfo: ProcessInfo = .processInfo
+
+        /// Sets additional configuration attributes.
+        /// This can be used to tweak internal features of the SDK.
+        internal var additionalConfiguration: [String: Any] = [:]
+
+        /// Default date provider used by the SDK and all products.
+        internal var dateProvider: DateProvider = SystemDateProvider()
+
+        /// Creates `HTTPClient` with given proxy configuration attributes.
+        internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
+            URLSessionClient(proxyConfiguration: proxyConfiguration)
         }
     }
 
@@ -315,8 +330,8 @@ public struct Datadog {
         trackingConsent: TrackingConsent,
         instanceName: String
     ) throws -> DatadogCoreProtocol {
-        if CoreRegistry.default is DatadogCore {
-            throw ProgrammerError(description: "SDK is already initialized.")
+        guard !CoreRegistry.isRegistered(instanceName: instanceName) else {
+            throw ProgrammerError(description: "The '\(instanceName)' instance of SDK is already initialized.")
         }
 
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -346,14 +361,14 @@ public struct Datadog {
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(
-                in: Directory.cache(),
+                in: configuration.systemDirectory(),
                 instancenName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.proxyConfiguration),
+            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,

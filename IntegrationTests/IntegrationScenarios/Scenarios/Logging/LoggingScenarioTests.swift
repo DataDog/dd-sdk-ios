@@ -48,7 +48,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
 
         logMatchers.forEach { matcher in
             matcher.assertDate(matches: { Date().timeIntervalSince($0) < dataDeliveryTimeout * 2 })
-            matcher.assertServiceName(equals: "ui-tests-service-name")
+            matcher.assertService(equals: "ui-tests-service-name")
             matcher.assertLoggerName(equals: "logger-name")
             matcher.assertLoggerVersion(matches: { $0.matches(regex: semverRegex)})
             matcher.assertApplicationVersion(equals: "1.0")

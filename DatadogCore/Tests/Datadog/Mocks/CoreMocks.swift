@@ -299,23 +299,27 @@ extension DataFormat {
     }
 }
 
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: .mockAny())
-    }
-}
-
 class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}
 }
 
-struct DataUploaderMock: DataUploaderType {
+internal class DataUploaderMock: DataUploaderType {
     let uploadStatus: DataUploadStatus
 
-    var onUpload: (() throws -> Void)? = nil
+    /// Notifies on each started upload.
+    var onUpload: (() throws -> Void)?
+
+    /// Tracks uploaded events.
+    private(set) var uploadedEvents: [Event] = []
+
+    init(uploadStatus: DataUploadStatus, onUpload: (() -> Void)? = nil) {
+        self.uploadStatus = uploadStatus
+        self.onUpload = onUpload
+    }
 
     func upload(events: [Event], context: DatadogContext) throws -> DataUploadStatus {
+        uploadedEvents += events
         try onUpload?()
         return uploadStatus
     }

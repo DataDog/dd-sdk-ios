@@ -10,20 +10,18 @@ import TestUtilities
 @testable import DatadogCore
 
 class DataUploaderTests: XCTestCase {
-    func testWhenUploadCompletesWithSuccess_itReturnsExpectedUploadStatus() throws {
+    // swiftlint:disable opening_brace
+    func testGivenValidRequest_whenUploadCompletesWithStatusCode_itReturnsUploadStatus() throws {
         // Given
         let randomResponse: HTTPURLResponse = .mockResponseWith(statusCode: (100...599).randomElement()!)
-        let randomRequestIDOrNil: String? = Bool.random() ? .mockRandom() : nil
-        let requestIDHeaderOrNil: URLRequestBuilder.HTTPHeader? = randomRequestIDOrNil.flatMap { randomRequestID in
-                .init(field: URLRequestBuilder.HTTPHeader.ddRequestIDHeaderField, value: { randomRequestID })
-        }
-
-        let server = ServerMock(delivery: .success(response: randomResponse))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let randomRequest: URLRequest = oneOf([
+            { .mockWith(headers: [:]) },
+            { .mockWith(headers: ["DD-REQUEST-ID": String.mockRandom()]) }
+        ])
 
         let uploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock(headers: requestIDHeaderOrNil.map { [$0] } ?? [])
+            httpClient: HTTPClientMock(response: randomResponse),
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
         )
 
         // When
@@ -33,23 +31,24 @@ class DataUploaderTests: XCTestCase {
         )
 
         // Then
-        let expectedUploadStatus = DataUploadStatus(httpResponse: randomResponse, ddRequestID: randomRequestIDOrNil)
+        let expectedUploadStatus = DataUploadStatus(
+            httpResponse: randomResponse,
+            ddRequestID: randomRequest.value(forHTTPHeaderField: "DD-REQUEST-ID")
+        )
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
-        server.waitFor(requestsCompletion: 1)
     }
+    // swiftlint:enable opening_brace
 
-    func testWhenUploadCompletesWithFailure_itReturnsExpectedUploadStatus() throws {
+    func testGivenValidRequest_whenUploadCompletesWithError_itReturnsUploadStatus() throws {
         // Given
         let randomErrorDescription: String = .mockRandom()
         let randomError = NSError(domain: .mockRandom(), code: .mockRandom(), userInfo: [NSLocalizedDescriptionKey: randomErrorDescription])
-
-        let server = ServerMock(delivery: .failure(error: randomError))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let randomRequest: URLRequest = .mockAny()
 
         let uploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
+            httpClient: HTTPClientMock(error: randomError),
+            requestBuilder: FeatureRequestBuilderMock(request: randomRequest)
         )
 
         // When
@@ -62,15 +61,14 @@ class DataUploaderTests: XCTestCase {
         let expectedUploadStatus = DataUploadStatus(networkError: randomError)
 
         DDAssertReflectionEqual(uploadStatus, expectedUploadStatus)
-        server.waitFor(requestsCompletion: 1)
     }
 
-    func testWhenUploadCannotBeInitiated_itThrows() throws {
+    func testWhenRequestCannotBeCreated_itThrows() throws {
         // Given
         let error = ErrorMock()
 
         let uploader = DataUploader(
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             requestBuilder: FailingRequestBuilderMock(error: error)
         )
 

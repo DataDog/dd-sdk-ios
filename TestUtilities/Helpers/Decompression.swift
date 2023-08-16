@@ -58,3 +58,25 @@ public struct zlib {
         }
     }
 }
+
+public struct DecompressionError: Error, CustomStringConvertible {
+    public var description: String
+}
+
+public extension URLRequest {
+    /// Returns a copy of the URLRequest with a potentially decompressed body.
+    /// - Returns: A copy of the URLRequest with a decompressed body if applicable, otherwise the original request.
+    /// - Throws: A `DecompressionError` if decompression fails.
+    func decompressed() throws -> URLRequest {
+        let isCompressed = value(forHTTPHeaderField: "Content-Encoding") == "deflate"
+        guard isCompressed, let body = httpBody else {
+            return self
+        }
+        guard let decompressedBody = zlib.decode(body) else {
+            throw DecompressionError(description: "Failed to decompress request body: \(self)")
+        }
+        var request = self
+        request.httpBody = decompressedBody
+        return request
+    }
+}

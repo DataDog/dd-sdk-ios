@@ -38,7 +38,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -70,12 +70,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: randomUploadURL
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(customEndpoint: randomUploadURL), in: core)
 
         // When
         let logger = Logger.create(in: core)
@@ -105,7 +100,7 @@ class DatadogLogsFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -136,12 +131,7 @@ class DatadogLogsFeatureTests: XCTestCase {
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: .mockAny()
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(), in: core)
 
         let logger = Logger.create(in: core)
         logger.debug("log 1")

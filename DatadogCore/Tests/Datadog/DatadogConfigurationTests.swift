@@ -53,8 +53,9 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let urlSessionClient = try XCTUnwrap(core.httpClient as? URLSessionClient)
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
-        XCTAssertNil(core.httpClient.session.configuration.connectionProxyDictionary)
+        XCTAssertNil(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertNil(core.encryption)
 
         let context = core.contextProvider.read()
@@ -115,7 +116,8 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
         XCTAssertTrue(core.encryption is DataEncryptionMock)
 
-        let connectionProxyDictionary = try XCTUnwrap(core.httpClient.session.configuration.connectionProxyDictionary)
+        let urlSessionClient = try XCTUnwrap(core.httpClient as? URLSessionClient)
+        let connectionProxyDictionary = try XCTUnwrap(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPEnable] as? Bool, true)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPPort] as? Int, 123)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
@@ -174,7 +176,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK is already initialized."
+            "🔥 Datadog SDK usage error: The 'main' instance of SDK is already initialized."
         )
 
         Datadog.flushAndDeinitialize()

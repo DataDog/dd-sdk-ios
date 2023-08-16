@@ -42,7 +42,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,
             performance: .mockAny(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version
