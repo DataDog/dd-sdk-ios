@@ -6,17 +6,16 @@
 
 import Foundation
 
-/// The `OTelHTTPHeadersWriter` should be used to inject trace propagation headers to
-/// the network requests send to the backend instrumented with Open Telemetry.
-/// The injected headers conform to [Open Telemetry](https://github.com/openzipkin/b3-propagation) standard.
+/// The `OTelHTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
+/// targeted at a backend expecting [B3 propagation format](https://github.com/openzipkin/b3-propagation).
 ///
 /// Usage:
 ///
 ///     var request = URLRequest(...)
 ///
 ///     let writer = OTelHTTPHeadersWriter(injectEncoding: .single)
-///     let span = DatadogTracer.shared().startSpan("network request")
-///     writer.inject(spanContext: span.context)
+///     let span = Tracer.shared().startRootSpan(operationName: "network request")
+///     Tracer.shared().inject(spanContext: span.context, writer: writer)
 ///
 ///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
@@ -24,23 +23,28 @@ import Foundation
 ///
 ///     // call span.finish() when the request completes
 ///
-///
 public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
-    /// Open Telemetry header encoding.
+    /// Enumerates Open Telemetry header encoding options.
     ///
-    /// There are two encodings of B3:
+    /// There are two encodings of B3 propagation:
     /// [Single Header](https://github.com/openzipkin/b3-propagation#single-header)
     /// and [Multiple Header](https://github.com/openzipkin/b3-propagation#multiple-headers).
     ///
-    /// Multiple header encoding uses an `X-B3-` prefixed header per item in the trace context.
-    /// Single header delimits the context into into a single entry named b3.
+    /// Multiple header encoding employs an `X-B3-` prefixed header per item in the trace context.
+    /// Single header delimits the context into a single entry named `B3`.
     /// The single-header variant takes precedence over the multiple header one when extracting fields.
     public enum InjectEncoding {
-        case multiple, single
+        /// Encoding that employs `X-B3-*` prefixed headers per item in the trace context.
+        ///
+        /// See: [Multiple Header](https://github.com/openzipkin/b3-propagation#multiple-headers).
+        case multiple
+        /// Encoding that uses a single `B3` header to transport the trace context.
+        ///
+        /// See: [Single Header](https://github.com/openzipkin/b3-propagation#single-header)
+        case single
     }
 
-    /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
-    /// to the backend instrumented with Open Telemetry.
+    /// A dictionary containing the required HTTP Headers for propagating trace information.
     ///
     /// Usage:
     ///
@@ -52,18 +56,17 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
 
     /// The tracing sampler.
     ///
-    /// This value will decide of the `X-B3-Sampled` header field value
-    /// and if `X-B3-TraceId`, `X-B3-SpanId` and `X-B3-ParentSpanId` are propagated.
+    /// The sample rate determines the `X-B3-Sampled` header field value
+    /// and whether `X-B3-TraceId`, `X-B3-SpanId`, and `X-B3-ParentSpanId` are propagated.
     private let sampler: Sampler
 
-    /// Determines the type of telemetry header type used by the writer.
+    /// The telemetry header encoding used by the writer.
     private let injectEncoding: InjectEncoding
 
-    /// Creates a `OTelHTTPHeadersWriter` to inject traces propagation headers
-    /// to network request.
+    /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
-    /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
+    /// - Parameter samplingRate: The sampling rate applied for headers injection.
+    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:injectEncoding:)` instead.")
     public convenience init(
         samplingRate: Float,
@@ -72,6 +75,10 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
         self.init(sampleRate: samplingRate, injectEncoding: injectEncoding)
     }
 
+    /// Initializes the headers writer.
+    ///
+    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
+    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
     public convenience init(
         sampleRate: Float = 20,
         injectEncoding: InjectEncoding = .single
@@ -82,11 +89,10 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
         )
     }
 
-    /// Creates a `OTelHTTPHeadersWriter` to inject traces propagation headers
-    /// to network request.
+    /// Initializes the headers writer.
     ///
-    /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
-    /// - Parameter injectEncoding: Determines the type of telemetry header type used by the writer.
+    /// - Parameter sampler: The sampler used for headers injection.
+    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
     public init(
         sampler: Sampler,
         injectEncoding: InjectEncoding = .single
@@ -95,6 +101,11 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
         self.injectEncoding = injectEncoding
     }
 
+    /// Writes the trace ID, span ID, and optional parent span ID into the trace propagation headers.
+    ///
+    /// - Parameter traceID: The trace ID.
+    /// - Parameter spanID: The span ID.
+    /// - Parameter parentSpanID: The parent span ID, if applicable.
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 
