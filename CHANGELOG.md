@@ -1,5 +1,6 @@
 # Unreleased
 
+- [BUGFIX] Fix session replay uploads to AP1 site. See [#1418][].
 - [BUGFIX] Allow instantiating custom instance of the SDK after default one. See [#1413][].
 - [BUGFIX] Do not propagate attributes from Errors and LongTasks to Views.
 - [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.1.
@@ -495,6 +496,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
 [#1413]: https://github.com/DataDog/dd-sdk-ios/pull/1413
+[#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
