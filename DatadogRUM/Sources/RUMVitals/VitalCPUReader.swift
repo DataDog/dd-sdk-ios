@@ -14,8 +14,14 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
     private static let host_cpu_load_info_count = MemoryLayout<host_cpu_load_info>.stride / MemoryLayout<integer_t>.stride
     private var totalInactiveTicks: UInt64 = 0
     private var utilizedTicksWhenResigningActive: UInt64? = nil
+    /// Telemetry interface.
+    private let telemetry: Telemetry
 
-    init(notificationCenter: NotificationCenter = .default) {
+    init(
+        notificationCenter: NotificationCenter = .default,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
+        self.telemetry = telemetry
         notificationCenter.addObserver(self, selector: #selector(appWillResignActive), name: UIApplication.willResignActiveNotification, object: nil)
         notificationCenter.addObserver(self, selector: #selector(appDidBecomeActive), name: UIApplication.didBecomeActiveNotification, object: nil)
     }
@@ -66,7 +72,7 @@ internal class VitalCPUReader: SamplingBasedVitalReader {
         if result != KERN_SUCCESS {
             // in case of error, refer to `kern_return.h` (Objc)
             // as its Swift interface doesn't have integer values
-            DD.telemetry.error("CPU Vital cannot be read! Error code: \(result)")
+            telemetry.error("CPU Vital cannot be read! Error code: \(result)")
             return nil
         }
 

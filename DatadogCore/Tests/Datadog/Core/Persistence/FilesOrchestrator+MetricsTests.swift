@@ -10,7 +10,6 @@ import DatadogInternal
 @testable import DatadogCore
 
 class FilesOrchestrator_MetricsTests: XCTestCase {
-    private var dd: DDMock<CoreLoggerMock, TelemetryMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private let telemetry = TelemetryMock()
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private var storage: StoragePerformanceMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -18,7 +17,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        dd = DD.mockWith(telemetry: telemetry)
         CreateTemporaryDirectory()
 
         let performance: PerformancePreset = .mockRandom()
@@ -28,7 +26,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func tearDown() {
         DeleteTemporaryDirectory()
-        dd.reset()
         super.tearDown()
     }
 
@@ -37,6 +34,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             directory: Directory(url: temporaryDirectory),
             performance: PerformancePreset.combining(storagePerformance: storage, uploadPerformance: upload),
             dateProvider: dateProvider,
+            telemetry: telemetry,
             metricsData: .init(trackName: "track name", uploaderPerformance: upload)
         )
     }

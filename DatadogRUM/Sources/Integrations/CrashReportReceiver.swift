@@ -96,6 +96,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     // MARK: - Initialization
 
@@ -105,7 +107,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         sessionSampler: Sampler,
         trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
-        ciTest: RUMCITest?
+        ciTest: RUMCITest?,
+        telemetry: Telemetry
     ) {
         self.applicationID = applicationID
         self.dateProvider = dateProvider
@@ -113,6 +116,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
+        self.telemetry = telemetry
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -472,7 +476,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(device: context.device),
+            device: .init(device: context.device, telemetry: telemetry),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded

@@ -19,7 +19,10 @@ extension Datadog: InternalExtended {}
 /// are not considered part of the public interface of the Datadog SDK.
 extension InternalExtension where ExtendedType == Datadog {
     /// Internal telemetry proxy.
-    public static var telemetry: _TelemetryProxy { .init() }
+    public static var telemetry: _TelemetryProxy {
+        let telemetry = TelemetryCore(core: CoreRegistry.default)
+        return .init(telemetry: telemetry)
+    }
 
     /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public static func set(customVersion: String) {
@@ -32,14 +35,16 @@ extension InternalExtension where ExtendedType == Datadog {
 }
 
 public struct _TelemetryProxy {
+    let telemetry: Telemetry
+
     /// See Telementry.debug
     public func debug(id: String, message: String) {
-        DD.telemetry.debug(id: id, message: message)
+        telemetry.debug(id: id, message: message)
     }
 
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
-        DD.telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        telemetry.error(id: id, message: message, kind: kind, stack: stack)
     }
 }
 

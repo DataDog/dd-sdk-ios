@@ -24,15 +24,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let uploadConditions: DataUploadConditions
     /// Name of the feature this worker is performing uploads for.
     private let featureName: String
-
     /// The core context provider
     private let contextProvider: DatadogContextProvider
-
     /// Delay used to schedule consecutive uploads.
     private var delay: Delay
-
     /// Upload work scheduled by this worker.
     private var uploadWork: DispatchWorkItem?
+    /// Telemetry interface.
+    private let telemetry: Telemetry
 
     init(
         queue: DispatchQueue,
@@ -41,7 +40,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
         contextProvider: DatadogContextProvider,
         uploadConditions: DataUploadConditions,
         delay: Delay,
-        featureName: String
+        featureName: String,
+        telemetry: Telemetry
     ) {
         self.queue = queue
         self.fileReader = fileReader
@@ -50,6 +50,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.contextProvider = contextProvider
         self.delay = delay
         self.featureName = featureName
+        self.telemetry = telemetry
 
         let uploadWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -86,15 +87,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     case .unauthorized:
                         DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                     case let .httpError(statusCode: statusCode):
-                        DD.telemetry.error("Data upload finished with status code: \(statusCode)")
+                        telemetry.error("Data upload finished with status code: \(statusCode)")
                     case let .networkError(error: error):
-                        DD.telemetry.error("Data upload finished with error", error: error)
+                        telemetry.error("Data upload finished with error", error: error)
                     case .none: break
                     }
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
-                    DD.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
+                    telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             } else {
                 let batchLabel = nextBatch != nil ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")

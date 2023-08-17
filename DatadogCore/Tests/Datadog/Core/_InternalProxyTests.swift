@@ -12,8 +12,10 @@ import TestUtilities
 class _InternalProxyTests: XCTestCase {
     func testWhenTelemetryIsSentThroughProxy_thenItForwardsToDDTelemetry() throws {
         // Given
-        let dd = DD.mockWith(telemetry: TelemetryMock())
-        defer { dd.reset() }
+        let telemetry = TelemetryMock()
+        let core = PassthroughCoreMock(messageReceiver: telemetry)
+        CoreRegistry.register(default: core)
+        defer { CoreRegistry.unregisterDefault() }
 
         // When
         let randomDebugMessage: String = .mockRandom()
@@ -22,15 +24,15 @@ class _InternalProxyTests: XCTestCase {
         Datadog._internal.telemetry.error(id: .mockAny(), message: randomErrorMessage, kind: .mockAny(), stack: .mockAny())
 
         // Then
-        XCTAssertEqual(dd.telemetry.messages.count, 2)
+        XCTAssertEqual(telemetry.messages.count, 2)
 
-        guard case .debug(_, let receivedMessage, _) = dd.telemetry.messages.first else {
-            return XCTFail("A debug should be send to `DD.telemetry`.")
+        guard case .debug(_, let receivedMessage, _) = telemetry.messages.first else {
+            return XCTFail("A debug should be send to `telemetry`.")
         }
         XCTAssertEqual(receivedMessage, randomDebugMessage)
 
-        guard case .error(_, let receivedMessage, _, _) = dd.telemetry.messages.last else {
-            return XCTFail("An error should be send to `DD.telemetry`.")
+        guard case .error(_, let receivedMessage, _, _) = telemetry.messages.last else {
+            return XCTFail("An error should be send to `telemetry`.")
         }
         XCTAssertEqual(receivedMessage, randomErrorMessage)
     }

@@ -27,8 +27,11 @@ class FileReaderTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
-                dateProvider: SystemDateProvider()
-            )
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
+            ),
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
         let dataBlocks = [
             DataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
@@ -71,11 +74,13 @@ class FileReaderTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
             encryption: DataEncryptionMock(
                 decrypt: { _ in "bar".utf8Data }
-            )
+            ),
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -96,8 +101,11 @@ class FileReaderTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
-                dateProvider: dateProvider
-            )
+                dateProvider: dateProvider,
+                telemetry: NOPTelemetry()
+            ),
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
         let file1 = try directory.createFile(named: dateProvider.now.toFileName)
         try file1.append(data: DataBlock(type: .eventMetadata, data: "2".utf8Data).serialize())

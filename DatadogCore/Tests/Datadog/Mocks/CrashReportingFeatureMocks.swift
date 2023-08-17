@@ -28,13 +28,15 @@ extension CrashReportingFeature {
         integration: CrashReportSender,
         crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin(),
         crashContextProvider: CrashContextProvider = CrashContextProviderMock(),
-        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
+        telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
             sender: integration,
-            messageReceiver: messageReceiver
+            messageReceiver: messageReceiver,
+            telemetry: telemetry
         )
     }
 }

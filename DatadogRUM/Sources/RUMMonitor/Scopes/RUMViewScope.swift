@@ -157,7 +157,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMApplicationStartCommand:
             sendApplicationStartAction(on: command, context: context, writer: writer)
             if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
-                DD.telemetry.error(
+                dependencies.telemetry.error(
                     "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
                 )
             }
@@ -387,7 +387,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
             service: context.service,
@@ -453,7 +453,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
@@ -548,7 +548,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: command.attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
                 causes: nil,
@@ -611,7 +611,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             connectivity: .init(context: context),
             context: .init(contextInfo: command.attributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),

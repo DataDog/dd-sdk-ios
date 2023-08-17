@@ -29,13 +29,16 @@ internal class DDSpan: OTSpan {
     private var unsafeIsFinished: Bool
 
     private var activityReference: ActivityReference?
+    /// Telemetry interface.
+    private let telemetry: Telemetry
 
     init(
         tracer: DatadogTracer,
         context: DDSpanContext,
         operationName: String,
         startTime: Date,
-        tags: [String: Encodable]
+        tags: [String: Encodable],
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         self.ddTracer = tracer
         self.ddContext = context
@@ -46,6 +49,7 @@ internal class DDSpan: OTSpan {
         self.unsafeTags = tags
         self.unsafeLogFields = []
         self.unsafeIsFinished = false
+        self.telemetry = telemetry
     }
 
     // MARK: - Open Tracing interface
@@ -148,7 +152,8 @@ internal class DDSpan: OTSpan {
                 let builder = SpanEventBuilder(
                     serviceName: self.ddTracer.service,
                     networkInfoEnabled: self.ddTracer.networkInfoEnabled,
-                    eventsMapper: self.ddTracer.spanEventMapper
+                    eventsMapper: self.ddTracer.spanEventMapper,
+                    telemetry: self.telemetry
                 )
 
                 return builder.createSpanEvent(

@@ -35,6 +35,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Tracks the size of last writable file by accumulating the total `writeSize:` requested in `getWritableFile(writeSize:)`
     /// This is approximated value as it assumes that all requested writes succed. The actual difference should be negligible.
     private var lastWritableFileApproximatedSize: UInt64 = 0
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
@@ -51,11 +53,13 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         directory: Directory,
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
+        telemetry: Telemetry,
         metricsData: MetricsData? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.telemetry = telemetry
         self.metricsData = metricsData
     }
 
@@ -136,7 +140,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     return lastFile
                 }
             } catch {
-                DD.telemetry.error("Failed to reuse last writable file", error: error)
+                telemetry.error("Failed to reuse last writable file", error: error)
             }
         }
 
@@ -170,7 +174,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
             return fileIsOldEnough ? oldestFile : nil
         } catch {
-            DD.telemetry.error("Failed to obtain readable file", error: error)
+            telemetry.error("Failed to obtain readable file", error: error)
             return nil
         }
     }
@@ -180,7 +184,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             try readableFile.delete()
             sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
         } catch {
-            DD.telemetry.error("Failed to delete file", error: error)
+            telemetry.error("Failed to delete file", error: error)
         }
     }
 
@@ -240,7 +244,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
 
-        DD.telemetry.metric(
+        telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
                 BatchMetric.typeKey: BatchDeletedMetric.typeValue,
@@ -268,7 +272,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchDuration = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: fileName))
 
-        DD.telemetry.metric(
+        telemetry.metric(
             name: BatchClosedMetric.name,
             attributes: [
                 BatchMetric.typeKey: BatchClosedMetric.typeValue,

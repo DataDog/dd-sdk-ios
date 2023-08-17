@@ -7,61 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Creates Logging Feature Configuration.
-/// - Parameters:
-///   - intake: The Logging intake URL.
-///   - logEventMapper: The log event mapper.
-/// - Returns: The Logging feature configuration.
-internal func createLoggingConfiguration(
-    intake: URL,
-    dateProvider: DateProvider,
-    logEventMapper: LogEventMapper?
-) -> DatadogFeatureConfiguration {
-    return DatadogFeatureConfiguration(
-        name: "logging",
-        requestBuilder: LoggingRequestBuilder(intake: intake),
-        messageReceiver: CombinedFeatureMessageReceiver(
-            LogMessageReceiver(logEventMapper: logEventMapper),
-            CrashLogReceiver(dateProvider: dateProvider),
-            WebViewLogReceiver()
-        )
-    )
-}
-
-/// The Logging URL Request Builder for formatting and configuring the `URLRequest`
-/// to upload logs data.
-internal struct LoggingRequestBuilder: FeatureRequestBuilder {
-    /// The logs intake.
-    let intake: URL
-
-    /// The logs request body format.
-    let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
-
-    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
-        let builder = URLRequestBuilder(
-            url: intake,
-            queryItems: [
-                .ddsource(source: context.source)
-            ],
-            headers: [
-                .contentTypeHeader(contentType: .applicationJSON),
-                .userAgentHeader(
-                    appName: context.applicationName,
-                    appVersion: context.version,
-                    device: context.device
-                ),
-                .ddAPIKeyHeader(clientToken: context.clientToken),
-                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
-                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
-                .ddRequestIDHeader(),
-            ]
-        )
-
-        let data = format.format(events.map { $0.data })
-        return builder.uploadRequest(with: data)
-    }
-}
-
 /// Defines keys referencing RUM messages supported on the bus.
 internal enum LoggingMessageKeys {
     /// The key references a log entry message.
