@@ -4,11 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
+
 import XCTest
 import TestUtilities
 import DatadogInternal
-import DatadogObjc
 
+@testable import DatadogObjc
 @testable import DatadogSessionReplay
 
 class DDSessionReplayTests: XCTestCase {
@@ -72,3 +74,5 @@ class DDSessionReplayTests: XCTestCase {
         XCTAssertNil(requestBuilder.customUploadURL)
     }
 }
+
+#endif

@@ -30,7 +30,7 @@ public final class DDSessionReplay: NSObject {
 /// Session Replay feature configuration.
 @objc
 public final class DDSessionReplayConfiguration: NSObject {
-    public var _swift: SessionReplay.Configuration = .init(replaySampleRate: 0)
+    internal var _swift: SessionReplay.Configuration = .init(replaySampleRate: 0)
 
     /// The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
     ///
@@ -88,7 +88,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
     /// Mask input elements, but record all other content.
     case maskUserInput
 
-    public var _swift: SessionReplay.Configuration.PrivacyLevel {
+    internal var _swift: SessionReplay.Configuration.PrivacyLevel {
         switch self {
         case .allow: return .allow
         case .mask: return .mask
@@ -97,7 +97,7 @@ public enum DDSessionReplayConfigurationPrivacyLevel: Int {
         }
     }
 
-    public init(_ swift: SessionReplay.Configuration.PrivacyLevel) {
+    internal init(_ swift: SessionReplay.Configuration.PrivacyLevel) {
         switch swift {
         case .allow: self = .allow
         case .mask: self = .mask
