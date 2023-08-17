@@ -56,7 +56,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         return builder.uploadRequest(with: data)
     }
 
-    func url(with context: DatadogContext) -> URL {
+    private func url(with context: DatadogContext) -> URL {
         customIntakeURL ?? context.site.endpoint.appendingPathComponent("api/v2/rum")
     }
 }
