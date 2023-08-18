@@ -6,14 +6,17 @@
 
 import Foundation
 
-/// The `OTelHTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
+@available(*, deprecated, renamed: "B3HTTPHeadersWriter")
+public typealias OTelHTTPHeadersWriter = B3HTTPHeadersWriter
+
+/// The `B3HTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
 /// targeted at a backend expecting [B3 propagation format](https://github.com/openzipkin/b3-propagation).
 ///
 /// Usage:
 ///
 ///     var request = URLRequest(...)
 ///
-///     let writer = OTelHTTPHeadersWriter(injectEncoding: .single)
+///     let writer = B3HTTPHeadersWriter(injectEncoding: .single)
 ///     let span = Tracer.shared().startRootSpan(operationName: "network request")
 ///     Tracer.shared().inject(spanContext: span.context, writer: writer)
 ///
@@ -23,8 +26,8 @@ import Foundation
 ///
 ///     // call span.finish() when the request completes
 ///
-public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
-    /// Enumerates Open Telemetry header encoding options.
+public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
+    /// Enumerates B3 header encoding options.
     ///
     /// There are two encodings of B3 propagation:
     /// [Single Header](https://github.com/openzipkin/b3-propagation#single-header)
@@ -66,7 +69,7 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Initializes the headers writer.
     ///
     /// - Parameter samplingRate: The sampling rate applied for headers injection.
-    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
+    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:injectEncoding:)` instead.")
     public convenience init(
         samplingRate: Float,
@@ -78,7 +81,7 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Initializes the headers writer.
     ///
     /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
-    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
+    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     public convenience init(
         sampleRate: Float = 20,
         injectEncoding: InjectEncoding = .single
@@ -92,7 +95,7 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Initializes the headers writer.
     ///
     /// - Parameter sampler: The sampler used for headers injection.
-    /// - Parameter injectEncoding: The OTel header encoding type, with `.single` as the default.
+    /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     public init(
         sampler: Sampler,
         injectEncoding: InjectEncoding = .single
@@ -109,22 +112,22 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 
-        typealias Constants = OTelHTTPHeaders.Constants
+        typealias Constants = B3HTTPHeaders.Constants
 
         switch injectEncoding {
         case .multiple:
             traceHeaderFields = [
-                OTelHTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
+                B3HTTPHeaders.Multiple.sampledField: samplingPriority ? Constants.sampledValue : Constants.unsampledValue
             ]
 
             if samplingPriority {
-                traceHeaderFields[OTelHTTPHeaders.Multiple.traceIDField] = String(traceID, representation: .hexadecimal32Chars)
-                traceHeaderFields[OTelHTTPHeaders.Multiple.spanIDField] = String(spanID, representation: .hexadecimal16Chars)
-                traceHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
+                traceHeaderFields[B3HTTPHeaders.Multiple.traceIDField] = String(traceID, representation: .hexadecimal32Chars)
+                traceHeaderFields[B3HTTPHeaders.Multiple.spanIDField] = String(spanID, representation: .hexadecimal16Chars)
+                traceHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField] = parentSpanID.map { String($0, representation: .hexadecimal16Chars) }
             }
         case .single:
             if samplingPriority {
-                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = [
+                traceHeaderFields[B3HTTPHeaders.Single.b3Field] = [
                     String(traceID, representation: .hexadecimal32Chars),
                     String(spanID, representation: .hexadecimal16Chars),
                     samplingPriority ? Constants.sampledValue : Constants.unsampledValue,
@@ -133,7 +136,7 @@ public class OTelHTTPHeadersWriter: TracePropagationHeadersWriter {
                 .compactMap { $0 }
                 .joined(separator: Constants.b3Separator)
             } else {
-                traceHeaderFields[OTelHTTPHeaders.Single.b3Field] = Constants.unsampledValue
+                traceHeaderFields[B3HTTPHeaders.Single.b3Field] = Constants.unsampledValue
             }
         }
     }

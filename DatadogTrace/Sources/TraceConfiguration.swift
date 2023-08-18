@@ -14,7 +14,7 @@ import DatadogInternal
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 
 @_exported import class DatadogInternal.HTTPHeadersWriter
-@_exported import class DatadogInternal.OTelHTTPHeadersWriter
+@_exported import class DatadogInternal.B3HTTPHeadersWriter
 @_exported import class DatadogInternal.W3CHTTPHeadersWriter
 // swiftlint:enable duplicate_imports
 

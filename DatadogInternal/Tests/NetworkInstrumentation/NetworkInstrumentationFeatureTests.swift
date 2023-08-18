@@ -263,7 +263,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenOpenTelemetry_b3single_whenInterceptingRequests_itInjectsTrace() throws {
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
+        let writer = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         handler.firstPartyHosts = .init(["test.com": [.b3]])
 
         // When
@@ -285,7 +285,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenOpenTelemetry_b3multi_whenInterceptingRequests_itInjectsTrace() throws {
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = OTelHTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
+        let writer = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         handler.firstPartyHosts = .init(["test.com": [.b3multi]])
 
         // When

@@ -7,71 +7,71 @@
 import XCTest
 import DatadogInternal
 
-class OTelHTTPHeadersReaderTests: XCTestCase {
-    func testOTelHTTPHeadersReaderreadsSingleHeader() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929-1-162e"])
+class B3HTTPHeadersReaderTests: XCTestCase {
+    func testItReadsSingleHeader() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929-1-162e"])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
     }
 
-    func testOTelHTTPHeadersReaderreadsSingleHeaderWithSampling() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "0"])
+    func testItReadsSingleHeaderWithSampling() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: ["b3": "0"])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
     }
 
-    func testOTelHTTPHeadersReaderreadsSingleHeaderWithoutOptionalValues() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929"])
+    func testItReadsSingleHeaderWithoutOptionalValues() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: ["b3": "4d2-929"])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
     }
 
-    func testOTelHTTPHeadersReaderreadsMultipleHeader() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: [
+    func testItReadsMultipleHeader() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: [
             "X-B3-TraceId": "4d2",
             "X-B3-SpanId": "929",
             "X-B3-Sampled": "1",
             "X-B3-ParentSpanId": "162e"
         ])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertEqual(ids?.parentSpanID, 5_678)
     }
 
-    func testOTelHTTPHeadersReaderreadsMultipleHeaderWithSampling() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: [
+    func testItReadsMultipleHeaderWithSampling() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: [
             "X-B3-Sampled": "0"
         ])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertNil(ids?.traceID)
         XCTAssertNil(ids?.spanID)
         XCTAssertNil(ids?.parentSpanID)
     }
 
-    func testOTelHTTPHeadersReaderreadsMultipleHeaderWithoutOptionalValues() {
-        let oTelHTTPHeadersReader = OTelHTTPHeadersReader(httpHeaderFields: [
+    func testItReadsMultipleHeaderWithoutOptionalValues() {
+        let reader = B3HTTPHeadersReader(httpHeaderFields: [
             "X-B3-TraceId": "4d2",
             "X-B3-SpanId": "929"
         ])
 
-        let ids = oTelHTTPHeadersReader.read()
+        let ids = reader.read()
 
         XCTAssertEqual(ids?.traceID, 1_234)
         XCTAssertEqual(ids?.spanID, 2_345)

@@ -115,11 +115,11 @@ internal struct DebugManualTraceInjectionView: View {
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Single:
-            let writer = OTelHTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .single)
+            let writer = B3HTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .single)
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Multiple:
-            let writer = OTelHTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .multiple)
+            let writer = B3HTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .multiple)
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }

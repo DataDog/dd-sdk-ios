@@ -5,7 +5,7 @@
  */
 
 import Foundation
-import class DatadogInternal.OTelHTTPHeadersWriter
+import class DatadogInternal.B3HTTPHeadersWriter
 
 @objc
 public enum DDInjectEncoding: Int {
@@ -13,7 +13,7 @@ public enum DDInjectEncoding: Int {
     case single = 1
 }
 
-private extension OTelHTTPHeadersWriter.InjectEncoding {
+private extension B3HTTPHeadersWriter.InjectEncoding {
     init(_ value: DDInjectEncoding) {
         switch value {
         case .single:
@@ -25,11 +25,15 @@ private extension OTelHTTPHeadersWriter.InjectEncoding {
 }
 
 @objc
-public class DDOTelHTTPHeadersWriter: NSObject {
-    let swiftOTelHTTPHeadersWriter: OTelHTTPHeadersWriter
+@available(*, deprecated, renamed: "DDB3HTTPHeadersWriter")
+public class DDOTelHTTPHeadersWriter: DDB3HTTPHeadersWriter {}
+
+@objc
+public class DDB3HTTPHeadersWriter: NSObject {
+    let swiftB3HTTPHeadersWriter: B3HTTPHeadersWriter
 
     @objc public var traceHeaderFields: [String: String] {
-        swiftOTelHTTPHeadersWriter.traceHeaderFields
+        swiftB3HTTPHeadersWriter.traceHeaderFields
     }
 
     @objc
@@ -46,7 +50,7 @@ public class DDOTelHTTPHeadersWriter: NSObject {
         sampleRate: Float = 20,
         injectEncoding: DDInjectEncoding = .single
     ) {
-        swiftOTelHTTPHeadersWriter = OTelHTTPHeadersWriter(
+        swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
             sampleRate: sampleRate,
             injectEncoding: .init(injectEncoding)
         )
