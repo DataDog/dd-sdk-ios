@@ -9,11 +9,11 @@ import DatadogInternal
 
 extension HTTPHeadersReader: OTFormatReader {}
 extension W3CHTTPHeadersReader: OTFormatReader {}
-extension OTelHTTPHeadersReader: OTFormatReader {}
+extension B3HTTPHeadersReader: OTFormatReader {}
 
 extension HTTPHeadersWriter: OTFormatWriter {}
 extension W3CHTTPHeadersWriter: OTFormatWriter {}
-extension OTelHTTPHeadersWriter: OTFormatWriter {}
+extension B3HTTPHeadersWriter: OTFormatWriter {}
 
 extension TracePropagationHeadersWriter where Self: OTFormatWriter {
     public func inject(spanContext: OTSpanContext) {

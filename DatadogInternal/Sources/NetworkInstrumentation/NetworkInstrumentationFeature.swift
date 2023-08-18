@@ -175,7 +175,7 @@ extension NetworkInstrumentationFeature {
         if tracingHeaderTypes.contains(.datadog) {
             reader = HTTPHeadersReader(httpHeaderFields: headers)
         } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multi) {
-            reader = OTelHTTPHeadersReader(httpHeaderFields: headers)
+            reader = B3HTTPHeadersReader(httpHeaderFields: headers)
         } else {
             reader = W3CHTTPHeadersReader(httpHeaderFields: headers)
         }

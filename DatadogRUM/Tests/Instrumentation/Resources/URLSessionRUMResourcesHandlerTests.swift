@@ -67,7 +67,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders() throws {
@@ -87,10 +87,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField), "0000000000000001")
-        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000001")
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders() throws {
@@ -152,7 +152,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Single.b3Field), "0")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "0")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders() throws {
@@ -172,10 +172,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.traceIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.spanIDField))
-        XCTAssertNil(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: OTelHTTPHeaders.Multiple.sampledField), "0")
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders() throws {

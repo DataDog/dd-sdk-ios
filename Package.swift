@@ -44,7 +44,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
+        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.1"),
     ],
     targets: [
         .target(
@@ -63,6 +63,7 @@ let package = Package(
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogRUM"),
+                .target(name: "DatadogSessionReplay"),
             ],
             path: "DatadogObjc/Sources"
         ),

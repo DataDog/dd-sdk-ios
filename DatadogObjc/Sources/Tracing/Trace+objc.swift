@@ -197,13 +197,13 @@ public class DDTracer: NSObject, DatadogObjc.OTTracer {
                 spanContext: ddspanContext.swiftSpanContext,
                 writer: objcWriter.swiftHTTPHeadersWriter
             )
-        } else if let objcWriter = carrier as? DDOTelHTTPHeadersWriter, format == OT.formatTextMap {
+        } else if let objcWriter = carrier as? DDB3HTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {
                 return
             }
             swiftTracer.inject(
                 spanContext: ddspanContext.swiftSpanContext,
-                writer: objcWriter.swiftOTelHTTPHeadersWriter
+                writer: objcWriter.swiftB3HTTPHeadersWriter
             )
         } else if let objcWriter = carrier as? DDW3CHTTPHeadersWriter, format == OT.formatTextMap {
             guard let ddspanContext = spanContext.dd else {

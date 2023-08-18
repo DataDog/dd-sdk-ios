@@ -20,7 +20,7 @@ public final class CoreRegistry {
     public static let defaultInstanceName = "main"
 
     @ReadWriteLock
-    private static var instances: [String: DatadogCoreProtocol] = [:]
+    internal private(set) static var instances: [String: DatadogCoreProtocol] = [:]
 
     private init() { }
 
@@ -37,11 +37,19 @@ public final class CoreRegistry {
     ///   - instance: The core instance
     ///   - name: The name of the given instance.
     public static func register(_ instance: DatadogCoreProtocol, named name: String) {
-        if instances[name] == nil {
-            instances[name] = instance
-        } else {
+        guard !isRegistered(instanceName: name) else {
             DD.logger.warn("A core instance with name \(name) has already been registered.")
+            return
         }
+        instances[name] = instance
+    }
+
+    /// Checks if a core instance with the specified name is currently registered.
+    ///
+    /// - Parameter instanceName: The name of the core instance to check.
+    /// - Returns: `true` if an instance with the given name is registered, otherwise `false`.
+    public static func isRegistered(instanceName: String) -> Bool {
+        return instances[instanceName] != nil
     }
 
     /// Unregisters the instance for the given name.

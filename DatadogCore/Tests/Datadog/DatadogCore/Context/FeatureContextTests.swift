@@ -17,7 +17,7 @@ class FeatureContextTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             initialConsent: .granted,
             performance: .mockAny(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny()

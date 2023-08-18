@@ -30,35 +30,15 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         // error to let the core delete the batch:
         let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0.data) }
         let segment = try segmentBuilder.createSegmentJSON(from: records)
-        let url = customUploadURL ?? intakeURL(for: context.site)
 
-        return try createRequest(url: url, segment: segment, context: context)
+        return try createRequest(segment: segment, context: context)
     }
 
-    private func intakeURL(for site: DatadogSite) -> URL {
-        // swiftlint:disable force_unwrapping
-        switch site {
-        case .us1:
-            return URL(string: "https://session-replay.browser-intake-datadoghq.com/api/v2/replay")!
-        case .us3:
-            return URL(string: "https://session-replay.browser-intake-us3-datadoghq.com/api/v2/replay")!
-        case .us5:
-            return URL(string: "https://session-replay.browser-intake-us5-datadoghq.com/api/v2/replay")!
-        case .eu1:
-            return URL(string: "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")!
-        case .ap1:
-            return URL(string: "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")!
-        case .us1_fed:
-            return URL(string: "https://session-replay.browser-intake-ddog-gov.com/api/v2/replay")!
-        }
-        // swiftlint:enable force_unwrapping
-    }
-
-    private func createRequest(url: URL, segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {
+    private func createRequest(segment: SegmentJSON, context: DatadogContext) throws -> URLRequest {
         var multipart = multipartBuilder
 
         let builder = URLRequestBuilder(
-            url: url,
+            url: url(with: context),
             queryItems: [],
             headers: [
                 .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary.uuidString)),
@@ -96,5 +76,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         // Data is already compressed, so request building request w/o compression:
         return builder.uploadRequest(with: multipart.data, compress: false)
+    }
+
+    private func url(with context: DatadogContext) -> URL {
+        customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
     }
 }

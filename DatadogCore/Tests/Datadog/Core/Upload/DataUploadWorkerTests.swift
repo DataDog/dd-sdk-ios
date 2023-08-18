@@ -41,11 +41,12 @@ class DataUploadWorkerTests: XCTestCase {
     // MARK: - Data Uploads
 
     func testItUploadsAllData() {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
-        let dataUploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
+        let uploadExpectation = self.expectation(description: "Make 3 uploads")
+        uploadExpectation.expectedFulfillmentCount = 3
+
+        let dataUploader = DataUploaderMock(
+            uploadStatus: DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 200), ddRequestID: nil),
+            onUpload: uploadExpectation.fulfill
         )
 
         // Given
@@ -65,10 +66,10 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Then
-        let recordedRequests = server.waitAndReturnRequests(count: 3)
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[2], Event(data: #"{"k3":"v3"}"#.utf8Data))
 
         worker.cancelSynchronously()
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
@@ -77,7 +78,7 @@ class DataUploadWorkerTests: XCTestCase {
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
-        var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: false))
+        let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: false))
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         // Given
@@ -105,7 +106,7 @@ class DataUploadWorkerTests: XCTestCase {
     func testGivenDataToUpload_whenUploadFailsToBeInitiated_thenDataIsDeleted() {
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
 
-        var mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
+        let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
         mockDataUploader.onUpload = {
             initiatingUploadExpectation.fulfill()
             throw ErrorMock("Failed to prepare upload")
@@ -136,7 +137,7 @@ class DataUploadWorkerTests: XCTestCase {
     func testGivenDataToUpload_whenUploadFinishesAndNeedsToBeRetried_thenDataIsPreserved() {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 
-        var mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
+        let mockDataUploader = DataUploaderMock(uploadStatus: .mockWith(needsRetry: true))
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         // Given
@@ -177,7 +178,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -213,7 +214,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -249,7 +250,7 @@ class DataUploadWorkerTests: XCTestCase {
         writer.write(value: ["k1": "v1"])
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -285,7 +286,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        var mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         let worker = DataUploadWorker(
@@ -329,7 +330,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        var mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         let worker = DataUploadWorker(
@@ -363,7 +364,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        var mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         let worker = DataUploadWorker(
@@ -399,7 +400,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         let startUploadExpectation = self.expectation(description: "Upload has started")
-        var mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
+        let mockDataUploader = DataUploaderMock(uploadStatus: randomUploadStatus)
         mockDataUploader.onUpload = { startUploadExpectation.fulfill() }
 
         let worker = DataUploadWorker(
@@ -434,7 +435,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         let initiatingUploadExpectation = self.expectation(description: "Upload is being initiated")
-        var mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
+        let mockDataUploader = DataUploaderMock(uploadStatus: .mockRandom())
         mockDataUploader.onUpload = {
             initiatingUploadExpectation.fulfill()
             throw ErrorMock("Failed to prepare upload")
@@ -468,7 +469,7 @@ class DataUploadWorkerTests: XCTestCase {
     func testWhenCancelled_itPerformsNoMoreUploads() {
         // Given
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let dataUploader = DataUploader(
             httpClient: httpClient,
@@ -494,12 +495,12 @@ class DataUploadWorkerTests: XCTestCase {
     }
 
     func testItFlushesAllData() {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let uploadExpectation = self.expectation(description: "Make 3 uploads")
+        uploadExpectation.expectedFulfillmentCount = 3
 
-        let dataUploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
+        let dataUploader = DataUploaderMock(
+            uploadStatus: .mockRandom(),
+            onUpload: uploadExpectation.fulfill
         )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
@@ -522,10 +523,10 @@ class DataUploadWorkerTests: XCTestCase {
         // Then
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
-        let recordedRequests = server.waitAndReturnRequests(count: 3)
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k1":"v1"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k2":"v2"}]"#.utf8Data })
-        XCTAssertTrue(recordedRequests.contains { $0.httpBody == #"[{"k3":"v3"}]"#.utf8Data })
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[2], Event(data: #"{"k3":"v3"}"#.utf8Data))
 
         worker.cancelSynchronously()
     }

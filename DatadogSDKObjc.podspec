@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKObjc"
   s.module_name  = "DatadogObjc"
-  s.version      = "2.0.0"
+  s.version      = "2.1.0"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -28,4 +28,5 @@ Pod::Spec.new do |s|
   s.dependency 'DatadogRUM', s.version.to_s
   s.dependency 'DatadogLogs', s.version.to_s
   s.dependency 'DatadogTrace', s.version.to_s
+  s.dependency 'DatadogSessionReplay', s.version.to_s
 end
