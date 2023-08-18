@@ -43,12 +43,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             case .datadog:
                 writer = HTTPHeadersWriter(sampler: tracingSampler)
             case .b3:
-                writer = OTelHTTPHeadersWriter(
+                writer = B3HTTPHeadersWriter(
                     sampler: tracingSampler,
                     injectEncoding: .single
                 )
             case .b3multi:
-                writer = OTelHTTPHeadersWriter(
+                writer = B3HTTPHeadersWriter(
                     sampler: tracingSampler,
                     injectEncoding: .multiple
                 )

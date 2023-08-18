@@ -7,19 +7,19 @@
 #import <XCTest/XCTest.h>
 @import DatadogObjc;
 
-@interface DDOTelHTTPHeadersWriter_apiTests : XCTestCase
+@interface DDB3HTTPHeadersWriter_apiTests : XCTestCase
 @end
 
 /*
  * `DatadogObjc` APIs smoke tests - only check if the interface is available to Objc.
  */
-@implementation DDOTelHTTPHeadersWriter_apiTests
+@implementation DDB3HTTPHeadersWriter_apiTests
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testInitWithSamplingRate {
-    [[DDOTelHTTPHeadersWriter alloc] initWithSamplingRate:100 injectEncoding:DDInjectEncodingSingle];
+    [[DDB3HTTPHeadersWriter alloc] initWithSampleRate:100 injectEncoding:DDInjectEncodingSingle];
 }
 
 #pragma clang diagnostic pop

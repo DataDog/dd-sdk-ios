@@ -6,7 +6,10 @@
 
 import Foundation
 
-public class OTelHTTPHeadersReader: TracePropagationHeadersReader {
+@available(*, deprecated, renamed: "B3HTTPHeadersReader")
+public typealias OTelHTTPHeadersReader = B3HTTPHeadersReader
+
+public class B3HTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
     public init(httpHeaderFields: [String: String]) {
@@ -14,20 +17,20 @@ public class OTelHTTPHeadersReader: TracePropagationHeadersReader {
     }
 
     public func read() -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
-        if let traceIDValue = httpHeaderFields[OTelHTTPHeaders.Multiple.traceIDField],
-           let spanIDValue = httpHeaderFields[OTelHTTPHeaders.Multiple.spanIDField],
+        if let traceIDValue = httpHeaderFields[B3HTTPHeaders.Multiple.traceIDField],
+           let spanIDValue = httpHeaderFields[B3HTTPHeaders.Multiple.spanIDField],
            let traceID = TraceID(traceIDValue, representation: .hexadecimal),
            let spanID = TraceID(spanIDValue, representation: .hexadecimal) {
             return (
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: httpHeaderFields[OTelHTTPHeaders.Multiple.parentSpanIDField]
+                parentSpanID: httpHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField]
                     .flatMap { TraceID($0, representation: .hexadecimal) }
             )
         }
 
-        let b3Value = httpHeaderFields[OTelHTTPHeaders.Single.b3Field]?
-            .components(separatedBy: OTelHTTPHeaders.Constants.b3Separator)
+        let b3Value = httpHeaderFields[B3HTTPHeaders.Single.b3Field]?
+            .components(separatedBy: B3HTTPHeaders.Constants.b3Separator)
 
         if let traceIDValue = b3Value?[safe: 0],
            let spanIDValue = b3Value?[safe: 1],

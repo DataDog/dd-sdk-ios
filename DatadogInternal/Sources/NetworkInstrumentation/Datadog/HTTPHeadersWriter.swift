@@ -6,16 +6,16 @@
 
 import Foundation
 
-/// The `HTTPHeadersWriter` should be used to inject trace propagation headers to
-/// the network requests send to the backend instrumented with Datadog APM.
+/// The `HTTPHeadersWriter` class facilitates the injection of trace propagation headers into network requests
+/// targeted at a backend instrumented with Datadog and expecting `x-datadog-*` headers.
 ///
 /// Usage:
 ///
 ///     var request = URLRequest(...)
 ///
 ///     let writer = HTTPHeadersWriter()
-///     let span = DatadogTracer.shared().startSpan("network request")
-///     writer.inject(spanContext: span.context)
+///     let span = Tracer.shared().startRootSpan(operationName: "network request")
+///     Tracer.shared().inject(spanContext: span.context, writer: writer)
 ///
 ///     writer.traceHeaderFields.forEach { (field, value) in
 ///         request.setValue(value, forHTTPHeaderField: field)
@@ -23,10 +23,8 @@ import Foundation
 ///
 ///     // call span.finish() when the request completes
 ///
-///
 public class HTTPHeadersWriter: TracePropagationHeadersWriter {
-    /// A dictionary with HTTP Headers required to propagate the trace started in the mobile app
-    /// to the backend instrumented with Datadog APM.
+    /// A dictionary containing the required HTTP Headers for propagating trace information.
     ///
     /// Usage:
     ///
@@ -42,22 +40,33 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// and if `x-datadog-trace-id` and `x-datadog-parent-id` are propagated.
     private let sampler: Sampler
 
-    /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
-    /// to network request.
+    /// Initializes the headers writer.
     ///
-    /// - Parameter samplingRate: Tracing sampling rate. 20% by default.
-    public init(samplingRate: Float = 20) {
-        self.sampler = Sampler(samplingRate: samplingRate)
+    /// - Parameter samplingRate: The sampling rate applied for headers injection.
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
+    public convenience init(samplingRate: Float) {
+        self.init(sampleRate: samplingRate)
     }
 
-    /// Creates a `HTTPHeadersWriter` to inject traces propagation headers
-    /// to network request.
+    /// Initializes the headers writer.
     ///
-    /// - Parameter sampler: Tracing sampler responsible for randomizing the sample.
+    /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
+    public convenience init(sampleRate: Float = 20) {
+        self.init(sampler: Sampler(samplingRate: sampleRate))
+    }
+
+    /// Initializes the headers writer.
+    ///
+    /// - Parameter sampler: The sampler used for headers injection.
     public init(sampler: Sampler) {
         self.sampler = sampler
     }
 
+    /// Writes the trace ID, span ID, and optional parent span ID into the trace propagation headers.
+    ///
+    /// - Parameter traceID: The trace ID.
+    /// - Parameter spanID: The span ID.
+    /// - Parameter parentSpanID: The parent span ID, if applicable.
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         let samplingPriority = sampler.sample()
 

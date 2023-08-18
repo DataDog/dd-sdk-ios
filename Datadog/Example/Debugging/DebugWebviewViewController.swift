@@ -6,7 +6,6 @@
 
 import UIKit
 import WebKit
-import DatadogInternal
 import DatadogRUM
 import DatadogWebViewTracking
 

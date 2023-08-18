@@ -12,6 +12,10 @@ import DatadogInternal
 @_exported import class DatadogInternal.DatadogURLSessionDelegate
 @_exported import typealias DatadogInternal.DDURLSessionDelegate
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
+
+@_exported import class DatadogInternal.HTTPHeadersWriter
+@_exported import class DatadogInternal.B3HTTPHeadersWriter
+@_exported import class DatadogInternal.W3CHTTPHeadersWriter
 // swiftlint:enable duplicate_imports
 
 extension Trace {
