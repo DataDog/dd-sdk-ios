@@ -63,6 +63,7 @@ let package = Package(
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogRUM"),
+                .target(name: "DatadogSessionReplay"),
             ],
             path: "DatadogObjc/Sources"
         ),
