@@ -42,12 +42,12 @@ class RequestBuilderTests: XCTestCase {
         }
 
         // Then
-        XCTAssertEqual(try url(for: .us1), "https://session-replay.browser-intake-datadoghq.com/api/v2/replay")
-        XCTAssertEqual(try url(for: .us3), "https://session-replay.browser-intake-us3-datadoghq.com/api/v2/replay")
-        XCTAssertEqual(try url(for: .us5), "https://session-replay.browser-intake-us5-datadoghq.com/api/v2/replay")
-        XCTAssertEqual(try url(for: .eu1), "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")
-        XCTAssertEqual(try url(for: .ap1), "https://session-replay.browser-intake-datadoghq.eu/api/v2/replay")
-        XCTAssertEqual(try url(for: .us1_fed), "https://session-replay.browser-intake-ddog-gov.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .us1), "https://browser-intake-datadoghq.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .us3), "https://browser-intake-us3-datadoghq.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .us5), "https://browser-intake-us5-datadoghq.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .eu1), "https://browser-intake-datadoghq.eu/api/v2/replay")
+        XCTAssertEqual(try url(for: .ap1), "https://browser-intake-ap1-datadoghq.com/api/v2/replay")
+        XCTAssertEqual(try url(for: .us1_fed), "https://browser-intake-ddog-gov.com/api/v2/replay")
     }
 
     func testItSetsCustomIntakeURL() {
