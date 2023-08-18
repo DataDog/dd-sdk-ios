@@ -3,7 +3,7 @@
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21679"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -13,7 +13,7 @@
         <!--Shapes View Controller-->
         <scene sceneID="s0d-6b-0kx">
             <objects>
-                <viewController storyboardIdentifier="Shapes" id="Y6W-OH-hqX" customClass="ShapesViewController" customModule="SRHost" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Shapes" id="Y6W-OH-hqX" customClass="ShapesViewController" customModule="SRFixtures" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -72,7 +72,7 @@
         <!--Texts View Controller-->
         <scene sceneID="Ujp-gw-g1R">
             <objects>
-                <viewController storyboardIdentifier="Texts" id="O73-uX-Hhn" customClass="TextsViewController" customModule="SRHost" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Texts" id="O73-uX-Hhn" customClass="TextsViewController" customModule="SRFixtures" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="okQ-2i-bM3">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -168,7 +168,7 @@
         <!--Popups View Controller-->
         <scene sceneID="bZC-NI-Lx2">
             <objects>
-                <viewController storyboardIdentifier="Popups" id="tgf-1d-byI" customClass="PopupsViewController" customModule="SRHost" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Popups" id="tgf-1d-byI" customClass="PopupsViewController" customModule="SRFixtures" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="rij-Eo-0BL">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>

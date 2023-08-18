@@ -5,8 +5,9 @@
  */
 
 import XCTest
-@testable import SRHost
+import SRFixtures
 import TestUtilities
+@testable import SRHost
 
 final class SRSnapshotTests: SnapshotTestCase {
     /// The path for storing PNG files.
