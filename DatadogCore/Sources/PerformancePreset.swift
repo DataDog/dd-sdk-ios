@@ -126,13 +126,13 @@ internal extension PerformancePreset {
         minUploadDelay: TimeInterval,
         uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
     ) {
-        self.maxFileSize = UInt64(4).MB
-        self.maxDirectorySize = UInt64(512).MB
+        self.maxFileSize = 4.MB.asUInt64()
+        self.maxDirectorySize = 512.MB.asUInt64()
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18.hours
         self.maxObjectsInFile = 500
-        self.maxObjectSize = UInt64(512).KB
+        self.maxObjectSize = 512.KB.asUInt64()
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max
