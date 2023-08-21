@@ -294,7 +294,6 @@
 		617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */ = {isa = PBXBuildFile; fileRef = 617247AE25DA9BEA007085B3 /* CrashReportingObjcHelpers.m */; };
 		617247B825DAB0E2007085B3 /* DDCrashReportBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617247B725DAB0E2007085B3 /* DDCrashReportBuilder.swift */; };
 		6175922B2A6FA8EE0073F431 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
-		6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
 		617699182A860D9D0030022B /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617699172A860D9D0030022B /* HTTPClient.swift */; };
 		617699192A860D9D0030022B /* HTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617699172A860D9D0030022B /* HTTPClient.swift */; };
 		6176991B2A86121B0030022B /* HTTPClientMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176991A2A86121B0030022B /* HTTPClientMock.swift */; };
@@ -344,7 +343,6 @@
 		61A2CC302A4449CB0000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
 		61A2CC312A4449D70000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */; };
 		61A2CC322A445D8A0000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
-		61A2CC332A44A5F60000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
 		61A2CC342A44A6030000FF25 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */; };
 		61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */; };
 		61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */; };
@@ -461,6 +459,15 @@
 		A79B0F65292BD074008742B3 /* DDOTelHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDOTelHTTPHeadersWriter+apiTests.m */; };
 		A79B0F66292BD7CA008742B3 /* OTelHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */; };
 		A79B0F67292BD7CC008742B3 /* OTelHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* OTelHTTPHeadersWriter+objc.swift */; };
+		B39251FB2A8FA21500039566 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		B39251FC2A8FA21500039566 /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B3EC94902A8F71C20077DC57 /* DatadogRUM.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; };
+		B3EC94912A8F71C20077DC57 /* DatadogRUM.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B3EC94922A8F71C30077DC57 /* DatadogSessionReplay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; };
+		B3EC94932A8F71C30077DC57 /* DatadogSessionReplay.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B3EC94942A8F71C50077DC57 /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
+		B3EC94952A8F71C50077DC57 /* DatadogTrace.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		B3EC94962A8F855E0077DC57 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A4287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A5287476230047275C /* ServerOffsetPublisher.swift */; };
@@ -746,7 +753,6 @@
 		D240687127CF971C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */; };
 		D240687227CF971C00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D240687327CF971C00C04F44 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */; };
-		D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; };
 		D240687C27CF982C00C04F44 /* DatadogCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61133B82242393DE00786299 /* DatadogCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
@@ -828,7 +834,6 @@
 		D257959A298AD967008A1BE5 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
 		D25CFA9829C4F41900E3A43D /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		D25CFA9929C4F41900E3A43D /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
-		D25CFA9C29C4FC6900E3A43D /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
 		D25CFA9D29C4FC6E00E3A43D /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		D25CFA9F29C860E100E3A43D /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25CFA9E29C85FA400E3A43D /* TracingFeatureMocks.swift */; };
 		D25CFAA029C860E300E3A43D /* TracingFeatureMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25CFA9E29C85FA400E3A43D /* TracingFeatureMocks.swift */; };
@@ -1540,6 +1545,13 @@
 			remoteGlobalIDString = 61B7885325C180CB002675B5;
 			remoteInfo = DatadogCrashReporting;
 		};
+		B39251FD2A8FA21600039566 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D23039A4298D513C001A1FA3;
+			remoteInfo = "DatadogInternal iOS";
+		};
 		D206BB872A41CA6800F43BA2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -1797,10 +1809,14 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				B39251FC2A8FA21500039566 /* DatadogInternal.framework in Embed Frameworks */,
 				D240687E27CF982D00C04F44 /* DatadogCrashReporting.framework in Embed Frameworks */,
 				D240687C27CF982C00C04F44 /* DatadogCore.framework in Embed Frameworks */,
 				D24C9C4329A7A50D002057CF /* DatadogLogs.framework in Embed Frameworks */,
 				3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */,
+				B3EC94912A8F71C20077DC57 /* DatadogRUM.framework in Embed Frameworks */,
+				B3EC94952A8F71C50077DC57 /* DatadogTrace.framework in Embed Frameworks */,
+				B3EC94932A8F71C30077DC57 /* DatadogSessionReplay.framework in Embed Frameworks */,
 				D240688027CF982F00C04F44 /* DatadogObjc.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
@@ -2690,13 +2706,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */,
-				61A2CC332A44A5F60000FF25 /* DatadogRUM.framework in Frameworks */,
+				B39251FB2A8FA21500039566 /* DatadogInternal.framework in Frameworks */,
 				3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */,
-				D25CFA9C29C4FC6900E3A43D /* DatadogTrace.framework in Frameworks */,
 				9E5BD8042819742200CB568E /* SwiftUI.framework in Frameworks */,
-				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
+				B3EC94922A8F71C30077DC57 /* DatadogSessionReplay.framework in Frameworks */,
+				B3EC94902A8F71C20077DC57 /* DatadogRUM.framework in Frameworks */,
+				B3EC94942A8F71C50077DC57 /* DatadogTrace.framework in Frameworks */,
 				D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */,
+				B3EC94962A8F855E0077DC57 /* CrashReporter.xcframework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
 				D24C9C4229A7A50D002057CF /* DatadogLogs.framework in Frameworks */,
 				D240687F27CF982F00C04F44 /* DatadogObjc.framework in Frameworks */,
@@ -6012,6 +6029,7 @@
 			dependencies = (
 				D231F7B62A00FF9A000D6239 /* PBXTargetDependency */,
 				D231F7B42A00FF8F000D6239 /* PBXTargetDependency */,
+				B39251FE2A8FA21600039566 /* PBXTargetDependency */,
 			);
 			name = "Example iOS";
 			packageProductDependencies = (
@@ -8837,6 +8855,11 @@
 			isa = PBXTargetDependency;
 			target = 61B7885325C180CB002675B5 /* DatadogCrashReporting iOS */;
 			targetProxy = 61B7885E25C180CB002675B5 /* PBXContainerItemProxy */;
+		};
+		B39251FE2A8FA21600039566 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D23039A4298D513C001A1FA3 /* DatadogInternal iOS */;
+			targetProxy = B39251FD2A8FA21600039566 /* PBXContainerItemProxy */;
 		};
 		D206BB882A41CA6800F43BA2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
