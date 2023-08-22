@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UIStepperRecorder: NodeRecorder {
@@ -89,3 +90,4 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
         return [background, divider, minus, plusHorizontal, plusVertical]
     }
 }
+#endif

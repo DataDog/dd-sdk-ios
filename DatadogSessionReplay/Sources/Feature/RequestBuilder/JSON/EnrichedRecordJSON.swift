@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal typealias JSONObject = [String: Any]
@@ -60,3 +61,4 @@ private func read<T>(codingKey: EnrichedRecord.CodingKeys, from object: JSONObje
     }
     return value
 }
+#endif

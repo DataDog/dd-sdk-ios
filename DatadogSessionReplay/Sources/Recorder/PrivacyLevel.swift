@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 internal typealias PrivacyLevel = SessionReplay.Configuration.PrivacyLevel
 
 /// Text obfuscation strategies for different text types.
@@ -63,3 +64,4 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
         }
     }
 }
+#endif

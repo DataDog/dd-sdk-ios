@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 extension CGRect {
@@ -152,3 +153,4 @@ fileprivate extension CGSize {
         return CGRect(x: x, y: y, width: width, height: height)
     }
 }
+#endif

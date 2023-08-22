@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -82,3 +83,4 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
     }
 }
+#endif

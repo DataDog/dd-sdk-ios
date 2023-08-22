@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct ViewTreeRecorder {
@@ -73,3 +74,4 @@ internal struct ViewTreeRecorder {
         return semantics
     }
 }
+#endif

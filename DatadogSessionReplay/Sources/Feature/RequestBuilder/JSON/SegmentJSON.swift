@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// A counterpart of `SRSegment`. Unlike codable `SRSegment` it can be encoded to JSON data
@@ -51,3 +52,4 @@ private func segmentKey(_ codingKey: SRSegment.CodingKeys) -> String { codingKey
 private func applicationKey(_ codingKey: SRSegment.Application.CodingKeys) -> String { codingKey.stringValue }
 private func sessionKey(_ codingKey: SRSegment.Session.CodingKeys) -> String { codingKey.stringValue }
 private func viewKey(_ codingKey: SRSegment.View.CodingKeys) -> String { codingKey.stringValue }
+#endif

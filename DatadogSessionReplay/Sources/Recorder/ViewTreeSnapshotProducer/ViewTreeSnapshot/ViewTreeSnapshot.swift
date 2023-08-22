@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import CoreGraphics
 import UIKit
@@ -227,3 +228,4 @@ internal struct SpecificElement: NodeSemantics {
     let subtreeStrategy: NodeSubtreeStrategy
     let nodes: [Node]
 }
+#endif

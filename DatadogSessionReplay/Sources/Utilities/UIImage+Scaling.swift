@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 extension UIImage {
@@ -75,3 +76,4 @@ extension UIImage {
         return scaledImage ?? UIImage()
     }
 }
+#endif

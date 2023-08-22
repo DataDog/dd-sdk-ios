@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
@@ -106,3 +107,4 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

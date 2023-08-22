@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import UIKit
 
@@ -79,3 +80,4 @@ private extension UIView {
         get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [NodeID] }
     }
 }
+#endif
