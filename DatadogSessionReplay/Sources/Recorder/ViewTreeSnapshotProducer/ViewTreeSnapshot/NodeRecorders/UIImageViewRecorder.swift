@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
@@ -211,3 +212,4 @@ fileprivate extension UIImageView {
         return superViewType == "_UIBarBackground"
     }
 }
+#endif

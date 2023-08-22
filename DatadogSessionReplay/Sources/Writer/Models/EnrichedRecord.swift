@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Bundles SR records with their RUM context and other information required for preparing SR upload.
@@ -84,3 +85,4 @@ extension SRRecord {
         }
     }
 }
+#endif

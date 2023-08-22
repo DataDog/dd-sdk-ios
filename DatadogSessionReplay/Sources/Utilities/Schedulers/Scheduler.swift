@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Schedules operations for later execution.
@@ -21,3 +22,4 @@ internal protocol Scheduler {
     /// Stops executing scheduled operations.
     func stop()
 }
+#endif

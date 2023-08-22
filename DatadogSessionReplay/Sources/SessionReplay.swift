@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -43,3 +44,4 @@ public struct SessionReplay {
         sessionReplay.writer.startWriting(to: core)
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UINavigationBarRecorder: NodeRecorder {
@@ -72,3 +73,4 @@ internal struct UINavigationBarWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

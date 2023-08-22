@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal final class Cache<Key: Hashable, Value> {
@@ -109,3 +110,4 @@ extension Cache {
         }
     }
 }
+#endif
