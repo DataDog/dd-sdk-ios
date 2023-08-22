@@ -1,8 +1,8 @@
 # Unreleased
 
-# 2.1.1 / 21-08-2023
+# 2.1.1 / 22-08-2023
 
-- [BUGFIX] `DatadogObjc` pod not available in `2.1.x` release. See [#1428][].
+- [BUGFIX] `DatadogObjc` not fully available in `2.1.0`. See [#1428][].
 
 # 2.1.0 / 18-08-2023
 
