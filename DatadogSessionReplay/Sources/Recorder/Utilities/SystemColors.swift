@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 /// Collection of system colors.
@@ -92,3 +93,4 @@ internal enum SystemColors {
         }
     }
 }
+#endif

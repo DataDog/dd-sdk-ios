@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import DatadogInternal
 
 // This file was generated from JSON Schema. Do not modify it directly.
@@ -1145,3 +1146,4 @@ internal enum SRRecord: Codable {
 }
 
 // Generated from https://github.com/DataDog/rum-events-format/tree/e3d941c30622ff8624051604584ebd3f9fff2b25
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal typealias DiffableID = Int64
@@ -223,3 +224,4 @@ internal func computeDiff<E: Diffable>(oldArray: [E], newArray: [E]) throws -> D
 
     return Diff(adds: adds, updates: updates, removes: removes)
 }
+#endif

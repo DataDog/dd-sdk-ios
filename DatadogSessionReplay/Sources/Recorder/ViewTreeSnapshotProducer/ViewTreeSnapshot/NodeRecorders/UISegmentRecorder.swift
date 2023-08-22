@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
@@ -113,3 +114,4 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
         return [background] + segments
     }
 }
+#endif

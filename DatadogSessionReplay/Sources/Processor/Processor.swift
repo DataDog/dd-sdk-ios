@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -148,3 +149,4 @@ internal class Processor: Processing {
         srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
     }
 }
+#endif

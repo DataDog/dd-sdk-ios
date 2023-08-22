@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal protocol MultipartFormDataBuilder {
@@ -58,3 +59,4 @@ private extension Data {
         self.append(data)
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 // MARK: - `Diffable` Conformance
@@ -173,3 +174,4 @@ extension SRTextWireframe: MutableWireframe {
         )
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 /// Records `UIPickerView` nodes.
@@ -100,3 +101,4 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif
