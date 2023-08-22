@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import CoreGraphics
 import UIKit
 
@@ -48,3 +49,4 @@ internal func hexString(from color: CGColor) -> String? {
 
     return "#\(rstr)\(gstr)\(bstr)\(astr)"
 }
+#endif

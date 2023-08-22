@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UIDatePickerRecorder: NodeRecorder {
@@ -169,3 +170,4 @@ internal struct UIDatePickerWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

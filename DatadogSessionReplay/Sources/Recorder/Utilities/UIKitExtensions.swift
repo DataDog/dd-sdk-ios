@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal extension UIView {
@@ -51,3 +52,4 @@ internal extension UITextInputTraits {
         return false
     }
 }
+#endif

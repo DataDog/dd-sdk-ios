@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -109,3 +110,4 @@ extension FeatureBaggage {
         return try decoder.decode(from: attributes)
     }
 }
+#endif

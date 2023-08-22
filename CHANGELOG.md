@@ -1,5 +1,11 @@
 # Unreleased
 
+# 2.1.1 / 22-08-2023
+
+- [BUGFIX] `DatadogObjc` not fully available in `2.1.0`. See [#1428][].
+
+# 2.1.0 / 18-08-2023
+
 - [BUGFIX] Manual trace injection APIs are not available in DatadogTrace. See [#1415][].
 - [BUGFIX] Fix session replay uploads to AP1 site. See [#1418][].
 - [BUGFIX] Allow instantiating custom instance of the SDK after default one. See [#1413][].
@@ -501,6 +507,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1415]: https://github.com/DataDog/dd-sdk-ios/pull/1415
 [#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
 [#1419]: https://github.com/DataDog/dd-sdk-ios/pull/1419
+[#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

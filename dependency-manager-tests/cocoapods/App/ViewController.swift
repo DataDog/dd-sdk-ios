@@ -11,9 +11,8 @@ import DatadogTrace
 import DatadogRUM
 import DatadogAlamofireExtension
 import DatadogCrashReporting
-#if os(iOS)
-import DatadogSessionReplay
-#endif
+import DatadogSessionReplay  // it should compile for iOS and tvOS, but APIs are only available on iOS
+import DatadogObjc
 import Alamofire
 
 internal class ViewController: UIViewController {

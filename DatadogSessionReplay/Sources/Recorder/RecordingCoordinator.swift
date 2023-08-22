@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -74,3 +75,4 @@ internal class RecordingCoordinator {
         recorder.captureNextRecord(recorderContext)
     }
 }
+#endif

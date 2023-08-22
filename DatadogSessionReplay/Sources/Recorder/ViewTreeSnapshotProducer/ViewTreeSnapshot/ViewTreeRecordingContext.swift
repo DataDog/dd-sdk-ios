@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import SafariServices
 import SwiftUI
@@ -95,3 +96,4 @@ internal extension ViewTreeRecordingContext {
 private protocol AnyUIHostingViewController: AnyObject {}
 @available(iOS 13.0, *)
 extension UIHostingController: AnyUIHostingViewController {}
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 /// Unique identifier of a touch.
@@ -80,3 +81,4 @@ private extension UITouch {
         get { objc_getAssociatedObject(self, &associatedTouchIdentifierKey) as? TouchIdentifier }
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 import WebKit
 import SwiftUI
@@ -55,3 +56,4 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif
