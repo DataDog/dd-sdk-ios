@@ -2032,8 +2032,8 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenViewIsStarted_thenItUpdatesLastRUMViewEventInCrashContext() throws {
         var viewEvent: RUMViewEvent? = nil
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message {
-                viewEvent = baggage[RUMBaggageKeys.viewEvent]
+            if case let .baggage(label, baggage) = message, label == RUMBaggageKeys.viewEvent {
+                viewEvent = try? baggage.decode()
             }
         }
 

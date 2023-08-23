@@ -96,12 +96,12 @@ class CrashReportSenderMock: CrashReportSender {
 }
 
 class RUMCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: FeatureBaggage = [:]
+    var receivedBaggage: NewFeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
-        case .custom(let key, let attributes) where key == CrashReportReceiver.MessageKeys.crash:
-            receivedBaggage = attributes
+        case .baggage(let label, let baggage) where label == CrashReportReceiver.MessageKeys.crash:
+            receivedBaggage = baggage
             return true
         default:
             return false
@@ -110,12 +110,12 @@ class RUMCrashReceiverMock: FeatureMessageReceiver {
 }
 
 class LogsCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: FeatureBaggage = [:]
+    var receivedBaggage: NewFeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
-        case .custom(let key, let attributes) where key == LoggingMessageKeys.crash:
-            receivedBaggage = attributes
+        case .baggage(let label, let baggage) where label == LoggingMessageKeys.crash:
+            receivedBaggage = baggage
             return true
         default:
             return false

@@ -27,6 +27,13 @@ internal struct MessageBusSender: CrashReportSender {
         static let crash = "crash"
     }
 
+    struct Crash: Encodable {
+        /// The crash report.
+        let report: DDCrashReport
+        /// The crash context
+        let context: CrashContext
+    }
+
     /// The core for sending crash report and context.
     ///
     /// It must be a weak reference to avoid retain cycle (the `CrashReportSender` is held by crash reporting
@@ -39,30 +46,29 @@ internal struct MessageBusSender: CrashReportSender {
     ///   - report: The crash report.
     ///   - context: The crash context
     func send(report: DDCrashReport, with context: CrashContext) {
-        guard context.trackingConsent == .granted else {
+        guard let core = core, context.trackingConsent == .granted else {
             return
         }
 
-        sendCrash(
-            baggage: [
-                "report": report,
-                "context": context
-            ]
-        )
-    }
-
-    private func sendCrash(baggage: FeatureBaggage) {
-        core?.send(
-            message: .custom(key: MessageKeys.crash, baggage: baggage),
-            else: {
-                DD.logger.warn(
-            """
-            In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-            when initializing Datadog SDK.
-            """
+        do {
+            try core.send(
+                message: .baggage(
+                    key: MessageKeys.crash,
+                    value: Crash(report: report, context: context)
+                ),
+                else: {
+                    DD.logger.warn(
+                """
+                In order to use Crash Reporting, RUM or Logging feature must be enabled.
+                Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
+                when initializing Datadog SDK.
+                """
+                )
+                }
             )
-            }
-        )
+        } catch {
+            core.telemetry
+                .error("Fails to encode crash", error: error)
+        }
     }
 }

@@ -21,19 +21,14 @@ class CrashLogReceiverTests: XCTestCase {
         )
 
         // When
-        let sent: LogEvent = .mockRandom()
-
-        core.send(
-            message: .custom(key: LoggingMessageKeys.crash, baggage: [
-                "report": DDCrashReport.mockAny(),
-                "context": CrashContext.mockWith(lastRUMViewEvent: nil)
-            ])
-        )
-
-        core.send(
-            message: .custom(key: LoggingMessageKeys.crash, baggage: [
-                "log": sent
-            ])
+        try core.send(
+            message: .baggage(
+                key: MessageBusSender.MessageKeys.crash,
+                value: MessageBusSender.Crash(
+                    report: DDCrashReport.mockAny(),
+                    context: CrashContext.mockWith(lastRUMViewEvent: nil)
+                )
+            )
         )
 
         // Then

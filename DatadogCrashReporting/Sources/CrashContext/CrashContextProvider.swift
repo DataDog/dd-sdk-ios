@@ -56,22 +56,26 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     internal enum RUMBaggageKeys {
         /// The key references RUM view event.
         /// The view event associated with the key conforms to `Codable`.
-        static let viewEvent = "view-event"
+        static let viewEvent = "rum-view-event"
 
         /// The key references a `true` value if the RUM view is reset.
-        static let viewReset = "view-reset"
+        static let viewReset = "rum-view-reset"
 
         /// The key references RUM session state.
         /// The state associated with the key conforms to `Codable`.
-        static let sessionState = "session-state"
+        static let sessionState = "rum-session-state"
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
             return update(context: context)
-        case .custom(let key, let attributes) where key == "rum":
-            return rum(attributes: attributes, to: core)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
+            return rumView(baggage: baggage, to: core)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
+            return rumReset(baggage: baggage, to: core)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
+            return rumSessionState(baggage: baggage, to: core)
         default:
             return false
         }
@@ -96,20 +100,41 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         return true
     }
 
-    private func rum(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        if attributes["view-reset", type: Bool.self] == true {
-            queue.async { self.viewEvent = nil }
-            return true
-        }
-
-        if let event = attributes[RUMBaggageKeys.viewEvent, type: AnyCodable.self] {
+    private func rumView(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+        do {
+            let event = try baggage.decode(type: AnyCodable.self)
             queue.async { self.viewEvent = event }
             return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode RUM view event from Crash Reporting", error: error)
         }
 
-        if let state = attributes["session-state", type: AnyCodable.self] {
+        return false
+    }
+
+    private func rumReset(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+        do {
+            if try baggage.decode(type: Bool.self) {
+                queue.async { self.viewEvent = nil }
+            }
+            return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode RUM view reset from Crash Reporting", error: error)
+        }
+
+        return false
+    }
+
+    private func rumSessionState(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
+        do {
+            let state = try baggage.decode(type: AnyCodable.self)
             queue.async { self.sessionState = state }
             return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode RUM session state from Crash Reporting", error: error)
         }
 
         return false

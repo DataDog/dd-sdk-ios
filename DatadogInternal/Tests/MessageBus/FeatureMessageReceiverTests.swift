@@ -29,19 +29,19 @@ class FeatureMessageReceiverTests: XCTestCase {
         }
     }
 
-    func testNOPReceiver_returnsFalse() {
+    func testNOPReceiver_returnsFalse() throws {
         let receiver = NOPFeatureMessageReceiver()
-        XCTAssertFalse(receiver.receive(message: .custom(key: .mockAny(), baggage: [:]), from: core))
+        XCTAssertFalse(try receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
         XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
     }
 
-    func testEmptyCombinedReceiver_returnsFalse() {
+    func testEmptyCombinedReceiver_returnsFalse() throws {
         let receiver = CombinedFeatureMessageReceiver([])
-        XCTAssertFalse(receiver.receive(message: .custom(key: .mockAny(), baggage: [:]), from: core))
+        XCTAssertFalse(try receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
         XCTAssertFalse(receiver.receive(message: .context(.mockRandom()), from: core))
     }
 
-    func testCombinedReceiver_withValidReceiver_returnsTrue() {
+    func testCombinedReceiver_withValidReceiver_returnsTrue() throws {
         let expectation = expectation(description: "receive 2 messages")
         expectation.expectedFulfillmentCount = 2
 
@@ -50,12 +50,12 @@ class FeatureMessageReceiverTests: XCTestCase {
             TestReceiver(expectation: expectation)
         )
 
-        XCTAssertTrue(receiver.receive(message: .custom(key: .mockAny(), baggage: [:]), from: core))
+        XCTAssertTrue(try receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
         XCTAssertTrue(receiver.receive(message: .context(.mockRandom()), from: core))
         waitForExpectations(timeout: 0)
     }
 
-    func testCombinedReceiver_withMultiValidReceiver_itSendsToFirstOnly() {
+    func testCombinedReceiver_withMultiValidReceiver_itSendsToFirstOnly() throws {
         let expectation = self.expectation(description: "receive message")
         let noExpectation = self.expectation(description: "do not receive message")
         noExpectation.isInverted = true
@@ -65,7 +65,7 @@ class FeatureMessageReceiverTests: XCTestCase {
             TestReceiver(expectation: noExpectation)
         )
 
-        XCTAssertTrue(receiver.receive(message: .custom(key: .mockAny(), baggage: [:]), from: core))
+        XCTAssertTrue(try receiver.receive(message: .baggage(key: .mockAny(), value: "test"), from: core))
         waitForExpectations(timeout: 0)
     }
 }

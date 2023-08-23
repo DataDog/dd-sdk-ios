@@ -7,7 +7,7 @@
 import Foundation
 
 /// Network connection details.
-public struct NetworkConnectionInfo: Codable, Equatable, DictionaryEncodable {
+public struct NetworkConnectionInfo: Codable, Equatable, PassthroughAnyCodable {
     /// Tells if network is reachable.
     public enum Reachability: String, Codable, CaseIterable {
         /// The network is reachable.

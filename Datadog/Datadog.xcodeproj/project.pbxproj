@@ -556,6 +556,10 @@
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
 		D21C26D228A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
+		D2216EC02A94DE2900ADAEC8 /* NewFeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* NewFeatureBaggage.swift */; };
+		D2216EC12A94DE2900ADAEC8 /* NewFeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* NewFeatureBaggage.swift */; };
+		D2216EC32A96649500ADAEC8 /* NewFeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* NewFeatureBaggageTests.swift */; };
+		D2216EC42A96649700ADAEC8 /* NewFeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* NewFeatureBaggageTests.swift */; };
 		D224430429E9588100274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430529E9588500274EC7 /* TelemetryReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */; };
 		D224430629E95C2C00274EC7 /* MessageBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D214DAA429E072D7004D0AE8 /* MessageBus.swift */; };
@@ -2396,6 +2400,8 @@
 		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
+		D2216EBF2A94DE2800ADAEC8 /* NewFeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeatureBaggage.swift; sourceTree = "<group>"; };
+		D2216EC22A96632F00ADAEC8 /* NewFeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewFeatureBaggageTests.swift; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
 		D22743E829DEC9A9001A7EF9 /* RUMDataModelMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelMocks.swift; sourceTree = "<group>"; };
 		D22C1F5B271484B400922024 /* LogEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEventMapper.swift; sourceTree = "<group>"; };
@@ -5137,6 +5143,7 @@
 			isa = PBXGroup;
 			children = (
 				D23039C0298D5235001A1FA3 /* FeatureBaggage.swift */,
+				D2216EBF2A94DE2800ADAEC8 /* NewFeatureBaggage.swift */,
 				D23039C1298D5235001A1FA3 /* FeatureMessageReceiver.swift */,
 				D23039C2298D5235001A1FA3 /* FeatureMessage.swift */,
 			);
@@ -5559,6 +5566,7 @@
 			isa = PBXGroup;
 			children = (
 				D2DA239F298D58F300C6C7E6 /* FeatureBaggageTests.swift */,
+				D2216EC22A96632F00ADAEC8 /* NewFeatureBaggageTests.swift */,
 				D2DA23A0298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift */,
 			);
 			path = MessageBus;
@@ -7830,6 +7838,7 @@
 				D2EBEE2329BA160F00B15732 /* B3HTTPHeadersReader.swift in Sources */,
 				D23039F8298D5236001A1FA3 /* InternalLogger.swift in Sources */,
 				D2303A01298D5236001A1FA3 /* DateFormatting.swift in Sources */,
+				D2216EC02A94DE2900ADAEC8 /* NewFeatureBaggage.swift in Sources */,
 				D23039F1298D5236001A1FA3 /* AnyDecodable.swift in Sources */,
 				D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D23039DD298D5235001A1FA3 /* DD.swift in Sources */,
@@ -8609,6 +8618,7 @@
 				D2EBEE3129BA161100B15732 /* B3HTTPHeadersReader.swift in Sources */,
 				D2DA236E298D57AA00C6C7E6 /* InternalLogger.swift in Sources */,
 				D2DA236F298D57AA00C6C7E6 /* DateFormatting.swift in Sources */,
+				D2216EC12A94DE2900ADAEC8 /* NewFeatureBaggage.swift in Sources */,
 				D2DA2370298D57AA00C6C7E6 /* AnyDecodable.swift in Sources */,
 				D2160CC629C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D2DA2372298D57AA00C6C7E6 /* DD.swift in Sources */,
@@ -8666,6 +8676,7 @@
 				D2DA23A6298D58F400C6C7E6 /* AnyCoderTests.swift in Sources */,
 				D2EBEE3E29BA163E00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
 				D2160CE929C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
+				D2216EC32A96649500ADAEC8 /* NewFeatureBaggageTests.swift in Sources */,
 				D2160CDC29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				D2F44FB8299AA1DA0074B0D9 /* DataCompressionTests.swift in Sources */,
 				D2160CE029C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,
@@ -8703,6 +8714,7 @@
 				D2160CEA29C0E00200FAA9A5 /* MethodSwizzlerTests.swift in Sources */,
 				D2DA23B6298D59DC00C6C7E6 /* AnyCoderTests.swift in Sources */,
 				D2EBEE4229BA163F00B15732 /* W3CHTTPHeadersReaderTests.swift in Sources */,
+				D2216EC42A96649700ADAEC8 /* NewFeatureBaggageTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				D2F44FB9299AA1DB0074B0D9 /* DataCompressionTests.swift in Sources */,
 				D2160CE129C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,

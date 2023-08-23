@@ -23,8 +23,8 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         let value: String = .mockRandom()
 
-        core.send(
-            message: .custom(key: LoggingMessageKeys.browserLog, baggage: .init([
+        try core.send(
+            message: .baggage(key: LoggingMessageKeys.browserLog, value: AnyEncodable([
                 "test": value
             ]))
         )
@@ -84,10 +84,10 @@ class WebViewLogReceiverTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
-        core.send(
-            message: .custom(
+        try core.send(
+            message: .baggage(
                 key: LoggingMessageKeys.browserLog,
-                baggage: .init(webLogEvent)
+                value: AnyCodable(webLogEvent)
             )
         )
 
@@ -119,10 +119,10 @@ class WebViewLogReceiverTests: XCTestCase {
         var expectedWebLogEvent: JSON = webLogEvent
         expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
 
-        core.send(
-            message: .custom(
+        try core.send(
+            message: .baggage(
                 key: LoggingMessageKeys.browserLog,
-                baggage: .init(webLogEvent)
+                value: AnyEncodable(webLogEvent)
             )
         )
 

@@ -30,6 +30,30 @@ internal struct TracingWithLoggingIntegration {
         case critical
     }
 
+    struct LogMessage: Encodable {
+        static let key = "log"
+        /// The Logger name
+        let logger: String = "trace"
+        /// The Logger service
+        let service: String?
+        /// The Log date
+        let date: Date
+        /// The Log message
+        let message: String
+        /// The Log error
+        let error: DDError?
+        /// The Log level
+        let level: LogLevel
+        /// The thread name
+        let thread: String
+        /// The thread name
+        let networkInfoEnabled: Bool
+        /// The Log user custom attributes
+        let userAttributes: AnyEncodable
+        /// The Log internal attributes
+        let internalAttributes: [String: String]
+    }
+
     /// `DatadogCore` instance managing this integration.
     weak var core: DatadogCoreProtocol?
     let service: String?
@@ -73,23 +97,27 @@ internal struct TracingWithLoggingIntegration {
             )
         }
 
-        core.send(
-            message: .custom(
-                key: "log",
-                baggage: [
-                    "date": date,
-                    "loggerName": "trace",
-                    "service": service,
-                    "threadName": Thread.current.dd.name,
-                    "message": message,
-                    "level": level,
-                    "error": extractedError,
-                    "userAttributes": AnyEncodable(userAttributes),
-                    "internalAttributes": internalAttributes,
-                    "networkInfoEnabled": networkInfoEnabled
-                ]
-            ),
-            else: fallback
-        )
+        do {
+            try core.send(
+                message: .baggage(
+                    key: LogMessage.key,
+                    value: LogMessage(
+                        service: service,
+                        date: date,
+                        message: message,
+                        error: extractedError,
+                        level: level,
+                        thread: Thread.current.dd.name,
+                        networkInfoEnabled: networkInfoEnabled,
+                        userAttributes: AnyEncodable(userAttributes),
+                        internalAttributes: internalAttributes
+                    )
+                ),
+                else: fallback
+            )
+        } catch {
+            core.telemetry
+                .error("Fails to encode a span log", error: error)
+        }
     }
 }

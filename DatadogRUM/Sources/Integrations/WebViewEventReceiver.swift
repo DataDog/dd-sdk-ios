@@ -37,9 +37,20 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        if case let .custom(key, baggage) = message, key == MessageKeys.browserEvent {
-            write(event: baggage.attributes, to: core)
+        do {
+            guard case let .baggage(label, baggage) = message, label == MessageKeys.browserEvent else {
+                return false
+            }
+
+            guard let event = baggage.rawValue as? JSON else {
+                throw InternalError(description: "Event is not a dictionary")
+            }
+
+            write(event: event, to: core)
             return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode browser event from RUM", error: error)
         }
 
         return false
