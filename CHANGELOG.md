@@ -1,4 +1,5 @@
 # Unreleased
+- [IMPROVEMENT] Allow readPendingCrashReport completion closure to escape.
 
 # 2.1.1 / 22-08-2023
 
