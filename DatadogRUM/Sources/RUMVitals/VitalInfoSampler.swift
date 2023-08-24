@@ -44,7 +44,7 @@ internal final class VitalInfoSampler {
     private static var maximumFramesPerSecond: Double {
         get {
 #if os(visionOS)
-            return 120.0
+            return 120.0 // Temporary workaround to enable visionOS compliation
 #else
             return Double(UIScreen.main.maximumFramesPerSecond)
 #endif
