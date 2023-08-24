@@ -237,6 +237,6 @@ public class DDConfiguration: NSObject {
     ///             To filter events on different environments (e.g. "staging" or "production").
     @objc
     public init(clientToken: String, env: String) {
-        sdkConfiguration = .init(clientToken: clientToken, env: env)
+        sdkConfiguration = .init(clientToken: clientToken, env: env)!
     }
 }

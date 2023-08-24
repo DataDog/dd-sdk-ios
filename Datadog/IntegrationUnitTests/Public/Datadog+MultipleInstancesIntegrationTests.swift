@@ -12,9 +12,13 @@ import DatadogLogs
 
 class Datadog_MultipleInstancesIntegrationTests: XCTestCase {
     /// The configuraiton of default instance of SDK.
-    private var defaultInstanceConfig = Datadog.Configuration(clientToken: "main-token", env: "default-env")
+    private func createDefaultInstanceConfig(httpClient: HTTPClient) -> Datadog.Configuration? {
+        return Datadog.Configuration(clientToken: "main-token", env: "default-env", httpClient: httpClient)
+    }
     /// The configuraiton of custom instance of SDK.
-    private var customInstanceConfig = Datadog.Configuration(clientToken: "custom-token", env: "custom-env")
+    private func createCustomInstanceConfig(httpClient: HTTPClient) -> Datadog.Configuration? {
+        return Datadog.Configuration(clientToken: "custom-token", env: "custom-env", httpClient: httpClient)
+    }
 
     override func setUp() {
         super.setUp()
@@ -34,10 +38,8 @@ class Datadog_MultipleInstancesIntegrationTests: XCTestCase {
     func testGivenTwoInstancesOfSDK_whenCollectingLogs_thenEachSDKUploadsItsOwnData() throws {
         let customInstanceName = "custom"
         let numberOfLogs = 10
-        let defaultHTTPClient = HTTPClientMock(responseCode: 200)
-        let customHTTPClient = HTTPClientMock(responseCode: 200)
-        defaultInstanceConfig.httpClientFactory = { _ in defaultHTTPClient }
-        customInstanceConfig.httpClientFactory = { _ in customHTTPClient }
+        let defaultInstanceConfig = createDefaultInstanceConfig(httpClient: HTTPClientMock(responseCode: 200))
+        let customInstanceConfig = createCustomInstanceConfig(httpClient: HTTPClientMock(responseCode: 200))
         defaultInstanceConfig.bundle = .mockWith(bundleIdentifier: "com.bundle.default", CFBundleShortVersionString: "1.0-default")
         customInstanceConfig.bundle = .mockWith(bundleIdentifier: "com.bundle.custom", CFBundleShortVersionString: "1.0-custom")
 

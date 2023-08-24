@@ -140,50 +140,105 @@ public struct Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
-        public init(
+        public init?(
             clientToken: String,
             env: String,
-            site: DatadogSite = .us1,
-            service: String? = nil,
-            bundle: Bundle = .main,
-            batchSize: BatchSize = .medium,
-            uploadFrequency: UploadFrequency = .average,
-            proxyConfiguration: [AnyHashable: Any]? = nil,
-            encryption: DataEncryption? = nil,
-            serverDateProvider: ServerDateProvider? = nil
+            site: DatadogSite = defaultSite,
+            service: String? = defaultService,
+            bundle: Bundle = defaultBundle,
+            batchSize: BatchSize = defaultBatchSize,
+            uploadFrequency: UploadFrequency = defaultUploadFrequency,
+            proxyConfiguration: [AnyHashable: Any]? = defaultProxyConfiguration,
+            encryption: DataEncryption? = defaultEncryption,
+            serverDateProvider: ServerDateProvider? = defaultServerDateProvider
         ) {
+            let cache: Directory
+            do {
+                cache = try Directory.cache()
+            } catch {
+                consolePrint("\(error)")
+                return nil
+            }
+            self.init(
+                systemDirectory: cache,
+                processInfo: .processInfo,
+                dateProvider: SystemDateProvider(),
+                httpClient: URLSessionClient(proxyConfiguration: proxyConfiguration),
+                clientToken: clientToken,
+                env: env,
+                additionalConfiguration: [:],
+                site: site,
+                service: service,
+                batchSize: batchSize,
+                uploadFrequency: uploadFrequency,
+                proxyConfiguration: proxyConfiguration,
+                encryption: encryption,
+                serverDateProvider: serverDateProvider ?? DatadogNTPDateProvider(),
+                bundle: bundle
+            )
+        }
+
+        internal init(
+            systemDirectory: Directory,
+            processInfo: ProcessInfo,
+            dateProvider: DateProvider,
+            httpClient: HTTPClient,
+            clientToken: String,
+            env: String,
+            additionalConfiguration: [String: Any] = [:],
+            site: DatadogSite = defaultSite,
+            service: String? = defaultService,
+            batchSize: Datadog.Configuration.BatchSize = defaultBatchSize,
+            uploadFrequency: Datadog.Configuration.UploadFrequency = defaultUploadFrequency,
+            proxyConfiguration: [AnyHashable: Any]? = defaultProxyConfiguration,
+            encryption: DataEncryption? = defaultEncryption,
+            serverDateProvider: ServerDateProvider = defaultServerDateProvider,
+            bundle: Bundle = defaultBundle
+        ) {
+            self.systemDirectory = systemDirectory
+            self.processInfo = processInfo
+            self.additionalConfiguration = additionalConfiguration
+            self.dateProvider = dateProvider
+            self.httpClient = httpClient
             self.clientToken = clientToken
             self.env = env
             self.site = site
             self.service = service
-            self.bundle = bundle
             self.batchSize = batchSize
             self.uploadFrequency = uploadFrequency
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
-            self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.serverDateProvider = serverDateProvider
+            self.bundle = bundle
         }
 
         // MARK: - Internal
 
         /// Obtains OS directory where SDK creates its root folder.
         /// All instances of the SDK use the same root folder, but each creates its own subdirectory.
-        internal var systemDirectory: () throws -> Directory = { try Directory.cache() }
+        internal let systemDirectory: Directory
 
         /// Default process information.
-        internal var processInfo: ProcessInfo = .processInfo
+        internal let processInfo: ProcessInfo
 
         /// Sets additional configuration attributes.
         /// This can be used to tweak internal features of the SDK.
-        internal var additionalConfiguration: [String: Any] = [:]
+        internal var additionalConfiguration: [String: Any]
 
         /// Default date provider used by the SDK and all products.
-        internal var dateProvider: DateProvider = SystemDateProvider()
+        internal let dateProvider: DateProvider
 
         /// Creates `HTTPClient` with given proxy configuration attributes.
-        internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
-            URLSessionClient(proxyConfiguration: proxyConfiguration)
-        }
+        internal let httpClient: HTTPClient
+
+        public static let defaultSite: DatadogSite = .us1
+        public static let defaultService: String? = nil
+        public static let defaultBundle: Bundle = .main
+        public static let defaultBatchSize: BatchSize = .medium
+        public static let defaultUploadFrequency: UploadFrequency = .average
+        public static let defaultProxyConfiguration: [AnyHashable: Any]? = nil
+        public static let defaultEncryption: DataEncryption? = nil
+        public static let defaultServerDateProvider: ServerDateProvider = DatadogNTPDateProvider()
     }
 
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
@@ -304,7 +359,7 @@ public struct Datadog {
     ///                     stable between application runs.
     @discardableResult
     public static func initialize(
-        with configuration: Configuration,
+        with configuration: Configuration?,
         trackingConsent: TrackingConsent,
         instanceName: String = CoreRegistry.defaultInstanceName
     ) -> DatadogCoreProtocol {
@@ -313,6 +368,10 @@ public struct Datadog {
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
         #endif
 
+        guard let configuration = configuration else {
+            consolePrint("⚠️ No configuration provided - creating NOP instance!")
+            return NOPDatadogCore()
+        }
         do {
             return try initializeOrThrow(
                 with: configuration,
@@ -361,14 +420,14 @@ public struct Datadog {
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(
-                in: configuration.systemDirectory(),
+                in: configuration.systemDirectory,
                 instancenName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
+            httpClient: configuration.httpClient,
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,
