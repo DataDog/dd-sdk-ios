@@ -36,7 +36,7 @@ internal class RUMDebugging {
 
     // MARK: - Initialization
 
-    #if !os(tvOS) && !os(visionOS)
+    #if !os(tvOS)
     init() {
         DispatchQueue.main.async {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
@@ -109,7 +109,7 @@ internal class RUMDebugging {
             canvas.addSubview(view)
         }
         if canvas.superview == nil,
-           let someWindow = UIApplication.dd.managedShared?.windows.first(where: { $0.isKeyWindow }) {
+           let someWindow = UIApplication.dd.managedShared?.keyWindow {
             canvas.frame.size = someWindow.bounds.size
             someWindow.addSubview(canvas)
         }
