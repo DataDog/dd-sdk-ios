@@ -31,7 +31,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -69,7 +70,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         //Then
@@ -100,7 +102,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         //Then
@@ -126,7 +129,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -154,7 +158,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -181,7 +186,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         try withExtendedLifetime(feature) {
@@ -205,7 +211,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         try withExtendedLifetime(feature) {
@@ -245,7 +252,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -281,7 +289,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // swiftlint:disable opening_brace
@@ -318,7 +327,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // When

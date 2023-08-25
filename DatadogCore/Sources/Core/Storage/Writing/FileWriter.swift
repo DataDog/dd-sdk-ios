@@ -18,6 +18,20 @@ internal struct FileWriter: Writer {
     let encryption: DataEncryption?
     /// If this writer should force creation of a new file for writing events.
     let forceNewFile: Bool
+    /// Telemetry interface.
+    let telemetry: Telemetry
+
+    init(
+        orchestrator: FilesOrchestratorType,
+        forceNewFile: Bool,
+        encryption: DataEncryption?,
+        telemetry: Telemetry
+    ) {
+        self.orchestrator = orchestrator
+        self.encryption = encryption
+        self.forceNewFile = forceNewFile
+        self.telemetry = telemetry
+    }
 
     // MARK: - Writing data
 
@@ -45,7 +59,7 @@ internal struct FileWriter: Writer {
             try file.append(data: encoded)
         } catch {
             DD.logger.error("Failed to write data", error: error)
-            DD.telemetry.error("Failed to write data to file", error: error)
+            telemetry.error("Failed to write data to file", error: error)
         }
     }
 

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 
 @testable import DatadogCore
@@ -21,7 +22,8 @@ class FeatureStorageTests: XCTestCase {
             directories: temporaryFeatureDirectories,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             performance: .mockRandom(),
-            encryption: nil
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
         temporaryFeatureDirectories.create()
     }

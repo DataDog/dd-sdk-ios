@@ -32,7 +32,8 @@ class TracingStorageBenchmarkTests: XCTestCase {
             ),
             dateProvider: SystemDateProvider(),
             performance: .benchmarksPreset,
-            encryption: nil
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
 
         self.writer = storage.writer(for: .granted, forceNewBatch: false)

@@ -58,12 +58,14 @@ public struct Logs {
         with configuration: Configuration = .init(),
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
+        let telemetry = TelemetryCore(core: core)
         let logEventMapper = configuration._internalEventMapper ?? configuration.eventMapper.map(SyncLogEventMapper.init)
 
         let feature = LogsFeature(
             logEventMapper: logEventMapper,
             dateProvider: configuration.dateProvider,
-            customIntakeURL: configuration.customEndpoint
+            customIntakeURL: configuration.customEndpoint,
+            telemetry: telemetry
         )
 
         do {

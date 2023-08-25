@@ -48,7 +48,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .ddEVPOriginHeader(source: context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
                 .ddRequestIDHeader(),
-            ]
+            ],
+            telemetry: telemetry
         )
 
         // Session Replay BE accepts compressed segment data followed by newline character (before compression):

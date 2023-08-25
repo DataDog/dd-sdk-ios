@@ -96,13 +96,16 @@ public struct URLRequestBuilder {
     private let url: URL
     /// HTTP headers.
     private let headers: [HTTPHeader]
+    /// Telemetry interface.
+    private let telemetry: Telemetry
 
     // MARK: - Initialization
 
     public init(
         url: URL,
         queryItems: [QueryItem],
-        headers: [HTTPHeader]
+        headers: [HTTPHeader],
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         var urlComponents = URLComponents(url: url, resolvingAgainstBaseURL: false)
 
@@ -112,6 +115,7 @@ public struct URLRequestBuilder {
 
         self.url = urlComponents?.url ?? url
         self.headers = headers
+        self.telemetry = telemetry
     }
 
     /// Creates `URLRequest` for uploading given `body` to Datadog.
@@ -131,7 +135,7 @@ public struct URLRequestBuilder {
         } else {
             request.httpBody = body
             if compress {
-                DD.telemetry.debug(
+                telemetry.debug(
                     """
                     Failed to compress request payload
                     - url: \(url)

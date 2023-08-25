@@ -391,9 +391,7 @@ public struct Datadog {
             applicationVersion: applicationVersion
         )
 
-        let telemetry = TelemetryCore(core: core)
-
-        telemetry.configuration(
+        TelemetryCore(core: core).configuration(
             batchSize: Int64(exactly: performance.maxFileSize),
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,
@@ -411,8 +409,6 @@ public struct Datadog {
             printFunction: consolePrint,
             verbosityLevel: { Datadog.verbosityLevel }
         )
-
-        DD.telemetry = telemetry
 
         return core
     }
@@ -444,9 +440,6 @@ public struct Datadog {
 
         // Flush and tear down SDK core:
         (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
-
-        // Reset Globals:
-        DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
         CoreRegistry.unregisterInstance(named: instanceName)

@@ -232,7 +232,8 @@ extension FeatureStorage {
             directories: temporaryFeatureDirectories,
             authorizedFilesOrchestrator: NOPFilesOrchestrator(),
             unauthorizedFilesOrchestrator: NOPFilesOrchestrator(),
-            encryption: nil
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
     }
 }

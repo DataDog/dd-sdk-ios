@@ -28,7 +28,8 @@ public final class CrashReporting {
                 crashReportingPlugin: PLCrashReporterPlugin(),
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
-                messageReceiver: contextProvider
+                messageReceiver: contextProvider,
+                telemetry: TelemetryCore(core: core)
             )
 
             try core.register(feature: reporter)
