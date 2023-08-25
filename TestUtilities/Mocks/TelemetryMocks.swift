@@ -99,12 +99,36 @@ public extension Array where Element == TelemetryMessage {
 }
 
 public extension TelemetryMessage {
-    /// Extracts metric attributes if this is metric message.
-    var asMetric: (name: String, attributes: [String: Encodable])? {
-        guard case let .metric(metricName, metricAttributes) = self else {
+    /// Extracts debug from telemetry message.
+    var asDebug: (id: String, message: String, attributes: [String: Encodable]?)? {
+        guard case let .debug(id, message, attributes) = self else {
             return nil
         }
-        return (name: metricName, attributes: metricAttributes)
+        return (id: id, message: message, attributes: attributes)
+    }
+
+    /// Extracts debug from telemetry message.
+    var asError: (id: String, message: String, kind: String?, stack: String?)? {
+        guard case let .error(id, message, kind, stack) = self else {
+            return nil
+        }
+        return (id: id, message: message, kind: kind, stack: stack)
+    }
+
+    /// Extracts configuration from telemetry message.
+    var asConfiguration: ConfigurationTelemetry? {
+        guard case let .configuration(configuration) = self else {
+            return nil
+        }
+        return configuration
+    }
+
+    /// Extracts metric attributes if this is metric message.
+    var asMetric: (name: String, attributes: [String: Encodable])? {
+        guard case let .metric(name, attributes) = self else {
+            return nil
+        }
+        return (name: name, attributes: attributes)
     }
 }
 
