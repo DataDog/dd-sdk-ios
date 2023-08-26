@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 /// An entry point to Datadog Trace feature.
-public struct Trace {
+public enum Trace {
     /// Enables Datadog Trace feature.
     ///
     /// After Trace is enabled, use `Tracer.shared(in:)` to collect spans.
