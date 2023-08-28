@@ -391,7 +391,7 @@ public struct Datadog {
             applicationVersion: applicationVersion
         )
 
-        TelemetryCore(core: core).configuration(
+        core.telemetry.configuration(
             batchSize: Int64(exactly: performance.maxFileSize),
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,

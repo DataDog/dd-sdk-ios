@@ -223,8 +223,6 @@ extension DatadogCore: DatadogCoreProtocol {
             performancePreset = performance
         }
 
-        let telemetry = TelemetryCore(core: self)
-
         if let feature = feature as? DatadogRemoteFeature {
             let storage = FeatureStorage(
                 featureName: T.name,
@@ -283,7 +281,7 @@ extension DatadogCore: DatadogCoreProtocol {
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
             storage: storage,
-            telemetry: TelemetryCore(core: self)
+            telemetry: telemetry
         )
     }
 

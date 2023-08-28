@@ -218,17 +218,17 @@ public struct NOPTelemetry: Telemetry {
     public func send(telemetry: TelemetryMessage) { }
 }
 
-public struct TelemetryCore: Telemetry {
+internal struct CoreTelemetry: Telemetry {
     /// A weak core reference.
     private weak var core: DatadogCoreProtocol?
 
     /// Creates a Telemetry associated with a core instance.
     ///
-    /// The `TelemetryCore` keeps a weak reference
+    /// The `CoreTelemetry` keeps a weak reference
     /// to the provided core.
     ///
     /// - Parameter core: The core instance.
-    public init(core: DatadogCoreProtocol) {
+    init(core: DatadogCoreProtocol) {
         self.core = core
     }
 
@@ -238,9 +238,16 @@ public struct TelemetryCore: Telemetry {
     /// of the core.
     ///
     /// - Parameter telemetry: The telemtry message.
-    public func send(telemetry: TelemetryMessage) {
+    func send(telemetry: TelemetryMessage) {
         core?.send(message: .telemetry(telemetry))
     }
+}
+
+extension DatadogCoreProtocol {
+    /// Telemetry endpoint.
+    ///
+    /// Use this property to report any telemetry event to the core.
+    public var telemetry: Telemetry { CoreTelemetry(core: self) }
 }
 
 extension ConfigurationTelemetry {

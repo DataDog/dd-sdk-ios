@@ -20,8 +20,7 @@ extension Datadog: InternalExtended {}
 extension InternalExtension where ExtendedType == Datadog {
     /// Internal telemetry proxy.
     public static var telemetry: _TelemetryProxy {
-        let telemetry = TelemetryCore(core: CoreRegistry.default)
-        return .init(telemetry: telemetry)
+        .init(telemetry: CoreRegistry.default.telemetry)
     }
 
     /// Changes the `version` used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).

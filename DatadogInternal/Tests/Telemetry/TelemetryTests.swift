@@ -197,10 +197,9 @@ class TelemetryTests: XCTestCase {
 
         let receiver = Receiver()
         let core = PassthroughCoreMock(messageReceiver: receiver)
-        let telemetry = TelemetryCore(core: core)
 
         // When
-        telemetry.debug("debug")
+        core.telemetry.debug("debug")
 
         // Then
         guard case .debug(_, let message, _) = receiver.telemetry else {
@@ -209,7 +208,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(message, "debug")
 
         // When
-        telemetry.error("error")
+        core.telemetry.error("error")
 
         // Then
         guard case .error(_, let message, _, _) = receiver.telemetry else {
@@ -218,7 +217,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(message, "error")
 
         // When
-        telemetry.configuration(batchSize: 0)
+        core.telemetry.configuration(batchSize: 0)
 
         // Then
         guard case .configuration(let configuration) = receiver.telemetry else {
