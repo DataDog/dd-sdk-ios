@@ -238,35 +238,4 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
     }
-
-    func testItUpdatesTheFeatureBaggage() throws {
-        // Given
-        let contextProvider: DatadogContextProvider = .mockAny()
-        let core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: SystemDateProvider(),
-            initialConsent: .mockRandom(),
-            performance: .mockRandom(),
-            httpClient: HTTPClientMock(),
-            encryption: nil,
-            contextProvider: contextProvider,
-            applicationVersion: .mockAny(),
-            backgroundTasksEnabled: .mockAny()
-        )
-        defer { core.flushAndTearDown() }
-        try core.register(feature: FeatureMock())
-
-        // When
-        core.update(feature: FeatureMock.name) {
-            return ["foo": "bar"]
-        }
-        core.update(feature: FeatureMock.name) {
-            return ["bizz": "bazz"]
-        }
-
-        // Then
-        let context = contextProvider.read()
-        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.foo, "bar")
-        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.bizz, "bazz")
-    }
 }

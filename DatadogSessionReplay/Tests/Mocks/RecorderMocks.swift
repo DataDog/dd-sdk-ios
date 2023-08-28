@@ -395,11 +395,9 @@ extension RUMContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMContext {
         return RUMContext(
-            ids: .init(
-                applicationID: .mockRandom(),
-                sessionID: .mockRandom(),
-                viewID: .mockRandom()
-            ),
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
             viewServerTimeOffset: .mockRandom()
         )
     }
@@ -411,11 +409,9 @@ extension RUMContext: AnyMockable, RandomMockable {
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
-            ids: .init(
-                applicationID: applicationID,
-                sessionID: sessionID,
-                viewID: viewID
-            ),
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
             viewServerTimeOffset: serverTimeOffset
         )
     }
@@ -453,9 +449,9 @@ extension Recorder.Context: AnyMockable, RandomMockable {
     ) {
         self.init(
             privacy: privacy,
-            applicationID: rumContext.ids.applicationID,
-            sessionID: rumContext.ids.sessionID,
-            viewID: rumContext.ids.viewID ?? "",
+            applicationID: rumContext.applicationID,
+            sessionID: rumContext.sessionID,
+            viewID: rumContext.viewID ?? "",
             viewServerTimeOffset: rumContext.viewServerTimeOffset,
             date: date
         )

@@ -5,97 +5,83 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogInternal
 
 class FeatureBaggageTests: XCTestCase {
-    private enum EnumAttribute: String, Codable {
-        case test
+    struct GroceryProduct: Encodable, RandomMockable {
+        var name: String
+        var points: Int
+        var description: String?
+
+        static func mockRandom() -> Self {
+            .init(
+                name: .mockRandom(),
+                points: .mockRandom(),
+                description: .mockRandom()
+            )
+        }
     }
 
-    struct SomeEncodable: Encodable {
-        var string: String
+    struct CartItem: Decodable {
+        var name: String
+        var points: Int
     }
 
-    struct SomeDecodable: Decodable {
-        var string: String
+    func testEncodeDecode() throws {
+        let pear = GroceryProduct.mockRandom()
+        let baggage = FeatureBaggage(pear)
+        let item: CartItem = try baggage.decode()
+
+        XCTAssertEqual(pear.name, item.name)
+        XCTAssertEqual(pear.points, item.points)
     }
 
-    let attributes: FeatureBaggage = [
-        "int": 1,
-        "string": "test",
-        "double": 2.0,
-        "enum": EnumAttribute.test
-    ]
+    func testEncodingFailure() throws {
+        struct FaultyEncodable: Encodable {
+            func encode(to encoder: Encoder) throws {
+                throw EncodingError.invalidValue(
+                    self,
+                    .init(codingPath: [], debugDescription: "FaultyEncodable")
+                )
+            }
+        }
 
-    func testSubscript() {
-        var attributes = attributes
-        XCTAssertEqual(attributes["int", type: Int.self], 1)
-        XCTAssertEqual(attributes["double", type: Double.self], 2.0)
-        XCTAssertNil(attributes["string", type: Int.self])
-        XCTAssertEqual(attributes["string"], "test")
-
-        attributes["int"] = 2
-        XCTAssertEqual(attributes["int"], 2)
+        let faulty = FaultyEncodable()
+        let baggage = FeatureBaggage(faulty)
+        XCTAssertThrowsError(try baggage.decode(type: CartItem.self)) {
+            XCTAssert($0 is EncodingError)
+        }
     }
 
-    func testRawRepresentable() {
-        XCTAssertEqual(attributes["enum", type: EnumAttribute.self], .test)
-        XCTAssertEqual(attributes["string", type: EnumAttribute.self], .test)
+    func testDecodingFailure() throws {
+        struct FaultyDecodable: Decodable {
+            init(from decoder: Decoder) throws {
+                throw DecodingError.valueNotFound(
+                    FaultyDecodable.self,
+                    .init(codingPath: [], debugDescription: "FaultyDecodable")
+                )
+            }
+        }
+
+        let pear = GroceryProduct.mockRandom()
+        let baggage = FeatureBaggage(pear)
+        XCTAssertThrowsError(try baggage.decode(type: FaultyDecodable.self)) { error in
+            XCTAssert(error is DecodingError)
+        }
     }
 
-    func testDynamicMemberLookup() {
-        var attributes = attributes
-        XCTAssertEqual(attributes.int, 1)
-        XCTAssertEqual(attributes.double, 2.0)
-        XCTAssertEqual(attributes.string, "test")
-        XCTAssertEqual(attributes.string, EnumAttribute.test)
-        XCTAssertEqual(attributes.enum, EnumAttribute.test)
-
-        attributes.int = 2
-        XCTAssertEqual(attributes.int, 2)
-    }
-
-    func testMerge() {
-        var attributes = attributes
-        attributes.merge(with: ["string": "test2"])
-
-        XCTAssertEqual(attributes.int, 1)
-        XCTAssertEqual(attributes.double, 2.0)
-        XCTAssertEqual(attributes.string, "test2")
-        XCTAssertEqual(attributes.enum, EnumAttribute.test)
-    }
-
-    func testSetDecodable() {
-        let value = SomeEncodable(string: "test")
-        let baggage = FeatureBaggage(["key": value])
-
-        var decodable: SomeDecodable? = baggage["key"]
-        XCTAssertEqual(decodable?.string, "test")
-
-        decodable = baggage.key
-        XCTAssertEqual(decodable?.string, "test")
-    }
-
-    func testDecodableBaggage() {
-        let baggage = FeatureBaggage([
-            "key": ["string": "test" as Any]
-        ])
-
-        var decodable: SomeDecodable? = baggage["key"]
-        XCTAssertEqual(decodable?.string, "test")
-
-        decodable = baggage.key
-        XCTAssertEqual(decodable?.string, "test")
-    }
-
-    func testAnyBaggage() {
-        let value = SomeEncodable(string: "test")
-        let baggage = FeatureBaggage(["key": value])
-
-        var decodable: [String: Any]? = baggage["key"]
-        XCTAssertEqual(decodable?["string"] as? String, "test")
-
-        decodable = baggage.key
-        XCTAssertEqual(decodable?["string"] as? String, "test")
+    func testThreadSafety() {
+        let pear = GroceryProduct.mockRandom()
+        let baggage = FeatureBaggage(pear)
+        // swiftlint:disable opening_brace
+        callConcurrently(
+            closures: [
+                { _ = try? baggage.encode() },
+                { _ = try? baggage.decode(type: CartItem.self) }
+            ],
+            iterations: 100
+        )
+        // swiftlint:enable opening_brace
     }
 }

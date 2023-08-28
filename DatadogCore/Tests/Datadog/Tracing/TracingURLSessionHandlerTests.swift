@@ -120,15 +120,15 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            log.attributes.internalAttributes?[SpanCoreContext.CodingKeys.traceID.rawValue] as? AnyCodable,
             AnyCodable(String(span.traceID))
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            log.attributes.internalAttributes?[SpanCoreContext.CodingKeys.traceID.rawValue] as? AnyCodable,
             AnyCodable(String(span.traceID))
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? AnyCodable,
+            log.attributes.internalAttributes?[SpanCoreContext.CodingKeys.spanID.rawValue] as? AnyCodable,
             AnyCodable(String(span.spanID))
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
@@ -188,11 +188,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
         DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID]),
+            AnyEncodable(log.attributes.internalAttributes?[SpanCoreContext.CodingKeys.traceID.rawValue]),
             String(span.traceID)
         )
         DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID]),
+            AnyEncodable(log.attributes.internalAttributes?[SpanCoreContext.CodingKeys.spanID.rawValue]),
             String(span.spanID)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")

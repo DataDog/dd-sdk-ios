@@ -43,7 +43,7 @@ internal class RecordingCoordinator {
     }
 
     private func onRUMContextChanged(rumContext: RUMContext?) {
-        if currentRUMContext?.ids.sessionID != rumContext?.ids.sessionID || currentRUMContext == nil {
+        if currentRUMContext?.sessionID != rumContext?.sessionID || currentRUMContext == nil {
             isSampled = sampler.sample()
         }
 
@@ -56,19 +56,19 @@ internal class RecordingCoordinator {
         }
 
         srContextPublisher.setHasReplay(
-            isSampled == true && currentRUMContext?.ids.viewID != nil
+            isSampled == true && currentRUMContext?.viewID != nil
         )
     }
 
     private func captureNextRecord() {
         guard let rumContext = currentRUMContext,
-              let viewID = rumContext.ids.viewID else {
+              let viewID = rumContext.viewID else {
             return
         }
         let recorderContext = Recorder.Context(
             privacy: privacy,
-            applicationID: rumContext.ids.applicationID,
-            sessionID: rumContext.ids.sessionID,
+            applicationID: rumContext.applicationID,
+            sessionID: rumContext.sessionID,
             viewID: viewID,
             viewServerTimeOffset: rumContext.viewServerTimeOffset
         )
