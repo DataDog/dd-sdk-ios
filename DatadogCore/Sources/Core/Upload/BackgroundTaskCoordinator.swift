@@ -28,14 +28,11 @@ extension UIApplication: UIKitAppBackgroundTaskCoordinator {}
 /// This coordinator conforms to the `BackgroundTaskCoordinator` protocol and provides an implementation of managing background tasks using the UIKit framework.
 /// It allows for registering and ending background tasks.
 internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
-    private let queue: DispatchQueue
     private let app: UIKitAppBackgroundTaskCoordinator?
 
     internal init(
-        queue: DispatchQueue,
         app: UIKitAppBackgroundTaskCoordinator? = UIApplication.dd.managedShared
     ) {
-        self.queue = queue
         self.app = app
     }
 
@@ -43,11 +40,7 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         guard let app = app else {
             return UIBackgroundTaskIdentifier.invalid.rawValue
         }
-        return app.beginBackgroundTask(expirationHandler: { [weak self] in
-            self?.queue.async {
-                handler()
-            }
-        }).rawValue
+        return app.beginBackgroundTask(expirationHandler: handler).rawValue
     }
 
     func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int) {

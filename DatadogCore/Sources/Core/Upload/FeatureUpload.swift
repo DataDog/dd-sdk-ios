@@ -32,7 +32,7 @@ internal struct FeatureUpload {
         )
 
         #if canImport(UIKit)
-        let backgroundTaskCoordinator = UIKitBackgroundTaskCoordinator(queue: uploadQueue)
+        let backgroundTaskCoordinator = UIKitBackgroundTaskCoordinator()
         #else
         let backgroundTaskCoordinator = nil
         #endif
