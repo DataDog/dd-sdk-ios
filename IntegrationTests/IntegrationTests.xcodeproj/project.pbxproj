@@ -146,6 +146,7 @@
 		611EA14725810E2600BC0E56 /* TSPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSPictureViewController.swift; sourceTree = "<group>"; };
 		611EA14D25810E3700BC0E56 /* TSConsentSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSConsentSettingViewController.swift; sourceTree = "<group>"; };
 		611EA16525825FB300BC0E56 /* TrackingConsentScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentScenarioTests.swift; sourceTree = "<group>"; };
+		612C136D2A9CF1380086B5D1 /* SRFixtures */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SRFixtures; path = ../DatadogSessionReplay/SRSnapshotTests/SRFixtures; sourceTree = "<group>"; };
 		612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMScrubbingScenario.storyboard; sourceTree = "<group>"; };
 		612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingViewController.swift; sourceTree = "<group>"; };
 		612D8F8025AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingScenarioTests.swift; sourceTree = "<group>"; };
@@ -691,6 +692,7 @@
 		D29495F329967780003518CD /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				612C136D2A9CF1380086B5D1 /* SRFixtures */,
 				D29495F429967780003518CD /* http-server-mock */,
 			);
 			name = Packages;
