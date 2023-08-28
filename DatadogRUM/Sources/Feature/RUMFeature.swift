@@ -22,8 +22,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
     ) throws {
-        let telemetry = TelemetryCore(core: core)
-
         let dependencies = RUMScopeDependencies(
             core: core,
             rumApplicationID: configuration.applicationID,
@@ -47,12 +45,17 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     resourceEventMapper: configuration.resourceEventMapper,
                     actionEventMapper: configuration.actionEventMapper,
                     longTaskEventMapper: configuration.longTaskEventMapper,
-                    telemetry: telemetry
+                    telemetry: core.telemetry
                 )
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map { VitalsReaders(frequency: $0.timeInterval, telemetry: telemetry) },
+            vitalsReaders: configuration.vitalsUpdateFrequency.map {
+                VitalsReaders(
+                    frequency: $0.timeInterval,
+                    telemetry: core.telemetry
+                )
+            },
             onSessionStart: configuration.onSessionStart
         )
 
@@ -71,7 +74,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             eventsFilter: RUMViewEventsFilter(),
-            telemetry: telemetry
+            telemetry: core.telemetry
         )
         self.messageReceiver = CombinedFeatureMessageReceiver(
             TelemetryReceiver(
@@ -92,7 +95,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 trackBackgroundEvents: configuration.trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-                telemetry: telemetry
+                telemetry: core.telemetry
             )
         )
 
@@ -100,7 +103,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         instrumentation.publish(to: monitor)
 
         // Send configuration telemetry:
-        telemetry.configuration(
+        core.telemetry.configuration(
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
             sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
             telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),

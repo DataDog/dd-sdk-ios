@@ -18,14 +18,12 @@ internal final class TraceFeature: DatadogRemoteFeature {
         in core: DatadogCoreProtocol,
         configuration: Trace.Configuration
     ) {
-        let telemetry = TelemetryCore(core: core)
-
         let contextReceiver = ContextMessageReceiver(
             bundleWithRumEnabled: configuration.bundleWithRumEnabled
         )
         self.requestBuilder = TracingRequestBuilder(
             customIntakeURL: configuration.customEndpoint,
-            telemetry: telemetry
+            telemetry: core.telemetry
         )
 
         self.messageReceiver = contextReceiver
@@ -44,10 +42,10 @@ internal final class TraceFeature: DatadogRemoteFeature {
                 service: configuration.service,
                 networkInfoEnabled: configuration.networkInfoEnabled
             ),
-            telemetry: telemetry
+            telemetry: core.telemetry
         )
 
         // Send configuration telemetry:
-        telemetry.configuration(useTracing: true)
+        core.telemetry.configuration(useTracing: true)
     }
 }

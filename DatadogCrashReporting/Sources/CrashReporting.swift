@@ -29,14 +29,14 @@ public final class CrashReporting {
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
                 messageReceiver: contextProvider,
-                telemetry: TelemetryCore(core: core)
+                telemetry: core.telemetry
             )
 
             try core.register(feature: reporter)
 
             reporter.sendCrashReportIfFound()
 
-            TelemetryCore(core: core)
+            core.telemetry
                 .configuration(trackErrors: true)
         } catch {
             consolePrint("\(error)")

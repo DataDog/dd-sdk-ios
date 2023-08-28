@@ -41,6 +41,6 @@ internal struct RUMScopeDependencies {
     let onSessionStart: RUM.SessionListener?
 
     var telemetry: Telemetry {
-        core.map(TelemetryCore.init) ?? NOPTelemetry()
+        core?.telemetry ?? NOPTelemetry()
     }
 }
