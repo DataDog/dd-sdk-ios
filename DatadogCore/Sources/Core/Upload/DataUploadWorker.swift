@@ -27,11 +27,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// The core context provider
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
-    private var delay: Delay
+    private let delay: Delay
+
     /// Upload work scheduled by this worker.
     private var uploadWork: DispatchWorkItem?
     /// Telemetry interface.
     private let telemetry: Telemetry
+
+    private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
+    private var taskID: Int?
 
     init(
         queue: DispatchQueue,
@@ -41,13 +45,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
         uploadConditions: DataUploadConditions,
         delay: Delay,
         featureName: String,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
         self.uploadConditions = uploadConditions
         self.dataUploader = dataUploader
         self.contextProvider = contextProvider
+        self.backgroundTaskCoordinator = backgroundTaskCoordinator
         self.delay = delay
         self.featureName = featureName
         self.telemetry = telemetry
@@ -56,12 +62,22 @@ internal class DataUploadWorker: DataUploadWorkerType {
             guard let self = self else {
                 return
             }
-
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
+            let batch = self.fileReader.readNextBatch()
+            let nextBatch = isSystemReady ? batch : nil
             if let batch = nextBatch {
+                if let taskID = taskID {
+                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                    self.taskID = nil
+                }
+                self.taskID = self.backgroundTaskCoordinator?.beginBackgroundTask { [backgroundTaskCoordinator, taskID] in
+                    guard let taskID = taskID else {
+                        return
+                    }
+                    backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                }
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 do {
@@ -102,8 +118,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
+                if let taskID = taskID {
+                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
+                    self.taskID = nil
+                }
             }
-
             self.scheduleNextUpload(after: self.delay.current)
         }
 

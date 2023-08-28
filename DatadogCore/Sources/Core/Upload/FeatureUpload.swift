@@ -31,6 +31,12 @@ internal struct FeatureUpload {
             requestBuilder: requestBuilder
         )
 
+        #if canImport(UIKit)
+        let backgroundTaskCoordinator = UIKitBackgroundTaskCoordinator(queue: uploadQueue)
+        #else
+        let backgroundTaskCoordinator = nil
+        #endif
+
         self.init(
             uploader: DataUploadWorker(
                 queue: uploadQueue,
@@ -40,7 +46,8 @@ internal struct FeatureUpload {
                 uploadConditions: DataUploadConditions(),
                 delay: DataUploadDelay(performance: performance),
                 featureName: featureName,
-                telemetry: telemetry
+                telemetry: telemetry,
+                backgroundTaskCoordinator: backgroundTaskCoordinator
             )
         )
     }

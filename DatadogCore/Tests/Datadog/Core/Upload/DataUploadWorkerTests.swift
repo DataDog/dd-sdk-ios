@@ -173,28 +173,23 @@ class DataUploadWorkerTests: XCTestCase {
 
     func testWhenThereIsNoBatch_thenIntervalIncreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
-        let mockDelay = MockDelay { command in
-            if case .increase = command {
-                delayChangeExpectation.fulfill()
-            } else {
-                XCTFail("Wrong command is sent!")
-            }
-        }
+        let initialUploadDelay = 0.01
+        let delay = DataUploadDelay(
+            performance: UploadPerformanceMock(
+                initialUploadDelay: initialUploadDelay,
+                minUploadDelay: 0,
+                maxUploadDelay: 1,
+                uploadDelayChangeRate: 0.01
+            )
+        )
 
         // When
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
-
-        let dataUploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
-        )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: dataUploader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: mockDelay,
@@ -203,35 +198,34 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Then
-        server.waitFor(requestsCompletion: 0)
-        waitForExpectations(timeout: 1, handler: nil)
+        wait(until: { [uploaderQueue] in
+            uploaderQueue.sync {
+                delay.current > initialUploadDelay
+            }
+        }, andThenFulfill: delayChangeExpectation)
+        wait(for: [delayChangeExpectation])
         worker.cancelSynchronously()
     }
 
     func testWhenBatchFails_thenIntervalIncreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
-        let mockDelay = MockDelay { command in
-            if case .increase = command {
-                delayChangeExpectation.fulfill()
-            } else {
-                XCTFail("Wrong command is sent!")
-            }
-        }
+        let initialUploadDelay = 0.01
+        let delay = DataUploadDelay(
+            performance: UploadPerformanceMock(
+                initialUploadDelay: initialUploadDelay,
+                minUploadDelay: 0,
+                maxUploadDelay: 1,
+                uploadDelayChangeRate: 0.01
+            )
+        )
 
         // When
         writer.write(value: ["k1": "v1"])
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 500)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
-
-        let dataUploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
-        )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: dataUploader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: true)),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
@@ -240,35 +234,33 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Then
-        server.waitFor(requestsCompletion: 1)
-        waitForExpectations(timeout: 1, handler: nil)
+        wait(until: { [uploaderQueue] in
+            uploaderQueue.sync {
+                delay.current > initialUploadDelay
+            }
+        }, andThenFulfill: delayChangeExpectation)
+        wait(for: [delayChangeExpectation])
         worker.cancelSynchronously()
     }
 
     func testWhenBatchSucceeds_thenIntervalDecreases() {
         let delayChangeExpectation = expectation(description: "Upload delay is decreased")
-        let mockDelay = MockDelay { command in
-            if case .decrease = command {
-                delayChangeExpectation.fulfill()
-            } else {
-                XCTFail("Wrong command is sent!")
-            }
-        }
-
+        let initialUploadDelay = 0.05
+        let delay = DataUploadDelay(
+            performance: UploadPerformanceMock(
+                initialUploadDelay: initialUploadDelay,
+                minUploadDelay: 0,
+                maxUploadDelay: 1,
+                uploadDelayChangeRate: 0.01
+            )
+        )
         // When
         writer.write(value: ["k1": "v1"])
 
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
-
-        let dataUploader = DataUploader(
-            httpClient: httpClient,
-            requestBuilder: FeatureRequestBuilderMock()
-        )
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: dataUploader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: false)),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
@@ -277,8 +269,12 @@ class DataUploadWorkerTests: XCTestCase {
         )
 
         // Then
-        server.waitFor(requestsCompletion: 1)
-        waitForExpectations(timeout: 2, handler: nil)
+        wait(until: { [uploaderQueue] in
+            uploaderQueue.sync {
+                delay.current < initialUploadDelay
+            }
+        }, andThenFulfill: delayChangeExpectation)
+        wait(for: [delayChangeExpectation])
         worker.cancelSynchronously()
     }
 
@@ -535,23 +531,33 @@ class DataUploadWorkerTests: XCTestCase {
 
         worker.cancelSynchronously()
     }
-}
 
-struct MockDelay: Delay {
-    enum Command {
-        case increase, decrease
-    }
+    func testItTriggersBackgroundTaskRegistration() {
+        let expectTaskRegistered = expectation(description: "task should be registered")
+        let expectTaskEnded = expectation(description: "task should be ended")
+        let backgroundTaskCoordinator = SpyBackgroundTaskCoordinator(
+            beginBackgroundTaskCalled: {
+                expectTaskRegistered.fulfill()
+            }, endBackgroundTaskCalled: {
+                expectTaskEnded.fulfill()
+            }
+        )
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
+            contextProvider: .mockAny(),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny(),
+            backgroundTaskCoordinator: backgroundTaskCoordinator
+        )
+        writer.write(value: ["k1": "v1"])
 
-    var callback: ((Command) -> Void)?
-    let current: TimeInterval = 0.1
-
-    mutating func decrease() {
-        callback?(.decrease)
-        callback = nil
-    }
-    mutating func increase() {
-        callback?(.increase)
-        callback = nil
+        // Then
+        withExtendedLifetime(worker) {
+            wait(for: [expectTaskRegistered, expectTaskEnded])
+        }
     }
 }
 
@@ -562,5 +568,27 @@ private extension DataUploadConditions {
 
     static func neverUpload() -> DataUploadConditions {
         return DataUploadConditions(minBatteryLevel: 1)
+    }
+}
+
+private class SpyBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+    private let beginBackgroundTaskCalled: () -> Void
+    private let endBackgroundTaskCalled: () -> Void
+
+    init(
+        beginBackgroundTaskCalled: @escaping () -> Void,
+        endBackgroundTaskCalled: @escaping () -> Void
+    ) {
+        self.beginBackgroundTaskCalled = beginBackgroundTaskCalled
+        self.endBackgroundTaskCalled = endBackgroundTaskCalled
+    }
+
+    func beginBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
+        beginBackgroundTaskCalled()
+        return Int.mockRandom()
+    }
+
+    func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int) {
+        endBackgroundTaskCalled()
     }
 }
