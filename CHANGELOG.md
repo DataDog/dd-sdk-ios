@@ -1,5 +1,7 @@
 # Unreleased
 
+- [BUGFIX] Do not embed DatadogInternal while building Trace and RUM xcframeworks. See [#1444][].
+
 # 2.1.1 / 22-08-2023
 
 - [BUGFIX] `DatadogObjc` not fully available in `2.1.0`. See [#1428][].
@@ -21,7 +23,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 - [FEATURE] Session Replay.
 - [FEATURE] Support multiple SDK instances.
 - [IMPROVEMENT] All relevant products (RUM, Trace, Logs, etc.) are now extracted into different modules.
-- [BUGFIX] Module stability: fix name collision. 
+- [BUGFIX] Module stability: fix name collision.
 
 # 1.22.0 / 21-07-2023
 - [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
@@ -508,6 +510,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
 [#1419]: https://github.com/DataDog/dd-sdk-ios/pull/1419
 [#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
+[#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
