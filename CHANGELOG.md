@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.1.2 / 29-08-2023
+
 - [BUGFIX] Do not embed DatadogInternal while building Trace and RUM xcframeworks. See [#1444][].
 
 # 2.1.1 / 22-08-2023
