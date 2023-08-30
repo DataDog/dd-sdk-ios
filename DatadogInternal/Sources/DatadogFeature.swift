@@ -53,6 +53,8 @@ public protocol DatadogRemoteFeature: DatadogFeature {
     /// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
     /// The request will be transported by `DatadogCore`.
     var requestBuilder: FeatureRequestBuilder { get }
+
+    var backgroundTasksEnabled: Bool { get }
 }
 
 extension DatadogFeature {

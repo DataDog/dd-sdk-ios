@@ -105,6 +105,8 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
+        public var backgroundTasksEnabled: Bool
+
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
@@ -150,7 +152,8 @@ public struct Datadog {
             uploadFrequency: UploadFrequency = .average,
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
-            serverDateProvider: ServerDateProvider? = nil
+            serverDateProvider: ServerDateProvider? = nil,
+            backgroundTasksEnabled: Bool = false
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -162,6 +165,7 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.backgroundTasksEnabled = backgroundTasksEnabled
         }
 
         // MARK: - Internal
@@ -389,7 +393,8 @@ public struct Datadog {
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider
             ),
-            applicationVersion: applicationVersion
+            applicationVersion: applicationVersion,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 
         core.telemetry.configuration(

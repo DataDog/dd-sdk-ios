@@ -18,6 +18,7 @@ internal struct FeatureUpload {
         requestBuilder: FeatureRequestBuilder,
         httpClient: HTTPClient,
         performance: PerformancePreset,
+        backgroundTasksEnabled: Bool,
         telemetry: Telemetry
     ) {
         let uploadQueue = DispatchQueue(
@@ -32,7 +33,9 @@ internal struct FeatureUpload {
         )
 
         #if canImport(UIKit)
-        let backgroundTaskCoordinator = UIKitBackgroundTaskCoordinator()
+        let backgroundTaskCoordinator = backgroundTasksEnabled
+            ? UIKitBackgroundTaskCoordinator()
+            : nil
         #else
         let backgroundTaskCoordinator = nil
         #endif

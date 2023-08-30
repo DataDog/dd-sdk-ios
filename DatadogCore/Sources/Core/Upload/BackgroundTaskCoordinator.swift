@@ -48,9 +48,7 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         guard task != .invalid else {
             return
         }
-        DispatchQueue.main.async { [app] in
-            app?.endBackgroundTask(task)
-        }
+        app?.endBackgroundTask(task)
     }
 }
 #endif
