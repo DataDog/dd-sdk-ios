@@ -327,4 +327,17 @@ class DatadogConfigurationTests: XCTestCase {
         verify(invalidEnv: "*^@!&#\nsome_env")
         verify(invalidEnv: String(repeating: "a", count: 197))
     }
+
+    func testApplicationVersionOverride() throws {
+        var configuration = defaultConfig
+        configuration.additionalConfiguration[CrossPlatformAttributes.version] = "5.23.2"
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.version, "5.23.2")
+    }
 }

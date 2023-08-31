@@ -340,7 +340,8 @@ public struct Datadog {
             Datadog.verbosityLevel = .debug
         }
 
-        let applicationVersion = configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
+            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"
 
