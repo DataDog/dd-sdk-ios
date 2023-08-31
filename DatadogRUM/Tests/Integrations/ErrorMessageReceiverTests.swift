@@ -35,7 +35,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         let expectation = expectation(description: "Don't send error fallback")
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(key: "error", value: ["message": "message-test"]),
             else: { expectation.fulfill() }
         )
@@ -51,7 +51,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         core.expectation = expectation(description: "Send Error")
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(key: "error", value: [
                 "message": "message-test",
                 "source": "custom"
@@ -80,7 +80,7 @@ class ErrorMessageReceiverTests: XCTestCase {
                 "any-key": mockAttribute
             ]
         ]
-        try core.send(
+        core.send(
             message: .baggage(key: "error", value: AnyEncodable(baggage))
         )
 

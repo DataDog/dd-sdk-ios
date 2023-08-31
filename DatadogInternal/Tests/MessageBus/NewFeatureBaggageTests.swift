@@ -21,7 +21,7 @@ class NewFeatureBaggageTests: XCTestCase {
 
     func testEncodeDecode() throws {
         let pear = GroceryProduct(name: .mockRandom(), points: .mockRandom(), description: .mockRandom())
-        let baggage = try NewFeatureBaggage(pear)
+        let baggage = NewFeatureBaggage(pear)
         let item: CartItem = try baggage.decode()
 
         XCTAssertEqual(pear.name, item.name)

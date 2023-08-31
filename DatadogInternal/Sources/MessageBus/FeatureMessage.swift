@@ -31,11 +31,11 @@ extension FeatureMessage {
     /// Creates a `.baggage` message with thegiven label and `Encodable` type.
     ///
     /// - Parameters:
-    ///   - label: The baggage label.
+    ///   - key: The baggage key.
     ///   - baggage: The baggage value.
     /// - Returns: a `.baggage` case.
-    public static func baggage<Value>(key: String, value: Value) throws -> FeatureMessage where Value: Encodable {
-        try .baggage(key: key, baggage: .init(value))
+    public static func baggage<Value>(key: String, value: Value) -> FeatureMessage where Value: Encodable {
+        .baggage(key: key, baggage: .init(value))
     }
 
     /// Decodes the value of a baggage if the label matches.

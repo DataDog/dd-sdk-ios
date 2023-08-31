@@ -58,7 +58,7 @@ class MessageEmitterCoreTests: XCTestCase {
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserLog:
-                    let event = baggage.rawValue as? JSON
+                    let event = try? baggage.encode() as? JSON
                     XCTAssertEqual(event?["date"] as? Int64, 1_635_932_927_012)
                     XCTAssertEqual(event?["message"] as? String, "console error: error")
                     XCTAssertEqual(event?["status"] as? String, "error")
@@ -109,7 +109,7 @@ class MessageEmitterCoreTests: XCTestCase {
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
-                    let event = baggage.rawValue as? JSON
+                    let event = try? baggage.encode() as? JSON
                     XCTAssertEqual((event?["session"] as? JSON)?["id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                     XCTAssertEqual((event?["view"] as? JSON)?["url"] as? String, "http://localhost:8080/test.html")
                     expectation.fulfill()

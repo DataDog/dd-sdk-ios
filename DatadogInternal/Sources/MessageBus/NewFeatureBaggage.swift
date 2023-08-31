@@ -23,7 +23,7 @@ import Foundation
 ///     }
 ///
 ///     let pear = GroceryProduct(name: "Pear", points: 250, description: "A ripe pear.")
-///     let baggage = try FeatureBaggage(pear)
+///     let baggage = FeatureBaggage(pear)
 ///
 /// The `pear` is stored as a dictionary within the baggage:
 ///
@@ -47,14 +47,30 @@ import Foundation
 ///
 /// A Feature Baggage does not ensure thread-safety of values that holds references, make
 /// sure that any value can be accessibe from any thread.
-public struct NewFeatureBaggage {
+public final class NewFeatureBaggage {
     /// The raw value contained in the baggage.
-    public let rawValue: Any?
+    private var rawValue: Any?
+
+    /// The underlying encoding process.
+    private let _encode: () throws -> Any?
 
     /// Creates an instance initialized with the given encodable.
-    public init<Value>(_ value: Value) throws where Value: Encodable {
+    public init<Value>(_ value: Value) where Value: Encodable {
         let encoder = AnyEncoder()
-        self.rawValue = try encoder.encode(value)
+        self._encode = { try encoder.encode(value) }
+    }
+
+    /// Encodes the baggage value to `Any?`
+    ///
+    /// - Returns: The encoded baggage value.
+    public func encode() throws -> Any? {
+        // lazily encode to save from encoding
+        // if the value is never decoded.
+        if let rawValue = rawValue {
+            return rawValue
+        }
+        rawValue = try _encode()
+        return rawValue
     }
 
     /// Decodes the value stored in the baggage.
@@ -64,6 +80,6 @@ public struct NewFeatureBaggage {
     /// - Returns: The decoded baggage.
     public func decode<Value>(type: Value.Type = Value.self) throws -> Value where Value: Decodable {
         let decoder = AnyDecoder()
-        return try decoder.decode(from: rawValue)
+        return try decoder.decode(from: encode())
     }
 }

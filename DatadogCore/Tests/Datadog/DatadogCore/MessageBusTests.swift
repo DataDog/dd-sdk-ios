@@ -35,7 +35,7 @@ class MessageBusTests: XCTestCase {
         bus.connect(receiver, forKey: "receiver 2")
 
         // When
-        try bus.send(message: .baggage(key: "test", value: "value"))
+        bus.send(message: .baggage(key: "test", value: "value"))
 
         // Then
         wait(for: [expectation], timeout: 0.5)

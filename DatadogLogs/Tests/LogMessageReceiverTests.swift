@@ -33,7 +33,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: "log",
                 value: "wrong-type"
@@ -55,7 +55,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: "log",
                 value: LogMessage(
@@ -98,7 +98,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: "log",
                 value: LogMessage(
@@ -149,7 +149,7 @@ class LogMessageReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: "log",
                 value: LogMessage(

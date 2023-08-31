@@ -50,25 +50,20 @@ internal struct MessageBusSender: CrashReportSender {
             return
         }
 
-        do {
-            try core.send(
-                message: .baggage(
-                    key: MessageKeys.crash,
-                    value: Crash(report: report, context: context)
-                ),
-                else: {
-                    DD.logger.warn(
-                """
-                In order to use Crash Reporting, RUM or Logging feature must be enabled.
-                Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-                when initializing Datadog SDK.
-                """
+        core.send(
+            message: .baggage(
+                key: MessageKeys.crash,
+                value: Crash(report: report, context: context)
+            ),
+            else: {
+                DD.logger.warn(
+                    """
+                    In order to use Crash Reporting, RUM or Logging feature must be enabled.
+                    Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
+                    when initializing Datadog SDK.
+                    """
                 )
-                }
-            )
-        } catch {
-            core.telemetry
-                .error("Fails to encode crash", error: error)
-        }
+            }
+        )
     }
 }

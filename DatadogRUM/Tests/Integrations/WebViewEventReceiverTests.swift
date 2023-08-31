@@ -53,7 +53,7 @@ class WebViewEventReceiverTests: XCTestCase {
             "test": String.mockRandom()
         ]
 
-        try core.send(
+        core.send(
             message: .baggage(key: WebViewEventReceiver.MessageKeys.browserEvent, value: AnyEncodable(sent))
         )
 

@@ -168,22 +168,17 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
-                do {
-                    try self.core.send(
-                        message: .baggage(
-                            key: ErrorMessage.key,
-                            value: ErrorMessage(
-                                message: log.error?.message ?? log.message,
-                                type: log.error?.kind,
-                                stack: log.error?.stack,
-                                attributes: .init(userAttributes)
-                            )
+                self.core.send(
+                    message: .baggage(
+                        key: ErrorMessage.key,
+                        value: ErrorMessage(
+                            message: log.error?.message ?? log.message,
+                            type: log.error?.kind,
+                            stack: log.error?.stack,
+                            attributes: .init(userAttributes)
                         )
                     )
-                } catch {
-                    self.core.telemetry
-                        .error("Fails to encore error message", error: error)
-                }
+                )
             }
         }
     }

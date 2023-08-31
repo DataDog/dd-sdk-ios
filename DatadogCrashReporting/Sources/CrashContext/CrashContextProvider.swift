@@ -69,22 +69,24 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
-            return update(context: context)
+            update(context: context)
         case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
-            return rumView(baggage: baggage, to: core)
+            rumView(baggage: baggage, to: core)
         case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
-            return rumReset(baggage: baggage, to: core)
+            rumReset(baggage: baggage, to: core)
         case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
-            return rumSessionState(baggage: baggage, to: core)
+            rumSessionState(baggage: baggage, to: core)
         default:
             return false
         }
+
+        return true
     }
 
     /// Updates crash context.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext) -> Bool {
+    private func update(context: DatadogContext) {
         queue.async {
             let crashContext = CrashContext(
                 context,
@@ -96,47 +98,40 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                 self._context = crashContext
             }
         }
-
-        return true
     }
 
-    private func rumView(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        do {
-            let event = try baggage.decode(type: AnyCodable.self)
-            queue.async { self.viewEvent = event }
-            return true
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM view event from Crash Reporting", error: error)
-        }
-
-        return false
-    }
-
-    private func rumReset(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        do {
-            if try baggage.decode(type: Bool.self) {
-                queue.async { self.viewEvent = nil }
+    private func rumView(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async {
+            do {
+                self.viewEvent = try baggage.decode(type: AnyCodable.self)
+            } catch {
+                core.telemetry
+                    .error("Fails to decode RUM view event from Crash Reporting", error: error)
             }
-            return true
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM view reset from Crash Reporting", error: error)
         }
-
-        return false
     }
 
-    private func rumSessionState(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        do {
-            let state = try baggage.decode(type: AnyCodable.self)
-            queue.async { self.sessionState = state }
-            return true
-        } catch {
-            core.telemetry
-                .error("Fails to decode RUM session state from Crash Reporting", error: error)
+    private func rumReset(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async {
+            do {
+                if try baggage.decode(type: Bool.self) {
+                    self.viewEvent = nil
+                }
+            } catch {
+                core.telemetry
+                    .error("Fails to decode RUM view reset from Crash Reporting", error: error)
+            }
         }
+    }
 
-        return false
+    private func rumSessionState(baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async {
+            do {
+                self.sessionState = try baggage.decode(type: AnyCodable.self)
+            } catch {
+                core.telemetry
+                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
+            }
+        }
     }
 }

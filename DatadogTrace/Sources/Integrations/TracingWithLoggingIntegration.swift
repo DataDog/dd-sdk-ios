@@ -97,27 +97,22 @@ internal struct TracingWithLoggingIntegration {
             )
         }
 
-        do {
-            try core.send(
-                message: .baggage(
-                    key: LogMessage.key,
-                    value: LogMessage(
-                        service: service,
-                        date: date,
-                        message: message,
-                        error: extractedError,
-                        level: level,
-                        thread: Thread.current.dd.name,
-                        networkInfoEnabled: networkInfoEnabled,
-                        userAttributes: AnyEncodable(userAttributes),
-                        internalAttributes: internalAttributes
-                    )
-                ),
-                else: fallback
-            )
-        } catch {
-            core.telemetry
-                .error("Fails to encode a span log", error: error)
-        }
+        core.send(
+            message: .baggage(
+                key: LogMessage.key,
+                value: LogMessage(
+                    service: service,
+                    date: date,
+                    message: message,
+                    error: extractedError,
+                    level: level,
+                    thread: Thread.current.dd.name,
+                    networkInfoEnabled: networkInfoEnabled,
+                    userAttributes: AnyEncodable(userAttributes),
+                    internalAttributes: internalAttributes
+                )
+            ),
+            else: fallback
+        )
     }
 }

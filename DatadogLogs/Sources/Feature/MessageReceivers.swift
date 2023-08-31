@@ -248,7 +248,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            guard var event = baggage.rawValue as? [String: Any?] else {
+            guard var event = try baggage.encode() as? [String: Any?] else {
                 throw InternalError(description: "event is not a dictionary")
             }
 

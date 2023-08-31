@@ -42,7 +42,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            guard let event = baggage.rawValue as? JSON else {
+            guard let event = try baggage.encode() as? JSON else {
                 throw InternalError(description: "Event is not a dictionary")
             }
 

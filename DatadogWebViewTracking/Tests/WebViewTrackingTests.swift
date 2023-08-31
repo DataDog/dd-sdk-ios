@@ -157,7 +157,7 @@ class WebViewTrackingTests: XCTestCase {
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserLog:
-                    let event = baggage.rawValue as? JSON
+                    let event = try? baggage.encode() as? JSON
                     XCTAssertEqual(event?["date"] as? Int64, 1_635_932_927_012)
                     XCTAssertEqual(event?["message"] as? String, "console error: error")
                     XCTAssertEqual(event?["status"] as? String, "error")
@@ -166,7 +166,7 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(event?["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                     logMessageExpectation.fulfill()
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
-                    let event = baggage.rawValue as? JSON
+                    let event = try? baggage.encode() as? JSON
                     XCTAssertEqual((event?["view"] as? JSON)?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                     rumMessageExpectation.fulfill()
                 case .baggage(let label, let baggage):

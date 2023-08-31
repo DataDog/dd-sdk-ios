@@ -32,7 +32,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: CrashReportReceiver.MessageKeys.crash,
                 value: MessageBusSender.Crash(
@@ -57,7 +57,7 @@ class CrashReportReceiverTests: XCTestCase {
         let lastRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: CrashReportReceiver.MessageKeys.crash,
                 value: MessageBusSender.Crash(
@@ -99,7 +99,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -133,7 +133,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertFalse(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -165,7 +165,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -198,7 +198,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -232,7 +232,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -264,7 +264,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertFalse(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -294,7 +294,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -332,7 +332,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -365,7 +365,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -462,7 +462,7 @@ class CrashReportReceiverTests: XCTestCase {
 
         // When
         XCTAssertTrue(
-            try receiver.receive(message: .baggage(
+            receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
             ), from: core)
@@ -572,7 +572,7 @@ class CrashReportReceiverTests: XCTestCase {
 
             // When
             XCTAssertTrue(
-                try receiver.receive(message: .baggage(
+                receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
                 ), from: core)
@@ -713,7 +713,7 @@ class CrashReportReceiverTests: XCTestCase {
 
             // When
             XCTAssertTrue(
-                try receiver.receive(message: .baggage(
+                receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
                 ), from: core)

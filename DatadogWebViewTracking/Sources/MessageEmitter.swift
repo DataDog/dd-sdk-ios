@@ -33,20 +33,15 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
 
-        do {
-            switch message {
-            case let .log(event):
-                try core.send(message: .baggage(key: MessageKeys.browserLog, value: AnyEncodable(event)), else: {
-                    DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-                })
-            case let .rum(event):
-                try core.send(message: .baggage(key: MessageKeys.browserRUMEvent, value: AnyEncodable(event)), else: {
-                    DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
-                })
-            }
-        } catch {
-            core.telemetry
-                .error("Fails to encode a browser event", error: error)
+        switch message {
+        case let .log(event):
+            core.send(message: .baggage(key: MessageKeys.browserLog, value: AnyEncodable(event)), else: {
+                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+            })
+        case let .rum(event):
+            core.send(message: .baggage(key: MessageKeys.browserRUMEvent, value: AnyEncodable(event)), else: {
+                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
+            })
         }
     }
 }

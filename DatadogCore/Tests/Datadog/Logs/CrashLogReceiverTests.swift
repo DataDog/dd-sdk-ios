@@ -21,7 +21,7 @@ class CrashLogReceiverTests: XCTestCase {
         )
 
         // When
-        try core.send(
+        core.send(
             message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(

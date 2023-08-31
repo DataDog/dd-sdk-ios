@@ -69,7 +69,7 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        try core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -91,8 +91,8 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        try core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
-        try core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -116,7 +116,7 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        try core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
+        core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -135,9 +135,9 @@ class CrashContextProviderTests: XCTestCase {
             closures: [
                 { _ = provider.currentCrashContext },
                 { core.send(message: .context(.mockRandom())) },
-                { try? core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true)) },
-                { try? core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent)) },
-                { try? core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState)) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true)) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent)) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState)) },
             ],
             iterations: 50
         )
