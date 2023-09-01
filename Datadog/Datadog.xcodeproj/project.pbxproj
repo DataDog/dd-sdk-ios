@@ -28,6 +28,7 @@
 		3C85D42C29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		3CB33BC22AA200B100B72A0F /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 3CB33BC12AA200B100B72A0F /* FirebaseCrashlytics */; };
 		3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
@@ -2762,6 +2763,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3CB33BC22AA200B100B72A0F /* FirebaseCrashlytics in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6169,6 +6171,9 @@
 			dependencies = (
 			);
 			name = "DatadogInternal iOS";
+			packageProductDependencies = (
+				3CB33BC12AA200B100B72A0F /* FirebaseCrashlytics */,
+			);
 			productName = DatadogInternal;
 			productReference = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6656,6 +6661,9 @@
 				Base,
 			);
 			mainGroup = 61133B78242393DE00786299;
+			packageReferences = (
+				3CB33BC02AA200B100B72A0F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -12830,7 +12838,23 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		3CB33BC02AA200B100B72A0F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 10.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		3CB33BC12AA200B100B72A0F /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CB33BC02AA200B100B72A0F /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCrashlytics;
+		};
 		6152C83D24BE1C91006A1679 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;
