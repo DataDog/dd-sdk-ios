@@ -141,6 +141,10 @@ class CrashContextProviderTests: XCTestCase {
             ],
             iterations: 50
         )
+
+        // provider retains the core in its queue:
+        // flush to release the core.
+        provider.flush()
         // swiftlint:enable opening_brace
     }
 }

@@ -135,3 +135,12 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         }
     }
 }
+
+extension CrashContextCoreProvider: Flushable {
+    /// Awaits completion of all asynchronous operations.
+    ///
+    /// **blocks the caller thread**
+    func flush() {
+        queue.sync { }
+    }
+}
