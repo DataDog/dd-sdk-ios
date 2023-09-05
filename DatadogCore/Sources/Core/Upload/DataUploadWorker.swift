@@ -111,7 +111,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endCurrentBackgroundTaskIfActive()
             }
-            
+
             self.scheduleNextUpload(after: self.delay.current)
         }
 
