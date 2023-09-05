@@ -15,6 +15,7 @@ let package = Package(
             name: "rum-models-generator",
             dependencies: [
                 "CodeGeneration",
+                "CodeDecoration",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]
         ),
