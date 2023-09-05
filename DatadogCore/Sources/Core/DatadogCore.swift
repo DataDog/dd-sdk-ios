@@ -96,7 +96,6 @@ internal final class DatadogCore {
         self.encryption = encryption
         self.contextProvider = contextProvider
         self.backgroundTasksEnabled = backgroundTasksEnabled
-        
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 

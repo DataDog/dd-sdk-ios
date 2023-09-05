@@ -192,7 +192,7 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
-            delay: mockDelay,
+            delay: delay,
             featureName: .mockAny(),
             telemetry: NOPTelemetry()
         )
@@ -228,7 +228,7 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: true)),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: mockDelay,
+            delay: delay,
             featureName: .mockAny(),
             telemetry: NOPTelemetry()
         )
@@ -263,7 +263,7 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: false)),
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
-            delay: mockDelay,
+            delay: delay,
             featureName: .mockAny(),
             telemetry: NOPTelemetry()
         )
@@ -480,7 +480,7 @@ class DataUploadWorkerTests: XCTestCase {
             dataUploader: dataUploader,
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
-            delay: MockDelay(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry()
         )
@@ -550,6 +550,7 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         writer.write(value: ["k1": "v1"])
@@ -583,12 +584,11 @@ private class SpyBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.endBackgroundTaskCalled = endBackgroundTaskCalled
     }
 
-    func beginBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
+    func beginBackgroundTask() {
         beginBackgroundTaskCalled()
-        return Int.mockRandom()
     }
 
-    func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int) {
+    func endCurrentBackgroundTaskIfActive() {
         endBackgroundTaskCalled()
     }
 }

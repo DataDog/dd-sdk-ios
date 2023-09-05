@@ -34,8 +34,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Telemetry interface.
     private let telemetry: Telemetry
 
+    /// Background task coordinator responsible for registering and ending background tasks for UIKit targets.
     private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
-    private var taskID: Int?
 
     init(
         queue: DispatchQueue,
@@ -68,16 +68,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let batch = self.fileReader.readNextBatch()
             let nextBatch = isSystemReady ? batch : nil
             if let batch = nextBatch {
-                if let taskID = taskID {
-                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
-                    self.taskID = nil
-                }
-                self.taskID = self.backgroundTaskCoordinator?.beginBackgroundTask { [backgroundTaskCoordinator, taskID] in
-                    guard let taskID = taskID else {
-                        return
-                    }
-                    backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
-                }
+                self.backgroundTaskCoordinator?.beginBackgroundTask()
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 do {
@@ -118,10 +109,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
-                if let taskID = taskID {
-                    self.backgroundTaskCoordinator?.endBackgroundTaskIfActive(taskID)
-                    self.taskID = nil
-                }
+                self.backgroundTaskCoordinator?.endCurrentBackgroundTaskIfActive()
             }
             self.scheduleNextUpload(after: self.delay.current)
         }

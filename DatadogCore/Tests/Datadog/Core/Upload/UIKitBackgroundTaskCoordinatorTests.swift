@@ -16,46 +16,38 @@ class UIKitBackgroundTaskCoordinatorTests: XCTestCase {
         super.setUp()
         appSpy = AppSpy()
         coordinator = UIKitBackgroundTaskCoordinator(
-            queue: DispatchQueue.main,
             app: appSpy
         )
     }
 
     func testBeginBackgroundTask() {
-        let backgroundTaskIdentifier = coordinator?.beginBackgroundTask { }
+        coordinator?.beginBackgroundTask()
 
-        XCTAssertEqual(backgroundTaskIdentifier, 1)
         XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, true)
         XCTAssertEqual(appSpy?.endBackgroundTaskCalled, false)
     }
 
     func testEndBackgroundTask() throws {
-        let backgroundTaskIdentifier = try XCTUnwrap(coordinator?.beginBackgroundTask(expirationHandler: { }))
-        coordinator?.endBackgroundTaskIfActive(backgroundTaskIdentifier)
+        coordinator?.beginBackgroundTask()
+        coordinator?.endCurrentBackgroundTaskIfActive()
 
-        XCTAssertEqual(backgroundTaskIdentifier, 1)
         XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, true)
         XCTAssertEqual(appSpy?.endBackgroundTaskCalled, true)
     }
 
-    func testHanderFromTheSameQueue() {
-        let expectHandlerCalled = expectation(description: "handler called")
-        _ = coordinator?.beginBackgroundTask {
-            XCTAssertEqual(Thread.current, Thread.main)
-            expectHandlerCalled.fulfill()
-        }
-        appSpy?.fireHandler(from: .main)
-        wait(for: [expectHandlerCalled])
+    func testEndBackgroundTaskNotCalledWhenNotBegan() throws {
+        coordinator?.endCurrentBackgroundTaskIfActive()
+
+        XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, false)
+        XCTAssertEqual(appSpy?.endBackgroundTaskCalled, false)
     }
 
-    func testHandlerFromDifferentQueue() {
-        let expectHandlerCalled = expectation(description: "handler called")
-        _ = coordinator?.beginBackgroundTask {
-            XCTAssertEqual(Thread.current, Thread.main)
-            expectHandlerCalled.fulfill()
-        }
-        appSpy?.fireHandler(from: .global(qos: .background))
-        wait(for: [expectHandlerCalled])
+    func testBeginEndsPreviousTask() throws {
+        coordinator?.beginBackgroundTask()
+        coordinator?.beginBackgroundTask()
+
+        XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, true)
+        XCTAssertEqual(appSpy?.endBackgroundTaskCalled, true)
     }
 }
 
@@ -63,7 +55,7 @@ class AppSpy: UIKitAppBackgroundTaskCoordinator {
     var beginBackgroundTaskCalled = false
     var endBackgroundTaskCalled = false
 
-    private var handler: (() -> Void)? = nil
+    var handler: (() -> Void)? = nil
 
     func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
         self.handler = handler
@@ -73,11 +65,5 @@ class AppSpy: UIKitAppBackgroundTaskCoordinator {
 
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier) {
         endBackgroundTaskCalled = true
-    }
-
-    func fireHandler(from: DispatchQueue) {
-        from.async { [handler] in
-            handler?()
-        }
     }
 }

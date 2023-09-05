@@ -10,12 +10,13 @@ import Foundation
 /// It serves as a useful abstraction for testing purposes as well as allows decoupling from UIKit in order to maintain Catalyst compliation. To abstract from UIKit, it leverages
 /// the fact that UIBackgroundTaskIdentifier raw value is based on Int.
 internal protocol BackgroundTaskCoordinator {
-    func beginBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int
-    func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int)
+    func beginBackgroundTask()
+    func endCurrentBackgroundTaskIfActive()
 }
 
 #if canImport(UIKit)
 import UIKit
+import DatadogInternal
 
 internal protocol UIKitAppBackgroundTaskCoordinator {
     func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
@@ -24,11 +25,11 @@ internal protocol UIKitAppBackgroundTaskCoordinator {
 
 extension UIApplication: UIKitAppBackgroundTaskCoordinator {}
 
-/// Manages background tasks using UIKit.
-/// This coordinator conforms to the `BackgroundTaskCoordinator` protocol and provides an implementation of managing background tasks using the UIKit framework.
-/// It allows for registering and ending background tasks.
 internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
     private let app: UIKitAppBackgroundTaskCoordinator?
+
+    @ReadWriteLock
+    private var currentTaskId: UIBackgroundTaskIdentifier?
 
     internal init(
         app: UIKitAppBackgroundTaskCoordinator? = UIApplication.dd.managedShared
@@ -36,19 +37,24 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         self.app = app
     }
 
-    internal func beginBackgroundTask(expirationHandler handler: @escaping (() -> Void)) -> Int {
-        guard let app = app else {
-            return UIBackgroundTaskIdentifier.invalid.rawValue
+    internal func beginBackgroundTask() {
+        endCurrentBackgroundTaskIfActive()
+        currentTaskId = app?.beginBackgroundTask { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.endCurrentBackgroundTaskIfActive()
         }
-        return app.beginBackgroundTask(expirationHandler: handler).rawValue
     }
 
-    func endBackgroundTaskIfActive(_ backgroundTaskIdentifier: Int) {
-        let task = UIBackgroundTaskIdentifier(rawValue: backgroundTaskIdentifier)
-        guard task != .invalid else {
+    func endCurrentBackgroundTaskIfActive() {
+        guard let currentTaskId = currentTaskId else {
             return
         }
-        app?.endBackgroundTask(task)
+        if currentTaskId != .invalid {
+            app?.endBackgroundTask(currentTaskId)
+        }
+        self.currentTaskId = nil
     }
 }
 #endif
