@@ -62,11 +62,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
             guard let self = self else {
                 return
             }
+
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let batch = self.fileReader.readNextBatch()
-            let nextBatch = isSystemReady ? batch : nil
+            let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
                 self.backgroundTaskCoordinator?.beginBackgroundTask()
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
@@ -111,6 +111,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.delay.increase()
                 self.backgroundTaskCoordinator?.endCurrentBackgroundTaskIfActive()
             }
+            
             self.scheduleNextUpload(after: self.delay.current)
         }
 

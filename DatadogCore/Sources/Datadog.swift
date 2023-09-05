@@ -105,6 +105,7 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
+        /// Flag that determines if UIKit's background tasks are utilized to perform uploads in background.
         public var backgroundTasksEnabled: Bool
 
         /// Creates a Datadog SDK Configuration object.
