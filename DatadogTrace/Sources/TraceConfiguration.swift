@@ -12,6 +12,7 @@ import DatadogInternal
 @_exported import class DatadogInternal.DatadogURLSessionDelegate
 @_exported import typealias DatadogInternal.DDURLSessionDelegate
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
+@_exported import enum DatadogInternal.URLSessionInstrumentation
 
 @_exported import class DatadogInternal.HTTPHeadersWriter
 @_exported import class DatadogInternal.B3HTTPHeadersWriter

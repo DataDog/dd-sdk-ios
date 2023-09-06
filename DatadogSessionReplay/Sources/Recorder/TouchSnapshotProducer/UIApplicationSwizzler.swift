@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import DatadogInternal
 
 // MARK: - Copy & Paste from Datadog SDK
 
@@ -122,7 +123,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             set(newIMP: newImp, for: foundMethod)
 
             #if DD_SDK_COMPILED_FOR_TESTING
-            activeSwizzlingNames.append(foundMethod.swizzlingName)
+            Swizzling.activeSwizzlingNames.append(foundMethod.swizzlingName)
             #endif
         }
     }
@@ -134,7 +135,7 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
             method_setImplementation(foundMethod.method, originalIMP)
 
-            activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
+            Swizzling.activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
         }
     }
 
@@ -176,7 +177,4 @@ internal class MethodSwizzler<TypedIMP, TypedBlockIMP> {
 internal extension MethodSwizzler.FoundMethod {
     var swizzlingName: String { "\(klass).\(method_getName(method))" }
 }
-
-/// The list of active swizzlings to ensure integrity in unit tests.
-internal var activeSwizzlingNames: [String] = []
 #endif

@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 @import DatadogObjc;
+@import DatadogTrace;
 
 @interface DDNSURLSessionDelegate_apiTests : XCTestCase
 @end
@@ -17,6 +18,27 @@
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-value"
+
+- (void)setUp {
+    [super setUp];
+
+    DDConfiguration *configuration = [[DDConfiguration alloc] initWithClientToken:@"abc" env:@"def"];
+    [DDDatadog initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted]];
+
+    DDTraceConfiguration *config = [[DDTraceConfiguration alloc] init];
+    DDTraceFirstPartyHostsTracing *tracing = [[DDTraceFirstPartyHostsTracing alloc] initWithHosts:[NSSet new] sampleRate:20];
+    DDTraceURLSessionTracking *urlSessionTracking = [[DDTraceURLSessionTracking alloc] initWithFirstPartyHostsTracing:tracing];
+    [config setURLSessionTracking:urlSessionTracking];
+    [DDTrace enableWith:config];
+}
+
+- (void)tearDown {
+    [super tearDown];
+
+    [DDURLSessionInstrumentation disableWithDelegateClass:[DDNSURLSessionDelegate class]];
+    [DDDatadog clearAllData];
+    [DDDatadog flushAndDeinitialize];
+}
 
 - (void)testDDNSURLSessionDelegateAPI {
     [[DDNSURLSessionDelegate alloc] init];

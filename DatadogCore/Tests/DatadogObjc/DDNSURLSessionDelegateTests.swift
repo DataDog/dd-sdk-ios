@@ -29,6 +29,27 @@ private class DDURLSessionDelegateMock: DDURLSessionDelegate {
 }
 
 class DDNSURLSessionDelegateTests: XCTestCase {
+    private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+
+        core = FeatureRegistrationCoreMock()
+        CoreRegistry.register(default: core)
+
+        let config = DDRUMConfiguration(applicationID: "fake-id")
+        config.setURLSessionTracking(.init())
+        DDRUM.enable(with: config)
+    }
+
+    override func tearDown() {
+        DDURLSessionInstrumentation.disable(delegateClass: DDNSURLSessionDelegate.self)
+        CoreRegistry.unregisterDefault()
+        core = nil
+
+        super.tearDown()
+    }
+
     func testInit() {
         let delegate = DDNSURLSessionDelegate()
         let url = URL(string: "foo.com")
