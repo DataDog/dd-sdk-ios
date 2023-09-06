@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     "Maciej Burda" => "maciej.burda@datadoghq.com"
   }
 
-  s.swift_version = '5.8.1'
+  s.swift_version = '5.8.0'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 
