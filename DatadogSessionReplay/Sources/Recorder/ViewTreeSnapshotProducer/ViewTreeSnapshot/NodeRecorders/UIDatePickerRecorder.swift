@@ -8,6 +8,7 @@
 import UIKit
 
 internal struct UIDatePickerRecorder: NodeRecorder {
+    let identifier: UUID = UUID()
     private let wheelsStyleRecorder = WheelsStyleDatePickerRecorder()
     private let compactStyleRecorder = CompactStyleDatePickerRecorder()
     private let inlineStyleRecorder = InlineStyleDatePickerRecorder()
@@ -55,7 +56,7 @@ internal struct UIDatePickerRecorder: NodeRecorder {
         let builder = UIDatePickerWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
-            backgroundWireframeID: context.ids.nodeID(for: datePicker),
+            backgroundWireframeID: context.ids.nodeID(view: datePicker, nodeRecorder: self),
             isDisplayedInPopover: isDisplayedInPopover
         )
         let backgroundNode = Node(

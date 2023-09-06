@@ -8,6 +8,8 @@
 import UIKit
 
 internal struct UISwitchRecorder: NodeRecorder {
+    let identifier: UUID = UUID()
+    
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let `switch` = view as? UISwitch else {
             return nil
@@ -19,7 +21,7 @@ internal struct UISwitchRecorder: NodeRecorder {
 
         // The actual frame of the switch. It might be different than `view.frame` if displayed in stack view:
         let switchFrame = CGRect(origin: attributes.frame.origin, size: view.intrinsicContentSize)
-        let ids = context.ids.nodeIDs(3, for: `switch`)
+        let ids = context.ids.nodeIDs(3, view: `switch`, nodeRecorder: self)
 
         let builder = UISwitchWireframesBuilder(
             wireframeRect: switchFrame,

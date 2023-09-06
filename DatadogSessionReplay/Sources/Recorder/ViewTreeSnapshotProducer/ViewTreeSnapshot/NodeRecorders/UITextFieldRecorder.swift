@@ -8,6 +8,7 @@
 import UIKit
 
 internal struct UITextFieldRecorder: NodeRecorder {
+    let identifier: UUID = UUID()
     /// `UIViewRecorder` for recording appearance of the text field.
     private let backgroundViewRecorder: UIViewRecorder
     /// `UIImageViewRecorder` for recording icons that are displayed in text field.
@@ -85,7 +86,7 @@ internal struct UITextFieldRecorder: NodeRecorder {
         let builder = UITextFieldWireframesBuilder(
             wireframeRect: textFrame,
             attributes: attributes,
-            wireframeID: context.ids.nodeID(for: textField),
+            wireframeID: context.ids.nodeID(view: textField, nodeRecorder: self),
             text: text,
             textColor: textField.textColor?.cgColor,
             textAlignment: textField.textAlignment,
