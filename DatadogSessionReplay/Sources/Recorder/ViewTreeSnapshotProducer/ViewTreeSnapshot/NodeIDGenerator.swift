@@ -53,19 +53,14 @@ internal final class NodeIDGenerator {
     /// - Parameter nodeRecorder: the `NodeRecorder` object
     /// - Returns: an array with given number of `NodeID` values
     func nodeIDs(_ size: Int, view: UIView, nodeRecorder: NodeRecorder) -> [NodeID] {
-        var result = [NodeID]()
-        let key = nodeRecorder.identifier.uuidString + "-\(view.hash)"
+        let key = nodeRecorder.identifier.uuidString + "-\(view.hash)-\(size)"
         if let nodeIDs = ids[key] {
-            result += nodeIDs
+            return nodeIDs
+        } else {
+            let nodeIDs = (0..<size).map { _ in getNextID() }
+            ids[key] = nodeIDs
+            return nodeIDs
         }
-        if result.count < size {
-            for _ in 0..<(size - result.count) {
-                let nodeID = getNextID()
-                result.append(nodeID)
-            }
-            ids[key] = result
-        }
-        return result
     }
 
     private func getNextID() -> NodeID {
