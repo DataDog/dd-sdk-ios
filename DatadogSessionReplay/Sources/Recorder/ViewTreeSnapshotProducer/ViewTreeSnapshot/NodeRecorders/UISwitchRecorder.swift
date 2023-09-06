@@ -8,8 +8,8 @@
 import UIKit
 
 internal struct UISwitchRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
-    
+    let identifier = UUID()
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let `switch` = view as? UISwitch else {
             return nil

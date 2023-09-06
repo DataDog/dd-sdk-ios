@@ -8,7 +8,7 @@
 import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
 
     /// An option for customizing wireframes builder created by this recorder.
     var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder

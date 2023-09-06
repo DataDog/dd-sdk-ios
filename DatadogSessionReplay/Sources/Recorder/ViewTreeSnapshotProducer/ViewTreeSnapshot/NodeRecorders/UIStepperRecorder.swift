@@ -8,8 +8,8 @@
 import UIKit
 
 internal struct UIStepperRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
-    
+    let identifier = UUID()
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let stepper = view as? UIStepper else {
             return nil

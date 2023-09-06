@@ -31,7 +31,6 @@ internal final class NodeIDGenerator {
         self.maxID = maxID
     }
 
-
     /// Returns single `NodeID` for given instance of `UIView`.
     /// - Parameter view: the `UIView` object
     /// - Parameter nodeRecorder: the `NodeRecorder` object

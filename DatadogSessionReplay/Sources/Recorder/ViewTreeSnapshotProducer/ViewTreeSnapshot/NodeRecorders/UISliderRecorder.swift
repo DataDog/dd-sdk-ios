@@ -8,7 +8,7 @@
 import UIKit
 
 internal struct UISliderRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let slider = view as? UISlider else {

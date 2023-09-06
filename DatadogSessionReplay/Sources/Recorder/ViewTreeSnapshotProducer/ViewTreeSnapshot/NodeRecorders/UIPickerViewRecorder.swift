@@ -17,7 +17,7 @@ import UIKit
 /// - Instead, we infer the value by traversing picker's subtree and finding texts that have no "3D wheel" effect applied.
 /// - If privacy mode is elevated, we don't replace individual characters with "x" letter - instead we change whole options to fixed-width mask value.
 internal struct UIPickerViewRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
     /// Records all shapes in picker's subtree.
     /// It is used to capture the background of selected option.
     private let selectionRecorder: ViewTreeRecorder

@@ -8,7 +8,7 @@
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
 
     var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
         if isSensitive {

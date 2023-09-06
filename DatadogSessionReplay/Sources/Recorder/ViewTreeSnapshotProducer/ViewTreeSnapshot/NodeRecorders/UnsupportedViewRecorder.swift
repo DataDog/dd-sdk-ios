@@ -10,7 +10,7 @@ import WebKit
 import SwiftUI
 
 internal struct UnsupportedViewRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
     // swiftlint:disable opening_brace
     private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
         { _, context in context.viewControllerContext.isRootView(of: .safari) },

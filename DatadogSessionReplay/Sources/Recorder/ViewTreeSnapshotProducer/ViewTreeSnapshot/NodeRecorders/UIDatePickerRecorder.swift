@@ -8,7 +8,7 @@
 import UIKit
 
 internal struct UIDatePickerRecorder: NodeRecorder {
-    let identifier: UUID = UUID()
+    let identifier = UUID()
     private let wheelsStyleRecorder = WheelsStyleDatePickerRecorder()
     private let compactStyleRecorder = CompactStyleDatePickerRecorder()
     private let inlineStyleRecorder = InlineStyleDatePickerRecorder()

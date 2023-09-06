@@ -315,7 +315,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 }
 
 class NodeRecorderMock: NodeRecorder {
-    var identifier: UUID = UUID()
+    var identifier = UUID()
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []
     var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
