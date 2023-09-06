@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal class DDSpan: OTSpan {
+internal final class DDSpan: OTSpan {
     /// The `Tracer` which created this span.
     private let ddTracer: DatadogTracer
     /// Span context.
