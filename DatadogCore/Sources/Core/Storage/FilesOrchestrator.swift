@@ -7,6 +7,10 @@
 import Foundation
 import DatadogInternal
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 internal protocol FilesOrchestratorType: AnyObject {
     var performance: StoragePerformancePreset { get }
 
@@ -244,6 +248,12 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
 
+        #if canImport(UIKit)
+        let inBackground = UIApplication.dd.managedShared?.applicationState == .background
+        #else
+        let inBackground = false
+        #endif
+
         telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
@@ -256,7 +266,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: false,
+                BatchDeletedMetric.inBackgroundKey: inBackground,
             ]
         )
     }
