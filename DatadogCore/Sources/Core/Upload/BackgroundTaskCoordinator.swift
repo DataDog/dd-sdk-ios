@@ -10,7 +10,9 @@ import Foundation
 /// It serves as a useful abstraction for testing purposes as well as allows decoupling from UIKit in order to maintain Catalyst compliation. To abstract from UIKit, it leverages
 /// the fact that UIBackgroundTaskIdentifier raw value is based on Int.
 internal protocol BackgroundTaskCoordinator {
+    /// Requests additional background execution time for the app.
     func beginBackgroundTask()
+    /// Marks the end of a specific long-running background task.
     func endCurrentBackgroundTaskIfActive()
 }
 
@@ -18,6 +20,7 @@ internal protocol BackgroundTaskCoordinator {
 import UIKit
 import DatadogInternal
 
+/// Bridge protocol that matches UIApplication's interface for background tasks. Allows easier testablity.
 internal protocol UIKitAppBackgroundTaskCoordinator {
     func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
@@ -47,7 +50,7 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         }
     }
 
-    func endCurrentBackgroundTaskIfActive() {
+    internal func endCurrentBackgroundTaskIfActive() {
         guard let currentTaskId = currentTaskId else {
             return
         }
