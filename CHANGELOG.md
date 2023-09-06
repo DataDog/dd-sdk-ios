@@ -12,6 +12,7 @@
 
 - [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#1447][]
 - [IMPROVEMENT] Enable cross-platform SDKs to edit more of telemetry configuration. See [#1456][]
+- [BUGFIX] fix!: swizzle URLSessionTask for network instrumentation. See [#1394][]
 
 # 2.1.2 / 29-08-2023
 
@@ -531,6 +532,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
 [#1488]: https://github.com/DataDog/dd-sdk-ios/pull/1488
 [#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
+[#1394]: https://github.com/DataDog/dd-sdk-ios/pull/1394
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

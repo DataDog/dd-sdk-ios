@@ -33,22 +33,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { activeSwizzlingNames.isEmpty },
+            assert: { Swizzling.activeSwizzlingNames.isEmpty },
             problem: "No swizzling must be applied.",
             solution: """
             Make sure all applied swizzling are reset by the end of test with `unswizzle()`.
 
-            `DatadogTestsObserver` found \(activeSwizzlingNames.count) leaked swizzlings:
-            \(activeSwizzlingNames.joined(separator: ", "))
-            """
-        ),
-        .init(
-            assert: { URLSessionSwizzler.bindingsCount == 0 },
-            problem: "No `URLSessionSwizzler` must be bonded.",
-            solution: """
-            Make sure all applied `URLSessionSwizzler.bind()` are reset by the end of test with `URLSessionSwizzler.unbind()`.
-
-            `DatadogTestsObserver` found \(URLSessionSwizzler.bindingsCount) bindings left.
+            `DatadogTestsObserver` found \(Swizzling.activeSwizzlingNames.count) leaked swizzlings:
+            \(Swizzling.activeSwizzlingNames.joined(separator: ", "))
             """
         ),
         .init(
@@ -140,6 +131,27 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             - it must be deallocated before test ends (e.g. in `tearDown()`)
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
+        ),
+        .init(
+            assert: { URLSessionTaskDelegateSwizzler.isBinded == false },
+            problem: "No URLSessionTaskDelegate swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskDelegateSwizzler.unbind(delegate:)`.
+            """
+        ),
+        .init(
+            assert: { URLSessionDataDelegateSwizzler.isBinded == false },
+            problem: "No URLSessionDataDelegate swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionDataDelegateSwizzler.unbind(delegate:)`.
+            """
+        ),
+        .init(
+            assert: { URLSessionTaskSwizzler.isBinded == false },
+            problem: "No URLSessionTask swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskSwizzler.unbind()`.
             """
         )
     ]

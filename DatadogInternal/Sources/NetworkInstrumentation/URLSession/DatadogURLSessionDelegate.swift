@@ -12,12 +12,6 @@ public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
 /// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.
 @objc
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
-    /// Datadog delegate object.
-    /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
-    /// - `func urlSession(_:task:didFinishCollecting:)`
-    /// - `func urlSession(_:task:didCompleteWithError:)`
-    /// - `func urlSession(_:dataTask:didReceive:)`
-    var ddURLSessionDelegate: DatadogURLSessionDelegate { get }
 }
 
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
@@ -34,7 +28,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     /* private */ public let firstPartyHosts: FirstPartyHosts
 
     /// The instance of the SDK core notified by this delegate.
-    /// 
+    ///
     /// It must be a weak reference, because `URLSessionDelegate` can last longer than core instance.
     /// Any `URLSession` will retain its delegate until `.invalidateAndCancel()` is called.
     private weak var core: DatadogCoreProtocol?
@@ -43,6 +37,15 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     override public init() {
         core = nil
         firstPartyHosts = .init()
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: DatadogURLSessionDelegate.self,
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
+            ),
+            in: core ?? CoreRegistry.default
+        )
+
         super.init()
     }
 
@@ -89,6 +92,14 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     ) {
         self.core = core
         self.firstPartyHosts = FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes)
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: DatadogURLSessionDelegate.self,
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
+            ),
+            in: core ?? CoreRegistry.default
+        )
         super.init()
     }
 

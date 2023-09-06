@@ -43,12 +43,66 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
-    init() throws {
-        try URLSessionSwizzler.bind()
+    /// Swizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, and `URLSessionTask` methods
+    /// to intercept `URLSessionTask` lifecycles.
+    ///
+    /// - Parameter configuration: The configuration to use for swizzling.
+    /// Note: We are only concerned with type of the delegate here but to provide compile time safety, we
+    ///      use the instance of the delegate to get the type.
+    internal func bindIfNeeded(configuration: URLSessionInstrumentation.Configuration) throws {
+        let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing) ?? .init()
+
+        try URLSessionTaskDelegateSwizzler.bindIfNeeded(
+            delegateClass: configuration.delegateClass,
+            interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                self?.task(task, didFinishCollecting: metrics)
+                session.delegate?.interceptor?.task(task, didFinishCollecting: metrics)
+                if task.state == .completed {
+                    self?.task(task, didCompleteWithError: task.error)
+                    session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
+                }
+            }
+        )
+
+        try URLSessionDataDelegateSwizzler.bindIfNeeded(delegateClass: configuration.delegateClass, interceptDidReceive: { [weak self] session, task, data in
+            self?.task(task, didReceive: data)
+            session.delegate?.interceptor?.task(task, didReceive: data)
+        })
+
+        try URLSessionTaskSwizzler.bindIfNeeded(interceptResume: { [weak self] task in
+            let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
+            self?.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
+        })
     }
 
-    deinit {
-        URLSessionSwizzler.unbind()
+    private func firstPartyHosts(configuration: URLSessionInstrumentation.Configuration, delegate: URLSessionDelegate) -> FirstPartyHosts? {
+         var firstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing)
+
+         if let datadogDelegate = delegate as? DatadogURLSessionDelegate {
+             firstPartyHosts += datadogDelegate.firstPartyHosts
+         }
+
+         return firstPartyHosts
+     }
+
+    internal func unbindAll() {
+        URLSessionTaskDelegateSwizzler.unbindAll()
+        URLSessionDataDelegateSwizzler.unbindAll()
+        URLSessionTaskSwizzler.unbind()
+    }
+
+    /// Unswizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, `URLSessionTask` and `URLSession` methods
+    /// - Parameter delegateClass: The delegate class to unswizzle.
+    internal func unbind(delegateClass: URLSessionDataDelegate.Type) {
+        URLSessionTaskDelegateSwizzler.unbind(delegateClass: delegateClass)
+        URLSessionDataDelegateSwizzler.unbind(delegateClass: delegateClass)
+
+        guard URLSessionTaskDelegateSwizzler.didFinishCollectingMap.isEmpty,
+              URLSessionDataDelegateSwizzler.didReceiveMap.isEmpty else {
+            return
+        }
+
+        URLSessionTaskSwizzler.unbind()
     }
 }
 
@@ -78,28 +132,39 @@ extension NetworkInstrumentationFeature {
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
-        guard let request = task.originalRequest else {
+        guard let originalRequest = task.originalRequest else {
             return
         }
 
-        queue.async {
-            let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
+        // sync update to task prevents a race condition where the currentRequest could already be sent to the transport
+        queue.sync { [weak self] in
+            guard let interceptedRequest = self?.intercept(request: originalRequest, additionalFirstPartyHosts: additionalFirstPartyHosts) else {
+                return
+            }
+            task.setValue(interceptedRequest, forKey: "currentRequest")
 
-            let interception = URLSessionTaskInterception(
-                request: request,
-                isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
-            )
+            guard let firstPartyHosts = self?.firstPartyHosts(with: additionalFirstPartyHosts) else {
+                return
+            }
 
-            if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
+            let interception = self?.interceptions[task] ??
+                URLSessionTaskInterception(
+                    request: interceptedRequest,
+                    isFirstParty: firstPartyHosts.isFirstParty(url: interceptedRequest.url)
+                )
+
+            interception.register(request: interceptedRequest)
+
+            if let trace = self?.extractTrace(firstPartyHosts: firstPartyHosts, request: interceptedRequest) {
                 interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
             }
 
-            if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
+            if let origin = interceptedRequest.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
                 interception.register(origin: origin)
             }
 
-            self.interceptions[task] = interception
-            self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
+            self?.interceptions[task] = interception
+            self?.handlers.forEach { $0.interceptionDidStart(interception: interception) }
         }
     }
 
@@ -109,8 +174,8 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        queue.async {
-            guard let interception = self.interceptions[task] else {
+        queue.async { [weak self] in
+            guard let interception = self?.interceptions[task] else {
                 return
             }
 
@@ -119,7 +184,7 @@ extension NetworkInstrumentationFeature {
             )
 
             if interception.isDone {
-                self.finish(task: task, interception: interception)
+                self?.finish(task: task, interception: interception)
             }
         }
     }
@@ -130,7 +195,12 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
     func task(_ task: URLSessionTask, didReceive data: Data) {
-        queue.async { self.interceptions[task]?.register(nextData: data) }
+        queue.async { [weak self] in
+            guard let interception = self?.interceptions[task] else {
+                return
+            }
+            interception.register(nextData: data)
+        }
     }
 
     /// Tells the interceptors that the task did complete.
@@ -139,8 +209,8 @@ extension NetworkInstrumentationFeature {
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
-        queue.async {
-            guard let interception = self.interceptions[task] else {
+        queue.async { [weak self] in
+            guard let interception = self?.interceptions[task] else {
                 return
             }
 
@@ -150,7 +220,7 @@ extension NetworkInstrumentationFeature {
             )
 
             if interception.isDone {
-                self.finish(task: task, interception: interception)
+                self?.finish(task: task, interception: interception)
             }
         }
     }
@@ -160,8 +230,8 @@ extension NetworkInstrumentationFeature {
     }
 
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
-        interceptions[task] = nil
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
+        interceptions[task] = nil
     }
 
     private func extractTrace(firstPartyHosts: FirstPartyHosts, request: URLRequest) -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {

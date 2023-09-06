@@ -6,6 +6,12 @@
 
 import Foundation
 
+public enum Swizzling {
+    /// The list of active swizzlings to ensure integrity in unit tests.
+    @ReadWriteLock
+    public static var activeSwizzlingNames: [String] = []
+}
+
 open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
     public struct FoundMethod: Hashable {
         let method: Method
@@ -70,7 +76,7 @@ open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             set(newIMP: newImp, for: foundMethod)
 
             #if DD_SDK_COMPILED_FOR_TESTING
-            activeSwizzlingNames.append(foundMethod.swizzlingName)
+            Swizzling.activeSwizzlingNames.append(foundMethod.swizzlingName)
             #endif
         }
     }
@@ -82,7 +88,7 @@ open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
             let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
             method_setImplementation(foundMethod.method, originalIMP)
 
-            activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
+            Swizzling.activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
         }
     }
 
@@ -124,6 +130,3 @@ open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
 internal extension MethodSwizzler.FoundMethod {
     var swizzlingName: String { "\(klass).\(method_getName(method))" }
 }
-
-/// The list of active swizzlings to ensure integrity in unit tests.
-internal var activeSwizzlingNames: [String] = []

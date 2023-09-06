@@ -11,7 +11,7 @@ public class URLSessionTaskInterception {
     public let identifier: UUID
     /// The initial request send during this interception. It is, the request send from `URLSession`, not the one
     /// given by the user (as the request could have been modified in `URLSessionSwizzler`).
-    public let request: URLRequest
+    public private(set) var request: URLRequest
     /// Tells if the `request` is send to a 1st party host.
     public let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
@@ -48,6 +48,10 @@ public class URLSessionTaskInterception {
         } else {
             self.data = nextData
         }
+    }
+
+    func register(request: URLRequest) {
+        self.request = request
     }
 
     func register(response: URLResponse?, error: Error?) {
