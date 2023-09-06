@@ -30,7 +30,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
     let performance: StoragePerformancePreset
-
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the last file was returned from `getWritableFile(writeSize:)`.
@@ -41,6 +40,15 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     private var lastWritableFileApproximatedSize: UInt64 = 0
     /// Telemetry interface.
     let telemetry: Telemetry
+
+    #if canImport(UIKit)
+    /// Application state publisher for enriching telemetry.
+    let applicationStatePublisher: ApplicationStatePublisher = .init()
+    var subscription: ContextValueSubscription?
+    #endif
+    /// Flag indicating if the application is in background state.
+    @ReadWriteLock
+    var inBackground = false
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
@@ -65,6 +73,16 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         self.dateProvider = dateProvider
         self.telemetry = telemetry
         self.metricsData = metricsData
+
+        #if canImport(UIKit)
+        self.subscription = applicationStatePublisher.subscribe { [weak self] appStateHistory in
+            self?.inBackground = appStateHistory.currentSnapshot.state == .background
+        }
+        #endif
+    }
+
+    deinit {
+        self.subscription?.cancel()
     }
 
     // MARK: - `WritableFile` orchestration
@@ -247,12 +265,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
-
-        #if canImport(UIKit)
-        let inBackground = UIApplication.dd.managedShared?.applicationState == .background
-        #else
-        let inBackground = false
-        #endif
 
         telemetry.metric(
             name: BatchDeletedMetric.name,
