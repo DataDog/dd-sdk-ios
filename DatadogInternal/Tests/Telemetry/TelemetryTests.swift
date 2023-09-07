@@ -122,6 +122,22 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(telemetry.configuration, expectedConfiguration)
     }
 
+    func testTelemetryConfigurationMerge() {
+        // Given
+        let initialConfiguration: ConfigurationTelemetry = .mockRandom()
+        let expectedConfiguration: ConfigurationTelemetry = .mockRandom()
+
+        let telemetry = TelemetryTest()
+
+        // When
+        telemetry.applyConfiguration(configuration: initialConfiguration)
+        telemetry.applyConfiguration(configuration: expectedConfiguration)
+
+        // Then
+        XCTAssertEqual(telemetry.configuration, expectedConfiguration)
+        XCTAssertNotEqual(telemetry.configuration, initialConfiguration)
+    }
+
     func testWhenSendingTelemetryMessage_itForwardsToCore() {
         // Given
         class Receiver: FeatureMessageReceiver {
@@ -179,8 +195,8 @@ class TelemetryTest: Telemetry {
 
         self.configuration = configuration
     }
-    
-    public func applyConfiguration(configuration: ConfigurationTelemetry) {
+
+    internal func applyConfiguration(configuration: ConfigurationTelemetry) {
         self.configuration(
             actionNameAttribute: configuration.actionNameAttribute,
             allowFallbackToLocalStorage: configuration.allowFallbackToLocalStorage,
