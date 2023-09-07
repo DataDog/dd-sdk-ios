@@ -123,55 +123,7 @@ class TelemetryTests: XCTestCase {
             }
         }
 
-        let expectedConfiguration = ConfigurationTelemetry(
-            actionNameAttribute: .mockRandom(),
-            allowFallbackToLocalStorage: .mockRandom(),
-            allowUntrustedEvents: .mockRandom(),
-            batchSize: .mockRandom(),
-            batchUploadFrequency: .mockRandom(),
-            dartVersion: .mockRandom(),
-            defaultPrivacyLevel: .mockRandom(),
-            forwardErrorsToLogs: .mockRandom(),
-            initializationType: .mockRandom(),
-            mobileVitalsUpdatePeriod: .mockRandom(),
-            premiumSampleRate: .mockRandom(),
-            reactNativeVersion: .mockRandom(),
-            reactVersion: .mockRandom(),
-            replaySampleRate: .mockRandom(),
-            sessionReplaySampleRate: .mockRandom(),
-            sessionSampleRate: .mockRandom(),
-            silentMultipleInit: .mockRandom(),
-            startSessionReplayRecordingManually: .mockRandom(),
-            telemetryConfigurationSampleRate: .mockRandom(),
-            telemetrySampleRate: .mockRandom(),
-            traceSampleRate: .mockRandom(),
-            trackBackgroundEvents: .mockRandom(),
-            trackCrossPlatformLongTasks: .mockRandom(),
-            trackErrors: .mockRandom(),
-            trackFlutterPerformance: .mockRandom(),
-            trackFrustrations: .mockRandom(),
-            trackInteractions: .mockRandom(),
-            trackLongTask: .mockRandom(),
-            trackNativeErrors: .mockRandom(),
-            trackNativeLongTasks: .mockRandom(),
-            trackNativeViews: .mockRandom(),
-            trackNetworkRequests: .mockRandom(),
-            trackResources: .mockRandom(),
-            trackSessionAcrossSubdomains: .mockRandom(),
-            trackUserInteractions: .mockRandom(),
-            trackViewsManually: .mockRandom(),
-            useAllowedTracingOrigins: .mockRandom(),
-            useAllowedTracingUrls: .mockRandom(),
-            useBeforeSend: .mockRandom(),
-            useCrossSiteSessionCookie: .mockRandom(),
-            useExcludedActivityUrls: .mockRandom(),
-            useFirstPartyHosts: .mockRandom(),
-            useLocalEncryption: .mockRandom(),
-            useProxy: .mockRandom(),
-            useSecureSessionCookie: .mockRandom(),
-            useTracing: .mockRandom(),
-            useWorkerUrl: .mockRandom()
-        )
+        let expectedConfiguration: ConfigurationTelemetry = .mockRandom()
 
         let telemetry = TelemetryTest()
 
