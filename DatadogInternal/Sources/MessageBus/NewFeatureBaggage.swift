@@ -49,6 +49,7 @@ import Foundation
 /// sure that any value can be accessibe from any thread.
 public final class NewFeatureBaggage {
     /// The raw value contained in the baggage.
+    @ReadWriteLock
     private var rawValue: Any?
 
     /// The underlying encoding process.
@@ -66,10 +67,11 @@ public final class NewFeatureBaggage {
     public func encode() throws -> Any? {
         // lazily encode to save from encoding
         // if the value is never decoded.
-        if let rawValue = rawValue {
+        if let rawValue = self.rawValue {
             return rawValue
         }
-        rawValue = try _encode()
+        let rawValue = try _encode()
+        self.rawValue = rawValue
         return rawValue
     }
 

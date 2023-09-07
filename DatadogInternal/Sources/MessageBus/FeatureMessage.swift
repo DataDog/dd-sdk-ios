@@ -28,7 +28,7 @@ public enum FeatureMessage {
 }
 
 extension FeatureMessage {
-    /// Creates a `.baggage` message with thegiven label and `Encodable` type.
+    /// Creates a `.baggage` message with the given key and `Encodable` value.
     ///
     /// - Parameters:
     ///   - key: The baggage key.
@@ -38,7 +38,7 @@ extension FeatureMessage {
         .baggage(key: key, baggage: .init(value))
     }
 
-    /// Decodes the value of a baggage if the label matches.
+    /// Returns the baggage if the key matches the message.
     ///
     /// - Parameters:
     ///   - label: The requested baggage label.
