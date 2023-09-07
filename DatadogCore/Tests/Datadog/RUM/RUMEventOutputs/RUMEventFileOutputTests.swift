@@ -35,6 +35,7 @@ class RUMEventFileOutputTests: XCTestCase {
                     uploadPerformance: .noOp
                 ),
                 dateProvider: fileCreationDateProvider,
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,

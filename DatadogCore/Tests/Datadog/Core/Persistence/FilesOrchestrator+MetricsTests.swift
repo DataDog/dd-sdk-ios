@@ -34,6 +34,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             directory: Directory(url: temporaryDirectory),
             performance: PerformancePreset.combining(storagePerformance: storage, uploadPerformance: upload),
             dateProvider: dateProvider,
+            contextProvider: .mockAny(),
             telemetry: telemetry,
             metricsData: .init(trackName: "track name", uploaderPerformance: upload)
         )

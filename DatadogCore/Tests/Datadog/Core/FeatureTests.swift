@@ -18,6 +18,7 @@ class FeatureStorageTests: XCTestCase {
         super.setUp()
         storage = FeatureStorage(
             featureName: .mockAny(),
+            contextProvider: .mockAny(),
             queue: queue,
             directories: temporaryFeatureDirectories,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),

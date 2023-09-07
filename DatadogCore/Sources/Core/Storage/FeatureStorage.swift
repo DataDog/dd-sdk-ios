@@ -113,6 +113,7 @@ internal struct FeatureStorage {
 extension FeatureStorage {
     init(
         featureName: String,
+        contextProvider: DatadogContextProvider,
         queue: DispatchQueue,
         directories: FeatureDirectories,
         dateProvider: DateProvider,
@@ -124,6 +125,7 @@ extension FeatureStorage {
             directory: directories.authorized,
             performance: performance,
             dateProvider: dateProvider,
+            contextProvider: contextProvider,
             telemetry: telemetry,
             metricsData: {
                 guard let trackName = BatchMetric.trackValue(for: featureName) else {
@@ -137,6 +139,7 @@ extension FeatureStorage {
             directory: directories.unauthorized,
             performance: performance,
             dateProvider: dateProvider,
+            contextProvider: contextProvider,
             telemetry: telemetry,
             metricsData: nil // do not send metrics for unauthorized orchestrator
         )

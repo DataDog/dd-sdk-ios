@@ -230,6 +230,7 @@ extension DatadogCore: DatadogCoreProtocol {
         if let feature = feature as? DatadogRemoteFeature {
             let storage = FeatureStorage(
                 featureName: T.name,
+                contextProvider: contextProvider,
                 queue: readWriteQueue,
                 directories: featureDirectories,
                 dateProvider: dateProvider,

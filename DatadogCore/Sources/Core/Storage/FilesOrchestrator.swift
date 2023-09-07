@@ -7,10 +7,6 @@
 import Foundation
 import DatadogInternal
 
-#if canImport(UIKit)
-import UIKit
-#endif
-
 internal protocol FilesOrchestratorType: AnyObject {
     var performance: StoragePerformancePreset { get }
 
@@ -41,14 +37,11 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    #if canImport(UIKit)
-    /// Application state publisher for enriching telemetry.
-    let applicationStatePublisher: ApplicationStatePublisher = .init()
-    var subscription: ContextValueSubscription?
-    #endif
     /// Flag indicating if the application is in background state.
-    @ReadWriteLock
-    var inBackground = false
+    var inBackground: Bool {
+        return contextProvider.read().applicationStateHistory.currentSnapshot.state == .background
+    }
+    let contextProvider: DatadogContextProvider
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
@@ -65,24 +58,16 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         directory: Directory,
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
+        contextProvider: DatadogContextProvider,
         telemetry: Telemetry,
         metricsData: MetricsData? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.contextProvider = contextProvider
         self.telemetry = telemetry
         self.metricsData = metricsData
-
-        #if canImport(UIKit)
-        self.subscription = applicationStatePublisher.subscribe { [weak self] appStateHistory in
-            self?.inBackground = appStateHistory.currentSnapshot.state == .background
-        }
-        #endif
-    }
-
-    deinit {
-        self.subscription?.cancel()
     }
 
     // MARK: - `WritableFile` orchestration

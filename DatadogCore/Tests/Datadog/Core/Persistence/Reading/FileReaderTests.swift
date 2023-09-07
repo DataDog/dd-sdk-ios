@@ -28,6 +28,7 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: nil,
@@ -75,6 +76,7 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: DataEncryptionMock(
@@ -102,6 +104,7 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider,
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: nil,

@@ -28,6 +28,7 @@ class FilesOrchestratorTests: XCTestCase {
             directory: .init(url: temporaryDirectory),
             performance: performance,
             dateProvider: dateProvider,
+            contextProvider: .mockAny(),
             telemetry: NOPTelemetry()
         )
     }
@@ -137,6 +138,7 @@ class FilesOrchestratorTests: XCTestCase {
                 maxObjectSize: .max
             ),
             dateProvider: RelativeDateProvider(advancingBySeconds: 1),
+            contextProvider: .mockAny(),
             telemetry: NOPTelemetry()
         )
 

@@ -17,6 +17,7 @@ class DataUploadWorkerTests: XCTestCase {
         directory: .init(url: temporaryDirectory),
         performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
         dateProvider: dateProvider,
+        contextProvider: .mockAny(),
         telemetry: NOPTelemetry()
     )
     lazy var writer = FileWriter(

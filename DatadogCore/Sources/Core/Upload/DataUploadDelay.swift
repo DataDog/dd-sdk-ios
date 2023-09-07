@@ -7,19 +7,13 @@
 import Foundation
 import DatadogInternal
 
-internal protocol Delay {
-    var current: TimeInterval { get }
-    func decrease()
-    func increase()
-}
-
 /// Mutable interval used for periodic data uploads.
-internal class DataUploadDelay: Delay {
+internal class DataUploadDelay {
     private let minDelay: TimeInterval
     private let maxDelay: TimeInterval
     private let changeRate: Double
 
-    var current: TimeInterval
+    private(set) var current: TimeInterval
 
     init(performance: UploadPerformancePreset) {
         self.minDelay = performance.minUploadDelay

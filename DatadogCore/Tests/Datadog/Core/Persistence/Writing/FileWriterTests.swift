@@ -29,6 +29,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -67,6 +68,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -109,6 +111,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -141,6 +144,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: RelativeDateProvider(advancingBySeconds: 1),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: true,
@@ -188,6 +192,7 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -221,6 +226,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -243,6 +249,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -274,6 +281,7 @@ class FileWriterTests: XCTestCase {
                     maxObjectSize: .max
                 ),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,
@@ -337,6 +345,7 @@ class FileWriterTests: XCTestCase {
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
                 dateProvider: SystemDateProvider(),
+                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             forceNewFile: false,

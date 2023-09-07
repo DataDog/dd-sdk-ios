@@ -27,7 +27,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// The core context provider
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
-    private let delay: Delay
+    private let delay: DataUploadDelay
 
     /// Upload work scheduled by this worker.
     private var uploadWork: DispatchWorkItem?
@@ -43,7 +43,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         dataUploader: DataUploaderType,
         contextProvider: DatadogContextProvider,
         uploadConditions: DataUploadConditions,
-        delay: Delay,
+        delay: DataUploadDelay,
         featureName: String,
         telemetry: Telemetry,
         backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
