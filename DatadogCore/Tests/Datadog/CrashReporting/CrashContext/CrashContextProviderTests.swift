@@ -54,7 +54,7 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - `RUMViewEvent` Integration
 
-    func testWhenNewRUMView_thenItNotifiesNewCrashContext() {
+    func testWhenNewRUMView_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
@@ -69,13 +69,13 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewEvent: viewEvent]))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
-    func testWhenRUMViewReset_thenItNotifiesNewCrashContext() {
+    func testWhenRUMViewReset_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
         expectation.expectedFulfillmentCount = 2
 
@@ -91,8 +91,8 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewEvent: viewEvent]))
-        core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true]))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -101,7 +101,7 @@ class CrashContextProviderTests: XCTestCase {
 
     // MARK: - RUM Session State Integration
 
-    func testWhenNewRUMSessionStateIsSentThroughMessageBus_thenItNotifiesNewCrashContext() {
+    func testWhenNewRUMSessionStateIsSentThroughMessageBus_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
@@ -116,7 +116,7 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: sessionState]))
+        core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -135,12 +135,16 @@ class CrashContextProviderTests: XCTestCase {
             closures: [
                 { _ = provider.currentCrashContext },
                 { core.send(message: .context(.mockRandom())) },
-                { core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewReset: true])) },
-                { core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.viewEvent: viewEvent])) },
-                { core.send(message: .custom(key: "rum", baggage: [RUMBaggageKeys.sessionState: sessionState])) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true)) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent)) },
+                { core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState)) },
             ],
             iterations: 50
         )
+
+        // provider retains the core in its queue:
+        // flush to release the core.
+        provider.flush()
         // swiftlint:enable opening_brace
     }
 }

@@ -54,7 +54,7 @@ class WebViewEventReceiverTests: XCTestCase {
         ]
 
         core.send(
-            message: .custom(key: WebViewEventReceiver.MessageKeys.browserEvent, baggage: .init(sent))
+            message: .baggage(key: WebViewEventReceiver.MessageKeys.browserEvent, value: AnyEncodable(sent))
         )
 
         // Then

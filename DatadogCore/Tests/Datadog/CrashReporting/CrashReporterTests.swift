@@ -80,7 +80,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        XCTAssert(!rumCrashReceiver.receivedBaggage.isEmpty, "RUM baggage must not be empty")
+        XCTAssertNotNil(rumCrashReceiver.receivedBaggage, "RUM baggage must not be empty")
     }
 
     func testWhenPendingCrashReportIsFound_itIsSentToLogsFeature() throws {
@@ -112,7 +112,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        XCTAssert(!logsCrashReceiver.receivedBaggage.isEmpty, "Logs baggage must not be empty")
+        XCTAssertNotNil(logsCrashReceiver.receivedBaggage, "Logs baggage must not be empty")
     }
 
     func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
@@ -340,8 +340,8 @@ class CrashReporterTests: XCTestCase {
 
         XCTAssert(logs.contains(where: { $0.message == """
             In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-            when initializing Datadog SDK.
-            """ }))
+            Make sure `RUM` or `Logs` are enabled when initializing Datadog SDK.
+            """
+        }))
     }
 }

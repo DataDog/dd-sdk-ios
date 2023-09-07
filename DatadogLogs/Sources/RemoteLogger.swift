@@ -25,6 +25,20 @@ internal final class RemoteLogger: LoggerProtocol {
         let sampler: Sampler
     }
 
+    struct ErrorMessage: Encodable {
+        static let key = "error"
+        /// The Log error message
+        let message: String
+        /// The Log error type
+        let type: String?
+        /// The Log error stack
+        let stack: String?
+        /// The Log error stack
+        let source: String = "logger"
+        /// The Log attributes
+        let attributes: AnyEncodable
+    }
+
     /// `DatadogCore` instance managing this logger.
     internal let core: DatadogCoreProtocol
     /// Configuration specific to this logger.
@@ -155,14 +169,14 @@ internal final class RemoteLogger: LoggerProtocol {
                 }
 
                 self.core.send(
-                    message: .error(
-                        message: log.error?.message ?? log.message,
-                        baggage: [
-                            "type": log.error?.kind,
-                            "stack": log.error?.stack,
-                            "source": "logger",
-                            "attributes": userAttributes
-                        ]
+                    message: .baggage(
+                        key: ErrorMessage.key,
+                        value: ErrorMessage(
+                            message: log.error?.message ?? log.message,
+                            type: log.error?.kind,
+                            stack: log.error?.stack,
+                            attributes: .init(userAttributes)
+                        )
                     )
                 )
             }
