@@ -218,6 +218,12 @@
 		61216B852667CFFE0089DCD1 /* RUME2EHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61216B7826679DD20089DCD1 /* RUME2EHelpers.swift */; };
 		612556B0268C8D31002BCE74 /* CrashReport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612556AF268C8D31002BCE74 /* CrashReport.swift */; };
 		612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */; };
+		612C13D02AA772FA0086B5D1 /* SRRequestMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13CF2AA772FA0086B5D1 /* SRRequestMatcher.swift */; };
+		612C13D12AA772FA0086B5D1 /* SRRequestMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13CF2AA772FA0086B5D1 /* SRRequestMatcher.swift */; };
+		612C13D32AAA20660086B5D1 /* JSONObjectMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D22AAA20660086B5D1 /* JSONObjectMatcher.swift */; };
+		612C13D42AAA20660086B5D1 /* JSONObjectMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D22AAA20660086B5D1 /* JSONObjectMatcher.swift */; };
+		612C13D62AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D52AAB35EB0086B5D1 /* SRSegmentMatcher.swift */; };
+		612C13D72AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D52AAB35EB0086B5D1 /* SRSegmentMatcher.swift */; };
 		6132BF4224A38D2400D7BD17 /* OTTracer+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */; };
 		6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */; };
 		6132BF4924A49B6800D7BD17 /* DDSpanContext+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */; };
@@ -2029,6 +2035,9 @@
 		6122514727FDFF82004F5AE4 /* RUMScopeDependencies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScopeDependencies.swift; sourceTree = "<group>"; };
 		612556AF268C8D31002BCE74 /* CrashReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReport.swift; sourceTree = "<group>"; };
 		612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportExporter.swift; sourceTree = "<group>"; };
+		612C13CF2AA772FA0086B5D1 /* SRRequestMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRRequestMatcher.swift; sourceTree = "<group>"; };
+		612C13D22AAA20660086B5D1 /* JSONObjectMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONObjectMatcher.swift; sourceTree = "<group>"; };
+		612C13D52AAB35EB0086B5D1 /* SRSegmentMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRSegmentMatcher.swift; sourceTree = "<group>"; };
 		6132BF4124A38D2400D7BD17 /* OTTracer+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "OTTracer+objc.swift"; sourceTree = "<group>"; };
 		6132BF4624A498D800D7BD17 /* DDSpan+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpan+objc.swift"; sourceTree = "<group>"; };
 		6132BF4824A49B6800D7BD17 /* DDSpanContext+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDSpanContext+objc.swift"; sourceTree = "<group>"; };
@@ -3932,10 +3941,13 @@
 			isa = PBXGroup;
 			children = (
 				61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */,
+				612C13D22AAA20660086B5D1 /* JSONObjectMatcher.swift */,
 				61133C432423990D00786299 /* LogMatcher.swift */,
 				61E45ED02451A8730061DAC7 /* SpanMatcher.swift */,
 				61FF282724B8A31E000B3D9B /* RUMEventMatcher.swift */,
 				61F9CA982513977A000A5E61 /* RUMSessionMatcher.swift */,
+				612C13CF2AA772FA0086B5D1 /* SRRequestMatcher.swift */,
+				612C13D52AAB35EB0086B5D1 /* SRSegmentMatcher.swift */,
 			);
 			path = Matchers;
 			sourceTree = "<group>";
@@ -7313,6 +7325,7 @@
 				614798962A459AA80095CB02 /* DDTraceTests.swift in Sources */,
 				D25085102976E30000E931C3 /* DatadogRemoteFeatureMock.swift in Sources */,
 				A7C816AB2A98CEBA00BF097B /* UIKitBackgroundTaskCoordinatorTests.swift in Sources */,
+				612C13D02AA772FA0086B5D1 /* SRRequestMatcher.swift in Sources */,
 				61A1A44929643254007909E7 /* DatadogCoreProxy.swift in Sources */,
 				D2A1EE3B287EECC000D28DFB /* CarrierInfoPublisherTests.swift in Sources */,
 				D22743D829DEB8B4001A7EF9 /* VitalInfoTests.swift in Sources */,
@@ -7330,6 +7343,7 @@
 				D2EFA875286E011900F1FAA6 /* DatadogContextProviderTests.swift in Sources */,
 				61363D9F24D99BAA0084CD6F /* DDErrorTests.swift in Sources */,
 				D22743DA29DEB8B4001A7EF9 /* VitalMemoryReaderTests.swift in Sources */,
+				612C13D32AAA20660086B5D1 /* JSONObjectMatcher.swift in Sources */,
 				61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */,
 				61133C582423990D00786299 /* FileWriterTests.swift in Sources */,
 				D22743DC29DEB8B4001A7EF9 /* VitalRefreshRateReaderTests.swift in Sources */,
@@ -7371,6 +7385,7 @@
 				61133C6A2423990D00786299 /* DatadogTests.swift in Sources */,
 				D22743DB29DEB8B4001A7EF9 /* VitalCPUReaderTests.swift in Sources */,
 				61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */,
+				612C13D62AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
 				61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */,
 				D24C9C6229A7CB14002057CF /* WebViewLogReceiverTests.swift in Sources */,
@@ -8413,6 +8428,7 @@
 				D2CB6EF427C520D400A62B57 /* FileWriterTests.swift in Sources */,
 				D2CB6EFE27C520D400A62B57 /* RUMMonitorConfigurationTests.swift in Sources */,
 				D2CB6F0027C520D400A62B57 /* RUMSessionMatcher.swift in Sources */,
+				612C13D42AAA20660086B5D1 /* JSONObjectMatcher.swift in Sources */,
 				A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */,
 				D2CB6F0127C520D400A62B57 /* DatadogPrivateMocks.swift in Sources */,
 				D26C49B02886DC7B00802B2D /* ApplicationStatePublisherTests.swift in Sources */,
@@ -8429,6 +8445,7 @@
 				614B78EE296D7B63009C6B92 /* DatadogCoreTests.swift in Sources */,
 				D2CB6F0C27C520D400A62B57 /* KronosNTPPacketTests.swift in Sources */,
 				D2CB6F0E27C520D400A62B57 /* DDRUMMonitorTests.swift in Sources */,
+				612C13D12AA772FA0086B5D1 /* SRRequestMatcher.swift in Sources */,
 				D24C9C6529A7CB7D002057CF /* CrashLogReceiverTests.swift in Sources */,
 				D29A9FD129DDC590005C54A4 /* RUMFeatureTests.swift in Sources */,
 				D2CB6F1027C520D400A62B57 /* DDNSURLSessionDelegateTests.swift in Sources */,
@@ -8505,6 +8522,7 @@
 				D2CB6F7C27C520D400A62B57 /* CrashReporterTests.swift in Sources */,
 				D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */,
 				D28F836629C9E6A200EF8EA2 /* DatadogTraceFeatureTests.swift in Sources */,
+				612C13D72AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				6147989A2A459B2E0095CB02 /* DDTraceConfigurationTests.swift in Sources */,
 				D2A1EE27287C35DE00D28DFB /* ContextValueReaderMock.swift in Sources */,
 				D2CB6F7E27C520D400A62B57 /* OTSpanTests.swift in Sources */,

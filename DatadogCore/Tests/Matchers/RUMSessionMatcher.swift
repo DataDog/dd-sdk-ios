@@ -22,16 +22,30 @@ struct RUMSessionConsistencyException: Error, CustomStringConvertible {
 internal class RUMSessionMatcher {
     // MARK: - Initialization
 
-    /// Takes the array of `RUMEventMatchers` and groups them by session ID.
+    /// Takes the array of `RUMEventMatchers` and groups them by application ID and session ID.
     /// For each distinct session ID, the `RUMSessionMatcher` is created.
     /// Each `RUMSessionMatcher` groups its RUM Events by kind and `ViewVisit`.
     class func groupMatchersBySessions(_ matchers: [RUMEventMatcher]) throws -> [RUMSessionMatcher] {
-        let eventMatchersBySessionID: [String: [RUMEventMatcher]] = try Dictionary(grouping: matchers) { eventMatcher in
-            try eventMatcher.jsonMatcher.value(forKeyPath: "session.id") as String
+        struct Group: Hashable {
+            let applicationID: String
+            let sessionID: String
+        }
+
+        let eventMatchersBySessionID: [Group: [RUMEventMatcher]] = try Dictionary(grouping: matchers) { eventMatcher in
+            Group(
+                applicationID: try eventMatcher.jsonMatcher.value(forKeyPath: "application.id"),
+                sessionID: try eventMatcher.jsonMatcher.value(forKeyPath: "session.id")
+            )
         }
 
         return try eventMatchersBySessionID
-            .map { try RUMSessionMatcher(sessionEventMatchers: $0.value) }
+            .map { group, eventMatchers in
+                try RUMSessionMatcher(
+                    applicationID: group.applicationID,
+                    sessionID: group.sessionID,
+                    sessionEventMatchers: eventMatchers
+                )
+            }
     }
 
     // MARK: - View Visits
@@ -74,9 +88,15 @@ internal class RUMSessionMatcher {
         fileprivate(set) var longTaskEvents: [RUMLongTaskEvent] = []
     }
 
+    /// RUM application ID for this session.
+    let applicationID: String
+    /// The ID of this session in RUM.
+    let sessionID: String
+
+    let applicationLaunchView: ViewVisit?
+
     /// An array of view visits tracked during this RUM Session.
     /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.'
-    let applicationLaunchView: ViewVisit?
     let viewVisits: [ViewVisit]
 
     let viewEventMatchers: [RUMEventMatcher]
@@ -85,7 +105,7 @@ internal class RUMSessionMatcher {
     let errorEventMatchers: [RUMEventMatcher]
     let longTaskEventMatchers: [RUMEventMatcher]
 
-    private init(sessionEventMatchers: [RUMEventMatcher]) throws {
+    private init(applicationID: String, sessionID: String, sessionEventMatchers: [RUMEventMatcher]) throws {
         // Sort events so they follow increasing time order
         let sessionEventOrderedByTime = try sessionEventMatchers.sorted { firstEvent, secondEvent in
             let firstEventTime: Int64 = try firstEvent.jsonMatcher.value(forKeyPath: "date")
@@ -99,6 +119,8 @@ internal class RUMSessionMatcher {
 
         // Get RUM Events by kind:
 
+        self.applicationID = applicationID
+        self.sessionID = sessionID
         self.viewEventMatchers = eventsMatchersByType["view"] ?? []
         self.actionEventMatchers = eventsMatchersByType["action"] ?? []
         self.resourceEventMatchers = eventsMatchersByType["resource"] ?? []
@@ -416,12 +438,7 @@ private func strictValidate(os: RUMOperatingSystem) throws {
 
 extension RUMSessionMatcher: CustomStringConvertible {
     var description: String {
-        let firstViewEvent = viewVisits.first?.viewEvents.first
-        guard let sessionID = firstViewEvent?.session.id else {
-            return "[⛔️ Invalid RUM session - it has no views]"
-        }
-
-        var description = "[🎞 RUM session (id: \(sessionID), number of views: \(viewVisits.count))]"
+        var description = "[🎞 RUM session (application.id: \(applicationID), session.id: \(sessionID), number of views: \(viewVisits.count))]"
         viewVisits.forEach { view in
             description += "\n\(describe(viewVisit: view))"
         }
