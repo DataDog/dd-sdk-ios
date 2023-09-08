@@ -7,11 +7,25 @@
 import Foundation
 
 public struct ConfigurationTelemetry: Equatable {
+    public let actionNameAttribute: String?
+    public let allowFallbackToLocalStorage: Bool?
+    public let allowUntrustedEvents: Bool?
     public let batchSize: Int64?
     public let batchUploadFrequency: Int64?
     public let dartVersion: String?
+    public let defaultPrivacyLevel: String?
+    public let forwardErrorsToLogs: Bool?
+    public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
+    public let premiumSampleRate: Int64?
+    public let reactNativeVersion: String?
+    public let reactVersion: String?
+    public let replaySampleRate: Int64?
+    public let sessionReplaySampleRate: Int64?
     public let sessionSampleRate: Int64?
+    public let silentMultipleInit: Bool?
+    public let startSessionReplayRecordingManually: Bool?
+    public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
     public let traceSampleRate: Int64?
     public let trackBackgroundEvents: Bool?
@@ -21,14 +35,25 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackFrustrations: Bool?
     public let trackInteractions: Bool?
     public let trackLongTask: Bool?
+    public let trackNativeErrors: Bool?
     public let trackNativeLongTasks: Bool?
     public let trackNativeViews: Bool?
     public let trackNetworkRequests: Bool?
+    public let trackResources: Bool?
+    public let trackSessionAcrossSubdomains: Bool?
+    public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
+    public let useAllowedTracingOrigins: Bool?
+    public let useAllowedTracingUrls: Bool?
+    public let useBeforeSend: Bool?
+    public let useCrossSiteSessionCookie: Bool?
+    public let useExcludedActivityUrls: Bool?
     public let useFirstPartyHosts: Bool?
     public let useLocalEncryption: Bool?
     public let useProxy: Bool?
+    public let useSecureSessionCookie: Bool?
     public let useTracing: Bool?
+    public let useWorkerUrl: Bool?
 }
 
 public enum TelemetryMessage {
@@ -150,11 +175,25 @@ extension Telemetry {
     /// The configuration can be partial, the telemtry should support accumulation of
     /// configuration for lazy initialization of the SDK.
     public func configuration(
+        actionNameAttribute: String? = nil,
+        allowFallbackToLocalStorage: Bool? = nil,
+        allowUntrustedEvents: Bool? = nil,
         batchSize: Int64? = nil,
         batchUploadFrequency: Int64? = nil,
         dartVersion: String? = nil,
+        defaultPrivacyLevel: String? = nil,
+        forwardErrorsToLogs: Bool? = nil,
+        initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
+        premiumSampleRate: Int64? = nil,
+        reactNativeVersion: String? = nil,
+        reactVersion: String? = nil,
+        replaySampleRate: Int64? = nil,
+        sessionReplaySampleRate: Int64? = nil,
         sessionSampleRate: Int64? = nil,
+        silentMultipleInit: Bool? = nil,
+        startSessionReplayRecordingManually: Bool? = nil,
+        telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
         traceSampleRate: Int64? = nil,
         trackBackgroundEvents: Bool? = nil,
@@ -164,21 +203,46 @@ extension Telemetry {
         trackFrustrations: Bool? = nil,
         trackInteractions: Bool? = nil,
         trackLongTask: Bool? = nil,
+        trackNativeErrors: Bool? = nil,
         trackNativeLongTasks: Bool? = nil,
         trackNativeViews: Bool? = nil,
         trackNetworkRequests: Bool? = nil,
+        trackResources: Bool? = nil,
+        trackSessionAcrossSubdomains: Bool? = nil,
+        trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
+        useAllowedTracingOrigins: Bool? = nil,
+        useAllowedTracingUrls: Bool? = nil,
+        useBeforeSend: Bool? = nil,
+        useCrossSiteSessionCookie: Bool? = nil,
+        useExcludedActivityUrls: Bool? = nil,
         useFirstPartyHosts: Bool? = nil,
         useLocalEncryption: Bool? = nil,
         useProxy: Bool? = nil,
-        useTracing: Bool? = nil
+        useSecureSessionCookie: Bool? = nil,
+        useTracing: Bool? = nil,
+        useWorkerUrl: Bool? = nil
     ) {
         self.report(configuration: .init(
+            actionNameAttribute: actionNameAttribute,
+            allowFallbackToLocalStorage: allowFallbackToLocalStorage,
+            allowUntrustedEvents: allowUntrustedEvents,
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
             dartVersion: dartVersion,
+            defaultPrivacyLevel: defaultPrivacyLevel,
+            forwardErrorsToLogs: forwardErrorsToLogs,
+            initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
+            premiumSampleRate: premiumSampleRate,
+            reactNativeVersion: reactNativeVersion,
+            reactVersion: reactVersion,
+            replaySampleRate: replaySampleRate,
+            sessionReplaySampleRate: sessionReplaySampleRate,
             sessionSampleRate: sessionSampleRate,
+            silentMultipleInit: silentMultipleInit,
+            startSessionReplayRecordingManually: startSessionReplayRecordingManually,
+            telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
             traceSampleRate: traceSampleRate,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -188,14 +252,25 @@ extension Telemetry {
             trackFrustrations: trackFrustrations,
             trackInteractions: trackInteractions,
             trackLongTask: trackLongTask,
+            trackNativeErrors: trackNativeErrors,
             trackNativeLongTasks: trackNativeLongTasks,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: trackNetworkRequests,
+            trackResources: trackResources,
+            trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
+            trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
+            useAllowedTracingOrigins: useAllowedTracingOrigins,
+            useAllowedTracingUrls: useAllowedTracingUrls,
+            useBeforeSend: useBeforeSend,
+            useCrossSiteSessionCookie: useCrossSiteSessionCookie,
+            useExcludedActivityUrls: useExcludedActivityUrls,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
             useProxy: useProxy,
-            useTracing: useTracing
+            useSecureSessionCookie: useSecureSessionCookie,
+            useTracing: useTracing,
+            useWorkerUrl: useWorkerUrl
         ))
     }
 
@@ -253,11 +328,25 @@ extension DatadogCoreProtocol {
 extension ConfigurationTelemetry {
     public func merged(with other: Self) -> Self {
         .init(
+            actionNameAttribute: other.actionNameAttribute ?? actionNameAttribute,
+            allowFallbackToLocalStorage: other.allowFallbackToLocalStorage ?? allowFallbackToLocalStorage,
+            allowUntrustedEvents: other.allowUntrustedEvents ?? allowUntrustedEvents,
             batchSize: other.batchSize ?? batchSize,
             batchUploadFrequency: other.batchUploadFrequency ?? batchUploadFrequency,
             dartVersion: other.dartVersion ?? dartVersion,
+            defaultPrivacyLevel: other.defaultPrivacyLevel ?? defaultPrivacyLevel,
+            forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
+            initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
+            premiumSampleRate: other.premiumSampleRate ?? premiumSampleRate,
+            reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
+            reactVersion: other.reactVersion ?? reactVersion,
+            replaySampleRate: other.replaySampleRate ?? replaySampleRate,
+            sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
+            silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
+            startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
+            telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,
             trackBackgroundEvents: other.trackBackgroundEvents ?? trackBackgroundEvents,
@@ -267,14 +356,25 @@ extension ConfigurationTelemetry {
             trackFrustrations: other.trackFrustrations ?? trackFrustrations,
             trackInteractions: other.trackInteractions ?? trackInteractions,
             trackLongTask: other.trackLongTask ?? trackLongTask,
+            trackNativeErrors: other.trackNativeErrors ?? trackNativeErrors,
             trackNativeLongTasks: other.trackNativeLongTasks ?? trackNativeLongTasks,
             trackNativeViews: other.trackNativeViews ?? trackNativeViews,
             trackNetworkRequests: other.trackNetworkRequests ?? trackNetworkRequests,
+            trackResources: other.trackResources ?? trackResources,
+            trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
+            trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
+            useAllowedTracingOrigins: other.useAllowedTracingOrigins ?? useAllowedTracingOrigins,
+            useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
+            useBeforeSend: other.useBeforeSend ?? useBeforeSend,
+            useCrossSiteSessionCookie: other.useCrossSiteSessionCookie ?? useCrossSiteSessionCookie,
+            useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
             useFirstPartyHosts: other.useFirstPartyHosts ?? useFirstPartyHosts,
             useLocalEncryption: other.useLocalEncryption ?? useLocalEncryption,
             useProxy: other.useProxy ?? useProxy,
-            useTracing: other.useTracing ?? useTracing
+            useSecureSessionCookie: other.useSecureSessionCookie ?? useSecureSessionCookie,
+            useTracing: other.useTracing ?? useTracing,
+            useWorkerUrl: other.useWorkerUrl ?? useWorkerUrl
         )
     }
 }
