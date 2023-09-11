@@ -1,5 +1,10 @@
 # Unreleased
 
+# 2.2.0 / 12-09-2023
+
+- [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#1447][]
+- [IMPROVEMENT] Enable cross-platform SDKs to edit more of telemetry configuration. See [#1456][]
+
 # 2.1.2 / 29-08-2023
 
 - [BUGFIX] Do not embed DatadogInternal while building Trace and RUM xcframeworks. See [#1444][].
