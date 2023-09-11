@@ -23,15 +23,20 @@ internal struct FeatureStorage {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
-        switch trackingConsent {
+    func writer(
+        for context: DatadogContext,
+        bypassConsent: Bool = false,
+        forceNewBatch: Bool = false
+    ) -> Writer {
+        switch bypassConsent ? .granted : context.trackingConsent {
         case .granted:
             return AsyncWriter(
                 execute: FileWriter(
                     orchestrator: authorizedFilesOrchestrator,
                     forceNewFile: forceNewBatch,
                     encryption: encryption,
-                    telemetry: telemetry
+                    telemetry: telemetry,
+                    context: context
                 ),
                 on: queue
             )
@@ -43,7 +48,8 @@ internal struct FeatureStorage {
                     orchestrator: unauthorizedFilesOrchestrator,
                     forceNewFile: forceNewBatch,
                     encryption: encryption,
-                    telemetry: telemetry
+                    telemetry: telemetry,
+                    context: context
                 ),
                 on: queue
             )
@@ -125,7 +131,6 @@ extension FeatureStorage {
             directory: directories.authorized,
             performance: performance,
             dateProvider: dateProvider,
-            contextProvider: contextProvider,
             telemetry: telemetry,
             metricsData: {
                 guard let trackName = BatchMetric.trackValue(for: featureName) else {
@@ -139,7 +144,6 @@ extension FeatureStorage {
             directory: directories.unauthorized,
             performance: performance,
             dateProvider: dateProvider,
-            contextProvider: contextProvider,
             telemetry: telemetry,
             metricsData: nil // do not send metrics for unauthorized orchestrator
         )

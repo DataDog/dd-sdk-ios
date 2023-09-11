@@ -247,20 +247,20 @@ extension FeatureUpload {
 extension Reader {
     func markBatchAsRead(_ batch: Batch) {
         // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
-        markBatchAsRead(batch, reason: .flushed)
+        markBatchAsRead(batch, reason: .flushed, context: .mockAny())
     }
 }
 
 extension FilesOrchestratorType {
     func delete(readableFile: ReadableFile) {
         // We can ignore `deletionReason` in most tests (used for sending metric), so we provide this convenience variant.
-        delete(readableFile: readableFile, deletionReason: .flushed)
+        delete(readableFile: readableFile, deletionReason: .flushed, context: .mockAny())
     }
 }
 
 class NOPReader: Reader {
-    func readNextBatch() -> Batch? { nil }
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
+    func readNextBatch(context: DatadogContext) -> Batch? { nil }
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason, context: DatadogContext) {}
 }
 
 internal class NOPFilesOrchestrator: FilesOrchestratorType {
@@ -274,10 +274,10 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
 
     var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
-    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
+    func getNewWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile { NOPFile() }
+    func getWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile { NOPFile() }
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>, context: DatadogContext) -> ReadableFile? { NOPFile() }
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason, context: DatadogContext) { }
 
     var ignoreFilesAgeWhenReading = false
 }

@@ -28,7 +28,6 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider(),
-                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: nil,
@@ -46,7 +45,7 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
-        let batch = reader.readNextBatch()
+        let batch = reader.readNextBatch(context: .mockAny())
 
         let expected = [
             Event(data: "ABCD".utf8Data, metadata: "EFGH".utf8Data)
@@ -76,7 +75,6 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: SystemDateProvider(),
-                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: DataEncryptionMock(
@@ -86,7 +84,7 @@ class FileReaderTests: XCTestCase {
         )
 
         // When
-        let batch = reader.readNextBatch()
+        let batch = reader.readNextBatch(context: .mockAny())
 
         // Then
         let expected = [
@@ -104,7 +102,6 @@ class FileReaderTests: XCTestCase {
                 directory: directory,
                 performance: StoragePerformanceMock.readAllFiles,
                 dateProvider: dateProvider,
-                contextProvider: .mockAny(),
                 telemetry: NOPTelemetry()
             ),
             encryption: nil,
@@ -128,19 +125,19 @@ class FileReaderTests: XCTestCase {
         ]
 
         var batch: Batch
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatch(context: .mockAny()).unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[0])
         reader.markBatchAsRead(batch)
 
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatch(context: .mockAny()).unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[1])
         reader.markBatchAsRead(batch)
 
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatch(context: .mockAny()).unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[2])
         reader.markBatchAsRead(batch)
 
-        XCTAssertNil(reader.readNextBatch())
+        XCTAssertNil(reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(try directory.files().count, 0)
     }
 }

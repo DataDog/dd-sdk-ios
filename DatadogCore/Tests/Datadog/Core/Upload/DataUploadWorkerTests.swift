@@ -17,14 +17,14 @@ class DataUploadWorkerTests: XCTestCase {
         directory: .init(url: temporaryDirectory),
         performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
         dateProvider: dateProvider,
-        contextProvider: .mockAny(),
         telemetry: NOPTelemetry()
     )
     lazy var writer = FileWriter(
         orchestrator: orchestrator,
         forceNewFile: false,
         encryption: nil,
-        telemetry: NOPTelemetry()
+        telemetry: NOPTelemetry(),
+        context: .mockAny()
     )
     lazy var reader = FileReader(
         orchestrator: orchestrator,
