@@ -153,7 +153,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     // MARK: - `ReadableFile` orchestration
 
     func getReadableFile(
-        excludingFilesNamed excludedFileNames: Set<String> = [],
+        excludingFilesNamed excludedFileNames: Set<String>,
         context: DatadogContext
     ) -> ReadableFile? {
         do {

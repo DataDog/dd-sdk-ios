@@ -304,3 +304,11 @@ class FilesOrchestratorTests: XCTestCase {
     }
     // swiftlint:enable number_separator
 }
+
+extension FilesOrchestrator {
+    func getReadableFile(
+        context: DatadogContext
+    ) -> ReadableFile? {
+        getReadableFile(excludingFilesNamed: [], context: context)
+    }
+}
