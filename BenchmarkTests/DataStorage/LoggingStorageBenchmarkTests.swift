@@ -36,7 +36,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        self.writer = storage.writer(for: .granted, forceNewBatch: false)
+        self.writer = storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: false)
         self.reader = storage.reader
 
         XCTAssertTrue(try directory.files().isEmpty)
@@ -71,13 +71,13 @@ class LoggingStorageBenchmarkTests: XCTestCase {
 
         measureMetrics([.wallClockTime], automaticallyStartMeasuring: false) {
             self.startMeasuring()
-            let batch = reader.readNextBatch()
+            let batch = reader.readNextBatch(context: .mockAny())
             self.stopMeasuring()
 
             XCTAssertNotNil(batch, "Not enough batch files were created for this benchmark.")
 
             if let batch = batch {
-                reader.markBatchAsRead(batch, reason: .flushed)
+                reader.markBatchAsRead(batch, reason: .flushed, context: .mockAny())
             }
         }
     }
