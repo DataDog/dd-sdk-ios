@@ -27,7 +27,8 @@ class FilesOrchestratorTests: XCTestCase {
         return FilesOrchestrator(
             directory: .init(url: temporaryDirectory),
             performance: performance,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            telemetry: NOPTelemetry()
         )
     }
 
@@ -135,7 +136,8 @@ class FilesOrchestratorTests: XCTestCase {
                 maxObjectsInFile: 1, // create new file each time
                 maxObjectSize: .max
             ),
-            dateProvider: RelativeDateProvider(advancingBySeconds: 1)
+            dateProvider: RelativeDateProvider(advancingBySeconds: 1),
+            telemetry: NOPTelemetry()
         )
 
         // write 1MB to first file (1MB of directory size in total)

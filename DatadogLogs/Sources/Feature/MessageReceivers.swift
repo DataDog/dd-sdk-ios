@@ -7,61 +7,6 @@
 import Foundation
 import DatadogInternal
 
-/// Creates Logging Feature Configuration.
-/// - Parameters:
-///   - intake: The Logging intake URL.
-///   - logEventMapper: The log event mapper.
-/// - Returns: The Logging feature configuration.
-internal func createLoggingConfiguration(
-    intake: URL,
-    dateProvider: DateProvider,
-    logEventMapper: LogEventMapper?
-) -> DatadogFeatureConfiguration {
-    return DatadogFeatureConfiguration(
-        name: "logging",
-        requestBuilder: LoggingRequestBuilder(intake: intake),
-        messageReceiver: CombinedFeatureMessageReceiver(
-            LogMessageReceiver(logEventMapper: logEventMapper),
-            CrashLogReceiver(dateProvider: dateProvider),
-            WebViewLogReceiver()
-        )
-    )
-}
-
-/// The Logging URL Request Builder for formatting and configuring the `URLRequest`
-/// to upload logs data.
-internal struct LoggingRequestBuilder: FeatureRequestBuilder {
-    /// The logs intake.
-    let intake: URL
-
-    /// The logs request body format.
-    let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
-
-    func request(for events: [Event], with context: DatadogContext) -> URLRequest {
-        let builder = URLRequestBuilder(
-            url: intake,
-            queryItems: [
-                .ddsource(source: context.source)
-            ],
-            headers: [
-                .contentTypeHeader(contentType: .applicationJSON),
-                .userAgentHeader(
-                    appName: context.applicationName,
-                    appVersion: context.version,
-                    device: context.device
-                ),
-                .ddAPIKeyHeader(clientToken: context.clientToken),
-                .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
-                .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
-                .ddRequestIDHeader(),
-            ]
-        )
-
-        let data = format.format(events.map { $0.data })
-        return builder.uploadRequest(with: data)
-    }
-}
-
 /// Defines keys referencing RUM messages supported on the bus.
 internal enum LoggingMessageKeys {
     /// The key references a log entry message.
@@ -76,6 +21,29 @@ internal enum LoggingMessageKeys {
 
 /// Receiver to consume a Log message
 internal struct LogMessageReceiver: FeatureMessageReceiver {
+    struct LogMessage: Decodable {
+        /// The Logger name
+        let logger: String
+        /// The Logger service
+        let service: String?
+        /// The Log date
+        let date: Date
+        /// The Log message
+        let message: String
+        /// The Log error
+        let error: DDError?
+        /// The Log level
+        let level: LogLevel
+        /// The thread name
+        let thread: String
+        /// The thread name
+        let networkInfoEnabled: Bool?
+        /// The Log user custom attributes
+        let userAttributes: [String: AnyCodable]?
+        /// The Log internal attributes
+        let internalAttributes: [String: AnyCodable]?
+    }
+
     /// The log event mapper
     let logEventMapper: LogEventMapper?
 
@@ -85,50 +53,54 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard
-            case let .custom(key, attributes) = message, key == LoggingMessageKeys.log,
-            let loggerName: String = attributes["loggerName"],
-            let date: Date = attributes["date"],
-            let message: String = attributes["message"],
-            let level: LogLevel = attributes["level"],
-            let threadName: String = attributes["threadName"]
-        else {
-            return false
+        do {
+            guard let log: LogMessage = try message.baggage(forKey: LoggingMessageKeys.log) else {
+                return false
+            }
+
+            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+                let builder = LogEventBuilder(
+                    service: log.service ?? context.service,
+                    loggerName: log.logger,
+                    networkInfoEnabled: log.networkInfoEnabled ?? false,
+                    eventMapper: logEventMapper
+                )
+
+                builder.createLogEvent(
+                    date: log.date,
+                    level: log.level,
+                    message: log.message,
+                    error: log.error,
+                    attributes: .init(
+                        userAttributes: log.userAttributes ?? [:],
+                        internalAttributes: log.internalAttributes
+                    ),
+                    tags: [],
+                    context: context,
+                    threadName: log.thread,
+                    callback: writer.write
+                )
+            }
+
+            return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode crash from Logs", error: error)
         }
 
-        let userAttributes: [String: AnyCodable] = attributes["userAttributes"] ?? [:]
-        let internalAttributes: [String: AnyCodable]? = attributes["internalAttributes"]
-
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: false) { context, writer in
-            let builder = LogEventBuilder(
-                service: attributes["service"] ?? context.service,
-                loggerName: loggerName,
-                networkInfoEnabled: attributes["networkInfoEnabled"] ?? false,
-                eventMapper: logEventMapper
-            )
-
-            builder.createLogEvent(
-                date: date,
-                level: level,
-                message: message,
-                error: attributes["error"],
-                attributes: .init(
-                    userAttributes: userAttributes,
-                    internalAttributes: internalAttributes
-                ),
-                tags: [],
-                context: context,
-                threadName: threadName,
-                callback: writer.write
-            )
-        }
-
-        return true
+        return false
     }
 }
 
 /// Receiver to consume a Crash Log message as Log.
 internal struct CrashLogReceiver: FeatureMessageReceiver {
+    private struct Crash: Decodable {
+        /// The crash report.
+        let report: CrashReport
+        /// The crash context
+        let context: CrashContext
+    }
+
     private struct CrashReport: Decodable {
         /// The date of the crash occurrence.
         let date: Date?
@@ -189,14 +161,20 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard
-            case let .custom(key, attributes) = message, key == LoggingMessageKeys.crash,
-            let report = attributes["report", type: CrashReport.self],
-            let context = attributes["context", type: CrashContext.self]
-        else {
-            return false
-        }
+        do {
+            guard let crash: Crash = try message.baggage(forKey: LoggingMessageKeys.crash) else {
+                return false
+            }
 
+            return send(report: crash.report, with: crash.context, to: core)
+        } catch {
+            core.telemetry
+                .error("Fails to decode crash from RUM", error: error)
+        }
+        return false
+    }
+
+    private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
@@ -265,40 +243,49 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .custom(key, baggage) = message, key == LoggingMessageKeys.browserLog else {
-            return false
+        do {
+            guard case let .baggage(label, baggage) = message, label == LoggingMessageKeys.browserLog else {
+                return false
+            }
+
+            guard var event = try baggage.encode() as? [String: Any?] else {
+                throw InternalError(description: "event is not a dictionary")
+            }
+
+            let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
+            let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
+            let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
+            let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
+
+            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+                let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
+
+                if let tags = event[tagsKey] as? String, !tags.isEmpty {
+                    event[tagsKey] = "\(ddTags),\(tags)"
+                } else {
+                    event[tagsKey] = ddTags
+                }
+
+                if let timestampInMs = event[dateKey] as? Int64 {
+                    let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
+                    let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+                    event[dateKey] = correctedTimestamp
+                }
+
+                if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
+                    let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
+                    event.merge(mappedBaggage as [String: Any]) { $1 }
+                }
+
+                writer.write(value: AnyEncodable(event))
+            }
+
+            return true
+        } catch {
+            core.telemetry
+                .error("Fails to decode browser log", error: error)
         }
 
-        var event = baggage.attributes
-
-        let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
-        let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
-        let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
-        let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
-
-        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
-            let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
-
-            if let tags = event[tagsKey] as? String, !tags.isEmpty {
-                event[tagsKey] = "\(ddTags),\(tags)"
-            } else {
-                event[tagsKey] = ddTags
-            }
-
-            if let timestampInMs = event[dateKey] as? Int64 {
-                let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
-                let correctedTimestamp = timestampInMs + serverTimeOffsetInMs
-                event[dateKey] = correctedTimestamp
-            }
-
-            if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
-                event.merge(mappedBaggage as [String: Any]) { $1 }
-            }
-
-            writer.write(value: AnyEncodable(event))
-        }
-
-        return true
+        return false
     }
 }

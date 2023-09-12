@@ -233,12 +233,14 @@ extension SpanEventBuilder {
     static func mockWith(
         serviceName: String = .mockAny(),
         networkInfoEnabled: Bool = false,
-        eventsMapper: SpanEventMapper? = nil
+        eventsMapper: SpanEventMapper? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> SpanEventBuilder {
         return SpanEventBuilder(
             serviceName: serviceName,
             networkInfoEnabled: networkInfoEnabled,
-            eventsMapper: eventsMapper
+            eventsMapper: eventsMapper,
+            telemetry: telemetry
         )
     }
 }

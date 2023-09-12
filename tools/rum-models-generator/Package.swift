@@ -1,5 +1,4 @@
-// swift-tools-version:5.3
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.8.0
 
 import PackageDescription
 
@@ -8,7 +7,7 @@ let package = Package(
     platforms: [.macOS(.v10_15)],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.2.0"),
-        .package(name: "Difference", url: "https://github.com/krzysztofzablocki/Difference.git", from: "0.5.0"),
+        .package(url: "https://github.com/krzysztofzablocki/Difference.git", from: "0.5.0"),
     ],
     targets: [
         // CLI wrapper

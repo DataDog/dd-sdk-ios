@@ -111,73 +111,31 @@ class TelemetryTests: XCTestCase {
 
     func testTelemetryConfiguration() {
         // Given
-        class TelemetryTest: Telemetry {
-            var configuration: ConfigurationTelemetry?
-
-            func send(telemetry: DatadogInternal.TelemetryMessage) {
-                guard case .configuration(let configuration) = telemetry else {
-                    return
-                }
-
-                self.configuration = configuration
-            }
-        }
-
-        let expectedConfiguration = ConfigurationTelemetry(
-            batchSize: .mockRandom(),
-            batchUploadFrequency: .mockRandom(),
-            dartVersion: .mockRandom(),
-            mobileVitalsUpdatePeriod: .mockRandom(),
-            sessionSampleRate: .mockRandom(),
-            telemetrySampleRate: .mockRandom(),
-            traceSampleRate: .mockRandom(),
-            trackBackgroundEvents: .mockRandom(),
-            trackCrossPlatformLongTasks: .mockRandom(),
-            trackErrors: .mockRandom(),
-            trackFlutterPerformance: .mockRandom(),
-            trackFrustrations: .mockRandom(),
-            trackInteractions: .mockRandom(),
-            trackLongTask: .mockRandom(),
-            trackNativeLongTasks: .mockRandom(),
-            trackNativeViews: .mockRandom(),
-            trackNetworkRequests: .mockRandom(),
-            trackViewsManually: .mockRandom(),
-            useFirstPartyHosts: .mockRandom(),
-            useLocalEncryption: .mockRandom(),
-            useProxy: .mockRandom(),
-            useTracing: .mockRandom()
-        )
+        let expectedConfiguration: ConfigurationTelemetry = .mockRandom()
 
         let telemetry = TelemetryTest()
 
         // When
-        telemetry.configuration(
-            batchSize: expectedConfiguration.batchSize,
-            batchUploadFrequency: expectedConfiguration.batchUploadFrequency,
-            dartVersion: expectedConfiguration.dartVersion,
-            mobileVitalsUpdatePeriod: expectedConfiguration.mobileVitalsUpdatePeriod,
-            sessionSampleRate: expectedConfiguration.sessionSampleRate,
-            telemetrySampleRate: expectedConfiguration.telemetrySampleRate,
-            traceSampleRate: expectedConfiguration.traceSampleRate,
-            trackBackgroundEvents: expectedConfiguration.trackBackgroundEvents,
-            trackCrossPlatformLongTasks: expectedConfiguration.trackCrossPlatformLongTasks,
-            trackErrors: expectedConfiguration.trackErrors,
-            trackFlutterPerformance: expectedConfiguration.trackFlutterPerformance,
-            trackFrustrations: expectedConfiguration.trackFrustrations,
-            trackInteractions: expectedConfiguration.trackInteractions,
-            trackLongTask: expectedConfiguration.trackLongTask,
-            trackNativeLongTasks: expectedConfiguration.trackNativeLongTasks,
-            trackNativeViews: expectedConfiguration.trackNativeViews,
-            trackNetworkRequests: expectedConfiguration.trackNetworkRequests,
-            trackViewsManually: expectedConfiguration.trackViewsManually,
-            useFirstPartyHosts: expectedConfiguration.useFirstPartyHosts,
-            useLocalEncryption: expectedConfiguration.useLocalEncryption,
-            useProxy: expectedConfiguration.useProxy,
-            useTracing: expectedConfiguration.useTracing
-        )
+        telemetry.applyConfiguration(configuration: expectedConfiguration)
 
         // Then
         XCTAssertEqual(telemetry.configuration, expectedConfiguration)
+    }
+
+    func testTelemetryConfigurationMerge() {
+        // Given
+        let initialConfiguration: ConfigurationTelemetry = .mockRandom()
+        let expectedConfiguration: ConfigurationTelemetry = .mockRandom()
+
+        let telemetry = TelemetryTest()
+
+        // When
+        telemetry.applyConfiguration(configuration: initialConfiguration)
+        telemetry.applyConfiguration(configuration: expectedConfiguration)
+
+        // Then
+        XCTAssertEqual(telemetry.configuration, expectedConfiguration)
+        XCTAssertNotEqual(telemetry.configuration, initialConfiguration)
     }
 
     func testWhenSendingTelemetryMessage_itForwardsToCore() {
@@ -197,10 +155,9 @@ class TelemetryTests: XCTestCase {
 
         let receiver = Receiver()
         let core = PassthroughCoreMock(messageReceiver: receiver)
-        let telemetry = TelemetryCore(core: core)
 
         // When
-        telemetry.debug("debug")
+        core.telemetry.debug("debug")
 
         // Then
         guard case .debug(_, let message, _) = receiver.telemetry else {
@@ -209,7 +166,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(message, "debug")
 
         // When
-        telemetry.error("error")
+        core.telemetry.error("error")
 
         // Then
         guard case .error(_, let message, _, _) = receiver.telemetry else {
@@ -218,12 +175,76 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(message, "error")
 
         // When
-        telemetry.configuration(batchSize: 0)
+        core.telemetry.configuration(batchSize: 0)
 
         // Then
         guard case .configuration(let configuration) = receiver.telemetry else {
             return XCTFail("An error should be send to core.")
         }
         XCTAssertEqual(configuration.batchSize, 0)
+    }
+}
+
+class TelemetryTest: Telemetry {
+    var configuration: ConfigurationTelemetry?
+
+    func send(telemetry: DatadogInternal.TelemetryMessage) {
+        guard case .configuration(let configuration) = telemetry else {
+            return
+        }
+
+        self.configuration = configuration
+    }
+
+    internal func applyConfiguration(configuration: ConfigurationTelemetry) {
+        self.configuration(
+            actionNameAttribute: configuration.actionNameAttribute,
+            allowFallbackToLocalStorage: configuration.allowFallbackToLocalStorage,
+            allowUntrustedEvents: configuration.allowUntrustedEvents,
+            batchSize: configuration.batchSize,
+            batchUploadFrequency: configuration.batchUploadFrequency,
+            dartVersion: configuration.dartVersion,
+            defaultPrivacyLevel: configuration.defaultPrivacyLevel,
+            forwardErrorsToLogs: configuration.forwardErrorsToLogs,
+            initializationType: configuration.initializationType,
+            mobileVitalsUpdatePeriod: configuration.mobileVitalsUpdatePeriod,
+            premiumSampleRate: configuration.premiumSampleRate,
+            reactNativeVersion: configuration.reactNativeVersion,
+            reactVersion: configuration.reactVersion,
+            replaySampleRate: configuration.replaySampleRate,
+            sessionReplaySampleRate: configuration.sessionReplaySampleRate,
+            sessionSampleRate: configuration.sessionSampleRate,
+            silentMultipleInit: configuration.silentMultipleInit,
+            startSessionReplayRecordingManually: configuration.startSessionReplayRecordingManually,
+            telemetryConfigurationSampleRate: configuration.telemetryConfigurationSampleRate,
+            telemetrySampleRate: configuration.telemetrySampleRate,
+            traceSampleRate: configuration.traceSampleRate,
+            trackBackgroundEvents: configuration.trackBackgroundEvents,
+            trackCrossPlatformLongTasks: configuration.trackCrossPlatformLongTasks,
+            trackErrors: configuration.trackErrors,
+            trackFlutterPerformance: configuration.trackFlutterPerformance,
+            trackFrustrations: configuration.trackFrustrations,
+            trackInteractions: configuration.trackInteractions,
+            trackLongTask: configuration.trackLongTask,
+            trackNativeErrors: configuration.trackNativeErrors,
+            trackNativeLongTasks: configuration.trackNativeLongTasks,
+            trackNativeViews: configuration.trackNativeViews,
+            trackNetworkRequests: configuration.trackNetworkRequests,
+            trackResources: configuration.trackResources,
+            trackSessionAcrossSubdomains: configuration.trackSessionAcrossSubdomains,
+            trackUserInteractions: configuration.trackUserInteractions,
+            trackViewsManually: configuration.trackViewsManually,
+            useAllowedTracingOrigins: configuration.useAllowedTracingOrigins,
+            useAllowedTracingUrls: configuration.useAllowedTracingUrls,
+            useBeforeSend: configuration.useBeforeSend,
+            useCrossSiteSessionCookie: configuration.useCrossSiteSessionCookie,
+            useExcludedActivityUrls: configuration.useExcludedActivityUrls,
+            useFirstPartyHosts: configuration.useFirstPartyHosts,
+            useLocalEncryption: configuration.useLocalEncryption,
+            useProxy: configuration.useProxy,
+            useSecureSessionCookie: configuration.useSecureSessionCookie,
+            useTracing: configuration.useTracing,
+            useWorkerUrl: configuration.useWorkerUrl
+        )
     }
 }

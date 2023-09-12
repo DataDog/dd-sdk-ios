@@ -23,17 +23,6 @@ public struct DD {
         printFunction: consolePrint,
         verbosityLevel: { .debug }
     )
-
-    /// The telemetry monitor providing methods to send debug information
-    /// and execution errors of the Datadog SDK. It is only available if RUM feature is used.
-    ///
-    /// All collected events are anonymous and get reported to Datadog Telemetry org.
-    /// The actual implementation of `Telemetry` provides sampling and throttling
-    /// capabilities to ensure fair usage of user quota.
-    ///
-    /// Regardless internal optimisations, **it should be used wisely to report only useful
-    /// and actionable events** that are key to SDK observability.
-    public static var telemetry: Telemetry = NOPTelemetry()
 }
 
 /// Function printing `String` content to console.

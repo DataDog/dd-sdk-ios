@@ -151,7 +151,7 @@ internal class RUMResourceScope: RUMScope {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
             resource: .init(
@@ -241,7 +241,7 @@ internal class RUMResourceScope: RUMScope {
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
                 handling: nil,

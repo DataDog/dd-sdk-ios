@@ -650,7 +650,7 @@ private class _AnyEncoder: Encoder {
         ///
         /// - parameter value: The value to encode.
         func encode<T>(_ value: T) throws where T: Encodable {
-            if value is DictionaryEncodable {
+            if value is PassthroughAnyCodable {
                 store(value)
             } else {
                 let encoder = _AnyEncoder(path: codingPath)
@@ -661,13 +661,18 @@ private class _AnyEncoder: Encoder {
     }
 }
 
-/// A shared encodable object will skip encoding when using the `AnyEncoder`.
+/// A passthrough  object will skip encoding when using the ``AnyEncoder``.
+/// The object will be stored as-is in the returned `Any?` container.
 ///
-/// Making an `Encodable` as shared allow to bypass encoding when the type is
+/// Making an `Encodable` as passthrough allow to bypass encoding when the type is
 /// known by multiple parties.
-public protocol DictionaryEncodable { }
+///
+/// When decoding an object using the ``AnyDecoder``, the decoder will
+/// attempt to cast the object to the expected type, a `DecodingError.typeMismatch`
+/// error is raised in case of failure.
+public protocol PassthroughAnyCodable { }
 
-extension URL: DictionaryEncodable { }
-extension Date: DictionaryEncodable { }
-extension UUID: DictionaryEncodable { }
-extension Data: DictionaryEncodable { }
+extension URL: PassthroughAnyCodable { }
+extension Date: PassthroughAnyCodable { }
+extension UUID: PassthroughAnyCodable { }
+extension Data: PassthroughAnyCodable { }

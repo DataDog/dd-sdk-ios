@@ -298,9 +298,7 @@ class RUMSessionScopeTests: XCTestCase {
         var sessionState: RUMSessionState? = nil
 
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message {
-                sessionState = baggage[RUMBaggageKeys.sessionState]
-            }
+            sessionState = try? message.baggage(forKey: RUMBaggageKeys.sessionState)
         }
 
         let core = PassthroughCoreMock(
@@ -334,8 +332,8 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionScopeStartsAnyView_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
         var sessionState: RUMSessionState? = nil
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message, let state = baggage[RUMBaggageKeys.sessionState, type: RUMSessionState.self] {
-                sessionState = state
+            if case let .baggage(label, baggage) = message, label == RUMBaggageKeys.sessionState {
+                sessionState = try? baggage.decode()
             }
         }
 
@@ -377,9 +375,9 @@ class RUMSessionScopeTests: XCTestCase {
     func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
         var viewEvent: RUMViewEvent? = nil
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message, let event = baggage[RUMBaggageKeys.viewEvent, type: RUMViewEvent.self] {
+            if let event: RUMViewEvent = try? message.baggage(forKey: RUMBaggageKeys.viewEvent) {
                 viewEvent = event
-            } else if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+            } else if let reset: Bool = try? message.baggage(forKey: RUMBaggageKeys.viewReset), reset {
                 viewEvent = nil
             }
         }
@@ -544,9 +542,9 @@ class RUMSessionScopeTests: XCTestCase {
         // Given
         var viewEvent: RUMViewEvent? = nil
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message, let event = baggage[RUMBaggageKeys.viewEvent, type: RUMViewEvent.self] {
-                viewEvent = event
-            } else if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+            if case let .baggage(label, baggage) = message, label == RUMBaggageKeys.viewEvent {
+                viewEvent = try? baggage.decode()
+            } else if case let .baggage(label, _) = message, label == RUMBaggageKeys.viewReset {
                 viewEvent = nil
             }
         }
@@ -563,7 +561,10 @@ class RUMSessionScopeTests: XCTestCase {
         )
 
         let command = RUMStartViewCommand.mockWith(time: Date(), identity: mockView)
+        // When
         _ = scope.process(command: command, context: context, writer: writer)
+        // Then
+        XCTAssertNotNil(viewEvent)
 
         // When
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
@@ -576,7 +577,7 @@ class RUMSessionScopeTests: XCTestCase {
         // Given
         var viewResetCallCount = 0
         let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .custom(_, baggage) = message, baggage[RUMBaggageKeys.viewReset, type: Bool.self] == true {
+            if case let .baggage(label, _) = message, label == RUMBaggageKeys.viewReset {
                 viewResetCallCount += 1
             }
         }

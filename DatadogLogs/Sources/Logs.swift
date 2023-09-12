@@ -63,7 +63,8 @@ public struct Logs {
         let feature = LogsFeature(
             logEventMapper: logEventMapper,
             dateProvider: configuration.dateProvider,
-            customIntakeURL: configuration.customEndpoint
+            customIntakeURL: configuration.customEndpoint,
+            telemetry: core.telemetry
         )
 
         do {

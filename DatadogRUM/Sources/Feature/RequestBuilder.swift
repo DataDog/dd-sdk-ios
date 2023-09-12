@@ -19,6 +19,9 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// The RUM request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
+    /// Telemetry interface.
+    let telemetry: Telemetry
+
     func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         var tags = [
             "service:\(context.service)",
@@ -48,7 +51,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
                 .ddRequestIDHeader(),
-            ]
+            ],
+            telemetry: telemetry
         )
 
         let filteredEvents = eventsFilter.filter(events: events)

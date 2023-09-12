@@ -24,7 +24,7 @@ class WebViewLogReceiverTests: XCTestCase {
         let value: String = .mockRandom()
 
         core.send(
-            message: .custom(key: LoggingMessageKeys.browserLog, baggage: .init([
+            message: .baggage(key: LoggingMessageKeys.browserLog, value: AnyEncodable([
                 "test": value
             ]))
         )
@@ -85,9 +85,9 @@ class WebViewLogReceiverTests: XCTestCase {
         ]
 
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: LoggingMessageKeys.browserLog,
-                baggage: .init(webLogEvent)
+                value: AnyCodable(webLogEvent)
             )
         )
 
@@ -120,9 +120,9 @@ class WebViewLogReceiverTests: XCTestCase {
         expectedWebLogEvent["ddtags"] = "version:\(applicationVersion),env:\(environment)"
 
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: LoggingMessageKeys.browserLog,
-                baggage: .init(webLogEvent)
+                value: AnyEncodable(webLogEvent)
             )
         )
 

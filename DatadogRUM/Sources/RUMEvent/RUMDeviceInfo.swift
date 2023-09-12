@@ -8,11 +8,20 @@ import Foundation
 import DatadogInternal
 
 extension RUMDevice {
-    init(context: DatadogContext) {
-        self.init(device: context.device)
+    init(
+        context: DatadogContext,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
+        self.init(
+            device: context.device,
+            telemetry: telemetry
+        )
     }
 
-    init(device: DeviceInfo) {
+    init(
+        device: DeviceInfo,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         self.init(
             architecture: device.architecture,
             brand: device.brand,
@@ -22,7 +31,7 @@ extension RUMDevice {
                 if let type = RUMDeviceType(from: device.model) {
                     return type
                 } else {
-                    DD.telemetry.debug("Couldn't read `RUMDeviceType` from `device.model`: \(device.model)")
+                    telemetry.debug("Couldn't read `RUMDeviceType` from `device.model`: \(device.model)")
                     return .other
                 }
             }()

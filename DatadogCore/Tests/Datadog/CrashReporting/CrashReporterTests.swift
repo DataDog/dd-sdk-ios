@@ -31,7 +31,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -69,7 +70,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         //Then
@@ -78,7 +80,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        XCTAssert(!rumCrashReceiver.receivedBaggage.isEmpty, "RUM baggage must not be empty")
+        XCTAssertNotNil(rumCrashReceiver.receivedBaggage, "RUM baggage must not be empty")
     }
 
     func testWhenPendingCrashReportIsFound_itIsSentToLogsFeature() throws {
@@ -100,7 +102,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         //Then
@@ -109,7 +112,7 @@ class CrashReporterTests: XCTestCase {
 
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        XCTAssert(!logsCrashReceiver.receivedBaggage.isEmpty, "Logs baggage must not be empty")
+        XCTAssertNotNil(logsCrashReceiver.receivedBaggage, "Logs baggage must not be empty")
     }
 
     func testWhenPendingCrashReportIsNotFound_itDoesNothing() {
@@ -126,7 +129,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -154,7 +158,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: sender,
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -181,7 +186,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(initialCrashContext: initialCrashContext),
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         try withExtendedLifetime(feature) {
@@ -205,7 +211,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         try withExtendedLifetime(feature) {
@@ -245,7 +252,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -281,7 +289,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: crashContextProvider,
             sender: CrashReportSenderMock(),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // swiftlint:disable opening_brace
@@ -318,7 +327,8 @@ class CrashReporterTests: XCTestCase {
             crashReportingPlugin: plugin,
             crashContextProvider: CrashContextProviderMock(),
             sender: MessageBusSender(core: core),
-            messageReceiver: NOPFeatureMessageReceiver()
+            messageReceiver: NOPFeatureMessageReceiver(),
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -330,8 +340,8 @@ class CrashReporterTests: XCTestCase {
 
         XCTAssert(logs.contains(where: { $0.message == """
             In order to use Crash Reporting, RUM or Logging feature must be enabled.
-            Make sure `.enableRUM(true)` or `.enableLogging(true)` are configured
-            when initializing Datadog SDK.
-            """ }))
+            Make sure `RUM` or `Logs` are enabled when initializing Datadog SDK.
+            """
+        }))
     }
 }

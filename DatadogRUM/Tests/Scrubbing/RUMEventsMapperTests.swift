@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 import TestUtilities
 @testable import DatadogRUM
 
@@ -28,7 +29,7 @@ class RUMEventsMapperTests: XCTestCase {
         let modifiedLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
+        let mapper: RUMEventsMapper = .mockWith(
             viewEventMapper: { viewEvent in
                 DDAssertReflectionEqual(viewEvent, originalViewEvent, "Mapper should be called with the original event.")
                 return modifiedViewEvent
@@ -81,8 +82,7 @@ class RUMEventsMapperTests: XCTestCase {
         let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
-            viewEventMapper: nil,
+        let mapper: RUMEventsMapper = .mockWith(
             errorEventMapper: { errorEvent in
                 DDAssertReflectionEqual(errorEvent, originalErrorEvent, "Mapper should be called with the original event.")
                 return nil
@@ -123,13 +123,7 @@ class RUMEventsMapperTests: XCTestCase {
         let originalLongTaskEvent: RUMLongTaskEvent = .mockRandom()
 
         // Given
-        let mapper = RUMEventsMapper(
-            viewEventMapper: nil,
-            errorEventMapper: nil,
-            resourceEventMapper: nil,
-            actionEventMapper: nil,
-            longTaskEventMapper: nil
-        )
+        let mapper: RUMEventsMapper = .mockNoOp()
 
         // When
         let mappedViewEvent = mapper.map(event: originalViewEvent)
@@ -157,14 +151,7 @@ class RUMEventsMapperTests: XCTestCase {
         let originalEvent = UnrecognizedEvent(value: .mockRandom())
 
         // When
-        let mapper = RUMEventsMapper(
-            viewEventMapper: nil,
-            errorEventMapper: { _ in nil },
-            resourceEventMapper: { _ in nil },
-            actionEventMapper: { _ in nil },
-            longTaskEventMapper: { _ in nil }
-        )
-
+        let mapper: RUMEventsMapper = .mockNoOp()
         let mappedEvent = try XCTUnwrap(mapper.map(event: originalEvent))
 
         // Then

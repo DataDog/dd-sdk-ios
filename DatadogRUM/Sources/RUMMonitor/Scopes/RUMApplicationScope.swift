@@ -97,7 +97,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         // Sanity telemety, only end up with one active session
         if sessionScopes.filter({ $0.isActive }).count > 1 {
-            DD.telemetry.error("An application has multiple active sessions!")
+            dependencies.telemetry.error("An application has multiple active sessions!")
         }
 
         return activeSession != nil

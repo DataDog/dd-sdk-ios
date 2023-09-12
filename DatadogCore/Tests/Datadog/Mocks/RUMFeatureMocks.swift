@@ -59,7 +59,8 @@ extension CrashReportReceiver: AnyMockable {
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        ciTest: RUMCITest? = nil
+        ciTest: RUMCITest? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -67,7 +68,8 @@ extension CrashReportReceiver: AnyMockable {
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
-            ciTest: ciTest
+            ciTest: ciTest,
+            telemetry: telemetry
         )
     }
 }
@@ -108,14 +110,16 @@ extension RUMEventsMapper {
         errorEventMapper: RUM.ErrorEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
-        longTaskEventMapper: RUM.LongTaskEventMapper? = nil
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
             errorEventMapper: errorEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
-            longTaskEventMapper: longTaskEventMapper
+            longTaskEventMapper: longTaskEventMapper,
+            telemetry: telemetry
         )
     }
 }

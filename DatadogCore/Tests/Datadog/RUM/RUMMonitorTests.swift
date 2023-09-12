@@ -547,7 +547,7 @@ class RUMMonitorTests: XCTestCase {
             "int": AnyEncodable(11_235),
             "bool": AnyEncodable(true)
         ])
-        try rumEventMatchers.forEach { event in
+        try rumEventMatchers.filterTelemetry().forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
@@ -1332,7 +1332,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {
-        for matcher in matchers {
+        for matcher in matchers.filterTelemetry() {
             // Application Start/Launch happens too early to have attributes set.
             if (try? matcher.attribute(forKeyPath: "action.type")) == "application_start" ||
                (try? matcher.attribute(forKeyPath: "view.name")) == "ApplicationLaunch"{

@@ -18,9 +18,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let instrumentation: RUMInstrumentation
 
-    let telemetry: TelemetryCore
-
-    convenience init(
+    init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
     ) throws {
@@ -46,28 +44,27 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     errorEventMapper: configuration.errorEventMapper,
                     resourceEventMapper: configuration.resourceEventMapper,
                     actionEventMapper: configuration.actionEventMapper,
-                    longTaskEventMapper: configuration.longTaskEventMapper
+                    longTaskEventMapper: configuration.longTaskEventMapper,
+                    telemetry: core.telemetry
                 )
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
-            vitalsReaders: configuration.vitalsUpdateFrequency.map { VitalsReaders(frequency: $0.timeInterval) },
+            vitalsReaders: configuration.vitalsUpdateFrequency.map {
+                VitalsReaders(
+                    frequency: $0.timeInterval,
+                    telemetry: core.telemetry
+                )
+            },
             onSessionStart: configuration.onSessionStart
         )
 
-        try self.init(
-            in: core,
-            configuration: configuration,
-            with: Monitor(core: core, dependencies: dependencies, dateProvider: configuration.dateProvider)
+        self.monitor = Monitor(
+            core: core,
+            dependencies: dependencies,
+            dateProvider: configuration.dateProvider
         )
-    }
 
-    private init(
-        in core: DatadogCoreProtocol,
-        configuration: RUM.Configuration,
-        with monitor: Monitor
-    ) throws {
-        self.monitor = monitor
         self.instrumentation = RUMInstrumentation(
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
@@ -76,7 +73,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
-            eventsFilter: RUMViewEventsFilter()
+            eventsFilter: RUMViewEventsFilter(),
+            telemetry: core.telemetry
         )
         self.messageReceiver = CombinedFeatureMessageReceiver(
             TelemetryReceiver(
@@ -96,16 +94,16 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
                 trackBackgroundEvents: configuration.trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
-                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) }
+                ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+                telemetry: core.telemetry
             )
         )
-        self.telemetry = TelemetryCore(core: core)
 
         // Forward instrumentation calls to monitor:
         instrumentation.publish(to: monitor)
 
         // Send configuration telemetry:
-        telemetry.configuration(
+        core.telemetry.configuration(
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
             sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
             telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),

@@ -10,19 +10,16 @@ import DatadogInternal
 @testable import DatadogRUM
 import TestUtilities
 
-class TelemetryCoreIntegrationTests: XCTestCase {
+class CoreTelemetryIntegrationTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
-    private var telemetry: TelemetryCore! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
         core = DatadogCoreProxy()
-        telemetry = TelemetryCore(core: core)
     }
 
     override func tearDown() {
         core.flushAndTearDown()
         core = nil
-        telemetry = nil
     }
 
     func testGivenRUMEnabled_telemetryEventsAreSent() {
@@ -33,9 +30,9 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // When
-        telemetry.debug("Debug Telemetry", attributes: ["debug.attribute": 42])
-        telemetry.error("Error Telemetry")
-        telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42])
+        core.telemetry.debug("Debug Telemetry", attributes: ["debug.attribute": 42])
+        core.telemetry.error("Error Telemetry")
+        core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42])
 
         // Then
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
@@ -64,9 +61,9 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        telemetry.debug("Debug Telemetry")
-        telemetry.error("Error Telemetry")
-        telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.debug("Debug Telemetry")
+        core.telemetry.error("Error Telemetry")
+        core.telemetry.metric(name: "Metric Name", attributes: [:])
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
@@ -101,9 +98,9 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         RUMMonitor.shared(in: core).startView(key: .mockRandom())
 
         // Then
-        telemetry.debug("Debug Telemetry")
-        telemetry.error("Error Telemetry")
-        telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.debug("Debug Telemetry")
+        core.telemetry.error("Error Telemetry")
+        core.telemetry.metric(name: "Metric Name", attributes: [:])
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
@@ -139,9 +136,9 @@ class TelemetryCoreIntegrationTests: XCTestCase {
         RUMMonitor.shared(in: core).addAction(type: .tap, name: "tap")
 
         // Then
-        telemetry.debug("Debug Telemetry")
-        telemetry.error("Error Telemetry")
-        telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.debug("Debug Telemetry")
+        core.telemetry.error("Error Telemetry")
+        core.telemetry.metric(name: "Metric Name", attributes: [:])
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)

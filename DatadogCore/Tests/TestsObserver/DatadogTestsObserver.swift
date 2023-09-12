@@ -64,18 +64,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { DD.telemetry is NOPTelemetry },
-            problem: "`DD.telemetry` must use `NOPTelemetry` implementation.",
-            solution: """
-            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
-
-            ```
-            let dd = DD.mockWith(telemetry: TelemetryMock())
-            defer { dd.reset() }
-            ```
-            """
-        ),
-        .init(
             assert: { ServerMock.activeInstance == nil },
             problem: "`ServerMock` must not be active.",
             solution: """

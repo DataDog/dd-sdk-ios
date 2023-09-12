@@ -80,6 +80,17 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
     }
 }
 
+extension TelemetryMock: FeatureMessageReceiver {
+    public func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
+        guard case let .telemetry(message) = message else {
+            return false
+        }
+
+        send(telemetry: message)
+        return true
+    }
+}
+
 public extension Array where Element == TelemetryMessage {
     /// Returns properties of the first metric message of given name.
     func firstMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
@@ -88,12 +99,36 @@ public extension Array where Element == TelemetryMessage {
 }
 
 public extension TelemetryMessage {
-    /// Extracts metric attributes if this is metric message.
-    var asMetric: (name: String, attributes: [String: Encodable])? {
-        guard case let .metric(metricName, metricAttributes) = self else {
+    /// Extracts debug from telemetry message.
+    var asDebug: (id: String, message: String, attributes: [String: Encodable]?)? {
+        guard case let .debug(id, message, attributes) = self else {
             return nil
         }
-        return (name: metricName, attributes: metricAttributes)
+        return (id: id, message: message, attributes: attributes)
+    }
+
+    /// Extracts debug from telemetry message.
+    var asError: (id: String, message: String, kind: String?, stack: String?)? {
+        guard case let .error(id, message, kind, stack) = self else {
+            return nil
+        }
+        return (id: id, message: message, kind: kind, stack: stack)
+    }
+
+    /// Extracts configuration from telemetry message.
+    var asConfiguration: ConfigurationTelemetry? {
+        guard case let .configuration(configuration) = self else {
+            return nil
+        }
+        return configuration
+    }
+
+    /// Extracts metric attributes if this is metric message.
+    var asMetric: (name: String, attributes: [String: Encodable])? {
+        guard case let .metric(name, attributes) = self else {
+            return nil
+        }
+        return (name: name, attributes: attributes)
     }
 }
 
@@ -104,44 +139,22 @@ extension DD {
     /// let dd = DD.mockWith(logger: CoreLoggerMock())
     /// defer { dd.reset() }
     /// ```
-    public static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL, TelemetryMock> {
+    public static func mockWith<CL: CoreLogger>(logger: CL) -> DDMock<CL> {
         let mock = DDMock(
             oldLogger: DD.logger,
-            oldTelemetry: DD.telemetry,
-            logger: logger,
-            telemetry: TelemetryMock()
+            logger: logger
         )
         DD.logger = logger
         return mock
     }
-
-    /// Syntactic sugar for patching the `dd` bundle by replacing `telemetry`.
-    ///
-    /// ```
-    /// let dd = DD.mockWith(telemetry: TelemetryMock())
-    /// defer { dd.reset() }
-    /// ```
-    public static func mockWith<TM: Telemetry>(telemetry: TM) -> DDMock<CoreLoggerMock, TM> {
-        let mock = DDMock(
-            oldLogger: DD.logger,
-            oldTelemetry: DD.telemetry,
-            logger: CoreLoggerMock(),
-            telemetry: telemetry
-        )
-        DD.telemetry = telemetry
-        return mock
-    }
 }
 
-public struct DDMock<CL: CoreLogger, TM: Telemetry> {
+public struct DDMock<CL: CoreLogger> {
     let oldLogger: CoreLogger
-    let oldTelemetry: Telemetry
 
     public let logger: CL
-    public let telemetry: TM
 
     public func reset() {
         DD.logger = oldLogger
-        DD.telemetry = oldTelemetry
     }
 }

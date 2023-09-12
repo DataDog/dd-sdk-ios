@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describes current device information.
-public struct DeviceInfo: Codable, Equatable, DictionaryEncodable {
+public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     // MARK: - Info
 
     /// Device manufacturer name. Always'Apple'

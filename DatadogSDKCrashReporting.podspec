@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKCrashReporting"
   s.module_name  = "DatadogCrashReporting"
-  s.version      = "2.1.2"
+  s.version      = "2.2.0"
   s.summary      = "Official Datadog Crash Reporting SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -10,12 +10,12 @@ Pod::Spec.new do |s|
   s.license            = { :type => "Apache", :file => 'LICENSE' }
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
-    "Maciej Burda" => "maciej.burda@datadoghq.com",
     "Maxime Epain" => "maxime.epain@datadoghq.com",
-    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
+    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com",
+    "Maciej Burda" => "maciej.burda@datadoghq.com"
   }
 
-  s.swift_version = '5.5'
+  s.swift_version = '5.8.0'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 

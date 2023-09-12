@@ -16,16 +16,19 @@ class DataUploadWorkerTests: XCTestCase {
     lazy var orchestrator = FilesOrchestrator(
         directory: .init(url: temporaryDirectory),
         performance: StoragePerformanceMock.writeEachObjectToNewFileAndReadAllFiles,
-        dateProvider: dateProvider
+        dateProvider: dateProvider,
+        telemetry: NOPTelemetry()
     )
     lazy var writer = FileWriter(
         orchestrator: orchestrator,
+        forceNewFile: false,
         encryption: nil,
-        forceNewFile: false
+        telemetry: NOPTelemetry()
     )
     lazy var reader = FileReader(
         orchestrator: orchestrator,
-        encryption: nil
+        encryption: nil,
+        telemetry: NOPTelemetry()
     )
 
     override func setUp() {
@@ -62,7 +65,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -93,7 +97,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -124,7 +129,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
@@ -152,7 +158,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -191,7 +198,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: mockDelay,
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -227,7 +235,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -263,7 +272,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: mockDelay,
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -296,7 +306,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: randomFeatureName
+            featureName: randomFeatureName,
+            telemetry: NOPTelemetry()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -340,7 +351,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom()
+            featureName: .mockRandom(),
+            telemetry: NOPTelemetry()
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -354,10 +366,9 @@ class DataUploadWorkerTests: XCTestCase {
         )
     }
 
-    func testWhenDataIsUploadedWith500StatusCode_itSendsErrorTelemetry() {
+    func testWhenDataIsUploadedWith500StatusCode_itSendsErrorTelemetry() throws {
         // Given
-        let dd = DD.mockWith(telemetry: TelemetryMock())
-        defer { dd.reset() }
+        let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .httpError(statusCode: 500))
@@ -374,26 +385,23 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom()
+            featureName: .mockRandom(),
+            telemetry: telemetry
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 1)
 
-        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
-            return XCTFail("An error should be send to `DD.telemetry`.")
-        }
-
-        XCTAssertEqual(message,"Data upload finished with status code: 500")
+        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        XCTAssertEqual(error.message,"Data upload finished with status code: 500")
     }
 
-    func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() {
+    func testWhenDataCannotBeUploadedDueToNetworkError_itSendsErrorTelemetry() throws {
         // Given
-        let dd = DD.mockWith(telemetry: TelemetryMock())
-        defer { dd.reset() }
+        let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
         let randomUploadStatus: DataUploadStatus = .mockWith(error: .networkError(error: .mockAny()))
@@ -410,26 +418,23 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: .mockRandom()
+            featureName: .mockRandom(),
+            telemetry: telemetry
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 1)
 
-        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
-            return XCTFail("An error should be send to `DD.telemetry`.")
-        }
-
-        XCTAssertEqual(message,#"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
+        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        XCTAssertEqual(error.message, #"Data upload finished with error - Error Domain=abc Code=0 "(null)""#)
     }
 
-    func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() {
+    func testWhenDataCannotBePreparedForUpload_itSendsErrorTelemetry() throws {
         // Given
-        let dd = DD.mockWith(telemetry: TelemetryMock())
-        defer { dd.reset() }
+        let telemetry = TelemetryMock()
 
         writer.write(value: ["key": "value"])
 
@@ -448,20 +453,18 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
-            featureName: "some-feature"
+            featureName: "some-feature",
+            telemetry: telemetry
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
         worker.cancelSynchronously()
 
         // Then
-        XCTAssertEqual(dd.telemetry.messages.count, 1)
+        XCTAssertEqual(telemetry.messages.count, 1)
 
-        guard case .error(_, let message, _, _) = dd.telemetry.messages.first else {
-            return XCTFail("An error should be send to `DD.telemetry`.")
-        }
-
-        XCTAssertEqual(message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
+        let error = try XCTUnwrap(telemetry.messages.first?.asError, "An error should be send to `telemetry`.")
+        XCTAssertEqual(error.message, #"Failed to initiate 'some-feature' data upload - Failed to prepare upload"#)
     }
 
     // MARK: - Tearing Down
@@ -482,7 +485,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: MockDelay(),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // When
@@ -509,7 +513,8 @@ class DataUploadWorkerTests: XCTestCase {
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
-            featureName: .mockAny()
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry()
         )
 
         // Given

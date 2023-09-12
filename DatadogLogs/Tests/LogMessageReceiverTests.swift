@@ -10,6 +10,19 @@ import DatadogInternal
 @testable import DatadogLogs
 
 class LogMessageReceiverTests: XCTestCase {
+    struct LogMessage: Encodable {
+        let logger: String
+        let service: String?
+        let date: Date
+        let message: String
+        let level: LogLevel
+        let thread: String
+        let error: DDError?
+        let networkInfoEnabled: Bool?
+        let userAttributes: [String: String]?
+        let internalAttributes: [String: String]?
+    }
+
     func testReceiveIncompleteLogMessage() throws {
         let expectation = expectation(description: "Don't send log fallback")
 
@@ -21,12 +34,9 @@ class LogMessageReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: "log",
-                baggage: [
-                    "date": Date.mockDecember15th2019At10AMUTC(),
-                    "message": "message-test",
-                ]
+                value: "wrong-type"
             ),
             else: { expectation.fulfill() }
         )
@@ -46,15 +56,20 @@ class LogMessageReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: "log",
-                baggage: [
-                    "date": Date.mockDecember15th2019At10AMUTC(),
-                    "loggerName": "logger-test",
-                    "threadName": "thread-test",
-                    "message": "message-test",
-                    "level": LogLevel.info
-                ]
+                value: LogMessage(
+                    logger: "logger-test",
+                    service: nil,
+                    date: .mockDecember15th2019At10AMUTC(),
+                    message: "message-test",
+                    level: .info,
+                    thread: "thread-test",
+                    error: nil,
+                    networkInfoEnabled: nil,
+                    userAttributes: nil,
+                    internalAttributes: nil
+                )
             )
         )
 
@@ -84,20 +99,20 @@ class LogMessageReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: "log",
-                baggage: [
-                    "date": Date.mockDecember15th2019At10AMUTC(),
-                    "loggerName": "logger-test",
-                    "service": "service-test",
-                    "threadName": "thread-test",
-                    "message": "message-test",
-                    "level": LogLevel.info,
-                    "error": DDError.mockAny(),
-                    "userAttributes": ["user": "attribute"],
-                    "internalAttributes": ["internal": "attribute"],
-                    "networkInfoEnabled": true
-                ]
+                value: LogMessage(
+                    logger: "logger-test",
+                    service: "service-test",
+                    date: .mockDecember15th2019At10AMUTC(),
+                    message: "message-test",
+                    level: .info,
+                    thread: "thread-test",
+                    error: .mockAny(),
+                    networkInfoEnabled: true,
+                    userAttributes: ["user": "attribute"],
+                    internalAttributes: ["internal": "attribute"]
+                )
             )
         )
 
@@ -135,15 +150,20 @@ class LogMessageReceiverTests: XCTestCase {
 
         // When
         core.send(
-            message: .custom(
+            message: .baggage(
                 key: "log",
-                baggage: [
-                    "date": Date.mockDecember15th2019At10AMUTC(),
-                    "loggerName": "logger-test",
-                    "threadName": "thread-test",
-                    "message": "message-test",
-                    "level": LogLevel.info
-                ]
+                value: LogMessage(
+                    logger: "logger-test",
+                    service: nil,
+                    date: .mockDecember15th2019At10AMUTC(),
+                    message: "message-test",
+                    level: .info,
+                    thread: "thread-test",
+                    error: nil,
+                    networkInfoEnabled: nil,
+                    userAttributes: nil,
+                    internalAttributes: nil
+                )
             )
         )
 

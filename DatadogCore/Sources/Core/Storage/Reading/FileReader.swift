@@ -12,15 +12,19 @@ internal final class FileReader: Reader {
     /// Orchestrator producing reference to readable file.
     private let orchestrator: FilesOrchestratorType
     private let encryption: DataEncryption?
+    /// Telemetry interface.
+    private let telemetry: Telemetry
 
     /// Files marked as read.
     private var filesRead: Set<String> = []
 
     init(
         orchestrator: FilesOrchestratorType,
-        encryption: DataEncryption? = nil
+        encryption: DataEncryption?,
+        telemetry: Telemetry
     ) {
         self.orchestrator = orchestrator
+        self.telemetry = telemetry
         self.encryption = encryption
     }
 
@@ -35,7 +39,7 @@ internal final class FileReader: Reader {
             let dataBlocks = try decode(stream: file.stream())
             return Batch(dataBlocks: dataBlocks, file: file)
         } catch {
-            DD.telemetry.error("Failed to read data from file", error: error)
+            telemetry.error("Failed to read data from file", error: error)
             return nil
         }
     }

@@ -14,6 +14,8 @@ internal struct RUMEventsMapper {
     let resourceEventMapper: RUM.ResourceEventMapper?
     let actionEventMapper: RUM.ActionEventMapper?
     let longTaskEventMapper: RUM.LongTaskEventMapper?
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     // MARK: - EventMapper
 
@@ -37,7 +39,7 @@ internal struct RUMEventsMapper {
         case let event as RUMLongTaskEvent:
             return map(event: event, using: longTaskEventMapper) as? T
         default:
-            DD.telemetry.error("No `RUMEventMapper` is registered for \(type(of: event))")
+            telemetry.error("No `RUMEventMapper` is registered for \(type(of: event))")
             return event
         }
     }

@@ -230,7 +230,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 directories: featureDirectories,
                 dateProvider: dateProvider,
                 performance: performancePreset,
-                encryption: encryption
+                encryption: encryption,
+                telemetry: telemetry
             )
 
             let upload = FeatureUpload(
@@ -239,7 +240,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 fileReader: storage.reader,
                 requestBuilder: feature.requestBuilder,
                 httpClient: httpClient,
-                performance: performancePreset
+                performance: performancePreset,
+                telemetry: telemetry
             )
 
             stores[T.name] = (
@@ -278,7 +280,8 @@ extension DatadogCore: DatadogCoreProtocol {
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
-            storage: storage
+            storage: storage,
+            telemetry: telemetry
         )
     }
 
@@ -304,6 +307,7 @@ extension DatadogCore: DatadogCoreProtocol {
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
+    let telemetry: Telemetry
 
     func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         // On user thread: request SDK context.
@@ -319,7 +323,7 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
             do {
                 try block(context, writer)
             } catch {
-                DD.telemetry.error("Failed to execute feature scope", error: error)
+                telemetry.error("Failed to execute feature scope", error: error)
             }
         }
     }

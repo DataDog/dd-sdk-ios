@@ -16,8 +16,15 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// The logs request body format.
     let format = DataFormat(prefix: "[", suffix: "]", separator: ",")
 
-    init(customIntakeURL: URL? = nil) {
+    /// Telemetry interface.
+    let telemetry: Telemetry
+
+    init(
+        customIntakeURL: URL? = nil,
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         self.customIntakeURL = customIntakeURL
+        self.telemetry = telemetry
     }
 
     func request(for events: [Event], with context: DatadogContext) -> URLRequest {
@@ -37,7 +44,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
                 .ddRequestIDHeader(),
-            ]
+            ],
+            telemetry: telemetry
         )
 
         let data = format.format(events.map { $0.data })
