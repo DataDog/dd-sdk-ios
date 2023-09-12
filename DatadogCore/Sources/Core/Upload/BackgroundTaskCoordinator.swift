@@ -8,12 +8,11 @@ import Foundation
 
 /// The `BackgroundTaskCoordinator` protocol provides an abstraction for managing background tasks and includes methods for registering and ending background tasks.
 internal protocol BackgroundTaskCoordinator {
-    /// Requests additional background execution time for the app.
+    /// Begins a background task, requesting additional background execution time for the app.
+    /// Calling it multiple times will end the previous background task and start a new one.
+    /// It internally implements system handler for background task expiration which will end current background task.
     func beginBackgroundTask()
     /// Marks the end of a background task.
-    ///
-    /// You must call this method to end a task that was started using the `beginBackgroundTask()` method.
-    /// If you do not, the system may terminate your app.
     func endBackgroundTask()
 }
 
