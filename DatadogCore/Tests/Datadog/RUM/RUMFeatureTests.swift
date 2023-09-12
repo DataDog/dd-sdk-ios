@@ -38,6 +38,7 @@ class RUMFeatureTests: XCTestCase {
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
+        let randomBackgroundTasksEnabled: Bool = .mockRandom()
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
         let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
@@ -69,7 +70,8 @@ class RUMFeatureTests: XCTestCase {
                     )
                 )
             ),
-            applicationVersion: randomApplicationVersion
+            applicationVersion: randomApplicationVersion,
+            backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
         defer { core.flushAndTearDown() }
 
@@ -135,7 +137,8 @@ class RUMFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 

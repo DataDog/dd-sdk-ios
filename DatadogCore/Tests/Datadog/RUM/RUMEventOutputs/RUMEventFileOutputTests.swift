@@ -39,7 +39,8 @@ class RUMEventFileOutputTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))
