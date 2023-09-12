@@ -13,7 +13,7 @@ internal enum JSONMatcherException: Error {
 
 /// A type-safe matcher for dynamic `[String: Any]` JSON objects.
 internal class JSONObjectMatcher {
-    private let object: [String: Any]
+    let object: [String: Any]
 
     /// Creates a matcher for a given JSON object.
     /// - Parameter object: The JSON object.
@@ -53,7 +53,7 @@ internal class JSONObjectMatcher {
 
 /// A type-safe matcher for dynamic `[Any]` JSON arrays.
 internal class JSONArrrayMatcher {
-    private let array: [Any]
+    let array: [Any]
 
     /// Creates a matcher for a given JSON array.
     /// - Parameter array: The JSON array.
@@ -67,6 +67,19 @@ internal class JSONArrrayMatcher {
     ///
     /// Throws an error if the element at the given index is not a JSON object.
     func object(at index: Int) throws -> JSONObjectMatcher { .init(object: try value(at: index)) }
+
+    /// Returns a JSON object matchers for all elements in this array.
+    /// - Returns: An array of JSON object matchers.
+    ///
+    /// Throws an error if the any of elements is not a JSON object.
+    func objects() throws -> [JSONObjectMatcher] {
+        return try array.enumerated().map { idx, element in
+            guard let object = element as? [String: Any] else {
+                throw JSONMatcherException.arrayException("Element at index `\(idx)` is not a JSON object: \(String(describing: element))")
+            }
+            return JSONObjectMatcher(object: object)
+        }
+    }
 
     /// Returns a JSON array matcher for the element at the specified index.
     /// - Parameter index: The index.
@@ -90,4 +103,7 @@ internal class JSONArrrayMatcher {
         }
         return value
     }
+
+    /// The number of elements in the array.
+    var count: Int { array.count }
 }

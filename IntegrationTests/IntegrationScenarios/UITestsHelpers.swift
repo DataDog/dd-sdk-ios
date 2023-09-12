@@ -10,6 +10,11 @@ import XCTest
 let semverPattern = #"(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"#
 let semverRegex = "^\(semverPattern)$"
 
+/// Regex for matching the value of UA header, e.g.: "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
+let userAgentRegex = #"^.*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#
+/// Regex for matching the value of `DD-REQUEST-ID` header, e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
+let ddRequestIDRegex = #"^[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"#
+
 /// Convenient interface to navigate through Example app's main screen.
 class ExampleApplication: XCUIApplication {
     /// Launches the app by providing mock server configuration.
@@ -86,7 +91,13 @@ extension Array where Element == RUMEventMatcher {
 
 extension String {
     func matches(regex: String) -> Bool {
-        range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
+        let match = range(of: regex, options: .regularExpression, range: nil, locale: nil) != nil
+
+        if !match {
+            print("'\(self)' does not match '\(regex)'")
+        }
+
+        return match
     }
 }
 

@@ -23,8 +23,21 @@ internal struct SRRequestMatcher {
     ///
     /// - Parameter request: Session Replay request.
     init(request: URLRequest) throws {
+        guard let body = request.httpBody else {
+            throw SRRequestException.multipartRequestException("Request must define body")
+        }
+        try self.init(body: body, headers: request.allHTTPHeaderFields ?? [:])
+    }
+
+    /// Creates matcher from request body and headers.
+    /// Both `body` and `headers` must describe a valid Session Replay (multipart) request.
+    ///
+    /// - Parameters:
+    ///   - body: The body of request.
+    ///   - headers: Request headers.
+    init(body: Data, headers: [String: String]) throws {
         let contentTypePrefix = "multipart/form-data; boundary="
-        guard let contentType = request.value(forHTTPHeaderField: "Content-Type") else {
+        guard let contentType = headers["Content-Type"] else {
             throw SRRequestException.multipartRequestException("Request must define Content-Type header")
         }
         guard contentType.hasPrefix(contentTypePrefix) else {
@@ -34,14 +47,7 @@ internal struct SRRequestMatcher {
         guard !boundary.isEmpty else {
             throw SRRequestException.multipartRequestException("Multipart boundary must be a non-empty string")
         }
-        guard let body = request.httpBody else {
-            throw SRRequestException.multipartRequestException("Request must define body")
-        }
         try self.init(multipartBody: body, multipartBoundary: boundary)
-    }
-
-    init(requestHeaders: [String], requestBody: Data) throws {
-
     }
 
     /// Underlying (multipart) form data sent with tested request.

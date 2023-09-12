@@ -109,12 +109,14 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             getSpanID(from: firstPartyPOSTRequest),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`."
         )
-        XCTAssertTrue(
-            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-sampling-priority: 1"),
+        XCTAssertEqual(
+            firstPartyPOSTRequest.httpHeaders["x-datadog-sampling-priority"],
+            "1",
             "`x-datadog-sampling-priority: 1` header must be set for `firstPartyPOSTResourceURL`"
         )
-        XCTAssertTrue(
-            firstPartyPOSTRequest.httpHeaders.contains("x-datadog-origin: rum"),
+        XCTAssertEqual(
+            firstPartyPOSTRequest.httpHeaders["x-datadog-origin"],
+            "rum",
             "`x-datadog-origin: rum` header must be set for `firstPartyPOSTResourceURL`"
         )
 
@@ -242,21 +244,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         }
     }
 
-    private func getTraceID(from request: Request) -> String? {
-        let prefix = "x-datadog-trace-id: "
-        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
-        header?.removeFirst(prefix.count)
-        return header
-    }
-
-    private func getSpanID(from request: Request) -> String? {
-        let prefix = "x-datadog-parent-id: "
-        var header = request.httpHeaders.first { $0.hasPrefix(prefix) }
-        header?.removeFirst(prefix.count)
-        return header
-    }
-
-    private func isValid(sampleRate: Double) -> Bool {
-        return sampleRate >= 0 && sampleRate <= 1
-    }
+    private func getTraceID(from request: Request) -> String? { request.httpHeaders["x-datadog-trace-id"] }
+    private func getSpanID(from request: Request) -> String? { request.httpHeaders["x-datadog-parent-id"] }
+    private func isValid(sampleRate: Double) -> Bool { sampleRate >= 0 && sampleRate <= 1 }
 }
