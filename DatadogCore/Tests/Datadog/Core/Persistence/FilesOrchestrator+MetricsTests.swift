@@ -127,6 +127,21 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         ])
     }
 
+    func testWhenAppIsInBackground_itSendsBatchInBackgroundMetric() throws {
+        // Given
+        let orchestrator = createOrchestrator()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
+        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1, context: context) as? ReadableFile)
+
+        // When:
+        orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202), context: context)
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        let inBackground = try XCTUnwrap(metric.attributes["in_background"] as? Bool)
+        XCTAssertTrue(inBackground)
+    }
+
     // MARK: - "Batch Closed" Metric
 
     func testWhenNewBatchIsStarted_itSendsBatchClosedMetric() throws {

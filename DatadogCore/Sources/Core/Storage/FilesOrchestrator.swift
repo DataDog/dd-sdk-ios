@@ -280,7 +280,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: inBackground,
+                BatchDeletedMetric.inBackgroundKey: inBackground
             ]
         )
     }
