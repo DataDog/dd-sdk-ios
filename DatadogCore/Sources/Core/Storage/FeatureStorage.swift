@@ -119,7 +119,6 @@ internal struct FeatureStorage {
 extension FeatureStorage {
     init(
         featureName: String,
-        contextProvider: DatadogContextProvider,
         queue: DispatchQueue,
         directories: FeatureDirectories,
         dateProvider: DateProvider,

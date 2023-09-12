@@ -105,7 +105,7 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
-        /// Flag that determines if UIKit's [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
+        /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
         ///
         /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
@@ -148,6 +148,13 @@ public struct Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
+        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                 are used to perform background uploads.
+        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                 any upload blocker such us no internet connection or low battery.
+        ///                                 By default it's set to `false`.
         public init(
             clientToken: String,
             env: String,

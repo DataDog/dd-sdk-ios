@@ -268,7 +268,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
         let inBackground = context.applicationStateHistory.currentSnapshot.state == .background
-        print("👾 In background: \(inBackground)")
         telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [

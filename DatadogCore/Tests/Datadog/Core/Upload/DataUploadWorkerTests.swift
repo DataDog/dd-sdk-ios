@@ -533,7 +533,7 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testItTriggersBackgroundTaskRegistration() {
+    func testItTriggersBackgroundTaskBeginEndForSuccessfulUpload() {
         let expectTaskRegistered = expectation(description: "task should be registered")
         let expectTaskEnded = expectation(description: "task should be ended")
         let backgroundTaskCoordinator = SpyBackgroundTaskCoordinator(
@@ -559,6 +559,61 @@ class DataUploadWorkerTests: XCTestCase {
         // Then
         withExtendedLifetime(worker) {
             wait(for: [expectTaskRegistered, expectTaskEnded])
+        }
+    }
+
+    func testItTriggersBackgroundTaskBeginEndWhenBlockerOccurs() {
+        let expectTaskRegistered = expectation(description: "task should be registered")
+        let expectTaskEnded = expectation(description: "task should be ended")
+        let backgroundTaskCoordinator = SpyBackgroundTaskCoordinator(
+            beginBackgroundTaskCalled: {
+                expectTaskRegistered.fulfill()
+            }, endBackgroundTaskCalled: {
+                expectTaskEnded.fulfill()
+            }
+        )
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
+            contextProvider: .mockAny(),
+            uploadConditions: .neverUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            backgroundTaskCoordinator: backgroundTaskCoordinator
+        )
+        writer.write(value: ["k1": "v1"])
+
+        // Then
+        withExtendedLifetime(worker) {
+            wait(for: [expectTaskRegistered, expectTaskEnded])
+        }
+    }
+
+    func testItTriggersBackgroundTaskEndWhenThereIsNothingToUpload() {
+        let expectTaskEnded = expectation(description: "task should be ended")
+        let backgroundTaskCoordinator = SpyBackgroundTaskCoordinator(
+            beginBackgroundTaskCalled: {
+                XCTFail("begin background task should not be called")
+            }, endBackgroundTaskCalled: {
+                expectTaskEnded.fulfill()
+            }
+        )
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: DataUploaderMock(uploadStatus: .mockWith()),
+            contextProvider: .mockAny(),
+            uploadConditions: .neverUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            backgroundTaskCoordinator: backgroundTaskCoordinator
+        )
+        // Then
+        withExtendedLifetime(worker) {
+            wait(for: [expectTaskEnded])
         }
     }
 }
@@ -589,7 +644,7 @@ private class SpyBackgroundTaskCoordinator: BackgroundTaskCoordinator {
         beginBackgroundTaskCalled()
     }
 
-    func endCurrentBackgroundTaskIfActive() {
+    func endBackgroundTask() {
         endBackgroundTaskCalled()
     }
 }

@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
+
 # 2.1.2 / 29-08-2023
 
 - [BUGFIX] Do not embed DatadogInternal while building Trace and RUM xcframeworks. See [#1444][].
@@ -17,7 +19,6 @@
 - [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.1.
 - [FEATURE] Report session sample rate to the backend with RUM events. See [#1410][]
 - [IMPROVEMENT] Expose Session Replay to Objective-C. see [#1419][]
-- [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
 
 # 2.0.0 / 31-07-2023
 

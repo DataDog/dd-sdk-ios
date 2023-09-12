@@ -18,7 +18,6 @@ class FeatureStorageTests: XCTestCase {
         super.setUp()
         storage = FeatureStorage(
             featureName: .mockAny(),
-            contextProvider: .mockAny(),
             queue: queue,
             directories: temporaryFeatureDirectories,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
@@ -74,7 +73,7 @@ class FeatureStorageTests: XCTestCase {
         XCTAssertEqual(batch.events.count, 1)
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batche")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches")
     }
 
     // MARK: - Behaviours on tracking consent

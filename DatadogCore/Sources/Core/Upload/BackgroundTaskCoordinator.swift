@@ -7,20 +7,21 @@
 import Foundation
 
 /// The `BackgroundTaskCoordinator` protocol provides an abstraction for managing background tasks and includes methods for registering and ending background tasks.
-/// It serves as a useful abstraction for testing purposes as well as allows decoupling from UIKit in order to maintain Catalyst compliation. To abstract from UIKit, it leverages
-/// the fact that UIBackgroundTaskIdentifier raw value is based on Int.
 internal protocol BackgroundTaskCoordinator {
     /// Requests additional background execution time for the app.
     func beginBackgroundTask()
-    /// Marks the end of a specific long-running background task.
-    func endCurrentBackgroundTaskIfActive()
+    /// Marks the end of a background task.
+    ///
+    /// You must call this method to end a task that was started using the `beginBackgroundTask()` method.
+    /// If you do not, the system may terminate your app.
+    func endBackgroundTask()
 }
 
 #if canImport(UIKit)
 import UIKit
 import DatadogInternal
 
-/// Bridge protocol that matches UIApplication's interface for background tasks. Allows easier testablity.
+/// Bridge protocol that matches `UIApplication` interface for background tasks. Allows easier testablity.
 internal protocol UIKitAppBackgroundTaskCoordinator {
     func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier
     func endBackgroundTask(_ identifier: UIBackgroundTaskIdentifier)
@@ -41,16 +42,16 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
     }
 
     internal func beginBackgroundTask() {
-        endCurrentBackgroundTaskIfActive()
+        endBackgroundTask()
         currentTaskId = app?.beginBackgroundTask { [weak self] in
             guard let self = self else {
                 return
             }
-            self.endCurrentBackgroundTaskIfActive()
+            self.endBackgroundTask()
         }
     }
 
-    internal func endCurrentBackgroundTaskIfActive() {
+    internal func endBackgroundTask() {
         guard let currentTaskId = currentTaskId else {
             return
         }

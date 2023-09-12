@@ -113,7 +113,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
-                self.backgroundTaskCoordinator?.endCurrentBackgroundTaskIfActive()
+                self.backgroundTaskCoordinator?.endBackgroundTask()
             }
 
             self.scheduleNextUpload(after: self.delay.current)

@@ -29,14 +29,14 @@ class UIKitBackgroundTaskCoordinatorTests: XCTestCase {
 
     func testEndBackgroundTask() throws {
         coordinator?.beginBackgroundTask()
-        coordinator?.endCurrentBackgroundTaskIfActive()
+        coordinator?.endBackgroundTask()
 
         XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, true)
         XCTAssertEqual(appSpy?.endBackgroundTaskCalled, true)
     }
 
     func testEndBackgroundTaskNotCalledWhenNotBegan() throws {
-        coordinator?.endCurrentBackgroundTaskIfActive()
+        coordinator?.endBackgroundTask()
 
         XCTAssertEqual(appSpy?.beginBackgroundTaskCalled, false)
         XCTAssertEqual(appSpy?.endBackgroundTaskCalled, false)
