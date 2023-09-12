@@ -255,6 +255,26 @@ class DatadogConfigurationTests: XCTestCase {
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.version, "0.0.0")
+        XCTAssertEqual(context.buildNumber, "0")
+    }
+
+    func testGivenNoBundleVersion_itUsesDefaultValue() throws {
+        var configuration = defaultConfig
+
+        configuration.bundle = .mockWith(
+            CFBundleVersion: "FFFFF",
+            CFBundleShortVersionString: nil
+        )
+
+        Datadog.initialize(
+            with: configuration,
+            trackingConsent: .mockRandom()
+        )
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.buildNumber, "FFFFF")
     }
 
     func testGivenNoBundleIdentifier_itUsesDefaultValues() throws {

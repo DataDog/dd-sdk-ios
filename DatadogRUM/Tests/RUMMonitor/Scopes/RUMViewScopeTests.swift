@@ -13,6 +13,8 @@ import DatadogInternal
 class RUMViewScopeTests: XCTestCase {
     let context: DatadogContext = .mockWith(
         service: "test-service",
+        version: "test-version",
+        buildNumber: "test-build",
         device: .mockWith(
             name: "device-name",
             osName: "device-os",
@@ -232,6 +234,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -311,6 +315,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar 2", "fizz": "buzz"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -378,6 +384,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -875,6 +883,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.action.target?.name, customActionName)
         XCTAssertEqual(firstActionEvent.source, .ios)
         XCTAssertEqual(firstActionEvent.service, "test-service")
+        XCTAssertEqual(firstActionEvent.version, "test-version")
+        XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -923,6 +933,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.action.target?.name, customActionName)
         XCTAssertEqual(firstActionEvent.source, .ios)
         XCTAssertEqual(firstActionEvent.service, "test-service")
+        XCTAssertEqual(firstActionEvent.version, "test-version")
+        XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1049,6 +1061,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(error.source, .ios)
         XCTAssertEqual(error.service, "test-service")
+        XCTAssertEqual(error.version, "test-version")
+        XCTAssertEqual(error.buildVersion, "test-build")
         XCTAssertEqual(error.device?.name, "device-name")
         XCTAssertEqual(error.os?.name, "device-os")
         XCTAssertEqual(error.os?.version, "os-version")
@@ -1309,6 +1323,8 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.id, scope.viewUUID.toRUMDataFormat)
         XCTAssertNil(event.synthetics)
         XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")

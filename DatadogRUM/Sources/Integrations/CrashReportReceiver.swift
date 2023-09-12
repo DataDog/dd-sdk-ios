@@ -63,6 +63,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let device: DeviceInfo
         /// The version of the application that data is generated from.
         let version: String
+        /// The build number of the application that data is generated from.
+        let buildNumber: String
         /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
         let source: String
         /// The last RUM view in crashed app process.
@@ -337,6 +339,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            buildVersion: lastRUMView.buildVersion,
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             context: lastRUMView.context,
@@ -392,6 +395,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 session: .init(plan: .plan1)
             ),
             application: original.application,
+            buildVersion: original.buildVersion,
             ciTest: original.ciTest,
             connectivity: original.connectivity,
             context: original.context,
@@ -412,6 +416,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 cpuTicksPerSecond: original.view.cpuTicksPerSecond,
                 crash: .init(count: 1),
                 cumulativeLayoutShift: original.view.cumulativeLayoutShift,
+                cumulativeLayoutShiftTargetSelector: nil,
                 customTimings: original.view.customTimings,
                 domComplete: original.view.domComplete,
                 domContentLoaded: original.view.domContentLoaded,
@@ -420,6 +425,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstByte: nil,
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
+                firstInputTargetSelector: nil,
                 firstInputTime: original.view.firstInputTime,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
@@ -428,10 +434,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
                 interactionToNextPaint: nil,
+                interactionToNextPaintTargetSelector: nil,
                 isActive: false,
                 isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: original.view.largestContentfulPaint,
+                largestContentfulPaintTargetSelector: nil,
                 loadEvent: original.view.loadEvent,
                 loadingTime: original.view.loadingTime,
                 loadingType: original.view.loadingType,
@@ -472,6 +480,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             application: .init(
                 id: applicationID
             ),
+            buildVersion: context.buildNumber,
             ciTest: ciTest,
             connectivity: RUMConnectivity(
                 networkInfo: context.networkConnectionInfo,
@@ -506,6 +515,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 cpuTicksPerSecond: nil,
                 crash: .init(count: 0),
                 cumulativeLayoutShift: nil,
+                cumulativeLayoutShiftTargetSelector: nil,
                 customTimings: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
@@ -514,6 +524,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstByte: nil,
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
+                firstInputTargetSelector: nil,
                 firstInputTime: nil,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
@@ -522,10 +533,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 interactionToNextPaint: nil,
+                interactionToNextPaintTargetSelector: nil,
                 isActive: false, // we know it won't receive updates
                 isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
+                largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
                 loadingTime: nil,
                 loadingType: nil,

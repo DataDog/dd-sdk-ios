@@ -32,6 +32,10 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMActionEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMActionEventRUMCITest(root: root) : nil
     }
@@ -854,6 +858,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var application: DDRUMErrorEventApplication {
         DDRUMErrorEventApplication(root: root)
+    }
+
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
     }
 
     @objc public var ciTest: DDRUMErrorEventRUMCITest? {
@@ -1851,6 +1859,10 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMLongTaskEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMLongTaskEventRUMCITest(root: root) : nil
     }
@@ -2487,6 +2499,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var application: DDRUMResourceEventApplication {
         DDRUMResourceEventApplication(root: root)
+    }
+
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
     }
 
     @objc public var ciTest: DDRUMResourceEventRUMCITest? {
@@ -3444,6 +3460,10 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMViewEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMViewEventRUMCITest(root: root) : nil
     }
@@ -4206,6 +4226,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShift as NSNumber?
     }
 
+    @objc public var cumulativeLayoutShiftTargetSelector: String? {
+        root.swiftModel.view.cumulativeLayoutShiftTargetSelector
+    }
+
     @objc public var customTimings: [String: NSNumber]? {
         root.swiftModel.view.customTimings as [String: NSNumber]?
     }
@@ -4236,6 +4260,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var firstInputDelay: NSNumber? {
         root.swiftModel.view.firstInputDelay as NSNumber?
+    }
+
+    @objc public var firstInputTargetSelector: String? {
+        root.swiftModel.view.firstInputTargetSelector
     }
 
     @objc public var firstInputTime: NSNumber? {
@@ -4270,6 +4298,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.interactionToNextPaint as NSNumber?
     }
 
+    @objc public var interactionToNextPaintTargetSelector: String? {
+        root.swiftModel.view.interactionToNextPaintTargetSelector
+    }
+
     @objc public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
     }
@@ -4284,6 +4316,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var largestContentfulPaint: NSNumber? {
         root.swiftModel.view.largestContentfulPaint as NSNumber?
+    }
+
+    @objc public var largestContentfulPaintTargetSelector: String? {
+        root.swiftModel.view.largestContentfulPaintTargetSelector
     }
 
     @objc public var loadEvent: NSNumber? {
@@ -5194,6 +5230,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually as NSNumber? }
     }
 
+    @objc public var storeContextsAcrossPages: NSNumber? {
+        root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
+    }
+
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -5450,4 +5490,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f21e8badee23a4d3204440d55a5ac7b5d9fadc81
+// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d
