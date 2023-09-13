@@ -101,46 +101,37 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func updateRUMView(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async {
+        queue.async { [weak core] in
             do {
                 self.viewEvent = try baggage.decode(type: AnyCodable.self)
             } catch {
-                core.telemetry
+                core?.telemetry
                     .error("Fails to decode RUM view event from Crash Reporting", error: error)
             }
         }
     }
 
     private func resetRUMView(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async {
+        queue.async { [weak core] in
             do {
                 if try baggage.decode(type: Bool.self) {
                     self.viewEvent = nil
                 }
             } catch {
-                core.telemetry
+                core?.telemetry
                     .error("Fails to decode RUM view reset from Crash Reporting", error: error)
             }
         }
     }
 
     private func updateSessionState(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async {
+        queue.async { [weak core] in
             do {
                 self.sessionState = try baggage.decode(type: AnyCodable.self)
             } catch {
-                core.telemetry
+                core?.telemetry
                     .error("Fails to decode RUM session state from Crash Reporting", error: error)
             }
         }
-    }
-}
-
-extension CrashContextCoreProvider: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        queue.sync { }
     }
 }
