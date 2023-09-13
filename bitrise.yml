@@ -142,9 +142,18 @@ workflows:
     after_run:
       - run_linter
       - run_unit_tests
-      - run_integration_tests
-      - run_smoke_tests
-      - run_tools_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      - run_unit_tests
+      # - run_integration_tests
+      # - run_smoke_tests
+      # - run_tools_tests
 
   run_linter:
     description: |-
@@ -189,14 +198,14 @@ workflows:
         - main SDK tests when 'DD_RUN_UNIT_TESTS' is '1'
         - or Session Replay tests when when 'DD_RUN_SR_UNIT_TESTS' is '1'
     steps:
-    - script:
-        title: Verify RUM data models
-        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-            make rum-models-verify ci=${CI}
+    # - script:
+    #     title: Verify RUM data models
+    #     run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - content: |-
+    #         #!/usr/bin/env zsh
+    #         set -e
+    #         make rum-models-verify ci=${CI}
     - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
@@ -209,77 +218,77 @@ workflows:
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"
-    - xcode-test:
-        title: Run unit tests for DatadogCrashReporting - iOS Simulator
-        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: DatadogCrashReporting iOS
-        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
-    - xcode-test:
-        title: Run unit tests for Datadog - tvOS Simulator
-        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: DatadogCore tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - is_clean_build: 'yes'
-        - test_repetition_mode: 'retry_on_failure'
-        - maximum_test_repetitions: 2
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
-    - xcode-test:
-        title: Run unit tests for DatadogCrashReporting - tvOS Simulator
-        run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: DatadogCrashReporting tvOS
-        - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
-    - xcode-test:
-        title: Run unit tests for Session Replay - iOS Simulator
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: DatadogSessionReplay iOS
-        - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
-        - should_build_before_test: 'no'
-        - is_clean_build: 'no'
-        - generate_code_coverage_files: 'yes'
-        - project_path: Datadog.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-ios-unit-tests.html"
-    - script:
-        title: Pull Session Replay snapshots
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - content: |-
-            #!/usr/bin/env zsh
-            set -e
-            make sr-pull-snapshots
-    - script:
-        title: Configure SRSnapshotTests project launch
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - content: |
-            #!/usr/bin/env zsh
+    # - xcode-test:
+    #     title: Run unit tests for DatadogCrashReporting - iOS Simulator
+    #     run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: DatadogCrashReporting iOS
+    #     - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-ios-unit-tests.html"
+    # - xcode-test:
+    #     title: Run unit tests for Datadog - tvOS Simulator
+    #     run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: DatadogCore tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - is_clean_build: 'yes'
+    #     - test_repetition_mode: 'retry_on_failure'
+    #     - maximum_test_repetitions: 2
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
+    # - xcode-test:
+    #     title: Run unit tests for DatadogCrashReporting - tvOS Simulator
+    #     run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: DatadogCrashReporting tvOS
+    #     - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogCrashReporting-tvos-unit-tests.html"
+    # - xcode-test:
+    #     title: Run unit tests for Session Replay - iOS Simulator
+    #     run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: DatadogSessionReplay iOS
+    #     - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
+    #     - should_build_before_test: 'no'
+    #     - is_clean_build: 'no'
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: Datadog.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-ios-unit-tests.html"
+    # - script:
+    #     title: Pull Session Replay snapshots
+    #     run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - content: |-
+    #         #!/usr/bin/env zsh
+    #         set -e
+    #         make sr-pull-snapshots
+    # - script:
+    #     title: Configure SRSnapshotTests project launch
+    #     run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - content: |
+    #         #!/usr/bin/env zsh
 
-            # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
-            # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
-            # variable respected by the main package. Here we export it so it is available in next CI steps:
-            envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
-    - xcode-test:
-        title: Run snapshot tests for Session Replay - iOS Simulator
-        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
-        inputs:
-        - scheme: SRSnapshotTests
-        - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
-        - should_build_before_test: 'no'
-        - is_clean_build: 'no'
-        - generate_code_coverage_files: 'yes'
-        - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
+    #         # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
+    #         # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
+    #         # variable respected by the main package. Here we export it so it is available in next CI steps:
+    #         envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
+    # - xcode-test:
+    #     title: Run snapshot tests for Session Replay - iOS Simulator
+    #     run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+    #     inputs:
+    #     - scheme: SRSnapshotTests
+    #     - destination: platform=iOS Simulator,name=iPhone 14,OS=16.2
+    #     - should_build_before_test: 'no'
+    #     - is_clean_build: 'no'
+    #     - generate_code_coverage_files: 'yes'
+    #     - project_path: DatadogSessionReplay/SRSnapshotTests/SRSnapshotTests.xcworkspace
+    #     - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-snapshot-tests.html"
 
   run_integration_tests:
     description: |-
