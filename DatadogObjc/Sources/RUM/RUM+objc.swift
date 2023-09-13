@@ -45,6 +45,35 @@ public protocol DDUIKitRUMViewsPredicate: AnyObject {
     func rumView(for viewController: UIViewController) -> DDRUMView?
 }
 
+@objc
+public class DDDefaultUIKitRUMViewsPredicate: NSObject, DDUIKitRUMViewsPredicate {
+    private let swiftPredicate = DefaultUIKitRUMViewsPredicate()
+
+    public func rumView(for viewController: UIViewController) -> DDRUMView? {
+        return swiftPredicate.rumView(for: viewController).map {
+            DDRUMView(name: $0.name, attributes: castAttributesToObjectiveC($0.attributes))
+        }
+    }
+}
+
+@objc
+public class DDDefaultUIKitRUMActionsPredicate: NSObject, DDUIKitRUMActionsPredicate {
+    let swiftPredicate = DefaultUIKitRUMActionsPredicate()
+    #if os(tvOS)
+    public func rumAction(press type: UIPress.PressType, targetView: UIView) -> DDRUMAction? {
+        swiftPredicate.rumAction(press: type, targetView: targetView).map {
+            DDRUMAction(name: $0.name, attributes: castAttributesToObjectiveC($0.attributes))
+        }
+    }
+    #else
+    public func rumAction(targetView: UIView) -> DDRUMAction? {
+        swiftPredicate.rumAction(targetView: targetView).map {
+            DDRUMAction(name: $0.name, attributes: castAttributesToObjectiveC($0.attributes))
+        }
+    }
+    #endif
+}
+
 internal struct UIKitRUMActionsPredicateBridge: UITouchRUMActionsPredicate & UIPressRUMActionsPredicate {
     let objcPredicate: AnyObject?
 
