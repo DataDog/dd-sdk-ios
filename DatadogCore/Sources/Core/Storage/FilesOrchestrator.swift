@@ -10,10 +10,14 @@ import DatadogInternal
 internal protocol FilesOrchestratorType: AnyObject {
     var performance: StoragePerformancePreset { get }
 
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
-    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
+    func getNewWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile
+    func getWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>, context: DatadogContext) -> ReadableFile?
+    func delete(
+        readableFile: ReadableFile,
+        deletionReason: BatchDeletedMetric.RemovalReason,
+        context: DatadogContext
+    )
 
     var ignoreFilesAgeWhenReading: Bool { get set }
 }
@@ -26,7 +30,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
     let performance: StoragePerformancePreset
-
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the last file was returned from `getWritableFile(writeSize:)`.
@@ -72,19 +75,19 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     ///
     /// - Parameter writeSize: the size of data to be written
     /// - Returns: `WritableFile` capable of writing data of given size
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile {
+    func getNewWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile {
         try validate(writeSize: writeSize)
         if let closedBatchName = lastWritableFileName {
             sendBatchClosedMetric(fileName: closedBatchName, forcedNew: true)
         }
-        return try createNewWritableFile(writeSize: writeSize)
+        return try createNewWritableFile(writeSize: writeSize, context: context)
     }
 
     /// Returns writable file accordingly to default heuristic of creating and reusing files.
     ///
     /// - Parameter writeSize: the size of data to be written
     /// - Returns: `WritableFile` capable of writing data of given size
-    func getWritableFile(writeSize: UInt64) throws -> WritableFile {
+    func getWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile {
         try validate(writeSize: writeSize)
 
         if let lastWritableFile = reuseLastWritableFileIfPossible(writeSize: writeSize) { // if last writable file can be reused
@@ -95,7 +98,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             if let closedBatchName = lastWritableFileName {
                 sendBatchClosedMetric(fileName: closedBatchName, forcedNew: false)
             }
-            return try createNewWritableFile(writeSize: writeSize)
+            return try createNewWritableFile(writeSize: writeSize, context: context)
         }
     }
 
@@ -105,13 +108,13 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
     }
 
-    private func createNewWritableFile(writeSize: UInt64) throws -> WritableFile {
+    private func createNewWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile {
         // NOTE: RUMM-610 Because purging files directory is a memory-expensive operation, do it only when a new file
         // is created (we assume here that this won't happen too often). In details, this is to avoid over-allocating
         // internal `_FileCache` and `_NSFastEnumerationEnumerator` objects in downstream `FileManager` routines.
         // This optimisation results with flat allocation graph in a long term (vs endlessly growing if purging
         // happens too often).
-        try purgeFilesDirectoryIfNeeded()
+        try purgeFilesDirectoryIfNeeded(context: context)
 
         let newFileName = fileNameFrom(fileCreationDate: dateProvider.now)
         let newFile = try directory.createFile(named: newFileName)
@@ -149,11 +152,16 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
+    func getReadableFile(
+        excludingFilesNamed excludedFileNames: Set<String>,
+        context: DatadogContext
+    ) -> ReadableFile? {
         do {
             let filesWithCreationDate = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
-                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
+                .compactMap {
+                    try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate, context: context)
+                }
 
             guard let (oldestFile, creationDate) = filesWithCreationDate
                 .filter({ excludedFileNames.contains($0.file.name) == false })
@@ -179,10 +187,18 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
     }
 
-    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
+    func delete(
+        readableFile: ReadableFile,
+        deletionReason: BatchDeletedMetric.RemovalReason,
+        context: DatadogContext
+    ) {
         do {
             try readableFile.delete()
-            sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
+            sendBatchDeletedMetric(
+                batchFile: readableFile,
+                deletionReason: deletionReason,
+                context: context
+            )
         } catch {
             telemetry.error("Failed to delete file", error: error)
         }
@@ -194,7 +210,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     // MARK: - Directory size management
 
     /// Removes oldest files from the directory if it becomes too big.
-    private func purgeFilesDirectoryIfNeeded() throws {
+    private func purgeFilesDirectoryIfNeeded(context: DatadogContext) throws {
         let filesSortedByCreationDate = try directory.files()
             .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
             .sorted { $0.creationDate < $1.creationDate }
@@ -211,18 +227,22 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             while sizeFreed < sizeToFree && !filesWithSizeSortedByCreationDate.isEmpty {
                 let fileWithSize = filesWithSizeSortedByCreationDate.removeFirst()
                 try fileWithSize.file.delete()
-                sendBatchDeletedMetric(batchFile: fileWithSize.file, deletionReason: .purged)
+                sendBatchDeletedMetric(
+                    batchFile: fileWithSize.file,
+                    deletionReason: .purged,
+                    context: context
+                )
                 sizeFreed += fileWithSize.size
             }
         }
     }
 
-    private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date) throws -> (file: File, creationDate: Date)? {
+    private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date, context: DatadogContext) throws -> (file: File, creationDate: Date)? {
         let fileAge = dateProvider.now.timeIntervalSince(fileCreationDate)
 
         if fileAge > performance.maxFileAgeForRead {
             try file.delete()
-            sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete)
+            sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete, context: context)
             return nil
         } else {
             return (file: file, creationDate: fileCreationDate)
@@ -237,13 +257,17 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     ///   - deletionReason: The reason of deleting this file.
     ///
     /// Note: The `batchFile` doesn't exist at this point.
-    private func sendBatchDeletedMetric(batchFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) {
+    private func sendBatchDeletedMetric(
+        batchFile: ReadableFile,
+        deletionReason: BatchDeletedMetric.RemovalReason,
+        context: DatadogContext
+    ) {
         guard let metricsData = metricsData, deletionReason.includeInMetric else {
             return // do not track metrics for this orchestrator or deletion reason
         }
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
-
+        let inBackground = context.applicationStateHistory.currentSnapshot.state == .background
         telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
@@ -256,7 +280,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: false,
+                BatchDeletedMetric.inBackgroundKey: inBackground
             ]
         )
     }

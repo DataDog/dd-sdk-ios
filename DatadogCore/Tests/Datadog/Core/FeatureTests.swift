@@ -38,67 +38,67 @@ class FeatureStorageTests: XCTestCase {
 
     func testWhenWritingEventsWithoutForcingNewBatch_itShouldWriteAllEventsToTheSameBatch() throws {
         // When
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event1": "1"])
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event2": "2"])
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event3": "3"])
+        storage.writer(for: .mockWith(trackingConsent: .granted)).write(value: ["event1": "1"])
+        storage.writer(for: .mockWith(trackingConsent: .granted)).write(value: ["event2": "2"])
+        storage.writer(for: .mockWith(trackingConsent: .granted)).write(value: ["event3": "3"])
 
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatch())
+        let batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.count, 3, "All 3 events should be written to the same batch")
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batche")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batche")
     }
 
     func testWhenWritingEventsWithForcingNewBatch_itShouldWriteEachEventToSeparateBatch() throws {
         // When
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event1": "1"])
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event2": "2"])
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event3": "3"])
+        storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: true).write(value: ["event1": "1"])
+        storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: true).write(value: ["event2": "2"])
+        storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: true).write(value: ["event3": "3"])
 
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        var batch = try XCTUnwrap(storage.reader.readNextBatch())
+        var batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.count, 1)
         storage.reader.markBatchAsRead(batch)
 
-        batch = try XCTUnwrap(storage.reader.readNextBatch())
+        batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.count, 1)
         storage.reader.markBatchAsRead(batch)
 
-        batch = try XCTUnwrap(storage.reader.readNextBatch())
+        batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.count, 1)
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batche")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches")
     }
 
     // MARK: - Behaviours on tracking consent
 
     func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() throws {
         // When
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .mockWith(trackingConsent: .granted)).write(value: ["event.consent": "granted"])
+        storage.writer(for: .mockWith(trackingConsent: .pending)).write(value: ["event.consent": "pending"])
+        storage.writer(for: .mockWith(trackingConsent: .notGranted)).write(value: ["event.consent": "notGranted"])
 
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatch())
+        let batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches")
     }
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() throws {
         // Given
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: false).write(value: ["event.consent": "granted"])
+        storage.writer(for: .mockWith(trackingConsent: .pending), forceNewBatch: false).write(value: ["event.consent": "pending"])
+        storage.writer(for: .mockWith(trackingConsent: .notGranted), forceNewBatch: false).write(value: ["event.consent": "notGranted"])
 
         // When
         storage.migrateUnauthorizedData(toConsent: .granted)
@@ -106,22 +106,22 @@ class FeatureStorageTests: XCTestCase {
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        var batch = try XCTUnwrap(storage.reader.readNextBatch())
+        var batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
-        batch = try XCTUnwrap(storage.reader.readNextBatch())
+        batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"pending"}"#])
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches")
     }
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() throws {
         // Given
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .mockWith(trackingConsent: .granted), forceNewBatch: false).write(value: ["event.consent": "granted"])
+        storage.writer(for: .mockWith(trackingConsent: .pending), forceNewBatch: false).write(value: ["event.consent": "pending"])
+        storage.writer(for: .mockWith(trackingConsent: .notGranted), forceNewBatch: false).write(value: ["event.consent": "notGranted"])
 
         // When
         storage.migrateUnauthorizedData(toConsent: .notGranted)
@@ -129,14 +129,14 @@ class FeatureStorageTests: XCTestCase {
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        let batch = try XCTUnwrap(storage.reader.readNextBatch())
+        let batch = try XCTUnwrap(storage.reader.readNextBatch(context: .mockAny()))
         XCTAssertEqual(batch.events.map { $0.data.utf8String }, [#"{"event.consent":"granted"}"#])
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches")
 
         storage.migrateUnauthorizedData(toConsent: .granted)
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches, because pending events were deleted")
+        XCTAssertNil(storage.reader.readNextBatch(context: .mockAny()), "There must be no other batches, because pending events were deleted")
     }
 
     // MARK: - Data migration

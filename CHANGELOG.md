@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
+
 # 2.2.1 / 13-09-2023
 
 - [BUGFIX] Add default RUM views and actions predicates to DatadogObjc . See [#1464][].
@@ -516,6 +518,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
 [#1413]: https://github.com/DataDog/dd-sdk-ios/pull/1413
 [#1415]: https://github.com/DataDog/dd-sdk-ios/pull/1415
 [#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
