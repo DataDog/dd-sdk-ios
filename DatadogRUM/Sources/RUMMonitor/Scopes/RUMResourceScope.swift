@@ -181,6 +181,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
+                graphql: nil,
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
                 provider: resourceEventProvider,

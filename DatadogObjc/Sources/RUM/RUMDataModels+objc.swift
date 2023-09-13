@@ -2988,6 +2988,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.firstByte != nil ? DDRUMResourceEventResourceFirstByte(root: root) : nil
     }
 
+    @objc public var graphql: DDRUMResourceEventResourceGraphql? {
+        root.swiftModel.resource.graphql != nil ? DDRUMResourceEventResourceGraphql(root: root) : nil
+    }
+
     @objc public var id: String? {
         root.swiftModel.resource.id
     }
@@ -3092,6 +3096,56 @@ public class DDRUMResourceEventResourceFirstByte: NSObject {
     @objc public var start: NSNumber {
         root.swiftModel.resource.firstByte!.start as NSNumber
     }
+}
+
+@objc
+public class DDRUMResourceEventResourceGraphql: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var operationName: String? {
+        root.swiftModel.resource.graphql!.operationName
+    }
+
+    @objc public var operationType: DDRUMResourceEventResourceGraphqlOperationType {
+        .init(swift: root.swiftModel.resource.graphql!.operationType)
+    }
+
+    @objc public var payload: String? {
+        set { root.swiftModel.resource.graphql!.payload = newValue }
+        get { root.swiftModel.resource.graphql!.payload }
+    }
+
+    @objc public var variables: String? {
+        set { root.swiftModel.resource.graphql!.variables = newValue }
+        get { root.swiftModel.resource.graphql!.variables }
+    }
+}
+
+@objc
+public enum DDRUMResourceEventResourceGraphqlOperationType: Int {
+    internal init(swift: RUMResourceEvent.Resource.Graphql.OperationType) {
+        switch swift {
+        case .query: self = .query
+        case .mutation: self = .mutation
+        case .subscription: self = .subscription
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.Graphql.OperationType {
+        switch self {
+        case .query: return .query
+        case .mutation: return .mutation
+        case .subscription: return .subscription
+        }
+    }
+
+    case query
+    case mutation
+    case subscription
 }
 
 @objc
@@ -5490,4 +5544,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d
+// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
