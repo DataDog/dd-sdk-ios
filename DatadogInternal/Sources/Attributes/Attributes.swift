@@ -125,6 +125,26 @@ public struct CrossPlatformAttributes {
     /// The goal of RUMM-3289 is to create an RFC to get rid of this mechanism.
     /// Expects `Bool` value.
     public static let errorLogIsCrash = "_dd.error_log.is_crash"
+
+    /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
+    /// It sets the GraphQL operation name if it was defined by the developer.
+    /// Expects `String` value.
+    public static let graphqlOperationName = "_dd.graphql.operation_name"
+
+    /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
+    /// It sets the GraphQL operation type.
+    /// Expects `String` value of either `query`, `mutation` or `subscription`.
+    public static let graphqlOperationType = "_dd.graphql.operation_type"
+
+    /// Custom attribute passed when starting GraphQL RUM resources from a cross platform SDK.
+    /// It sets the GraphQL payload as a JSON string when it is specified.
+    /// Expects `String` value.
+    public static let graphqlPayload = "_dd.graphql.payload"
+
+    /// Custom attribute passed when starting GraphQL RUM resources resources from a cross platform SDK.
+    /// It sets the GraphQL varibles as a JSON string if they were defined by the developer.
+    /// Expects `String` value.
+    public static let graphqlVariables = "_dd.graphql.variables"
 }
 
 public struct LaunchArguments {

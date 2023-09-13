@@ -227,6 +227,32 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
     }
 
+    func testLoadingResourceWithURLString_thenLoadingResourceWithGraphQLAttributes() throws {
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
+        monitor.startView(viewController: mockView)
+        monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [
+            "_dd.graphql.operation_name": "GetCountry",
+            "_dd.graphql.operation_type": "query",
+            "_dd.graphql.payload": "{country(code:$code){name}}",
+            "_dd.graphql.variables": "{\"code\":\"BE\"}"
+        ])
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "text/json"))
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationName, "GetCountry")
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationType.rawValue, "query")
+        XCTAssertEqual(resourceEvent.resource.graphql?.payload, "{country(code:$code){name}}")
+        XCTAssertEqual(resourceEvent.resource.graphql?.variables, "{\"code\":\"BE\"}")
+    }
+
     func testStartingView_thenTappingButton() throws {
         RUM.enable(with: config, in: core)
 
