@@ -20,7 +20,8 @@ class FeatureContextTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
 
         defer { temporaryCoreDirectory.delete() }

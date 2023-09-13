@@ -42,7 +42,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -87,7 +88,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -140,7 +142,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -190,7 +193,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         let core2 = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -200,7 +204,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer {
             core1.flushAndTearDown()
@@ -245,7 +250,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: contextProvider,
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
         try core.register(feature: FeatureMock())
