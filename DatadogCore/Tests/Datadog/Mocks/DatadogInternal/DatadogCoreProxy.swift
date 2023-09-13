@@ -30,6 +30,9 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     /// leaks of SDK core in `DatadogTestsObserver`.
     static var referenceCount = 0
 
+    internal static var onInit: (() -> Void)? = nil
+    internal static var onDeinit: (() -> Void)? = nil
+
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
 
@@ -51,11 +54,13 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
 
         // override the message-bus's core instance
         core.bus.connect(core: self)
+        DatadogCoreProxy.onInit?()
         DatadogCoreProxy.referenceCount += 1
     }
 
     deinit {
         DatadogCoreProxy.referenceCount -= 1
+        DatadogCoreProxy.onDeinit?()
     }
 
     var context: DatadogContext {

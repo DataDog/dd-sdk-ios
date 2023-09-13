@@ -18,6 +18,18 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         XCTestObservationCenter.shared.addTestObserver(observer)
     }
 
+    override init() {
+        super.init()
+        PassthroughCoreMock.onInit = { [unowned self] in registeredCores["PassthroughCoreMock"] = self.currentTestName }
+        PassthroughCoreMock.onDeinit = { [unowned self] in registeredCores["PassthroughCoreMock"] = nil }
+
+        DatadogCoreProxy.onInit = { [unowned self] in registeredCores["DatadogCoreProxy"] = self.currentTestName }
+        DatadogCoreProxy.onDeinit = { [unowned self] in registeredCores["DatadogCoreProxy"] = nil }
+
+        FeatureRegistrationCoreMock.onInit = { [unowned self] in registeredCores["FeatureRegistrationCoreMock"] = self.currentTestName }
+        FeatureRegistrationCoreMock.onDeinit = { [unowned self] in registeredCores["FeatureRegistrationCoreMock"] = nil }
+    }
+
     // MARK: - Checking Tests Integrity
 
     /// A list of checks ensuring global state integrity before and after each tests.
@@ -144,10 +156,18 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
         )
     ]
 
+    private var currentTestName: String? = nil
+    private var registeredCores: [String: String] = [:]
+
+    func testCaseWillStart(_ testCase: XCTestCase) {
+        currentTestName = testCase.name
+    }
+
     func testCaseDidFinish(_ testCase: XCTestCase) {
         if testCase.testRun?.hasSucceeded == true {
             performIntegrityChecks(after: testCase)
         }
+        currentTestName = nil
     }
 
     private func performIntegrityChecks(after testCase: XCTestCase) {
@@ -168,7 +188,12 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
                 """
             }
 
-            message += "\n"
+            message += "\nWhich core instances are active and what test registered them:\n"
+
+            for (coreName, testName) in registeredCores {
+                message += "\n - 🕵️‍♂️\(coreName) registered in \(testName)"
+            }
+
             preconditionFailure(message)
         }
     }
