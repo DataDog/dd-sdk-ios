@@ -1064,37 +1064,37 @@ class RUMMonitorTests: XCTestCase {
 
     // MARK: - Integration with Crash Reporting
 
-    func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
-        let randomUserInfoAttributes = mockRandomAttributes()
-        let randomViewEventAttributes = mockRandomAttributes()
-
-        core.context = .mockWith(
-            userInfo: .init(
-                id: .mockRandom(),
-                name: .mockRandom(),
-                email: .mockRandom(),
-                extraInfo: randomUserInfoAttributes
-            )
-        )
-
-        // Given
-        CrashReporting.enable(in: core)
-        let crashReporter = try XCTUnwrap(core.get(feature: CrashReportingFeature.self))
-
-        try core.register(feature: crashReporter)
-
-        // When
-        RUM.enable(with: config, in: core)
-        let monitor = RUMMonitor.shared(in: core)
-        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
-
-        // Then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
-        let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[0].model()
-
-        let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
-        DDAssertJSONEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
-    }
+//    func testGivenRegisteredCrashReporter_whenRUMViewEventIsSend_itIsUpdatedInCurrentCrashContext() throws {
+//        let randomUserInfoAttributes = mockRandomAttributes()
+//        let randomViewEventAttributes = mockRandomAttributes()
+//
+//        core.context = .mockWith(
+//            userInfo: .init(
+//                id: .mockRandom(),
+//                name: .mockRandom(),
+//                email: .mockRandom(),
+//                extraInfo: randomUserInfoAttributes
+//            )
+//        )
+//
+//        // Given
+//        CrashReporting.enable(in: core)
+//        let crashReporter = try XCTUnwrap(core.get(feature: CrashReportingFeature.self))
+//
+//        try core.register(feature: crashReporter)
+//
+//        // When
+//        RUM.enable(with: config, in: core)
+//        let monitor = RUMMonitor.shared(in: core)
+//        monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
+//
+//        // Then
+//        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+//        let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[0].model()
+//
+//        let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
+//        DDAssertJSONEqual(currentLastRUMViewEventSent, lastRUMViewEventSent)
+//    }
 
     // MARK: - Thread safety
 

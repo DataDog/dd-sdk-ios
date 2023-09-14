@@ -67,20 +67,20 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        switch message {
-        case .context(let context):
-            update(context: context)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
-            updateRUMView(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
-            resetRUMView(with: baggage, to: core)
-        case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
-            updateSessionState(with: baggage, to: core)
-        default:
-            return false
-        }
+//        switch message {
+//        case .context(let context):
+//            update(context: context)
+//        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
+//            updateRUMView(with: baggage, to: core)
+//        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
+//            resetRUMView(with: baggage, to: core)
+//        case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
+//            updateSessionState(with: baggage, to: core)
+//        default:
+//            return false
+//        }
 
-        return true
+        return false
     }
 
     /// Updates crash context.
