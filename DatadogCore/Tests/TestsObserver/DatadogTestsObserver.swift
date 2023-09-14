@@ -126,7 +126,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             - it must be deallocated before test ends (e.g. in `tearDown()`)
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
-
+            referenceCount: \(DatadogCoreProxy.referenceCount)
             \(DatadogCoreProxy.stackTrace)
             """
         ),
@@ -143,6 +143,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
 
+            referenceCount: \(PassthroughCoreMock.referenceCount)
             \(PassthroughCoreMock.stackTrace)
             """
         )

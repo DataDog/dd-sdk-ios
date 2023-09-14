@@ -42,12 +42,12 @@ internal final class MessageBus {
     /// - Parameter configurationDispatchTime: The delay to dispatch the
     /// configuration telemetry
     init(configurationDispatchTime: DispatchTimeInterval = .seconds(5)) {
-        queue.asyncAfter(deadline: .now() + configurationDispatchTime) {
-            guard let core = self.core, let configuration = self.configuration else {
+        queue.asyncAfter(deadline: .now() + configurationDispatchTime) { [weak self] in
+            guard let core = self?.core, let configuration = self?.configuration else {
                 return
             }
 
-            self.bus.values.forEach {
+            self?.bus.values.forEach {
                 $0.receive(message: .telemetry(.configuration(configuration)), from: core)
             }
         }
@@ -76,7 +76,7 @@ internal final class MessageBus {
     }
 
     /// Removes the given key and its associated receiver from the bus.
-    /// 
+    ///
     /// - Parameter key: The key to remove along with its associated receiver.
     func removeReceiver(forKey key: String) {
         queue.async { self.bus.removeValue(forKey: key) }
@@ -98,16 +98,15 @@ internal final class MessageBus {
             return save(configuration: configuration)
         }
 
-        queue.async {
-            guard let core = self.core else {
-                return
+        queue.async { [weak self] in
+            let receivers = self?.bus.values.filter { [weak self] in
+                guard let core = self?.core else {
+                    return false
+                }
+                return $0.receive(message: message, from: core)
             }
 
-            let receivers = self.bus.values.filter {
-                $0.receive(message: message, from: core)
-            }
-
-            if receivers.isEmpty {
+            if receivers?.isEmpty == true {
                 fallback()
             }
         }
