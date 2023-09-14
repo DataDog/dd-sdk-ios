@@ -46,8 +46,9 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
 
             return true
         } catch {
-            core.telemetry
-                .error("Fails to decode error message", error: error)
+            _ = core.telemetry
+//            core.telemetry
+//                .error("Fails to decode error message", error: error)
             return false
         }
     }

@@ -84,8 +84,9 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
 
             return true
         } catch {
-            core.telemetry
-                .error("Fails to decode crash from Logs", error: error)
+            _ = core.telemetry
+//            core.telemetry
+//                .error("Fails to decode crash from Logs", error: error)
         }
 
         return false
@@ -168,8 +169,9 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
             return send(report: crash.report, with: crash.context, to: core)
         } catch {
-            core.telemetry
-                .error("Fails to decode crash from RUM", error: error)
+            _ = core.telemetry
+//            core.telemetry
+//                .error("Fails to decode crash from RUM", error: error)
         }
         return false
     }
@@ -282,8 +284,9 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
 
             return true
         } catch {
-            core.telemetry
-                .error("Fails to decode browser log", error: error)
+            _ = core.telemetry
+//            core.telemetry
+//                .error("Fails to decode browser log", error: error)
         }
 
         return false

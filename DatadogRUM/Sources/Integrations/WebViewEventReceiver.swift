@@ -49,8 +49,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             write(event: event, to: core)
             return true
         } catch {
-            core.telemetry
-                .error("Fails to decode browser event from RUM", error: error)
+            _ = core.telemetry
+//            core.telemetry
+//                .error("Fails to decode browser event from RUM", error: error)
         }
 
         return false

@@ -105,8 +105,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
             do {
                 self.viewEvent = try baggage.decode(type: AnyCodable.self)
             } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM view event from Crash Reporting", error: error)
+                _ = core?.telemetry
+//                core?.telemetry
+//                    .error("Fails to decode RUM view event from Crash Reporting", error: error)
             }
         }
     }
@@ -118,8 +119,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                     self.viewEvent = nil
                 }
             } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM view reset from Crash Reporting", error: error)
+                _ = core?.telemetry
+//                core?.telemetry
+//                    .error("Fails to decode RUM view reset from Crash Reporting", error: error)
             }
         }
     }
@@ -129,8 +131,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
             do {
                 self.sessionState = try baggage.decode(type: AnyCodable.self)
             } catch {
-                core?.telemetry
-                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
+                _ = core?.telemetry
+//                core?.telemetry
+//                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
             }
         }
     }
