@@ -28,6 +28,7 @@ import DatadogInternal
 internal class DatadogCoreProxy: DatadogCoreProtocol {
     /// Counts references to `DatadogCoreProxy` instances, so we can prevent memory
     /// leaks of SDK core in `DatadogTestsObserver`.
+    @ReadWriteLock
     static var referenceCount = 0
 
     /// The SDK core managed by this proxy.
