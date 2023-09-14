@@ -72,6 +72,15 @@
       enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B8A242393DE00786299"
+            BuildableName = "DatadogCoreTests.xctest"
+            BlueprintName = "DatadogCoreTests iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "IS_RUNNING_UNIT_TESTS"
@@ -167,12 +176,12 @@
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_ITR_ENABLED"
             value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_EXCLUDED_BRANCHES"
             value = "develop,release/*,hotfix/*"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <CodeCoverageTargets>
