@@ -113,6 +113,35 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             ```
             """
         ),
+        .init(
+            assert: { DatadogCoreProxy.referenceCount == 0 },
+            problem: "Leaking reference to `DatadogCoreProtocol`",
+            solution: """
+            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
+            but some instances of `DatadogCoreProxy` are still alive.
+
+            Make sure the instance of `DatadogCoreProxy` is properly managed in test:
+            - it must be allocated on each test start (e.g. in `setUp()` or directly in test)
+            - it must be flushed and deinitialized before test ends with `.flushAndTearDown()`
+            - it must be deallocated before test ends (e.g. in `tearDown()`)
+
+            If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
+        ),
+        .init(
+            assert: { PassthroughCoreMock.referenceCount == 0 },
+            problem: "Leaking reference to `DatadogCoreProtocol`",
+            solution: """
+            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
+            but some instances of `PassthroughCoreMock` are still alive.
+
+            Make sure the instance of `PassthroughCoreMock` is properly managed in test:
+            - it must be allocated on each test test start (e.g. in `setUp()` or directly in test)
+            - it must be deallocated before test ends (e.g. in `tearDown()`)
+
+            If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
+        )
     ]
 
     func testCaseDidFinish(_ testCase: XCTestCase) {
