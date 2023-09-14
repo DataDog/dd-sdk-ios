@@ -33,6 +33,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     @ReadWriteLock
     public static var referenceCount = 0
 
+    @ReadWriteLock
+    public static var stackTrace: [String] = []
+
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
     public var context: DatadogContext {
@@ -87,6 +90,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
 
     deinit {
         PassthroughCoreMock.referenceCount -= 1
+        Self.stackTrace = Thread.callStackSymbols
     }
 
     /// no-op

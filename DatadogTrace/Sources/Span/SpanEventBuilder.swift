@@ -18,7 +18,7 @@ internal struct SpanEventBuilder {
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
     /// Telemetry interface.
-    let telemetry: Telemetry
+    let telemetry: Telemetry?
 
     func createSpanEvent(
         context: DatadogContext,
@@ -124,7 +124,7 @@ internal struct SpanEventBuilder {
                                 codingPath: [],
                                 debugDescription: "Failed to use temporary array container when encoding span tag '\(key)' to JSON string."
                             )
-                            telemetry.error(encodingContext.debugDescription)
+                            telemetry?.error(encodingContext.debugDescription)
                             throw EncodingError.invalidValue(encodable.value, encodingContext)
                         }
 
@@ -138,7 +138,7 @@ internal struct SpanEventBuilder {
                             codingPath: [],
                             debugDescription: "Failed to read utf-8 JSON data when encoding span tag '\(key)' to JSON string."
                         )
-                        telemetry.error(encodingContext.debugDescription)
+                        telemetry?.error(encodingContext.debugDescription)
                         throw EncodingError.invalidValue(encodable.value, encodingContext)
                     }
                 } catch let error {

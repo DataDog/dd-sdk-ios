@@ -126,6 +126,8 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             - it must be deallocated before test ends (e.g. in `tearDown()`)
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
+
+            \(DatadogCoreProxy.stackTrace)
             """
         ),
         .init(
@@ -140,6 +142,8 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             - it must be deallocated before test ends (e.g. in `tearDown()`)
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
+
+            \(PassthroughCoreMock.stackTrace)
             """
         )
     ]

@@ -59,6 +59,11 @@ public struct CombinedFeatureMessageReceiver: FeatureMessageReceiver {
     ///   - core: An instance of the core from which the message is transmitted.
     /// - Returns: `true` if the message was processed by one of the receiver; `false` if it was ignored.
     public func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        receivers.contains(where: { $0.receive(message: message, from: core) })
+        receivers.contains { [weak core] in
+            guard let core = core else {
+                return false
+            }
+            return $0.receive(message: message, from: core)
+        }
     }
 }

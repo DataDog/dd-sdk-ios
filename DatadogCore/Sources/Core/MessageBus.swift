@@ -59,7 +59,9 @@ internal final class MessageBus {
     ///
     /// - Parameter core: The core ference.
     func connect(core: DatadogCoreProtocol) {
-        queue.async { self.core = core }
+        queue.async { [weak core] in
+            self.core = core
+        }
     }
 
     /// Connects a receiver with a given key.
@@ -68,7 +70,9 @@ internal final class MessageBus {
     ///   - receiver: The message receiver.
     ///   - key: The key associated with the receiver.
     func connect(_ receiver: FeatureMessageReceiver, forKey key: String) {
-        queue.async { self.bus[key] = receiver }
+        queue.async {
+            self.bus[key] = receiver
+        }
     }
 
     /// Removes the given key and its associated receiver from the bus.
