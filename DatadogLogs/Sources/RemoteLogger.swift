@@ -40,7 +40,7 @@ internal final class RemoteLogger: LoggerProtocol {
     }
 
     /// `DatadogCore` instance managing this logger.
-    internal let core: DatadogCoreProtocol
+    internal weak var core: DatadogCoreProtocol?
     /// Configuration specific to this logger.
     internal let configuration: Configuration
     /// Date provider for logs.
@@ -127,7 +127,7 @@ internal final class RemoteLogger: LoggerProtocol {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+        self.core?.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
             let contextAttributes = context.featuresAttributes
 
@@ -168,7 +168,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
-                self.core.send(
+                self.core?.send(
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(
