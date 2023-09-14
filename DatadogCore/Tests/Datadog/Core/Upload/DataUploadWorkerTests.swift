@@ -204,7 +204,7 @@ class DataUploadWorkerTests: XCTestCase {
                 delay.current > initialUploadDelay
             }
         }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation])
+        wait(for: [delayChangeExpectation], timeout: 0.5)
         worker.cancelSynchronously()
     }
 
@@ -240,7 +240,7 @@ class DataUploadWorkerTests: XCTestCase {
                 delay.current > initialUploadDelay
             }
         }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation])
+        wait(for: [delayChangeExpectation], timeout: 0.5)
         worker.cancelSynchronously()
     }
 
@@ -275,7 +275,7 @@ class DataUploadWorkerTests: XCTestCase {
                 delay.current < initialUploadDelay
             }
         }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation])
+        wait(for: [delayChangeExpectation], timeout: 0.5)
         worker.cancelSynchronously()
     }
 
@@ -558,7 +558,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         withExtendedLifetime(worker) {
-            wait(for: [expectTaskRegistered, expectTaskEnded])
+            wait(for: [expectTaskRegistered, expectTaskEnded], timeout: 0.5)
         }
     }
 
@@ -587,7 +587,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         // Then
         withExtendedLifetime(worker) {
-            wait(for: [expectTaskRegistered, expectTaskEnded])
+            wait(for: [expectTaskRegistered, expectTaskEnded], timeout: 0.5)
         }
     }
 
@@ -613,7 +613,7 @@ class DataUploadWorkerTests: XCTestCase {
         )
         // Then
         withExtendedLifetime(worker) {
-            wait(for: [expectTaskEnded])
+            wait(for: [expectTaskEnded], timeout: 0.5)
         }
     }
 }
