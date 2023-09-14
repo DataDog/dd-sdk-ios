@@ -2,6 +2,10 @@
 
 - [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
 
+# 2.2.1 / 13-09-2023
+
+- [BUGFIX] Add default RUM views and actions predicates to DatadogObjc . See [#1464][].
+
 # 2.2.0 / 12-09-2023
 
 - [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#1447][]
@@ -514,13 +518,14 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
 [#1413]: https://github.com/DataDog/dd-sdk-ios/pull/1413
 [#1415]: https://github.com/DataDog/dd-sdk-ios/pull/1415
 [#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
 [#1419]: https://github.com/DataDog/dd-sdk-ios/pull/1419
 [#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
 [#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
-[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
+[#1464]: https://github.com/DataDog/dd-sdk-ios/pull/1464
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
