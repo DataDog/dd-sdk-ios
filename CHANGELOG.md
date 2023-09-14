@@ -1,6 +1,7 @@
 # Unreleased
 
 - [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
+- [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
 
 # 2.2.1 / 13-09-2023
 
@@ -526,6 +527,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
 [#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
 [#1464]: https://github.com/DataDog/dd-sdk-ios/pull/1464
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
+[#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
