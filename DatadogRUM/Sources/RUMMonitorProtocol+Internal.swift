@@ -12,7 +12,7 @@ public extension RUMMonitorProtocol {
     /// Grants access to an internal interface utilized only by Datadog cross-platform SDKs.
     /// **It is not meant for public use** and it might change without prior notice.
     var _internal: DatadogInternalInterface? {
-        guard let monitor = self as? Monitor else {
+        guard let monitor = self as? RUMCommandSubscriber else {
             return nil
         }
         return DatadogInternalInterface(monitor: monitor)
