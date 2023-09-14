@@ -32,9 +32,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     /// leaks of SDK core in `DatadogTestsObserver`.
     public static var referenceCount = 0
 
-    public static var onInit: (() -> Void)? = nil
-    public static var onDeinit: (() -> Void)? = nil
-
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
     public var context: DatadogContext {
@@ -84,13 +81,11 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
 
         messageReceiver.receive(message: .context(context), from: self)
 
-        PassthroughCoreMock.onInit?()
         PassthroughCoreMock.referenceCount += 1
     }
 
     deinit {
         PassthroughCoreMock.referenceCount -= 1
-        PassthroughCoreMock.onDeinit?()
     }
 
     /// no-op

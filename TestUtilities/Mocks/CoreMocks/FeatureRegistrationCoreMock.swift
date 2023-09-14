@@ -24,19 +24,14 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
     /// Counts references to this mock, so we can test if there are no memory leaks.
     public static var referenceCount = 0
 
-    public static var onInit: (() -> Void)? = nil
-    public static var onDeinit: (() -> Void)? = nil
-
     public internal(set) var registeredFeatures: [DatadogFeature] = []
 
     public init() {
-        FeatureRegistrationCoreMock.onInit?()
         FeatureRegistrationCoreMock.referenceCount += 1
     }
 
     deinit {
         FeatureRegistrationCoreMock.referenceCount -= 1
-        FeatureRegistrationCoreMock.onDeinit?()
     }
 
     // MARK: - Supported
