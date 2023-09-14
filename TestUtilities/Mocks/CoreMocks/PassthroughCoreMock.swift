@@ -34,7 +34,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public static var referenceCount = 0
 
     @ReadWriteLock
-    public static var stackTrace: [String] = []
+    public static var stackTrace: String = ""
 
     /// Current context that will be passed to feature-scopes.
     @ReadWriteLock
@@ -90,7 +90,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
 
     deinit {
         PassthroughCoreMock.referenceCount -= 1
-        Self.stackTrace = Thread.callStackSymbols
+        Self.stackTrace = Thread.stackTrace
     }
 
     /// no-op
@@ -149,5 +149,11 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     /// - Returns: A list of event of the give type.
     public func events<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         writer.events(ofType: type)
+    }
+}
+
+extension Thread {
+    public static var stackTrace: String {
+        Self.callStackSymbols.joined(separator: "\n")
     }
 }

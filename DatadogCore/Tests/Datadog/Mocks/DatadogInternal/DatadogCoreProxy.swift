@@ -32,7 +32,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     static var referenceCount = 0
 
     @ReadWriteLock
-    static var stackTrace: [String] = []
+    static var stackTrace: String = ""
 
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
@@ -60,7 +60,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
 
     deinit {
         DatadogCoreProxy.referenceCount -= 1
-        Self.stackTrace = Thread.callStackSymbols
+        Self.stackTrace = Thread.stackTrace
     }
 
     var context: DatadogContext {
