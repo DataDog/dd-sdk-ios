@@ -49,6 +49,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .context(context))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -72,6 +73,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -95,6 +97,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertNil(viewEvent)
     }
@@ -119,6 +122,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -141,6 +145,8 @@ class CrashContextProviderTests: XCTestCase {
             ],
             iterations: 50
         )
+
+        provider.flush()
         // swiftlint:enable opening_brace
     }
 }
