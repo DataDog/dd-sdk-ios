@@ -101,6 +101,7 @@ class CrashLogReceiverTests: XCTestCase {
             service: .mockRandom(),
             env: .mockRandom(),
             version: .mockRandom(),
+            buildNumber: .mockRandom(),
             device: .mockWith(
                 name: mockOSName,
                 osVersion: mockOSVersion,
@@ -143,6 +144,7 @@ class CrashLogReceiverTests: XCTestCase {
             loggerVersion: crashContext.sdkVersion,
             threadName: nil,
             applicationVersion: crashContext.version,
+            applicationBuildNumber: crashContext.buildNumber,
             dd: .init(device: .init(architecture: mockArchitecture)),
             os: .init(
                 name: mockOSName,

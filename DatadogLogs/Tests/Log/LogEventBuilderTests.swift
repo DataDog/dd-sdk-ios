@@ -73,6 +73,7 @@ class LogEventBuilderTests: XCTestCase {
 
         let randomDate: Date = .mockRandomInThePast()
         let randomApplicationVersion: String = .mockRandom()
+        let randomApplicationBuildNumber: String = .mockRandom()
         let randomEnvironment: String = .mockRandom()
         let randomSDKVersion: String = .mockRandom()
         let randomUserInfo: UserInfo = .mockRandom()
@@ -85,6 +86,7 @@ class LogEventBuilderTests: XCTestCase {
         let randomSDKContext: DatadogContext = .mockWith(
             env: randomEnvironment,
             version: randomApplicationVersion,
+            buildNumber: randomApplicationBuildNumber,
             sdkVersion: randomSDKVersion,
             serverTimeOffset: randomServerOffset,
             device: .mockWith(
@@ -119,6 +121,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.date, randomDate.addingTimeInterval(randomServerOffset), "It must correct date with server offset")
             XCTAssertEqual(log.environment, randomSDKContext.env)
             XCTAssertEqual(log.applicationVersion, randomSDKContext.version)
+            XCTAssertEqual(log.applicationBuildNumber, randomSDKContext.buildNumber)
             XCTAssertEqual(log.loggerVersion, randomSDKContext.sdkVersion)
             XCTAssertEqual(log.userInfo.id, randomUserInfo.id)
             XCTAssertEqual(log.userInfo.name, randomUserInfo.name)

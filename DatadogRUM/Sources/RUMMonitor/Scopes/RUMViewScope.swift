@@ -383,6 +383,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: .applicationStart
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
@@ -449,6 +450,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 session: .init(plan: .plan1)
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
@@ -477,6 +479,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 cpuTicksPerSecond: timeSpent > 1.0 ? cpuInfo?.greatestDiff?.divideIfNotZero(by: Double(timeSpent)) : nil,
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
+                cumulativeLayoutShiftTargetSelector: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
                 },
@@ -487,6 +490,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 firstByte: nil,
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
+                firstInputTargetSelector: nil,
                 firstInputTime: nil,
                 flutterBuildTime: viewPerformanceMetrics[.flutterBuildTime]?.asFlutterBuildTime(),
                 flutterRasterTime: viewPerformanceMetrics[.flutterRasterTime]?.asFlutterRasterTime(),
@@ -495,10 +499,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
                 interactionToNextPaint: nil,
+                interactionToNextPaintTargetSelector: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),
                 largestContentfulPaint: nil,
+                largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
                 loadingTime: nil,
                 loadingType: nil,
@@ -544,6 +550,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: command.attributes),
@@ -607,6 +614,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: .string(value: $0.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: command.attributes),

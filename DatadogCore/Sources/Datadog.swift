@@ -362,6 +362,9 @@ public struct Datadog {
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"
 
+        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0"
+
         let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
         let bundleType: BundleType = configuration.bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
@@ -394,6 +397,7 @@ public struct Datadog {
                 service: service,
                 env: try ifValid(env: configuration.env),
                 version: applicationVersion,
+                buildNumber: applicationBuildNumber,
                 variant: variant,
                 source: source,
                 sdkVersion: sdkVersion,

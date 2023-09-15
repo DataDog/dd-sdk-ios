@@ -299,6 +299,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             sessionReplaySampleRate: nil,
             sessionSampleRate: configuration.sessionSampleRate,
             silentMultipleInit: nil,
+            storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
             traceSampleRate: configuration.traceSampleRate,

@@ -35,6 +35,7 @@ class CrashContextProviderTests: XCTestCase {
             XCTAssertEqual($0.service, context.service)
             XCTAssertEqual($0.env, context.env)
             XCTAssertEqual($0.version, context.version)
+            XCTAssertEqual($0.buildNumber, context.buildNumber)
             XCTAssertEqual($0.device.osVersion, context.device.osVersion)
             XCTAssertEqual($0.sdkVersion, context.sdkVersion)
             XCTAssertEqual($0.source, context.source)
