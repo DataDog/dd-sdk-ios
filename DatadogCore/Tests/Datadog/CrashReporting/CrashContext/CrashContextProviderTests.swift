@@ -19,14 +19,31 @@ import TestUtilities
 /// This suite tests if `CrashContextProvider` gets updated by different SDK components, each updating
 /// separate part of the `CrashContext` information.
 class CrashContextProviderTests: XCTestCase {
+    var crashContextProvider: CrashContextCoreProvider! // swiftlint:disable:this implicitly_unwrapped_optional
+    var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+
+        crashContextProvider = CrashContextCoreProvider()
+        core = PassthroughCoreMock(messageReceiver: crashContextProvider)
+    }
+
+    override func tearDown() {
+        super.tearDown()
+
+        crashContextProvider.flush()
+        crashContextProvider = nil
+        core = nil
+    }
+
     // MARK: - `DatadogContext` Integration
 
     func testWhenTrackingConsentValueChangesInConsentProvider_thenCrashContextProviderNotifiesNewContext() {
         let expectation = self.expectation(description: "Notify new crash context")
 
         // Given
-        let crashContextProvider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
+
         let context: DatadogContext = .mockRandom()
 
         // When
@@ -57,10 +74,6 @@ class CrashContextProviderTests: XCTestCase {
     func testWhenNewRUMView_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
 
-        // Given
-        let crashContextProvider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
-
         let viewEvent = AnyCodable(mockRandomAttributes())
 
         // When
@@ -78,10 +91,6 @@ class CrashContextProviderTests: XCTestCase {
     func testWhenRUMViewReset_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
         expectation.expectedFulfillmentCount = 2
-
-        // Given
-        let crashContextProvider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
         var viewEvent: AnyCodable? = AnyCodable(mockRandomAttributes())
 
@@ -104,10 +113,6 @@ class CrashContextProviderTests: XCTestCase {
     func testWhenNewRUMSessionStateIsSentThroughMessageBus_thenItNotifiesNewCrashContext() throws {
         let expectation = self.expectation(description: "Notify new crash context")
 
-        // Given
-        let crashContextProvider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
-
         let sessionState: AnyCodable? = AnyCodable(mockRandomAttributes())
 
         // When
@@ -125,26 +130,24 @@ class CrashContextProviderTests: XCTestCase {
     // MARK: - Thread safety
 
     func testWhenContextIsWrittenAndReadFromDifferentThreads_itRunsAllOperationsSafely() {
-        let provider = CrashContextCoreProvider()
-        let core = PassthroughCoreMock(messageReceiver: provider)
         let viewEvent: RUMViewEvent = .mockRandom()
         let sessionState: RUMSessionState = .mockRandom()
 
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { _ = provider.currentCrashContext },
-                { core.send(message: .context(.mockRandom())) },
-                { core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true)) },
-                { core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent)) },
-                { core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState)) },
+                { _ = self.crashContextProvider.currentCrashContext },
+                { self.core.send(message: .context(.mockRandom())) },
+                { self.core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true)) },
+                { self.core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent)) },
+                { self.core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState)) },
             ],
             iterations: 50
         )
 
         // provider retains the core in its queue:
         // flush to release the core.
-        provider.flush()
+        crashContextProvider.flush()
         // swiftlint:enable opening_brace
     }
 }
