@@ -1029,6 +1029,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(session.viewVisits[0].longTaskEvents[0].view.name, "ModifiedLongTaskViewName")
     }
 
+    // ❄️
     func testDroppingEventsBeforeTheyGetSent() throws {
         config.resourceEventMapper = { _ in nil }
         config.actionEventMapper = { event in event.action.type == .applicationStart ? event : nil }

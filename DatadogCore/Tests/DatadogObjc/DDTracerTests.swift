@@ -298,6 +298,7 @@ class DDTracerTests: XCTestCase {
         )
     }
 
+    // ❄️
     func testInjectingSpanContextToValidCarrierAndFormatForW3C() throws {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()

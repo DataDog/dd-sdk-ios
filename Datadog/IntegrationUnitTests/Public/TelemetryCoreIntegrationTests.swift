@@ -87,6 +87,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNil(metric.action?.id)
     }
 
+    // ❄️
     func testGivenRUMEnabled_whenViewIsActive_telemetryEventsAreLinkedToView() throws {
         // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")

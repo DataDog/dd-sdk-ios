@@ -210,9 +210,506 @@
                BlueprintName = "DatadogCoreTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "ApplicationStatePublisherTests">
+               </Test>
+               <Test
+                  Identifier = "ApplicationVersionPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "BatteryStatusPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "CITestIntegrationTests">
+               </Test>
+               <Test
+                  Identifier = "CarrierInfoPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "CoreMetricsIntegrationTests">
+               </Test>
+               <Test
+                  Identifier = "CoreMetricsTests">
+               </Test>
+               <Test
+                  Identifier = "CoreTelemetryIntegrationTests/testGivenRUMEnabled_telemetryEventsAreSent()">
+               </Test>
+               <Test
+                  Identifier = "CoreTelemetryIntegrationTests/testGivenRUMEnabled_whenActionIsActive_telemetryEventsAreLinkedToAction()">
+               </Test>
+               <Test
+                  Identifier = "CoreTelemetryIntegrationTests/testGivenRUMEnabled_whenNoViewIsActive_telemetryEventsAreLinkedToSession()">
+               </Test>
+               <Test
+                  Identifier = "CrashContextProviderTests">
+               </Test>
+               <Test
+                  Identifier = "CrashContextTests">
+               </Test>
+               <Test
+                  Identifier = "CrashLogReceiverTests">
+               </Test>
+               <Test
+                  Identifier = "CrashReportReceiverTests">
+               </Test>
+               <Test
+                  Identifier = "CrashReporterTests">
+               </Test>
+               <Test
+                  Identifier = "CryptographyTests">
+               </Test>
+               <Test
+                  Identifier = "DDB3HTTPHeadersWriter_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDConfigurationTests">
+               </Test>
+               <Test
+                  Identifier = "DDConfiguration_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDDatadogTests">
+               </Test>
+               <Test
+                  Identifier = "DDDatadog_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDErrorTests">
+               </Test>
+               <Test
+                  Identifier = "DDHTTPHeadersWriter_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDLogsTests">
+               </Test>
+               <Test
+                  Identifier = "DDNSURLSessionDelegateTests">
+               </Test>
+               <Test
+                  Identifier = "DDNSURLSessionDelegate_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMActionTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMConfigurationTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMErrorSourceTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMMethodTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMMonitorTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMMonitor_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMResourceKindTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMUserActionTypeTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUMViewTests">
+               </Test>
+               <Test
+                  Identifier = "DDRUM_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDSessionReplayTests">
+               </Test>
+               <Test
+                  Identifier = "DDSessionReplay_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDSpanTests">
+               </Test>
+               <Test
+                  Identifier = "DDTraceConfigurationTests">
+               </Test>
+               <Test
+                  Identifier = "DDTraceTests">
+               </Test>
+               <Test
+                  Identifier = "DDTrace_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingRejectedSpanContextToValidCarrierAndFormat()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingRejectedSpanContextToValidCarrierAndFormatForB3()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingRejectedSpanContextToValidCarrierAndFormatForW3C()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingSpanContextToInvalidCarrierOrFormat()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingSpanContextToInvalidCarrierOrFormatForB3()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingSpanContextToInvalidCarrierOrFormatForW3C()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingSpanContextToValidCarrierAndFormat()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testInjectingSpanContextToValidCarrierAndFormatForB3()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testSendingCustomizedSpans()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testSendingSpanLogs()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testSendingSpanLogsWithErrorFromArguments()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testSendingSpanLogsWithErrorFromNSError()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testWhenSwiftTraceIsEnabled_thenObjcTracerIsRegistered()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testWhenSwiftTraceIsNotEnabled_thenObjcTracerIsNotRegistered()">
+               </Test>
+               <Test
+                  Identifier = "DDTracerTests/testsWhenTagsDictionaryContainsInvalidKeys_thenThosesTagsAreDropped()">
+               </Test>
+               <Test
+                  Identifier = "DDW3CHTTPHeadersWriter_apiTests">
+               </Test>
+               <Test
+                  Identifier = "DataBlockTests">
+               </Test>
+               <Test
+                  Identifier = "DataUploadConditionsTests">
+               </Test>
+               <Test
+                  Identifier = "DataUploadDelayTests">
+               </Test>
+               <Test
+                  Identifier = "DataUploadStatusTests">
+               </Test>
+               <Test
+                  Identifier = "DataUploadWorkerTests">
+               </Test>
+               <Test
+                  Identifier = "DataUploaderTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogConfigurationTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogContextProviderTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogCoreTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogLogsFeatureTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogTests">
+               </Test>
+               <Test
+                  Identifier = "DatadogTraceFeatureTests">
+               </Test>
+               <Test
+                  Identifier = "Datadog_MultipleInstancesIntegrationTests">
+               </Test>
+               <Test
+                  Identifier = "DateFormattingTests">
+               </Test>
+               <Test
+                  Identifier = "DirectoriesTests">
+               </Test>
+               <Test
+                  Identifier = "DirectoryTests">
+               </Test>
+               <Test
+                  Identifier = "EventGeneratorTests">
+               </Test>
+               <Test
+                  Identifier = "FeatureContextTests">
+               </Test>
+               <Test
+                  Identifier = "FeatureStorageTests">
+               </Test>
+               <Test
+                  Identifier = "FileReaderTests">
+               </Test>
+               <Test
+                  Identifier = "FileTests">
+               </Test>
+               <Test
+                  Identifier = "FileWriterTests">
+               </Test>
+               <Test
+                  Identifier = "FilesOrchestratorTests">
+               </Test>
+               <Test
+                  Identifier = "FilesOrchestrator_MetricsTests">
+               </Test>
+               <Test
+                  Identifier = "InternalLoggerTests">
+               </Test>
+               <Test
+                  Identifier = "InternalProxyTests">
+               </Test>
+               <Test
+                  Identifier = "JSONEncoderTests">
+               </Test>
+               <Test
+                  Identifier = "KronosInternetAddressTests">
+               </Test>
+               <Test
+                  Identifier = "KronosNTPPacketTests">
+               </Test>
+               <Test
+                  Identifier = "KronosTimeStoragePolicyTests">
+               </Test>
+               <Test
+                  Identifier = "KronosTimeStorageTests">
+               </Test>
+               <Test
+                  Identifier = "LaunchTimePublisherTests">
+               </Test>
+               <Test
+                  Identifier = "LoggerTests">
+               </Test>
+               <Test
+                  Identifier = "LowPowerModePublisherTests">
+               </Test>
+               <Test
+                  Identifier = "MessageBusTests">
+               </Test>
+               <Test
+                  Identifier = "NetworkConnectionInfoConversionTests">
+               </Test>
+               <Test
+                  Identifier = "NetworkConnectionInfoPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "OTSpanTests">
+               </Test>
+               <Test
+                  Identifier = "ObjcExceptionHandlerTests">
+               </Test>
+               <Test
+                  Identifier = "PerformancePresetTests">
+               </Test>
+               <Test
+                  Identifier = "RUMDataModels_objcTests">
+               </Test>
+               <Test
+                  Identifier = "RUMDebuggingTests">
+               </Test>
+               <Test
+                  Identifier = "RUMEventFileOutputTests">
+               </Test>
+               <Test
+                  Identifier = "RUMFeatureTests">
+               </Test>
+               <Test
+                  Identifier = "RUMHTTPMethodTests">
+               </Test>
+               <Test
+                  Identifier = "RUMInternalProxyTests">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorConfigurationTests">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testGivenActiveViewWithFlags_thenAddingError_sendsFlags()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testGivenAnActiveViewWithFlags_startingANewView_resetsFlags()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testGivenRUMNotEnabled_whenObtainingSharedMonitor_itPrintsError()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testGivenSDKNotInitialized_whenObtainingSharedMonitor_itPrintsError()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testGivenTimeDifferenceBetweenDeviceAndServer_whenCollectingRUMEvents_thenEventsDateUseServerTime()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testHandlingInternalTimestampAttribute()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testLoadingResourceWithURLString_thenMarksFirstPartyURLs()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testLoadingResourceWithURL_thenMarksFirstPartyURLs()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testModifyingEventsBeforeTheyGetSend()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testRUMEvents_containSessionSampleRate()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testSendingActionEvents_whenGlobalAttributesHaveConflict()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testSendingActionEvents_whenViewAttributesHaveConflict()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testSendingAttributes()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingAnotherViewBeforeFirstIsStopped_thenLoadingResourcesAfterTapingButton()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingLoadingResourcesFromTheFirstView_thenStartingAnotherViewWhichAlsoLoadsResources()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingViewCreatesNewSession()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingViewIdentifiedByStringKey()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingViewIdentifiedByViewController()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenAddingFeatureFlags()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenAddingTiming()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenIssuingErrors_whileScrolling()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenLoadingImageResourceWithRequest()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenLoadingNativeResourceWithRequestWithMetrics()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenLoadingResourceWithURL()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenLoadingResourceWithURLString()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenLoadingResources_whileScrolling()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenTappingButton()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testStartingView_thenTappingButton_thenTappingAnotherButton()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testWhenCollectingEventsBeforeStartingFirstView_itTracksThemWithinApplicationLaunchView()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testWhenInitializingWithActivePrewarm_itStartsApplicationLaunchView_withSdkInitDate()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testWhenInitializing_itStartsApplicationLaunchView_withLaunchTime()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testWhenNetworkAndCarrierInfoAreProvided_thenConnectivityInfoIsSendWithAllEvents()">
+               </Test>
+               <Test
+                  Identifier = "RUMMonitorTests/testWhenUserInfoIsProvided_itIsSendWithAllEvents()">
+               </Test>
+               <Test
+                  Identifier = "RUMResourceKindTests">
+               </Test>
+               <Test
+                  Identifier = "RequestBuilderTests">
+               </Test>
+               <Test
+                  Identifier = "RetryingTests">
+               </Test>
+               <Test
+                  Identifier = "ServerOffsetPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "SwiftUIExtensionsTests">
+               </Test>
+               <Test
+                  Identifier = "TelemetryReceiverTests">
+               </Test>
+               <Test
+                  Identifier = "TracerTests">
+               </Test>
+               <Test
+                  Identifier = "TracingURLSessionHandlerTests">
+               </Test>
+               <Test
+                  Identifier = "TracingWithLoggingIntegrationTests">
+               </Test>
+               <Test
+                  Identifier = "TrackingConsentPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "UIApplicationSwizzlerTests">
+               </Test>
+               <Test
+                  Identifier = "UIKitBackgroundTaskCoordinatorTests">
+               </Test>
+               <Test
+                  Identifier = "UIKitExtensionsTests">
+               </Test>
+               <Test
+                  Identifier = "UIKitRUMActionsPredicateBridgeTests">
+               </Test>
+               <Test
+                  Identifier = "UIKitRUMViewsPredicateBridgeTests">
+               </Test>
+               <Test
+                  Identifier = "UIKitRUMViewsPredicateTests">
+               </Test>
+               <Test
+                  Identifier = "UIViewControllerSwizzlerTests">
+               </Test>
+               <Test
+                  Identifier = "URLSessionClientTests">
+               </Test>
+               <Test
+                  Identifier = "UserInfoPublisherTests">
+               </Test>
+               <Test
+                  Identifier = "VitalCPUReaderTest">
+               </Test>
+               <Test
+                  Identifier = "VitalInfoSamplerTests">
+               </Test>
+               <Test
+                  Identifier = "VitalInfoTest">
+               </Test>
+               <Test
+                  Identifier = "VitalMemoryReaderTest">
+               </Test>
+               <Test
+                  Identifier = "VitalRefreshRateReaderTests">
+               </Test>
+               <Test
+                  Identifier = "WebViewLogReceiverTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2DA2389298D588800C6C7E6"
@@ -222,7 +719,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D207318229A5226A00ECBF94"
@@ -232,7 +729,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D25EE93A29C4C3C300CE3839"
@@ -242,7 +739,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
@@ -252,7 +749,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "61B7885B25C180CB002675B5"
@@ -262,7 +759,7 @@
             </BuildableReference>
          </TestableReference>
          <TestableReference
-            skipped = "NO">
+            skipped = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "3CE11A0429F7BE0300202522"
