@@ -223,8 +223,6 @@ workflows:
         - scheme: DatadogCore iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
-        - test_repetition_mode: 'retry_on_failure'
-        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"

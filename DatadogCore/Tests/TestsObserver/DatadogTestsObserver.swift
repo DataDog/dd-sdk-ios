@@ -169,7 +169,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             }
 
             message += "\n"
-            preconditionFailure(message)
+            fatalError(message)
         }
     }
 }
