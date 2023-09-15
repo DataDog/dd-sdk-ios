@@ -48,20 +48,6 @@
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B7885B25C180CB002675B5"
-               BuildableName = "DatadogCrashReportingTests.xctest"
-               BlueprintName = "DatadogCrashReportingTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -72,6 +58,15 @@
       enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "61133B8A242393DE00786299"
+            BuildableName = "DatadogCoreTests.xctest"
+            BlueprintName = "DatadogCoreTests iOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "IS_RUNNING_UNIT_TESTS"
@@ -166,7 +161,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_ITR_ENABLED"
-            value = "1"
+            value = "0"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -239,16 +234,6 @@
                BlueprintIdentifier = "D29A9F3A29DD84AB005C54A4"
                BuildableName = "DatadogRUMTests iOS.xctest"
                BlueprintName = "DatadogRUMTests iOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "61B7885B25C180CB002675B5"
-               BuildableName = "DatadogCrashReportingTests.xctest"
-               BlueprintName = "DatadogCrashReportingTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>

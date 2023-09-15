@@ -38,10 +38,17 @@ class DDCrashReportBuilderTests: XCTestCase {
             ddCrashReport.stack.contains("XCTest"),
             "`DDCrashReport's` stack should include at least one frame from `XCTest` image"
         )
+        #if os(iOS)
         XCTAssertTrue(
-            ddCrashReport.binaryImages.contains(where: { $0.libraryName == "DatadogCrashReportingTests" }),
-            "`DDCrashReport` should include the image for `DatadogCrashReportingTests`"
+            ddCrashReport.binaryImages.contains(where: { $0.libraryName == "DatadogCrashReportingTests iOS" }),
+            "`DDCrashReport` should include the image for `DatadogCrashReportingTests iOS`"
         )
+        #elseif os(tvOS)
+        XCTAssertTrue(
+            ddCrashReport.binaryImages.contains(where: { $0.libraryName == "DatadogCrashReportingTests tvOS" }),
+            "`DDCrashReport` should include the image for `DatadogCrashReportingTests tvOS`"
+        )
+        #endif
         XCTAssertTrue(
             // Assert on prefix as it's `XCTestCore` on iOS 15+ and `XCTest` earlier:
             ddCrashReport.binaryImages.contains(where: { $0.libraryName.hasPrefix("XCTest") }),

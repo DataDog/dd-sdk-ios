@@ -77,18 +77,28 @@
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "GIT_REPOSITORY_URL"
-            value = "$(GIT_REPOSITORY_URL)"
+            key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
+            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
-            key = "BITRISE_GIT_COMMIT"
-            value = "$(BITRISE_GIT_COMMIT)"
+            key = "SRCROOT"
+            value = "$(SRCROOT)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "BITRISE_SOURCE_DIR"
             value = "$(BITRISE_SOURCE_DIR)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_TRIGGERED_WORKFLOW_ID"
+            value = "$(BITRISE_TRIGGERED_WORKFLOW_ID)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "BITRISE_BUILD_SLUG"
+            value = "$(BITRISE_BUILD_SLUG)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -99,71 +109,6 @@
          <EnvironmentVariable
             key = "BITRISE_BUILD_URL"
             value = "$(BITRISE_BUILD_URL)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_GIT_BRANCH"
-            value = "$(BITRISE_GIT_BRANCH)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISEIO_GIT_BRANCH_DEST"
-            value = "$(BITRISEIO_GIT_BRANCH_DEST)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_GIT_TAG"
-            value = "$(BITRISE_GIT_TAG)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_HASH"
-            value = "$(GIT_CLONE_COMMIT_HASH)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_APP_TITLE"
-            value = "$(BITRISE_APP_TITLE)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_BUILD_SLUG"
-            value = "$(BITRISE_BUILD_SLUG)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "BITRISE_GIT_MESSAGE"
-            value = "$(BITRISE_GIT_MESSAGE)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_MESSAGE_SUBJECT"
-            value = "$(GIT_CLONE_COMMIT_MESSAGE_SUBJECT)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_MESSAGE_BODY"
-            value = "$(GIT_CLONE_COMMIT_MESSAGE_BODY)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_AUTHOR_NAME"
-            value = "$(GIT_CLONE_COMMIT_AUTHOR_NAME)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_AUTHOR_EMAIL"
-            value = "$(GIT_CLONE_COMMIT_AUTHOR_EMAIL)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_COMMITER_NAME"
-            value = "$(GIT_CLONE_COMMIT_COMMITER_NAME)"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "GIT_CLONE_COMMIT_COMMITER_EMAIL"
-            value = "$(GIT_CLONE_COMMIT_COMMITER_EMAIL)"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -188,7 +133,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_ITR_ENABLED"
-            value = "1"
+            value = "0"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

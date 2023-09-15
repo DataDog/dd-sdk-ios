@@ -44,6 +44,15 @@
       enableThreadSanitizer = "YES"
       codeCoverageEnabled = "YES"
       onlyGenerateCoverageForSpecifiedTargets = "YES">
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "D24067F827CE6C9E00C04F44"
+            BuildableName = "Example tvOS.app"
+            BlueprintName = "Example tvOS"
+            ReferencedContainer = "container:Datadog.xcodeproj">
+         </BuildableReference>
+      </MacroExpansion>
       <CommandLineArguments>
          <CommandLineArgument
             argument = "IS_RUNNING_UNIT_TESTS"
@@ -211,16 +220,6 @@
                BlueprintIdentifier = "D23F8E9A29DDCD38001CFAE8"
                BuildableName = "DatadogRUMTests tvOS.xctest"
                BlueprintName = "DatadogRUMTests tvOS"
-               ReferencedContainer = "container:Datadog.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
-               BuildableName = "DatadogCrashReportingTests.xctest"
-               BlueprintName = "DatadogCrashReportingTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
          </TestableReference>
