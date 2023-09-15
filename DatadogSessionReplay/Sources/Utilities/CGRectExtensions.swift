@@ -4,7 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
+import CoreGraphics
 
 internal extension CGRect {
     enum HorizontalAlignment {
@@ -38,3 +40,4 @@ internal extension CGRect {
         return new
     }
 }
+#endif

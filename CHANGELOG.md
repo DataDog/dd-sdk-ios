@@ -1,5 +1,46 @@
 # Unreleased
 
+- [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
+- [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
+
+# 2.2.1 / 13-09-2023
+
+- [BUGFIX] Add default RUM views and actions predicates to DatadogObjc . See [#1464][].
+
+# 2.2.0 / 12-09-2023
+
+- [IMPROVEMENT] Enable cross-platform SDKs to change app `version`. See [#1447][]
+- [IMPROVEMENT] Enable cross-platform SDKs to edit more of telemetry configuration. See [#1456][]
+
+# 2.1.2 / 29-08-2023
+
+- [BUGFIX] Do not embed DatadogInternal while building Trace and RUM xcframeworks. See [#1444][].
+
+# 2.1.1 / 22-08-2023
+
+- [BUGFIX] `DatadogObjc` not fully available in `2.1.0`. See [#1428][].
+
+# 2.1.0 / 18-08-2023
+
+- [BUGFIX] Manual trace injection APIs are not available in DatadogTrace. See [#1415][].
+- [BUGFIX] Fix session replay uploads to AP1 site. See [#1418][].
+- [BUGFIX] Allow instantiating custom instance of the SDK after default one. See [#1413][].
+- [BUGFIX] Do not propagate attributes from Errors and LongTasks to Views.
+- [IMPROVEMENT] Upgrade to PLCrashReporter 1.11.1.
+- [FEATURE] Report session sample rate to the backend with RUM events. See [#1410][]
+- [IMPROVEMENT] Expose Session Replay to Objective-C. see [#1419][]
+
+# 2.0.0 / 31-07-2023
+
+Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATION.md) to upgrade from `1.x` versions.
+
+- [FEATURE] Session Replay.
+- [FEATURE] Support multiple SDK instances.
+- [IMPROVEMENT] All relevant products (RUM, Trace, Logs, etc.) are now extracted into different modules.
+- [BUGFIX] Module stability: fix name collision.
+
+# 1.22.0 / 21-07-2023
+- [BUGFIX] Fix APM local spans not correlating with RUM views. See [#1355][]
 - [IMPROVEMENT] Reduce number of view updates by filtering events from payload. See [#1328][]
 
 # 1.21.0 / 27-06-2023
@@ -476,6 +517,18 @@
 [#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
 [#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
+[#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
+[#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
+[#1413]: https://github.com/DataDog/dd-sdk-ios/pull/1413
+[#1415]: https://github.com/DataDog/dd-sdk-ios/pull/1415
+[#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
+[#1419]: https://github.com/DataDog/dd-sdk-ios/pull/1419
+[#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
+[#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
+[#1464]: https://github.com/DataDog/dd-sdk-ios/pull/1464
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
+[#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

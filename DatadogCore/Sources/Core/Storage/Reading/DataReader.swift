@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Synchronizes the work of `FileReader` on given read/write queue.
 internal final class DataReader: Reader {
@@ -17,15 +18,15 @@ internal final class DataReader: Reader {
         self.fileReader = fileReader
     }
 
-    func readNextBatch() -> Batch? {
+    func readNextBatch(context: DatadogContext) -> Batch? {
         queue.sync {
-            self.fileReader.readNextBatch()
+            self.fileReader.readNextBatch(context: context)
         }
     }
 
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason, context: DatadogContext) {
         queue.sync {
-            self.fileReader.markBatchAsRead(batch, reason: reason)
+            self.fileReader.markBatchAsRead(batch, reason: reason, context: context)
         }
     }
 }

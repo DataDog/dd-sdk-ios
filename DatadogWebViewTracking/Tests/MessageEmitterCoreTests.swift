@@ -57,20 +57,17 @@ class MessageEmitterCoreTests: XCTestCase {
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
-                case .custom(let key, let baggage):
-                    switch key {
-                    case "browser-log":
-                        let event = baggage.attributes as JSON
-                        XCTAssertEqual(event["date"] as? Int64, 1_635_932_927_012)
-                        XCTAssertEqual(event["message"] as? String, "console error: error")
-                        XCTAssertEqual(event["status"] as? String, "error")
-                        XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                        XCTAssertEqual(event["error"] as? [String: String], ["origin": "console"])
-                        XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
-                        expectation.fulfill()
-                    default:
-                        XCTFail("Unexpected custom message received: key: \(key), baggage: \(baggage)")
-                    }
+                case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserLog:
+                    let event = try? baggage.encode() as? JSON
+                    XCTAssertEqual(event?["date"] as? Int64, 1_635_932_927_012)
+                    XCTAssertEqual(event?["message"] as? String, "console error: error")
+                    XCTAssertEqual(event?["status"] as? String, "error")
+                    XCTAssertEqual(event?["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+                    XCTAssertEqual(event?["error"] as? [String: String], ["origin": "console"])
+                    XCTAssertEqual(event?["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
+                    expectation.fulfill()
+                case .baggage(let label, let baggage):
+                    XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")
                 case .context:
                     break
                 default:
@@ -111,16 +108,17 @@ class MessageEmitterCoreTests: XCTestCase {
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
-                case .custom(let key, let baggage):
-                    XCTAssertEqual(key, "browser-rum-event")
-                    let event = baggage.attributes as JSON
-                    XCTAssertEqual((event["session"] as? JSON)?["id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
-                    XCTAssertEqual((event["view"] as? JSON)?["url"] as? String, "http://localhost:8080/test.html")
+                case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
+                    let event = try? baggage.encode() as? JSON
+                    XCTAssertEqual((event?["session"] as? JSON)?["id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
+                    XCTAssertEqual((event?["view"] as? JSON)?["url"] as? String, "http://localhost:8080/test.html")
                     expectation.fulfill()
+                case .baggage(let label, let baggage):
+                    XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")
                 case .context:
                     break
                 default:
-                    XCTFail("Unexpected message type")
+                    XCTFail("Unexpected message received: \(message)")
                 }
             }
         )

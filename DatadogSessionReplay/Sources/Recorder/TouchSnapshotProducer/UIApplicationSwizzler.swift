@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 // MARK: - Copy & Paste from Datadog SDK
@@ -178,3 +179,4 @@ internal extension MethodSwizzler.FoundMethod {
 
 /// The list of active swizzlings to ensure integrity in unit tests.
 internal var activeSwizzlingNames: [String] = []
+#endif

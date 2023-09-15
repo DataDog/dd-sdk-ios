@@ -31,6 +31,9 @@ internal class DatadogTracer: OTTracer {
 
     let sampler: Sampler
 
+    /// Telemetry interface.
+    let telemetry: Telemetry
+
     /// Tracer Attributes shared with other Feature registered in core.
     internal struct Attributes {
         internal static let traceID = "dd.trace_id"
@@ -49,7 +52,8 @@ internal class DatadogTracer: OTTracer {
         tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
         contextReceiver: ContextMessageReceiver,
-        loggingIntegration: TracingWithLoggingIntegration
+        loggingIntegration: TracingWithLoggingIntegration,
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         self.core = core
         self.tags = tags
@@ -66,6 +70,7 @@ internal class DatadogTracer: OTTracer {
         self.contextReceiver = contextReceiver
         self.loggingIntegration = loggingIntegration
         self.sampler = sampler
+        self.telemetry = telemetry
     }
 
     // MARK: - Open Tracing interface
@@ -128,7 +133,8 @@ internal class DatadogTracer: OTTracer {
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.now,
-            tags: combinedTags
+            tags: combinedTags,
+            telemetry: telemetry
         )
         return span
     }

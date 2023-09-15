@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogSDKObjc"
   s.module_name  = "DatadogObjc"
-  s.version      = "2.0.0-beta.2"
+  s.version      = "2.2.1"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -15,7 +15,7 @@ Pod::Spec.new do |s|
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version = '5.5'
+  s.swift_version = '5.8.0'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 
@@ -28,4 +28,5 @@ Pod::Spec.new do |s|
   s.dependency 'DatadogRUM', s.version.to_s
   s.dependency 'DatadogLogs', s.version.to_s
   s.dependency 'DatadogTrace', s.version.to_s
+  s.dependency 'DatadogSessionReplay', s.version.to_s
 end

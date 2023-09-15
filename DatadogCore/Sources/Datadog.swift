@@ -7,8 +7,10 @@
 import Foundation
 import DatadogInternal
 
-//swiftlint:disable:next duplicate_imports
+//swiftlint:disable duplicate_imports
 @_exported import enum DatadogInternal.TrackingConsent
+@_exported import protocol DatadogInternal.DatadogCoreProtocol
+//swiftlint:enable duplicate_imports
 
 /// An entry point to Datadog SDK.
 ///
@@ -84,6 +86,8 @@ public struct Datadog {
 
         /// Proxy configuration attributes.
         /// This can be used to a enable a custom proxy for uploading tracked data to Datadog's intake.
+        ///
+        /// Ref.: https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1411499-connectionproxydictionary
         public var proxyConfiguration: [AnyHashable: Any]?
 
         /// SeData encryption to use for on-disk data persistency by providing an object
@@ -101,15 +105,13 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
-        /// Overrides the default process information.
-        internal var processInfo: ProcessInfo = .processInfo
-
-        /// Sets additional configuration attributes.
-        /// This can be used to tweak internal features of the SDK.
-        internal var additionalConfiguration: [String: Any] = [:]
-
-        /// Overrides the date provider.
-        internal var dateProvider: DateProvider = SystemDateProvider()
+        /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
+        /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
+        ///
+        /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
+        ///
+        /// By default it's set to `false`.
+        public var backgroundTasksEnabled: Bool
 
         /// Creates a Datadog SDK Configuration object.
         ///
@@ -146,6 +148,13 @@ public struct Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
+        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                 are used to perform background uploads.
+        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                 any upload blocker such us no internet connection or low battery.
+        ///                                 By default it's set to `false`.
         public init(
             clientToken: String,
             env: String,
@@ -156,7 +165,8 @@ public struct Datadog {
             uploadFrequency: UploadFrequency = .average,
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
-            serverDateProvider: ServerDateProvider? = nil
+            serverDateProvider: ServerDateProvider? = nil,
+            backgroundTasksEnabled: Bool = false
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -168,6 +178,28 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.backgroundTasksEnabled = backgroundTasksEnabled
+        }
+
+        // MARK: - Internal
+
+        /// Obtains OS directory where SDK creates its root folder.
+        /// All instances of the SDK use the same root folder, but each creates its own subdirectory.
+        internal var systemDirectory: () throws -> Directory = { try Directory.cache() }
+
+        /// Default process information.
+        internal var processInfo: ProcessInfo = .processInfo
+
+        /// Sets additional configuration attributes.
+        /// This can be used to tweak internal features of the SDK.
+        internal var additionalConfiguration: [String: Any] = [:]
+
+        /// Default date provider used by the SDK and all products.
+        internal var dateProvider: DateProvider = SystemDateProvider()
+
+        /// Creates `HTTPClient` with given proxy configuration attributes.
+        internal var httpClientFactory: ([AnyHashable: Any]?) -> HTTPClient = { proxyConfiguration in
+            URLSessionClient(proxyConfiguration: proxyConfiguration)
         }
     }
 
@@ -315,8 +347,8 @@ public struct Datadog {
         trackingConsent: TrackingConsent,
         instanceName: String
     ) throws -> DatadogCoreProtocol {
-        if CoreRegistry.default is DatadogCore {
-            throw ProgrammerError(description: "SDK is already initialized.")
+        guard !CoreRegistry.isRegistered(instanceName: instanceName) else {
+            throw ProgrammerError(description: "The '\(instanceName)' instance of SDK is already initialized.")
         }
 
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -325,9 +357,13 @@ public struct Datadog {
             Datadog.verbosityLevel = .debug
         }
 
-        let applicationVersion = configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let applicationVersion = configuration.additionalConfiguration[CrossPlatformAttributes.version] as? String
+            ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"
+
+        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0"
 
         let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
         let bundleType: BundleType = configuration.bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
@@ -346,14 +382,14 @@ public struct Datadog {
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(
-                in: Directory.cache(),
+                in: configuration.systemDirectory(),
                 instancenName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
             initialConsent: trackingConsent,
             performance: performance,
-            httpClient: HTTPClient(proxyConfiguration: configuration.proxyConfiguration),
+            httpClient: configuration.httpClientFactory(configuration.proxyConfiguration),
             encryption: configuration.encryption,
             contextProvider: DatadogContextProvider(
                 site: configuration.site,
@@ -361,6 +397,7 @@ public struct Datadog {
                 service: service,
                 env: try ifValid(env: configuration.env),
                 version: applicationVersion,
+                buildNumber: applicationBuildNumber,
                 variant: variant,
                 source: source,
                 sdkVersion: sdkVersion,
@@ -373,12 +410,11 @@ public struct Datadog {
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider
             ),
-            applicationVersion: applicationVersion
+            applicationVersion: applicationVersion,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 
-        let telemetry = TelemetryCore(core: core)
-
-        telemetry.configuration(
+        core.telemetry.configuration(
             batchSize: Int64(exactly: performance.maxFileSize),
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,
@@ -396,8 +432,6 @@ public struct Datadog {
             printFunction: consolePrint,
             verbosityLevel: { Datadog.verbosityLevel }
         )
-
-        DD.telemetry = telemetry
 
         return core
     }
@@ -429,9 +463,6 @@ public struct Datadog {
 
         // Flush and tear down SDK core:
         (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
-
-        // Reset Globals:
-        DD.telemetry = NOPTelemetry()
 
         // Deinitialize `Datadog`:
         CoreRegistry.unregisterInstance(named: instanceName)

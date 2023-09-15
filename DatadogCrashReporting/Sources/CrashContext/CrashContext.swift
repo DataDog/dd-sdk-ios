@@ -27,6 +27,9 @@ internal struct CrashContext: Codable, Equatable {
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     let version: String
 
+    /// The build number of the application that data is generated from.
+    let buildNumber: String
+
     /// Current device information.
     let device: DeviceInfo
 
@@ -73,6 +76,7 @@ internal struct CrashContext: Codable, Equatable {
         service: String,
         env: String,
         version: String,
+        buildNumber: String,
         device: DeviceInfo,
         sdkVersion: String,
         source: String,
@@ -88,6 +92,7 @@ internal struct CrashContext: Codable, Equatable {
         self.service = service
         self.env = env
         self.version = version
+        self.buildNumber = buildNumber
         self.device = device
         self.sdkVersion = service
         self.source = source
@@ -109,6 +114,7 @@ internal struct CrashContext: Codable, Equatable {
         self.service = context.service
         self.env = context.env
         self.version = context.version
+        self.buildNumber = context.buildNumber
         self.device = context.device
         self.sdkVersion = context.sdkVersion
         self.source = context.source
@@ -127,6 +133,7 @@ internal struct CrashContext: Codable, Equatable {
             lhs.service == rhs.service &&
             lhs.env == rhs.env &&
             lhs.version == rhs.version &&
+            lhs.buildNumber == rhs.buildNumber &&
             lhs.source == rhs.source &&
             lhs.trackingConsent == rhs.trackingConsent &&
             lhs.networkConnectionInfo == rhs.networkConnectionInfo &&

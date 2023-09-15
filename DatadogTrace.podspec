@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogTrace"
-  s.version      = "2.0.0-beta.2"
+  s.version      = "2.2.1"
   s.summary      = "Datadog Trace Module."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -10,10 +10,11 @@ Pod::Spec.new do |s|
   s.authors            = { 
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
     "Maciej Burda" => "maciej.burda@datadoghq.com",
-    "Maxime Epain" => "maxime.epain@datadoghq.com"
+    "Maxime Epain" => "maxime.epain@datadoghq.com",
+    "Ganesh Jangir" => "ganesh.jangir@datadoghq.com"
   }
 
-  s.swift_version = '5.5'
+  s.swift_version = '5.8.0'
   s.ios.deployment_target = '11.0'
   s.tvos.deployment_target = '11.0'
 

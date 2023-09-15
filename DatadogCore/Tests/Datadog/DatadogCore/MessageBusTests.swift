@@ -20,14 +20,10 @@ class MessageBusTests: XCTestCase {
 
         let receiver = FeatureMessageReceiverMock(expectation: expectation) { message in
             // Then
-            switch message {
-            case .custom(let key, let attributes):
-                XCTAssertEqual(key, "test")
-                XCTAssertEqual(attributes["key"], "value")
+            if let value: String = try? message.baggage(forKey: "test") {
+                XCTAssertEqual(value, "value")
                 expectation.fulfill()
-            case .context:
-                break
-            default:
+            } else {
                 XCTFail("wrong message case")
             }
         }
@@ -39,7 +35,7 @@ class MessageBusTests: XCTestCase {
         bus.connect(receiver, forKey: "receiver 2")
 
         // When
-        bus.send(message: .custom(key: "test", baggage: ["key": "value"]))
+        bus.send(message: .baggage(key: "test", value: "value"))
 
         // Then
         wait(for: [expectation], timeout: 0.5)

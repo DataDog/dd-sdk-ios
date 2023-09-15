@@ -10,24 +10,25 @@ import DatadogInternal
 
 @testable import DatadogLogs
 
-class RemoteLoggerErrorMessageReceiver: FeatureMessageReceiver {
-    private var errors: [String] = []
+private class RemoteLoggerErrorMessageReceiver: FeatureMessageReceiver {
+    struct ErrorMessage: Decodable {
+        /// The Log error message
+        let message: String
+    }
+
+    var errors: [String] = []
 
     /// Adds RUM Error with given message and stack to current RUM View.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard
-            case let .error(message, _) = message
+            let error = try? message.baggage(forKey: "error", type: ErrorMessage.self)
         else {
             return false
         }
 
-        self.errors.append(message)
+        self.errors.append(error.message)
 
         return true
-    }
-
-    func getErrorMessages() -> [String] {
-        return self.errors
     }
 }
 
@@ -64,9 +65,8 @@ class RemoteLoggerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let events: [String] = errorMessageReceiver.getErrorMessages()
-        XCTAssertEqual(events.count, 1)
-        XCTAssertEqual(events.first, "Error message")
+        XCTAssertEqual(errorMessageReceiver.errors.count, 1)
+        XCTAssertEqual(errorMessageReceiver.errors.first, "Error message")
     }
 
     func testItDoesNotSendErrorAlongWithCrossPlatformCrashLog() throws {
@@ -101,7 +101,6 @@ class RemoteLoggerTests: XCTestCase {
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
 
-        let events: [String] = errorMessageReceiver.getErrorMessages()
-        XCTAssertEqual(events.count, 0)
+        XCTAssertEqual(errorMessageReceiver.errors.count, 0)
     }
 }

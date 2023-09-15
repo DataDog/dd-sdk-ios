@@ -20,19 +20,37 @@ internal struct FeatureStorage {
     let unauthorizedFilesOrchestrator: FilesOrchestratorType
     /// Encryption algorithm applied to persisted data.
     let encryption: DataEncryption?
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
-    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
-        switch trackingConsent {
+    func writer(
+        for context: DatadogContext,
+        bypassConsent: Bool = false,
+        forceNewBatch: Bool = false
+    ) -> Writer {
+        switch bypassConsent ? .granted : context.trackingConsent {
         case .granted:
             return AsyncWriter(
-                execute: FileWriter(orchestrator: authorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
+                execute: FileWriter(
+                    orchestrator: authorizedFilesOrchestrator,
+                    forceNewFile: forceNewBatch,
+                    encryption: encryption,
+                    telemetry: telemetry,
+                    context: context
+                ),
                 on: queue
             )
         case .notGranted:
             return NOPWriter()
         case .pending:
             return AsyncWriter(
-                execute: FileWriter(orchestrator: unauthorizedFilesOrchestrator, encryption: encryption, forceNewFile: forceNewBatch),
+                execute: FileWriter(
+                    orchestrator: unauthorizedFilesOrchestrator,
+                    forceNewFile: forceNewBatch,
+                    encryption: encryption,
+                    telemetry: telemetry,
+                    context: context
+                ),
                 on: queue
             )
         }
@@ -43,7 +61,8 @@ internal struct FeatureStorage {
             readWriteQueue: queue,
             fileReader: FileReader(
                 orchestrator: authorizedFilesOrchestrator,
-                encryption: encryption
+                encryption: encryption,
+                telemetry: telemetry
             )
         )
     }
@@ -60,7 +79,7 @@ internal struct FeatureStorage {
                     break
                 }
             } catch {
-                DD.telemetry.error(
+                telemetry.error(
                     "Failed to migrate unauthorized data in \(featureName) after consent change to to \(consent)",
                     error: error
                 )
@@ -73,7 +92,7 @@ internal struct FeatureStorage {
             do {
                 try directories.unauthorized.deleteAllFiles()
             } catch {
-                DD.telemetry.error("Failed clear unauthorized data in \(featureName)", error: error)
+                telemetry.error("Failed clear unauthorized data in \(featureName)", error: error)
             }
         }
     }
@@ -84,7 +103,7 @@ internal struct FeatureStorage {
                 try directories.unauthorized.deleteAllFiles()
                 try directories.authorized.deleteAllFiles()
             } catch {
-                DD.telemetry.error("Failed clear all data in \(featureName)", error: error)
+                telemetry.error("Failed clear all data in \(featureName)", error: error)
             }
         }
     }
@@ -104,12 +123,14 @@ extension FeatureStorage {
         directories: FeatureDirectories,
         dateProvider: DateProvider,
         performance: PerformancePreset,
-        encryption: DataEncryption?
+        encryption: DataEncryption?,
+        telemetry: Telemetry
     ) {
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: performance,
             dateProvider: dateProvider,
+            telemetry: telemetry,
             metricsData: {
                 guard let trackName = BatchMetric.trackValue(for: featureName) else {
                     DD.logger.error("Can't determine track name for feature named '\(featureName)'")
@@ -122,6 +143,7 @@ extension FeatureStorage {
             directory: directories.unauthorized,
             performance: performance,
             dateProvider: dateProvider,
+            telemetry: telemetry,
             metricsData: nil // do not send metrics for unauthorized orchestrator
         )
 
@@ -131,7 +153,8 @@ extension FeatureStorage {
             directories: directories,
             authorizedFilesOrchestrator: authorizedFilesOrchestrator,
             unauthorizedFilesOrchestrator: unauthorizedFilesOrchestrator,
-            encryption: encryption
+            encryption: encryption,
+            telemetry: telemetry
         )
     }
 }

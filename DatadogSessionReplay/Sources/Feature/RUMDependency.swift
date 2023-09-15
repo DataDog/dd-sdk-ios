@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Defines dependency between Session Replay (SR) and RUM modules.
@@ -45,3 +46,4 @@ internal enum RUMDependency {
     /// They key referencing a `[String: Int64]` dictionary of viewIDs and associated records count.
     static let recordsCountByViewID = "records_count_by_view_id"
 }
+#endif

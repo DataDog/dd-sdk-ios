@@ -19,3 +19,4 @@ venv
 __pycache__
 *.swp
 .venv
+.vscode

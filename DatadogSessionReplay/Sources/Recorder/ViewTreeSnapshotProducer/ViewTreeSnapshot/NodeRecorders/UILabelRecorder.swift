@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
@@ -87,3 +88,4 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

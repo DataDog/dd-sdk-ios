@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Produces `TouchSnapshots` that describe touch interactions.
@@ -14,3 +15,4 @@ internal protocol TouchSnapshotProducer {
     /// - Returns: the snapshot or `nil` if no new touch information is available
     func takeSnapshot(context: Recorder.Context) -> TouchSnapshot?
 }
+#endif

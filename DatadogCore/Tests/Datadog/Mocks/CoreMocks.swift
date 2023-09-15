@@ -232,7 +232,8 @@ extension FeatureStorage {
             directories: temporaryFeatureDirectories,
             authorizedFilesOrchestrator: NOPFilesOrchestrator(),
             unauthorizedFilesOrchestrator: NOPFilesOrchestrator(),
-            encryption: nil
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
     }
 }
@@ -246,20 +247,20 @@ extension FeatureUpload {
 extension Reader {
     func markBatchAsRead(_ batch: Batch) {
         // We can ignore `reason` in most tests (used for sending metric), so we provide this convenience variant.
-        markBatchAsRead(batch, reason: .flushed)
+        markBatchAsRead(batch, reason: .flushed, context: .mockAny())
     }
 }
 
 extension FilesOrchestratorType {
     func delete(readableFile: ReadableFile) {
         // We can ignore `deletionReason` in most tests (used for sending metric), so we provide this convenience variant.
-        delete(readableFile: readableFile, deletionReason: .flushed)
+        delete(readableFile: readableFile, deletionReason: .flushed, context: .mockAny())
     }
 }
 
 class NOPReader: Reader {
-    func readNextBatch() -> Batch? { nil }
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
+    func readNextBatch(context: DatadogContext) -> Batch? { nil }
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason, context: DatadogContext) {}
 }
 
 internal class NOPFilesOrchestrator: FilesOrchestratorType {
@@ -273,10 +274,10 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
 
     var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
-    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
+    func getNewWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile { NOPFile() }
+    func getWritableFile(writeSize: UInt64, context: DatadogContext) throws -> WritableFile { NOPFile() }
+    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>, context: DatadogContext) -> ReadableFile? { NOPFile() }
+    func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason, context: DatadogContext) { }
 
     var ignoreFilesAgeWhenReading = false
 }
@@ -299,23 +300,27 @@ extension DataFormat {
     }
 }
 
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: .mockAny())
-    }
-}
-
 class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}
 }
 
-struct DataUploaderMock: DataUploaderType {
+internal class DataUploaderMock: DataUploaderType {
     let uploadStatus: DataUploadStatus
 
-    var onUpload: (() throws -> Void)? = nil
+    /// Notifies on each started upload.
+    var onUpload: (() throws -> Void)?
+
+    /// Tracks uploaded events.
+    private(set) var uploadedEvents: [Event] = []
+
+    init(uploadStatus: DataUploadStatus, onUpload: (() -> Void)? = nil) {
+        self.uploadStatus = uploadStatus
+        self.onUpload = onUpload
+    }
 
     func upload(events: [Event], context: DatadogContext) throws -> DataUploadStatus {
+        uploadedEvents += events
         try onUpload?()
         return uploadStatus
     }

@@ -28,10 +28,13 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
@@ -64,14 +67,17 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { data in
                     "encrypted".utf8Data + data + "encrypted".utf8Data
                 }
             ),
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
@@ -104,10 +110,13 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["key1": "value1"])
@@ -134,10 +143,13 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: RelativeDateProvider(advancingBySeconds: 1)
+                dateProvider: RelativeDateProvider(advancingBySeconds: 1),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: true,
             encryption: nil,
-            forceNewFile: true
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["key1": "value1"])
@@ -179,10 +191,13 @@ class FileWriterTests: XCTestCase {
                     maxObjectsInFile: .max,
                     maxObjectSize: 23 // 23 bytes is enough for TLV with {"key1":"value1"} JSON
                 ),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
@@ -210,10 +225,13 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -230,10 +248,13 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         writer.write(value: ["ok"]) // will create the file
@@ -259,10 +280,13 @@ class FileWriterTests: XCTestCase {
                     maxObjectsInFile: .max, // write to single file
                     maxObjectSize: .max
                 ),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
@@ -320,12 +344,15 @@ class FileWriterTests: XCTestCase {
             orchestrator: FilesOrchestrator(
                 directory: directory,
                 performance: PerformancePreset.mockAny(),
-                dateProvider: SystemDateProvider()
+                dateProvider: SystemDateProvider(),
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
             ),
-            forceNewFile: false
+            telemetry: NOPTelemetry(),
+            context: .mockAny()
         )
 
         // When

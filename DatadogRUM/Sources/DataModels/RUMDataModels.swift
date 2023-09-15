@@ -21,6 +21,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -70,6 +73,7 @@ public struct RUMActionEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -161,7 +165,7 @@ public struct RUMActionEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -435,6 +439,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -490,6 +497,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -533,7 +541,7 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -899,6 +907,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -951,6 +962,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -997,7 +1009,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1174,6 +1186,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1226,6 +1241,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1284,7 +1300,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1637,6 +1653,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1691,6 +1710,7 @@ public struct RUMViewEvent: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1746,7 +1766,7 @@ public struct RUMViewEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1988,6 +2008,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Total layout shift score that occurred on the view
         public let cumulativeLayoutShift: Double?
 
+        /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
+        public let cumulativeLayoutShiftTargetSelector: String?
+
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
         public let customTimings: [String: Int64]?
 
@@ -2012,6 +2035,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Duration in ns of the first input event delay
         public let firstInputDelay: Int64?
 
+        /// CSS selector path of the first input target element
+        public let firstInputTargetSelector: String?
+
         /// Duration in ns to the first input
         public let firstInputTime: Int64?
 
@@ -2033,6 +2059,12 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the periods of time the user had the view in foreground (focused in the browser)
         public let inForegroundPeriods: [InForegroundPeriods]?
 
+        /// Longest duration in ns between an interaction and the next paint
+        public let interactionToNextPaint: Int64?
+
+        /// CSS selector path of the interacted element corresponding to INP
+        public let interactionToNextPaintTargetSelector: String?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -2044,6 +2076,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns to the largest contentful paint
         public let largestContentfulPaint: Int64?
+
+        /// CSS selector path of the largest contentful paint element
+        public let largestContentfulPaintTargetSelector: String?
 
         /// Duration in ns to the end of the load event handler execution
         public let loadEvent: Int64?
@@ -2090,6 +2125,7 @@ public struct RUMViewEvent: RUMDataModel {
             case cpuTicksPerSecond = "cpu_ticks_per_second"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
+            case cumulativeLayoutShiftTargetSelector = "cumulative_layout_shift_target_selector"
             case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
@@ -2098,6 +2134,7 @@ public struct RUMViewEvent: RUMDataModel {
             case firstByte = "first_byte"
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
+            case firstInputTargetSelector = "first_input_target_selector"
             case firstInputTime = "first_input_time"
             case flutterBuildTime = "flutter_build_time"
             case flutterRasterTime = "flutter_raster_time"
@@ -2105,10 +2142,13 @@ public struct RUMViewEvent: RUMDataModel {
             case frustration = "frustration"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
+            case interactionToNextPaint = "interaction_to_next_paint"
+            case interactionToNextPaintTargetSelector = "interaction_to_next_paint_target_selector"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
+            case largestContentfulPaintTargetSelector = "largest_contentful_paint_target_selector"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
             case loadingType = "loading_type"
@@ -2747,6 +2787,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
+            /// Whether it is allowed to use LocalStorage when cookies are not available
+            public let allowFallbackToLocalStorage: Bool?
+
+            /// Whether untrusted events are allowed
+            public let allowUntrustedEvents: Bool?
+
             /// The window duration for batches sent by the SDK (in milliseconds)
             public let batchSize: Int64?
 
@@ -2800,6 +2846,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the session replay start is handled manually
             public var startSessionReplayRecordingManually: Bool?
+
+            /// Whether contexts are stored in local storage
+            public let storeContextsAcrossPages: Bool?
 
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
@@ -2876,7 +2925,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether local encryption is used
             public let useLocalEncryption: Bool?
 
-            /// Whether a proxy configured is used
+            /// Whether a proxy is used
             public var useProxy: Bool?
 
             /// Whether a secure session cookie is used
@@ -2885,11 +2934,16 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether tracing features are enabled
             public let useTracing: Bool?
 
+            /// Whether the Worker is loaded from an external URL
+            public let useWorkerUrl: Bool?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
             enum CodingKeys: String, CodingKey {
                 case actionNameAttribute = "action_name_attribute"
+                case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
+                case allowUntrustedEvents = "allow_untrusted_events"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
                 case dartVersion = "dart_version"
@@ -2908,6 +2962,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
+                case storeContextsAcrossPages = "store_contexts_across_pages"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -2936,6 +2991,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
+                case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -3309,4 +3365,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00
+// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d

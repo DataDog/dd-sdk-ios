@@ -7,7 +7,7 @@
 import Foundation
 
 /// Describe the battery state for mobile devices.
-public struct BatteryStatus: Codable, Equatable, DictionaryEncodable {
+public struct BatteryStatus: Codable, Equatable, PassthroughAnyCodable {
     public enum State: Codable {
         case unknown
         case unplugged

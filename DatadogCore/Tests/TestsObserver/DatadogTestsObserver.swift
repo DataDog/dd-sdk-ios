@@ -23,19 +23,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     /// A list of checks ensuring global state integrity before and after each tests.
     private let checks: [TestIntegrityCheck] = [
         .init(
-            assert: { !Datadog.isInitialized() },
-            problem: "`Datadog` must not be initialized.",
+            assert: { CoreRegistry.instances.isEmpty },
+            problem: "No instance of `DatadogCore` must be left initialized after test completion.",
             solution: """
-            Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.
-            """
-        ),
-        .init(
-            assert: {
-                CoreRegistry.default is NOPDatadogCore
-            },
-            problem: "`CoreRegistry.default` must be reset after each test.",
-            solution: """
-            Make sure `CoreRegistry.unregisterDefault()` is called after the end of test that register a default core.
+            Make sure deinitialization APIs are called before the end of test that registers `DatadogCore`.
+            If registering directly to `CoreRegistry`, make sure the test cleans it up properly.
+
+            `DatadogTestsObserver` found following instances still being registered: \(CoreRegistry.instances.map({ "'\($0.key)'" }))
             """
         ),
         .init(
@@ -65,18 +59,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             ```
             let dd = DD.mockWith(logger: CoreLoggerMock())
-            defer { dd.reset() }
-            ```
-            """
-        ),
-        .init(
-            assert: { DD.telemetry is NOPTelemetry },
-            problem: "`DD.telemetry` must use `NOPTelemetry` implementation.",
-            solution: """
-            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
-
-            ```
-            let dd = DD.mockWith(telemetry: TelemetryMock())
             defer { dd.reset() }
             ```
             """
@@ -131,35 +113,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             ```
             """
         ),
-        .init(
-            assert: { DatadogCoreProxy.referenceCount == 0 },
-            problem: "Leaking reference to `DatadogCoreProtocol`",
-            solution: """
-            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
-            but some instances of `DatadogCoreProxy` are still alive.
-
-            Make sure the instance of `DatadogCoreProxy` is properly managed in test:
-            - it must be allocated on each test start (e.g. in `setUp()` or directly in test)
-            - it must be flushed and deinitialized before test ends with `.flushAndTearDown()`
-            - it must be deallocated before test ends (e.g. in `tearDown()`)
-
-            If all above conditions are met, this failure might indicate a memory leak in the implementation.
-            """
-        ),
-        .init(
-            assert: { PassthroughCoreMock.referenceCount == 0 },
-            problem: "Leaking reference to `DatadogCoreProtocol`",
-            solution: """
-            There should be no remaining reference to `DatadogCoreProtocol` upon each test completion
-            but some instances of `PassthroughCoreMock` are still alive.
-
-            Make sure the instance of `PassthroughCoreMock` is properly managed in test:
-            - it must be allocated on each test test start (e.g. in `setUp()` or directly in test)
-            - it must be deallocated before test ends (e.g. in `tearDown()`)
-
-            If all above conditions are met, this failure might indicate a memory leak in the implementation.
-            """
-        )
     ]
 
     func testCaseDidFinish(_ testCase: XCTestCase) {

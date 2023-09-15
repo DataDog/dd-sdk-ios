@@ -99,8 +99,9 @@ bundle DatadogRUM
 bundle DatadogObjc
 bundle DatadogCrashReporting
 
-# Build DatadogWebViewTracking for iOS only
+# Build iOS-only XCFrameworks
 if [[ $PLATFORM == *"iOS"* ]]; then
     PLATFORM="iOS"
     bundle DatadogWebViewTracking
+    bundle DatadogSessionReplay
 fi

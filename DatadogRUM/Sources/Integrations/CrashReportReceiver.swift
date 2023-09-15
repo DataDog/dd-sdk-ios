@@ -25,7 +25,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
     }
 
-    private struct CrashReport: Decodable {
+    struct Crash: Decodable {
+        /// The crash report.
+        let report: CrashReport
+        /// The crash context
+        let context: CrashContext
+    }
+
+    struct CrashReport: Decodable {
         /// The date of the crash occurrence.
         let date: Date?
         /// Crash report type - used to group similar crash reports.
@@ -47,7 +54,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let wasTruncated: Bool
     }
 
-    private struct CrashContext: Decodable {
+    struct CrashContext: Decodable {
         /// Interval between device and server time.
         let serverTimeOffset: TimeInterval
         /// The name of the service that data is generated from.
@@ -56,6 +63,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let device: DeviceInfo
         /// The version of the application that data is generated from.
         let version: String
+        /// The build number of the application that data is generated from.
+        let buildNumber: String
         /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
         let source: String
         /// The last RUM view in crashed app process.
@@ -96,6 +105,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     // MARK: - Initialization
 
@@ -105,7 +116,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         sessionSampler: Sampler,
         trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
-        ciTest: RUMCITest?
+        ciTest: RUMCITest?,
+        telemetry: Telemetry
     ) {
         self.applicationID = applicationID
         self.dateProvider = dateProvider
@@ -113,25 +125,22 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
+        self.telemetry = telemetry
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        if case let .custom(key, baggage) = message, key == MessageKeys.crash {
-            return write(crash: baggage, to: core)
+        do {
+            guard let crash: Crash = try message.baggage(forKey: MessageKeys.crash) else {
+                return false
+            }
+
+            return send(report: crash.report, with: crash.context, to: core)
+        } catch {
+            core.telemetry
+                .error("Fails to decode crash from RUM", error: error)
         }
 
         return false
-    }
-
-    private func write(crash attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        guard
-            let report = attributes["report", type: CrashReport.self],
-            let context = attributes["context", type: CrashContext.self]
-        else {
-            return false
-        }
-
-        return send(report: report, with: context, to: core)
     }
 
     private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
@@ -325,11 +334,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let event = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 session: .init(plan: .plan1)
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            buildVersion: lastRUMView.buildVersion,
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
             context: lastRUMView.context,
@@ -378,13 +388,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
                 session: .init(plan: .plan1)
             ),
             application: original.application,
+            buildVersion: original.buildVersion,
             ciTest: original.ciTest,
             connectivity: original.connectivity,
             context: original.context,
@@ -405,6 +416,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 cpuTicksPerSecond: original.view.cpuTicksPerSecond,
                 crash: .init(count: 1),
                 cumulativeLayoutShift: original.view.cumulativeLayoutShift,
+                cumulativeLayoutShiftTargetSelector: nil,
                 customTimings: original.view.customTimings,
                 domComplete: original.view.domComplete,
                 domContentLoaded: original.view.domContentLoaded,
@@ -413,6 +425,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstByte: nil,
                 firstContentfulPaint: original.view.firstContentfulPaint,
                 firstInputDelay: original.view.firstInputDelay,
+                firstInputTargetSelector: nil,
                 firstInputTime: original.view.firstInputTime,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
@@ -420,10 +433,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 frustration: .init(count: 0),
                 id: original.view.id,
                 inForegroundPeriods: original.view.inForegroundPeriods,
+                interactionToNextPaint: nil,
+                interactionToNextPaintTargetSelector: nil,
                 isActive: false,
                 isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: original.view.largestContentfulPaint,
+                largestContentfulPaintTargetSelector: nil,
                 loadEvent: original.view.loadEvent,
                 loadingTime: original.view.loadingTime,
                 loadingType: original.view.loadingType,
@@ -455,7 +471,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,
@@ -464,6 +480,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             application: .init(
                 id: applicationID
             ),
+            buildVersion: context.buildNumber,
             ciTest: ciTest,
             connectivity: RUMConnectivity(
                 networkInfo: context.networkConnectionInfo,
@@ -471,7 +488,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(device: context.device),
+            device: .init(device: context.device, telemetry: telemetry),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded
@@ -498,6 +515,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 cpuTicksPerSecond: nil,
                 crash: .init(count: 0),
                 cumulativeLayoutShift: nil,
+                cumulativeLayoutShiftTargetSelector: nil,
                 customTimings: nil,
                 domComplete: nil,
                 domContentLoaded: nil,
@@ -506,6 +524,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 firstByte: nil,
                 firstContentfulPaint: nil,
                 firstInputDelay: nil,
+                firstInputTargetSelector: nil,
                 firstInputTime: nil,
                 flutterBuildTime: nil,
                 flutterRasterTime: nil,
@@ -513,10 +532,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 frustration: .init(count: 0),
                 id: viewUUID.toRUMDataFormat,
                 inForegroundPeriods: nil,
+                interactionToNextPaint: nil,
+                interactionToNextPaintTargetSelector: nil,
                 isActive: false, // we know it won't receive updates
                 isSlowRendered: false,
                 jsRefreshRate: nil,
                 largestContentfulPaint: nil,
+                largestContentfulPaintTargetSelector: nil,
                 loadEvent: nil,
                 loadingTime: nil,
                 loadingType: nil,

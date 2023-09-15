@@ -21,19 +21,14 @@ class CrashLogReceiverTests: XCTestCase {
         )
 
         // When
-        let sent: LogEvent = .mockRandom()
-
         core.send(
-            message: .custom(key: LoggingMessageKeys.crash, baggage: [
-                "report": DDCrashReport.mockAny(),
-                "context": CrashContext.mockWith(lastRUMViewEvent: nil)
-            ])
-        )
-
-        core.send(
-            message: .custom(key: LoggingMessageKeys.crash, baggage: [
-                "log": sent
-            ])
+            message: .baggage(
+                key: MessageBusSender.MessageKeys.crash,
+                value: MessageBusSender.Crash(
+                    report: DDCrashReport.mockAny(),
+                    context: CrashContext.mockWith(lastRUMViewEvent: nil)
+                )
+            )
         )
 
         // Then
@@ -106,6 +101,7 @@ class CrashLogReceiverTests: XCTestCase {
             service: .mockRandom(),
             env: .mockRandom(),
             version: .mockRandom(),
+            buildNumber: .mockRandom(),
             device: .mockWith(
                 name: mockOSName,
                 osVersion: mockOSVersion,
@@ -148,6 +144,7 @@ class CrashLogReceiverTests: XCTestCase {
             loggerVersion: crashContext.sdkVersion,
             threadName: nil,
             applicationVersion: crashContext.version,
+            applicationBuildNumber: crashContext.buildNumber,
             dd: .init(device: .init(architecture: mockArchitecture)),
             os: .init(
                 name: mockOSName,

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 
 /// Provides set of assertions for single `Log` JSON object and collection of `[Log]`.
 /// Note: this file is individually referenced by integration tests target, so no dependency on other source files should be introduced.
@@ -14,12 +15,13 @@ internal class LogMatcher: JSONDataMatcher {
         static let date = "date"
         static let status = "status"
         static let message = "message"
-        static let serviceName = "service"
+        static let service = "service"
         static let tags = "ddtags"
 
         // MARK: - Application info
 
         static let applicationVersion = "version"
+        static let applicationBuildNumber = "build_version"
 
         // MARK: - Logger info
 
@@ -77,6 +79,14 @@ internal class LogMatcher: JSONDataMatcher {
             .map { LogMatcher(from: $0) }
     }
 
+    class func fromLogsRequest(_ request: URLRequest, file: StaticString = #file, line: UInt = #line) throws -> [LogMatcher] {
+        guard let body = try request.decompressed().httpBody else {
+            XCTFail("Request has no body", file: file, line: line)
+            return []
+        }
+        return try fromArrayOfJSONObjectsData(body)
+    }
+
     override private init(from jsonObject: [String: Any]) {
         super.init(from: jsonObject)
     }
@@ -95,8 +105,8 @@ internal class LogMatcher: JSONDataMatcher {
         XCTAssertTrue(datePredicate(date), file: file, line: line)
     }
 
-    func assertServiceName(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
-        assertValue(forKey: JSONKey.serviceName, equals: serviceName, file: file, line: line)
+    func assertService(equals serviceName: String, file: StaticString = #file, line: UInt = #line) {
+        assertValue(forKey: JSONKey.service, equals: serviceName, file: file, line: line)
     }
 
     func assertThreadName(equals threadName: String, file: StaticString = #file, line: UInt = #line) {
@@ -113,6 +123,10 @@ internal class LogMatcher: JSONDataMatcher {
 
     func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.applicationVersion, equals: applicationVersion, file: file, line: line)
+    }
+
+    func assertApplicationBuildNumber(equals applicationBuildNumber: String, file: StaticString = #file, line: UInt = #line) {
+        assertValue(forKey: JSONKey.applicationBuildNumber, equals: applicationBuildNumber, file: file, line: line)
     }
 
     func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {

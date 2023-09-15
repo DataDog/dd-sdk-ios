@@ -33,18 +33,17 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -70,7 +69,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 1)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -81,18 +79,17 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -118,7 +115,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 1)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -137,24 +133,23 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenWritingEventsWithForcingNewBatch_itUploadsEachEventInSeparateRequest() throws {
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-
         // Given
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
             performance: .mockRandom(),
-            httpClient: HTTPClient(session: server.getInterceptedURLSession()),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: "mock"))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
         scope.eventWriteContext(forceNewBatch: true) { context, writer in
@@ -171,7 +166,6 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         core.flushAndTearDown()
-        server.waitFor(requestsCompletion: 3)
 
         let uploadedEvents = requestBuilderSpy.requestParameters
             .flatMap { $0.events }
@@ -190,23 +184,39 @@ class DatadogCoreTests: XCTestCase {
     }
 
     func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
-        let core = DatadogCore(
+        // Given
+        let core1 = DatadogCore(
             directory: temporaryCoreDirectory,
             dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
             initialConsent: .granted,
             performance: .mockRandom(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
-        try core.register(
+        let core2 = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer {
+            core1.flushAndTearDown()
+            core2.flushAndTearDown()
+        }
+
+        // When
+        try core1.register(
             feature: FeatureMock(performanceOverride: nil)
         )
-        let store = core.stores.values.first
-        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
-        XCTAssertEqual(store?.storage.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
-        try core.register(
+        try core2.register(
             feature: FeatureMock(
                 performanceOverride: PerformancePresetOverride(
                     maxFileSize: 123,
@@ -216,11 +226,17 @@ class DatadogCoreTests: XCTestCase {
                 )
             )
         )
-        let storage = core.stores.values.first?.storage
-        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
-        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
-        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
-        XCTAssertEqual(storage?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+
+        // Then
+        let storage1 = core1.stores.values.first?.storage
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+
+        let storage2 = core2.stores.values.first?.storage
+        XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
+        XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
+        XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
+        XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
     }
 
     func testItUpdatesTheFeatureBaggage() throws {
@@ -231,25 +247,26 @@ class DatadogCoreTests: XCTestCase {
             dateProvider: SystemDateProvider(),
             initialConsent: .mockRandom(),
             performance: .mockRandom(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: contextProvider,
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
         try core.register(feature: FeatureMock())
 
         // When
-        core.update(feature: "mock") {
+        core.update(feature: FeatureMock.name) {
             return ["foo": "bar"]
         }
-        core.update(feature: "mock") {
+        core.update(feature: FeatureMock.name) {
             return ["bizz": "bazz"]
         }
 
         // Then
         let context = contextProvider.read()
-        XCTAssertEqual(context.featuresAttributes["mock"]?.foo, "bar")
-        XCTAssertEqual(context.featuresAttributes["mock"]?.bizz, "bazz")
+        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.foo, "bar")
+        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.bizz, "bazz")
     }
 }

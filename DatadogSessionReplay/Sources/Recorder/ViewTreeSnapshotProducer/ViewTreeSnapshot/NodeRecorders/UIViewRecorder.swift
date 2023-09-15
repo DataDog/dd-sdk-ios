@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
@@ -66,3 +67,4 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

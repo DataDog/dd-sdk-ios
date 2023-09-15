@@ -18,7 +18,11 @@ class RequestBuilderTests: XCTestCase {
 
     func testItCreatesPOSTRequest() {
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
 
         // When
         let request = builder.request(for: mockEvents, with: .mockAny())
@@ -29,7 +33,11 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsRUMIntakeURL() {
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
 
         // When
         func url(for site: DatadogSite) -> String {
@@ -49,7 +57,11 @@ class RequestBuilderTests: XCTestCase {
     func testItSetsCustomIntakeURL() {
         // Given
         let randomURL: URL = .mockRandom()
-        let builder = RequestBuilder(customIntakeURL: randomURL, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: randomURL,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
 
         // When
         func url(for site: DatadogSite) -> String {
@@ -75,7 +87,11 @@ class RequestBuilderTests: XCTestCase {
         let randomSDKVersion: String = .mockRandom(among: .alphanumerics)
 
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
         let context: DatadogContext = .mockWith(
             service: randomService,
             env: randomEnv,
@@ -100,7 +116,11 @@ class RequestBuilderTests: XCTestCase {
         let randomVariant: String = .mockRandom(among: .alphanumerics)
 
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
         let context: DatadogContext = .mockWith(variant: randomVariant)
 
         // When
@@ -125,7 +145,11 @@ class RequestBuilderTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
 
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
         let context: DatadogContext = .mockWith(
             clientToken: randomClientToken,
             service: randomService,
@@ -162,7 +186,11 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsHTTPBodyInExpectedFormat() {
         // Given
-        let builder = RequestBuilder(customIntakeURL: nil, eventsFilter: .init())
+        let builder = RequestBuilder(
+            customIntakeURL: nil,
+            eventsFilter: .init(),
+            telemetry: NOPTelemetry()
+        )
 
         // When
         let request = builder.request(for: mockEvents, with: .mockAny())

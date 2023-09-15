@@ -10,7 +10,6 @@ import DatadogInternal
 @testable import DatadogCore
 
 class FilesOrchestrator_MetricsTests: XCTestCase {
-    private var dd: DDMock<CoreLoggerMock, TelemetryMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private let telemetry = TelemetryMock()
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private var storage: StoragePerformanceMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -18,7 +17,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        dd = DD.mockWith(telemetry: telemetry)
         CreateTemporaryDirectory()
 
         let performance: PerformancePreset = .mockRandom()
@@ -28,7 +26,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func tearDown() {
         DeleteTemporaryDirectory()
-        dd.reset()
         super.tearDown()
     }
 
@@ -37,6 +34,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             directory: Directory(url: temporaryDirectory),
             performance: PerformancePreset.combining(storagePerformance: storage, uploadPerformance: upload),
             dateProvider: dateProvider,
+            telemetry: telemetry,
             metricsData: .init(trackName: "track name", uploaderPerformance: upload)
         )
     }
@@ -46,13 +44,13 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
     func testWhenReadableFileIsDeleted_itSendsBatchDeletedMetric() throws {
         // Given
         let orchestrator = createOrchestrator()
-        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1) as? ReadableFile)
+        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1, context: .mockAny()) as? ReadableFile)
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
         // When:
         // - wait and delete the file
         dateProvider.advance(bySeconds: expectedBatchAge)
-        orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202))
+        orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202), context: .mockAny())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
@@ -74,13 +72,13 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // Given:
         // - request some batch to be created
         let orchestrator = createOrchestrator()
-        _ = try orchestrator.getWritableFile(writeSize: 1)
+        _ = try orchestrator.getWritableFile(writeSize: 1, context: .mockAny())
 
         // When:
         // - wait more than batch obsolescence limit
         // - then request readable file, which should trigger obsolete files deletion
         dateProvider.advance(bySeconds: storage.maxFileAgeForRead + 1)
-        _ = orchestrator.getReadableFile()
+        _ = orchestrator.getReadableFile(context: .mockAny())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
@@ -104,14 +102,14 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - write more data than allowed directory size limit
         storage.maxDirectorySize = 10 // 10 bytes
         let orchestrator = createOrchestrator()
-        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize + 1)
+        let file = try orchestrator.getWritableFile(writeSize: storage.maxDirectorySize + 1, context: .mockAny())
         try file.append(data: .mockRandom(ofSize: storage.maxDirectorySize + 1))
         let expectedBatchAge = storage.minFileAgeForRead + 1
 
         // When:
         // - then request new batch, which triggers directory purging
         dateProvider.advance(bySeconds: expectedBatchAge)
-        _ = try orchestrator.getNewWritableFile(writeSize: 1)
+        _ = try orchestrator.getNewWritableFile(writeSize: 1, context: .mockAny())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
@@ -129,6 +127,21 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         ])
     }
 
+    func testWhenAppIsInBackground_itSendsBatchInBackgroundMetric() throws {
+        // Given
+        let orchestrator = createOrchestrator()
+        let context: DatadogContext = .mockWith(applicationStateHistory: .mockAppInBackground())
+        let file = try XCTUnwrap(orchestrator.getWritableFile(writeSize: 1, context: context) as? ReadableFile)
+
+        // When:
+        orchestrator.delete(readableFile: file, deletionReason: .intakeCode(responseCode: 202), context: context)
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
+        let inBackground = try XCTUnwrap(metric.attributes["in_background"] as? Bool)
+        XCTAssertTrue(inBackground)
+    }
+
     // MARK: - "Batch Closed" Metric
 
     func testWhenNewBatchIsStarted_itSendsBatchClosedMetric() throws {
@@ -138,14 +151,14 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         let orchestrator = createOrchestrator()
         let expectedWrites: [UInt64] = [10, 5, 2]
         try expectedWrites.forEach { writeSize in
-            _ = try orchestrator.getWritableFile(writeSize: writeSize)
+            _ = try orchestrator.getWritableFile(writeSize: writeSize, context: .mockAny())
         }
 
         // When
         // - wait more than allowed batch age for writes, so next batch request will create another batch
         // - then request another batch, which will close the previous one
         dateProvider.advance(bySeconds: (storage.maxFileAgeForWrite + 1))
-        _ = try orchestrator.getWritableFile(writeSize: 1)
+        _ = try orchestrator.getWritableFile(writeSize: 1, context: .mockAny())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Closed"))
@@ -167,7 +180,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         let orchestrator = createOrchestrator()
         let expectedWrites: [UInt64] = [10, 5, 2]
         try expectedWrites.forEach { writeSize in
-            _ = try orchestrator.getWritableFile(writeSize: writeSize)
+            _ = try orchestrator.getWritableFile(writeSize: writeSize, context: .mockAny())
         }
         let expectedBatchDuration = storage.maxFileAgeForWrite - 1
 
@@ -175,7 +188,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - wait less than allowed batch age for writes
         // - then request new batch, which closes the previous one
         dateProvider.advance(bySeconds: expectedBatchDuration)
-        _ = try orchestrator.getNewWritableFile(writeSize: 1)
+        _ = try orchestrator.getNewWritableFile(writeSize: 1, context: .mockAny())
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Closed"))

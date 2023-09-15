@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal protocol TextObfuscating {
@@ -52,3 +53,4 @@ internal struct NOPTextObfuscator: TextObfuscating {
         return text
     }
 }
+#endif

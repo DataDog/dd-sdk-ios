@@ -5,7 +5,6 @@
  */
 
 import DatadogCore
-import DatadogInternal
 import DatadogTrace
 
 class TracerE2ETests: E2ETests {

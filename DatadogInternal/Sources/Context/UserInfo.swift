@@ -6,7 +6,7 @@
 
 import Foundation
 
-public struct UserInfo: Codable, DictionaryEncodable {
+public struct UserInfo: Codable, PassthroughAnyCodable {
     /// User ID, if any.
     public let id: String?
     /// Name representing the user, if any.

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 /// A type recording semantics of a given `UIView` or its subclasses. Different implementations of `NodeRecorder` should
@@ -34,3 +35,4 @@ internal protocol NodeWireframesBuilder {
     /// - Returns: one or more wireframes that describe a node in SR.
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe]
 }
+#endif

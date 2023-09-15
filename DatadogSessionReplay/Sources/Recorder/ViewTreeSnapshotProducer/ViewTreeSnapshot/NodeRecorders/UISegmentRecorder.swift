@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
@@ -92,7 +93,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
             segmentRects.append(segmentRect)
         }
 
-        let segments = (0..<numberOfSegments).map { idx in
+        let segments: [SRWireframe] = (0..<numberOfSegments).map { idx in
             let isSelected = idx == selectedSegmentIndex
             return builder.createTextWireframe(
                 id: segmentWireframeIDs[idx],
@@ -113,3 +114,4 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
         return [background] + segments
     }
 }
+#endif

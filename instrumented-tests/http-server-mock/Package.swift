@@ -1,11 +1,10 @@
-// swift-tools-version:5.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
+// swift-tools-version: 5.6.0
 
 import PackageDescription
 
 let package = Package(
     name: "HTTPServerMock",
-    platforms: [.macOS(.v10_12)],
+    platforms: [.macOS(.v10_13)],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(

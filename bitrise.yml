@@ -243,13 +243,13 @@ workflows:
         title: Run unit tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
         inputs:
-        - scheme: DatadogSessionReplay-Package
+        - scheme: DatadogSessionReplay iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - should_build_before_test: 'no'
         - is_clean_build: 'no'
         - generate_code_coverage_files: 'yes'
-        - project_path: DatadogSessionReplay/Package.swift
-        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-unit-tests.html"
+        - project_path: Datadog.xcworkspace
+        - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/DatadogSessionReplay-ios-unit-tests.html"
     - script:
         title: Pull Session Replay snapshots
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
@@ -258,6 +258,17 @@ workflows:
             #!/usr/bin/env zsh
             set -e
             make sr-pull-snapshots
+    - script:
+        title: Configure SRSnapshotTests project launch
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - content: |
+            #!/usr/bin/env zsh
+
+            # The `SRSnapshotTests.xcworkspace` depends on `dd-sdk-ios/Package.swift` but requires the `dd-sdk-ios/TestUtilities` library, 
+            # which is not defined statically in the root package. To add it dynamically, we leverage the `DD_TEST_UTILITIES_ENABLED` ENV
+            # variable respected by the main package. Here we export it so it is available in next CI steps:
+            envman add --key DD_TEST_UTILITIES_ENABLED --value '1'
     - xcode-test:
         title: Run snapshot tests for Session Replay - iOS Simulator
         run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'

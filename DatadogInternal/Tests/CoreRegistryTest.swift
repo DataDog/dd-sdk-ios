@@ -10,14 +10,6 @@ import TestUtilities
 @testable import DatadogInternal
 
 class CoreRegistryTest: XCTestCase {
-    override func tearDown() {
-        // make sure to clean the registry:
-        // conccurency test can leve the registry unclean
-        CoreRegistry.unregisterDefault()
-        CoreRegistry.unregisterInstance(named: "test")
-        super.tearDown()
-    }
-
     func testRegistration() {
         let core = PassthroughCoreMock()
         CoreRegistry.register(default: core)
@@ -26,11 +18,15 @@ class CoreRegistryTest: XCTestCase {
         let name: String = .mockRandom()
         CoreRegistry.register(core, named: name)
         XCTAssertTrue(CoreRegistry.instance(named: name) === core)
+        XCTAssertTrue(CoreRegistry.isRegistered(instanceName: CoreRegistry.defaultInstanceName))
+        XCTAssertTrue(CoreRegistry.isRegistered(instanceName: name))
 
         CoreRegistry.unregisterDefault()
-        XCTAssertTrue(CoreRegistry.default is NOPDatadogCore)
         CoreRegistry.unregisterInstance(named: name)
+        XCTAssertTrue(CoreRegistry.default is NOPDatadogCore)
         XCTAssertTrue(CoreRegistry.instance(named: name) is NOPDatadogCore)
+        XCTAssertFalse(CoreRegistry.isRegistered(instanceName: CoreRegistry.defaultInstanceName))
+        XCTAssertFalse(CoreRegistry.isRegistered(instanceName: name))
     }
 
     func testConcurrency() {
@@ -46,5 +42,8 @@ class CoreRegistryTest: XCTestCase {
             { CoreRegistry.unregisterInstance(named: "test") }
         )
         // swiftlint:enable opening_brace
+
+        CoreRegistry.unregisterDefault()
+        CoreRegistry.unregisterInstance(named: "test")
     }
 }

@@ -32,6 +32,10 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMActionEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMActionEventRUMCITest(root: root) : nil
     }
@@ -185,8 +189,8 @@ public class DDRUMActionEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -856,6 +860,10 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMErrorEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMErrorEventRUMCITest(root: root) : nil
     }
@@ -958,8 +966,8 @@ public class DDRUMErrorEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -1851,6 +1859,10 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMLongTaskEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMLongTaskEventRUMCITest(root: root) : nil
     }
@@ -1953,8 +1965,8 @@ public class DDRUMLongTaskEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -2489,6 +2501,10 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMResourceEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMResourceEventRUMCITest(root: root) : nil
     }
@@ -2603,8 +2619,8 @@ public class DDRUMResourceEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -3444,6 +3460,10 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMViewEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMViewEventRUMCITest(root: root) : nil
     }
@@ -3558,8 +3578,8 @@ public class DDRUMViewEventDDConfiguration: NSObject {
         self.root = root
     }
 
-    @objc public var sessionReplaySampleRate: NSNumber {
-        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber
+    @objc public var sessionReplaySampleRate: NSNumber? {
+        root.swiftModel.dd.configuration!.sessionReplaySampleRate as NSNumber?
     }
 
     @objc public var sessionSampleRate: NSNumber {
@@ -4206,6 +4226,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShift as NSNumber?
     }
 
+    @objc public var cumulativeLayoutShiftTargetSelector: String? {
+        root.swiftModel.view.cumulativeLayoutShiftTargetSelector
+    }
+
     @objc public var customTimings: [String: NSNumber]? {
         root.swiftModel.view.customTimings as [String: NSNumber]?
     }
@@ -4238,6 +4262,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.firstInputDelay as NSNumber?
     }
 
+    @objc public var firstInputTargetSelector: String? {
+        root.swiftModel.view.firstInputTargetSelector
+    }
+
     @objc public var firstInputTime: NSNumber? {
         root.swiftModel.view.firstInputTime as NSNumber?
     }
@@ -4266,6 +4294,14 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.inForegroundPeriods?.map { DDRUMViewEventViewInForegroundPeriods(swiftModel: $0) }
     }
 
+    @objc public var interactionToNextPaint: NSNumber? {
+        root.swiftModel.view.interactionToNextPaint as NSNumber?
+    }
+
+    @objc public var interactionToNextPaintTargetSelector: String? {
+        root.swiftModel.view.interactionToNextPaintTargetSelector
+    }
+
     @objc public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
     }
@@ -4280,6 +4316,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var largestContentfulPaint: NSNumber? {
         root.swiftModel.view.largestContentfulPaint as NSNumber?
+    }
+
+    @objc public var largestContentfulPaintTargetSelector: String? {
+        root.swiftModel.view.largestContentfulPaintTargetSelector
     }
 
     @objc public var loadEvent: NSNumber? {
@@ -5102,6 +5142,14 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.actionNameAttribute
     }
 
+    @objc public var allowFallbackToLocalStorage: NSNumber? {
+        root.swiftModel.telemetry.configuration.allowFallbackToLocalStorage as NSNumber?
+    }
+
+    @objc public var allowUntrustedEvents: NSNumber? {
+        root.swiftModel.telemetry.configuration.allowUntrustedEvents as NSNumber?
+    }
+
     @objc public var batchSize: NSNumber? {
         root.swiftModel.telemetry.configuration.batchSize as NSNumber?
     }
@@ -5180,6 +5228,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     @objc public var startSessionReplayRecordingManually: NSNumber? {
         set { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually as NSNumber? }
+    }
+
+    @objc public var storeContextsAcrossPages: NSNumber? {
+        root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
     }
 
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
@@ -5310,6 +5362,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useTracing as NSNumber?
     }
 
+    @objc public var useWorkerUrl: NSNumber? {
+        root.swiftModel.telemetry.configuration.useWorkerUrl as NSNumber?
+    }
+
     @objc public var viewTrackingStrategy: DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy {
         .init(swift: root.swiftModel.telemetry.configuration.viewTrackingStrategy)
     }
@@ -5434,4 +5490,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00
+// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d

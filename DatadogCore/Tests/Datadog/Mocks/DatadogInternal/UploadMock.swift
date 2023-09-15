@@ -7,36 +7,26 @@
 import Foundation
 import TestUtilities
 import DatadogInternal
-@testable import DatadogCore
 
-internal struct FeatureRequestBuilderMock: FeatureRequestBuilder {
-    let url: URL
-    let queryItems: [URLRequestBuilder.QueryItem]
-    let headers: [URLRequestBuilder.HTTPHeader]
-    let format: DataFormat
+internal class FeatureRequestBuilderMock: FeatureRequestBuilder {
+    private let factory: (([Event], DatadogContext) throws -> URLRequest)
 
-    init(
-        url: URL = .mockAny(),
-        queryItems: [URLRequestBuilder.QueryItem] = [],
-        headers: [URLRequestBuilder.HTTPHeader] = [],
-        format: DataFormat = .mockWith(prefix: "[", suffix: "]", separator: ",")
-    ) {
-        self.url = url
-        self.queryItems = queryItems
-        self.headers = headers
-        self.format = format
+    init(factory: @escaping (([Event], DatadogContext) throws -> URLRequest) = { _, _ in .mockAny() }) {
+        self.factory = factory
+    }
+
+    convenience init(request: URLRequest) {
+        self.init(factory: { _, _ in request })
     }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let builder = URLRequestBuilder(url: url, queryItems: queryItems, headers: headers)
-        let data = format.format(events.map { $0.data })
-        return builder.uploadRequest(with: data)
+        return try factory(events, context)
     }
 }
 
 internal class FeatureRequestBuilderSpy: FeatureRequestBuilder {
     /// Records parameters passed to `requet(for:with:)`
-    var requestParameters: [(events: [Event], context: DatadogContext)] = []
+    private(set) var requestParameters: [(events: [Event], context: DatadogContext)] = []
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         requestParameters.append((events: events, context: context))
