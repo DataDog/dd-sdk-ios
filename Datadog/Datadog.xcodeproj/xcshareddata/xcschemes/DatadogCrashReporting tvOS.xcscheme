@@ -34,7 +34,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
-            BuildableName = "DatadogCrashReportingTests.xctest"
+            BuildableName = "DatadogCrashReportingTests tvOS.xctest"
             BlueprintName = "DatadogCrashReportingTests tvOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
@@ -157,7 +157,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
-               BuildableName = "DatadogCrashReportingTests.xctest"
+               BuildableName = "DatadogCrashReportingTests tvOS.xctest"
                BlueprintName = "DatadogCrashReportingTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>

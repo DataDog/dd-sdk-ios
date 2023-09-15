@@ -1816,7 +1816,7 @@
 		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
 		3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
 		3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogWebViewTrackingTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogWebViewTrackingTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
@@ -1965,7 +1965,7 @@
 		61133B82242393DE00786299 /* DatadogCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61133B85242393DE00786299 /* DatadogCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DatadogCore.h; sourceTree = "<group>"; };
 		61133B86242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		61133B8B242393DE00786299 /* DatadogCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61133B8B242393DE00786299 /* DatadogCoreTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogCoreTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		61133B92242393DE00786299 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		61133BA72423979B00786299 /* FileWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FileWriter.swift; sourceTree = "<group>"; };
 		61133BA92423979B00786299 /* FilesOrchestrator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FilesOrchestrator.swift; sourceTree = "<group>"; };
@@ -2555,7 +2555,7 @@
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
 		D2C7E3AD28FEBDA10023B2CC /* LaunchTimePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTimePublisher.swift; sourceTree = "<group>"; };
 		D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		D2CB6F8F27C520D400A62B57 /* DatadogCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DatadogCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D2CB6F8F27C520D400A62B57 /* DatadogCoreTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogCoreTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogObjc.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogCrashReporting.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2CB6FEC27C5352300A62B57 /* DatadogCrashReportingTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogCrashReportingTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3581,7 +3581,7 @@
 			isa = PBXGroup;
 			children = (
 				61133B82242393DE00786299 /* DatadogCore.framework */,
-				61133B8B242393DE00786299 /* DatadogCoreTests.xctest */,
+				61133B8B242393DE00786299 /* DatadogCoreTests iOS.xctest */,
 				61133BF0242397DA00786299 /* DatadogObjc.framework */,
 				61441C0224616DE9003D8BB8 /* Example iOS.app */,
 				61441C6824619FE4003D8BB8 /* DatadogBenchmarkTests.xctest */,
@@ -3591,7 +3591,7 @@
 				61993665265BBEDC009D7EA8 /* E2ETests.xctest */,
 				618F9840265BC486009959F8 /* E2EInstrumentationTests.xctest */,
 				D2CB6ED127C50EAE00A62B57 /* DatadogCore.framework */,
-				D2CB6F8F27C520D400A62B57 /* DatadogCoreTests.xctest */,
+				D2CB6F8F27C520D400A62B57 /* DatadogCoreTests tvOS.xctest */,
 				D2CB6FB027C5217A00A62B57 /* DatadogObjc.framework */,
 				D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */,
 				D2CB6FEC27C5352300A62B57 /* DatadogCrashReportingTests tvOS.xctest */,
@@ -3615,7 +3615,7 @@
 				D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */,
 				D23F8ECD29DDCD38001CFAE8 /* DatadogRUMTests tvOS.xctest */,
 				3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */,
-				3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests.xctest */,
+				3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */,
 				6133D1F52A6ED9E100384BEF /* DatadogSessionReplay.framework */,
 				6133D2082A6EDB7700384BEF /* DatadogSessionReplayTests iOS.xctest */,
 			);
@@ -5890,7 +5890,7 @@
 			);
 			name = "DatadogWebViewTrackingTests iOS";
 			productName = "DatadogWebViewTracking iOSTests";
-			productReference = 3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests.xctest */;
+			productReference = 3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		61133B81242393DE00786299 /* DatadogCore iOS */ = {
@@ -5930,7 +5930,7 @@
 			);
 			name = "DatadogCoreTests iOS";
 			productName = DatadogTests;
-			productReference = 61133B8B242393DE00786299 /* DatadogCoreTests.xctest */;
+			productReference = 61133B8B242393DE00786299 /* DatadogCoreTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		61133BEF242397DA00786299 /* DatadogObjc iOS */ = {
@@ -6472,7 +6472,7 @@
 			);
 			name = "DatadogCoreTests tvOS";
 			productName = DatadogTests;
-			productReference = D2CB6F8F27C520D400A62B57 /* DatadogCoreTests.xctest */;
+			productReference = D2CB6F8F27C520D400A62B57 /* DatadogCoreTests tvOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		D2CB6F9227C5217A00A62B57 /* DatadogObjc tvOS */ = {
@@ -9157,7 +9157,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogWebViewTrackingTests;
-				PRODUCT_NAME = DatadogWebViewTrackingTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -9187,7 +9187,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogWebViewTrackingTests;
-				PRODUCT_NAME = DatadogWebViewTrackingTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -9216,7 +9216,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.DatadogWebViewTrackingTests;
-				PRODUCT_NAME = DatadogWebViewTrackingTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -9418,7 +9418,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -9444,7 +9444,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -10362,7 +10362,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
@@ -11922,7 +11922,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
@@ -11946,7 +11946,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";
@@ -11969,7 +11969,7 @@
 					"@loader_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.datadogqh.DatadogTests;
-				PRODUCT_NAME = "$(DD_SWIFT_SDK_PRODUCT_NAME)Tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "TargetSupport/DatadogTests/DatadogTests-Bridging-Header.h";

@@ -29,7 +29,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6FD327C5352300A62B57"
-               BuildableName = "DatadogCrashReportingTests.xctest"
+               BuildableName = "DatadogCrashReportingTests tvOS.xctest"
                BlueprintName = "DatadogCrashReportingTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
@@ -47,9 +47,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "D24067F827CE6C9E00C04F44"
-            BuildableName = "Example tvOS.app"
-            BlueprintName = "Example tvOS"
+            BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
+            BuildableName = "DatadogCoreTests tvOS.xctest"
+            BlueprintName = "DatadogCoreTests tvOS"
             ReferencedContainer = "container:Datadog.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -147,7 +147,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_CIVISIBILITY_ITR_ENABLED"
-            value = "1"
+            value = "0"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable
@@ -178,7 +178,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "D2CB6ED327C520D400A62B57"
-               BuildableName = "DatadogCoreTests.xctest"
+               BuildableName = "DatadogCoreTests tvOS.xctest"
                BlueprintName = "DatadogCoreTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
