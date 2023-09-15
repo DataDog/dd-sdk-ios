@@ -146,9 +146,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.
-                    _ = try self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try self.dataUploader.upload(events: nextBatch.events, context: context)
                 } catch {
-                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: context)
                 }
             }
         }
