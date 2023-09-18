@@ -77,7 +77,7 @@ class NodeIDGeneratorTests: XCTestCase {
         // Then
         XCTAssertEqual(Set(ids1).intersection(Set(ids2)), [])
     }
-    
+
     func testIDisDifferentWhenRecorderChanges() {
         // Given
         let view: UIView = .mockRandom()
