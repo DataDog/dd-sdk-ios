@@ -15,7 +15,11 @@ class UIKitExtensionsTests: XCTestCase {
         let swiftViewController = CustomSwiftViewController()
         let objcViewController = CustomObjcViewController()
 
-        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests.CustomSwiftViewController")
+        #if os(iOS)
+        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests_iOS.CustomSwiftViewController")
+        #elseif os(tvOS)
+        XCTAssertEqual(swiftViewController.canonicalClassName, "DatadogCoreTests_tvOS.CustomSwiftViewController")
+        #endif
         XCTAssertEqual(objcViewController.canonicalClassName, "CustomObjcViewController")
     }
 

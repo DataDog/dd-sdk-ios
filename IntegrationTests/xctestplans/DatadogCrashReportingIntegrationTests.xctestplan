@@ -92,7 +92,7 @@
       },
       {
         "key" : "DD_CIVISIBILITY_ITR_ENABLED",
-        "value" : "1"
+        "value" : "0"
       },
       {
         "key" : "DD_CIVISIBILITY_EXCLUDED_BRANCHES",
