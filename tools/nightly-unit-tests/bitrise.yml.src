@@ -55,8 +55,6 @@ workflows:
         - scheme: $PROJECT_SCHEME
         - destination: platform=iOS Simulator,name=$SIMULATOR_DEVICE,OS=$SIMULATOR_OS_VERSION
         - is_clean_build: 'no'
-        - test_repetition_mode: 'retry_on_failure'
-        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Unit-tests-${PROJECT_SCHEME}-${SIMULATOR_DEVICE} (${SIMULATOR_OS_VERSION}).html"
     - deploy-to-bitrise-io: {}
