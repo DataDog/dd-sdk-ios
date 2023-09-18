@@ -19,8 +19,8 @@ internal typealias NodeID = Int64
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
 internal final class NodeIDGenerator {
-    /// Dictionary of generated node IDs for given `UIView` /  `NodeRecorder` pairs.
-    private var ids = [String: [NodeID]]()
+    /// Cache of generated node IDs for given `UIView` /  `NodeRecorder` pairs.
+    private var ids = Cache<String, [NodeID]>(maximumEntryCount: 10_000)
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
     private let maxID: NodeID
