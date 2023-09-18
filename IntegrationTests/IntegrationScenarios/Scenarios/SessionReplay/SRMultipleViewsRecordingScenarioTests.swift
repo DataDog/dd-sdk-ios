@@ -18,8 +18,33 @@ private extension ExampleApplication {
 }
 
 class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts, SRCommonAsserts {
-    /// The minimal number of SR records expected in this test. If less records are produced, the test will fail.
-    private let recordsCountBaseline = 30
+    /// Number of events expected by this test.
+    ///
+    /// These are **"minimum"** values, computed from a baseline run. Exact values may cause flakiness as number of SR records
+    /// will highly depend on the performance of app, Simulator and CI.
+    private struct Baseline {
+        /// Number of all SR records to pass the test.
+        static let totalRecordsCount = 35
+        /// Number of all "full snapshot" records to pass the test.
+        static let fullSnapshotRecordsCount = 6
+        /// Number of all "incremental snapshot" records to pass the test.
+        static let incrementalSnapshotRecordsCount = 17
+        /// Number of all "meta" records to pass the test.
+        static let metaRecordsCount = 6
+        /// Number of all "focus" records to pass the test.
+        static let focusRecordsCount = 6
+
+        /// Total number of wireframes in all "full snapshot" records.
+        static let totalWireframesInFullSnapshots = 150
+        /// Minimal number of wireframes in each "full snapshot" record.
+        static let minWireframesInFullSnapshot = 5
+
+        /// Total number of "incremental snapshot" records that send "wireframe mutation" data.
+        static let totalWireframeMutationRecords = 7
+        /// Total number of "incremental snapshot" records that send "pointer interaction" data.
+        static let totalTouchDataRecords = 10
+    }
+
 
     func testSRMultipleViewsRecordingScenario() throws {
         // RUM endpoint in `HTTPServerMock`
@@ -36,7 +61,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
                 srEndpoint: srEndpoint.recordingURL
             )
         )
-        for _ in (0..<5) {
+        for _ in (0..<7) {
             app.wait(seconds: 1)
             app.tapNextButton()
         }
@@ -96,32 +121,47 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         }
         
         // Validate SR records.
-        // - Only broad checks on record and wireframe volumes.
+        // - Broad checks on number of records:
         let allRecords = try segments.flatMap { try $0.records() }
-        XCTAssertGreaterThan(allRecords.count, recordsCountBaseline, "Expected at least \(recordsCountBaseline) records, got \(allRecords.count)")
-        
-        let fullSnapshotRecords = try segments.flatMap { try $0.fullSnapshotRecords() }
-        XCTAssertGreaterThan(fullSnapshotRecords.count, 0, "Expected some 'full snapshot' records")
-        for fullSnapshotRecord in fullSnapshotRecords {
-            XCTAssertGreaterThan(try fullSnapshotRecord.wireframes().count, 0, "Each 'full snapshot' must include some wireframes")
-//            print("🕵️‍♂️    → wireframes in FS = \(try fullSnapshotRecord.wireframes().count)")
-        }
+        let fullSnapshotRecords = try segments.flatMap { try $0.records(type: .fullSnapshotRecord) }
+        let incrementalSnapshotRecords = try segments.flatMap { try $0.records(type: .incrementalSnapshotRecord) }
+        let metaRecords = try segments.flatMap { try $0.records(type: .metaRecord) }
+        let focusRecords = try segments.flatMap { try $0.records(type: .focusRecord) }
 
-        let incrementalSnapshotRecords = try segments.flatMap { try $0.incrementalSnapshotRecords() }
-        XCTAssertGreaterThan(incrementalSnapshotRecords.count, 0, "Expected some 'incremental snapshot' records")
-        XCTAssertGreaterThan(try incrementalSnapshotRecords.filter({ try $0.has(incrementalDataType: .mutationData) }).count, 0, "Expected some wireframe mutations")
-        XCTAssertGreaterThan(try incrementalSnapshotRecords.filter({ try $0.has(incrementalDataType: .pointerInteractionData) }).count, 0, "Expected some touch data")
+        XCTAssertGreaterThan(allRecords.count, Baseline.totalRecordsCount, "The number of all records must be above baseline")
+        XCTAssertGreaterThan(fullSnapshotRecords.count, Baseline.fullSnapshotRecordsCount, "The number of 'full snapshot' records must be above baseline")
+        XCTAssertGreaterThan(incrementalSnapshotRecords.count, Baseline.incrementalSnapshotRecordsCount, "The number of 'incremental snapshot' records must be above baseline")
+        XCTAssertGreaterThan(metaRecords.count, Baseline.metaRecordsCount, "The number of 'meta' records must be above baseline")
+        XCTAssertGreaterThan(focusRecords.count, Baseline.focusRecordsCount, "The number of 'focus' records must be above baseline")
 
-        XCTAssertGreaterThan(try segments.flatMap({ try $0.records(type: .metaRecord) }).count, 0, "Expected some 'meta' records")
-        XCTAssertGreaterThan(try segments.flatMap({ try $0.records(type: .focusRecord) }).count, 0, "Expected some 'focus' records")
+        // - Broad checks on contents of "full snapshot" records:
+        let fullSnapshots = try segments.flatMap { try $0.fullSnapshotRecords() }
+        let wireframesInFullSnapshots = try fullSnapshots.flatMap { try $0.wireframes() }
+        let minWireframesInFullSnapshot = try fullSnapshots.map({ try $0.wireframes().count }).min() ?? 0
+        XCTAssertGreaterThan(
+            wireframesInFullSnapshots.count,
+            Baseline.totalWireframesInFullSnapshots,
+            "The total number of wireframes in all 'full snapshot' records must be above baseline"
+        )
+        XCTAssertGreaterThan(
+            minWireframesInFullSnapshot,
+            Baseline.minWireframesInFullSnapshot,
+            "The minimal number of wireframes in each 'full snapshot' records must be above baseline"
+        )
 
-//        print("🕵️‍♂️ allRecords.count = \(allRecords.count)")
-//        print("🕵️‍♂️ fullSnapshotRecords.count = \(fullSnapshotRecords.count)")
-//        print("🕵️‍♂️ incrementalSnapshotRecords.count = \(incrementalSnapshotRecords.count)")
-//        print("🕵️‍♂️ metaRecord.count = \(try segments.flatMap({ try $0.records(type: .metaRecord) }).count)")
-//        print("🕵️‍♂️ focusRecord.count = \(try segments.flatMap({ try $0.records(type: .focusRecord) }).count)")
-//
-//        print("🕵️‍♂️    → wireframe mutations.count = \(try incrementalSnapshotRecords.filter({ try $0.has(incrementalDataType: .mutationData) }).count)")
-//        print("🕵️‍♂️    → touch data.count = \(try incrementalSnapshotRecords.filter({ try $0.has(incrementalDataType: .pointerInteractionData) }).count)")
+        // - Broad checks on contents of "incremental snapshot" records:
+        let incrementalSnapshots = try segments.flatMap { try $0.incrementalSnapshotRecords() }
+        let incrementalWithMutationData = try incrementalSnapshots.filter { try $0.has(incrementalDataType: .mutationData) }
+        let incrementalWithTouchData = try incrementalSnapshots.filter { try $0.has(incrementalDataType: .pointerInteractionData) }
+        XCTAssertGreaterThan(
+            incrementalWithMutationData.count,
+            Baseline.totalWireframeMutationRecords,
+            "The number of 'incremental snapshot' records that send 'wireframe mutation' data must be above baseline"
+        )
+        XCTAssertGreaterThan(
+            incrementalWithTouchData.count,
+            Baseline.totalTouchDataRecords,
+            "The number of 'incremental snapshot' records that send 'touch data' data must be above baseline"
+        )
     }
 }

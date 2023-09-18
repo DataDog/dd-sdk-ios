@@ -55,12 +55,12 @@ internal class SRSegmentMatcher: JSONObjectMatcher {
         try records().filter { try $0.value("type") == type.rawValue }
     }
 
-    /// Returns an array of JSON object matchers for "full snapshot" records.
+    /// Returns an array of specialised matchers for "full snapshot" records.
     func fullSnapshotRecords() throws -> [SRFullSnapshotRecordMatcher] {
         try records(type: .fullSnapshotRecord).map { SRFullSnapshotRecordMatcher(jsonObject: $0.object) }
     }
 
-    /// Returns an array of JSON object matchers for "incremental snapshot" records.
+    /// Returns an array of specialised matchers for "incremental snapshot" records.
     func incrementalSnapshotRecords() throws -> [SRIncrementalSnapshotRecordMatcher] {
         try records(type: .incrementalSnapshotRecord).map { SRIncrementalSnapshotRecordMatcher(jsonObject: $0.object) }
     }

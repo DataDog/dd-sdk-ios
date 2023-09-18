@@ -304,7 +304,7 @@ workflows:
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
     - xcode-test:
-        title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
+        title: Run integration tests for RUM, Logging, Tracing and SR (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - scheme: IntegrationScenarios

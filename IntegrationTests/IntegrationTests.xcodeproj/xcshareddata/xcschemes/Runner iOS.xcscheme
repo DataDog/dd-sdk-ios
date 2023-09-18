@@ -213,7 +213,7 @@
          <EnvironmentVariable
             key = "DD_TEST_SCENARIO_CLASS_NAME"
             value = "SRMultipleViewsRecordingScenario"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
