@@ -19,6 +19,7 @@ internal typealias NodeID = Int64
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
 internal final class NodeIDGenerator {
+    /// Dictionary of generated node IDs for given `UIView` /  `NodeRecorder` pairs.
     private var ids = [String: [NodeID]]()
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
@@ -36,7 +37,7 @@ internal final class NodeIDGenerator {
     /// - Parameter nodeRecorder: the `NodeRecorder` object
     /// - Returns: the `NodeID` of queried instance
     func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
-        let key = nodeRecorder.identifier.uuidString + "-\(view.hash)"
+        let key = nodeRecorder.identifier.uuidString + String(view.hash)
         if let nodeID = ids[key]?.first {
             return nodeID
         } else {
@@ -52,7 +53,7 @@ internal final class NodeIDGenerator {
     /// - Parameter nodeRecorder: the `NodeRecorder` object
     /// - Returns: an array with given number of `NodeID` values
     func nodeIDs(_ size: Int, view: UIView, nodeRecorder: NodeRecorder) -> [NodeID] {
-        let key = nodeRecorder.identifier.uuidString + "-\(view.hash)-\(size)"
+        let key = nodeRecorder.identifier.uuidString + String(view.hash) + String(size)
         if let nodeIDs = ids[key] {
             return nodeIDs
         } else {

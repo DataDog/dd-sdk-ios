@@ -50,14 +50,15 @@ class NodeIDGeneratorTests: XCTestCase {
         // Given
         let maxID: NodeID = .mockRandom(min: 1)
         let currentID: NodeID = maxID - 1
+        let views: [UIView] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
         // When
         let generator = NodeIDGenerator(currentID: currentID, maxID: maxID)
 
         // Then
-        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), currentID)
-        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), maxID)
-        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), 0)
+        XCTAssertEqual(generator.nodeID(view: views[0], nodeRecorder: nodeRecorder), currentID)
+        XCTAssertEqual(generator.nodeID(view: views[1], nodeRecorder: nodeRecorder), maxID)
+        XCTAssertEqual(generator.nodeID(view: views[2], nodeRecorder: nodeRecorder), 0)
     }
 
     func testGivenIDsRetrievedFirstTime_whenQueryingForDifferentSize_itReturnsDistinctIDs() {
@@ -75,5 +76,33 @@ class NodeIDGeneratorTests: XCTestCase {
 
         // Then
         XCTAssertEqual(Set(ids1).intersection(Set(ids2)), [])
+    }
+    
+    func testIDisDifferentWhenRecorderChanges() {
+        // Given
+        let view: UIView = .mockRandom()
+        let generator = NodeIDGenerator()
+        let id = generator.nodeID(view: view, nodeRecorder: nodeRecorder)
+
+        // When
+        let newRecorder = NodeRecorderMock()
+        let newID = generator.nodeID(view: view, nodeRecorder: newRecorder)
+
+        // Then
+        XCTAssertNotEqual(id, newID)
+    }
+
+    func testIDchangesWhenViewChanges() {
+        // Given
+        let view1: UIView = .mockRandom()
+        let view2: UIView = .mockRandom()
+        let generator = NodeIDGenerator()
+        let id = generator.nodeID(view: view1, nodeRecorder: nodeRecorder)
+
+        // When
+        let newID = generator.nodeID(view: view2, nodeRecorder: nodeRecorder)
+
+        // Then
+        XCTAssertNotEqual(id, newID)
     }
 }
