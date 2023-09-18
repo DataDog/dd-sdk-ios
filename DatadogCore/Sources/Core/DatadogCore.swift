@@ -318,7 +318,10 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
         // On user thread: request SDK context.
         contextProvider.read { context in
             // On context thread: request writer for current tracking consent.
-            let writer = storage.writer(for: context, bypassConsent: bypassConsent, forceNewBatch: forceNewBatch)
+            let writer = storage.writer(
+                for: bypassConsent ? .granted : context.trackingConsent,
+                forceNewBatch: forceNewBatch
+            )
 
             // Still on context thread: send `Writer` to EWC caller. The writer implements `AsyncWriter`, so
             // the implementation of `writer.write(value:)` will run asynchronously without blocking the context thread.

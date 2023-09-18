@@ -23,8 +23,7 @@ class DataUploadWorkerTests: XCTestCase {
         orchestrator: orchestrator,
         forceNewFile: false,
         encryption: nil,
-        telemetry: NOPTelemetry(),
-        context: .mockAny()
+        telemetry: NOPTelemetry()
     )
     lazy var reader = FileReader(
         orchestrator: orchestrator,
