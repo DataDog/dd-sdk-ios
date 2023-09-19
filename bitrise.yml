@@ -526,6 +526,15 @@ workflows:
             set -e
             cd tools/distribution && make
             venv/bin/python3 -m pytest tests
+    - script:
+        title: Run tests for nightly-unit-tests tool
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            cd tools/nightly-unit-tests && make
+            venv/bin/python3 -m pytest tests
 
   create_dogfooding_pr:
     description: |-

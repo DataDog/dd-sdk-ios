@@ -52,7 +52,9 @@ class Simulators:
                     os_version=Version.parse(match.groups()[1]),
                     is_installed=match.groups()[2] == 'installed'
                 )
-                self.all.append(simulator)
+
+                if simulator not in self.all:
+                    self.all.append(simulator)
 
         self.installed = list(filter(lambda s: s.is_installed, self.all))
         self.not_installed = list(filter(lambda s: not s.is_installed, self.all))
