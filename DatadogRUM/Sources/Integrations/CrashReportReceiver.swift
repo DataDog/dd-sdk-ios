@@ -372,6 +372,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             view: .init(
                 id: lastRUMView.view.id,
                 inForeground: nil,
+                name: lastRUMView.view.name,
                 referrer: lastRUMView.view.referrer,
                 url: lastRUMView.view.url
             )

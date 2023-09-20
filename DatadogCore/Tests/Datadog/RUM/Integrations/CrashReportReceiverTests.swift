@@ -482,6 +482,10 @@ class CrashReportReceiverTests: XCTestCase {
             "The `RUMErrorEvent` sent must be linked to the same RUM Session as the last `RUMViewEvent`."
         )
 
+        XCTAssertEqual(sendRUMErrorEvent.model.view.name, lastRUMViewEvent.view.name, "It must include view attributes")
+        XCTAssertEqual(sendRUMErrorEvent.model.view.referrer, lastRUMViewEvent.view.referrer, "It must include view attributes")
+        XCTAssertEqual(sendRUMErrorEvent.model.view.url, lastRUMViewEvent.view.url, "It must include view attributes")
+
         XCTAssertNotNil(sendRUMErrorEvent.context, "It must contain context details")
         XCTAssertNotNil(lastRUMViewEvent.context, "It must contain context details")
 
