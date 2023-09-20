@@ -29,7 +29,7 @@ class RUMContextReceiverTests: XCTestCase {
 
     func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() throws {
         // Given
-        let context = try DatadogContext.mockWith(
+        let context = DatadogContext.mockWith(
             baggages: [
                 RUMContext.key: .init(
                     RUMContextMock(
@@ -63,7 +63,7 @@ class RUMContextReceiverTests: XCTestCase {
 
     func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() throws {
         // Given
-        let context1 = try DatadogContext.mockWith(
+        let context1 = DatadogContext.mockWith(
             baggages: [
                 RUMContext.key: .init(
                     RUMContextMock(
@@ -76,7 +76,7 @@ class RUMContextReceiverTests: XCTestCase {
             ]
         )
         let message1 = FeatureMessage.context(context1)
-        let context2 = try DatadogContext.mockWith(
+        let context2 = DatadogContext.mockWith(
             baggages: [
                 RUMContext.key: .init(
                     RUMContextMock(
