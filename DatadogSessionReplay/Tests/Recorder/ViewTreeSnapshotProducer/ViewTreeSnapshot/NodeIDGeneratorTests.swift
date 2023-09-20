@@ -50,15 +50,14 @@ class NodeIDGeneratorTests: XCTestCase {
         // Given
         let maxID: NodeID = .mockRandom(min: 1)
         let currentID: NodeID = maxID - 1
-        let views: [UIView] = [.mockRandom(), .mockRandom(), .mockRandom()]
 
         // When
         let generator = NodeIDGenerator(currentID: currentID, maxID: maxID)
 
         // Then
-        XCTAssertEqual(generator.nodeID(view: views[0], nodeRecorder: nodeRecorder), currentID)
-        XCTAssertEqual(generator.nodeID(view: views[1], nodeRecorder: nodeRecorder), maxID)
-        XCTAssertEqual(generator.nodeID(view: views[2], nodeRecorder: nodeRecorder), 0)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), currentID)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), maxID)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), 0)
     }
 
     func testGivenIDsRetrievedFirstTime_whenQueryingForDifferentSize_itReturnsDistinctIDs() {
@@ -85,8 +84,7 @@ class NodeIDGeneratorTests: XCTestCase {
         let id = generator.nodeID(view: view, nodeRecorder: nodeRecorder)
 
         // When
-        let newRecorder = NodeRecorderMock()
-        let newID = generator.nodeID(view: view, nodeRecorder: newRecorder)
+        let newID = generator.nodeID(view: view, nodeRecorder: NodeRecorderMock())
 
         // Then
         XCTAssertNotEqual(id, newID)

@@ -19,8 +19,6 @@ internal typealias NodeID = Int64
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
 internal final class NodeIDGenerator {
-    /// Cache of generated node IDs for given `UIView` /  `NodeRecorder` pairs.
-    private var ids = Cache<String, [NodeID]>(maximumEntryCount: 10_000)
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
     private let maxID: NodeID
@@ -34,32 +32,36 @@ internal final class NodeIDGenerator {
 
     /// Returns single `NodeID` for given instance of `UIView`.
     /// - Parameter view: the `UIView` object
-    /// - Parameter nodeRecorder: the `NodeRecorder` object
     /// - Returns: the `NodeID` of queried instance
     func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
-        let key = nodeRecorder.identifier.uuidString + String(view.hash)
-        if let nodeID = ids[key]?.first {
-            return nodeID
+        if let currentID = view.nodeID?[nodeRecorder.identifier] {
+            return currentID
         } else {
-            let nodeID = getNextID()
-            ids[key] = [nodeID]
-            return nodeID
+            let id = getNextID()
+            if view.nodeID != nil {
+                view.nodeID?[nodeRecorder.identifier] = id
+            } else {
+                view.nodeID = [nodeRecorder.identifier: id]
+            }
+            return id
         }
     }
 
     /// Returns multiple `NodeIDs` for given instance of `UIView`.
     /// - Parameter size: the number of IDs
     /// - Parameter view: the `UIView` object
-    /// - Parameter nodeRecorder: the `NodeRecorder` object
     /// - Returns: an array with given number of `NodeID` values
     func nodeIDs(_ size: Int, view: UIView, nodeRecorder: NodeRecorder) -> [NodeID] {
-        let key = nodeRecorder.identifier.uuidString + String(view.hash) + String(size)
-        if let nodeIDs = ids[key] {
-            return nodeIDs
+        if let currentIDs = view.nodeIDs?[nodeRecorder.identifier], currentIDs.count == size {
+            return currentIDs
         } else {
-            let nodeIDs = (0..<size).map { _ in getNextID() }
-            ids[key] = nodeIDs
-            return nodeIDs
+            let ids = (0..<size).map { _ in getNextID() }
+            if view.nodeIDs != nil {
+                view.nodeIDs?[nodeRecorder.identifier] = ids
+            } else {
+                view.nodeIDs = [nodeRecorder.identifier: ids]
+            }
+            return ids
         }
     }
 
@@ -67,6 +69,23 @@ internal final class NodeIDGenerator {
         let nextID = currentID
         currentID = currentID < maxID ? (currentID + 1) : 0
         return nextID
+    }
+}
+
+// MARK: - UIView tagging
+
+fileprivate var associatedNodeIDKey: UInt8 = 1
+fileprivate var associatedNodeIDsKey: UInt8 = 2
+
+private extension UIView {
+    var nodeID: [UUID: NodeID]? {
+        set { objc_setAssociatedObject(self, &associatedNodeIDKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedNodeIDKey) as? [UUID: NodeID] }
+    }
+
+    var nodeIDs: [UUID: [NodeID]]? {
+        set { objc_setAssociatedObject(self, &associatedNodeIDsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
+        get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [UUID: [NodeID]] }
     }
 }
 #endif
