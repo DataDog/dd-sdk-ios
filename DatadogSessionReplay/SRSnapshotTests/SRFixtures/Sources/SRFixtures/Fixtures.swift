@@ -7,7 +7,7 @@
 import UIKit
 import SwiftUI
 
-internal enum Fixture: CaseIterable {
+public enum Fixture: CaseIterable {
     case basicShapes
     case basicTexts
     case sliders
@@ -16,59 +16,25 @@ internal enum Fixture: CaseIterable {
     case switches
     case textFields
     case steppers
+    /// Instantiated view controller is ``DatePickersInlineViewController``
     case datePickersInline
+    /// Instantiated view controller is ``DatePickersCompactViewController``
     case datePickersCompact
+    /// Instantiated view controller is ``DatePickersWheelsViewController``
     case datePickersWheels
+    /// Instantiated view controller is ``TimePickersCountDownViewController``
     case timePickersCountDown
+    /// Instantiated view controller is ``TimePickersWheelViewController``
     case timePickersWheels
+    /// Instantiated view controller is ``TimePickersCompactViewController``
     case timePickersCompact
     case images
     case unsupportedViews
+    /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
 
-    var menuItemTitle: String {
-        switch self {
-        case .basicShapes:
-            return "Basic Shapes"
-        case .basicTexts:
-            return "Basic Texts"
-        case .sliders:
-            return "Sliders"
-        case .segments:
-            return "Segments"
-        case .pickers:
-            return "Pickers"
-        case .switches:
-            return "Switches"
-        case .textFields:
-            return "Text Fields"
-        case .steppers:
-            return "Steppers"
-        case .datePickersInline:
-            return "Date Picker (inline)"
-        case .datePickersCompact:
-            return "Date Picker (compact)"
-        case .datePickersWheels:
-            return "Date Picker (wheels)"
-        case .timePickersCountDown:
-            return "Time Picker (count down)"
-        case .timePickersWheels:
-            return "Time Picker (wheels)"
-        case .timePickersCompact:
-            return "Time Picker (compact)"
-        case .images:
-            return "Images"
-        case .unsupportedViews:
-            return "Unsupported Views"
-        case .popups:
-            return "Popups"
-        case .swiftUI:
-            return "SwiftUI"
-        }
-    }
-
-    func instantiateViewController() -> UIViewController {
+    public func instantiateViewController() -> UIViewController {
         switch self {
         case .basicShapes:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Shapes")
@@ -105,15 +71,19 @@ internal enum Fixture: CaseIterable {
         case .popups:
             return UIStoryboard.basic.instantiateViewController(withIdentifier: "Popups")
         case .swiftUI:
-            return UIHostingController(rootView: Text("Hello SwiftUI"))
+            if #available(iOS 13.0, *) {
+                return UIHostingController(rootView: Text("Hello SwiftUI"))
+            } else {
+                return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 13+")
+            }
         }
     }
 }
 
 internal extension UIStoryboard {
-    static var basic: UIStoryboard { UIStoryboard(name: "Basic", bundle: nil) }
-    static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: nil) }
-    static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: nil) }
-    static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: nil) }
-    static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: nil) }
+    static var basic: UIStoryboard { UIStoryboard(name: "Basic", bundle: .module) }
+    static var inputElements: UIStoryboard { UIStoryboard(name: "InputElements", bundle: .module) }
+    static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: .module) }
+    static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: .module) }
+    static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: .module) }
 }

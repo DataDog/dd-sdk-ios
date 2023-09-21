@@ -82,6 +82,8 @@ internal class RUMEventMatcher {
 
     func eventType()            throws -> String { try jsonMatcher.value(forKeyPath: "type") }
 
+    func sessionHasReplay()     throws -> Bool? { try jsonMatcher.value(forKeyPath: "session.has_replay") }
+
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }
     func userName()             throws -> String { try jsonMatcher.value(forKeyPath: "usr.name") }
     func userEmail()            throws -> String { try jsonMatcher.value(forKeyPath: "usr.email") }

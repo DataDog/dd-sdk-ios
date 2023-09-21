@@ -58,25 +58,25 @@ internal class PickersViewController: UIViewController {
     }
 }
 
-internal class DatePickersInlineViewController: UIViewController {
+public class DatePickersInlineViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date, timeZone: TimeZone) {
+    public func set(date: Date, timeZone: TimeZone) {
         datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }
 
-internal class DatePickersCompactViewController: UIViewController {
+public class DatePickersCompactViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date, timeZone: TimeZone) {
+    public func set(date: Date, timeZone: TimeZone) {
         datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 
     /// Forces the "compact" date picker to open full calendar view in a popover.
-    func openCalendarPopover() {
+    public func openCalendarPopover() {
         // Here we use private Objc APIs. It works fine on iOS 15.0+ which matches the OS version used
         // for snapshot tests, but might need updates in the future.
         if #available(iOS 15.0, *) {
@@ -87,7 +87,7 @@ internal class DatePickersCompactViewController: UIViewController {
     }
 
     /// Forces the "wheel" time picker to open in a popover.
-    func openTimePickerPopover() {
+    public func openTimePickerPopover() {
         // Here we use private Objc APIs - it works fine on iOS 15.0+ which matches the OS version used
         // for snapshot tests, but might need updates in the future.
         if #available(iOS 15.0, *) {
@@ -103,25 +103,25 @@ internal class DatePickersCompactViewController: UIViewController {
     }
 }
 
-internal class DatePickersWheelsViewController: UIViewController {
+public class DatePickersWheelsViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date, timeZone: TimeZone) {
+    public func set(date: Date, timeZone: TimeZone) {
         datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }
 
-internal class TimePickersCountDownViewController: UIViewController {}
+public class TimePickersCountDownViewController: UIViewController {}
 
-internal class TimePickersWheelViewController: UIViewController {
+public class TimePickersWheelViewController: UIViewController {
     @IBOutlet weak var datePicker: UIDatePicker!
 
-    func set(date: Date, timeZone: TimeZone) {
+    public func set(date: Date, timeZone: TimeZone) {
         datePicker.timeZone = timeZone
         datePicker.setDate(date, animated: false)
     }
 }
 
 /// Sharing the same VC for compact time and date picker.
-internal typealias TimePickersCompactViewController = DatePickersCompactViewController
+public typealias TimePickersCompactViewController = DatePickersCompactViewController

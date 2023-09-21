@@ -15,6 +15,9 @@ internal class ImagesViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        guard #available(iOS 13.0, *) else {
+            return
+        }
 
         let color = UIColor(white: 0, alpha: 0.05)
         customButton.setBackgroundImage(UIImage(color: color), for: .normal)
@@ -23,7 +26,8 @@ internal class ImagesViewController: UIViewController {
         tabBar.selectedItem = tabBar.items?.first
         navigationBar.setBackgroundImage(UIImage(color: color), for: .default)
 
-        customImageView.image = UIImage(named: "dd_logo")?.withRenderingMode(.alwaysTemplate)
+        let image = UIImage(named: "dd_logo", in: .module, with: nil)
+        customImageView.image = image?.withRenderingMode(.alwaysTemplate)
 
         contentImageView.image = UIImage(color: color)
     }

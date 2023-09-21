@@ -26,13 +26,13 @@ internal class TextsViewController: UIViewController {
     }
 }
 
-internal class PopupsViewController: UIViewController {
+public class PopupsViewController: UIViewController {
 
-    @IBAction func showSafari() {
+    @IBAction public func showSafari() {
         present(SFSafariViewController(url: URL(string: "http://127.0.0.1")!), animated: false)
     }
 
-    @IBAction func showAlert() {
+    @IBAction public func showAlert() {
         let alertController = UIAlertController(
             title: "Alert Example",
             message: "This is an elaborate example of UIAlertController",
@@ -64,7 +64,7 @@ internal class PopupsViewController: UIViewController {
         }
     }
 
-    @IBAction func showActivity() {
+    @IBAction public func showActivity() {
         let activityViewController = UIActivityViewController(activityItems: [], applicationActivities: nil)
         present(activityViewController, animated: false, completion: nil)
     }

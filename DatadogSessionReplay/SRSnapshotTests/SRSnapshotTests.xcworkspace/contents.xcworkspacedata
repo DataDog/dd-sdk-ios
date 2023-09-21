@@ -5,6 +5,9 @@
       location = "group:../..">
    </FileRef>
    <FileRef
+      location = "group:SRFixtures">
+   </FileRef>
+   <FileRef
       location = "container:SRSnapshotTests.xcodeproj">
    </FileRef>
 </Workspace>
