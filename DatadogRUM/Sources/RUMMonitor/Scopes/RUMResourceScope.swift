@@ -121,6 +121,22 @@ internal class RUMResourceScope: RUMScope {
         let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
         let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
 
+        // Check GraphQL attributes
+        var graphql: RUMResourceEvent.Resource.Graphql? = nil
+        let graphqlOperationName = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName) as? String)
+        let graphqlPayload = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload) as? String)
+        let graphqlVariables = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables) as? String)
+        if let rawGraphqlOperationType = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType) as? String) {
+            if let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
+                graphql = .init(
+                    operationName: graphqlOperationName,
+                    operationType: graphqlOperationType,
+                    payload: graphqlPayload,
+                    variables: graphqlVariables
+                )
+            }
+        }
+
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
@@ -181,6 +197,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
+                graphql: graphql,
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
                 provider: resourceEventProvider,

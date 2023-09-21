@@ -1389,6 +1389,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// First Byte phase properties
         public let firstByte: FirstByte?
 
+        /// GraphQL requests parameters
+        public var graphql: Graphql?
+
         /// UUID of the resource
         public let id: String?
 
@@ -1422,6 +1425,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case download = "download"
             case duration = "duration"
             case firstByte = "first_byte"
+            case graphql = "graphql"
             case id = "id"
             case method = "method"
             case provider = "provider"
@@ -1486,6 +1490,35 @@ public struct RUMResourceEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
                 case start = "start"
+            }
+        }
+
+        /// GraphQL requests parameters
+        public struct Graphql: Codable {
+            /// Name of the GraphQL operation
+            public let operationName: String?
+
+            /// Type of the GraphQL operation
+            public let operationType: OperationType
+
+            /// Content of the GraphQL operation
+            public var payload: String?
+
+            /// String representation of the operation variables
+            public var variables: String?
+
+            enum CodingKeys: String, CodingKey {
+                case operationName = "operationName"
+                case operationType = "operationType"
+                case payload = "payload"
+                case variables = "variables"
+            }
+
+            /// Type of the GraphQL operation
+            public enum OperationType: String, Codable {
+                case query = "query"
+                case mutation = "mutation"
+                case subscription = "subscription"
             }
         }
 
@@ -3365,4 +3398,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d
+// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
