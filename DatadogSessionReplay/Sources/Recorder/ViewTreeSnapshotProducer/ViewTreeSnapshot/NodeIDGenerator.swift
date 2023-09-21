@@ -32,6 +32,7 @@ internal final class NodeIDGenerator {
 
     /// Returns single `NodeID` for given instance of `UIView`.
     /// - Parameter view: the `UIView` object
+    /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: the `NodeID` of queried instance
     func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
         if let currentID = view.nodeID?[nodeRecorder.identifier] {
@@ -50,6 +51,7 @@ internal final class NodeIDGenerator {
     /// Returns multiple `NodeIDs` for given instance of `UIView`.
     /// - Parameter size: the number of IDs
     /// - Parameter view: the `UIView` object
+    /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: an array with given number of `NodeID` values
     func nodeIDs(_ size: Int, view: UIView, nodeRecorder: NodeRecorder) -> [NodeID] {
         if let currentIDs = view.nodeIDs?[nodeRecorder.identifier], currentIDs.count == size {
