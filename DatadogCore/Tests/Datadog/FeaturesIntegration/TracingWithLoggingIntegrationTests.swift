@@ -56,8 +56,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                SpanCoreContext.CodingKeys.spanID.rawValue: "2",
-                SpanCoreContext.CodingKeys.traceID.rawValue: "1"
+                "dd.trace_id": "1",
+                "dd.span_id": "2"
             ])
         )
     }

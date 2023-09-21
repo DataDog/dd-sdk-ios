@@ -12,7 +12,7 @@ class FeatureBaggageTests: XCTestCase {
     struct GroceryProduct: Encodable, RandomMockable {
         var name: String
         var points: Int
-        var description: String?
+        var description: String
 
         static func mockRandom() -> Self {
             .init(
@@ -26,6 +26,7 @@ class FeatureBaggageTests: XCTestCase {
     struct CartItem: Decodable {
         var name: String
         var points: Int
+        var code: String?
     }
 
     func testEncodeDecode() throws {
@@ -35,6 +36,7 @@ class FeatureBaggageTests: XCTestCase {
 
         XCTAssertEqual(pear.name, item.name)
         XCTAssertEqual(pear.points, item.points)
+        XCTAssertNil(item.code)
     }
 
     func testEncodingFailure() throws {
