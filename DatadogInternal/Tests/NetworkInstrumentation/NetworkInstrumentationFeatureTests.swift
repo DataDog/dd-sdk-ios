@@ -116,13 +116,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(from: URL.mockAny(), delegate: delegate)
 
         // Then
-        wait(
-            for: [
+        await fulfillment(
+            of: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
-            timeout: 1
+            timeout: 1,
+            enforceOrder: true
         )
+
         _ = server.waitAndReturnRequests(count: 1)
     }
 
@@ -152,12 +154,13 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(for: URLRequest(url: url), delegate: delegate)
 
         // Then
-        wait(
-            for: [
+        await fulfillment(
+            of: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
-            timeout: 1
+            timeout: 1,
+            enforceOrder: true
         )
 
         _ = server.waitAndReturnRequests(count: 1)
@@ -291,13 +294,15 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
 
         // Then
-        wait(
-            for: [
+        await fulfillment(
+            of: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
-            timeout: 1
+            timeout: 1,
+            enforceOrder: true
         )
+
         _ = server.waitAndReturnRequests(count: 2)
 
         let dateAfterAllRequests = Date()
