@@ -8,6 +8,8 @@
 import UIKit
 
 internal class UILabelRecorder: NodeRecorder {
+    let identifier = UUID()
+
     /// An option for customizing wireframes builder created by this recorder.
     var builderOverride: (UILabelWireframesBuilder) -> UILabelWireframesBuilder
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
@@ -34,7 +36,7 @@ internal class UILabelRecorder: NodeRecorder {
         }
 
         let builder = UILabelWireframesBuilder(
-            wireframeID: context.ids.nodeID(for: label),
+            wireframeID: context.ids.nodeID(view: label, nodeRecorder: self),
             attributes: attributes,
             text: label.text ?? "",
             textColor: label.textColor?.cgColor,

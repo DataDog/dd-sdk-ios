@@ -19,6 +19,9 @@ internal protocol NodeRecorder {
     ///   - context: the context of recording current view-tree
     /// - Returns: the value of `NodeSemantics` or `nil` if the view is a member of view subclass other than the one this recorder is specialised for.
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics?
+
+    /// Unique identifier of the node recorder.
+    var identifier: UUID { get }
 }
 
 /// A type producing SR wireframes.
