@@ -204,7 +204,7 @@ class RUMViewScopeTests: XCTestCase {
 
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(
+        context.baggages = try .mockSessionReplayAttributes(
             hasReplay: hasReplay,
             recordsCountByViewID: [scope.viewUUID.toRUMDataFormat: 1]
         )
@@ -1004,7 +1004,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -1170,7 +1170,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(
@@ -1269,7 +1269,7 @@ class RUMViewScopeTests: XCTestCase {
     func testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         let startViewDate: Date = .mockDecember15th2019At10AMUTC()
 
@@ -1337,7 +1337,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let scope = RUMViewScope(

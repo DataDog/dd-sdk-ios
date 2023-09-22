@@ -938,16 +938,6 @@ class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
 
 // MARK: - Dependency on Session Replay
 
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
-        return [
-            SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
-            ]
-        ]
-    }
-}
-
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
     public static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
@@ -990,12 +980,10 @@ internal class ValueObserverMock<Value>: ValueObserver {
 // MARK: - Dependency on Session Replay
 
 extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) -> Self {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) throws -> Self {
         return [
-            SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay,
-                SessionReplayDependency.recordsCountByViewID: recordsCountByViewID
-            ]
+            SessionReplayDependency.hasReplay: .init(hasReplay),
+            SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
         ]
     }
 }

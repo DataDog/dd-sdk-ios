@@ -11,7 +11,7 @@ internal struct CoreContext {
     /// The RUM attributes that should be added as Span tags.
     ///
     /// These attributes are synchronized using a read-write lock.
-    var rum: [String: String?]?
+    var rum: [String: String]?
 
     /// Provides the history of app foreground / background states.
     var applicationStateHistory: AppStateHistory?
@@ -38,7 +38,7 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
-            return update(context: context)
+            return update(context: context, from: core)
         default:
             return false
         }
@@ -47,14 +47,24 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
     /// Updates context of the `DatadogTracer` if available.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext) -> Bool {
+    private func update(context: DatadogContext, from core: DatadogCoreProtocol) -> Bool {
         _context.mutate {
             $0.applicationStateHistory = context.applicationStateHistory
 
-            if bundleWithRumEnabled, let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                let tags = attributes.compactMapValues { $0 }
-                let mappedTags = Dictionary(uniqueKeysWithValues: tags.map { key, value in (mapRUMContextAttributeKeyToSpanTagName(key), value) })
-                $0.rum = mappedTags
+            if bundleWithRumEnabled, let rum = context.baggages[RUMContext.key] {
+                do {
+                    let context: RUMContext = try rum.decode()
+                    $0.rum = [
+                        "_dd.application.id": context.applicationID,
+                        "_dd.session.id": context.sessionID
+                    ]
+
+                    $0.rum?["_dd.view.id"] = context.viewID
+                    $0.rum?["_dd.action.id"] = context.userActionID
+                } catch {
+                    core.telemetry
+                        .error("Fails to decode RUM context from Trace", error: error)
+                }
             }
         }
 

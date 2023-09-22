@@ -52,13 +52,11 @@ class WebViewLogReceiverTests: XCTestCase {
                 env: environment,
                 version: applicationVersion,
                 serverTimeOffset: 123,
-                featuresAttributes: [
-                    "rum": [
-                        "ids": [
-                            RUMContextAttributes.IDs.applicationID: "123456",
-                            RUMContextAttributes.IDs.sessionID: mockSessionID.uuidString.lowercased()
-                        ]
-                    ]
+                baggages: [
+                    "rum": .init([
+                        RUMContextAttributes.IDs.applicationID: "123456",
+                        RUMContextAttributes.IDs.sessionID: mockSessionID.uuidString.lowercased()
+                    ])
                 ]
             ),
             messageReceiver: WebViewLogReceiver()

@@ -54,7 +54,7 @@ class RUMResourceScopeTests: XCTestCase {
     func testGivenStartedResource_whenResourceLoadingEnds_itSendsResourceEvent() throws {
         let hasReplay: Bool = .mockRandom()
         var context = self.context
-        context.featuresAttributes = .mockSessionReplayAttributes(hasReplay: hasReplay)
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
 
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
 

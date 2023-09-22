@@ -72,9 +72,12 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         )
 
         core.scope(for: RUMFeature.name)?.eventWriteContext { context, writer in
-            guard let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids, !attributes.isEmpty else {
+            guard
+                let rum: RUMCoreContext = try? context.baggages[RUMFeature.name]?.decode()
+            else {
                 return writer.write(value: AnyEncodable(event))
             }
+
             var event = event
 
             if let date = event["date"] as? Int {
@@ -84,15 +87,13 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["date"] = correctedDate
             }
 
-            let applicationID = attributes[RUMContextAttributes.IDs.applicationID]
-            if let applicationID = applicationID, var application = event["application"] as? JSON {
-                application["id"] = applicationID
+            if var application = event["application"] as? JSON {
+                application["id"] = rum.applicationID
                 event["application"] = application
             }
 
-            let sessionID = attributes[RUMContextAttributes.IDs.sessionID]
-            if let sessionID = sessionID, var session = event["session"] as? JSON {
-                session["id"] = sessionID
+            if var session = event["session"] as? JSON {
+                session["id"] = rum.sessionID
                 event["session"] = session
             }
 

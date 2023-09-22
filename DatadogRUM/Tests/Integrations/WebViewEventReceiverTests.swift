@@ -17,18 +17,19 @@ class WebViewEventReceiverTests: XCTestCase {
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(
-            context: .mockWith(
-                serverTimeOffset: 123,
-                featuresAttributes: [
-                    "rum": [
-                        "ids": [
-                            RUMContextAttributes.IDs.applicationID: "123456",
-                            RUMContextAttributes.IDs.sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f"
-                        ]
-                    ]
-                ]
-            ),
+            context: .mockWith(serverTimeOffset: 123),
             messageReceiver: WebViewEventReceiver.mockAny()
+        )
+
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: "123456",
+                sessionID: "e9796469-c2a1-43d6-b0f6-65c47d33cf5f",
+                viewID: nil,
+                userActionID: nil,
+                viewServerTimeOffset: nil
+            ),
+            forKey: "rum"
         )
     }
 
@@ -109,7 +110,7 @@ class WebViewEventReceiverTests: XCTestCase {
     }
 
     func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToCoreMessageBus() throws {
-        core.context.featuresAttributes = [:]
+        core.context.baggages = [:]
 
         let receiver = WebViewEventReceiver(
             dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),

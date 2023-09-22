@@ -73,11 +73,9 @@ class SegmentJSONBuilderTests: XCTestCase {
         let context = Recorder.Context(
             privacy: .mockRandom(),
             rumContext: RUMContext(
-                ids: .init(
-                    applicationID: segment.application.id,
-                    sessionID: segment.session.id,
-                    viewID: segment.view.id
-                ),
+                applicationID: segment.application.id,
+                sessionID: segment.session.id,
+                viewID: segment.view.id,
                 viewServerTimeOffset: 0
             )
         )

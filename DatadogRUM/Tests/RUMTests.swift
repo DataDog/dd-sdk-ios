@@ -351,7 +351,7 @@ class RUMTests: XCTestCase {
 
     // MARK: - Behaviour Tests
 
-    func testWhenEnabled_itSetsRUMContextInCore() {
+    func testWhenEnabled_itSetsRUMContextInCore() throws {
         let core = PassthroughCoreMock()
         let applicationID: String = .mockRandom()
         let sessionID: RUMUUID = .mockRandom()
@@ -363,19 +363,12 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        DDAssertReflectionEqual(
-            core.context.featuresAttributes["rum"],
-            FeatureBaggage(
-                [
-                    "ids": [
-                        "application.id": applicationID,
-                        "session.id": sessionID.toRUMDataFormat,
-                        "view.id": nil,
-                        "user_action.id": nil
-                    ]
-                ]
-            )
-        )
+        let context: RUMCoreContext? = try core.context.baggages["rum"]?.decode()
+        XCTAssertNotNil(context)
+        XCTAssertEqual(context?.applicationID, applicationID)
+        XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
+        XCTAssertNil(context?.viewID)
+        XCTAssertNil(context?.userActionID)
     }
 
     func testWhenEnabled_itNotifiesInitialSessionID() {

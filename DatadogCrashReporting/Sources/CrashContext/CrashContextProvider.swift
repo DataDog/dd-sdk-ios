@@ -100,7 +100,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         }
     }
 
-    private func updateRUMView(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+    private func updateRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
         queue.async { [weak core] in
             do {
                 self.viewEvent = try baggage.decode(type: AnyCodable.self)
@@ -111,7 +111,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         }
     }
 
-    private func resetRUMView(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+    private func resetRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
         queue.async { [weak core] in
             do {
                 if try baggage.decode(type: Bool.self) {
@@ -124,7 +124,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
         }
     }
 
-    private func updateSessionState(with baggage: NewFeatureBaggage, to core: DatadogCoreProtocol) {
+    private func updateSessionState(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
         queue.async { [weak core] in
             do {
                 self.sessionState = try baggage.decode(type: AnyCodable.self)

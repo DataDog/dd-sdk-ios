@@ -49,12 +49,10 @@ class SRContextPublisherTests: XCTestCase {
     }
 }
 
-fileprivate extension PassthroughCoreMock {
-    var hasReplay: Bool? {
-        return context.featuresAttributes["session-replay"]?.has_replay
-    }
+private extension PassthroughCoreMock {
+    var hasReplay: Bool? { try? context.baggages["sr_has_replay"]?.decode() }
 
     var recordsCountByViewID: [String: Int64]? {
-        return context.featuresAttributes["session-replay"]?.records_count_by_view_id
+        try? context.baggages["sr_records_count_by_view_id"]?.decode()
     }
 }
