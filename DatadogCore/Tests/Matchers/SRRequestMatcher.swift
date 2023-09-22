@@ -237,6 +237,6 @@ private extension String {
     var utf8Bytes: [UInt8] { [UInt8](utf8Data) }
 }
 
-private extension ArraySlice<UInt8> {
+private extension ArraySlice where Element == UInt8 {
     var utf8String: String { Data(Array(self)).utf8String }
 }
