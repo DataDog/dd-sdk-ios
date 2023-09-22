@@ -116,16 +116,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(from: URL.mockAny(), delegate: delegate)
 
         // Then
-#if swift(>=5.8)
-        await fulfillment(
-            of: [
-                notifyInterceptionDidStart,
-                notifyInterceptionDidComplete
-            ],
-            timeout: 1,
-            enforceOrder: true
-        )
-#else
         wait(
             for: [
                 notifyInterceptionDidStart,
@@ -133,7 +123,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             ],
             timeout: 1
         )
-#endif
         _ = server.waitAndReturnRequests(count: 1)
     }
 
@@ -163,16 +152,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(for: URLRequest(url: url), delegate: delegate)
 
         // Then
-#if swift(>=5.8)
-        await fulfillment(
-            of: [
-                notifyInterceptionDidStart,
-                notifyInterceptionDidComplete
-            ],
-            timeout: 1,
-            enforceOrder: true
-        )
-#else
         wait(
             for: [
                 notifyInterceptionDidStart,
@@ -180,7 +159,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             ],
             timeout: 1
         )
-#endif
 
         _ = server.waitAndReturnRequests(count: 1)
     }
@@ -313,16 +291,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
 
         // Then
-#if swift(>=5.8)
-        await fulfillment(
-            of: [
-                notifyInterceptionDidStart,
-                notifyInterceptionDidComplete
-            ],
-            timeout: 1,
-            enforceOrder: true
-        )
-#else
         wait(
             for: [
                 notifyInterceptionDidStart,
@@ -330,7 +298,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             ],
             timeout: 1
         )
-#endif
         _ = server.waitAndReturnRequests(count: 2)
 
         let dateAfterAllRequests = Date()

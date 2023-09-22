@@ -13,6 +13,7 @@ import DatadogInternal
 public class DDURLSessionInstrumentationConfiguration: NSObject {
     internal var swiftConfig: URLSessionInstrumentation.Configuration
 
+    @objc
     public init(delegateClass: URLSessionDataDelegate.Type) {
         swiftConfig = .init(delegateClass: delegateClass)
     }
