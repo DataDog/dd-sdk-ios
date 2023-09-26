@@ -22,6 +22,9 @@ class LogEventBuilderTests: XCTestCase {
         let randomService: String = .mockRandom()
         let randomLoggerName: String = .mockRandom()
         let randomThreadName: String = .mockRandom()
+        let randomOsName: String = .mockRandom()
+        let randomOsVersion: String = .mockRandom()
+        let randomOsBuildNumber: String = .mockRandom()
         let randomArchitecture: String = .mockRandom()
 
         // Given
@@ -43,6 +46,9 @@ class LogEventBuilderTests: XCTestCase {
             context: .mockWith(
                 serverTimeOffset: 0,
                 device: .mockWith(
+                    osName: randomOsName,
+                    osVersion: randomOsVersion,
+                    osBuildNumber: randomOsBuildNumber,
                     architecture: randomArchitecture
                 )
             ),
@@ -61,6 +67,9 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.loggerName, randomLoggerName)
             XCTAssertEqual(log.threadName, randomThreadName)
             XCTAssertEqual(log.dd.device.architecture, randomArchitecture)
+            XCTAssertEqual(log.os.name, randomOsName)
+            XCTAssertEqual(log.os.version, randomOsVersion)
+            XCTAssertEqual(log.os.build, randomOsBuildNumber)
 
             expectation.fulfill()
         }
