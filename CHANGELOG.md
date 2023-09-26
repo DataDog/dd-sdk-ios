@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.3.0 / 27-09-2023
+
 - [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
 - [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
 - [BUGFIX] Fix wrong `view.name` reported in RUM crashes. See [#1488][]
