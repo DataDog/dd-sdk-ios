@@ -4,7 +4,6 @@
 # Copyright 2019-Present Datadog, Inc.
 # -----------------------------------------------------------
 
-import re
 from dataclasses import dataclass
 from src.semver import Version
 
@@ -12,16 +11,23 @@ from src.semver import Version
 @dataclass
 class Simulator:
     """
-    A simulator compatible with this host. Parsed from `xcversion simulators`:
+    A simulator compatible with this host. Parsed from `xcodes runtimes`:
 
     ...
-    iOS 11.4 Simulator (not installed)
-    iOS 12.0 Simulator (installed)
-    watchOS 5.0 Simulator (not installed)
-    tvOS 12.0 Simulator (not installed)
+    iOS 12.4 (Installed)
+    iOS 13.0
+    iOS 13.1
+    iOS 13.2.2
+    iOS 14.0.1 (Installed)
+    iOS 15.5 (Installed)
+    iOS 16.0
+    iOS 16.1
+    iOS 16.2
+    iOS 16.4 (Installed)
+    iOS 17.0 (Installed)
     ...
     """
-    os_name: str  # "iOS" | "watchOS" | "tvOS"
+    os_name: str  # "iOS" | "watchOS" | "tvOS" | "visionOS"
     os_version: Version  # e.g. 12.2
     is_installed: bool  # if it is already installed on this host or needs to be downloaded
 
@@ -29,28 +35,57 @@ class Simulator:
         availability = 'installed' if self.is_installed else 'not installed'
         return f'{self.os_name} Simulator ({self.os_version}) ({availability})'
 
-
 class Simulators:
     """
     Lists all 'Simulator' objects compatible with this host.
     """
 
-    def __init__(self, xcversion_simulators_output: str):
+    def __init__(self, xcodes_runtimes_output: str):
         """
-        :param the output of `xcversion simulators`
+        :param the output of `xcodes runtimes`
+
+        Example output:
+        xcodes runtimes
+        -- iOS --
+        iOS 12.4 (Installed)
+        iOS 13.0
+        iOS 13.1
+        iOS 13.2.2
+        iOS 14.0.1 (Installed)
+        iOS 15.5 (Installed)
+        iOS 16.0
+        iOS 16.1 (Bundled with selected Xcode)
+        iOS 16.2
+        iOS 16.4 (Installed)
+        iOS 17.0 (Installed)
+        -- watchOS --
+        watchOS 9.1
+        watchOS 9.4 (Installed)
+        watchOS 10.0
+        -- tvOS --
+        tvOS 15.4
+        tvOS 16.0 (Installed)
+        tvOS 16.1
+        tvOS 16.4 (Installed)
+        tvOS 17.0
+        -- visionOS --
+
+        Note: Bundled runtimes are indicated for the currently selected Xcode, more bundled runtimes may exist in other Xcode(s)
         """
         self.all: [Simulator] = []
 
-        lines = xcversion_simulators_output.split(sep='\n')
-        os_regex = r'(iOS|watchOS|tvOS) ([0-9.]+)? Simulator \((not installed|installed)\)'
+        lines = xcodes_runtimes_output.split(sep='\n')
 
         for line in lines:
-            match = re.match(os_regex, line)
-            if match:
+            if line.startswith('iOS') or line.startswith('watchOS') or line.startswith('tvOS') or line.startswith('visionOS'):
+                components = line.split(sep=' ')
+                os_name = components[0]
+                os_version = Version.parse(components[1])
+                is_installed = '(Installed)' in line or '(Bundled with selected Xcode)' in line
                 simulator = Simulator(
-                    os_name=match.groups()[0],
-                    os_version=Version.parse(match.groups()[1]),
-                    is_installed=match.groups()[2] == 'installed'
+                    os_name=os_name,
+                    os_version=os_version,
+                    is_installed=is_installed
                 )
 
                 if simulator not in self.all:
