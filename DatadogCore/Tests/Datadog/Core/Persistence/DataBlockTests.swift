@@ -163,16 +163,16 @@ class DataBlockTests: XCTestCase {
         let stream = InputStream(url: url)!
         let reader = DataBlockReader(input: stream)
 
-        do {
-            _ = try reader.next()
-            XCTFail("Expected error to be thrown")
-        } catch DataBlockError.readOperationFailed(_, let error) {
-            XCTAssertEqual(
-                (error as? NSError)?.localizedDescription,
-                "The operation couldn’t be completed. No such file or directory"
-            )
-        } catch {
-            XCTFail("Unexpected error: \(error)")
+        XCTAssertThrowsError(try reader.next()) { error in
+            guard case DataBlockError.readOperationFailed(streamStatus: _, streamError: let streamError) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+
+            guard let streamError = streamError else {
+                return XCTFail("Expected stream error")
+            }
+
+            XCTAssertTrue(streamError.localizedDescription.contains("No such file or directory"))
         }
     }
 }
