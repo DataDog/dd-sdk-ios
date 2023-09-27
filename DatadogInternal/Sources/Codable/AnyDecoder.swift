@@ -598,7 +598,7 @@ private class _AnyDecoder: Decoder {
 
     /// A container that can support the storage and direct decoding of a single
     /// nonkeyed value.
-    struct SingleValueContainer: SingleValueDecodingContainer {
+    struct SingleValueContainer: SingleValueDecodingContainer, PassthroughValueDecodingContainer {
         /// The path of coding keys taken to get to this point in encoding.
         let codingPath: [CodingKey]
 
@@ -777,6 +777,17 @@ private class _AnyDecoder: Decoder {
             return try T(from: decoder)
         }
 
+        /// Decodes a Passthrough value.
+        ///
+        /// - returns: Whether the encountered value was passthrough.
+        func decodePassthrough() throws -> PassthroughAnyCodable {
+            guard let value = value as? PassthroughAnyCodable else {
+                throw DecodingError.typeMismatch(PassthroughAnyCodable.self, in: self)
+            }
+
+            return value
+        }
+
         /// Converts value to any `BinaryInteger`.
         ///
         /// - Parameter type: The `BinaryInteger` to convert as.
@@ -855,4 +866,11 @@ private extension DecodingError {
 
         return .typeMismatch(type, context)
     }
+}
+
+internal protocol PassthroughValueDecodingContainer where Self: SingleValueDecodingContainer {
+    /// Decodes a Passthrough value.
+    ///
+    /// - returns: Whether the encountered value was passthrough.
+    func decodePassthrough() throws -> PassthroughAnyCodable
 }
