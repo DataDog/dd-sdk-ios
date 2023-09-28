@@ -7,7 +7,7 @@
 #if os(iOS)
 import Foundation
 
-internal protocol TextObfuscating {
+public protocol TextObfuscating {
     /// Obfuscates given `text`.
     /// - Parameter text: the text to be obfuscated
     /// - Returns: obfuscated text

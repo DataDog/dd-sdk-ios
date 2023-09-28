@@ -5,10 +5,10 @@
  */
 
 #if os(iOS)
-internal typealias PrivacyLevel = SessionReplay.Configuration.PrivacyLevel
+public typealias PrivacyLevel = SessionReplay.Configuration.PrivacyLevel
 
 /// Text obfuscation strategies for different text types.
-internal extension SessionReplay.Configuration.PrivacyLevel {
+public extension SessionReplay.Configuration.PrivacyLevel {
     /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Sensitive Text" is:

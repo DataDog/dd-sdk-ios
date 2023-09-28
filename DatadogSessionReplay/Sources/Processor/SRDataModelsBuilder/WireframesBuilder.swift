@@ -9,7 +9,7 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-internal typealias WireframeID = NodeID
+public typealias WireframeID = NodeID
 
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
 /// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
@@ -17,7 +17,7 @@ internal typealias WireframeID = NodeID
 /// It is used by the player to reconstruct individual elements of the recorded app UI.
 ///
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
-internal class WireframesBuilder {
+public class WireframesBuilder {
     /// A set of fallback values to use if the actual value cannot be read or converted.
     ///
     /// The idea is to always provide value, which would make certain element visible in the player.
@@ -86,7 +86,7 @@ internal class WireframesBuilder {
         return .imageWireframe(value: wireframe)
     }
 
-    func createTextWireframe(
+    public func createTextWireframe(
         id: WireframeID,
         frame: CGRect,
         text: String,

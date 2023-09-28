@@ -110,24 +110,31 @@ internal struct SRShapeBorder: Codable, Hashable {
 }
 
 /// Schema of clipping information for a Wireframe.
-internal struct SRContentClip: Codable, Hashable {
+public struct SRContentClip: Codable, Hashable {
     /// The amount of space in pixels that needs to be clipped (masked) at the bottom of the wireframe.
-    internal let bottom: Int64?
+    public let bottom: Int64?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the left of the wireframe.
-    internal let left: Int64?
+    public let left: Int64?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the right of the wireframe.
-    internal let right: Int64?
+    public let right: Int64?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the top of the wireframe.
-    internal let top: Int64?
+    public let top: Int64?
 
-    enum CodingKeys: String, CodingKey {
+    public enum CodingKeys: String, CodingKey {
         case bottom = "bottom"
         case left = "left"
         case right = "right"
         case top = "top"
+    }
+    
+    public init(bottom: Int64?, left: Int64?, right: Int64?, top: Int64?) {
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+        self.top = top
     }
 }
 
@@ -150,7 +157,7 @@ internal struct SRShapeStyle: Codable, Hashable {
 }
 
 /// Schema of all properties of a ShapeWireframe.
-internal struct SRShapeWireframe: Codable, Hashable {
+public struct SRShapeWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
 
@@ -192,7 +199,7 @@ internal struct SRShapeWireframe: Codable, Hashable {
 }
 
 /// Schema of all properties of a TextPosition.
-internal struct SRTextPosition: Codable, Hashable {
+public struct SRTextPosition: Codable, Hashable {
     internal let alignment: Alignment?
 
     internal let padding: Padding?
@@ -202,7 +209,7 @@ internal struct SRTextPosition: Codable, Hashable {
         case padding = "padding"
     }
 
-    internal struct Alignment: Codable, Hashable {
+    public struct Alignment: Codable, Hashable {
         /// The horizontal text alignment. The default value is `left`.
         internal let horizontal: Horizontal?
 
@@ -222,7 +229,7 @@ internal struct SRTextPosition: Codable, Hashable {
         }
 
         /// The vertical text alignment. The default value is `top`.
-        internal enum Vertical: String, Codable {
+        public enum Vertical: String, Codable {
             case top = "top"
             case bottom = "bottom"
             case center = "center"
@@ -270,7 +277,7 @@ internal struct SRTextStyle: Codable, Hashable {
 }
 
 /// Schema of all properties of a TextWireframe.
-internal struct SRTextWireframe: Codable, Hashable {
+public struct SRTextWireframe: Codable, Hashable {
     /// The border properties of this wireframe. The default value is null (no-border).
     internal let border: SRShapeBorder?
 
@@ -324,7 +331,7 @@ internal struct SRTextWireframe: Codable, Hashable {
 }
 
 /// Schema of all properties of a ImageWireframe.
-internal struct SRImageWireframe: Codable, Hashable {
+public struct SRImageWireframe: Codable, Hashable {
     /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
     internal var base64: String?
 
@@ -378,7 +385,7 @@ internal struct SRImageWireframe: Codable, Hashable {
 }
 
 /// Schema of all properties of a PlaceholderWireframe.
-internal struct SRPlaceholderWireframe: Codable, Hashable {
+public struct SRPlaceholderWireframe: Codable, Hashable {
     /// Schema of clipping information for a Wireframe.
     internal let clip: SRContentClip?
 
@@ -416,7 +423,7 @@ internal struct SRPlaceholderWireframe: Codable, Hashable {
 }
 
 /// Schema of a Wireframe type.
-internal enum SRWireframe: Codable {
+public enum SRWireframe: Codable {
     case shapeWireframe(value: SRShapeWireframe)
     case textWireframe(value: SRTextWireframe)
     case imageWireframe(value: SRImageWireframe)
@@ -424,7 +431,7 @@ internal enum SRWireframe: Codable {
 
     // MARK: - Codable
 
-    internal func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         // Encode only the associated value, without encoding enum case
         var container = encoder.singleValueContainer()
 
@@ -440,7 +447,7 @@ internal enum SRWireframe: Codable {
         }
     }
 
-    internal init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         // Decode enum case from associated value
         let container = try decoder.singleValueContainer()
 

@@ -46,6 +46,8 @@ extension SessionReplay {
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
+        
+        public var additionalNodeRecorders: [NodeRecorder]?
 
         /// Creates Session Replay configuration
         /// - Parameters:
@@ -55,11 +57,13 @@ extension SessionReplay {
         public init(
             replaySampleRate: Float,
             defaultPrivacyLevel: PrivacyLevel = .mask,
-            customEndpoint: URL? = nil
+            customEndpoint: URL? = nil,
+            additionalNodeRecorders: [NodeRecorder]? = nil
         ) {
             self.replaySampleRate = replaySampleRate
             self.defaultPrivacyLevel = defaultPrivacyLevel
             self.customEndpoint = customEndpoint
+            self.additionalNodeRecorders = additionalNodeRecorders
         }
     }
 }

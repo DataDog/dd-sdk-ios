@@ -35,54 +35,59 @@ internal struct ViewTreeSnapshot {
 ///
 /// **Note:** The purpose of this structure is to be lightweight and create minimal overhead when the view-tree
 /// is captured on the main thread (the `Recorder` constantly creates `Nodes` for views residing in the hierarchy).
-internal struct Node {
+public struct Node {
     /// Attributes of the `UIView` that this node was created for.
     let viewAttributes: ViewAttributes
     /// A type defining how to build SR wireframes for the UI element described by this node.
     let wireframesBuilder: NodeWireframesBuilder
+    
+    public init(viewAttributes: ViewAttributes, wireframesBuilder: NodeWireframesBuilder) {
+        self.viewAttributes = viewAttributes
+        self.wireframesBuilder = wireframesBuilder
+    }
 }
 
 /// Attributes of the `UIView` that the node was created for.
 ///
 /// It is used by the `Recorder` to capture view attributes on the main thread.
 /// It enforces immutability for later (thread safe) access from background queue in `Processor`.
-internal struct ViewAttributes: Equatable {
+public struct ViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
-    let frame: CGRect
+    public let frame: CGRect
 
-    /// Original view's `.backgorundColor`.
-    let backgroundColor: CGColor?
+    /// Original view's `.backgroundColor`.
+    public let backgroundColor: CGColor?
 
     /// Original view's `layer.borderColor`.
-    let layerBorderColor: CGColor?
+    public let layerBorderColor: CGColor?
 
     /// Original view's `layer.borderWidth`.
-    let layerBorderWidth: CGFloat
+    public let layerBorderWidth: CGFloat
 
     /// Original view's `layer.cornerRadius`.
-    let layerCornerRadius: CGFloat
+    public let layerCornerRadius: CGFloat
 
     /// Original view's `.alpha` (between `0.0` and `1.0`).
-    let alpha: CGFloat
+    public let alpha: CGFloat
 
     /// Original view's `.isHidden`.
-    let isHidden: Bool
+    public let isHidden: Bool
 
     /// Original view's `.intrinsicContentSize`.
-    let intrinsicContentSize: CGSize
+    public let intrinsicContentSize: CGSize
 
     /// If the view is technically visible (different than `!isHidden` because it also considers `alpha` and `frame != .zero`).
     /// A view can be technically visible, but it may have no appearance in practise (e.g. if its colors use `0` alpha component).
     ///
     /// Example 1: A view is invisible if it has `.zero` size or it is fully transparent (`alpha == 0`).
     /// Example 2: A view can be visible if it has fully transparent background color, but its `alpha` is `0.5` or it occupies non-zero area.
-    var isVisible: Bool { !isHidden && alpha > 0 && frame != .zero }
+    public var isVisible: Bool { !isHidden && alpha > 0 && frame != .zero }
 
     /// If the view has any visible appearance (considering: background color + border style).
     /// In other words: if this view brings anything visual.
     ///
     /// Example: A view might have no appearance if it has `0` border width and transparent fill color.
-    var hasAnyAppearance: Bool {
+    public var hasAnyAppearance: Bool {
         let borderAlpha = layerBorderColor?.alpha ?? 0
         let hasBorderAppearance = layerBorderWidth > 0 && borderAlpha > 0
 
@@ -96,7 +101,7 @@ internal struct ViewAttributes: Equatable {
     ///
     /// Example 1: A view with blue background of alpha `0.5` is considered "translucent".
     /// Example 2: A view with blue semi-transparent background, but alpha `1` is also conisdered "translucent".
-    var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
+    public var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
 
 extension ViewAttributes {
@@ -132,7 +137,7 @@ extension ViewAttributes {
 /// be safely ignored in `Recorder` or `Processor` (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// - `UnknownElement` - the element is of unknown kind, which could indicate an error during view tree traversal (e.g. working on
 /// assumption that is not met).
-internal protocol NodeSemantics {
+public protocol NodeSemantics {
     /// The severity of this semantic.
     ///
     /// While querying certain `view` with an array of supported `NodeRecorders` each recorder can spot different semantics of
@@ -154,7 +159,7 @@ extension NodeSemantics {
 }
 
 /// Strategies for handling node's subtree by `Recorder`.
-internal enum NodeSubtreeStrategy {
+public enum NodeSubtreeStrategy {
     /// Continue traversing subtree of this node to record nested nodes automatically.
     ///
     /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be
@@ -184,10 +189,10 @@ internal struct UnknownElement: NodeSemantics {
 /// has no visual appearance that can be presented in SR (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// Unlike `IgnoredElement`, this semantics can be overwritten with another one with higher importance. This means that even
 /// if the root view of certain element has no appearance, other node recorders will continue checking it for strictkier semantics.
-internal struct InvisibleElement: NodeSemantics {
-    static let importance: Int = 0
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node] = []
+public struct InvisibleElement: NodeSemantics {
+    public static let importance: Int = 0
+    public let subtreeStrategy: NodeSubtreeStrategy
+    public let nodes: [Node] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -199,7 +204,7 @@ internal struct InvisibleElement: NodeSemantics {
     }
 
     /// A constant value of `InvisibleElement` semantics.
-    static let constant = InvisibleElement()
+    public static let constant = InvisibleElement()
 }
 
 /// A semantics of an UI element that should be ignored when traversing view-tree. Unlike `InvisibleElement` this semantics cannot
@@ -223,9 +228,14 @@ internal struct AmbiguousElement: NodeSemantics {
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
-internal struct SpecificElement: NodeSemantics {
-    static let importance: Int = .max
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node]
+public struct SpecificElement: NodeSemantics {
+    public static let importance: Int = .max
+    public let subtreeStrategy: NodeSubtreeStrategy
+    public let nodes: [Node]
+    
+    public init(subtreeStrategy: NodeSubtreeStrategy, nodes: [Node]) {
+        self.subtreeStrategy = subtreeStrategy
+        self.nodes = nodes
+    }
 }
 #endif
