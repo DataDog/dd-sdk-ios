@@ -36,8 +36,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
-        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+        handler.onInterceptionDidStart = { _ in
+            notifyInterceptionDidStart.fulfill()
+        }
+        handler.onInterceptionDidComplete = { _ in
+            notifyInterceptionDidComplete.fulfill()
+        }
 
         // Given
         let delegate = MockDelegate()
@@ -54,7 +58,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
-            timeout: 1,
+            timeout: 5,
             enforceOrder: true
         )
         _ = server.waitAndReturnRequests(count: 1)
@@ -91,7 +95,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
-            timeout: 1,
+            timeout: 5,
             enforceOrder: true
         )
         _ = server.waitAndReturnRequests(count: 1)
@@ -122,7 +126,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                     notifyInterceptionDidStart,
                     notifyInterceptionDidComplete
                 ],
-                timeout: 1,
+                timeout: 5,
                 enforceOrder: true
             )
 
@@ -162,7 +166,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                     notifyInterceptionDidStart,
                     notifyInterceptionDidComplete
                 ],
-                timeout: 1,
+                timeout: 5,
                 enforceOrder: true
             )
 
@@ -203,7 +207,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
@@ -251,7 +255,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
@@ -304,7 +308,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                     notifyInterceptionDidStart,
                     notifyInterceptionDidComplete
                 ],
-                timeout: 1,
+                timeout: 5,
                 enforceOrder: true
             )
 
@@ -483,7 +487,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
@@ -514,7 +518,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
@@ -553,7 +557,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
     }
 

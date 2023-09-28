@@ -57,10 +57,20 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
                 self?.task(task, didFinishCollecting: metrics)
                 session.delegate?.interceptor?.task(task, didFinishCollecting: metrics)
-                if task.state == .completed {
-                    self?.task(task, didCompleteWithError: task.error)
-                    session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
+
+                // iOS 16 and above, didCompleteWithError is not called hence we use task state to detect task completion
+                // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+                if #available(iOS 15, tvOS 15, *) {
+                    if task.state == .completed {
+                        self?.task(task, didCompleteWithError: task.error)
+                        session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
+                    }
                 }
+            }, interceptDidCompleteWithError: { [weak self] session, task, error in
+                // prior to iOS 15, task state doesn't change to completed
+                // hence we use didCompleteWithError to detect task completion
+                self?.task(task, didCompleteWithError: task.error)
+                session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
             }
         )
 

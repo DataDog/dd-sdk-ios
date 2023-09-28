@@ -28,6 +28,8 @@ final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
             delegateClass: MockDelegate.self,
             interceptDidFinishCollecting: { _, _, _ in
                 didFinishCollecting.fulfill()
+            }, interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting.fulfill()
             }
         )
 
@@ -49,6 +51,8 @@ final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
             delegateClass: MockDelegate.self,
             interceptDidFinishCollecting: { _, _, _ in
                 didFinishCollecting.fulfill()
+            }, interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting.fulfill()
             }
         )
 
@@ -62,23 +66,26 @@ final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
     func testBindings() throws {
         XCTAssertNil(URLSessionTaskDelegateSwizzler.didFinishCollectingMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
 
-        try URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: { _, _, _ in })
+        try URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: interceptDidFinishCollecting, interceptDidCompleteWithError: interceptDidCompleteWithError)
         XCTAssertNotNil(URLSessionTaskDelegateSwizzler.didFinishCollectingMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
+        XCTAssertNotNil(URLSessionTaskDelegateSwizzler.didCompleteWithErrorMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
 
-        try URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: { _, _, _ in })
+        try URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: interceptDidFinishCollecting, interceptDidCompleteWithError: interceptDidCompleteWithError)
         XCTAssertNotNil(URLSessionTaskDelegateSwizzler.didFinishCollectingMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
+        XCTAssertNotNil(URLSessionTaskDelegateSwizzler.didCompleteWithErrorMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
 
         URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate.self)
         XCTAssertNil(URLSessionTaskDelegateSwizzler.didFinishCollectingMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
+        XCTAssertNil(URLSessionTaskDelegateSwizzler.didCompleteWithErrorMap[MetaTypeExtensions.key(from: MockDelegate.self)] as Any?)
     }
 
     func testConcurrentBinding() throws {
         // swiftlint:disable opening_brace trailing_closure
          callConcurrently(
             closures: [
-                { try? URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: self.intercept(session:task:metrics:)) },
+                { try? URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: self.intercept(session:task:metrics:), interceptDidCompleteWithError: self.interceptDidCompleteWithError(session:task:error:)) },
                 { URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate.self) },
-                { try? URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: self.intercept(session:task:metrics:)) },
+                { try? URLSessionTaskDelegateSwizzler.bind(delegateClass: MockDelegate.self, interceptDidFinishCollecting: self.intercept(session:task:metrics:), interceptDidCompleteWithError: self.interceptDidCompleteWithError(session:task:error:)) },
                 { URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate.self) },
             ],
             iterations: 50
@@ -87,6 +94,12 @@ final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
     }
 
     func intercept(session: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+    }
+
+    func interceptDidFinishCollecting(session: URLSession, task: URLSessionTask, metrics: URLSessionTaskMetrics) {
+    }
+
+    func interceptDidCompleteWithError(session: URLSession, task: URLSessionTask, error: Error?) {
     }
 
     class MockDelegate: NSObject, URLSessionTaskDelegate {

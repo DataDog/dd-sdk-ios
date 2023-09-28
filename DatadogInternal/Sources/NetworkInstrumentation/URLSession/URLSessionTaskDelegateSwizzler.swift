@@ -23,15 +23,30 @@ internal class URLSessionTaskDelegateSwizzler {
     }
     private static var lock = NSRecursiveLock()
 
+    private static var _didCompleteWithErrorMap: [String: DidCompleteWithError?] = [:]
+    static var didCompleteWithErrorMap: [String: DidCompleteWithError?] {
+        get {
+            lock.lock()
+            defer { lock.unlock() }
+            return _didCompleteWithErrorMap
+        }
+        set {
+            lock.lock()
+            defer { lock.unlock() }
+            _didCompleteWithErrorMap = newValue
+        }
+    }
+
     static var isBinded: Bool {
         lock.lock()
         defer { lock.unlock() }
-        return didFinishCollectingMap.isEmpty == false
+        return didFinishCollectingMap.isEmpty == false || didCompleteWithErrorMap.isEmpty == false
     }
 
     static func bindIfNeeded(
         delegateClass: AnyClass,
-        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void
+        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
+        interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
@@ -42,13 +57,15 @@ internal class URLSessionTaskDelegateSwizzler {
 
         try bind(
             delegateClass: delegateClass,
-            interceptDidFinishCollecting: interceptDidFinishCollecting
+            interceptDidFinishCollecting: interceptDidFinishCollecting,
+            interceptDidCompleteWithError: interceptDidCompleteWithError
         )
     }
 
     static func bind(
         delegateClass: AnyClass,
-        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void
+        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
+        interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
@@ -58,6 +75,10 @@ internal class URLSessionTaskDelegateSwizzler {
 
         didFinishCollecting.swizzle(intercept: interceptDidFinishCollecting)
         didFinishCollectingMap[key] = didFinishCollecting
+
+        let didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
+        didCompleteWithError.swizzle(intercept: interceptDidCompleteWithError)
+        didCompleteWithErrorMap[key] = didCompleteWithError
     }
 
     static func unbind(delegateClass: AnyClass) {
@@ -67,6 +88,9 @@ internal class URLSessionTaskDelegateSwizzler {
         let key = MetaTypeExtensions.key(from: delegateClass)
         didFinishCollectingMap[key]??.unswizzle()
         didFinishCollectingMap[key] = nil
+
+        didCompleteWithErrorMap[key]??.unswizzle()
+        didCompleteWithErrorMap[key] = nil
     }
 
     static func unbindAll() {
@@ -76,8 +100,12 @@ internal class URLSessionTaskDelegateSwizzler {
         didFinishCollectingMap.forEach { _, didFinishCollecting in
             didFinishCollecting?.unswizzle()
         }
-
         didFinishCollectingMap.removeAll()
+
+        didCompleteWithErrorMap.forEach { _, didCompleteWithError in
+            didCompleteWithError?.unswizzle()
+        }
+        didCompleteWithErrorMap.removeAll()
     }
 
     /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)` method.
@@ -120,6 +148,50 @@ internal class URLSessionTaskDelegateSwizzler {
                 return { delegate, session, task, metrics in
                     intercept(session, task, metrics)
                     return previousImplementation(delegate, Self.selector, session, task, metrics)
+                }
+            }
+        }
+    }
+
+    class DidCompleteWithError: MethodSwizzler<@convention(c) (URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, Error?) -> Void, @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void> {
+        private static let selector = #selector(URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:))
+
+        private let method: FoundMethod
+
+        static func build(klass: AnyClass) throws -> DidCompleteWithError {
+            return try DidCompleteWithError(selector: self.selector, klass: klass)
+        }
+
+        private init(selector: Selector, klass: AnyClass) throws {
+            do {
+                method = try Self.findMethod(with: selector, in: klass)
+            } catch {
+                // URLSessionTaskDelegate doesn't implement the selector, so we inject it and swizzle it
+                let block: @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void = { delegate, session, task, error in
+                }
+                let imp = imp_implementationWithBlock(block)
+                /*
+                v@:@@@ means:
+                v - return type is void
+                @ - self
+                : - selector
+                @ - first argument is an object
+                @ - second argument is an object
+                @ - third argument is an object
+                */
+                class_addMethod(klass, selector, imp, "v@:@@@")
+                method = try Self.findMethod(with: selector, in: klass)
+            }
+
+            super.init()
+        }
+
+        func swizzle(intercept: @escaping (URLSession, URLSessionTask, Error?) -> Void) {
+            typealias Signature = @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void
+            swizzle(method) { previousImplementation -> Signature in
+                return { delegate, session, task, error in
+                    intercept(session, task, error)
+                    return previousImplementation(delegate, Self.selector, session, task, error)
                 }
             }
         }
