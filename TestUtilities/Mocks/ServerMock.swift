@@ -95,13 +95,14 @@ public class ServerMock {
     fileprivate let mockedResponse: HTTPURLResponse?
     fileprivate let mockedData: Data?
     fileprivate let mockedError: NSError?
+    fileprivate let isAsyncAwait: Bool
 
     public enum Delivery {
         case success(response: HTTPURLResponse, data: Data = .mockAny())
         case failure(error: NSError)
     }
 
-    public init(delivery: Delivery) {
+    public init(delivery: Delivery, isAsyncAwait: Bool = false) {
         switch delivery {
         case let .success(response: response, data: data):
             self.mockedResponse = response
@@ -112,8 +113,10 @@ public class ServerMock {
             self.mockedData = nil
             self.mockedError = error
         }
-        precondition(Thread.isMainThread, "`ServerMock` should be initialized on the main thread.")
-        precondition(ServerMock.activeInstance == nil, "Only one active instance of `ServerMock` is allowed at a time.")
+        self.isAsyncAwait = isAsyncAwait
+        if !isAsyncAwait {
+            precondition(Thread.isMainThread, "`ServerMock` should be initialized on the main thread.")
+        }
         self.queue = DispatchQueue(label: "com.datadoghq.ServerMock-\(urlSessionUUID.uuidString)")
 
         ServerMock.activeInstance = self
@@ -136,7 +139,9 @@ public class ServerMock {
         ///
         /// NOTE: one of the `wait*` methods **must be called** within the test using `ServerMock`.
         ///
-        precondition(Thread.isMainThread, "`ServerMock` should be deinitialized on the main thread.")
+        if !isAsyncAwait {
+            precondition(Thread.isMainThread, "`ServerMock` should be deinitialized on the main thread.")
+        }
     }
 
     fileprivate func record(newRequest: URLRequest) {
