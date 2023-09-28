@@ -1896,20 +1896,20 @@ public struct RUMViewEvent: RUMDataModel {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
-            /// Page scroll height (total height) when the maximum scroll depth was reached for this view (in pixels)
-            public let maxDepthScrollHeight: Double
-
             /// Page scroll top (scrolled distance) when the maximum scroll depth was reached for this view (in pixels)
             public let maxDepthScrollTop: Double
 
-            /// Duration between the view start and the scroll event that reached the maximum scroll depth for this view (in nanoseconds)
-            public let maxDepthTime: Double
+            /// Maximum page scroll height (total height) for this view (in pixels)
+            public let maxScrollHeight: Double
+
+            /// Duration between the view start and the time the max scroll height was reached for this view (in nanoseconds)
+            public let maxScrollHeightTime: Double
 
             enum CodingKeys: String, CodingKey {
                 case maxDepth = "max_depth"
-                case maxDepthScrollHeight = "max_depth_scroll_height"
                 case maxDepthScrollTop = "max_depth_scroll_top"
-                case maxDepthTime = "max_depth_time"
+                case maxScrollHeight = "max_scroll_height"
+                case maxScrollHeightTime = "max_scroll_height_time"
             }
         }
 
@@ -3398,4 +3398,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
+// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4
