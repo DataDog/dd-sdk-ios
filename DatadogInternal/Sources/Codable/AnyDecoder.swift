@@ -864,18 +864,11 @@ extension SingleValueDecodingContainer {
     ///
     /// - returns: A passthrough value if any.
     /// - throws: `DecodingError.typeMismatch` if the value was not passthrough.
-    func passthrough() throws -> PassthroughAnyCodable {
+    func passthrough() -> PassthroughAnyCodable? {
         guard let container = self as? _AnyDecoder.SingleValueContainer else {
-            throw DecodingError.typeMismatch(PassthroughAnyCodable.self, DecodingError.Context(
-                codingPath: codingPath,
-                debugDescription: "Single Value Container cannot decode passthrough value."
-            ))
+            return nil
         }
 
-        guard let value = container.value as? PassthroughAnyCodable else {
-            throw DecodingError.typeMismatch(PassthroughAnyCodable.self, in: container)
-        }
-
-        return value
+        return container.value as? PassthroughAnyCodable
     }
 }
