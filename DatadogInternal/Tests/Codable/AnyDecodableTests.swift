@@ -93,4 +93,25 @@ class AnyDecodableTests: XCTestCase {
         XCTAssertEqual(dictionary["url"]?.value as? URL, URL(string: "https://test.com"))
         XCTAssert(dictionary["passthrough"]?.value as? Passthrough === passthrough)
     }
+
+    func testAnyDecodingFailue() throws {
+        class NotPassthrough {
+            init() {}
+        }
+
+        let passthrough = NotPassthrough()
+
+        let any: [String: Any?] = [
+            "passthrough": passthrough
+        ]
+
+        let decoder = AnyDecoder()
+        XCTAssertThrowsError(try decoder.decode(AnyDecodable.self, from: any)) { error in
+            guard case DecodingError.dataCorrupted(let context) = error else {
+                return XCTFail("Unexpected error: \(error)")
+            }
+
+            XCTAssertEqual(context.debugDescription, "AnyDecodable value cannot be decoded")
+        }
+    }
 }
