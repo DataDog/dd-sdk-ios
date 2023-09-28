@@ -98,10 +98,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, *)
+    @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataFromURL_itNotifiesInterceptor() async throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)), isAsyncAwait: true)
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -128,10 +129,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, *)
+    @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataForURLRequest_itNotifiesInterceptor() async throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)), isAsyncAwait: true)
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         handler.onInterceptionDidStart = { interception in
             XCTAssertTrue(interception.isFirstPartyRequest)
@@ -264,6 +266,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     @available(iOS 15.0, tvOS 15.0, *)
+    @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncData_itPassesAllValuesToTheInterceptor() async throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
@@ -271,7 +274,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         notifyInterceptionDidComplete.expectedFulfillmentCount = 2
 
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
-        let server = ServerMock(delivery: .failure(error: expectedError), isAsyncAwait: true)
+        let server = ServerMock(delivery: .failure(error: expectedError))
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
