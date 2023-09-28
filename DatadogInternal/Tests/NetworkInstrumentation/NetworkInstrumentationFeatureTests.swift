@@ -101,6 +101,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(iOS 16.0, tvOS 16.0, *)
     @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataFromURL_itNotifiesInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
@@ -134,6 +135,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
     }
 
+    @available(iOS 16.0, tvOS 16.0, *)
     @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataForURLRequest_itNotifiesInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
@@ -273,6 +275,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
     }
 
+    @available(iOS 16.0, tvOS 16.0, *)
     @MainActor
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncData_itPassesAllValuesToTheInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
