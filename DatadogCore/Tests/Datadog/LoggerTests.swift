@@ -39,7 +39,7 @@ class LoggerTests: XCTestCase {
             sdkVersion: "1.2.3",
             applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             device: .mockWith(
-                name: "testOS",
+                osName: "testOS",
                 osVersion: "1.0",
                 osBuildNumber: "FFFFFF",
                 architecture: "testArch"
