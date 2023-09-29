@@ -874,8 +874,6 @@ class RUMContextProviderMock: RUMContextProvider {
     var context: RUMContext
 }
 
-
-
 // MARK: - Auto Instrumentation Mocks
 
 class RUMCommandSubscriberMock: RUMCommandSubscriber {
