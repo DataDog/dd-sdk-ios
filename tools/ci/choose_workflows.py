@@ -48,6 +48,7 @@ def should_run_sr_unit_tests(ctx: CIContext) -> bool:
         pr_path_prefixes=[
             'Datadog/Datadog.xcodeproj/',
             'DatadogSessionReplay/',
+            'DatadogInternal/',
             'TestUtilities/',
         ],
         pr_file_extensions=[]
