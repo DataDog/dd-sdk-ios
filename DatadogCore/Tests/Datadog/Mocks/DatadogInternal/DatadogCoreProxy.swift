@@ -79,7 +79,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
-    func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage: Encodable {
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core.set(baggage: baggage, forKey: key)
     }
 

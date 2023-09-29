@@ -51,7 +51,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         return nil
     }
     
-    public func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage : Encodable {
+    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         // not supported - use different type of core mock if you need this
     }
 

@@ -1271,6 +1271,8 @@
 		D2D3199829E982AC0004F169 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2CB6FD127C5348200A62B57 /* DatadogCrashReporting.framework */; };
 		D2D3199A29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */; };
 		D2D3199B29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */; };
+		D2D36DCB2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */; };
+		D2D36DCC2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */; };
 		D2DA2358298D57AA00C6C7E6 /* CoreLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039CF298D5235001A1FA3 /* CoreLogger.swift */; };
 		D2DA2359298D57AA00C6C7E6 /* NetworkConnectionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039B9298D5235001A1FA3 /* NetworkConnectionInfo.swift */; };
 		D2DA235A298D57AA00C6C7E6 /* TrackingConsent.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23039BB298D5235001A1FA3 /* TrackingConsent.swift */; };
@@ -2568,6 +2570,7 @@
 		D2D30E5A2A40BF540020C553 /* Logs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logs.swift; sourceTree = "<group>"; };
 		D2D30E5D2A40CD2C0020C553 /* LogsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsTests.swift; sourceTree = "<group>"; };
 		D2D3199929E98D970004F169 /* DefaultJSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultJSONEncoder.swift; sourceTree = "<group>"; };
+		D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogCoreProtocolTests.swift; sourceTree = "<group>"; };
 		D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogInternal.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2DA238A298D588800C6C7E6 /* DatadogInternalTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogInternalTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2DA2395298D58F300C6C7E6 /* ReadWriteLockTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadWriteLockTests.swift; sourceTree = "<group>"; };
@@ -5599,6 +5602,7 @@
 		D2DA238B298D588A00C6C7E6 /* DatadogInternalTests */ = {
 			isa = PBXGroup;
 			children = (
+				D2D36DCA2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift */,
 				D26416B52A30E84F00BCD9F7 /* CoreRegistryTest.swift */,
 				D2A783D729A530CB003B03BB /* Concurrency */,
 				D2F44FBA299AA2310074B0D9 /* Upload */,
@@ -8702,6 +8706,7 @@
 				D2160CE029C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,
 				D2EBEE3B29BA163E00B15732 /* B3HTTPHeadersReaderTests.swift in Sources */,
 				D2A783DA29A530EF003B03BB /* SwiftExtensionsTests.swift in Sources */,
+				D2D36DCB2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */,
 				D2160CD429C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */,
 				D263BCB629DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift in Sources */,
 				D2DA23AA298D58F400C6C7E6 /* FeatureMessageReceiverTests.swift in Sources */,
@@ -8740,6 +8745,7 @@
 				D2160CE129C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,
 				D2EBEE3F29BA163F00B15732 /* B3HTTPHeadersReaderTests.swift in Sources */,
 				D2A783D929A530EF003B03BB /* SwiftExtensionsTests.swift in Sources */,
+				D2D36DCC2AC6DCCA0021F28A /* DatadogCoreProtocolTests.swift in Sources */,
 				D2160CD529C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift in Sources */,
 				D263BCB729DB014900FA0E21 /* TimeInterval+ConvenienceTests.swift in Sources */,
 				D2DA23B8298D59DC00C6C7E6 /* FeatureMessageReceiverTests.swift in Sources */,
