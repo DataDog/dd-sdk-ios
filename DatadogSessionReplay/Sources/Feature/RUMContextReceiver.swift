@@ -27,28 +27,28 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
     // MARK: - FeatureMessageReceiver
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .context(context) = message, let rum = context.baggages[RUMContext.key] else {
+        guard case let .context(context) = message else {
             // No RUM baggage in the message
             return false
         }
 
+        var new: RUMContext? = nil
+
         do {
             // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-            let new: RUMContext = try rum.decode()
-
-            // Notify only if it has changed:
-            if new != previous {
-                onNew?(new)
-                previous = new
-            }
-
-            return true
+            new = try context.baggages[RUMContext.key].map { try $0.decode() }
         } catch {
             core.telemetry
                 .error("Fails to decode RUM context from Session Replay", error: error)
         }
 
-        return false
+        // Notify only if it has changed:
+        if new != previous {
+            onNew?(new)
+            previous = new
+        }
+
+        return true
     }
 
     // MARK: - RUMContextObserver
