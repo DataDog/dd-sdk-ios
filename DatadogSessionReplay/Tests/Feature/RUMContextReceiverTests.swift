@@ -183,7 +183,7 @@ class RUMContextReceiverTests: XCTestCase {
 
     func testWhenMessageContainsMalformedRUMBaggage_itSendsTelemetry() throws {
         // Given
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             messageReceiver: telemetryReceiver
         )

@@ -6,6 +6,7 @@
 
 import Foundation
 import XCTest
+import TestUtilities
 
 /// Provides set of assertions for single JSON object or collection of JSON objects.
 /// Note: this file is individually referenced by integration tests project, so no dependency on other source files should be introduced.
@@ -103,25 +104,5 @@ internal class JSONDataMatcher {
             )
         }
         return tValue
-    }
-}
-
-internal extension Data {
-    func toArrayOfJSONObjects(file: StaticString = #file, line: UInt = #line) throws -> [[String: Any]] {
-        guard let jsonArray = try? JSONSerialization.jsonObject(with: self, options: []) as? [[String: Any]] else {
-            XCTFail("Cannot decode array of JSON objects from data.", file: file, line: line)
-            return []
-        }
-
-        return jsonArray
-    }
-
-    func toJSONObject(file: StaticString = #file, line: UInt = #line) throws -> [String: Any] {
-        guard let jsonObject = try? JSONSerialization.jsonObject(with: self, options: []) as? [String: Any] else {
-            XCTFail("Cannot decode JSON object from given data.", file: file, line: line)
-            return [:]
-        }
-
-        return jsonObject
     }
 }

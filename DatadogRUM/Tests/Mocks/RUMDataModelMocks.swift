@@ -8,6 +8,19 @@ import TestUtilities
 
 @testable import DatadogRUM
 
+/// Creates random RUM event.
+internal func randomRUMEvent() -> RUMDataModel {
+    // swiftlint:disable opening_brace
+    return oneOf([
+        { RUMViewEvent.mockRandom() },
+        { RUMActionEvent.mockRandom() },
+        { RUMResourceEvent.mockRandom() },
+        { RUMErrorEvent.mockRandom() },
+        { RUMLongTaskEvent.mockRandom() },
+    ])
+    // swiftlint:enable opening_brace
+}
+
 extension RUMUser: RandomMockable {
     public static func mockRandom() -> RUMUser {
         return RUMUser(
@@ -118,7 +131,7 @@ extension RUMViewEvent: RandomMockable {
                 documentVersion: .mockRandom(),
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: .plan1)
+                session: .init(plan: [.plan1, .plan2].randomElement()!)
             ),
             application: .init(id: .mockRandom()),
             buildVersion: .mockRandom(),
@@ -210,7 +223,7 @@ extension RUMResourceEvent: RandomMockable {
                 configuration: .mockRandom(),
                 discarded: nil,
                 rulePsr: nil,
-                session: .init(plan: .plan1),
+                session: .init(plan: [.plan1, .plan2].randomElement()!),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
@@ -283,7 +296,7 @@ extension RUMActionEvent: RandomMockable {
                 ),
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: .plan1)
+                session: .init(plan: [.plan1, .plan2].randomElement()!)
             ),
             action: .init(
                 crash: .init(count: .mockRandom()),
@@ -343,7 +356,7 @@ extension RUMErrorEvent: RandomMockable {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: .plan1)
+                session: .init(plan: [.plan1, .plan2].randomElement()!)
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
@@ -422,7 +435,7 @@ extension RUMLongTaskEvent: RandomMockable {
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
                 discarded: nil,
-                session: .init(plan: .plan1)
+                session: .init(plan: [.plan1, .plan2].randomElement()!)
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),

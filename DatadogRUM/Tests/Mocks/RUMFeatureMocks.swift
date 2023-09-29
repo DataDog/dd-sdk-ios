@@ -25,22 +25,6 @@ extension RUM.Configuration {
     }
 }
 
-extension WebViewEventReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
-    }
-
-    static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
-        commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            commandSubscriber: commandSubscriber
-        )
-    }
-}
-
 extension CrashReportReceiver: AnyMockable {
     public static func mockAny() -> Self {
         .mockWith()
@@ -644,6 +628,18 @@ extension RUMContext {
     }
 }
 
+extension RUMCoreContext: RandomMockable {
+    public static func mockRandom() -> RUMCoreContext {
+        RUMCoreContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom(),
+            viewServerTimeOffset: .mockRandom()
+        )
+    }
+}
+
 // MARK: - RUMScope Mocks
 
 func mockNoOpSessionListener() -> RUM.SessionListener {
@@ -877,6 +873,8 @@ class RUMContextProviderMock: RUMContextProvider {
 
     var context: RUMContext
 }
+
+
 
 // MARK: - Auto Instrumentation Mocks
 

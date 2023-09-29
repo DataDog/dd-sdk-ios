@@ -11,7 +11,7 @@ import DatadogInternal
 @testable import DatadogCore
 
 class InternalProxyTests: XCTestCase {
-    let telemetry = TelemetryMock()
+    let telemetry = TelemetryReceiverMock()
 
     private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 

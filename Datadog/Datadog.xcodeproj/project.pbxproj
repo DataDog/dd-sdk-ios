@@ -322,6 +322,8 @@
 		6187A53926FCBE240015D94A /* TracerE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6187A53826FCBE240015D94A /* TracerE2ETests.swift */; };
 		6188697C2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6188697B2A4376F700E8996B /* RUMConfigurationTests.swift */; };
 		6188697D2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6188697B2A4376F700E8996B /* RUMConfigurationTests.swift */; };
+		6188900F2AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6188900E2AC58B8C00D0B966 /* TelemetryReceiverMock.swift */; };
+		618890102AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6188900E2AC58B8C00D0B966 /* TelemetryReceiverMock.swift */; };
 		618C365F248E85B400520CDE /* DateFormattingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618C365E248E85B400520CDE /* DateFormattingTests.swift */; };
 		618F9843265BC486009959F8 /* E2EInstrumentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F9842265BC486009959F8 /* E2EInstrumentationTests.swift */; };
 		618F984E265BC905009959F8 /* E2EConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 618F984D265BC905009959F8 /* E2EConfig.swift */; };
@@ -1342,8 +1344,8 @@
 		D2DA23C8298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DA23C6298D5AC000C6C7E6 /* TelemetryMocks.swift */; };
 		D2DA23CA298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DA23C9298D5C1300C6C7E6 /* UIKitMocks.swift */; };
 		D2DA23CB298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DA23C9298D5C1300C6C7E6 /* UIKitMocks.swift */; };
-		D2DA23CF298D5F2300C6C7E6 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
-		D2DA23D0298D5F2300C6C7E6 /* MessageBusMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* MessageBusMock.swift */; };
+		D2DA23CF298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* FeatureMessageReceiverMock.swift */; };
+		D2DA23D0298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D628A647DB005DD405 /* FeatureMessageReceiverMock.swift */; };
 		D2DA23D1298D61FB00C6C7E6 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
 		D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DC4BF527F484AA00E4FB96 /* DataEncryption.swift */; };
@@ -2166,6 +2168,7 @@
 		618715FB24DC5F0800FC0F69 /* RUMDataModelsMappingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDataModelsMappingTests.swift; sourceTree = "<group>"; };
 		6187A53826FCBE240015D94A /* TracerE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracerE2ETests.swift; sourceTree = "<group>"; };
 		6188697B2A4376F700E8996B /* RUMConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConfigurationTests.swift; sourceTree = "<group>"; };
+		6188900E2AC58B8C00D0B966 /* TelemetryReceiverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiverMock.swift; sourceTree = "<group>"; };
 		618C365E248E85B400520CDE /* DateFormattingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateFormattingTests.swift; sourceTree = "<group>"; };
 		618D9DE6263AD78900A3FAD2 /* SpanEventMapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanEventMapper.swift; sourceTree = "<group>"; };
 		618DCFD624C7265300589570 /* RUMUUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUUID.swift; sourceTree = "<group>"; };
@@ -2413,7 +2416,7 @@
 		D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
-		D21C26D628A647DB005DD405 /* MessageBusMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusMock.swift; sourceTree = "<group>"; };
+		D21C26D628A647DB005DD405 /* FeatureMessageReceiverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiverMock.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggage.swift; sourceTree = "<group>"; };
@@ -4457,6 +4460,15 @@
 			path = Tracing;
 			sourceTree = "<group>";
 		};
+		6188900D2AC58B5D00D0B966 /* MessageReceiverMocks */ = {
+			isa = PBXGroup;
+			children = (
+				D21C26D628A647DB005DD405 /* FeatureMessageReceiverMock.swift */,
+				6188900E2AC58B8C00D0B966 /* TelemetryReceiverMock.swift */,
+			);
+			path = MessageReceiverMocks;
+			sourceTree = "<group>";
+		};
 		618C365D248E858200520CDE /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -5329,6 +5341,7 @@
 		D2579546298ABB04008A1BE5 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				6188900D2AC58B5D00D0B966 /* MessageReceiverMocks */,
 				61C713C52A3CA08B00FA735A /* CoreMocks */,
 				3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */,
 				D2579547298ABB04008A1BE5 /* FileWriterMock.swift */,
@@ -5338,7 +5351,6 @@
 				D257954C298ABB04008A1BE5 /* AttributesMocks.swift */,
 				D2DA23C6298D5AC000C6C7E6 /* TelemetryMocks.swift */,
 				D2DA23C9298D5C1300C6C7E6 /* UIKitMocks.swift */,
-				D21C26D628A647DB005DD405 /* MessageBusMock.swift */,
 				D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */,
 				D24C9C5129A7BD12002057CF /* SamplerMock.swift */,
 				D24C9C5429A7C5F3002057CF /* DateProvider.swift */,
@@ -8059,7 +8071,7 @@
 				D2579552298ABB04008A1BE5 /* FileWriterMock.swift in Sources */,
 				D2A7840329A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840D29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
-				D2DA23CF298D5F2300C6C7E6 /* MessageBusMock.swift in Sources */,
+				D2DA23CF298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
 				D2160CF029C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift in Sources */,
 				D2579554298ABB04008A1BE5 /* FeatureBaggageMock.swift in Sources */,
 				3C85D42C29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */,
@@ -8069,6 +8081,7 @@
 				D2579557298ABB04008A1BE5 /* AttributesMocks.swift in Sources */,
 				D2DA23C7298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,
 				D2DA23CA298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */,
+				6188900F2AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */,
 				61C713D02A3DEFF900FA735A /* FeatureRegistrationCoreMock.swift in Sources */,
 				D2579555298ABB04008A1BE5 /* PassthroughCoreMock.swift in Sources */,
 				D257955A298ABB04008A1BE5 /* SwiftExtensions.swift in Sources */,
@@ -8093,7 +8106,7 @@
 				D257957D298ABB83008A1BE5 /* FileWriterMock.swift in Sources */,
 				D2A7840429A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840E29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
-				D2DA23D0298D5F2300C6C7E6 /* MessageBusMock.swift in Sources */,
+				D2DA23D0298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
 				D2160CF129C0EC4D00FAA9A5 /* SingleFeatureCoreMock.swift in Sources */,
 				D257957E298ABB83008A1BE5 /* FeatureBaggageMock.swift in Sources */,
 				3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */,
@@ -8103,6 +8116,7 @@
 				D257957F298ABB83008A1BE5 /* AttributesMocks.swift in Sources */,
 				D2DA23C8298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,
 				D2DA23CB298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */,
+				618890102AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */,
 				61C713D12A3DEFF900FA735A /* FeatureRegistrationCoreMock.swift in Sources */,
 				D2579580298ABB83008A1BE5 /* PassthroughCoreMock.swift in Sources */,
 				D2579581298ABB83008A1BE5 /* SwiftExtensions.swift in Sources */,

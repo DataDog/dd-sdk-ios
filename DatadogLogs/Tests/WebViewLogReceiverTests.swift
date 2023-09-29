@@ -153,7 +153,7 @@ class WebViewLogReceiverTests: XCTestCase {
     func testWhenNoRUMContextIsAvailable_itDoesNotSendTelemetryError() throws {
         // Given
         let messageReceiver = WebViewLogReceiver()
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
@@ -187,7 +187,7 @@ class WebViewLogReceiverTests: XCTestCase {
     func testWhenRUMContextIsAvailable_withMalformedRUMContext_itSendsTelemetryError() throws {
         // Given
         let messageReceiver = WebViewLogReceiver()
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             context: .mockWith(
                 baggages: [
