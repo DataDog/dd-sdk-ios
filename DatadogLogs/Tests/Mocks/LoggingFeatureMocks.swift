@@ -10,6 +10,28 @@ import DatadogInternal
 
 @testable import DatadogLogs
 
+extension RemoteLogger.Configuration: AnyMockable {
+    public static func mockAny() -> Self { .mockWith() }
+
+    static func mockWith(
+        service: String? = "logger.tests",
+        name: String? = "TestLogger",
+        networkInfoEnabled: Bool = false,
+        threshold: LogLevel = .info,
+        eventMapper: LogEventMapper? = nil,
+        sampler: Sampler = .mockKeepAll()
+    ) -> Self {
+        return .init(
+            service: service,
+            name: name,
+            networkInfoEnabled: networkInfoEnabled,
+            threshold: threshold,
+            eventMapper: eventMapper,
+            sampler: sampler
+        )
+    }
+}
+
 extension LogsFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockAny() -> Self { .mockWith() }

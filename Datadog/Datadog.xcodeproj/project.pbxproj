@@ -507,6 +507,8 @@
 		D20731CC29A52E6000ECBF94 /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B8F2768FDDE00870CBF /* Sampler.swift */; };
 		D20731CD29A52E8700ECBF94 /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
 		D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
+		D20FD9CF2AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */; };
+		D20FD9D02AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */; };
 		D214DA8129DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
 		D214DA8229DF2D5E004D0AE8 /* CrashReportingPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */; };
 		D214DA8329DF2D5E004D0AE8 /* CrashReporting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6161247825CA9CA6009901BE /* CrashReporting.swift */; };
@@ -796,8 +798,6 @@
 		D24C9C5629A7C5F3002057CF /* RelativeDateProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C5429A7C5F3002057CF /* RelativeDateProvider.swift */; };
 		D24C9C6029A7CB0A002057CF /* DatadogLogsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* DatadogLogsFeatureTests.swift */; };
 		D24C9C6129A7CB0C002057CF /* DatadogLogsFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FB222F244E1BE900902D19 /* DatadogLogsFeatureTests.swift */; };
-		D24C9C6229A7CB14002057CF /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2375C262954785A00473EA0 /* WebViewLogReceiverTests.swift */; };
-		D24C9C6329A7CB16002057CF /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2375C262954785A00473EA0 /* WebViewLogReceiverTests.swift */; };
 		D24C9C6429A7CB7B002057CF /* CrashLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */; };
 		D24C9C6529A7CB7D002057CF /* CrashLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */; };
 		D24C9C6929A7CE06002057CF /* DDErrorMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C6629A7CBF0002057CF /* DDErrorMocks.swift */; };
@@ -2373,6 +2373,7 @@
 		D207317C29A5226A00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D207318329A5226A00ECBF94 /* DatadogLogsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D20731B429A5279D00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewLogReceiverTests.swift; sourceTree = "<group>"; };
 		D213532F270CA722000315AD /* DataCompressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataCompressionTests.swift; sourceTree = "<group>"; };
 		D214DAA429E072D7004D0AE8 /* MessageBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBus.swift; sourceTree = "<group>"; };
 		D214DAA729E54CB4004D0AE8 /* TelemetryReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiver.swift; sourceTree = "<group>"; };
@@ -2453,7 +2454,6 @@
 		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
-		D2375C262954785A00473EA0 /* WebViewLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewLogReceiverTests.swift; sourceTree = "<group>"; };
 		D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogRUM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23F8ECD29DDCD38001CFAE8 /* DatadogRUMTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogRUMTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5037,6 +5037,7 @@
 				6194D51B287ECDC00091547D /* ConsoleLoggerTests.swift */,
 				D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */,
 				D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */,
+				D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */,
 				61133C3A2423990D00786299 /* Log */,
 				61133C3D2423990D00786299 /* LogOutputs */,
 				D2A783EC29A534DB003B03BB /* Mocks */,
@@ -5273,7 +5274,6 @@
 			children = (
 				61FB222F244E1BE900902D19 /* DatadogLogsFeatureTests.swift */,
 				61FF416125EE5FF400CE35EC /* CrashLogReceiverTests.swift */,
-				D2375C262954785A00473EA0 /* WebViewLogReceiverTests.swift */,
 			);
 			path = Logs;
 			sourceTree = "<group>";
@@ -7384,7 +7384,6 @@
 				612C13D62AAB35EB0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				61133C5E2423990D00786299 /* DataUploadDelayTests.swift in Sources */,
 				61133C5C2423990D00786299 /* DataUploadWorkerTests.swift in Sources */,
-				D24C9C6229A7CB14002057CF /* WebViewLogReceiverTests.swift in Sources */,
 				A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */,
 				61FC5F3525CC1898006BB4DE /* CrashContextProviderTests.swift in Sources */,
 				49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */,
@@ -7779,6 +7778,7 @@
 				D2D30E602A40CD310020C553 /* LogsTests.swift in Sources */,
 				D2A783E729A53468003B03BB /* LogEventBuilderTests.swift in Sources */,
 				D242C2A12A14D747004B4980 /* RemoteLoggerTests.swift in Sources */,
+				D20FD9CF2AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */,
 				D2A783ED29A534F2003B03BB /* LoggingFeatureMocks.swift in Sources */,
 				D2B249972A45E10500DD4F9F /* LoggerTests.swift in Sources */,
 				D2A783EA29A53468003B03BB /* LogMessageReceiverTests.swift in Sources */,
@@ -8262,6 +8262,7 @@
 				D2D30E612A40CD310020C553 /* LogsTests.swift in Sources */,
 				D2A783F529A534F9003B03BB /* LogEventBuilderTests.swift in Sources */,
 				D242C2A22A14D747004B4980 /* RemoteLoggerTests.swift in Sources */,
+				D20FD9D02AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */,
 				D2A783F629A534F9003B03BB /* LoggingFeatureMocks.swift in Sources */,
 				D2B249982A45E10500DD4F9F /* LoggerTests.swift in Sources */,
 				D2A783F729A534F9003B03BB /* LogMessageReceiverTests.swift in Sources */,
@@ -8434,7 +8435,6 @@
 				D24C9C6129A7CB0C002057CF /* DatadogLogsFeatureTests.swift in Sources */,
 				D29A9FCF29DDC4BC005C54A4 /* RUMFeatureMocks.swift in Sources */,
 				D22743DE29DEB8B5001A7EF9 /* VitalInfoSamplerTests.swift in Sources */,
-				D24C9C6329A7CB16002057CF /* WebViewLogReceiverTests.swift in Sources */,
 				D2CB6F0927C520D400A62B57 /* RUMDataModels+objcTests.swift in Sources */,
 				D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */,
 				614B78EE296D7B63009C6B92 /* DatadogCoreTests.swift in Sources */,
