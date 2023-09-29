@@ -28,7 +28,10 @@ class WebViewEventReceiverTests: XCTestCase {
                     ]
                 ]
             ),
-            messageReceiver: WebViewEventReceiver.mockAny()
+            messageReceiver: WebViewEventReceiver(
+                dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
+                commandSubscriber: mockCommandSubscriber
+            )
         )
     }
 
@@ -53,9 +56,10 @@ class WebViewEventReceiverTests: XCTestCase {
             "test": String.mockRandom()
         ]
 
-        core.send(
-            message: .baggage(key: WebViewEventReceiver.MessageKeys.browserEvent, value: AnyEncodable(sent))
-        )
+        core.send(message: .baggage(
+            key: WebViewEventReceiver.MessageKeys.browserEvent,
+            value: AnyEncodable(sent)
+        ))
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -65,11 +69,6 @@ class WebViewEventReceiverTests: XCTestCase {
     }
 
     func testWhenValidWebRUMEventPassed_itDecoratesAndPassesToCoreMessageBus() throws {
-        let receiver = WebViewEventReceiver(
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: mockCommandSubscriber
-        )
-
         let webRUMEvent: JSON = [
             "_dd": [
                 "session": ["plan": 2]
@@ -98,7 +97,10 @@ class WebViewEventReceiverTests: XCTestCase {
             "type": "action"
         ]
 
-        receiver.write(event: webRUMEvent, to: core)
+        core.send(message: .baggage(
+            key: WebViewEventReceiver.MessageKeys.browserEvent,
+            value: AnyEncodable(webRUMEvent)
+        ))
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -110,11 +112,6 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testWhenValidWebRUMEventPassedWithoutRUMContext_itPassesToCoreMessageBus() throws {
         core.context.featuresAttributes = [:]
-
-        let receiver = WebViewEventReceiver(
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: mockCommandSubscriber
-        )
 
         let webRUMEvent: JSON = [
             "_dd": [
@@ -130,7 +127,10 @@ class WebViewEventReceiverTests: XCTestCase {
             "type": "action"
         ]
 
-        receiver.write(event: webRUMEvent, to: core)
+        core.send(message: .baggage(
+            key: WebViewEventReceiver.MessageKeys.browserEvent,
+            value: AnyEncodable(webRUMEvent)
+        ))
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -141,17 +141,15 @@ class WebViewEventReceiverTests: XCTestCase {
     }
 
     func testWhenNativeSessionIsSampledOut_itPassesWebEventToWriter() throws {
-        let receiver = WebViewEventReceiver(
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: mockCommandSubscriber
-        )
-
         let webRUMEvent: JSON = [
             "new_key": "new_value",
             "type": "unknown"
         ]
 
-        receiver.write(event: webRUMEvent, to: core)
+        core.send(message: .baggage(
+            key: WebViewEventReceiver.MessageKeys.browserEvent,
+            value: AnyEncodable(webRUMEvent)
+        ))
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)
@@ -162,17 +160,15 @@ class WebViewEventReceiverTests: XCTestCase {
     }
 
     func testWhenUnknownWebRUMEventPassed_itPassesToCoreMessageBus() throws {
-        let receiver = WebViewEventReceiver(
-            dateProvider: RelativeDateProvider(using: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: mockCommandSubscriber
-        )
-
         let unknownWebRUMEvent: JSON = [
             "new_key": "new_value",
             "type": "unknown"
         ]
 
-        receiver.write(event: unknownWebRUMEvent, to: core)
+        core.send(message: .baggage(
+            key: WebViewEventReceiver.MessageKeys.browserEvent,
+            value: AnyEncodable(unknownWebRUMEvent)
+        ))
 
         let data = try JSONEncoder().encode(core.events.first as? AnyEncodable)
         let writtenJSON = try XCTUnwrap(try JSONSerialization.jsonObject(with: data, options: []) as? JSON)

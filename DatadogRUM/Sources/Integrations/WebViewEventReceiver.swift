@@ -77,7 +77,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             }
             var event = event
 
-            if let date = event["date"] as? Int {
+            if let date = event["date"] as? Int64 {
                 let viewID = (event["view"] as? JSON)?["id"] as? String
                 let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
                 let correctedDate = Int64(date) + serverTimeOffsetInMs
@@ -96,9 +96,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 event["session"] = session
             }
 
-            if var dd = event["_dd"] as? JSON, var dd_sesion = dd["session"] as? [String: Int] {
-                dd_sesion["plan"] = 1
-                dd["session"] = dd_sesion
+            if var dd = event["_dd"] as? JSON, var dd_session = dd["session"] as? [String: Int64] {
+                dd_session["plan"] = 1
+                dd["session"] = dd_session
                 event["_dd"] = dd
             }
 
