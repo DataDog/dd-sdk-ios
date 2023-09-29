@@ -3979,16 +3979,16 @@ public class DDRUMViewEventDisplayScroll: NSObject {
         root.swiftModel.display!.scroll!.maxDepth as NSNumber
     }
 
-    @objc public var maxDepthScrollHeight: NSNumber {
-        root.swiftModel.display!.scroll!.maxDepthScrollHeight as NSNumber
-    }
-
     @objc public var maxDepthScrollTop: NSNumber {
         root.swiftModel.display!.scroll!.maxDepthScrollTop as NSNumber
     }
 
-    @objc public var maxDepthTime: NSNumber {
-        root.swiftModel.display!.scroll!.maxDepthTime as NSNumber
+    @objc public var maxScrollHeight: NSNumber {
+        root.swiftModel.display!.scroll!.maxScrollHeight as NSNumber
+    }
+
+    @objc public var maxScrollHeightTime: NSNumber {
+        root.swiftModel.display!.scroll!.maxScrollHeightTime as NSNumber
     }
 }
 
@@ -5544,4 +5544,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
+// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4
