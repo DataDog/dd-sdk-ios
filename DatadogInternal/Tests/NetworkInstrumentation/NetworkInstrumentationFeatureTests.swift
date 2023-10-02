@@ -125,8 +125,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(from: URL.mockAny(), delegate: delegate)
 
         // Then
-        await fulfillment(
-            of: [
+        await wait(
+            for: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
@@ -167,8 +167,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try await session.data(for: URLRequest(url: url), delegate: delegate)
 
         // Then
-        await fulfillment(
-            of: [
+        await wait(
+            for: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
@@ -311,8 +311,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
 
         // Then
-        await fulfillment(
-            of: [
+        await wait(
+            for: [
                 notifyInterceptionDidStart,
                 notifyInterceptionDidComplete
             ],
