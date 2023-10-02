@@ -73,7 +73,7 @@ class FeatureStorageTests: XCTestCase {
         XCTAssertEqual(batch.events.count, 1)
         storage.reader.markBatchAsRead(batch)
 
-        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batche")
+        XCTAssertNil(storage.reader.readNextBatch(), "There must be no other batches")
     }
 
     // MARK: - Behaviours on tracking consent

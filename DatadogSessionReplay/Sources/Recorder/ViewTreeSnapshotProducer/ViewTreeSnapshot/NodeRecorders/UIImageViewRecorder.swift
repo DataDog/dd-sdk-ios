@@ -8,6 +8,8 @@
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    internal let identifier = UUID()
+
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
     /// An option for overriding default semantics from parent recorder.
@@ -50,7 +52,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let ids = context.ids.nodeIDs(2, for: imageView)
+        let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
         let contentFrame: CGRect?
         if let image = imageView.image {
             contentFrame = attributes.frame.contentFrame(

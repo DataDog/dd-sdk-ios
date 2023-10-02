@@ -35,6 +35,7 @@ class LoggerTests: XCTestCase {
             service: "default-service-name",
             env: "tests",
             version: "1.0.0",
+            buildNumber: "1",
             sdkVersion: "1.2.3",
             applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             device: .mockWith(
@@ -69,6 +70,7 @@ class LoggerTests: XCTestCase {
           "logger.thread_name" : "main",
           "date" : "2019-12-15T10:00:00.000Z",
           "version": "1.0.0",
+          "build_version": "1",
           "ddtags": "env:tests,version:1.0.0",
           "_dd": {
             "device": {

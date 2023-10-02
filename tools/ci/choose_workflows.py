@@ -88,7 +88,7 @@ def should_run_tools_tests(ctx: CIContext) -> bool:
         ctx=ctx,
         trigger_env=context.trigger_env.DD_RUN_TOOLS_TESTS,
         build_env=context.build_env.DD_OVERRIDE_RUN_TOOLS_TESTS,
-        pr_keyword=None,
+        pr_keyword='[x] Run tests for `tools/`',
         pr_path_prefixes=[
             'instrumented-tests/',
             'tools/',

@@ -32,13 +32,18 @@ internal final class NodeIDGenerator {
 
     /// Returns single `NodeID` for given instance of `UIView`.
     /// - Parameter view: the `UIView` object
+    /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: the `NodeID` of queried instance
-    func nodeID(for view: UIView) -> NodeID {
-        if let currentID = view.nodeID {
+    func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
+        if let currentID = view.nodeID?[nodeRecorder.identifier] {
             return currentID
         } else {
             let id = getNextID()
-            view.nodeID = id
+            if view.nodeID != nil {
+                view.nodeID?[nodeRecorder.identifier] = id
+            } else {
+                view.nodeID = [nodeRecorder.identifier: id]
+            }
             return id
         }
     }
@@ -46,13 +51,18 @@ internal final class NodeIDGenerator {
     /// Returns multiple `NodeIDs` for given instance of `UIView`.
     /// - Parameter size: the number of IDs
     /// - Parameter view: the `UIView` object
+    /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: an array with given number of `NodeID` values
-    func nodeIDs(_ size: Int, for view: UIView) -> [NodeID] {
-        if let currentIDs = view.nodeIDs, currentIDs.count == size {
+    func nodeIDs(_ size: Int, view: UIView, nodeRecorder: NodeRecorder) -> [NodeID] {
+        if let currentIDs = view.nodeIDs?[nodeRecorder.identifier], currentIDs.count == size {
             return currentIDs
         } else {
             let ids = (0..<size).map { _ in getNextID() }
-            view.nodeIDs = ids
+            if view.nodeIDs != nil {
+                view.nodeIDs?[nodeRecorder.identifier] = ids
+            } else {
+                view.nodeIDs = [nodeRecorder.identifier: ids]
+            }
             return ids
         }
     }
@@ -70,14 +80,14 @@ fileprivate var associatedNodeIDKey: UInt8 = 1
 fileprivate var associatedNodeIDsKey: UInt8 = 2
 
 private extension UIView {
-    var nodeID: NodeID? {
+    var nodeID: [UUID: NodeID]? {
         set { objc_setAssociatedObject(self, &associatedNodeIDKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedNodeIDKey) as? NodeID }
+        get { objc_getAssociatedObject(self, &associatedNodeIDKey) as? [UUID: NodeID] }
     }
 
-    var nodeIDs: [NodeID]? {
+    var nodeIDs: [UUID: [NodeID]]? {
         set { objc_setAssociatedObject(self, &associatedNodeIDsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN_NONATOMIC) }
-        get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [NodeID] }
+        get { objc_getAssociatedObject(self, &associatedNodeIDsKey) as? [UUID: [NodeID]] }
     }
 }
 #endif

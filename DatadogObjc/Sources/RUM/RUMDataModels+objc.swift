@@ -32,6 +32,10 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMActionEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMActionEventRUMCITest(root: root) : nil
     }
@@ -854,6 +858,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var application: DDRUMErrorEventApplication {
         DDRUMErrorEventApplication(root: root)
+    }
+
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
     }
 
     @objc public var ciTest: DDRUMErrorEventRUMCITest? {
@@ -1851,6 +1859,10 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMLongTaskEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMLongTaskEventRUMCITest(root: root) : nil
     }
@@ -2489,6 +2501,10 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
+    }
+
     @objc public var ciTest: DDRUMResourceEventRUMCITest? {
         root.swiftModel.ciTest != nil ? DDRUMResourceEventRUMCITest(root: root) : nil
     }
@@ -2972,6 +2988,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.firstByte != nil ? DDRUMResourceEventResourceFirstByte(root: root) : nil
     }
 
+    @objc public var graphql: DDRUMResourceEventResourceGraphql? {
+        root.swiftModel.resource.graphql != nil ? DDRUMResourceEventResourceGraphql(root: root) : nil
+    }
+
     @objc public var id: String? {
         root.swiftModel.resource.id
     }
@@ -3076,6 +3096,56 @@ public class DDRUMResourceEventResourceFirstByte: NSObject {
     @objc public var start: NSNumber {
         root.swiftModel.resource.firstByte!.start as NSNumber
     }
+}
+
+@objc
+public class DDRUMResourceEventResourceGraphql: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var operationName: String? {
+        root.swiftModel.resource.graphql!.operationName
+    }
+
+    @objc public var operationType: DDRUMResourceEventResourceGraphqlOperationType {
+        .init(swift: root.swiftModel.resource.graphql!.operationType)
+    }
+
+    @objc public var payload: String? {
+        set { root.swiftModel.resource.graphql!.payload = newValue }
+        get { root.swiftModel.resource.graphql!.payload }
+    }
+
+    @objc public var variables: String? {
+        set { root.swiftModel.resource.graphql!.variables = newValue }
+        get { root.swiftModel.resource.graphql!.variables }
+    }
+}
+
+@objc
+public enum DDRUMResourceEventResourceGraphqlOperationType: Int {
+    internal init(swift: RUMResourceEvent.Resource.Graphql.OperationType) {
+        switch swift {
+        case .query: self = .query
+        case .mutation: self = .mutation
+        case .subscription: self = .subscription
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.Graphql.OperationType {
+        switch self {
+        case .query: return .query
+        case .mutation: return .mutation
+        case .subscription: return .subscription
+        }
+    }
+
+    case query
+    case mutation
+    case subscription
 }
 
 @objc
@@ -3442,6 +3512,10 @@ public class DDRUMViewEvent: NSObject {
 
     @objc public var application: DDRUMViewEventApplication {
         DDRUMViewEventApplication(root: root)
+    }
+
+    @objc public var buildVersion: String? {
+        root.swiftModel.buildVersion
     }
 
     @objc public var ciTest: DDRUMViewEventRUMCITest? {
@@ -3905,16 +3979,16 @@ public class DDRUMViewEventDisplayScroll: NSObject {
         root.swiftModel.display!.scroll!.maxDepth as NSNumber
     }
 
-    @objc public var maxDepthScrollHeight: NSNumber {
-        root.swiftModel.display!.scroll!.maxDepthScrollHeight as NSNumber
-    }
-
     @objc public var maxDepthScrollTop: NSNumber {
         root.swiftModel.display!.scroll!.maxDepthScrollTop as NSNumber
     }
 
-    @objc public var maxDepthTime: NSNumber {
-        root.swiftModel.display!.scroll!.maxDepthTime as NSNumber
+    @objc public var maxScrollHeight: NSNumber {
+        root.swiftModel.display!.scroll!.maxScrollHeight as NSNumber
+    }
+
+    @objc public var maxScrollHeightTime: NSNumber {
+        root.swiftModel.display!.scroll!.maxScrollHeightTime as NSNumber
     }
 }
 
@@ -4206,6 +4280,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.cumulativeLayoutShift as NSNumber?
     }
 
+    @objc public var cumulativeLayoutShiftTargetSelector: String? {
+        root.swiftModel.view.cumulativeLayoutShiftTargetSelector
+    }
+
     @objc public var customTimings: [String: NSNumber]? {
         root.swiftModel.view.customTimings as [String: NSNumber]?
     }
@@ -4236,6 +4314,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var firstInputDelay: NSNumber? {
         root.swiftModel.view.firstInputDelay as NSNumber?
+    }
+
+    @objc public var firstInputTargetSelector: String? {
+        root.swiftModel.view.firstInputTargetSelector
     }
 
     @objc public var firstInputTime: NSNumber? {
@@ -4270,6 +4352,10 @@ public class DDRUMViewEventView: NSObject {
         root.swiftModel.view.interactionToNextPaint as NSNumber?
     }
 
+    @objc public var interactionToNextPaintTargetSelector: String? {
+        root.swiftModel.view.interactionToNextPaintTargetSelector
+    }
+
     @objc public var isActive: NSNumber? {
         root.swiftModel.view.isActive as NSNumber?
     }
@@ -4284,6 +4370,10 @@ public class DDRUMViewEventView: NSObject {
 
     @objc public var largestContentfulPaint: NSNumber? {
         root.swiftModel.view.largestContentfulPaint as NSNumber?
+    }
+
+    @objc public var largestContentfulPaintTargetSelector: String? {
+        root.swiftModel.view.largestContentfulPaintTargetSelector
     }
 
     @objc public var loadEvent: NSNumber? {
@@ -5194,6 +5284,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.startSessionReplayRecordingManually as NSNumber? }
     }
 
+    @objc public var storeContextsAcrossPages: NSNumber? {
+        root.swiftModel.telemetry.configuration.storeContextsAcrossPages as NSNumber?
+    }
+
     @objc public var telemetryConfigurationSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.telemetryConfigurationSampleRate as NSNumber?
     }
@@ -5450,4 +5544,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f21e8badee23a4d3204440d55a5ac7b5d9fadc81
+// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4

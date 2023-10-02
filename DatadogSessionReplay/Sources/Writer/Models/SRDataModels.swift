@@ -1145,5 +1145,5 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/e3d941c30622ff8624051604584ebd3f9fff2b25
+// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
 #endif

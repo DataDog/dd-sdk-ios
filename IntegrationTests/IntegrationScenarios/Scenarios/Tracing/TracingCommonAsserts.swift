@@ -44,26 +44,12 @@ extension TracingCommonAsserts {
                 line: line
             )
 
-            let expectedHeadersRegexes = [
-                #"^Content-Type: text/plain;charset=UTF-8$"#,
-                #"^User-Agent: .*/\d+[.\d]* CFNetwork \([a-zA-Z ]+; iOS/[0-9.]+\)$"#, // e.g. "User-Agent: Example/1.0 CFNetwork (iPhone; iOS/14.5)"
-                #"^DD-API-KEY: ui-tests-client-token$"#,
-                #"^DD-EVP-ORIGIN: ios$"#,
-                #"^DD-EVP-ORIGIN-VERSION: \#(semverPattern)$"#, // e.g. "DD-EVP-ORIGIN-VERSION: 1.7.0-beta.2"
-                #"^DD-REQUEST-ID: [0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}$"# // e.g. "DD-REQUEST-ID: 524A2616-D2AA-4FE5-BBD9-898D173BE658"
-            ]
-            expectedHeadersRegexes.forEach { expectedHeaderRegex in
-                XCTAssertTrue(
-                    request.httpHeaders.contains { $0.matches(regex: expectedHeaderRegex) },
-                    """
-                    Request doesn't contain header matching expected regex.
-                    ✉️ request headers: \(request.httpHeaders.joined(separator: "\n"))
-                    🧪 expected regex: '\(expectedHeaderRegex)'
-                    """,
-                    file: file,
-                    line: line
-                )
-            }
+            XCTAssertEqual(request.httpHeaders["Content-Type"], "text/plain;charset=UTF-8", file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["User-Agent"]?.matches(regex: userAgentRegex), true, file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-API-KEY"], "ui-tests-client-token", file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN"], "ios", file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-EVP-ORIGIN-VERSION"]?.matches(regex: semverRegex), true, file: file, line: line)
+            XCTAssertEqual(request.httpHeaders["DD-REQUEST-ID"]?.matches(regex: ddRequestIDRegex), true, file: file, line: line)
         }
     }
 

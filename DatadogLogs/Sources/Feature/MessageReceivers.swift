@@ -132,6 +132,8 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         let env: String
         /// The version of the application that data is generated from.
         let version: String
+        /// The build number of the application that data is generated from.
+        let buildNumber: String
         /// Current device information.
         let device: DeviceInfo
         /// The version of Datadog iOS SDK.
@@ -205,6 +207,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             loggerVersion: context.sdkVersion,
             threadName: nil,
             applicationVersion: context.version,
+            applicationBuildNumber: context.buildNumber,
             dd: .init(
                 device: .init(architecture: deviceInfo.architecture)
             ),

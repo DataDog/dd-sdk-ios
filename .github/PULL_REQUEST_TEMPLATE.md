@@ -12,6 +12,8 @@ A brief description of implementation details of this PR.
 - [ ] Add CHANGELOG entry for user facing changes
 
 ### Custom CI job configuration (optional)
-- [ ] Run unit tests
+- [ ] Run unit tests for Core, RUM, Trace, Logs, CR and WVT
+- [ ] Run unit tests for Session Replay
 - [ ] Run integration tests
 - [ ] Run smoke tests
+- [ ] Run tests for `tools/`

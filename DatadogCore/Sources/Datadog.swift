@@ -105,6 +105,14 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
+        /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
+        /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
+        ///
+        /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
+        ///
+        /// By default it's set to `false`.
+        public var backgroundTasksEnabled: Bool
+
         /// Creates a Datadog SDK Configuration object.
         ///
         /// - Parameters:
@@ -140,6 +148,13 @@ public struct Datadog {
         ///                                 https://www.ntppool.org/ . Using different pools or setting a no-op `ServerDateProvider`
         ///                                 implementation will result in desynchronization of the SDK instance and the Datadog servers.
         ///                                 This can lead to significant time shift in RUM sessions or distributed traces.
+        ///   - backgroundTasksEnabled:     A flag that determines if `UIApplication` methods
+        ///                                 `beginBackgroundTask(expirationHandler:)` and `endBackgroundTask:`
+        ///                                 are used to perform background uploads.
+        ///                                 It may extend the amount of time the app is operating in background by 30 seconds.
+        ///                                 Tasks are normally stopped when there's nothing to upload or when encountering
+        ///                                 any upload blocker such us no internet connection or low battery.
+        ///                                 By default it's set to `false`.
         public init(
             clientToken: String,
             env: String,
@@ -150,7 +165,8 @@ public struct Datadog {
             uploadFrequency: UploadFrequency = .average,
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
-            serverDateProvider: ServerDateProvider? = nil
+            serverDateProvider: ServerDateProvider? = nil,
+            backgroundTasksEnabled: Bool = false
         ) {
             self.clientToken = clientToken
             self.env = env
@@ -162,6 +178,7 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.backgroundTasksEnabled = backgroundTasksEnabled
         }
 
         // MARK: - Internal
@@ -345,6 +362,9 @@ public struct Datadog {
             ?? configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
             ?? "0.0.0"
 
+        let applicationBuildNumber = configuration.bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+            ?? "0"
+
         let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
         let bundleType: BundleType = configuration.bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
@@ -377,6 +397,7 @@ public struct Datadog {
                 service: service,
                 env: try ifValid(env: configuration.env),
                 version: applicationVersion,
+                buildNumber: applicationBuildNumber,
                 variant: variant,
                 source: source,
                 sdkVersion: sdkVersion,
@@ -389,7 +410,8 @@ public struct Datadog {
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider
             ),
-            applicationVersion: applicationVersion
+            applicationVersion: applicationVersion,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 
         core.telemetry.configuration(

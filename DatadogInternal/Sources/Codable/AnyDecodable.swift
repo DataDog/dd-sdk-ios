@@ -93,6 +93,8 @@ extension _AnyDecodable {
             self.init(double)
         } else if let string = try? container.decode(String.self) {
             self.init(string)
+        } else if let passthrough = container.passthrough() {
+            self.init(passthrough)
         } else if let array = try? container.decode([AnyDecodable].self) {
             self.init(array.map { $0.value })
         } else if let dictionary = try? container.decode([String: AnyDecodable].self) {

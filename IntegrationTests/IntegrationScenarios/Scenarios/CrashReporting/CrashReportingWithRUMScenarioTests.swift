@@ -71,6 +71,9 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
 
         let crashRUMError = try XCTUnwrap(crashedSession.viewVisits[0].errorEvents.last)
+        XCTAssertEqual(crashRUMError.version, "1.0")
+        XCTAssertEqual(crashRUMError.buildVersion, "1")
+
 #if arch(arm64)
         XCTAssertEqual(crashRUMError.error.message, "Application crash: SIGTRAP (Trace/BPT trap)", "On ARM, the crash is caused by `fatalError()`, translates to `SIGTRAP` signal.")
         XCTAssertEqual(crashRUMError.error.type, "SIGTRAP (#0)")

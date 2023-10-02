@@ -8,6 +8,8 @@
 import UIKit
 
 internal struct UINavigationBarRecorder: NodeRecorder {
+    let identifier = UUID()
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let navigationBar = view as? UINavigationBar else {
             return nil
@@ -15,7 +17,7 @@ internal struct UINavigationBarRecorder: NodeRecorder {
 
         let builder = UINavigationBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: navigationBar, in: context),
-            wireframeID: context.ids.nodeID(for: navigationBar),
+            wireframeID: context.ids.nodeID(view: navigationBar, nodeRecorder: self),
             attributes: attributes,
             color: inferColor(of: navigationBar)
         )

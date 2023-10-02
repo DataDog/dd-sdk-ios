@@ -123,7 +123,7 @@ class FilesOrchestratorTests: XCTestCase {
     }
 
     func testWhenFilesDirectorySizeIsBig_itKeepsItUnderLimit_byRemovingOldestFilesFirst() throws {
-        let oneMB = UInt64(1).MB
+        let oneMB = 1.MB.asUInt64()
 
         let orchestrator = FilesOrchestrator(
             directory: .init(url: temporaryDirectory),
@@ -303,4 +303,12 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertEqual(fileCreationDateFrom(fileName: invalidFileName), Date(timeIntervalSinceReferenceDate: 0))
     }
     // swiftlint:enable number_separator
+}
+
+extension FilesOrchestrator {
+    func getReadableFile(
+        context: DatadogContext
+    ) -> ReadableFile? {
+        getReadableFile(excludingFilesNamed: [])
+    }
 }

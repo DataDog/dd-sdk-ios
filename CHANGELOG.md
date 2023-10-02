@@ -1,5 +1,12 @@
 # Unreleased
 
+# 2.3.0 / 27-09-2023
+
+- [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
+- [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
+- [BUGFIX] Fix wrong `view.name` reported in RUM crashes. See [#1488][]
+- [BUGFIX] Fix RUM sessions state propagation in Crash Reporting. See [#1498][]
+
 # 2.2.1 / 13-09-2023
 
 - [BUGFIX] Add default RUM views and actions predicates to DatadogObjc . See [#1464][].
@@ -516,6 +523,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
 [#1413]: https://github.com/DataDog/dd-sdk-ios/pull/1413
 [#1415]: https://github.com/DataDog/dd-sdk-ios/pull/1415
 [#1418]: https://github.com/DataDog/dd-sdk-ios/pull/1418
@@ -523,6 +531,10 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1428]: https://github.com/DataDog/dd-sdk-ios/pull/1428
 [#1444]: https://github.com/DataDog/dd-sdk-ios/pull/1444
 [#1464]: https://github.com/DataDog/dd-sdk-ios/pull/1464
+[#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
+[#1488]: https://github.com/DataDog/dd-sdk-ios/pull/1488
+[#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
+[#1498]: https://github.com/DataDog/dd-sdk-ios/pull/1498
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -204,8 +204,6 @@ workflows:
         - scheme: DatadogCore iOS
         - destination: platform=iOS Simulator,name=iPhone 11,OS=latest
         - is_clean_build: 'yes'
-        - test_repetition_mode: 'retry_on_failure'
-        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-ios-unit-tests.html"
@@ -225,8 +223,6 @@ workflows:
         - scheme: DatadogCore tvOS
         - destination: platform=tvOS Simulator,name=Apple TV,OS=latest
         - is_clean_build: 'yes'
-        - test_repetition_mode: 'retry_on_failure'
-        - maximum_test_repetitions: 2
         - generate_code_coverage_files: 'yes'
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Datadog-tvos-unit-tests.html"
@@ -308,7 +304,7 @@ workflows:
         - project_path: Datadog.xcworkspace
         - xcpretty_test_options: --color --report html --output "${BITRISE_DEPLOY_DIR}/Benchmark-tests.html"
     - xcode-test:
-        title: Run integration tests for RUM, Logging and Tracing (on iOS Simulator)
+        title: Run integration tests for RUM, Logging, Tracing and SR (on iOS Simulator)
         run_if: '{{enveq "DD_RUN_INTEGRATION_TESTS" "1"}}'
         inputs:
         - scheme: IntegrationScenarios
@@ -521,6 +517,24 @@ workflows:
             #!/usr/bin/env bash
             set -e
             swift test --package-path tools/sr-snapshots
+    - script:
+        title: Run tests for distribution tools
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            cd tools/distribution && make
+            venv/bin/python3 -m pytest tests
+    - script:
+        title: Run tests for nightly-unit-tests tool
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+            cd tools/nightly-unit-tests && make
+            venv/bin/python3 -m pytest tests
 
   create_dogfooding_pr:
     description: |-

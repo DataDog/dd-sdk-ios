@@ -21,6 +21,7 @@ internal class LogMatcher: JSONDataMatcher {
         // MARK: - Application info
 
         static let applicationVersion = "version"
+        static let applicationBuildNumber = "build_version"
 
         // MARK: - Logger info
 
@@ -122,6 +123,10 @@ internal class LogMatcher: JSONDataMatcher {
 
     func assertApplicationVersion(equals applicationVersion: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.applicationVersion, equals: applicationVersion, file: file, line: line)
+    }
+
+    func assertApplicationBuildNumber(equals applicationBuildNumber: String, file: StaticString = #file, line: UInt = #line) {
+        assertValue(forKey: JSONKey.applicationBuildNumber, equals: applicationBuildNumber, file: file, line: line)
     }
 
     func assertStatus(equals status: String, file: StaticString = #file, line: UInt = #line) {

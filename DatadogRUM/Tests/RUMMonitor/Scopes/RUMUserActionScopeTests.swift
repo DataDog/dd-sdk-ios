@@ -12,6 +12,8 @@ import DatadogInternal
 class RUMUserActionScopeTests: XCTestCase {
     let context: DatadogContext = .mockWith(
         service: "test-service",
+        version: "test-version",
+        buildNumber: "test-build",
         device: .mockWith(
             name: "device-name",
             osName: "device-os"
@@ -88,6 +90,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.session.hasReplay, hasReplay)
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
+        XCTAssertEqual(recordedAction.version, "test-version")
+        XCTAssertEqual(recordedAction.buildVersion, "test-build")
         XCTAssertEqual(recordedAction.device?.name, "device-name")
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
@@ -130,6 +134,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
         XCTAssertEqual(recordedAction.source, .ios)
         XCTAssertEqual(recordedAction.service, "test-service")
+        XCTAssertEqual(recordedAction.version, "test-version")
+        XCTAssertEqual(recordedAction.buildVersion, "test-build")
         XCTAssertEqual(recordedAction.device?.name, "device-name")
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
@@ -214,6 +220,8 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
         XCTAssertEqual(event.source, .ios)
         XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
     }

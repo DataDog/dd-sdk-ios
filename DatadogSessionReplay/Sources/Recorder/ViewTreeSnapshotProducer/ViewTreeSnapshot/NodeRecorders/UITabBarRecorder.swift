@@ -8,6 +8,7 @@
 import UIKit
 
 internal struct UITabBarRecorder: NodeRecorder {
+    let identifier = UUID()
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let tabBar = view as? UITabBar else {
             return nil
@@ -15,7 +16,7 @@ internal struct UITabBarRecorder: NodeRecorder {
 
         let builder = UITabBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: tabBar, in: context),
-            wireframeID: context.ids.nodeID(for: tabBar),
+            wireframeID: context.ids.nodeID(view: tabBar, nodeRecorder: self),
             attributes: attributes,
             color: inferColor(of: tabBar)
         )

@@ -27,11 +27,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// The core context provider
     private let contextProvider: DatadogContextProvider
     /// Delay used to schedule consecutive uploads.
-    private var delay: Delay
+    private let delay: DataUploadDelay
+
     /// Upload work scheduled by this worker.
     private var uploadWork: DispatchWorkItem?
     /// Telemetry interface.
     private let telemetry: Telemetry
+
+    /// Background task coordinator responsible for registering and ending background tasks for UIKit targets.
+    private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
 
     init(
         queue: DispatchQueue,
@@ -39,15 +43,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
         dataUploader: DataUploaderType,
         contextProvider: DatadogContextProvider,
         uploadConditions: DataUploadConditions,
-        delay: Delay,
+        delay: DataUploadDelay,
         featureName: String,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
         self.queue = queue
         self.fileReader = fileReader
         self.uploadConditions = uploadConditions
         self.dataUploader = dataUploader
         self.contextProvider = contextProvider
+        self.backgroundTaskCoordinator = backgroundTaskCoordinator
         self.delay = delay
         self.featureName = featureName
         self.telemetry = telemetry
@@ -62,6 +68,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let isSystemReady = blockersForUpload.isEmpty
             let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
+                self.backgroundTaskCoordinator?.beginBackgroundTask()
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
 
                 do {
@@ -102,6 +109,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.delay.increase()
+                self.backgroundTaskCoordinator?.endBackgroundTask()
             }
 
             self.scheduleNextUpload(after: self.delay.current)

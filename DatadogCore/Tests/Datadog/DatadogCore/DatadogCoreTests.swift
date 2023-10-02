@@ -42,7 +42,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -87,7 +88,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -140,7 +142,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
@@ -190,7 +193,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         let core2 = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -200,7 +204,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer {
             core1.flushAndTearDown()
@@ -224,8 +229,8 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         let storage1 = core1.stores.values.first?.storage
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt64())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt64())
 
         let storage2 = core2.stores.values.first?.storage
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
@@ -245,7 +250,8 @@ class DatadogCoreTests: XCTestCase {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: contextProvider,
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
         try core.register(feature: FeatureMock())

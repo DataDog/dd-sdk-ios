@@ -42,10 +42,11 @@ class ContextMessageReceiverTests: XCTestCase {
             messageReceiver: receiver
         )
 
-        XCTAssertEqual(receiver.context.rum!["_dd.application.id"] as? String?, "app-id")
-        XCTAssertEqual(receiver.context.rum!["_dd.session.id"] as? String?, "session-id")
-        XCTAssertEqual(receiver.context.rum!["_dd.view.id"] as? String?, "view-id")
-        XCTAssertEqual(receiver.context.rum!["_dd.action.id"] as? String?, "action-id")
+        var rumContext = try XCTUnwrap(receiver.context.rum)
+        XCTAssertEqual(rumContext["_dd.application.id"] as? String, "app-id")
+        XCTAssertEqual(rumContext["_dd.session.id"] as? String, "session-id")
+        XCTAssertEqual(rumContext["_dd.view.id"] as? String, "view-id")
+        XCTAssertEqual(rumContext["_dd.action.id"] as? String, "action-id")
 
         // When
         ids = [
@@ -57,10 +58,11 @@ class ContextMessageReceiverTests: XCTestCase {
         core.set(feature: "rum", attributes: { ["ids": ids] })
 
         // Then
-        XCTAssertEqual(receiver.context.rum!["_dd.application.id"] as? String?, "app-id")
-        XCTAssertEqual(receiver.context.rum!["_dd.session.id"] as? String?, "session-id")
-        XCTAssertNil(receiver.context.rum!["_dd.view.id"])
-        XCTAssertNil(receiver.context.rum!["_dd.action.id"])
+        rumContext = try XCTUnwrap(receiver.context.rum)
+        XCTAssertEqual(rumContext["_dd.application.id"] as? String, "app-id")
+        XCTAssertEqual(rumContext["_dd.session.id"] as? String, "session-id")
+        XCTAssertNil(rumContext["_dd.view.id"] as Any?)
+        XCTAssertNil(rumContext["_dd.action.id"] as Any?)
     }
 
     func testItIngnoresRUMContext() throws {

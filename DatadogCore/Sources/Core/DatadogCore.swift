@@ -65,6 +65,8 @@ internal final class DatadogCore {
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
 
+    internal let backgroundTasksEnabled: Bool
+
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -84,7 +86,8 @@ internal final class DatadogCore {
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
-        applicationVersion: String
+        applicationVersion: String,
+        backgroundTasksEnabled: Bool
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -92,6 +95,7 @@ internal final class DatadogCore {
         self.httpClient = httpClient
         self.encryption = encryption
         self.contextProvider = contextProvider
+        self.backgroundTasksEnabled = backgroundTasksEnabled
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
@@ -241,6 +245,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 requestBuilder: feature.requestBuilder,
                 httpClient: httpClient,
                 performance: performancePreset,
+                backgroundTasksEnabled: backgroundTasksEnabled,
                 telemetry: telemetry
             )
 
@@ -337,6 +342,7 @@ extension DatadogContextProvider {
         service: String,
         env: String,
         version: String,
+        buildNumber: String,
         variant: String?,
         source: String,
         sdkVersion: String,
@@ -355,6 +361,7 @@ extension DatadogContextProvider {
             service: service,
             env: env,
             version: applicationVersion,
+            buildNumber: buildNumber,
             variant: variant,
             source: source,
             sdkVersion: sdkVersion,

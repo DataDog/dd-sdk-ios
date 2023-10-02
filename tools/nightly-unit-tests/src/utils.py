@@ -16,22 +16,24 @@ def shell_output(command: str):
     :param command: shell command
     :return: command's STDOUT
     """
+    print(f'{command}')
     process = subprocess.run(
         args=[command],
         capture_output=True,
         shell=True,
         text=True  # capture STDOUT as text
     )
-    if process.returncode == 0:
-        return process.stdout
-    else:
-        raise Exception(
-            f'''
+    output = f'''
             Command {command} exited with status code {process.returncode}
             - STDOUT: {process.stdout if process.stdout != '' else '""'}
             - STDERR: {process.stderr if process.stderr != '' else '""'}
             '''
-        )
+    print(output)
+
+    if process.returncode == 0:
+        return process.stdout
+    else:
+        raise Exception(output)
 
 
 def shell(command: str):

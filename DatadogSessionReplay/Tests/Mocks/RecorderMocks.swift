@@ -315,12 +315,13 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 }
 
 class NodeRecorderMock: NodeRecorder {
+    var identifier = UUID()
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []
     var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
-    var resultForView: (UIView) -> NodeSemantics?
+    var resultForView: ((UIView) -> NodeSemantics?)?
 
-    init(resultForView: @escaping (UIView) -> NodeSemantics?) {
+    init(resultForView: ((UIView) -> NodeSemantics?)? = nil) {
         self.resultForView = resultForView
     }
 
@@ -328,7 +329,7 @@ class NodeRecorderMock: NodeRecorder {
         queriedViews.insert(view)
         queryContexts.append(context)
         queryContextsByView[view] = context
-        return resultForView(view)
+        return resultForView?(view)
     }
 }
 

@@ -22,7 +22,7 @@ class DataUploadDelayTests: XCTestCase {
     }
 
     func testWhenDecreasing_itGoesDownToMinimumDelay() {
-        var delay = DataUploadDelay(performance: mockPerformance)
+        let delay = DataUploadDelay(performance: mockPerformance)
         var previousValue: TimeInterval = delay.current
 
         while previousValue > mockPerformance.minUploadDelay {
@@ -41,7 +41,7 @@ class DataUploadDelayTests: XCTestCase {
     }
 
     func testWhenIncreasing_itClampsToMaximumDelay() {
-        var delay = DataUploadDelay(performance: mockPerformance)
+        let delay = DataUploadDelay(performance: mockPerformance)
         var previousValue: TimeInterval = delay.current
 
         while previousValue < mockPerformance.maxUploadDelay {

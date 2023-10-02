@@ -6,6 +6,7 @@
 
 import UIKit
 
+@available(iOS 13.0, *)
 internal class UnsupportedViewsViewController: UIViewController {
     
     @IBOutlet weak var swiftUIContainer: UIView!
@@ -23,6 +24,7 @@ internal class UnsupportedViewsViewController: UIViewController {
 
 import SwiftUI
 
+@available(iOS 13.0, *)
 fileprivate struct TestView: View {
     var body: some View {
         VStack {

@@ -21,6 +21,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -70,6 +73,7 @@ public struct RUMActionEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -435,6 +439,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -490,6 +497,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -899,6 +907,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -951,6 +962,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1174,6 +1186,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1226,6 +1241,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1373,6 +1389,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// First Byte phase properties
         public let firstByte: FirstByte?
 
+        /// GraphQL requests parameters
+        public var graphql: Graphql?
+
         /// UUID of the resource
         public let id: String?
 
@@ -1406,6 +1425,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case download = "download"
             case duration = "duration"
             case firstByte = "first_byte"
+            case graphql = "graphql"
             case id = "id"
             case method = "method"
             case provider = "provider"
@@ -1470,6 +1490,35 @@ public struct RUMResourceEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
                 case start = "start"
+            }
+        }
+
+        /// GraphQL requests parameters
+        public struct Graphql: Codable {
+            /// Name of the GraphQL operation
+            public let operationName: String?
+
+            /// Type of the GraphQL operation
+            public let operationType: OperationType
+
+            /// Content of the GraphQL operation
+            public var payload: String?
+
+            /// String representation of the operation variables
+            public var variables: String?
+
+            enum CodingKeys: String, CodingKey {
+                case operationName = "operationName"
+                case operationType = "operationType"
+                case payload = "payload"
+                case variables = "variables"
+            }
+
+            /// Type of the GraphQL operation
+            public enum OperationType: String, Codable {
+                case query = "query"
+                case mutation = "mutation"
+                case subscription = "subscription"
             }
         }
 
@@ -1637,6 +1686,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1691,6 +1743,7 @@ public struct RUMViewEvent: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1843,20 +1896,20 @@ public struct RUMViewEvent: RUMDataModel {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
-            /// Page scroll height (total height) when the maximum scroll depth was reached for this view (in pixels)
-            public let maxDepthScrollHeight: Double
-
             /// Page scroll top (scrolled distance) when the maximum scroll depth was reached for this view (in pixels)
             public let maxDepthScrollTop: Double
 
-            /// Duration between the view start and the scroll event that reached the maximum scroll depth for this view (in nanoseconds)
-            public let maxDepthTime: Double
+            /// Maximum page scroll height (total height) for this view (in pixels)
+            public let maxScrollHeight: Double
+
+            /// Duration between the view start and the time the max scroll height was reached for this view (in nanoseconds)
+            public let maxScrollHeightTime: Double
 
             enum CodingKeys: String, CodingKey {
                 case maxDepth = "max_depth"
-                case maxDepthScrollHeight = "max_depth_scroll_height"
                 case maxDepthScrollTop = "max_depth_scroll_top"
-                case maxDepthTime = "max_depth_time"
+                case maxScrollHeight = "max_scroll_height"
+                case maxScrollHeightTime = "max_scroll_height_time"
             }
         }
 
@@ -1988,6 +2041,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Total layout shift score that occurred on the view
         public let cumulativeLayoutShift: Double?
 
+        /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
+        public let cumulativeLayoutShiftTargetSelector: String?
+
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
         public let customTimings: [String: Int64]?
 
@@ -2011,6 +2067,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns of the first input event delay
         public let firstInputDelay: Int64?
+
+        /// CSS selector path of the first input target element
+        public let firstInputTargetSelector: String?
 
         /// Duration in ns to the first input
         public let firstInputTime: Int64?
@@ -2036,6 +2095,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Longest duration in ns between an interaction and the next paint
         public let interactionToNextPaint: Int64?
 
+        /// CSS selector path of the interacted element corresponding to INP
+        public let interactionToNextPaintTargetSelector: String?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -2047,6 +2109,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns to the largest contentful paint
         public let largestContentfulPaint: Int64?
+
+        /// CSS selector path of the largest contentful paint element
+        public let largestContentfulPaintTargetSelector: String?
 
         /// Duration in ns to the end of the load event handler execution
         public let loadEvent: Int64?
@@ -2093,6 +2158,7 @@ public struct RUMViewEvent: RUMDataModel {
             case cpuTicksPerSecond = "cpu_ticks_per_second"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
+            case cumulativeLayoutShiftTargetSelector = "cumulative_layout_shift_target_selector"
             case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
@@ -2101,6 +2167,7 @@ public struct RUMViewEvent: RUMDataModel {
             case firstByte = "first_byte"
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
+            case firstInputTargetSelector = "first_input_target_selector"
             case firstInputTime = "first_input_time"
             case flutterBuildTime = "flutter_build_time"
             case flutterRasterTime = "flutter_raster_time"
@@ -2109,10 +2176,12 @@ public struct RUMViewEvent: RUMDataModel {
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
             case interactionToNextPaint = "interaction_to_next_paint"
+            case interactionToNextPaintTargetSelector = "interaction_to_next_paint_target_selector"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
+            case largestContentfulPaintTargetSelector = "largest_contentful_paint_target_selector"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
             case loadingType = "loading_type"
@@ -2811,6 +2880,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the session replay start is handled manually
             public var startSessionReplayRecordingManually: Bool?
 
+            /// Whether contexts are stored in local storage
+            public let storeContextsAcrossPages: Bool?
+
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
 
@@ -2923,6 +2995,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
+                case storeContextsAcrossPages = "store_contexts_across_pages"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -3325,4 +3398,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f21e8badee23a4d3204440d55a5ac7b5d9fadc81
+// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4

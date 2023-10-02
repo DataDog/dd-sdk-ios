@@ -14,6 +14,8 @@ internal struct HTTPServerMockConfiguration: Codable {
     var tracesEndpoint: URL? = nil
     /// Python server URL to record RUM requests.
     var rumEndpoint: URL? = nil
+    /// Python server URL to record Session Replay requests.
+    var srEndpoint: URL? = nil
 
     /// Python server URLs to record custom requests, e.g. custom data requests
     /// to assert trace headers propagation.

@@ -26,6 +26,9 @@ public struct DatadogContext {
     /// The version of the application that data is generated from. Used for [Unified Service Tagging](https://docs.datadoghq.com/getting_started/tagging/unified_service_tagging).
     public var version: String
 
+    /// The build number of the application that data is generated from.
+    public let buildNumber: String
+
     /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
     public let variant: String?
 
@@ -107,6 +110,7 @@ public struct DatadogContext {
         service: String,
         env: String,
         version: String,
+        buildNumber: String,
         variant: String?,
         source: String,
         sdkVersion: String,
@@ -131,6 +135,7 @@ public struct DatadogContext {
         self.service = service
         self.env = env
         self.version = version
+        self.buildNumber = buildNumber
         self.variant = variant
         self.source = source
         self.sdkVersion = sdkVersion

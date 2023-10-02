@@ -56,12 +56,13 @@ class HTTPMockServer(BaseHTTPRequestHandler):
         global history
         request_path = parameters[0]
         request_body = self.rfile.read(int(self.headers['Content-Length']))
+        request_headers = '\n'.join([ f'{field}: {self.headers[field]}' for field in self.headers ]).encode('utf-8')
 
         # Decompress 'deflate' encoded body 
         if 'Content-Encoding' in self.headers and self.headers['Content-Encoding'] == 'deflate':
             request_body = zlib.decompress(request_body)
-        
-        request = GenericRequest("POST", request_path, self.headers.as_bytes(), request_body)
+
+        request = GenericRequest("POST", request_path, request_headers, request_body)
         history.add_request(request)
         return bytes()
 

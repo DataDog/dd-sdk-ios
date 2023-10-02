@@ -26,7 +26,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
     let performance: StoragePerformancePreset
-
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the last file was returned from `getWritableFile(writeSize:)`.
@@ -256,7 +255,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: false,
+                BatchDeletedMetric.inBackgroundKey: false
             ]
         )
     }
