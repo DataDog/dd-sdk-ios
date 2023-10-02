@@ -12,7 +12,7 @@ public enum FeatureMessage {
     /// attributes.
     case baggage(
         key: String,
-        baggage: NewFeatureBaggage
+        baggage: FeatureBaggage
     )
 
     /// A core context message.

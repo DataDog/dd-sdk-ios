@@ -103,7 +103,7 @@ class CrashLogReceiverTests: XCTestCase {
             version: .mockRandom(),
             buildNumber: .mockRandom(),
             device: .mockWith(
-                name: mockOSName,
+                osName: mockOSName,
                 osVersion: mockOSVersion,
                 osBuildNumber: mockOSBuild,
                 architecture: mockArchitecture

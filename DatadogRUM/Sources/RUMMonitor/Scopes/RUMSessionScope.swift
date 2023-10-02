@@ -116,7 +116,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             startTime: startTime,
             dependencies: expiredSession.dependencies,
-            hasReplay: context.srBaggage?.hasReplay
+            hasReplay: context.hasReplay
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:

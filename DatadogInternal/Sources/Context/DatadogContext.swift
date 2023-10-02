@@ -100,8 +100,8 @@ public struct DatadogContext {
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
-    /// Feature attributes provider.
-    public var featuresAttributes: [String: FeatureBaggage] = [:]
+    /// Type-less context baggages.
+    public var baggages: [String: FeatureBaggage] = [:]
 
     // swiftlint:disable function_default_parameter_at_end
     public init(
@@ -128,7 +128,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
-        featuresAttributes: [String: FeatureBaggage] = [:]
+        baggages: [String: FeatureBaggage] = [:]
     ) {
         self.site = site
         self.clientToken = clientToken
@@ -153,7 +153,7 @@ public struct DatadogContext {
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
-        self.featuresAttributes = featuresAttributes
+        self.baggages = baggages
     }
     // swiftlint:enable function_default_parameter_at_end
 }

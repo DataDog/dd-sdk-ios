@@ -393,7 +393,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -443,7 +443,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 documentVersion: version.toInt64,
                 pageStates: nil,
                 replayStats: .init(
-                    recordsCount: context.srBaggage?.recordsCountByViewID[viewUUID.toRUMDataFormat],
+                    recordsCount: context.recordsCountByViewID[viewUUID.toRUMDataFormat],
                     segmentsCount: nil,
                     segmentsTotalRawSize: nil
                 ),
@@ -462,7 +462,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             privacy: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
                 sampledForReplay: nil,
@@ -574,7 +574,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),
@@ -625,7 +625,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             os: .init(context: context),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
                 type: dependencies.ciTest != nil ? .ciTest : .user
             ),

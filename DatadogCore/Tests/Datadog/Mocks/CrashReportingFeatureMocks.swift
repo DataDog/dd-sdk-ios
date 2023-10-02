@@ -96,7 +96,7 @@ class CrashReportSenderMock: CrashReportSender {
 }
 
 class RUMCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: NewFeatureBaggage?
+    var receivedBaggage: FeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
@@ -110,7 +110,7 @@ class RUMCrashReceiverMock: FeatureMessageReceiver {
 }
 
 class LogsCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: NewFeatureBaggage?
+    var receivedBaggage: FeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {

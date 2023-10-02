@@ -30,39 +30,41 @@ class ContextMessageReceiverTests: XCTestCase {
     func testItReceivesRUMContext() throws {
         // Given
         let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
-        var ids: [String: String?] = [
-            "application.id": "app-id",
-            "session.id": "session-id",
-            "view.id": "view-id",
-            "user_action.id": "action-id"
-        ]
-
         let core = PassthroughCoreMock(
-            context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),
+            context: .mockWith(
+                baggages: [
+                    "rum": .init([
+                        "application.id": "app-id",
+                        "session.id": "session-id",
+                        "view.id": "view-id",
+                        "user_action.id": "action-id"
+                    ])
+                ]
+            ),
             messageReceiver: receiver
         )
 
-        var rumContext = try XCTUnwrap(receiver.context.rum)
-        XCTAssertEqual(rumContext["_dd.application.id"] as? String, "app-id")
-        XCTAssertEqual(rumContext["_dd.session.id"] as? String, "session-id")
-        XCTAssertEqual(rumContext["_dd.view.id"] as? String, "view-id")
-        XCTAssertEqual(rumContext["_dd.action.id"] as? String, "action-id")
+        XCTAssertEqual(receiver.context.rum?["_dd.application.id"], "app-id")
+        XCTAssertEqual(receiver.context.rum?["_dd.session.id"], "session-id")
+        XCTAssertEqual(receiver.context.rum?["_dd.view.id"], "view-id")
+        XCTAssertEqual(receiver.context.rum?["_dd.action.id"], "action-id")
 
         // When
-        ids = [
-            "application.id": "app-id",
-            "session.id": "session-id",
-            "view.id": nil,
-            "user_action.id": nil
-        ]
-        core.set(feature: "rum", attributes: { ["ids": ids] })
+        core.set(
+            baggage: [
+                "application.id": "app-id",
+                "session.id": "session-id",
+                "view.id": nil,
+                "user_action.id": nil
+            ],
+            forKey: "rum"
+        )
 
         // Then
-        rumContext = try XCTUnwrap(receiver.context.rum)
-        XCTAssertEqual(rumContext["_dd.application.id"] as? String, "app-id")
-        XCTAssertEqual(rumContext["_dd.session.id"] as? String, "session-id")
-        XCTAssertNil(rumContext["_dd.view.id"] as Any?)
-        XCTAssertNil(rumContext["_dd.action.id"] as Any?)
+        XCTAssertEqual(receiver.context.rum?["_dd.application.id"], "app-id")
+        XCTAssertEqual(receiver.context.rum?["_dd.session.id"], "session-id")
+        XCTAssertNil(receiver.context.rum?["_dd.view.id"])
+        XCTAssertNil(receiver.context.rum?["_dd.action.id"])
     }
 
     func testItIngnoresRUMContext() throws {
@@ -71,7 +73,7 @@ class ContextMessageReceiverTests: XCTestCase {
         var ids: [String: String?] = .mockRandom()
 
         let core = PassthroughCoreMock(
-            context: .mockWith(featuresAttributes: ["rum": ["ids": ids]]),
+            context: .mockWith(baggages: ["rum": .init(ids)]),
             messageReceiver: receiver
         )
 
@@ -79,7 +81,7 @@ class ContextMessageReceiverTests: XCTestCase {
 
         // When
         ids = .mockRandom()
-        core.set(feature: "rum", attributes: { ["ids": ids] })
+        core.set(baggage: ids, forKey: "rum")
 
         // Then
         XCTAssertNil(receiver.context.rum)

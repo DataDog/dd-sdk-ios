@@ -40,9 +40,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(writer.records.count, 1)
 
         let enrichedRecord = try XCTUnwrap(writer.records.first)
-        XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
-        XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
-        XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
+        XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
+        XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
+        XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
         XCTAssertEqual(enrichedRecord.earliestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(enrichedRecord.latestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
 
@@ -89,9 +89,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[2].records[0].isIncrementalSnapshotRecord)
 
         enrichedRecords.enumerated().forEach { index, enrichedRecord in
-            XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
-            XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
-            XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
+            XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
 
             let expectedTime = time.addingTimeInterval(TimeInterval(index))
             XCTAssertEqual(enrichedRecord.earliestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
@@ -182,9 +182,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[3].records[0].isIncrementalSnapshotRecord)
 
         zip(enrichedRecords, [rum1, rum1, rum2, rum2]).forEach { enrichedRecord, expectedRUM in
-            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.ids.applicationID)
-            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
-            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
+            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.viewID)
         }
 
         XCTAssertEqual(core.recordsCountByViewID?.values.map { $0 }, [4, 4])
@@ -211,9 +211,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertEqual(writer.records.count, 1)
 
         let enrichedRecord = try XCTUnwrap(writer.records.first)
-        XCTAssertEqual(enrichedRecord.applicationID, rum.ids.applicationID)
-        XCTAssertEqual(enrichedRecord.sessionID, rum.ids.sessionID)
-        XCTAssertEqual(enrichedRecord.viewID, rum.ids.viewID)
+        XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
+        XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
+        XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
         XCTAssertEqual(enrichedRecord.earliestTimestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(enrichedRecord.latestTimestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
 
@@ -269,9 +269,9 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
 
         zip(enrichedRecords, [rum1, rum2]).forEach { enrichedRecord, expectedRUM in
-            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.ids.applicationID)
-            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.ids.sessionID)
-            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.ids.viewID)
+            XCTAssertEqual(enrichedRecord.applicationID, expectedRUM.applicationID)
+            XCTAssertEqual(enrichedRecord.sessionID, expectedRUM.sessionID)
+            XCTAssertEqual(enrichedRecord.viewID, expectedRUM.viewID)
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 4])
@@ -321,6 +321,6 @@ class ProcessorTests: XCTestCase {
 
 fileprivate extension PassthroughCoreMock {
     var recordsCountByViewID: [String: Int64]? {
-        return context.featuresAttributes["session-replay"]?.records_count_by_view_id
+        return try? context.baggages["sr_records_count_by_view_id"]?.decode()
     }
 }
