@@ -40,6 +40,10 @@
 		3C85D42C29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		3CB32AD42ACB733000D602ED /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */; };
+		3CB32AD52ACB733000D602ED /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */; };
+		3CB32AD72ACB735600D602ED /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */; };
+		3CB32AD82ACB735600D602ED /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */; };
 		3CBDE66E2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE66D2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift */; };
 		3CBDE66F2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE66D2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift */; };
 		3CBDE6712AA08C0B00F6A7B6 /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE6702AA08C0B00F6A7B6 /* URLSessionTaskSwizzler.swift */; };
@@ -1853,6 +1857,8 @@
 		3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
 		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
 		3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
+		3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
+		3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		3CBDE66D2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
 		3CBDE6702AA08C0B00F6A7B6 /* URLSessionTaskSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzler.swift; sourceTree = "<group>"; };
 		3CBDE6732AA08C2F00F6A7B6 /* URLSessionInstrumentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionInstrumentation.swift; sourceTree = "<group>"; };
@@ -5101,6 +5107,7 @@
 				3CBDE6862AA0B7F000F6A7B6 /* URLSessionTaskDelegate+Tracking.swift */,
 				3CBDE6892AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift */,
 				3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */,
+				3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */,
 			);
 			path = URLSession;
 			sourceTree = "<group>";
@@ -5725,6 +5732,7 @@
 				3CBDE6802AA092A200F6A7B6 /* URLSessionTaskDelegateSwizzlerTests.swift */,
 				3CBDE6832AA092BC00F6A7B6 /* URLSessionTaskSwizzlerTests.swift */,
 				3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */,
+				3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */,
 			);
 			path = NetworkInstrumentation;
 			sourceTree = "<group>";
@@ -7920,6 +7928,7 @@
 				D2160CC529C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D23039DD298D5235001A1FA3 /* DD.swift in Sources */,
 				D2160C9A29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
+				3CB32AD42ACB733000D602ED /* URLSessionSwizzler.swift in Sources */,
 				D2EBEE2229BA160F00B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2303A02298D5236001A1FA3 /* ReadWriteLock.swift in Sources */,
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
@@ -8715,6 +8724,7 @@
 				D2160CC629C0DED100FAA9A5 /* URLSessionTaskInterception.swift in Sources */,
 				D2DA2372298D57AA00C6C7E6 /* DD.swift in Sources */,
 				D2160C9B29C0DE5700FAA9A5 /* FirstPartyHosts.swift in Sources */,
+				3CB32AD52ACB733000D602ED /* URLSessionSwizzler.swift in Sources */,
 				D2EBEE3029BA161100B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2DA2373298D57AA00C6C7E6 /* ReadWriteLock.swift in Sources */,
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
@@ -8764,6 +8774,7 @@
 				D2DA23A5298D58F400C6C7E6 /* AnyDecodableTests.swift in Sources */,
 				3CFD81952ABBB66400977C22 /* MetaTypeExtensionsTests.swift in Sources */,
 				D2EBEE3D29BA163E00B15732 /* W3CHTTPHeadersWriterTests.swift in Sources */,
+				3CB32AD72ACB735600D602ED /* URLSessionSwizzlerTests.swift in Sources */,
 				D2DA23A4298D58F400C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDE29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				D2DA23A1298D58F400C6C7E6 /* ReadWriteLockTests.swift in Sources */,
@@ -8805,6 +8816,7 @@
 				D2DA23B3298D59DC00C6C7E6 /* AnyDecodableTests.swift in Sources */,
 				3CFD81962ABBB66400977C22 /* MetaTypeExtensionsTests.swift in Sources */,
 				D2EBEE4129BA163F00B15732 /* W3CHTTPHeadersWriterTests.swift in Sources */,
+				3CB32AD82ACB735600D602ED /* URLSessionSwizzlerTests.swift in Sources */,
 				D2DA23B4298D59DC00C6C7E6 /* AnyCodableTests.swift in Sources */,
 				D2160CDF29C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift in Sources */,
 				D2DA23B5298D59DC00C6C7E6 /* ReadWriteLockTests.swift in Sources */,
