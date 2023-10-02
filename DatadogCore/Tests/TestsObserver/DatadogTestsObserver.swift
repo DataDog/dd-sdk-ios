@@ -153,6 +153,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             solution: """
             Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskSwizzler.unbind()`.
             """
+        ),
+        .init(
+            assert: { URLSessionSwizzler.isBinded == false },
+            problem: "No URLSession swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionSwizzler.unbind()`.
+            """
         )
     ]
 
