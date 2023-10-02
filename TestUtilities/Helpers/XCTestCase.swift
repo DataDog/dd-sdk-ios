@@ -49,7 +49,7 @@ extension XCTestCase {
     }
 
     @available(iOS 13.0, *)
-    public func wait(
+    public func dd_fulfillment(
         for expectations: [XCTestExpectation],
         timeout seconds: TimeInterval = .infinity,
         enforceOrder enforceOrderOfFulfillment: Bool = false) async {
