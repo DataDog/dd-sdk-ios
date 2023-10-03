@@ -79,10 +79,16 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             session.delegate?.interceptor?.task(task, didReceive: data)
         })
 
-        try URLSessionTaskSwizzler.bindIfNeeded(interceptResume: { [weak self] task in
-            let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
-            self?.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
-        })
+        if #available(iOS 13, tvOS 13, *) {
+            try URLSessionTaskSwizzler.bindIfNeeded(interceptResume: { [weak self] task in
+                let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
+                self?.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
+            })
+        } else {
+            try URLSessionSwizzler.bind(interceptURLRequest: { [weak self] request in
+                return self?.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts)
+            })
+        }
     }
 
     private func firstPartyHosts(configuration: URLSessionInstrumentation.Configuration, delegate: URLSessionDelegate) -> FirstPartyHosts? {

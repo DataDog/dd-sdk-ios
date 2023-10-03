@@ -8,28 +8,72 @@ import XCTest
 @testable import DatadogInternal
 
 final class URLSessionSwizzlerTests: XCTestCase {
+    override func tearDown() {
+        URLSessionSwizzler.unbind()
+        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequest as Any?)
 
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        super.tearDown()
     }
 
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    func testExample() throws {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // Any test you write for XCTest can be annotated as throws and async.
-        // Mark your test throws to produce an unexpected failure when your test encounters an uncaught error.
-        // Mark your test async to allow awaiting for asynchronous code to complete. Check the results with assertions afterwards.
-    }
-
-    func testPerformanceExample() throws {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
+    func testSwizzling_dataTaskWithURLRequestAndCompletion() throws {
+        let expectation = XCTestExpectation(description: "dataTaskWithURLRequestAndCompletion")
+        try URLSessionSwizzler.bind { request in
+            expectation.fulfill()
+            return self.interceptRequest(request: request)
         }
+
+        let session = URLSession(configuration: .default)
+        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        let task = session.dataTask(with: request) { _, _, _ in }
+        task.resume()
+
+        wait(for: [expectation], timeout: 5)
     }
 
+    func testSwizzling_testSwizzling_dataTaskWithURLRequest() throws {
+        let expectation = XCTestExpectation(description: "dataTaskWithURLRequest")
+        try URLSessionSwizzler.bind { request in
+            expectation.fulfill()
+            return self.interceptRequest(request: request)
+        }
+
+        let session = URLSession(configuration: .default)
+        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        let task = session.dataTask(with: request)
+        task.resume()
+
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testBindings() {
+        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+
+        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:))
+        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+
+        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:))
+        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+
+        URLSessionSwizzler.unbind()
+        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+    }
+
+    func testConcurrentBinding() throws {
+        // swiftlint:disable opening_brace trailing_closure
+         callConcurrently(
+            closures: [
+                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:)) },
+                { URLSessionSwizzler.unbind() },
+                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:)) },
+                { URLSessionSwizzler.unbind() },
+            ],
+            iterations: 50
+        )
+        // swiftlint:enable opening_brace trailing_closure
+    }
+
+    func interceptRequest(request: URLRequest) -> URLRequest {
+        return request
+    }
 }
