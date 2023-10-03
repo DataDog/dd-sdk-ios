@@ -87,7 +87,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
@@ -307,7 +310,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
         monitor.stopAction(type: .scroll)
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
@@ -1115,7 +1121,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
         // Then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[0].model()
 
         let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
