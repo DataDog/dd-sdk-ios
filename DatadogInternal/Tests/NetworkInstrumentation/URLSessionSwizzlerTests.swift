@@ -17,42 +17,61 @@ final class URLSessionSwizzlerTests: XCTestCase {
     }
 
     func testSwizzling_dataTaskWithURLRequestAndCompletion() throws {
-        let expectation = XCTestExpectation(description: "dataTaskWithURLRequestAndCompletion")
-        try URLSessionSwizzler.bind { request in
-            expectation.fulfill()
+        let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
+        let didInterceptTask = XCTestExpectation(description: "interceptTask")
+        try URLSessionSwizzler.bind(interceptURLRequest: { request in
+            didInterceptRequest.fulfill()
             return self.interceptRequest(request: request)
-        }
+        }, interceptTask: { _ in
+            didInterceptTask.fulfill()
+        })
 
         let session = URLSession(configuration: .default)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
         let task = session.dataTask(with: request) { _, _, _ in }
         task.resume()
 
-        wait(for: [expectation], timeout: 5)
+        wait(
+            for: [
+                didInterceptRequest,
+                didInterceptTask
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
     }
 
     func testSwizzling_testSwizzling_dataTaskWithURLRequest() throws {
-        let expectation = XCTestExpectation(description: "dataTaskWithURLRequest")
-        try URLSessionSwizzler.bind { request in
-            expectation.fulfill()
+        let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
+        let didInterceptTask = XCTestExpectation(description: "interceptTask")
+        try URLSessionSwizzler.bind(interceptURLRequest: { request in
+            didInterceptRequest.fulfill()
             return self.interceptRequest(request: request)
-        }
+        }, interceptTask: { _ in
+            didInterceptTask.fulfill()
+        })
 
         let session = URLSession(configuration: .default)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
         let task = session.dataTask(with: request)
         task.resume()
 
-        wait(for: [expectation], timeout: 5)
-    }
+        wait(
+            for: [
+                didInterceptRequest,
+                didInterceptTask
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )    }
 
     func testBindings() {
         XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
 
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:))
+        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
         XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
 
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:))
+        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
         XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
 
         URLSessionSwizzler.unbind()
@@ -63,9 +82,9 @@ final class URLSessionSwizzlerTests: XCTestCase {
         // swiftlint:disable opening_brace trailing_closure
          callConcurrently(
             closures: [
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:)) },
+                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
                 { URLSessionSwizzler.unbind() },
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:)) },
+                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
                 { URLSessionSwizzler.unbind() },
             ],
             iterations: 50
@@ -75,5 +94,8 @@ final class URLSessionSwizzlerTests: XCTestCase {
 
     func interceptRequest(request: URLRequest) -> URLRequest {
         return request
+    }
+
+    func interceptTask(task: URLSessionTask) {
     }
 }

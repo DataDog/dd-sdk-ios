@@ -85,8 +85,11 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 self?.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
             })
         } else {
-            try URLSessionSwizzler.bind(interceptURLRequest: { [weak self] request in
-                return self?.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts)
+            try URLSessionSwizzler.bindIfNeeded(interceptURLRequest: { request in
+                return self.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts)
+            }, interceptTask: { [weak self] task in
+                let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
+                self?.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
             })
         }
     }
@@ -105,6 +108,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         URLSessionTaskDelegateSwizzler.unbindAll()
         URLSessionDataDelegateSwizzler.unbindAll()
         URLSessionTaskSwizzler.unbind()
+        URLSessionSwizzler.unbind()
     }
 
     /// Unswizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, `URLSessionTask` and `URLSession` methods
@@ -154,10 +158,16 @@ extension NetworkInstrumentationFeature {
 
         // sync update to task prevents a race condition where the currentRequest could already be sent to the transport
         queue.sync { [weak self] in
-            guard let interceptedRequest = self?.intercept(request: originalRequest, additionalFirstPartyHosts: additionalFirstPartyHosts) else {
-                return
+            var interceptedRequest: URLRequest
+            if #available(iOS 13, tvOS 13, *) {
+                guard let request = self?.intercept(request: originalRequest, additionalFirstPartyHosts: additionalFirstPartyHosts) else {
+                    return
+                }
+                interceptedRequest = request
+                task.setValue(interceptedRequest, forKey: "currentRequest")
+            } else {
+                interceptedRequest = originalRequest
             }
-            task.setValue(interceptedRequest, forKey: "currentRequest")
 
             guard let firstPartyHosts = self?.firstPartyHosts(with: additionalFirstPartyHosts) else {
                 return

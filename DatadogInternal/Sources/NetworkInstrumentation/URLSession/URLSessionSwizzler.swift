@@ -37,8 +37,16 @@ internal class URLSessionSwizzler {
 
     private static var lock = NSRecursiveLock()
 
+    static var isBinded: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return dataTaskWithURLRequestAndCompletion != nil ||
+            dataTaskWithURLRequest != nil
+    }
+
     static func bindIfNeeded(
-        interceptURLRequest: @escaping (URLRequest) -> URLRequest?
+        interceptURLRequest: @escaping (URLRequest) -> URLRequest?,
+        interceptTask: @escaping (URLSessionTask) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
@@ -48,20 +56,21 @@ internal class URLSessionSwizzler {
             return
         }
 
-        try bind(interceptURLRequest: interceptURLRequest)
+        try bind(interceptURLRequest: interceptURLRequest, interceptTask: interceptTask)
     }
 
     static func bind(
-        interceptURLRequest: @escaping (URLRequest) -> URLRequest?
+        interceptURLRequest: @escaping (URLRequest) -> URLRequest?,
+        interceptTask: @escaping (URLSessionTask) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
 
         self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion.build()
-        dataTaskWithURLRequestAndCompletion?.swizzle(intercept: interceptURLRequest)
+        dataTaskWithURLRequestAndCompletion?.swizzle(interceptRequest: interceptURLRequest, interceptTask: interceptTask)
 
         self.dataTaskWithURLRequest = try DataTaskWithURLRequest.build()
-        dataTaskWithURLRequest?.swizzle(intercept: interceptURLRequest)
+        dataTaskWithURLRequest?.swizzle(interceptRequest: interceptURLRequest, interceptTask: interceptTask)
     }
 
     static func unbind() {
@@ -95,12 +104,17 @@ internal class URLSessionSwizzler {
             super.init()
         }
 
-        func swizzle(intercept: @escaping (URLRequest) -> URLRequest?) {
+        func swizzle(
+            interceptRequest: @escaping (URLRequest) -> URLRequest?,
+            interceptTask: @escaping (URLSessionTask) -> Void
+        ) {
             typealias Signature = @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
                 return { session, request, completionHandler -> URLSessionDataTask in
-                    let interceptedRequest = intercept(request) ?? request
-                    return previousImplementation(session, Self.selector, interceptedRequest, completionHandler)
+                    let interceptedRequest = interceptRequest(request) ?? request
+                    let task = previousImplementation(session, Self.selector, interceptedRequest, completionHandler)
+                    interceptTask(task)
+                    return task
                 }
             }
         }
@@ -125,12 +139,17 @@ internal class URLSessionSwizzler {
             super.init()
         }
 
-        func swizzle(intercept: @escaping (URLRequest) -> URLRequest?) {
+        func swizzle(
+            interceptRequest: @escaping (URLRequest) -> URLRequest?,
+            interceptTask: @escaping (URLSessionTask) -> Void
+        ) {
             typealias Signature = @convention(block) (URLSession, URLRequest) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
                 return { session, request -> URLSessionDataTask in
-                    let interceptedRequest = intercept(request) ?? request
-                    return previousImplementation(session, Self.selector, interceptedRequest)
+                    let interceptedRequest = interceptRequest(request) ?? request
+                    let task = previousImplementation(session, Self.selector, interceptedRequest)
+                    interceptTask(task)
+                    return task
                 }
             }
         }
