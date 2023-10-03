@@ -6,6 +6,7 @@
 
 import Foundation
 
+/// Swizzles `URLSession` methods.
 internal class URLSessionSwizzler {
     private static var _dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion?
     static var dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion? {
@@ -63,6 +64,7 @@ internal class URLSessionSwizzler {
 
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
 
+    /// Swizzles `URLSession.dataTask(with:completionHandler:)` method.
     class DataTaskWithURLRequestAndCompletion: MethodSwizzler<@convention(c) (URLSession, Selector, URLRequest, CompletionHandler?) -> URLSessionDataTask, @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask> {
         private static let selector = #selector(
             URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
