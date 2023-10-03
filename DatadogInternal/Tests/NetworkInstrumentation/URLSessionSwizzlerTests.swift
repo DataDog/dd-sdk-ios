@@ -11,7 +11,6 @@ final class URLSessionSwizzlerTests: XCTestCase {
     override func tearDown() {
         URLSessionSwizzler.unbind()
         XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequest as Any?)
 
         super.tearDown()
     }
@@ -42,6 +41,12 @@ final class URLSessionSwizzlerTests: XCTestCase {
     }
 
     func testSwizzling_testSwizzling_dataTaskWithURLRequest() throws {
+        // runs only on iOS 12 or below
+        // because on iOS 12 and below `URLSession.dataTask(with:)` is implemented using `URLSession.dataTask(with:completionHandler:)`
+        if #available(iOS 13.0, *) {
+            return
+        }
+
         let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
         let didInterceptTask = XCTestExpectation(description: "interceptTask")
         try URLSessionSwizzler.bind(interceptURLRequest: { request in
@@ -63,7 +68,8 @@ final class URLSessionSwizzlerTests: XCTestCase {
             ],
             timeout: 5,
             enforceOrder: true
-        )    }
+        )
+    }
 
     func testBindings() {
         XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)

@@ -21,27 +21,12 @@ internal class URLSessionSwizzler {
         }
     }
 
-    private static var _dataTaskWithURLRequest: DataTaskWithURLRequest?
-    static var dataTaskWithURLRequest: DataTaskWithURLRequest? {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _dataTaskWithURLRequest
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            _dataTaskWithURLRequest = newValue
-        }
-    }
-
     private static var lock = NSRecursiveLock()
 
     static var isBinded: Bool {
         lock.lock()
         defer { lock.unlock() }
-        return dataTaskWithURLRequestAndCompletion != nil ||
-            dataTaskWithURLRequest != nil
+        return dataTaskWithURLRequestAndCompletion != nil
     }
 
     static func bindIfNeeded(
@@ -51,8 +36,7 @@ internal class URLSessionSwizzler {
         lock.lock()
         defer { lock.unlock() }
 
-        guard dataTaskWithURLRequestAndCompletion == nil ||
-            dataTaskWithURLRequest == nil else {
+        guard dataTaskWithURLRequestAndCompletion == nil else {
             return
         }
 
@@ -68,9 +52,6 @@ internal class URLSessionSwizzler {
 
         self.dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion.build()
         dataTaskWithURLRequestAndCompletion?.swizzle(interceptRequest: interceptURLRequest, interceptTask: interceptTask)
-
-        self.dataTaskWithURLRequest = try DataTaskWithURLRequest.build()
-        dataTaskWithURLRequest?.swizzle(interceptRequest: interceptURLRequest, interceptTask: interceptTask)
     }
 
     static func unbind() {
@@ -78,9 +59,6 @@ internal class URLSessionSwizzler {
         defer { lock.unlock() }
         dataTaskWithURLRequestAndCompletion?.unswizzle()
         dataTaskWithURLRequestAndCompletion = nil
-
-        dataTaskWithURLRequest?.unswizzle()
-        dataTaskWithURLRequest = nil
     }
 
     typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
@@ -113,41 +91,6 @@ internal class URLSessionSwizzler {
                 return { session, request, completionHandler -> URLSessionDataTask in
                     let interceptedRequest = interceptRequest(request) ?? request
                     let task = previousImplementation(session, Self.selector, interceptedRequest, completionHandler)
-                    interceptTask(task)
-                    return task
-                }
-            }
-        }
-    }
-
-    class DataTaskWithURLRequest: MethodSwizzler<@convention(c) (URLSession, Selector, URLRequest) -> URLSessionDataTask, @convention(block) (URLSession, URLRequest) -> URLSessionDataTask> {
-        private static let selector = #selector(
-            URLSession.dataTask(with:) as (URLSession) -> (URLRequest) -> URLSessionDataTask
-        )
-
-        private let method: FoundMethod
-
-        static func build() throws -> DataTaskWithURLRequest {
-            return try DataTaskWithURLRequest(
-                selector: self.selector,
-                klass: URLSession.self
-            )
-        }
-
-        private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try Self.findMethod(with: selector, in: klass)
-            super.init()
-        }
-
-        func swizzle(
-            interceptRequest: @escaping (URLRequest) -> URLRequest?,
-            interceptTask: @escaping (URLSessionTask) -> Void
-        ) {
-            typealias Signature = @convention(block) (URLSession, URLRequest) -> URLSessionDataTask
-            swizzle(method) { previousImplementation -> Signature in
-                return { session, request -> URLSessionDataTask in
-                    let interceptedRequest = interceptRequest(request) ?? request
-                    let task = previousImplementation(session, Self.selector, interceptedRequest)
                     interceptTask(task)
                     return task
                 }
