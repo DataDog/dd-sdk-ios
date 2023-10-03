@@ -123,6 +123,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         }
 
         URLSessionTaskSwizzler.unbind()
+        URLSessionSwizzler.unbind()
     }
 }
 
@@ -159,6 +160,7 @@ extension NetworkInstrumentationFeature {
         // sync update to task prevents a race condition where the currentRequest could already be sent to the transport
         queue.sync { [weak self] in
             var interceptedRequest: URLRequest
+            /// task.setValue is not available on iOS 12, hence for iOS 12 we modify the request by swizzling URLSession methods
             if #available(iOS 13, tvOS 13, *) {
                 guard let request = self?.intercept(request: originalRequest, additionalFirstPartyHosts: additionalFirstPartyHosts) else {
                     return
