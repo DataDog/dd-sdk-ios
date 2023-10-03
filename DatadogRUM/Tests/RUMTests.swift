@@ -33,6 +33,14 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(RUMMonitor.shared(in: core) is NOPMonitor)
     }
 
+    func testWhenNotEnabled_thenRumIsEnabledIsFalse() {
+        // When
+        XCTAssertNil(core.get(feature: RUMFeature.self))
+
+        // Then
+        XCTAssertFalse(RUM._internal.isEnabled(in: core))
+    }
+
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
@@ -55,6 +63,15 @@ class RUMTests: XCTestCase {
 
         // Then
         XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
+    }
+
+    func testWhenEnabled_thenRumIsEnabledIsTrue() {
+        // When
+        RUM.enable(with: config, in: core)
+        XCTAssertNotNil(core.get(feature: RUMFeature.self))
+
+        // Then
+        XCTAssertTrue(RUM._internal.isEnabled(in: core))
     }
 
     // MARK: - Configuration Tests

@@ -68,6 +68,10 @@
 		3CFD81962ABBB66400977C22 /* MetaTypeExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD81942ABBB66400977C22 /* MetaTypeExtensionsTests.swift */; };
 		49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
 		49274907288048B800ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
+		49D8C0B72AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
+		49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
+		49D8C0BD2AC5F2BB0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
+		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
 		61054E5E2A6EE10A00AAA894 /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */; };
@@ -1873,6 +1877,8 @@
 		3CFD81942ABBB66400977C22 /* MetaTypeExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypeExtensionsTests.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
+		49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+Internal.swift"; sourceTree = "<group>"; };
+		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
 		61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecord.swift; sourceTree = "<group>"; };
@@ -5065,6 +5071,7 @@
 			isa = PBXGroup;
 			children = (
 				D2D30E5A2A40BF540020C553 /* Logs.swift */,
+				49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */,
 				D24C9C3E29A79772002057CF /* Logger.swift */,
 				D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */,
 				D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */,
@@ -5492,6 +5499,7 @@
 			isa = PBXGroup;
 			children = (
 				61C713B82A3C935C00FA735A /* RUM.swift */,
+				49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */,
 				61C713A02A3B78F900FA735A /* RUMMonitorProtocol.swift */,
 				61C713A22A3B78F900FA735A /* RUMMonitorProtocol+Convenience.swift */,
 				61C713A12A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift */,
@@ -7823,6 +7831,7 @@
 				D243BBEC29A614CE000B9CEC /* LoggerProtocol.swift in Sources */,
 				D207319629A522F600ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731C529A528EC00ECBF94 /* LogEventSanitizer.swift in Sources */,
+				49D8C0BD2AC5F2BB0075E427 /* Logs+Internal.swift in Sources */,
 				D20731C429A528EC00ECBF94 /* LogFileOutput.swift in Sources */,
 				D207319529A522F600ECBF94 /* LogsFeature.swift in Sources */,
 				D242C29E2A14D6A6004B4980 /* RemoteLogger.swift in Sources */,
@@ -7862,6 +7871,7 @@
 				D243BBED29A614CE000B9CEC /* LoggerProtocol.swift in Sources */,
 				D20731A929A5279D00ECBF94 /* ConsoleLogger.swift in Sources */,
 				D20731CA29A528ED00ECBF94 /* LogEventSanitizer.swift in Sources */,
+				49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */,
 				D20731C929A528ED00ECBF94 /* LogFileOutput.swift in Sources */,
 				D20731AB29A5279D00ECBF94 /* LogsFeature.swift in Sources */,
 				D242C29F2A14D6A7004B4980 /* RemoteLogger.swift in Sources */,
@@ -7989,6 +7999,7 @@
 				D23F8E6B29DDCD28001CFAE8 /* RUMMonitor.swift in Sources */,
 				D23F8E6C29DDCD28001CFAE8 /* RUMContextProvider.swift in Sources */,
 				D23F8E6D29DDCD28001CFAE8 /* RUMViewIdentity.swift in Sources */,
+				49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */,
 				D23F8E6E29DDCD28001CFAE8 /* RUMViewsHandler.swift in Sources */,
 				61C713BA2A3C935C00FA735A /* RUM.swift in Sources */,
 				D23F8E6F29DDCD28001CFAE8 /* RequestBuilder.swift in Sources */,
@@ -8240,6 +8251,7 @@
 				D29A9F6329DD85BB005C54A4 /* RUMMonitor.swift in Sources */,
 				D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */,
 				D29A9F6029DD85BB005C54A4 /* RUMViewIdentity.swift in Sources */,
+				49D8C0B72AC5D2160075E427 /* RUM+Internal.swift in Sources */,
 				D29A9F7629DD85BB005C54A4 /* RUMViewsHandler.swift in Sources */,
 				61C713B92A3C935C00FA735A /* RUM.swift in Sources */,
 				D29A9F7929DD85BB005C54A4 /* RequestBuilder.swift in Sources */,

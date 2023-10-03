@@ -856,3 +856,19 @@ private extension DecodingError {
         return .typeMismatch(type, context)
     }
 }
+
+extension SingleValueDecodingContainer {
+    /// Decodes a passthrough value of the given type.
+    ///
+    /// This method can succeed only when using `AnyDecoder`.
+    ///
+    /// - returns: A passthrough value if any.
+    /// - throws: `DecodingError.typeMismatch` if the value was not passthrough.
+    func passthrough() -> PassthroughAnyCodable? {
+        guard let container = self as? _AnyDecoder.SingleValueContainer else {
+            return nil
+        }
+
+        return container.value as? PassthroughAnyCodable
+    }
+}
