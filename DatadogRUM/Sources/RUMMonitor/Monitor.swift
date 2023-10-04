@@ -522,3 +522,9 @@ extension Monitor {
         queue.sync { }
     }
 }
+
+extension Monitor: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}

@@ -5,13 +5,13 @@
  */
 
 import Foundation
-
+import DatadogInternal
 @testable import DatadogWebViewTracking
 
 #if !os(tvOS)
 import WebKit
 
-final class WKUserContentControllerMock: WKUserContentController {
+final class WKUserContentControllerMock: WKUserContentController, DispatchContinuation {
     private var handlers: [String: WKScriptMessageHandler] = [:]
 
     override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
@@ -32,9 +32,9 @@ final class WKUserContentControllerMock: WKUserContentController {
         handlers[name]
     }
 
-    func flush() {
+    func notify(_ continuation: @escaping () -> Void) {
         let handler = handlers[DDScriptMessageHandler.name] as? DDScriptMessageHandler
-        handler?.flush()
+        handler?.notify(continuation) ?? continuation()
     }
 }
 

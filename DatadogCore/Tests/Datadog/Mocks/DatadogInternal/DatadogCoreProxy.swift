@@ -89,10 +89,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
 }
 
 extension DatadogCoreProxy {
-    func flush() {
-        core.flush()
-    }
-
     func flushAndTearDown() {
         core.flushAndTearDown()
 
@@ -105,15 +101,25 @@ extension DatadogCoreProxy {
     }
 }
 
+extension DatadogCoreProxy: Flushable {
+    func flush() {
+        core.flush()
+    }
+}
+
+extension DatadogCoreProxy: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        core.notify(continuation)
+    }
+}
+
 private struct FeatureScopeProxy: FeatureScope {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
 
     func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
-        interceptor.enter()
         proxy.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch) { context, writer in
             try block(context, interceptor.intercept(writer: writer))
-            interceptor.leave()
         }
     }
 }
@@ -141,17 +147,7 @@ private class FeatureScopeInterceptor {
     // MARK: - Synchronizing and awaiting events:
 
     @ReadWriteLock
-    private var events: [(event: Any, data: Data)] = []
-
-    private let group = DispatchGroup()
-
-    func enter() { group.enter() }
-    func leave() { group.leave() }
-
-    func waitAndReturnEvents() -> [(event: Any, data: Data)] {
-        _ = group.wait(timeout: .distantFuture)
-        return events
-    }
+    private(set) var events: [(event: Any, data: Data)] = []
 }
 
 extension DatadogCoreProxy {
@@ -161,9 +157,9 @@ extension DatadogCoreProxy {
     ///   - type: The type of events to filter out
     /// - Returns: A list of events.
     func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type) -> [T] where T: Encodable {
-        flush()
-        let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
+        waitDispatchContinuation()
+        let interceptor = self.featureScopeInterceptors[name]
+        return interceptor?.events.compactMap { $0.event as? T } ?? []
     }
 
     /// Returns serialized events of given Feature.
@@ -171,8 +167,8 @@ extension DatadogCoreProxy {
     /// - Parameter feature: The Feature to retrieve events from
     /// - Returns: A list of serialized events.
     func waitAndReturnEventsData(ofFeature name: String) -> [Data] {
-        flush()
-        let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().map { $0.data }
+        waitDispatchContinuation()
+        let interceptor = self.featureScopeInterceptors[name]
+        return interceptor?.events.map { $0.data } ?? []
     }
 }

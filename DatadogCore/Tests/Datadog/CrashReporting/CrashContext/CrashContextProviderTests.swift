@@ -50,7 +50,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .context(context))
 
         // Then
-        crashContextProvider.flush()
+        crashContextProvider.waitDispatchContinuation()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -74,7 +74,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
 
         // Then
-        crashContextProvider.flush()
+        crashContextProvider.waitDispatchContinuation()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -95,13 +95,13 @@ class CrashContextProviderTests: XCTestCase {
         }
 
         core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: RUMViewEvent.mockRandom()))
-        crashContextProvider.flush()
+        crashContextProvider.waitDispatchContinuation()
         XCTAssertNotNil(viewEvent)
 
         core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
 
         // Then
-        crashContextProvider.flush()
+        crashContextProvider.waitDispatchContinuation()
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertNil(viewEvent)
     }
@@ -126,7 +126,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
 
         // Then
-        crashContextProvider.flush()
+        crashContextProvider.waitDispatchContinuation()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -152,7 +152,7 @@ class CrashContextProviderTests: XCTestCase {
 
         // provider retains the core in its queue:
         // flush to release the core.
-        provider.flush()
+        provider.waitDispatchContinuation()
         // swiftlint:enable opening_brace
     }
 }

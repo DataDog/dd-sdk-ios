@@ -300,3 +300,9 @@ extension NetworkInstrumentationFeature: Flushable {
         queue.sync { }
     }
 }
+
+extension NetworkInstrumentationFeature: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}

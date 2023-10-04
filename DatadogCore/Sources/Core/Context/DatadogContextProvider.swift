@@ -169,3 +169,9 @@ extension DatadogContextProvider: Flushable {
         queue.sync { }
     }
 }
+
+extension DatadogContextProvider: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}

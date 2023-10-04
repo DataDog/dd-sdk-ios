@@ -134,3 +134,11 @@ extension CrashReportingFeature: Flushable {
         queue.sync {}
     }
 }
+
+extension CrashReportingFeature: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        DispatchContinuationSequence(first: crashContextProvider)
+            .then(queue)
+            .notify(continuation)
+    }
+}
