@@ -62,7 +62,7 @@ class WebLogIntegrationTests: XCTestCase {
 
         // When
         controller.send(body: body)
-        controller.flush()
+        controller.waitDispatchContinuation()
 
         // Then
         let logMatcher = try XCTUnwrap(core.waitAndReturnLogMatchers().first)
@@ -111,7 +111,7 @@ class WebLogIntegrationTests: XCTestCase {
         // When
         RUMMonitor.shared(in: core).startView(key: "web-view")
         controller.send(body: body)
-        controller.flush()
+        controller.waitDispatchContinuation()
 
         // Then
         let expectedUUID = randomUUID.uuidString.lowercased()

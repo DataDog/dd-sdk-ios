@@ -1143,7 +1143,7 @@ class TracerTests: XCTestCase {
         span.log(fields: ["bar": "bizz"])
 
         // then
-        core.flush()
+        core.waitDispatchContinuation()
         XCTAssertEqual(dd.logger.warnLog?.message, "The log for span \"foo\" will not be send, because the Logs feature is not enabled.")
     }
 }

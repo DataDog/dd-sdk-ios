@@ -133,3 +133,9 @@ extension MessageBus: Flushable {
         queue.sync { }
     }
 }
+
+extension MessageBus: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}

@@ -613,6 +613,10 @@
 		D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
 		D21C26D128A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
 		D21C26D228A64599005DD405 /* MessageBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26D028A64599005DD405 /* MessageBusTests.swift */; };
+		D21E200A2ACED7BD00554C1B /* DispatchContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21E20092ACED7BD00554C1B /* DispatchContinuation.swift */; };
+		D21E200B2ACED7BD00554C1B /* DispatchContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21E20092ACED7BD00554C1B /* DispatchContinuation.swift */; };
+		D21E200D2AD0028100554C1B /* DispatchContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21E200C2AD0028100554C1B /* DispatchContinuation.swift */; };
+		D21E200E2AD0028100554C1B /* DispatchContinuation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21E200C2AD0028100554C1B /* DispatchContinuation.swift */; };
 		D2216EC02A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */; };
 		D2216EC12A94DE2900ADAEC8 /* FeatureBaggage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */; };
 		D2216EC32A96649500ADAEC8 /* FeatureBaggageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */; };
@@ -703,6 +707,8 @@
 		D2303A04298D5317001A1FA3 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
 		D2303A0A298D5412001A1FA3 /* AsyncWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2303A09298D5412001A1FA3 /* AsyncWriter.swift */; };
 		D2303A0B298D5412001A1FA3 /* AsyncWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2303A09298D5412001A1FA3 /* AsyncWriter.swift */; };
+		D23279912AD055230090B21F /* DispatchContinuationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23279902AD055230090B21F /* DispatchContinuationTests.swift */; };
+		D23279922AD055230090B21F /* DispatchContinuationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23279902AD055230090B21F /* DispatchContinuationTests.swift */; };
 		D23354FC2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
 		D23354FD2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
 		D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
@@ -2474,6 +2480,8 @@
 		D21C26D628A647DB005DD405 /* FeatureMessageReceiverMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureMessageReceiverMock.swift; sourceTree = "<group>"; };
 		D21C26EA28AFA11E005DD405 /* LogMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogMessageReceiverTests.swift; sourceTree = "<group>"; };
 		D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorMessageReceiverTests.swift; sourceTree = "<group>"; };
+		D21E20092ACED7BD00554C1B /* DispatchContinuation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchContinuation.swift; sourceTree = "<group>"; };
+		D21E200C2AD0028100554C1B /* DispatchContinuation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchContinuation.swift; sourceTree = "<group>"; };
 		D2216EBF2A94DE2800ADAEC8 /* FeatureBaggage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggage.swift; sourceTree = "<group>"; };
 		D2216EC22A96632F00ADAEC8 /* FeatureBaggageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureBaggageTests.swift; sourceTree = "<group>"; };
 		D224430C29E95D6600274EC7 /* CrashReportReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CrashReportReceiverTests.swift; sourceTree = "<group>"; };
@@ -2523,6 +2531,7 @@
 		D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ReadWriteLock.swift; sourceTree = "<group>"; };
 		D23039DC298D5235001A1FA3 /* DDError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDError.swift; sourceTree = "<group>"; };
 		D2303A09298D5412001A1FA3 /* AsyncWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AsyncWriter.swift; sourceTree = "<group>"; };
+		D23279902AD055230090B21F /* DispatchContinuationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DispatchContinuationTests.swift; sourceTree = "<group>"; };
 		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
@@ -5327,6 +5336,7 @@
 			children = (
 				D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */,
 				D2432CF829EDB22C00D93657 /* Flushable.swift */,
+				D21E200C2AD0028100554C1B /* DispatchContinuation.swift */,
 			);
 			path = Concurrency;
 			sourceTree = "<group>";
@@ -5447,6 +5457,7 @@
 				D2F44FBB299AA36D0074B0D9 /* Decompression.swift */,
 				61133C462423990D00786299 /* TestsDirectory.swift */,
 				61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */,
+				D21E20092ACED7BD00554C1B /* DispatchContinuation.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -5677,6 +5688,7 @@
 			isa = PBXGroup;
 			children = (
 				D2DA2395298D58F300C6C7E6 /* ReadWriteLockTests.swift */,
+				D23279902AD055230090B21F /* DispatchContinuationTests.swift */,
 			);
 			path = Concurrency;
 			sourceTree = "<group>";
@@ -7987,6 +7999,7 @@
 				D2EBEE2229BA160F00B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2303A02298D5236001A1FA3 /* ReadWriteLock.swift in Sources */,
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
+				D21E200D2AD0028100554C1B /* DispatchContinuation.swift in Sources */,
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
 				D23039FF298D5236001A1FA3 /* Foundation+Datadog.swift in Sources */,
 				D2F8235329915E12003C7E99 /* DatadogSite.swift in Sources */,
@@ -8159,6 +8172,7 @@
 				D2579559298ABB04008A1BE5 /* DDAssert.swift in Sources */,
 				D2579552298ABB04008A1BE5 /* FileWriterMock.swift in Sources */,
 				61AE74172AD7DA9B008DB9BB /* FeatureMessageMocks.swift in Sources */,
+				D21E200A2ACED7BD00554C1B /* DispatchContinuation.swift in Sources */,
 				D2A7840329A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840D29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
 				D2DA23CF298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
@@ -8196,6 +8210,7 @@
 				D257957C298ABB83008A1BE5 /* DDAssert.swift in Sources */,
 				D257957D298ABB83008A1BE5 /* FileWriterMock.swift in Sources */,
 				61AE74182AD7DA9B008DB9BB /* FeatureMessageMocks.swift in Sources */,
+				D21E200B2ACED7BD00554C1B /* DispatchContinuation.swift in Sources */,
 				D2A7840429A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840E29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
 				D2DA23D0298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
@@ -8792,6 +8807,7 @@
 				D2EBEE3029BA161100B15732 /* TracePropagationHeadersReader.swift in Sources */,
 				D2DA2373298D57AA00C6C7E6 /* ReadWriteLock.swift in Sources */,
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
+				D21E200E2AD0028100554C1B /* DispatchContinuation.swift in Sources */,
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,
 				D2DA2375298D57AA00C6C7E6 /* Foundation+Datadog.swift in Sources */,
 				D2F8235429915E12003C7E99 /* DatadogSite.swift in Sources */,
@@ -8824,6 +8840,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C394EFA2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
+				D23279912AD055230090B21F /* DispatchContinuationTests.swift in Sources */,
 				D26416B62A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
 				D2EBEE3C29BA163E00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
 				3CBDE6812AA092A200F6A7B6 /* URLSessionTaskDelegateSwizzlerTests.swift in Sources */,
@@ -8867,6 +8884,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3C394EFB2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
+				D23279922AD055230090B21F /* DispatchContinuationTests.swift in Sources */,
 				D26416B72A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
 				D2EBEE4029BA163F00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
 				3CBDE6822AA092A200F6A7B6 /* URLSessionTaskDelegateSwizzlerTests.swift in Sources */,

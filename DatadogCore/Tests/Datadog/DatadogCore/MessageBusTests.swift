@@ -39,7 +39,7 @@ class MessageBusTests: XCTestCase {
 
         // Then
         wait(for: [expectation], timeout: 0.5)
-        bus.flush()
+        bus.waitDispatchContinuation()
     }
 
     func testItForwardConfigurationAfterDispatch() throws {
@@ -69,7 +69,7 @@ class MessageBusTests: XCTestCase {
 
         // Then
         wait(for: [expectation], timeout: 0.5)
-        bus.flush()
+        bus.waitDispatchContinuation()
     }
 }
 

@@ -12,6 +12,7 @@ import DatadogInternal
 
 internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 
     let emitter: MessageEmitter
 
@@ -40,9 +41,9 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     }
 }
 
-extension DDScriptMessageHandler: Flushable {
-    func flush() {
-        queue.sync { }
+extension DDScriptMessageHandler: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
     }
 }
 

@@ -435,3 +435,21 @@ extension DatadogCore: Flushable {
         }
     }
 }
+
+extension DatadogCore: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        // First, execute bus queue - because messages can lead to obtaining "event write context" (reading
+        // context & performing write) in other Features:
+        DispatchContinuationSequence(first: bus)
+            // Next, execute flushable Features - finish current data collection to open "event write contexts":
+            .then(group: features.values.compactMap { $0 as? DispatchContinuation })
+            // Next, execute context queue - because it indicates the entry point to "event write context" and
+            // actual writes dispatched from it:
+            .then(contextProvider)
+            // Last, execute read-write queue - it always comes last, no matter if the write operation is dispatched
+            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
+            // in other Feature:
+            .then(readWriteQueue)
+            .notify(continuation)
+    }
+}

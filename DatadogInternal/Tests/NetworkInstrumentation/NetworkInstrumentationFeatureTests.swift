@@ -404,7 +404,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
+        feature.waitDispatchContinuation()
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -425,7 +425,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
+        feature.waitDispatchContinuation()
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -447,7 +447,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
+        feature.waitDispatchContinuation()
 
         // Then
         let interception = handler.interceptions.first?.value
@@ -469,7 +469,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
+        feature.waitDispatchContinuation()
 
         // Then
         let interception = handler.interceptions.first?.value

@@ -65,7 +65,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     ///                  is invoked with `bypassConsent` parameter set to `true`.
     ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `forceNewBatch` parameter set to `true`.
-
     public required init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
@@ -97,7 +96,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public func scope(for feature: String) -> FeatureScope? {
         self
     }
-
 
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         context.baggages[key] = baggage()

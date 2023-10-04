@@ -157,3 +157,9 @@ internal class DatadogTracer: OTTracer {
         )
     }
 }
+
+extension DatadogTracer: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}
