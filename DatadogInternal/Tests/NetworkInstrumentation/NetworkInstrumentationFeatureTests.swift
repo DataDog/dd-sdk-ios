@@ -101,8 +101,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
-    @MainActor
+    @available(iOS 13.0, tvOS 13.0, *)
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataFromURL_itNotifiesInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -111,7 +110,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
@@ -137,8 +139,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
-    @MainActor
+    @available(iOS 13.0, tvOS 13.0, *)
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataForURLRequest_itNotifiesInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -146,7 +147,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
 
         handler.onInterceptionDidStart = { interception in
             XCTAssertTrue(interception.isFirstPartyRequest)
@@ -278,8 +282,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
     }
 
-    @available(iOS 15.0, tvOS 15.0, *)
-    @MainActor
+    @available(iOS 13.0, tvOS 13.0, *)
     func testGivenURLSessionWithCustomDelegate_whenUsingAsyncData_itPassesAllValuesToTheInterceptor() async throws {
         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
         guard #available(iOS 16, tvOS 16, *) else {
@@ -291,7 +294,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         notifyInterceptionDidComplete.expectedFulfillmentCount = 2
 
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
-        let server = ServerMock(delivery: .failure(error: expectedError))
+        let server = ServerMock(
+            delivery: .failure(error: expectedError),
+            skipIsMainThreadCheck: true
+        )
 
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
