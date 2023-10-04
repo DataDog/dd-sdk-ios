@@ -49,3 +49,9 @@ internal final class TraceFeature: DatadogRemoteFeature {
         core.telemetry.configuration(useTracing: true)
     }
 }
+
+extension TraceFeature: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        tracer.notify(continuation)
+    }
+}

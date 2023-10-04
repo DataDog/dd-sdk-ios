@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import Combine
 
 public protocol Flushable {
     /// Awaits completion of all asynchronous operations.

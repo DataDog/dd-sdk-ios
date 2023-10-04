@@ -144,3 +144,9 @@ extension CrashContextCoreProvider: Flushable {
         queue.sync { }
     }
 }
+
+extension CrashContextCoreProvider: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        queue.notify(continuation)
+    }
+}

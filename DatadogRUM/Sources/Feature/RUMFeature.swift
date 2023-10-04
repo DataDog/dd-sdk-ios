@@ -129,6 +129,12 @@ extension RUMFeature: Flushable {
     }
 }
 
+extension RUMFeature: DispatchContinuation {
+    func notify(_ continuation: @escaping () -> Void) {
+        monitor.notify(continuation)
+    }
+}
+
 private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
     var sampleRate: Float {
         switch self {
