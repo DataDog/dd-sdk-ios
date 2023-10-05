@@ -62,10 +62,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     // iOS 16 and above, didCompleteWithError is not called hence we use task state to detect task completion
                     // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
                     if #available(iOS 15, tvOS 15, *) {
-                        if task.state == .completed {
-                            self?._task(task, didCompleteWithError: task.error)
-                            session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
-                        }
+                        self?._task(task, didCompleteWithError: task.error)
+                        session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
                     }
                 }
             }, interceptDidCompleteWithError: { [weak self] session, task, error in
