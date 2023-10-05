@@ -42,8 +42,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            # bitrise already has xcodes installed
-            # brew install xcodesorg/made/xcodes
+            brew install xcodesorg/made/xcodes
 
             # Record env logs before installing new simulators
             mkdir -p tools/nightly-unit-tests/env-logs
