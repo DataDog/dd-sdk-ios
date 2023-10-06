@@ -217,7 +217,7 @@ extension DatadogCore: DatadogCoreProtocol {
     /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
     ///
     /// - Parameter feature: The Feature instance.
-    /* public */ func register<T>(feature: T) throws where T: DatadogFeature {
+    func register<T>(feature: T) throws where T: DatadogFeature {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
         let performancePreset: PerformancePreset
@@ -274,11 +274,11 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    /* public */ func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+    func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
         features[T.name] as? T
     }
 
-    /* public */ func scope(for feature: String) -> FeatureScope? {
+    func scope(for feature: String) -> FeatureScope? {
         guard let storage = stores[feature]?.storage else {
             return nil
         }
@@ -290,21 +290,11 @@ extension DatadogCore: DatadogCoreProtocol {
         )
     }
 
-    /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        contextProvider.write { $0.featuresAttributes[feature] = attributes() }
+    func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage: Encodable {
+        contextProvider.write { $0.baggages[key] = FeatureBaggage(baggage()) }
     }
 
-    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        contextProvider.write {
-            if $0.featuresAttributes[feature] != nil {
-                $0.featuresAttributes[feature]?.merge(with: attributes())
-            } else {
-                $0.featuresAttributes[feature] = attributes()
-            }
-        }
-    }
-
-    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
 }
@@ -318,7 +308,10 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
         // On user thread: request SDK context.
         contextProvider.read { context in
             // On context thread: request writer for current tracking consent.
-            let writer = storage.writer(for: context, bypassConsent: bypassConsent, forceNewBatch: forceNewBatch)
+            let writer = storage.writer(
+                for: bypassConsent ? .granted : context.trackingConsent,
+                forceNewBatch: forceNewBatch
+            )
 
             // Still on context thread: send `Writer` to EWC caller. The writer implements `AsyncWriter`, so
             // the implementation of `writer.write(value:)` will run asynchronously without blocking the context thread.

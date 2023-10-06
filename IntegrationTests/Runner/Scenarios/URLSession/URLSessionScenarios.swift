@@ -20,22 +20,18 @@ private class InheritedURLSessionDelegate: DDURLSessionDelegate {
 /// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through composition.
 private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     // MARK: - __URLSessionDelegateProviding conformance
-    let ddURLSessionDelegate: DatadogURLSessionDelegate = DDURLSessionDelegate()
 
     // MARK: - __URLSessionDelegateProviding handling
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        ddURLSessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics) // forward to DD
         /* run custom logic */
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        ddURLSessionDelegate.urlSession(session, task: task, didCompleteWithError: error) // forward to DD
         /* run custom logic */
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        ddURLSessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data) // forward to DD
         /* run custom logic */
     }
 }
@@ -142,7 +138,7 @@ class URLSessionBaseScenario: NSObject {
     }
 
     private func createInstrumentedURLSession() -> URLSession {
-        let delegate: URLSessionDelegate
+        let delegate: URLSessionDataDelegate
 
         switch setup.instrumentationMethod {
         case .directWithGlobalFirstPartyHosts:
@@ -159,6 +155,7 @@ class URLSessionBaseScenario: NSObject {
             delegate = InheritedURLSessionDelegate()
         case .composition:
             delegate = CompositedURLSessionDelegate()
+            URLSessionInstrumentation.enable(with: .init(delegateClass: CompositedURLSessionDelegate.self))
         }
 
         return URLSession(

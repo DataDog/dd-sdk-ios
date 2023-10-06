@@ -50,6 +50,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .context(context))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -62,7 +63,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let viewEvent = AnyCodable(mockRandomAttributes())
+        let viewEvent: RUMViewEvent = .mockRandom()
 
         // When
         crashContextProvider.onCrashContextChange = {
@@ -73,6 +74,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 
@@ -84,7 +86,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        var viewEvent: AnyCodable? = AnyCodable(mockRandomAttributes())
+        var viewEvent: AnyCodable? = nil
 
         // When
         crashContextProvider.onCrashContextChange = {
@@ -92,10 +94,14 @@ class CrashContextProviderTests: XCTestCase {
             expectation.fulfill()
         }
 
-        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: viewEvent))
+        core.send(message: .baggage(key: RUMBaggageKeys.viewEvent, value: RUMViewEvent.mockRandom()))
+        crashContextProvider.flush()
+        XCTAssertNotNil(viewEvent)
+
         core.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
         XCTAssertNil(viewEvent)
     }
@@ -109,7 +115,7 @@ class CrashContextProviderTests: XCTestCase {
         let crashContextProvider = CrashContextCoreProvider()
         let core = PassthroughCoreMock(messageReceiver: crashContextProvider)
 
-        let sessionState: AnyCodable? = AnyCodable(mockRandomAttributes())
+        let sessionState: RUMSessionState = .mockRandom()
 
         // When
         crashContextProvider.onCrashContextChange = {
@@ -120,6 +126,7 @@ class CrashContextProviderTests: XCTestCase {
         core.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: sessionState))
 
         // Then
+        crashContextProvider.flush()
         waitForExpectations(timeout: 0.5, handler: nil)
     }
 

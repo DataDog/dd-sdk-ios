@@ -8,6 +8,8 @@
 import UIKit
 
 internal struct UIStepperRecorder: NodeRecorder {
+    let identifier = UUID()
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let stepper = view as? UIStepper else {
             return nil
@@ -17,7 +19,7 @@ internal struct UIStepperRecorder: NodeRecorder {
         }
 
         let stepperFrame = CGRect(origin: attributes.frame.origin, size: stepper.intrinsicContentSize)
-        let ids = context.ids.nodeIDs(5, for: stepper)
+        let ids = context.ids.nodeIDs(5, view: stepper, nodeRecorder: self)
         let isMasked = context.recorder.privacy.shouldMaskInputElements
 
         let builder = UIStepperWireframesBuilder(

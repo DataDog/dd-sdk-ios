@@ -344,11 +344,10 @@ private func rumResourceAttributesProvider(
     if let responseHeaders = (response as? HTTPURLResponse)?.allHeaderFields {
         responseHeadersValue = format(headers: responseHeaders)
     }
-    if let data = data {
-        responseBodyValue = String(data: data, encoding: .utf8) ?? "<not an UTF-8 data>"
-    }
     if let error = error {
         errorDetailsValue = String(describing: error)
+    } else {
+        responseBodyValue = String(data: data ?? .init(), encoding: .utf8) ?? "<not an UTF-8 data>"
     }
 
     return [

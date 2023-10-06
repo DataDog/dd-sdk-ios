@@ -1,2 +1,6 @@
 // Add common settings from Datadog.xcconfig
 #include "../../xcconfigs/Datadog.xcconfig"
+
+// Add DatadogSDKTesting instrumentation (if available in current environment)
+DD_SDK_TESTING_OVERRIDE_PATH=$(SRCROOT)/../../instrumented-tests/
+#include? "../../xcconfigs/DatadogSDKTesting.local.xcconfig"

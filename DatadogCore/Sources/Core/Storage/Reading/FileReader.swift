@@ -30,8 +30,8 @@ internal final class FileReader: Reader {
 
     // MARK: - Reading batches
 
-    func readNextBatch(context: DatadogContext) -> Batch? {
-        guard let file = orchestrator.getReadableFile(excludingFilesNamed: filesRead, context: context) else {
+    func readNextBatch() -> Batch? {
+        guard let file = orchestrator.getReadableFile(excludingFilesNamed: filesRead) else {
             return nil
         }
 
@@ -95,8 +95,8 @@ internal final class FileReader: Reader {
 
     // MARK: - Accepting batches
 
-    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason, context: DatadogContext) {
-        orchestrator.delete(readableFile: batch.file, deletionReason: reason, context: context)
+    func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {
+        orchestrator.delete(readableFile: batch.file, deletionReason: reason)
         filesRead.insert(batch.file.name)
     }
 }

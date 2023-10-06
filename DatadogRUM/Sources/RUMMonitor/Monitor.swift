@@ -144,28 +144,29 @@ internal class Monitor: RUMCommandSubscriber {
         }
 
         // update the core context with rum context
-        core?.set(feature: RUMFeature.name, attributes: {
-            self.queue.sync {
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
-                                self.scopes.context
+        core?.set(
+            baggage: {
+                self.queue.sync { () -> RUMCoreContext? in
+                    let context = self.scopes.activeSession?.viewScopes.last?.context ??
+                                    self.scopes.activeSession?.context ??
+                                    self.scopes.context
 
-                guard context.sessionID != .nullUUID else {
-                    // if Session was sampled or not yet started
-                    return [:]
+                    guard context.sessionID != .nullUUID else {
+                        // if Session was sampled or not yet started
+                        return nil
+                    }
+
+                    return RUMCoreContext(
+                        applicationID: context.rumApplicationID,
+                        sessionID: context.sessionID.rawValue.uuidString.lowercased(),
+                        viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
+                        userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
+                        viewServerTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
+                    )
                 }
-
-                return [
-                    RUMContextAttributes.ids: [
-                        RUMContextAttributes.IDs.applicationID: context.rumApplicationID,
-                        RUMContextAttributes.IDs.sessionID: context.sessionID.rawValue.uuidString.lowercased(),
-                        RUMContextAttributes.IDs.viewID: context.activeViewID?.rawValue.uuidString.lowercased(),
-                        RUMContextAttributes.IDs.userActionID: context.activeUserActionID?.rawValue.uuidString.lowercased(),
-                    ],
-                    RUMContextAttributes.serverTimeOffset: self.scopes.activeSession?.viewScopes.last?.serverTimeOffset
-                ]
-            }
-        })
+            },
+            forKey: RUMFeature.name
+        )
     }
 
     // TODO: RUMM-896

@@ -23,20 +23,15 @@ internal struct FeatureStorage {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    func writer(
-        for context: DatadogContext,
-        bypassConsent: Bool = false,
-        forceNewBatch: Bool = false
-    ) -> Writer {
-        switch bypassConsent ? .granted : context.trackingConsent {
+    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
+        switch trackingConsent {
         case .granted:
             return AsyncWriter(
                 execute: FileWriter(
                     orchestrator: authorizedFilesOrchestrator,
                     forceNewFile: forceNewBatch,
                     encryption: encryption,
-                    telemetry: telemetry,
-                    context: context
+                    telemetry: telemetry
                 ),
                 on: queue
             )
@@ -48,8 +43,7 @@ internal struct FeatureStorage {
                     orchestrator: unauthorizedFilesOrchestrator,
                     forceNewFile: forceNewBatch,
                     encryption: encryption,
-                    telemetry: telemetry,
-                    context: context
+                    telemetry: telemetry
                 ),
                 on: queue
             )

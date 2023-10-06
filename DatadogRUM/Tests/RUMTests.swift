@@ -33,6 +33,14 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(RUMMonitor.shared(in: core) is NOPMonitor)
     }
 
+    func testWhenNotEnabled_thenRumIsEnabledIsFalse() {
+        // When
+        XCTAssertNil(core.get(feature: RUMFeature.self))
+
+        // Then
+        XCTAssertFalse(RUM._internal.isEnabled(in: core))
+    }
+
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
@@ -55,6 +63,15 @@ class RUMTests: XCTestCase {
 
         // Then
         XCTAssertTrue(RUMMonitor.shared(in: core) is Monitor)
+    }
+
+    func testWhenEnabled_thenRumIsEnabledIsTrue() {
+        // When
+        RUM.enable(with: config, in: core)
+        XCTAssertNotNil(core.get(feature: RUMFeature.self))
+
+        // Then
+        XCTAssertTrue(RUM._internal.isEnabled(in: core))
     }
 
     // MARK: - Configuration Tests
@@ -351,7 +368,7 @@ class RUMTests: XCTestCase {
 
     // MARK: - Behaviour Tests
 
-    func testWhenEnabled_itSetsRUMContextInCore() {
+    func testWhenEnabled_itSetsRUMContextInCore() throws {
         let core = PassthroughCoreMock()
         let applicationID: String = .mockRandom()
         let sessionID: RUMUUID = .mockRandom()
@@ -363,19 +380,12 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        DDAssertReflectionEqual(
-            core.context.featuresAttributes["rum"],
-            FeatureBaggage(
-                [
-                    "ids": [
-                        "application.id": applicationID,
-                        "session.id": sessionID.toRUMDataFormat,
-                        "view.id": nil,
-                        "user_action.id": nil
-                    ]
-                ]
-            )
-        )
+        let context: RUMCoreContext? = try core.context.baggages["rum"]?.decode()
+        XCTAssertNotNil(context)
+        XCTAssertEqual(context?.applicationID, applicationID)
+        XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
+        XCTAssertNil(context?.viewID)
+        XCTAssertNil(context?.userActionID)
     }
 
     func testWhenEnabled_itNotifiesInitialSessionID() {

@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SRFixtures
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

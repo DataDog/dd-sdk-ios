@@ -13,7 +13,7 @@ public struct Request {
     /// HTTP method of this request.
     public let httpMethod: String
     /// HTTP headers associated with this request.
-    public let httpHeaders: [String]
+    public let httpHeaders: [String: String]
     /// HTTP body of this request.
     public let httpBody: Data
 }

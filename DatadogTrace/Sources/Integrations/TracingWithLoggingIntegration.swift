@@ -9,11 +9,6 @@ import DatadogInternal
 
 /// Integration between Tracing and Logging Features to allow sending logs for spans (`span.log(fields:timestamp:)`)
 internal struct TracingWithLoggingIntegration {
-    internal struct TracingAttributes {
-        static let traceID = "dd.trace_id"
-        static let spanID = "dd.span_id"
-    }
-
     private struct Constants {
         static let defaultLogMessage = "Span event"
         static let defaultErrorProperty = "Unknown"
@@ -51,7 +46,7 @@ internal struct TracingWithLoggingIntegration {
         /// The Log user custom attributes
         let userAttributes: AnyEncodable
         /// The Log internal attributes
-        let internalAttributes: [String: String]
+        let internalAttributes: SpanCoreContext
     }
 
     /// `DatadogCore` instance managing this integration.
@@ -82,12 +77,6 @@ internal struct TracingWithLoggingIntegration {
         let hasErrorKind = errorKind != nil
         let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
-        // set tracing attributes
-        let internalAttributes = [
-            TracingAttributes.traceID: String(spanContext.traceID),
-            TracingAttributes.spanID: String(spanContext.spanID)
-        ]
-
         var extractedError: DDError?
         if level == .error {
             extractedError = DDError(
@@ -109,7 +98,10 @@ internal struct TracingWithLoggingIntegration {
                     thread: Thread.current.dd.name,
                     networkInfoEnabled: networkInfoEnabled,
                     userAttributes: AnyEncodable(userAttributes),
-                    internalAttributes: internalAttributes
+                    internalAttributes: SpanCoreContext(
+                        traceID: String(spanContext.traceID),
+                        spanID: String(spanContext.spanID)
+                    )
                 )
             ),
             else: fallback

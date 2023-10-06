@@ -20,21 +20,17 @@ internal struct FileWriter: Writer {
     let forceNewFile: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
-    /// Current context of the SDK.
-    let context: DatadogContext
 
     init(
         orchestrator: FilesOrchestratorType,
         forceNewFile: Bool,
         encryption: DataEncryption?,
-        telemetry: Telemetry,
-        context: DatadogContext
+        telemetry: Telemetry
     ) {
         self.orchestrator = orchestrator
         self.encryption = encryption
         self.forceNewFile = forceNewFile
         self.telemetry = telemetry
-        self.context = context
     }
 
     // MARK: - Writing data
@@ -59,9 +55,7 @@ internal struct FileWriter: Writer {
             // This is to avoid a situation where event is written to one file and event metadata to another.
             // If this happens, the reader will not be able to match event with its metadata.
             let writeSize = UInt64(encoded.count)
-            let file = try forceNewFile
-                ? orchestrator.getNewWritableFile(writeSize: writeSize, context: context)
-                : orchestrator.getWritableFile(writeSize: writeSize, context: context)
+            let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
             try file.append(data: encoded)
         } catch {
             DD.logger.error("Failed to write data", error: error)

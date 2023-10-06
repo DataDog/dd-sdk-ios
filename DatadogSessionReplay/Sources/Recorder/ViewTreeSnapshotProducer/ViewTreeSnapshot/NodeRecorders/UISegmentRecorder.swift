@@ -8,6 +8,7 @@
 import UIKit
 
 internal struct UISegmentRecorder: NodeRecorder {
+    let identifier = UUID()
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating = { context in
         return context.recorder.privacy.inputAndOptionTextObfuscator
     }
@@ -21,7 +22,7 @@ internal struct UISegmentRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let ids = context.ids.nodeIDs(1 + segment.numberOfSegments, for: segment)
+        let ids = context.ids.nodeIDs(1 + segment.numberOfSegments, view: segment, nodeRecorder: self)
 
         let builder = UISegmentWireframesBuilder(
             wireframeRect: attributes.frame,

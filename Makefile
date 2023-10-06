@@ -1,13 +1,14 @@
 all: dependencies templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.3.0
+DD_SDK_SWIFT_TESTING_VERSION = 2.3.2
 
 define DD_SDK_TESTING_XCCONFIG_CI
-FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(SRCROOT)/../instrumented-tests/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
+DD_SDK_TESTING_PATH=$$(DD_SDK_TESTING_OVERRIDE_PATH:default=$$(SRCROOT)/../instrumented-tests/)\n
+FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
+FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
+LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS[sdk=iphonesimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n

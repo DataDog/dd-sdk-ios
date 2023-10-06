@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import SRFixtures
 import TestUtilities
 @testable import DatadogSessionReplay
 @testable import SRHost

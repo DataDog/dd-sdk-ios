@@ -98,16 +98,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         self
     }
 
-    public func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        context.featuresAttributes[feature] = attributes()
-    }
 
-    public func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        if context.featuresAttributes[feature] != nil {
-            context.featuresAttributes[feature]?.merge(with: attributes())
-        } else {
-            context.featuresAttributes[feature] = attributes()
-        }
+    public func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage : Encodable {
+        context.baggages[key] = FeatureBaggage(baggage())
     }
 
     public func send(message: FeatureMessage, else fallback: () -> Void) {

@@ -33,8 +33,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
@@ -76,8 +75,7 @@ class FileWriterTests: XCTestCase {
                     "encrypted".utf8Data + data + "encrypted".utf8Data
                 }
             ),
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["key1": "value1"], metadata: ["meta1": "metaValue1"])
@@ -115,8 +113,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["key1": "value1"])
@@ -148,8 +145,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: true,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["key1": "value1"])
@@ -196,8 +192,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["key1": "value1"]) // will be written
@@ -230,8 +225,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: FailingEncodableMock(errorMessage: "failed to encode `FailingEncodable`."))
@@ -253,8 +247,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         writer.write(value: ["ok"]) // will create the file
@@ -285,8 +278,7 @@ class FileWriterTests: XCTestCase {
             ),
             forceNewFile: false,
             encryption: nil,
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         let ioInterruptionQueue = DispatchQueue(label: "com.datadohq.file-writer-random-io")
@@ -351,8 +343,7 @@ class FileWriterTests: XCTestCase {
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
             ),
-            telemetry: NOPTelemetry(),
-            context: .mockAny()
+            telemetry: NOPTelemetry()
         )
 
         // When

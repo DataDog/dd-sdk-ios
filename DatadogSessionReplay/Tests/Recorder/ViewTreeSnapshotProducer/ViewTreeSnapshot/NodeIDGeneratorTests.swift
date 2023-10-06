@@ -11,6 +11,7 @@ import UIKit
 
 class NodeIDGeneratorTests: XCTestCase {
     private let n: Int = .mockRandom(min: 1, max: 100)
+    private let nodeRecorder = NodeRecorderMock()
 
     func testAfterIDisRetrievedFirstTime_itAlwaysReturnsTheSameIDForUIViewInstance() {
         // Given
@@ -19,12 +20,12 @@ class NodeIDGeneratorTests: XCTestCase {
 
         // When
         let generator = NodeIDGenerator()
-        let id = generator.nodeID(for: view1)
-        let ids = generator.nodeIDs(n, for: view2)
+        let id = generator.nodeID(view: view1, nodeRecorder: nodeRecorder)
+        let ids = generator.nodeIDs(n, view: view2, nodeRecorder: nodeRecorder)
 
         // Then
-        XCTAssertEqual(id, generator.nodeID(for: view1))
-        XCTAssertEqual(ids, generator.nodeIDs(n, for: view2))
+        XCTAssertEqual(id, generator.nodeID(view: view1, nodeRecorder: nodeRecorder))
+        XCTAssertEqual(ids, generator.nodeIDs(n, view: view2, nodeRecorder: nodeRecorder))
     }
 
     func testAllIDsAreUnique() {
@@ -34,8 +35,8 @@ class NodeIDGeneratorTests: XCTestCase {
 
         // When
         let generator = NodeIDGenerator(currentID: .mockRandom())
-        let ids = viewsWithID.map { generator.nodeID(for: $0) }
-        let idNs = viewsWithIDs.map { generator.nodeIDs(n, for: $0) }
+        let ids = viewsWithID.map { generator.nodeID(view: $0, nodeRecorder: nodeRecorder) }
+        let idNs = viewsWithIDs.map { generator.nodeIDs(n, view: $0, nodeRecorder: nodeRecorder) }
 
         // Then
         let singleIDs: Set<NodeID> = ids.reduce(into: []) { result, id in result.insert(id) }
@@ -54,21 +55,52 @@ class NodeIDGeneratorTests: XCTestCase {
         let generator = NodeIDGenerator(currentID: currentID, maxID: maxID)
 
         // Then
-        XCTAssertEqual(generator.nodeID(for: .mockRandom()), currentID)
-        XCTAssertEqual(generator.nodeID(for: .mockRandom()), maxID)
-        XCTAssertEqual(generator.nodeID(for: .mockRandom()), 0)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), currentID)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), maxID)
+        XCTAssertEqual(generator.nodeID(view: .mockRandom(), nodeRecorder: nodeRecorder), 0)
     }
 
     func testGivenIDsRetrievedFirstTime_whenQueryingForDifferentSize_itReturnsDistinctIDs() {
         // Given
         let view: UIView = .mockRandom()
         let generator = NodeIDGenerator()
-        let ids1 = generator.nodeIDs(n, for: view)
+        let ids1 = generator.nodeIDs(n, view: view, nodeRecorder: nodeRecorder)
 
         // When
-        let ids2 = generator.nodeIDs(.mockRandom(min: 1, max: 100, otherThan: [n]), for: view)
+        let ids2 = generator.nodeIDs(
+            .mockRandom(min: 1, max: 100, otherThan: [n]),
+            view: view,
+            nodeRecorder: nodeRecorder
+        )
 
         // Then
         XCTAssertEqual(Set(ids1).intersection(Set(ids2)), [])
+    }
+
+    func testIDisDifferentWhenRecorderChanges() {
+        // Given
+        let view: UIView = .mockRandom()
+        let generator = NodeIDGenerator()
+        let id = generator.nodeID(view: view, nodeRecorder: nodeRecorder)
+
+        // When
+        let newID = generator.nodeID(view: view, nodeRecorder: NodeRecorderMock())
+
+        // Then
+        XCTAssertNotEqual(id, newID)
+    }
+
+    func testIDchangesWhenViewChanges() {
+        // Given
+        let view1: UIView = .mockRandom()
+        let view2: UIView = .mockRandom()
+        let generator = NodeIDGenerator()
+        let id = generator.nodeID(view: view1, nodeRecorder: nodeRecorder)
+
+        // When
+        let newID = generator.nodeID(view: view2, nodeRecorder: nodeRecorder)
+
+        // Then
+        XCTAssertNotEqual(id, newID)
     }
 }

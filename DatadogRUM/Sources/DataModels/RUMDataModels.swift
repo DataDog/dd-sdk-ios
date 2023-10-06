@@ -1389,6 +1389,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// First Byte phase properties
         public let firstByte: FirstByte?
 
+        /// GraphQL requests parameters
+        public var graphql: Graphql?
+
         /// UUID of the resource
         public let id: String?
 
@@ -1422,6 +1425,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case download = "download"
             case duration = "duration"
             case firstByte = "first_byte"
+            case graphql = "graphql"
             case id = "id"
             case method = "method"
             case provider = "provider"
@@ -1486,6 +1490,35 @@ public struct RUMResourceEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
                 case start = "start"
+            }
+        }
+
+        /// GraphQL requests parameters
+        public struct Graphql: Codable {
+            /// Name of the GraphQL operation
+            public let operationName: String?
+
+            /// Type of the GraphQL operation
+            public let operationType: OperationType
+
+            /// Content of the GraphQL operation
+            public var payload: String?
+
+            /// String representation of the operation variables
+            public var variables: String?
+
+            enum CodingKeys: String, CodingKey {
+                case operationName = "operationName"
+                case operationType = "operationType"
+                case payload = "payload"
+                case variables = "variables"
+            }
+
+            /// Type of the GraphQL operation
+            public enum OperationType: String, Codable {
+                case query = "query"
+                case mutation = "mutation"
+                case subscription = "subscription"
             }
         }
 
@@ -1863,20 +1896,20 @@ public struct RUMViewEvent: RUMDataModel {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
-            /// Page scroll height (total height) when the maximum scroll depth was reached for this view (in pixels)
-            public let maxDepthScrollHeight: Double
-
             /// Page scroll top (scrolled distance) when the maximum scroll depth was reached for this view (in pixels)
             public let maxDepthScrollTop: Double
 
-            /// Duration between the view start and the scroll event that reached the maximum scroll depth for this view (in nanoseconds)
-            public let maxDepthTime: Double
+            /// Maximum page scroll height (total height) for this view (in pixels)
+            public let maxScrollHeight: Double
+
+            /// Duration between the view start and the time the max scroll height was reached for this view (in nanoseconds)
+            public let maxScrollHeightTime: Double
 
             enum CodingKeys: String, CodingKey {
                 case maxDepth = "max_depth"
-                case maxDepthScrollHeight = "max_depth_scroll_height"
                 case maxDepthScrollTop = "max_depth_scroll_top"
-                case maxDepthTime = "max_depth_time"
+                case maxScrollHeight = "max_scroll_height"
+                case maxScrollHeightTime = "max_scroll_height_time"
             }
         }
 
@@ -3365,4 +3398,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/221e41f0b9dc24312731e22dff34d276a378d11d
+// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4

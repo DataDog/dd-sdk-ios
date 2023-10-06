@@ -36,7 +36,7 @@ internal class KioskSendEventsViewController: UIViewController {
 
         let simulatedResourceKey = "/resource/1"
         let simulatedResourceRequest = URLRequest(url: URL(string: "https://foo.com/resource/1")!)
-        let simulatedResourceLoadingTime: TimeInterval = 0.1
+        let simulatedResourceLoadingTime: TimeInterval = 0.5
 
         rumMonitor.startResource(
             resourceKey: simulatedResourceKey,

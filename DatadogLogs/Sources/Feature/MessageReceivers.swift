@@ -212,7 +212,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                 device: .init(architecture: deviceInfo.architecture)
             ),
             os: .init(
-                name: context.device.name,
+                name: context.device.osName,
                 version: context.device.osVersion,
                 build: context.device.osBuildNumber
             ),
@@ -275,9 +275,13 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
                     event[dateKey] = correctedTimestamp
                 }
 
-                if let baggage: [String: String?] = context.featuresAttributes["rum"]?.ids {
-                    let mappedBaggage = Dictionary(uniqueKeysWithValues: baggage.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
-                    event.merge(mappedBaggage as [String: Any]) { $1 }
+                if let rum = context.baggages[RUMContext.key] {
+                    do {
+                        let context = try rum.decode(type: RUMContext.self)
+                        event.merge(context.internalAttributes) { $1 }
+                    } catch {
+                        core.telemetry.error("Fails to decode RUM context from Logs", error: error)
+                    }
                 }
 
                 writer.write(value: AnyEncodable(event))

@@ -66,7 +66,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let nextBatch = isSystemReady ? self.fileReader.readNextBatch(context: context) : nil
+            let nextBatch = isSystemReady ? self.fileReader.readNextBatch() : nil
             if let batch = nextBatch {
                 self.backgroundTaskCoordinator?.beginBackgroundTask()
                 DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
@@ -84,11 +84,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                         DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                     } else {
-                        self.fileReader.markBatchAsRead(
-                            batch,
-                            reason: .intakeCode(responseCode: uploadStatus.responseCode ?? -1),
-                            context: context
-                        ) // -1 is unexpected here
+                        self.fileReader.markBatchAsRead(batch, reason: .intakeCode(responseCode: uploadStatus.responseCode ?? -1)) // -1 is unexpected here
                         self.delay.decrease()
 
                         DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
@@ -105,7 +101,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     }
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
-                    self.fileReader.markBatchAsRead(batch, reason: .invalid, context: context)
+                    self.fileReader.markBatchAsRead(batch, reason: .invalid)
                     telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             } else {
@@ -136,13 +132,12 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
         queue.sync {
-            let context = contextProvider.read()
-            while let nextBatch = self.fileReader.readNextBatch(context: context) {
+            while let nextBatch = self.fileReader.readNextBatch() {
                 defer {
                     // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
                     // purposes and never run in production apps.
-                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed, context: context)
+                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.

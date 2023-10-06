@@ -229,44 +229,13 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         let storage1 = core1.stores.values.first?.storage
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, UInt64(512).KB)
-        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, UInt64(4).MB)
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxObjectSize, 512.KB.asUInt64())
+        XCTAssertEqual(storage1?.authorizedFilesOrchestrator.performance.maxFileSize, 4.MB.asUInt64())
 
         let storage2 = core2.stores.values.first?.storage
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxObjectSize, 456)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
-    }
-
-    func testItUpdatesTheFeatureBaggage() throws {
-        // Given
-        let contextProvider: DatadogContextProvider = .mockAny()
-        let core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: SystemDateProvider(),
-            initialConsent: .mockRandom(),
-            performance: .mockRandom(),
-            httpClient: HTTPClientMock(),
-            encryption: nil,
-            contextProvider: contextProvider,
-            applicationVersion: .mockAny(),
-            backgroundTasksEnabled: .mockAny()
-        )
-        defer { core.flushAndTearDown() }
-        try core.register(feature: FeatureMock())
-
-        // When
-        core.update(feature: FeatureMock.name) {
-            return ["foo": "bar"]
-        }
-        core.update(feature: FeatureMock.name) {
-            return ["bizz": "bazz"]
-        }
-
-        // Then
-        let context = contextProvider.read()
-        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.foo, "bar")
-        XCTAssertEqual(context.featuresAttributes[FeatureMock.name]?.bizz, "bazz")
     }
 }

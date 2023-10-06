@@ -72,33 +72,34 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         )
 
         core.scope(for: RUMFeature.name)?.eventWriteContext { context, writer in
-            guard let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids, !attributes.isEmpty else {
+            guard
+                let rum: RUMCoreContext = try? context.baggages[RUMFeature.name]?.decode()
+            else {
                 return writer.write(value: AnyEncodable(event))
             }
+
             var event = event
 
-            if let date = event["date"] as? Int {
+            if let date = event["date"] as? Int64 {
                 let viewID = (event["view"] as? JSON)?["id"] as? String
                 let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
                 let correctedDate = Int64(date) + serverTimeOffsetInMs
                 event["date"] = correctedDate
             }
 
-            let applicationID = attributes[RUMContextAttributes.IDs.applicationID]
-            if let applicationID = applicationID, var application = event["application"] as? JSON {
-                application["id"] = applicationID
+            if var application = event["application"] as? JSON {
+                application["id"] = rum.applicationID
                 event["application"] = application
             }
 
-            let sessionID = attributes[RUMContextAttributes.IDs.sessionID]
-            if let sessionID = sessionID, var session = event["session"] as? JSON {
-                session["id"] = sessionID
+            if var session = event["session"] as? JSON {
+                session["id"] = rum.sessionID
                 event["session"] = session
             }
 
-            if var dd = event["_dd"] as? JSON, var dd_sesion = dd["session"] as? [String: Int] {
-                dd_sesion["plan"] = 1
-                dd["session"] = dd_sesion
+            if var dd = event["_dd"] as? JSON, var dd_session = dd["session"] as? [String: Int64] {
+                dd_session["plan"] = 1
+                dd["session"] = dd_session
                 event["_dd"] = dd
             }
 

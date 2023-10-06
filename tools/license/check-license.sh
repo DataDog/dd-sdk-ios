@@ -25,7 +25,8 @@ function files {
 		-not -name "OTTracer.swift" \
 		-not -name "OTReference.swift" \
 		-not -name "OTSpanContext.swift" \
-		-not -name "Versioning.swift"
+		-not -name "Versioning.swift" \
+		-not -name "__init__.py"
 }
 
 FILES_WITH_MISSING_LICENSE=""

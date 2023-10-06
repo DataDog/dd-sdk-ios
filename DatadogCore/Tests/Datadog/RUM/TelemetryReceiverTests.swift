@@ -32,14 +32,15 @@ class TelemetryReceiverTests: XCTestCase {
                 { core.telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
                 { core.telemetry.configuration(batchSize: .mockRandom()) },
                 {
-                    core.set(feature: "rum", attributes: {[
-                        RUMContextAttributes.ids: [
+                    core.set(
+                        baggage: [
                             RUMContextAttributes.IDs.applicationID: String.mockRandom(),
                             RUMContextAttributes.IDs.sessionID: String.mockRandom(),
                             RUMContextAttributes.IDs.viewID: String.mockRandom(),
                             RUMContextAttributes.IDs.userActionID: String.mockRandom()
-                        ]
-                    ]})
+                        ],
+                        forKey: "rum"
+                    )
                 }
             ],
             iterations: 50

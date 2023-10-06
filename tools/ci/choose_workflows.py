@@ -23,11 +23,16 @@ def should_run_unit_tests(ctx: CIContext) -> bool:
         build_env=context.build_env.DD_OVERRIDE_RUN_UNIT_TESTS,
         pr_keyword='[x] Run unit tests',
         pr_path_prefixes=[
-            'Sources/',
-            'Tests/DatadogTests',
-            'Tests/DatadogCrashReportingTests',
             'Datadog/Datadog.xcodeproj/',
             'TestUtilities/',
+            'DatadogCore/',
+            'DatadogRUM/',
+            'DatadogCrashReporting/',
+            'DatadogLogs/',
+            'DatadogTrace/',
+            'DatadogWebViewTracking/',
+            'DatadogObjc/',
+            'DatadogInternal/',
         ],
         pr_file_extensions=[]
     )
@@ -41,7 +46,9 @@ def should_run_sr_unit_tests(ctx: CIContext) -> bool:
         build_env=context.build_env.DD_OVERRIDE_RUN_SR_UNIT_TESTS,
         pr_keyword='[x] Run unit tests for Session Replay',
         pr_path_prefixes=[
+            'Datadog/Datadog.xcodeproj/',
             'DatadogSessionReplay/',
+            'DatadogInternal/',
             'TestUtilities/',
         ],
         pr_file_extensions=[]
@@ -88,7 +95,7 @@ def should_run_tools_tests(ctx: CIContext) -> bool:
         ctx=ctx,
         trigger_env=context.trigger_env.DD_RUN_TOOLS_TESTS,
         build_env=context.build_env.DD_OVERRIDE_RUN_TOOLS_TESTS,
-        pr_keyword=None,
+        pr_keyword='[x] Run tests for `tools/`',
         pr_path_prefixes=[
             'instrumented-tests/',
             'tools/',
