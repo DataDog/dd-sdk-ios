@@ -120,25 +120,37 @@ extension FeatureStorage {
         encryption: DataEncryption?,
         telemetry: Telemetry
     ) {
+        let trackName = BatchMetric.trackValue(for: featureName)
+
+        if trackName == nil {
+            DD.logger.error("Can't determine track name for feature named '\(featureName)'")
+        }
+
         let authorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.authorized,
             performance: performance,
             dateProvider: dateProvider,
             telemetry: telemetry,
-            metricsData: {
-                guard let trackName = BatchMetric.trackValue(for: featureName) else {
-                    DD.logger.error("Can't determine track name for feature named '\(featureName)'")
-                    return nil
-                }
-                return FilesOrchestrator.MetricsData(trackName: trackName, uploaderPerformance: performance)
-            }()
+            metricsData: trackName.map { trackName in
+                return FilesOrchestrator.MetricsData(
+                    trackName: trackName,
+                    consentLabel: BatchMetric.consentGrantedValue,
+                    uploaderPerformance: performance
+                )
+            }
         )
         let unauthorizedFilesOrchestrator = FilesOrchestrator(
             directory: directories.unauthorized,
             performance: performance,
             dateProvider: dateProvider,
             telemetry: telemetry,
-            metricsData: nil // do not send metrics for unauthorized orchestrator
+            metricsData: trackName.map { trackName in
+                return FilesOrchestrator.MetricsData(
+                    trackName: trackName,
+                    consentLabel: BatchMetric.consentPendingValue,
+                    uploaderPerformance: performance
+                )
+            }
         )
 
         self.init(
