@@ -13,18 +13,24 @@ import DatadogInternal
 class WebViewLogReceiverTests: XCTestCase {
     func testReceiveEvent() throws {
         // Given
+        let messageReceiver = WebViewLogReceiver()
+
         let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send Event"),
-            messageReceiver: WebViewLogReceiver()
+            expectation: expectation(description: "Send Event")
         )
 
         // When
         let value: String = .mockRandom()
 
-        core.send(message: .baggage(
-            key: LoggingMessageKeys.browserLog,
-            value: AnyEncodable([ "test": value ])
-        ))
+        XCTAssert(
+            messageReceiver.receive(
+                message: .baggage(
+                    key: LoggingMessageKeys.browserLog,
+                    value: AnyEncodable([ "test": value ])
+                ),
+                from: core
+            )
+        )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -40,6 +46,8 @@ class WebViewLogReceiverTests: XCTestCase {
     // MARK: - Web-view log
 
     func testWhenValidWebLogEventPassed_itDecoratesAndPassesToWriter() throws {
+        // Given
+        let messageReceiver = WebViewLogReceiver()
         let applicationVersion: String = .mockRandom()
         let environment: String = .mockRandom()
         let mockSessionID: UUID = .mockRandom()
@@ -55,8 +63,7 @@ class WebViewLogReceiverTests: XCTestCase {
                         "session.id": mockSessionID.uuidString.lowercased()
                     ])
                 ]
-            ),
-            messageReceiver: WebViewLogReceiver()
+            )
         )
 
         let webLogEvent: [String: Any] = [
@@ -68,6 +75,18 @@ class WebViewLogReceiverTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .baggage(
+                    key: LoggingMessageKeys.browserLog,
+                    value: AnyEncodable(webLogEvent)
+                ),
+                from: core
+            )
+        )
+
+        // Then
         let expectedWebLogEvent: [String: Any] = [
             "date": 1_635_932_927_012 + 123.toInt64Milliseconds,
             "error": ["origin": "console"],
@@ -79,13 +98,6 @@ class WebViewLogReceiverTests: XCTestCase {
             "view": ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"]
         ]
 
-        core.send(
-            message: .baggage(
-                key: LoggingMessageKeys.browserLog,
-                value: AnyEncodable(webLogEvent)
-            )
-        )
-
         let received: AnyEncodable = try XCTUnwrap(core.events().first, "It should send event")
         DDAssertJSONEqual(received, AnyEncodable(expectedWebLogEvent))
     }
@@ -93,32 +105,37 @@ class WebViewLogReceiverTests: XCTestCase {
     // MARK: - RUM Integration
 
     func testWhenRUMContextIsAvailable_itSendsLogWithRUMContext() throws {
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "Send log"),
-            messageReceiver: WebViewLogReceiver()
-        )
-
         // Given
+        let messageReceiver = WebViewLogReceiver()
         let applicationID: String = .mockRandom()
         let sessionID: String = .mockRandom()
         let viewID: String = .mockRandom()
         let actionID: String = .mockRandom()
 
-        // When
-        core.set(
-            baggage: [
-                "application.id": applicationID,
-                "session.id": sessionID,
-                "view.id": viewID,
-                "user_action.id": actionID
-            ],
-            forKey: "rum"
+        let core = PassthroughCoreMock(
+            context: .mockWith(
+                baggages: [
+                    "rum": .init([
+                        "application.id": applicationID,
+                        "session.id": sessionID,
+                        "view.id": viewID,
+                        "user_action.id": actionID
+                    ])
+                ]
+            ),
+            expectation: expectation(description: "Send log")
         )
 
-        core.send(message: .baggage(
-            key: LoggingMessageKeys.browserLog,
-            value: AnyEncodable([ "test": "value" ])
-        ))
+        // When
+        XCTAssert(
+            messageReceiver.receive(
+                message: .baggage(
+                    key: LoggingMessageKeys.browserLog,
+                    value: AnyEncodable([ "test": "value" ])
+                ),
+                from: core
+            )
+        )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -135,22 +152,23 @@ class WebViewLogReceiverTests: XCTestCase {
 
     func testWhenNoRUMContextIsAvailable_itDoesNotSendTelemetryError() throws {
         // Given
+        let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
-            messageReceiver: CombinedFeatureMessageReceiver([
-                WebViewLogReceiver(),
-                telemetryReceiver
-            ])
+            messageReceiver: telemetryReceiver
         )
 
         // When
-        core.set(baggage: nil, forKey: "rum")
-
-        core.send(message: .baggage(
-            key: LoggingMessageKeys.browserLog,
-            value: AnyEncodable([ "test": "value" ])
-        ))
+        XCTAssert(
+            messageReceiver.receive(
+                message: .baggage(
+                    key: LoggingMessageKeys.browserLog,
+                    value: AnyEncodable([ "test": "value" ])
+                ),
+                from: core
+            )
+        )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
@@ -168,22 +186,28 @@ class WebViewLogReceiverTests: XCTestCase {
 
     func testWhenRUMContextIsAvailable_withMalformedRUMContext_itSendsTelemetryError() throws {
         // Given
+        let messageReceiver = WebViewLogReceiver()
         let telemetryReceiver = TelemetryMock()
         let core = PassthroughCoreMock(
+            context: .mockWith(
+                baggages: [
+                    "rum": .init("malformed RUM context")
+                ]
+            ),
             expectation: expectation(description: "Send log"),
-            messageReceiver: CombinedFeatureMessageReceiver([
-                WebViewLogReceiver(),
-                telemetryReceiver
-            ])
+            messageReceiver: telemetryReceiver
         )
 
         // When
-        core.set(baggage: "malformed RUM context", forKey: "rum")
-
-        core.send(message: .baggage(
-            key: LoggingMessageKeys.browserLog,
-            value: AnyEncodable([ "test": "value" ])
-        ))
+        XCTAssert(
+            messageReceiver.receive(
+                message: .baggage(
+                    key: LoggingMessageKeys.browserLog,
+                    value: AnyEncodable([ "test": "value" ])
+                ),
+                from: core
+            )
+        )
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
