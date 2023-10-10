@@ -28,7 +28,6 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         guard case let .context(context) = message else {
-            // No RUM baggage in the message
             return false
         }
 

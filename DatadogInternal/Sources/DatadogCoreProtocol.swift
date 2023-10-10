@@ -62,7 +62,15 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         let fooID: Int? = try? context.featurebaggages["key"]?.decode()
+    ///         if let baggage = context.baggages["key"] {
+    ///             try {
+    ///                 // Try decoding context to expected type:
+    ///                 let value: String = try baggage.decode()
+    ///                 // If success, handle the `value`.
+    ///             } catch {
+    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
+    ///             }
+    ///         }
     ///     }
     ///
     /// - Parameters:
@@ -102,11 +110,19 @@ extension DatadogCoreProtocol {
     /// Feature `bar` will read it through the event write context.
     ///
     ///     // Foo.swift
-    ///     core.set(baggage: "value", forKey: "key")
+    ///     core.set(baggage: FeatureBaggage("value"), forKey: "key")
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         let fooID: Int? = try? context.featurebaggages["key"]?.decode()
+    ///         if let baggage = context.baggages["key"] {
+    ///             try {
+    ///                 // Try decoding context to expected type:
+    ///                 let value: String = try baggage.decode()
+    ///                 // If success, handle the `value`.
+    ///             } catch {
+    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
+    ///             }
+    ///         }
     ///     }
     ///
     /// - Parameters:
@@ -131,7 +147,15 @@ extension DatadogCoreProtocol {
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         let fooID: Int? = try? context.featurebaggages["key"]?.decode()
+    ///         if let baggage = context.baggages["key"] {
+    ///             try {
+    ///                 // Try decoding context to expected type:
+    ///                 let value: String = try baggage.decode()
+    ///                 // If success, handle the `value`.
+    ///             } catch {
+    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
+    ///             }
+    ///         }
     ///     }
     ///
     /// - Parameters:
@@ -156,7 +180,15 @@ extension DatadogCoreProtocol {
     ///
     ///     // Bar.swift
     ///     core.scope(for: "bar").eventWriteContext { context, writer in
-    ///         let fooID: Int? = try? context.featurebaggages["key"]?.decode()
+    ///         if let baggage = context.baggages["key"] {
+    ///             try {
+    ///                 // Try decoding context to expected type:
+    ///                 let value: String = try baggage.decode()
+    ///                 // If success, handle the `value`.
+    ///             } catch {
+    ///                 // Otherwise, handle the error (e.g. consider sending as telemetry).
+    ///             }
+    ///         }
     ///     }
     ///
     /// - Parameters:
