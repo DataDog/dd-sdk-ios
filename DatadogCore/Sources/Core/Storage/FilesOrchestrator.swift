@@ -41,6 +41,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     struct MetricsData {
         /// The name of the track reported for this orchestrator.
         let trackName: String
+        /// The label indicating the value of tracking consent that this orchestrator manages files for.
+        let consentLabel: String
         /// The preset for uploader performance in this feature to include in metric.
         let uploaderPerformance: UploadPerformancePreset
     }
@@ -252,6 +254,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
                     BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
                 ],
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
@@ -276,6 +279,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             attributes: [
                 BatchMetric.typeKey: BatchClosedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,
