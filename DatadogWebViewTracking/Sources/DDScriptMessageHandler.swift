@@ -40,4 +40,10 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     }
 }
 
+extension DDScriptMessageHandler: Flushable {
+    func flush() {
+        queue.sync { }
+    }
+}
+
 #endif

@@ -290,8 +290,8 @@ extension DatadogCore: DatadogCoreProtocol {
         )
     }
 
-    func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage: Encodable {
-        contextProvider.write { $0.baggages[key] = FeatureBaggage(baggage()) }
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        contextProvider.write { $0.baggages[key] = baggage() }
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
