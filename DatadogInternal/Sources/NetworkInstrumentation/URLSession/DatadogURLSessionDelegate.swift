@@ -43,7 +43,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self,
+                delegateClass: Self.self,
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
             ),
             in: core ?? CoreRegistry.default
@@ -98,7 +98,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self,
+                delegateClass: Self.self,
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
             ),
             in: core ?? CoreRegistry.default

@@ -15,7 +15,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
     override public init() {
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self
+                delegateClass: Self.self
             ),
             in: CoreRegistry.default
         )
@@ -29,7 +29,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         }
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self,
+                delegateClass: Self.self,
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts)
             ),
             in: CoreRegistry.default
