@@ -342,6 +342,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Usage
 
+    @available(*, deprecated)
     func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
         // Given
         let delegate1 = DatadogURLSessionDelegate()
@@ -358,6 +359,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
         // Given
         CoreRegistry.register(default: core)
@@ -374,6 +376,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -504,6 +507,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(*, deprecated)
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -535,6 +539,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(*, deprecated)
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }

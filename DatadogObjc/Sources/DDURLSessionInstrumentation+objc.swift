@@ -68,9 +68,6 @@ public class DDURLSessionInstrumentation: NSObject {
     ///   - delegateClass: The delegate class to unbind.
     @objc
     public static func disable(delegateClass: URLSessionDataDelegate.Type) {
-        if delegateClass == DDNSURLSessionDelegate.self {
-            URLSessionInstrumentation.disable(delegateClass: DatadogURLSessionDelegate.self)
-        }
         URLSessionInstrumentation.disable(delegateClass: delegateClass)
     }
 }

@@ -103,16 +103,6 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         }
     }
 
-    private func firstPartyHosts(configuration: URLSessionInstrumentation.Configuration, delegate: URLSessionDelegate) -> FirstPartyHosts? {
-         var firstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing)
-
-         if let datadogDelegate = delegate as? DatadogURLSessionDelegate {
-             firstPartyHosts += datadogDelegate.firstPartyHosts
-         }
-
-         return firstPartyHosts
-     }
-
     internal func unbindAll() {
         URLSessionTaskDelegateSwizzler.unbindAll()
         URLSessionDataDelegateSwizzler.unbindAll()

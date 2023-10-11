@@ -6,11 +6,13 @@
 
 import Foundation
 
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
 
 /// An interface for forwarding `URLSessionDelegate` calls to `DDURLSessionDelegate`.
 /// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.
 @objc
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 }
 
@@ -19,6 +21,7 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     var interceptor: URLSessionInterceptor? {
         let core = self.core ?? CoreRegistry.default
@@ -40,7 +43,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self,
+                delegateClass: Self.self,
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
             ),
             in: core ?? CoreRegistry.default
@@ -95,7 +98,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
         URLSessionInstrumentation.enable(
             with: .init(
-                delegateClass: DatadogURLSessionDelegate.self,
+                delegateClass: Self.self,
                 firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
             ),
             in: core ?? CoreRegistry.default
@@ -118,6 +121,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 }
 
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 extension DatadogURLSessionDelegate: __URLSessionDelegateProviding {
     public var ddURLSessionDelegate: DatadogURLSessionDelegate { self }
 }
