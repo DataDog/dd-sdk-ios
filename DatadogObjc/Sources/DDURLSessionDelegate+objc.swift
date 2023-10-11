@@ -24,13 +24,12 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
 
     @objc
     public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
-        let firstPartyHosts = additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
-            return Set(tracingHeaderTypes.map { $0.swiftType })
-        }
         URLSessionInstrumentation.enable(
             with: .init(
                 delegateClass: Self.self,
-                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts)
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+                    return Set(tracingHeaderTypes.map { $0.swiftType })
+                })
             ),
             in: CoreRegistry.default
         )
