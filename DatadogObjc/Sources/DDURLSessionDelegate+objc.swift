@@ -9,40 +9,40 @@ import DatadogCore
 import DatadogInternal
 
 @objc
-open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
-    var swiftDelegate: DDURLSessionDelegate
-    public var ddURLSessionDelegate: DatadogURLSessionDelegate {
-        return swiftDelegate
-    }
-
+@available(*, deprecated, message: "Use URLSessionInstrumentation instead.")
+open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
     @objc
     override public init() {
-        swiftDelegate = DDURLSessionDelegate()
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: DatadogURLSessionDelegate.self
+            ),
+            in: CoreRegistry.default
+        )
+        super.init()
     }
 
     @objc
     public init(additionalFirstPartyHostsWithHeaderTypes: [String: Set<DDTracingHeaderType>]) {
-        swiftDelegate = DDURLSessionDelegate(
-            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
-                return Set(tracingHeaderTypes.map { $0.swiftType })
-            }
+        let firstPartyHosts = additionalFirstPartyHostsWithHeaderTypes.mapValues { tracingHeaderTypes in
+            return Set(tracingHeaderTypes.map { $0.swiftType })
+        }
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: DatadogURLSessionDelegate.self,
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts)
+            ),
+            in: CoreRegistry.default
         )
+        super.init()
     }
-
+    
     @objc
-    public init(additionalFirstPartyHosts: Set<String>) {
-        swiftDelegate = DDURLSessionDelegate(additionalFirstPartyHosts: additionalFirstPartyHosts)
-    }
-
-    open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        swiftDelegate.urlSession(session, task: task, didCompleteWithError: error)
-    }
-
-    open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        swiftDelegate.urlSession(session, task: task, didFinishCollecting: metrics)
-    }
-
-    open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-        swiftDelegate.urlSession(session, dataTask: dataTask, didReceive: data)
+    public convenience init(additionalFirstPartyHosts: Set<String>) {
+        self.init(
+            additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
+                partialResult[host] = [.datadog]
+            })
+        )
     }
 }

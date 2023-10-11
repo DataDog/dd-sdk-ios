@@ -7,6 +7,7 @@
 import XCTest
 import DatadogInternal
 
+@available(*, deprecated, message: "Use URLSessionInstrumentation instead.")
 internal final class _DatadogURLSessionDelegate: DatadogURLSessionDelegate {
     let property: String
     override init() {
@@ -18,6 +19,7 @@ internal final class _DatadogURLSessionDelegate: DatadogURLSessionDelegate {
     }
 }
 
+@available(*, deprecated)
 class DDURLSessionDelegateAsSuperclassTests: XCTestCase {
     func testSubclassability() {
         // Success: tests compile, failure: compilation error

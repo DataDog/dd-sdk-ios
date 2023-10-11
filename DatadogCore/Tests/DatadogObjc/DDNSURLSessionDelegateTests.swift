@@ -10,6 +10,7 @@ import DatadogInternal
 @testable import DatadogCore
 @testable import DatadogObjc
 
+@available(*, deprecated)
 private class DDURLSessionDelegateMock: DDURLSessionDelegate {
     var calledDidFinishCollecting = false
     var calledDidCompleteWithError = false
@@ -28,6 +29,7 @@ private class DDURLSessionDelegateMock: DDURLSessionDelegate {
     }
 }
 
+@available(*, deprecated)
 class DDNSURLSessionDelegateTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -51,28 +53,14 @@ class DDNSURLSessionDelegateTests: XCTestCase {
     }
 
     func testInit() {
-        let delegate = DDNSURLSessionDelegate()
-        let url = URL(string: "foo.com")
-        XCTAssertFalse(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
+        _ = DDNSURLSessionDelegate()
+    }
+
+    func testInitWithAdditionalFirstPartyHostsWithHeaderTypes() {
+        _ = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": [.datadog]])
     }
 
     func testInitWithAdditionalFirstPartyHosts() {
-        let delegate = DDNSURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: ["foo.com": [.datadog]])
-        let url = URL(string: "http://foo.com")
-        XCTAssertTrue(delegate.swiftDelegate.firstPartyHosts.isFirstParty(url: url))
-    }
-
-    func testItForwardsCallsToSwiftDelegate() {
-        let swiftDelegate = DDURLSessionDelegateMock()
-        let objcDelegate = DDNSURLSessionDelegate()
-        objcDelegate.swiftDelegate = swiftDelegate
-
-        objcDelegate.urlSession(.shared, task: .mockAny(), didFinishCollecting: .mockAny())
-        objcDelegate.urlSession(.shared, task: .mockAny(), didCompleteWithError: ErrorMock())
-        objcDelegate.urlSession(.shared, dataTask: URLSessionDataTask(), didReceive: .mockAny())
-
-        XCTAssertTrue(swiftDelegate.calledDidFinishCollecting)
-        XCTAssertTrue(swiftDelegate.calledDidCompleteWithError)
-        XCTAssertTrue(swiftDelegate.calledDidReceiveData)
+        _ = DDNSURLSessionDelegate(additionalFirstPartyHosts: ["foo.com"])
     }
 }
