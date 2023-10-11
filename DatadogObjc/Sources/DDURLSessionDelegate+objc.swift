@@ -36,7 +36,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
         )
         super.init()
     }
-    
+
     @objc
     public convenience init(additionalFirstPartyHosts: Set<String>) {
         self.init(
