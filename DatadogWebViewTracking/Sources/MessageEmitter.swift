@@ -6,7 +6,7 @@
 
 import DatadogInternal
 
-/// Datadog implementation of `MessageEmitter`.
+/// A type forwarding type-less messages received from Datadog Browser SDK to either `DatadogRUM` or `DatadogLogs`.
 internal final class MessageEmitter: InternalExtension<WebViewTracking>.AbstractMessageEmitter {
     enum MessageKeys {
         static let browserLog = "browser-log"
@@ -23,12 +23,12 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
     /// - Parameter body: The data to send, it must be parsable to `WebViewMessage`
     override func send(body: Any) throws {
         let message = try WebViewMessage(body: body)
-        try send(message: message)
+        send(message: message)
     }
 
     /// Sends a message to the message bus
     /// - Parameter message: The message to send
-    func send(message: WebViewMessage) throws {
+    private func send(message: WebViewMessage) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
