@@ -13,9 +13,16 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
         static let browserRUMEvent = "browser-rum-event"
     }
 
+    /// Log events sampler.
+    let logsSampler: Sampler
+    /// The core for events forwarding.
     private weak var core: DatadogCoreProtocol?
 
-    init(core: DatadogCoreProtocol) {
+    init(
+        logsSampler: Sampler,
+        core: DatadogCoreProtocol
+    ) {
+        self.logsSampler = logsSampler
         self.core = core
     }
 
@@ -35,9 +42,11 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
 
         switch message {
         case let .log(event):
-            core.send(message: .baggage(key: MessageKeys.browserLog, value: AnyEncodable(event)), else: {
-                DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-            })
+            if logsSampler.sample() {
+                core.send(message: .baggage(key: MessageKeys.browserLog, value: AnyEncodable(event)), else: {
+                    DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+                })
+            }
         case let .rum(event):
             core.send(message: .baggage(key: MessageKeys.browserRUMEvent, value: AnyEncodable(event)), else: {
                 DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")

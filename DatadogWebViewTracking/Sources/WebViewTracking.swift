@@ -33,16 +33,20 @@ public enum WebViewTracking {
     /// - Parameters:
     ///   - webView: The web-view to track.
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
+    ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     ///   - core: Datadog SDK core to use for tracking.
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
+        logsSampleRate: Float = 100,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         enable(
             tracking: webView.configuration.userContentController,
             hosts: hosts,
             hostsSanitizer: HostsSanitizer(),
+            logsSampleRate: logsSampleRate,
             in: core
         )
     }
@@ -65,7 +69,13 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
-    static func enable(tracking controller: WKUserContentController, hosts: Set<String>, hostsSanitizer: HostsSanitizing, in core: DatadogCoreProtocol) {
+    static func enable(
+        tracking controller: WKUserContentController,
+        hosts: Set<String>,
+        hostsSanitizer: HostsSanitizing,
+        logsSampleRate: Float,
+        in core: DatadogCoreProtocol
+    ) {
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
@@ -75,7 +85,10 @@ public enum WebViewTracking {
         let bridgeName = DDScriptMessageHandler.name
 
         let messageHandler = DDScriptMessageHandler(
-            emitter: MessageEmitter(core: core)
+            emitter: MessageEmitter(
+                logsSampler: Sampler(samplingRate: logsSampleRate),
+                core: core
+            )
         )
 
         controller.add(messageHandler, name: bridgeName)
@@ -131,9 +144,17 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     /// Cross platform SDKs should instantiate a `MessageEmitter` implementation from
     /// this method and pass WebView related messages using the message bus of the core.
     ///
-    /// - Parameter core: The Datadog SDK core instance
+    /// - Parameters:
+    ///   - core: The Datadog SDK core instance
+    ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`. Default: `100`.
     /// - Returns: A `MessageEmitter` instance
-    public static func messageEmitter(in core: DatadogCoreProtocol) -> AbstractMessageEmitter {
-        return MessageEmitter(core: core)
+    public static func messageEmitter(
+        logsSampleRate: Float = 100,
+        in core: DatadogCoreProtocol
+    ) -> AbstractMessageEmitter {
+        return MessageEmitter(
+            logsSampler: Sampler(samplingRate: logsSampleRate),
+            core: core
+        )
     }
 }
