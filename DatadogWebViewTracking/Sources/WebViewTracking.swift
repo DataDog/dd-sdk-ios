@@ -149,8 +149,8 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`. Default: `100`.
     /// - Returns: A `MessageEmitter` instance
     public static func messageEmitter(
-        logsSampleRate: Float = 100,
-        in core: DatadogCoreProtocol
+        in core: DatadogCoreProtocol,
+        logsSampleRate: Float = 100
     ) -> AbstractMessageEmitter {
         return MessageEmitter(
             logsSampler: Sampler(samplingRate: logsSampleRate),

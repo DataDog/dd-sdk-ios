@@ -2,6 +2,7 @@
 
 # 2.3.0 / 02-10-2023
 
+- [FEATURE] WebView Log events can be now sampled. See [#1515][]
 - [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
 - [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
 - [BUGFIX] WebView RUM events are now dropped if mobile RUM session is not sampled. See [#1502][]
@@ -535,6 +536,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
 [#1488]: https://github.com/DataDog/dd-sdk-ios/pull/1488
 [#1502]: https://github.com/DataDog/dd-sdk-ios/pull/1502
+[#1515]: https://github.com/DataDog/dd-sdk-ios/pull/1515
 [#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
 [#1498]: https://github.com/DataDog/dd-sdk-ios/pull/1498
 [@00fa9a]: https://github.com/00FA9A

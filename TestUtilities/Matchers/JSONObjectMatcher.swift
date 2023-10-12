@@ -12,7 +12,7 @@ public enum JSONMatcherException: Error {
 }
 
 /// A type-safe matcher for dynamic `[String: Any]` JSON objects.
-public class JSONObjectMatcher {
+open class JSONObjectMatcher {
     public let object: [String: Any]
 
     /// Creates a matcher for a given JSON object.
