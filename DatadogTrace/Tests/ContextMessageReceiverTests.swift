@@ -116,7 +116,7 @@ class ContextMessageReceiverTests: XCTestCase {
 
     func testItReceivesMalformedRUMContext() throws {
         // Given
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
         let core = PassthroughCoreMock(
             messageReceiver: telemetryReceiver

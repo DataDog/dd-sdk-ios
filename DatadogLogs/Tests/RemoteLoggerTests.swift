@@ -134,7 +134,7 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError() throws {
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
@@ -169,7 +169,7 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenRUMIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
@@ -247,7 +247,7 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() throws {
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
@@ -280,7 +280,7 @@ class RemoteLoggerTests: XCTestCase {
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withMalformedRUMContext_itSendsTelemetryError() throws {
-        let telemetryReceiver = TelemetryMock()
+        let telemetryReceiver = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             expectation: expectation(description: "Send log"),
             messageReceiver: telemetryReceiver
