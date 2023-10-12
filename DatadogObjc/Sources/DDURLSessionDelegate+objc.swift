@@ -9,7 +9,7 @@ import DatadogCore
 import DatadogInternal
 
 @objc
-@available(*, deprecated, message: "Use URLSessionInstrumentation instead.")
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
     @objc
     override public init() {

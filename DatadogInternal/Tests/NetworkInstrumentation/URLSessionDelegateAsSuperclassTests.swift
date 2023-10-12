@@ -7,7 +7,7 @@
 import XCTest
 import DatadogInternal
 
-@available(*, deprecated, message: "Use URLSessionInstrumentation instead.")
+@available(*, deprecated)
 internal final class _DatadogURLSessionDelegate: DatadogURLSessionDelegate {
     let property: String
     override init() {
