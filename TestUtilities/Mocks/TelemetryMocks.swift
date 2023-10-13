@@ -93,7 +93,7 @@ public extension Array where Element == TelemetryMessage {
 }
 
 public extension TelemetryMessage {
-    /// Extracts debug from telemetry message.
+    /// Extracts debug attributes from telemetry message.
     var asDebug: (id: String, message: String, attributes: [String: Encodable]?)? {
         guard case let .debug(id, message, attributes) = self else {
             return nil
@@ -101,7 +101,7 @@ public extension TelemetryMessage {
         return (id: id, message: message, attributes: attributes)
     }
 
-    /// Extracts debug from telemetry message.
+    /// Extracts error attributes from telemetry message.
     var asError: (id: String, message: String, kind: String?, stack: String?)? {
         guard case let .error(id, message, kind, stack) = self else {
             return nil
