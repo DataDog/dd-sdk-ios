@@ -1,11 +1,12 @@
 # Unreleased
 
+- [FEATURE] WebView Log events can be now sampled. See [#1515][]
+- [BUGFIX] WebView RUM events are now dropped if mobile RUM session is not sampled. See [#1502][]
+
 # 2.3.0 / 02-10-2023
 
-- [FEATURE] WebView Log events can be now sampled. See [#1515][]
 - [IMPROVEMENT] Add UIBackgroundTask for uploading jobs. See [#1412][]
 - [IMPROVEMENT] Report Build Number in Logs and RUM. See [#1465][]
-- [BUGFIX] WebView RUM events are now dropped if mobile RUM session is not sampled. See [#1502][]
 - [BUGFIX] Fix wrong `view.name` reported in RUM crashes. See [#1488][]
 - [BUGFIX] Fix RUM sessions state propagation in Crash Reporting. See [#1498][]
 
