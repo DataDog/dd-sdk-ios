@@ -192,7 +192,11 @@ internal final class DatadogCore {
     ///
     /// Upon return, it is safe to assume that all events were stored and got uploaded. The SDK was deinitialised so this instance of core is missfunctional.
     func flushAndTearDown() {
-        flush()
+        // temporary semaphore before implementation
+        // of the stop mechanism
+        let semaphore = DispatchSemaphore(value: 0)
+        notify { semaphore.signal() }
+        semaphore.wait()
 
         // At this point we can assume that all write operations completed and resulted with writing events to
         // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
@@ -397,42 +401,6 @@ extension DatadogContextProvider {
             self.subscribe(\.applicationStateHistory, to: applicationStatePublisher)
         }
         #endif
-    }
-}
-
-extension DatadogCore: Flushable {
-    /// Flushes asynchronous operations related to events write, context and message bus propagation in this instance of the SDK
-    /// with **blocking the caller thread** till their completion.
-    ///
-    /// Upon return, it is safe to assume that all events are stored. No assumption on their upload should be made - to force events upload
-    /// use `flushAndTearDown()` instead.
-    func flush() {
-        // The order of flushing below must be considered cautiously and
-        // follow our design choices around SDK core's threading.
-
-        let features = features.values.compactMap { $0 as? Flushable }
-
-        // The flushing is repeated few times, to make sure that operations spawned from other operations
-        // on these queues are also awaited. Effectively, this is no different than short-time sleep() on current
-        // thread and it has the same drawbacks (including: it might become flaky). Until we find a better solution
-        // this is enough to get consistency in tests - but won't be reliable in any public "deinitialize" API.
-        for _ in 0..<5 {
-            // First, flush bus queue - because messages can lead to obtaining "event write context" (reading
-            // context & performing write) in other Features:
-            bus.flush()
-
-            // Next, flush flushable Features - finish current data collection to open "event write contexts":
-            features.forEach { $0.flush() }
-
-            // Next, flush context queue - because it indicates the entry point to "event write context" and
-            // actual writes dispatched from it:
-            contextProvider.flush()
-
-            // Last, flush read-write queue - it always comes last, no matter if the write operation is dispatched
-            // from "event write context" started on user thread OR if it happens upon receiving an "event" message
-            // in other Feature:
-            readWriteQueue.sync { }
-        }
     }
 }
 

@@ -292,15 +292,6 @@ extension NetworkInstrumentationFeature {
     }
 }
 
-extension NetworkInstrumentationFeature: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        queue.sync { }
-    }
-}
-
 extension NetworkInstrumentationFeature: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
         queue.notify(continuation)

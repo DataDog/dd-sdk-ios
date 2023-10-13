@@ -128,16 +128,13 @@ internal final class CrashReportingFeature: DatadogFeature {
     }
 }
 
-extension CrashReportingFeature: Flushable {
-    func flush() {
-        // Await asynchronous operations completion to safely sink all pending tasks.
-        queue.sync {}
-    }
-}
-
 extension CrashReportingFeature: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
-        DispatchContinuationSequence(first: crashContextProvider)
+        let sequence = (crashContextProvider as? DispatchContinuation)
+            .map { DispatchContinuationSequence(first: $0) }
+            ?? .init()
+
+        sequence
             .then(queue)
             .notify(continuation)
     }
