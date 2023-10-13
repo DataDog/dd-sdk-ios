@@ -101,15 +101,9 @@ extension DatadogCoreProxy {
     }
 }
 
-extension DatadogCoreProxy: Flushable {
-    func flush() {
-        core.flush()
-    }
-}
-
 extension DatadogCoreProxy: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
-        core.notify(continuation)
+        core.harvest.notify(continuation)
     }
 }
 

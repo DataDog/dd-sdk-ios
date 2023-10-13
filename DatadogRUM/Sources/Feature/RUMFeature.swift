@@ -120,15 +120,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
     }
 }
 
-extension RUMFeature: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        monitor.flush()
-    }
-}
-
 extension RUMFeature: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
         monitor.notify(continuation)

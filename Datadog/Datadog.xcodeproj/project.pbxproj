@@ -824,8 +824,6 @@
 		D242C29F2A14D6A7004B4980 /* RemoteLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6194E4B828785BFD00EB6307 /* RemoteLogger.swift */; };
 		D242C2A12A14D747004B4980 /* RemoteLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */; };
 		D242C2A22A14D747004B4980 /* RemoteLoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */; };
-		D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2432CF829EDB22C00D93657 /* Flushable.swift */; };
-		D2432CFA29EDB22C00D93657 /* Flushable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2432CF829EDB22C00D93657 /* Flushable.swift */; };
 		D243BBC0276C9D640019C857 /* PLCrashReporterIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */; };
 		D243BBEC29A614CE000B9CEC /* LoggerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */; };
 		D243BBED29A614CE000B9CEC /* LoggerProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */; };
@@ -2540,7 +2538,6 @@
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D240688527CFA64A00C04F44 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D242C2A02A14D747004B4980 /* RemoteLoggerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemoteLoggerTests.swift; sourceTree = "<group>"; };
-		D2432CF829EDB22C00D93657 /* Flushable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Flushable.swift; sourceTree = "<group>"; };
 		D243BBBF276C9D640019C857 /* PLCrashReporterIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PLCrashReporterIntegrationTests.swift; sourceTree = "<group>"; };
 		D243BBEB29A614CE000B9CEC /* LoggerProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerProtocol.swift; sourceTree = "<group>"; };
 		D243BBF129A6209C000B9CEC /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
@@ -5335,7 +5332,6 @@
 			isa = PBXGroup;
 			children = (
 				D23039DB298D5235001A1FA3 /* ReadWriteLock.swift */,
-				D2432CF829EDB22C00D93657 /* Flushable.swift */,
 				D21E200C2AD0028100554C1B /* DispatchContinuation.swift */,
 			);
 			path = Concurrency;
@@ -7958,7 +7954,6 @@
 				D2160CE429C0DFEE00FAA9A5 /* MethodSwizzler.swift in Sources */,
 				D2160CC929C0DED100FAA9A5 /* DatadogURLSessionDelegate.swift in Sources */,
 				D2EBEE2929BA160F00B15732 /* HTTPHeadersWriter.swift in Sources */,
-				D2432CF929EDB22C00D93657 /* Flushable.swift in Sources */,
 				D23039F7298D5236001A1FA3 /* AttributesSanitizer.swift in Sources */,
 				D23039EB298D5236001A1FA3 /* DatadogFeature.swift in Sources */,
 				3CBDE6742AA08C2F00F6A7B6 /* URLSessionInstrumentation.swift in Sources */,
@@ -8766,7 +8761,6 @@
 				D2160CE629C0DFEE00FAA9A5 /* MethodSwizzler.swift in Sources */,
 				D2160CCA29C0DED100FAA9A5 /* DatadogURLSessionDelegate.swift in Sources */,
 				D2EBEE3729BA161100B15732 /* HTTPHeadersWriter.swift in Sources */,
-				D2432CFA29EDB22C00D93657 /* Flushable.swift in Sources */,
 				D2DA235D298D57AA00C6C7E6 /* AttributesSanitizer.swift in Sources */,
 				D2DA235E298D57AA00C6C7E6 /* DatadogFeature.swift in Sources */,
 				3CBDE6752AA08C2F00F6A7B6 /* URLSessionInstrumentation.swift in Sources */,

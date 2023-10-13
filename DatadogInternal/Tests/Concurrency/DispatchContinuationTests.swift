@@ -17,7 +17,7 @@ private class AsyncOperator: DispatchContinuation {
 
     init(
         label: String,
-        delay: TimeInterval = 0.1,
+        delay: TimeInterval = 0.01,
         expectation: XCTestExpectation? = nil
     ) {
         self.queue = DispatchQueue(label: label)
@@ -100,7 +100,7 @@ class DispatchContinuationTests: XCTestCase {
             let operations = expectations.map {
                 AsyncOperator(
                     label: $0.expectationDescription,
-                    delay: .mockRandom(min: 0, max: 0.5),
+                    delay: .mockRandom(min: 0, max: 0.05),
                     expectation: $0
                 )
             }
@@ -119,14 +119,14 @@ class DispatchContinuationTests: XCTestCase {
 
     func testChainOfOperations() {
         let operationCount: Int = 100
-        let expectations = (0..<operationCount).map { expectation(description: "expect \($0) task") }
+        let expectations = (0..<operationCount).map { expectation(description: "expect async task \($0)") }
 
         autoreleasepool {
             // Given
             let operations = expectations.map {
                 AsyncOperator(
                     label: $0.expectationDescription,
-                    delay: .mockRandom(min: 0, max: 0.5),
+                    delay: .mockRandom(min: 0, max: 0.05),
                     expectation: $0
                 )
             }
