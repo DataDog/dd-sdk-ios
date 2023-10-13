@@ -118,6 +118,7 @@ extension DispatchContinuationSequence {
     /// Create a continuation sequence with the given first execution block.
     ///
     /// - Parameter block: The block to execute first.
+    /// - Parameter queue: The queue on which to execute the block.
     public init(first block: @escaping () -> Void, queue: DispatchQueue = .global()) {
         self.block = { continuation in
             queue.async {
@@ -312,16 +313,17 @@ extension DispatchContinuationSequence {
         then(DispatchContinuationSequence(group: sequence, queue: queue))
     }
 
-    /// Execute the next sequence when the current sequence notify its own
+    /// Execute the next continuation block when the current sequence notify its own
     /// continuation.
     ///
-    /// Use the `then(group:)` method to perform continuation in parallel and get notify when
-    /// all asynchronous tasks are completed.
+    /// Use the `then(_:)` method to perform continuation in cascade and get notify when
+    /// the synchronous task is completed.
     ///
     /// The following sequence:
     ///
     ///     DispatchContinuationSequence(first: task1)
-    ///         .then(group: [task2, task3], queue: queue)
+    ///         .then(task2)
+    ///         .then({ task3() }, queue: queue)
     ///         .notify {
     ///             print("done")
     ///         }
@@ -329,23 +331,16 @@ extension DispatchContinuationSequence {
     /// It will behave the same as the following:
     ///
     ///     task1.notify {
-    ///         let group = DispatchGroup()
-    ///
-    ///         group.enter()
     ///         task2.notify {
-    ///             group.leave()
-    ///         }
-    ///         group.enter()
-    ///         task3.notify {
-    ///             group.leave()
-    ///         }
-    ///         group.notify(queue: queue) {
-    ///             print("done")
+    ///             queue.async {
+    ///                 task3()
+    ///                 print("done")
+    ///             }
     ///         }
     ///     }
     ///
-    /// - Parameter sequence: The next ``DispatchContinuation`` group.
-    /// - Parameter queue: The queue to which the supplied continuation block is submitted when the group completes.
+    /// - Parameter sequence: The next synchronous block to execute.
+    /// - Parameter queue: The queue to which the supplied the block is submitted when the group completes.
     ///
     /// - Returns: The new sequence.
     public func then(_ block: @escaping () -> Void, queue: DispatchQueue = .global()) -> Self {

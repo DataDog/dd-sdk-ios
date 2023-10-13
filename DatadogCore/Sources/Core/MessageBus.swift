@@ -125,15 +125,6 @@ internal final class MessageBus {
     }
 }
 
-extension MessageBus: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        queue.sync { }
-    }
-}
-
 extension MessageBus: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
         queue.notify(continuation)

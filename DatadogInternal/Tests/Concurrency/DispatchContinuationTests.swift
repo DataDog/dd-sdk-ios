@@ -17,7 +17,7 @@ private class AsyncOperator: DispatchContinuation {
 
     init(
         label: String,
-        delay: TimeInterval = 0.1,
+        delay: TimeInterval = 0.01,
         expectation: XCTestExpectation? = nil
     ) {
         self.queue = DispatchQueue(label: label)
@@ -100,7 +100,7 @@ class DispatchContinuationTests: XCTestCase {
             let operations = expectations.map {
                 AsyncOperator(
                     label: $0.expectationDescription,
-                    delay: .mockRandom(min: 0, max: 0.5),
+                    delay: .mockRandom(min: 0, max: 0.05),
                     expectation: $0
                 )
             }
@@ -117,16 +117,32 @@ class DispatchContinuationTests: XCTestCase {
         wait(for: expectations, timeout: 0, enforceOrder: false)
     }
 
-    func testChainOfOperations() {
+    func testChainOperations() {
+        let expectations = (0..<4).map { expectation(description: "expect task \($0)") }
+
+        autoreleasepool {
+            // Given
+            _ = DispatchContinuationSequence(first: { expectations[0].fulfill() })
+                .then(AsyncOperator(label: "1", expectation: expectations[1]))
+                .then { expectations[2].fulfill() }
+                .then(AsyncOperator(label: "3", expectation: expectations[3]))
+                .waitDispatchContinuation()
+        }
+
+        // Then
+        wait(for: expectations, timeout: 0, enforceOrder: true)
+    }
+
+    func testChainOfAsyncOperations() {
         let operationCount: Int = 100
-        let expectations = (0..<operationCount).map { expectation(description: "expect \($0) task") }
+        let expectations = (0..<operationCount).map { expectation(description: "expect async task \($0)") }
 
         autoreleasepool {
             // Given
             let operations = expectations.map {
                 AsyncOperator(
                     label: $0.expectationDescription,
-                    delay: .mockRandom(min: 0, max: 0.5),
+                    delay: .mockRandom(min: 0, max: 0.05),
                     expectation: $0
                 )
             }
@@ -146,6 +162,22 @@ class DispatchContinuationTests: XCTestCase {
         XCTAssertEqual(AsyncOperator.referenceCount, 0)
 
         // expect order of continuation
+        wait(for: expectations, timeout: 0, enforceOrder: true)
+    }
+
+    func testChainOfSyncOperations() {
+        let operationCount: Int = 100
+        let expectations = (0..<operationCount).map { expectation(description: "expect sync task \($0)") }
+
+        // Given
+        let sequence = expectations.reduce(DispatchContinuationSequence()) { chain, expectation in
+            chain.then { expectation.fulfill() }
+        }
+
+        // When
+        sequence.waitDispatchContinuation()
+
+        // Then
         wait(for: expectations, timeout: 0, enforceOrder: true)
     }
 }

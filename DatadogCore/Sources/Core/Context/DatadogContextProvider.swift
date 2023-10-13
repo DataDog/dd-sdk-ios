@@ -161,15 +161,6 @@ internal final class DatadogContextProvider {
 #endif
 }
 
-extension DatadogContextProvider: Flushable {
-    /// Awaits completion of all asynchronous operations.
-    ///
-    /// **blocks the caller thread**
-    func flush() {
-        queue.sync { }
-    }
-}
-
 extension DatadogContextProvider: DispatchContinuation {
     func notify(_ continuation: @escaping () -> Void) {
         queue.notify(continuation)
