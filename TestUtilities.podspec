@@ -28,7 +28,8 @@ Pod::Spec.new do |s|
   
   s.source_files = [
     "TestUtilities/Helpers/**/*.swift",
-    "TestUtilities/Mocks/**/*.swift"
+    "TestUtilities/Mocks/**/*.swift",
+    "TestUtilities/Matchers/**/*.swift",
   ]
 
   s.dependency 'DatadogInternal'
