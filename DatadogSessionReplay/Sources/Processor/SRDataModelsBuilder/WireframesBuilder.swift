@@ -59,7 +59,7 @@ internal class WireframesBuilder {
     }
 
     func createImageWireframe(
-        base64: String,
+        imageResource: ImageResource,
         id: WireframeID,
         frame: CGRect,
         mimeType: String = "png",
@@ -71,13 +71,14 @@ internal class WireframesBuilder {
         opacity: CGFloat? = nil
     ) -> SRWireframe {
         let wireframe = SRImageWireframe(
-            base64: base64,
+            base64: imageResource.base64,
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: mimeType,
+            resourceId: imageResource.identifier,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
             x: Int64(withNoOverflow: frame.minX),

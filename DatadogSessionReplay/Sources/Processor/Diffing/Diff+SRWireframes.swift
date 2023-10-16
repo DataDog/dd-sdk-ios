@@ -174,4 +174,34 @@ extension SRTextWireframe: MutableWireframe {
         )
     }
 }
+
+extension SRImageWireframe: Hashable {
+    static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool {
+        return lhs.id == rhs.id
+            && lhs.resourceId == rhs.resourceId
+            && lhs.border == rhs.border
+            && lhs.clip == rhs.clip
+            && lhs.height == rhs.height
+            && lhs.isEmpty == rhs.isEmpty
+            && lhs.mimeType == rhs.mimeType
+            && lhs.shapeStyle == rhs.shapeStyle
+            && lhs.width == rhs.width
+            && lhs.x == rhs.x
+            && lhs.y == rhs.y
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+        hasher.combine(resourceId)
+        hasher.combine(border)
+        hasher.combine(clip)
+        hasher.combine(height)
+        hasher.combine(isEmpty)
+        hasher.combine(mimeType)
+        hasher.combine(shapeStyle)
+        hasher.combine(width)
+        hasher.combine(x)
+        hasher.combine(y)
+    }
+}
 #endif

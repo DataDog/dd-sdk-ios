@@ -8,15 +8,20 @@
 import Foundation
 import UIKit
 
+internal struct ImageResource {
+    let identifier: String
+    let base64: String
+}
+
 internal protocol ImageDataProviding {
     func contentBase64String(
         of image: UIImage?
-    ) -> String
+    ) -> ImageResource?
 
     func contentBase64String(
         of image: UIImage?,
         tintColor: UIColor?
-    ) -> String
+    ) -> ImageResource?
 }
 
 internal final class ImageDataProvider: ImageDataProviding {
@@ -35,29 +40,29 @@ internal final class ImageDataProvider: ImageDataProviding {
     func contentBase64String(
         of image: UIImage?,
         tintColor: UIColor?
-    ) -> String {
-        autoreleasepool {
+    ) -> ImageResource? {
+        autoreleasepool { () -> ImageResource? in
             guard var image = image else {
-                return ""
+                return nil
             }
             var identifier = image.srIdentifier
             if let tintColorIdentifier = tintColor?.srIdentifier {
                 identifier += tintColorIdentifier
             }
             if let base64EncodedImage = cache[identifier] {
-                return base64EncodedImage
+                return ImageResource(identifier: identifier, base64: base64EncodedImage)
             } else {
                 if #available(iOS 13.0, *), let tintColor = tintColor {
                     image = image.withTintColor(tintColor)
                 }
                 let base64EncodedImage = image.scaledDownToApproximateSize(desiredMaxBytesSize).base64EncodedString()
                 cache[identifier, base64EncodedImage.count] = base64EncodedImage
-                return base64EncodedImage
+                return ImageResource(identifier: identifier, base64: base64EncodedImage)
             }
         }
     }
 
-    func contentBase64String(of image: UIImage?) -> String {
+    func contentBase64String(of image: UIImage?) -> ImageResource? {
         contentBase64String(of: image, tintColor: nil)
     }
 }
@@ -70,13 +75,49 @@ fileprivate extension CGSize {
 
 extension UIImage {
     var srIdentifier: String {
-        return "\(hash)"
+        return md5Hash
     }
 }
 
 extension UIColor {
     var srIdentifier: String {
         return "\(hash)"
+    }
+}
+
+import CommonCrypto
+
+fileprivate extension UIImage {
+    private struct AssociatedKeys {
+        static var md5HashKey = "md5Hash"
+    }
+
+    var md5Hash: String {
+        if let hash = objc_getAssociatedObject(self, &AssociatedKeys.md5HashKey) as? String {
+            return hash
+        }
+
+        let hash = computeMD5Hash()
+        objc_setAssociatedObject(self, &AssociatedKeys.md5HashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return hash
+    }
+
+    private func computeMD5Hash() -> String {
+        guard let imageData = self.pngData() else {
+            return ""
+        }
+
+        var hashString = ""
+        imageData.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> Void in
+            var hash = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
+            CC_MD5(bytes.baseAddress, CC_LONG(imageData.count), &hash)
+
+            for byte in hash {
+                hashString += String(format: "%02x", byte)
+            }
+        }
+
+        return hashString
     }
 }
 #endif

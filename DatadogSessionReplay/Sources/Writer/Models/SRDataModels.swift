@@ -324,7 +324,7 @@ internal struct SRTextWireframe: Codable, Hashable {
 }
 
 /// Schema of all properties of a ImageWireframe.
-internal struct SRImageWireframe: Codable, Hashable {
+internal struct SRImageWireframe: Codable {
     /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
     internal var base64: String?
 
@@ -1154,3 +1154,4 @@ internal enum SRRecord: Codable {
 }
 
 // Generated from https://github.com/DataDog/rum-events-format/tree/5a79d9a36b6e76493420792055fc50aed780569b
+#endif
