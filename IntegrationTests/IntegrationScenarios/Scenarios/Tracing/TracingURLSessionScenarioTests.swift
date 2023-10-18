@@ -14,22 +14,72 @@ private extension ExampleApplication {
 }
 
 class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
-    func testTracingURLSessionScenario() throws {
+    func testTracingURLSessionScenario_composition() throws {
         try runTest(
             for: "TracingURLSessionScenario",
             urlSessionSetup: .init(
-                instrumentationMethod: .allCases.randomElement()!,
-                initializationMethod: .allCases.randomElement()!
+                instrumentationMethod: .composition,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+    
+    func testTracingURLSessionScenario_directWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+    
+    func testTracingURLSessionScenario_directWithGlobalFirstPartyHosts() throws {
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+    
+    func testTracingURLSessionScenario_inheritance() throws {
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .inheritance,
+                initializationMethod: .afterSDK
             )
         )
     }
 
-    func testTracingNSURLSessionScenario() throws {
+    func testTracingNSURLSessionScenario_composition() throws {
         try runTest(
             for: "TracingNSURLSessionScenario",
             urlSessionSetup: .init(
-                instrumentationMethod: .allCases.randomElement()!,
-                initializationMethod: .allCases.randomElement()!
+                instrumentationMethod: .composition,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+    
+    func testTracingNSURLSessionScenario_directWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+    
+    func testTracingNSURLSessionScenario_inheritance() throws {
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .inheritance,
+                initializationMethod: .afterSDK
             )
         )
     }

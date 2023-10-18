@@ -8,7 +8,7 @@ import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
-    fileprivate var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
+    internal var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     public var hosts: Set<String> {
         return Set(hostsWithTracingHeaderTypes.keys)
@@ -35,6 +35,17 @@ public struct FirstPartyHosts: Equatable {
     /// Creates empty (no hosts) `FirstPartyHosts`.
     public init() {
         self.init(hostsWithTracingHeaderTypes: [:])
+    }
+
+    internal init?(firstPartyHosts: URLSessionInstrumentation.FirstPartyHostsTracing?) {
+        switch firstPartyHosts {
+        case .trace(let hosts):
+            self.init(hosts)
+        case .traceWithHeaders(let hostsWithHeaders):
+            self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
+        default:
+            return nil
+        }
     }
 
     internal init(

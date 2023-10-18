@@ -5,6 +5,7 @@
 - [FEATURE] WebView Log events can be now sampled. See [#1515][]
 - [BUGFIX] WebView RUM events are now dropped if mobile RUM session is not sampled. See [#1502][]
 - [BUGFIX] Fix `os.name` in Log events. See [#1493][]
+- [FEATURE] Add network instrumentation for async/await URLSession APIs. See [#1394][]
 
 # 2.3.0 / 02-10-2023
 
@@ -544,6 +545,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1465]: https://github.com/DataDog/dd-sdk-ios/pull/1465
 [#1498]: https://github.com/DataDog/dd-sdk-ios/pull/1498
 [#1493]: https://github.com/DataDog/dd-sdk-ios/pull/1493
+[#1394]: https://github.com/DataDog/dd-sdk-ios/pull/1394
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
