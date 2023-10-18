@@ -600,6 +600,11 @@ extension RUMUUID {
     }
 }
 
+struct RUMUUIDGeneratorMock: RUMUUIDGenerator {
+    let uuid: UUID
+    func generateUnique() -> RUMUUID { RUMUUID(rawValue: uuid) }
+}
+
 extension RUMContext {
     public static func mockAny() -> RUMContext {
         return mockWith()

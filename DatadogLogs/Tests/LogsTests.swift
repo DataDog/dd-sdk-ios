@@ -20,6 +20,25 @@ class LogsTests: XCTestCase {
         XCTAssertNil(config.customEndpoint)
     }
 
+    func testWhenNotEnabled_thenLogsIsEnabledIsFalse() {
+        // When
+        let core = FeatureRegistrationCoreMock()
+        XCTAssertNil(core.get(feature: LogsFeature.self))
+
+        // Then
+        XCTAssertFalse(Logs._internal.isEnabled(in: core))
+    }
+
+    func testWhenEnabled_thenLogsIsEnabledIsTrue() {
+        // When
+        let core = FeatureRegistrationCoreMock()
+        let config = Logs.Configuration()
+        Logs.enable(with: config, in: core)
+
+        // Then
+        XCTAssertTrue(Logs._internal.isEnabled(in: core))
+    }
+
     func testConfigurationOverrides() throws {
         // Given
         let customEndpoint: URL = .mockRandom()

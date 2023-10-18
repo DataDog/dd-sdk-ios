@@ -13,7 +13,7 @@ import DatadogInternal
 internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
     static let name = "DatadogEventBridge"
 
-    private let emitter: MessageEmitter
+    let emitter: MessageEmitter
 
     let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
@@ -37,6 +37,12 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
                 DD.logger.error("Encountered an error when receiving web view event", error: error)
             }
         }
+    }
+}
+
+extension DDScriptMessageHandler: Flushable {
+    func flush() {
+        queue.sync { }
     }
 }
 

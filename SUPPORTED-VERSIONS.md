@@ -38,7 +38,7 @@ We currently support integration of the SDK using following dependency managers.
 | Framework       |   Automatic  | Manual |
 |-----------------|:------------:|:------:|
 | **URLSession**  |       ✅     |   ✅    |
-|[**Alamofire 5+**](https://github.com/DataDog/dd-sdk-ios/tree/develop/Sources/DatadogExtensions/Alamofire) |       ❌     |   ✅    |
+|[**Alamofire 5+**](https://github.com/DataDog/dd-sdk-ios/tree/develop/DatadogExtensions/Alamofire) |       ❌     |   ✅    |
 |  **SwiftNIO**   |       ❌     |   ❌    |
 
 *Note: Third party networking libraries can be instrumented by implementing custom `DDURLSessionDelegate`.*

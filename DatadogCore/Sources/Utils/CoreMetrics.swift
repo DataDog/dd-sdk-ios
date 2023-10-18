@@ -23,6 +23,13 @@ internal enum BatchMetric {
         default:                return nil
         }
     }
+    /// Consent label key.
+    /// It is added to differentiate telemetries for batches handled in `pending` and `granted` consents.
+    static let consentKey = "consent"
+    /// "granted" consent value.
+    static let consentGrantedValue = "granted"
+    /// "pending" consent value.
+    static let consentPendingValue = "pending"
 }
 
 /// Definition of "Batch Deleted" telemetry.

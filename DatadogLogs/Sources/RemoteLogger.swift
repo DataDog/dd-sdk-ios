@@ -25,20 +25,6 @@ internal final class RemoteLogger: LoggerProtocol {
         let sampler: Sampler
     }
 
-    struct ErrorMessage: Encodable {
-        static let key = "error"
-        /// The Log error message
-        let message: String
-        /// The Log error type
-        let type: String?
-        /// The Log error stack
-        let stack: String?
-        /// The Log error stack
-        let source: String = "logger"
-        /// The Log attributes
-        let attributes: AnyEncodable
-    }
-
     /// `DatadogCore` instance managing this logger.
     internal let core: DatadogCoreProtocol
     /// Configuration specific to this logger.
@@ -129,17 +115,25 @@ internal final class RemoteLogger: LoggerProtocol {
         // that are up-to-date for the caller.
         self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
-            let contextAttributes = context.featuresAttributes
 
-            if self.rumContextIntegration, let attributes: [String: AnyCodable?] = contextAttributes["rum"]?.ids {
-                let attributes = attributes.compactMapValues { $0 }
-                let mappedAttributes = Dictionary(uniqueKeysWithValues: attributes.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
-                internalAttributes.merge(mappedAttributes) { $1 }
+            if self.rumContextIntegration, let rum = context.baggages[RUMContext.key] {
+                do {
+                    let attributes = try rum.decode(type: RUMContext.self).internalAttributes
+                    internalAttributes.merge(attributes) { $1 }
+                } catch {
+                    self.core.telemetry
+                        .error("Fails to decode RUM context from Logs", error: error)
+                }
             }
 
-            if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
-                let attributes = attributes.compactMapValues(AnyEncodable.init)
-                internalAttributes.merge(attributes) { $1 }
+            if self.activeSpanIntegration, let span = context.baggages[SpanContext.key] {
+                do {
+                    let attributes = try span.decode(type: SpanContext.self).internalAttributes
+                    internalAttributes.merge(attributes) { $1 }
+                } catch {
+                    self.core.telemetry
+                        .error("Fails to decode Span context from Logs", error: error)
+                }
             }
 
             let builder = LogEventBuilder(

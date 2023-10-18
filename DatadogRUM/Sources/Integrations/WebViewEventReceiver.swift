@@ -63,7 +63,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// - Parameters:
     ///   - event: The Browser RUM event.
     ///   - core: The core to write the event.
-    func write(event: JSON, to core: DatadogCoreProtocol) {
+    private func write(event: JSON, to core: DatadogCoreProtocol) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -71,38 +71,42 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        core.scope(for: RUMFeature.name)?.eventWriteContext { context, writer in
-            guard let attributes: [String: String?] = context.featuresAttributes["rum"]?.ids, !attributes.isEmpty else {
-                return writer.write(value: AnyEncodable(event))
-            }
-            var event = event
-
-            if let date = event["date"] as? Int64 {
-                let viewID = (event["view"] as? JSON)?["id"] as? String
-                let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
-                let correctedDate = Int64(date) + serverTimeOffsetInMs
-                event["date"] = correctedDate
+        core.scope(for: RUMFeature.name)?.eventWriteContext { [weak core] context, writer in
+            guard let rumBaggage = context.baggages[RUMFeature.name] else {
+                return // Drop event if RUM is not enabled or RUM session is not sampled
             }
 
-            let applicationID = attributes[RUMContextAttributes.IDs.applicationID]
-            if let applicationID = applicationID, var application = event["application"] as? JSON {
-                application["id"] = applicationID
-                event["application"] = application
-            }
+            do {
+                let rum: RUMCoreContext = try rumBaggage.decode()
+                var event = event
 
-            let sessionID = attributes[RUMContextAttributes.IDs.sessionID]
-            if let sessionID = sessionID, var session = event["session"] as? JSON {
-                session["id"] = sessionID
-                event["session"] = session
-            }
+                if let date = event["date"] as? Int64 {
+                    let viewID = (event["view"] as? JSON)?["id"] as? String
+                    let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
+                    let correctedDate = Int64(date) + serverTimeOffsetInMs
+                    event["date"] = correctedDate
+                }
 
-            if var dd = event["_dd"] as? JSON, var dd_session = dd["session"] as? [String: Int64] {
-                dd_session["plan"] = 1
-                dd["session"] = dd_session
-                event["_dd"] = dd
-            }
+                if var application = event["application"] as? JSON {
+                    application["id"] = rum.applicationID
+                    event["application"] = application
+                }
 
-            writer.write(value: AnyEncodable(event))
+                if var session = event["session"] as? JSON {
+                    session["id"] = rum.sessionID
+                    event["session"] = session
+                }
+
+                if var dd = event["_dd"] as? JSON, var dd_sesion = dd["session"] as? [String: Int64] {
+                    dd_sesion["plan"] = 1
+                    dd["session"] = dd_sesion
+                    event["_dd"] = dd
+                }
+
+                writer.write(value: AnyEncodable(event))
+            } catch {
+                core?.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
+            }
         }
     }
 

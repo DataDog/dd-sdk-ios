@@ -82,14 +82,16 @@ class TelemetryReceiverTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
         core.telemetry.debug("telemetry debug", attributes: ["foo": 42])
@@ -112,14 +114,16 @@ class TelemetryReceiverTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
         core.telemetry.error("telemetry error")
@@ -257,22 +261,18 @@ class TelemetryReceiverTests: XCTestCase {
         core.messageReceiver = TelemetryReceiver.mockAny()
         let applicationId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: String.mockRandom()
-            ]
-        ]})
+        core.set(baggage: [
+            RUMContextAttributes.IDs.applicationID: applicationId,
+            RUMContextAttributes.IDs.sessionID: String.mockRandom()
+        ], forKey: "rum")
 
         // When
         core.telemetry.debug(id: "0", message: "telemetry debug")
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: String.mockRandom() // new session
-            ]
-        ]})
+        core.set(baggage: [
+            RUMContextAttributes.IDs.applicationID: applicationId,
+            RUMContextAttributes.IDs.sessionID: String.mockRandom()
+        ], forKey: "rum")
 
         core.telemetry.debug(id: "0", message: "telemetry debug")
 
@@ -407,14 +407,17 @@ class TelemetryReceiverTests: XCTestCase {
         let sessionId: String = .mockRandom()
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
-        core.set(feature: RUMFeature.name, attributes: {[
-            RUMContextAttributes.ids: [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
         core.telemetry.metric(name: .mockRandom(), attributes: mockRandomAttributes())

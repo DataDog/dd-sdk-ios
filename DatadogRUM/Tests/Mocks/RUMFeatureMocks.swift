@@ -25,22 +25,6 @@ extension RUM.Configuration {
     }
 }
 
-extension WebViewEventReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
-    }
-
-    static func mockWith(
-        dateProvider: DateProvider = SystemDateProvider(),
-        commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock()
-    ) -> Self {
-        .init(
-            dateProvider: dateProvider,
-            commandSubscriber: commandSubscriber
-        )
-    }
-}
-
 extension CrashReportReceiver: AnyMockable {
     public static func mockAny() -> Self {
         .mockWith()
@@ -644,6 +628,18 @@ extension RUMContext {
     }
 }
 
+extension RUMCoreContext: RandomMockable {
+    public static func mockRandom() -> RUMCoreContext {
+        RUMCoreContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom(),
+            viewServerTimeOffset: .mockRandom()
+        )
+    }
+}
+
 // MARK: - RUMScope Mocks
 
 func mockNoOpSessionListener() -> RUM.SessionListener {
@@ -938,16 +934,6 @@ class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
 
 // MARK: - Dependency on Session Replay
 
-extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?) -> Self {
-        return [
-            SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay
-            ]
-        ]
-    }
-}
-
 extension ValuePublisher: AnyMockable where Value: AnyMockable {
     public static func mockAny() -> Self {
         return .init(initialValue: .mockAny())
@@ -990,12 +976,10 @@ internal class ValueObserverMock<Value>: ValueObserver {
 // MARK: - Dependency on Session Replay
 
 extension Dictionary where Key == String, Value == FeatureBaggage {
-    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) -> Self {
+    static func mockSessionReplayAttributes(hasReplay: Bool?, recordsCountByViewID: [String: Int64]? = nil) throws -> Self {
         return [
-            SessionReplayDependency.srBaggageKey: [
-                SessionReplayDependency.hasReplay: hasReplay,
-                SessionReplayDependency.recordsCountByViewID: recordsCountByViewID
-            ]
+            SessionReplayDependency.hasReplay: .init(hasReplay),
+            SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
         ]
     }
 }

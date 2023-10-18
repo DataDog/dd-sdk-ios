@@ -9,25 +9,26 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class SessionReplayDependencyTests: XCTestCase {
-    func testWhenSessionReplayIsConfigured_itReadsReplayBeingRecorded() {
+    func testWhenSessionReplayIsConfigured_itReadsReplayBeingRecorded() throws {
         let hasReplay: Bool = .random()
         let recordsCountByViewID: [String: Int64] = [.mockRandom(): .mockRandom()]
 
         // When
         let context: DatadogContext = .mockWith(
-            featuresAttributes: .mockSessionReplayAttributes(hasReplay: hasReplay, recordsCountByViewID: recordsCountByViewID)
+            baggages: try .mockSessionReplayAttributes(hasReplay: hasReplay, recordsCountByViewID: recordsCountByViewID)
         )
 
         // Then
-        XCTAssertEqual(context.srBaggage?.hasReplay, hasReplay)
-        XCTAssertEqual(context.srBaggage?.recordsCountByViewID, recordsCountByViewID)
+        XCTAssertEqual(context.hasReplay, hasReplay)
+        XCTAssertEqual(context.recordsCountByViewID, recordsCountByViewID)
     }
 
     func testWhenSessionReplayIsNotConfigured_itReadsNoSRBaggage() {
         // When
-        let context: DatadogContext = .mockWith(featuresAttributes: [:])
+        let context: DatadogContext = .mockWith(baggages: [:])
 
         // Then
-        XCTAssertNil(context.srBaggage)
+        XCTAssertNil(context.hasReplay)
+        XCTAssert(context.recordsCountByViewID.isEmpty)
     }
 }

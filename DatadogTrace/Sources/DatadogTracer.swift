@@ -34,12 +34,6 @@ internal class DatadogTracer: OTTracer {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    /// Tracer Attributes shared with other Feature registered in core.
-    internal struct Attributes {
-        internal static let traceID = "dd.trace_id"
-        internal static let spanID = "dd.span_id"
-    }
-
     // MARK: - Initialization
 
     init(
@@ -152,9 +146,14 @@ internal class DatadogTracer: OTTracer {
     private func updateCoreAttributes() {
         let context = activeSpan?.context as? DDSpanContext
 
-        core?.set(feature: TraceFeature.name, attributes: {[
-            Attributes.traceID: context.map { String($0.traceID) },
-            Attributes.spanID: context.map { String($0.spanID) }
-        ]})
+        core?.set(
+            baggage: context.map {
+                SpanCoreContext(
+                    traceID: String($0.traceID),
+                    spanID: String($0.spanID)
+                )
+            },
+            forKey: SpanCoreContext.key
+        )
     }
 }

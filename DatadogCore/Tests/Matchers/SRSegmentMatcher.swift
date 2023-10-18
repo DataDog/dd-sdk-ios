@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import TestUtilities
 
 /// Matcher for asserting known values of Session Replay Segment.
 ///
