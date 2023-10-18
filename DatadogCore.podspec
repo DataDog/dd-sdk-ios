@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogCore"
-  s.version      = "2.3.0"
+  s.version      = "2.4.0"
   s.summary      = "Official Datadog Swift SDK for iOS."
   
   s.homepage     = "https://www.datadoghq.com"
