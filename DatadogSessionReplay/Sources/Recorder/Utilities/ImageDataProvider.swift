@@ -75,7 +75,7 @@ fileprivate extension CGSize {
 
 extension UIImage {
     var srIdentifier: String {
-        return md5Hash
+        return customHash
     }
 }
 
@@ -87,23 +87,19 @@ extension UIColor {
 
 import CryptoKit
 
-private var md5HashKey: UInt8 = 11
+private var customHashKey: UInt8 = 11
 fileprivate extension UIImage {
-    private struct AssociatedKeys {
-
-    }
-
-    var md5Hash: String {
-        if let hash = objc_getAssociatedObject(self, &md5HashKey) as? String {
+    var customHash: String {
+        if let hash = objc_getAssociatedObject(self, &customHashKey) as? String {
             return hash
         }
 
-        let hash = computeMD5Hash()
-        objc_setAssociatedObject(self, &md5HashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        let hash = computeHash()
+        objc_setAssociatedObject(self, &customHashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return hash
     }
 
-    private func computeMD5Hash() -> String {
+    private func computeHash() -> String {
         guard let imageData = self.pngData() else {
             return ""
         }
