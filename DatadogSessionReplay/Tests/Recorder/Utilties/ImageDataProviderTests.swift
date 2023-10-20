@@ -29,7 +29,7 @@ class ImageDataProviderTests: XCTestCase {
 
         let imageResource = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageResource.base64.count, 0)
-        XCTAssertEqual(imageResource.identifier, "536081631ad95d6f784c21dc5a3b3609")
+        XCTAssertEqual(imageResource.identifier, "258d046955bfb950883f0ed61b586b5a")
     }
 
     @available(iOS 13.0, *)
@@ -39,7 +39,7 @@ class ImageDataProviderTests: XCTestCase {
 
         let imageResource = try XCTUnwrap(sut.contentBase64String(of: image))
         XCTAssertGreaterThan(imageResource.base64.count, 0)
-        XCTAssertEqual(imageResource.identifier, "ae0bb15c82ec2dcddf937a0948ca9720")
+        XCTAssertEqual(imageResource.identifier, "89187ac6043b08c088090d348fbb397f")
     }
 
     func test_imageIdentifierConsistency() {

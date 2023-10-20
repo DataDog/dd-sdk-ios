@@ -120,7 +120,7 @@ class DiffSRWireframes: XCTestCase {
         }
     }
 
-    func testWhenComputingMutationsForImageWireframe_base64IsNotTakenIntoAccount() {
+    func testWhenComputingMutationsForImageWireframe_isNotDifferentButUpdateBase64() {
         // Given
         let randomID: WireframeID = .mockRandom()
         let base64: String = .mockRandom()

@@ -85,20 +85,21 @@ extension UIColor {
     }
 }
 
-import CommonCrypto
+import CryptoKit
 
+private var md5HashKey: UInt8 = 11
 fileprivate extension UIImage {
     private struct AssociatedKeys {
-        static var md5HashKey = "md5Hash"
+
     }
 
     var md5Hash: String {
-        if let hash = objc_getAssociatedObject(self, &AssociatedKeys.md5HashKey) as? String {
+        if let hash = objc_getAssociatedObject(self, &md5HashKey) as? String {
             return hash
         }
 
         let hash = computeMD5Hash()
-        objc_setAssociatedObject(self, &AssociatedKeys.md5HashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        objc_setAssociatedObject(self, &md5HashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
         return hash
     }
 
@@ -106,18 +107,11 @@ fileprivate extension UIImage {
         guard let imageData = self.pngData() else {
             return ""
         }
-
-        var hashString = ""
-        imageData.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) -> Void in
-            var hash = [UInt8](repeating: 0, count: Int(CC_MD5_DIGEST_LENGTH))
-            CC_MD5(bytes.baseAddress, CC_LONG(imageData.count), &hash)
-
-            for byte in hash {
-                hashString += String(format: "%02x", byte)
-            }
+        if #available(iOS 13.0, *) {
+            return Insecure.MD5.hash(data: imageData).map { String(format: "%02hhx", $0) }.joined()
+        } else {
+            return "\(hash)"
         }
-
-        return hashString
     }
 }
 #endif
