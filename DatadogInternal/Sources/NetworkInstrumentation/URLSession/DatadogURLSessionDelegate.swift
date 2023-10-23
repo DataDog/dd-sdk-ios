@@ -76,7 +76,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         self.init(
             in: nil,
             additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
-                partialResult[host] = [.datadog]
+                partialResult[host] = [.datadog, .tracecontext]
             })
         )
     }

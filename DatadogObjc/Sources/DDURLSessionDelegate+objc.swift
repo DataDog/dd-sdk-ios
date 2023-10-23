@@ -40,7 +40,7 @@ open class DDNSURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionD
     public convenience init(additionalFirstPartyHosts: Set<String>) {
         self.init(
             additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
-                partialResult[host] = [.datadog]
+                partialResult[host] = [.datadog, .tracecontext]
             })
         )
     }

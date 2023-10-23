@@ -27,7 +27,7 @@ public struct FirstPartyHosts: Equatable {
     public init(_ hosts: Set<String>) {
         self.init(
             hostsWithTracingHeaderTypes: hosts.reduce(into: [:], { partialResult, host in
-                partialResult[host] = [.datadog]
+                partialResult[host] = [.datadog, .tracecontext]
             })
         )
     }
