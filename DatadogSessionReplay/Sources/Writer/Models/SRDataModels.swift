@@ -324,7 +324,7 @@ internal struct SRTextWireframe: Codable, Hashable {
 }
 
 /// Schema of all properties of a ImageWireframe.
-internal struct SRImageWireframe: Codable, Hashable {
+internal struct SRImageWireframe: Codable {
     /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
     internal var base64: String?
 
@@ -345,6 +345,9 @@ internal struct SRImageWireframe: Codable, Hashable {
 
     /// MIME type of the image file
     internal var mimeType: String?
+
+    /// Unique identifier of the image resource
+    internal var resourceId: String?
 
     /// The style of this wireframe.
     internal let shapeStyle: SRShapeStyle?
@@ -369,6 +372,7 @@ internal struct SRImageWireframe: Codable, Hashable {
         case id = "id"
         case isEmpty = "isEmpty"
         case mimeType = "mimeType"
+        case resourceId = "resourceId"
         case shapeStyle = "shapeStyle"
         case type = "type"
         case width = "width"
@@ -786,6 +790,9 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                     /// MIME type of the image file
                     internal var mimeType: String?
 
+                    /// Unique identifier of the image resource
+                    internal var resourceId: String?
+
                     /// The style of this wireframe.
                     internal let shapeStyle: SRShapeStyle?
 
@@ -809,6 +816,7 @@ internal struct SRIncrementalSnapshotRecord: Codable {
                         case id = "id"
                         case isEmpty = "isEmpty"
                         case mimeType = "mimeType"
+                        case resourceId = "resourceId"
                         case shapeStyle = "shapeStyle"
                         case type = "type"
                         case width = "width"
@@ -1145,5 +1153,5 @@ internal enum SRRecord: Codable {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/1c476e469d5827aa1f4e60916f42ad35bbd950ef
+// Generated from https://github.com/DataDog/rum-events-format/tree/5a79d9a36b6e76493420792055fc50aed780569b
 #endif

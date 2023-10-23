@@ -136,18 +136,18 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        var base64: String?
+        var imageResource: ImageResource?
         if shouldRecordImage {
-            base64 = imageDataProvider.contentBase64String(
+            imageResource = imageDataProvider.contentBase64String(
                 of: image,
                 tintColor: tintColor
             )
         }
         if let contentFrame = contentFrame {
-            if let base64 = base64 {
+            if let imageResource = imageResource {
                 wireframes.append(
                     builder.createImageWireframe(
-                        base64: base64,
+                        imageResource: imageResource,
                         id: imageWireframeID,
                         frame: contentFrame,
                         clip: clipsToBounds ? clip : nil

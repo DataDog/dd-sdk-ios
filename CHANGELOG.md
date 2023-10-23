@@ -1,4 +1,5 @@
 # Unreleased
+- [BUGFIX] Optimize Session Replay diffing algorithm. See [#1524][]
 
 # 2.4.0 / 18-10-2023
 
@@ -546,6 +547,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1498]: https://github.com/DataDog/dd-sdk-ios/pull/1498
 [#1493]: https://github.com/DataDog/dd-sdk-ios/pull/1493
 [#1394]: https://github.com/DataDog/dd-sdk-ios/pull/1394
+[#1524]: https://github.com/DataDog/dd-sdk-ios/pull/1524
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
