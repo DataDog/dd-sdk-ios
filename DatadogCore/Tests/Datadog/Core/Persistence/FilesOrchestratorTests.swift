@@ -187,7 +187,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
-        XCTAssertNil(orchestrator.getReadableFile())
+        XCTAssertNil(orchestrator.getReadableFiles())
     }
 
     func testWhenReadableFileIsOldEnough_itReturnsFile() throws {
@@ -197,7 +197,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, file.name)
+        XCTAssertEqual(orchestrator.getReadableFiles().first?.name, file.name)
     }
 
     func testWhenReadableFileIsNotOldEnough_itReturnsNil() throws {
@@ -207,7 +207,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 0.5 * performance.minFileAgeForRead)
 
-        XCTAssertNil(orchestrator.getReadableFile())
+        XCTAssertNil(orchestrator.getReadableFiles())
     }
 
     func testWhenThereAreMultipleReadableFiles_itReturnsOldestFile() throws {
@@ -218,15 +218,15 @@ class FilesOrchestratorTests: XCTestCase {
         try fileNames.forEach { fileName in _ = try orchestrator.directory.createFile(named: fileName) }
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[0])
+        XCTAssertEqual(orchestrator.getReadableFiles().first?.name, fileNames[0])
         try orchestrator.directory.file(named: fileNames[0]).delete()
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[1])
+        XCTAssertEqual(orchestrator.getReadableFiles().first?.name, fileNames[1])
         try orchestrator.directory.file(named: fileNames[1]).delete()
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[2])
+        XCTAssertEqual(orchestrator.getReadableFiles().first?.name, fileNames[2])
         try orchestrator.directory.file(named: fileNames[2]).delete()
-        XCTAssertEqual(orchestrator.getReadableFile()?.name, fileNames[3])
+        XCTAssertEqual(orchestrator.getReadableFiles().first?.name, fileNames[3])
         try orchestrator.directory.file(named: fileNames[3]).delete()
-        XCTAssertNil(orchestrator.getReadableFile())
+        XCTAssertNil(orchestrator.getReadableFiles())
     }
 
     func testsWhenThereAreMultipleReadableFiles_itReturnsFileByExcludingCertainNames() throws {
@@ -238,7 +238,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
         XCTAssertEqual(
-            orchestrator.getReadableFile(excludingFilesNamed: Set(fileNames[0...2]))?.name,
+            orchestrator.getReadableFiles(excludingFilesNamed: Set(fileNames[0...2])).first?.name,
             fileNames[3]
         )
     }
@@ -250,7 +250,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 2 * performance.maxFileAgeForRead)
 
-        XCTAssertNil(orchestrator.getReadableFile())
+        XCTAssertNil(orchestrator.getReadableFiles())
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
@@ -263,7 +263,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
-        let readableFile = try orchestrator.getReadableFile().unwrapOrThrow()
+        let readableFile = try orchestrator.getReadableFiles().first.unwrapOrThrow()
         XCTAssertEqual(try orchestrator.directory.files().count, 1)
         orchestrator.delete(readableFile: readableFile)
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
@@ -306,9 +306,9 @@ class FilesOrchestratorTests: XCTestCase {
 }
 
 extension FilesOrchestrator {
-    func getReadableFile(
+    func getReadableFiles(
         context: DatadogContext
-    ) -> ReadableFile? {
-        getReadableFile(excludingFilesNamed: [])
+    ) -> [ReadableFile] {
+        getReadableFiles(excludingFilesNamed: [])
     }
 }

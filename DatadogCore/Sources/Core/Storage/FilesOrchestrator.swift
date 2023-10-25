@@ -12,7 +12,7 @@ internal protocol FilesOrchestratorType: AnyObject {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int?) -> [ReadableFile]
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
@@ -150,33 +150,30 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int? = nil) -> [ReadableFile] {
         do {
-            let filesWithCreationDate = try directory.files()
+            let filesFromOldest = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
 
-            guard let (oldestFile, creationDate) = filesWithCreationDate
-                .filter({ excludedFileNames.contains($0.file.name) == false })
-                .sorted(by: { $0.creationDate < $1.creationDate })
-                .first
-            else {
-                return nil
-            }
-
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
-                return oldestFile
+                return filesFromOldest
+                    .prefix(limit ?? filesFromOldest.count)
+                    .map { $0.file }
             }
             #endif
 
-            let oldestFileAge = dateProvider.now.timeIntervalSince(creationDate)
-            let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
-
-            return fileIsOldEnough ? oldestFile : nil
+            return filesFromOldest
+                .filter {
+                    let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
+                    return excludedFileNames.contains($0.file.name) == false || fileAge >= performance.minFileAgeForRead
+                }
+                .sorted(by: { $0.creationDate < $1.creationDate })
+                .map { $0.file }
         } catch {
             telemetry.error("Failed to obtain readable file", error: error)
-            return nil
+            return []
         }
     }
 

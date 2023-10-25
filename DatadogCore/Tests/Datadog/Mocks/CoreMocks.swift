@@ -259,7 +259,7 @@ extension FilesOrchestratorType {
 }
 
 class NOPReader: Reader {
-    func readNextBatch() -> Batch? { nil }
+    func readNextBatches(_ limit: Int?) -> [Batch] { [] }
     func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
@@ -276,7 +276,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int?) -> [ReadableFile] { [] }
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
 
     var ignoreFilesAgeWhenReading = false

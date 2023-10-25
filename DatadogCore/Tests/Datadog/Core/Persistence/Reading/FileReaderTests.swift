@@ -45,7 +45,7 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
-        let batch = reader.readNextBatch()
+        let batch = reader.readNextBatches(1).first
 
         let expected = [
             Event(data: "ABCD".utf8Data, metadata: "EFGH".utf8Data)
@@ -84,7 +84,7 @@ class FileReaderTests: XCTestCase {
         )
 
         // When
-        let batch = reader.readNextBatch()
+        let batch = reader.readNextBatches(1).first
 
         // Then
         let expected = [
@@ -125,19 +125,19 @@ class FileReaderTests: XCTestCase {
         ]
 
         var batch: Batch
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[0])
         reader.markBatchAsRead(batch)
 
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[1])
         reader.markBatchAsRead(batch)
 
-        batch = try reader.readNextBatch().unwrapOrThrow()
+        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[2])
         reader.markBatchAsRead(batch)
 
-        XCTAssertNil(reader.readNextBatch())
+        XCTAssertTrue(reader.readNextBatches(1).isEmpty)
         XCTAssertEqual(try directory.files().count, 0)
     }
 }

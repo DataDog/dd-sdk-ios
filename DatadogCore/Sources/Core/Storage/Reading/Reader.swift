@@ -24,6 +24,6 @@ extension Batch {
 
 /// A type, reading batched data.
 internal protocol Reader {
-    func readNextBatch() -> Batch?
+    func readNextBatches(_ count: Int?) -> [Batch]
     func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason)
 }
