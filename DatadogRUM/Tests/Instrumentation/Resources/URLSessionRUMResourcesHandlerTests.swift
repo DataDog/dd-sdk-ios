@@ -404,4 +404,31 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         DDAssertDictionariesEqual(stopResourceWithErrorCommand!.attributes, mockAttributes)
     }
+
+    func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
+        let handler = createHandler(
+            distributedTracing: .init(
+                sampler: .mockKeepAll(),
+                firstPartyHosts: .init(),
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+            )
+        )
+        let request: URLRequest = .mockWith(httpMethod: "GET")
+        let modifiedRequest = handler.modify(request: request, headerTypes: [.datadog, .tracecontext, .b3, .b3multi])
+
+        XCTAssertEqual(
+            modifiedRequest.allHTTPHeaderFields,
+            [
+                "traceparent": "00-00000000000000000000000000000001-0000000000000001-01",
+                "X-B3-SpanId": "0000000000000001",
+                "X-B3-Sampled": "1",
+                "X-B3-TraceId": "00000000000000000000000000000001",
+                "b3": "00000000000000000000000000000001-0000000000000001-1",
+                "x-datadog-trace-id": "1",
+                "x-datadog-parent-id": "1",
+                "x-datadog-sampling-priority": "1",
+                "x-datadog-origin": "rum"
+            ]
+        )
+    }
 }
