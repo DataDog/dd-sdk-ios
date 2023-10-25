@@ -1,12 +1,12 @@
 # Unreleased
 - [BUGFIX] Optimize Session Replay diffing algorithm. See [#1524][]
+- [FEATURE] Add network instrumentation for async/await URLSession APIs. See [#1394][]
 
 # 2.4.0 / 18-10-2023
 
 - [FEATURE] WebView Log events can be now sampled. See [#1515][]
 - [BUGFIX] WebView RUM events are now dropped if mobile RUM session is not sampled. See [#1502][]
 - [BUGFIX] Fix `os.name` in Log events. See [#1493][]
-- [FEATURE] Add network instrumentation for async/await URLSession APIs. See [#1394][]
 
 # 2.3.0 / 02-10-2023
 
