@@ -265,7 +265,7 @@ extension RUM {
 extension RUM.Configuration.URLSessionTracking {
     /// Defines configuration for first-party hosts in distributed tracing.
     public enum FirstPartyHostsTracing {
-        /// Trace the specified hosts using Datadog tracing headers.
+        /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
         ///
         /// - Parameters:
         ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.

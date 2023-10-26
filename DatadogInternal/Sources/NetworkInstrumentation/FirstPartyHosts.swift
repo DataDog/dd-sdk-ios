@@ -21,7 +21,7 @@ public struct FirstPartyHosts: Equatable {
         self.init(hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes)
     }
 
-    /// Creates a `FirstPartyHosts` instance with the given set of host names by assigning `.datadog` header type to each.
+    /// Creates a `FirstPartyHosts` instance with the given set of host names by assigning `.datadog` and `.tracecontext` header types to each.
     ///
     /// - Parameter hosts: The set of host names.
     public init(_ hosts: Set<String>) {
