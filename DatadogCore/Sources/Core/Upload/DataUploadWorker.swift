@@ -46,6 +46,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         delay: DataUploadDelay,
         featureName: String,
         telemetry: Telemetry,
+        maxBatchesPerUpload: Int,
         backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
         self.queue = queue
@@ -65,44 +66,48 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let batches = isSystemReady ? self.fileReader.readNextBatches(Constants.maxBatchesPerUpload) : nil
-            if batches?.isEmpty == false {
-                batches?.forEach { batch in
-                    self.backgroundTaskCoordinator?.beginBackgroundTask()
-                    DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
-                    do {
-                        // Upload batch
-                        let uploadStatus = try self.dataUploader.upload(
-                            events: batch.events,
-                            context: context
-                        )
+            let batches = isSystemReady ? self.fileReader.readNextBatches(maxBatchesPerUpload) : nil
+            if let batches = batches, batches.isEmpty == false {
+                autoreleasepool {
+                    for batch in batches {
+                        self.backgroundTaskCoordinator?.beginBackgroundTask()
+                        DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
+                        do {
+                            // Upload batch
+                            let uploadStatus = try self.dataUploader.upload(
+                                events: batch.events,
+                                context: context
+                            )
 
-                        // Delete or keep batch depending on the upload status
-                        if uploadStatus.needsRetry {
-                            self.delay.increase()
+                            // Delete or keep batch depending on the upload status
+                            if uploadStatus.needsRetry {
+                                self.delay.increase()
 
-                            DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
-                        } else {
-                            self.fileReader.markBatchAsRead(batch, reason: .intakeCode(responseCode: uploadStatus.responseCode ?? -1)) // -1 is unexpected here
-                            self.delay.decrease()
+                                DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                            } else {
+                                self.fileReader.markBatchAsRead(batch, reason: .intakeCode(responseCode: uploadStatus.responseCode ?? -1)) // -1 is unexpected here
+                                self.delay.decrease()
 
-                            DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                                DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
+                            }
+
+                            switch uploadStatus.error {
+                            case .unauthorized:
+                                DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
+                                return
+                            case let .httpError(statusCode: statusCode):
+                                telemetry.error("Data upload finished with status code: \(statusCode)")
+                                return
+                            case let .networkError(error: error):
+                                telemetry.error("Data upload finished with error", error: error)
+                                return
+                            case .none: continue
+                            }
+                        } catch let error {
+                            // If upload can't be initiated do not retry, so drop the batch:
+                            self.fileReader.markBatchAsRead(batch, reason: .invalid)
+                            telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                         }
-
-                        switch uploadStatus.error {
-                        case .unauthorized:
-                            DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
-                        case let .httpError(statusCode: statusCode):
-                            telemetry.error("Data upload finished with status code: \(statusCode)")
-                        case let .networkError(error: error):
-                            telemetry.error("Data upload finished with error", error: error)
-                        case .none: break
-                        }
-
-                    } catch let error {
-                        // If upload can't be initiated do not retry, so drop the batch:
-                        self.fileReader.markBatchAsRead(batch, reason: .invalid)
-                        telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                     }
                 }
             } else {
@@ -161,11 +166,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
             self.uploadWork?.cancel()
             self.uploadWork = nil
         }
-    }
-
-    private enum Constants {
-        /// The maximum number of batches that can be uploaded in a single request.
-        static let maxBatchesPerUpload = 10
     }
 }
 

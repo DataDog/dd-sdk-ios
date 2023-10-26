@@ -55,6 +55,12 @@ public struct Datadog {
             case rare
         }
 
+        public enum BatchProcessingLevel: Int {
+            case low = 1
+            case medium = 10
+            case high = 100
+        }
+
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
         public var clientToken: String
 
@@ -104,6 +110,9 @@ public struct Datadog {
 
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
+
+        ///
+        public var batchProcessingLevel: BatchProcessingLevel
 
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
@@ -166,6 +175,7 @@ public struct Datadog {
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
+            batchProcessingLevel: BatchProcessingLevel = .medium,
             backgroundTasksEnabled: Bool = false
         ) {
             self.clientToken = clientToken
@@ -178,6 +188,7 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.batchProcessingLevel = batchProcessingLevel
             self.backgroundTasksEnabled = backgroundTasksEnabled
         }
 
@@ -410,7 +421,8 @@ public struct Datadog {
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider
             ),
-            applicationVersion: applicationVersion,
+            applicationVersion: applicationVersion, 
+            maxBatchesPerUpload: configuration.batchProcessingLevel.rawValue,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 

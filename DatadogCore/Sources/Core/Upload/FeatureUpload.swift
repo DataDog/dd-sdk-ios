@@ -19,6 +19,7 @@ internal struct FeatureUpload {
         httpClient: HTTPClient,
         performance: PerformancePreset,
         backgroundTasksEnabled: Bool,
+        maxBatchesPerUpload: Int,
         telemetry: Telemetry
     ) {
         let uploadQueue = DispatchQueue(
@@ -50,6 +51,7 @@ internal struct FeatureUpload {
                 delay: DataUploadDelay(performance: performance),
                 featureName: featureName,
                 telemetry: telemetry,
+                maxBatchesPerUpload: maxBatchesPerUpload,
                 backgroundTaskCoordinator: backgroundTaskCoordinator
             )
         )
