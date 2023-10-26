@@ -187,7 +187,7 @@ class FilesOrchestratorTests: XCTestCase {
         let orchestrator = configureOrchestrator(using: dateProvider)
         dateProvider.advance(bySeconds: 1 + performance.minFileAgeForRead)
 
-        XCTAssertNil(orchestrator.getReadableFiles())
+        XCTAssertTrue(orchestrator.getReadableFiles().isEmpty)
     }
 
     func testWhenReadableFileIsOldEnough_itReturnsFile() throws {
@@ -207,7 +207,7 @@ class FilesOrchestratorTests: XCTestCase {
 
         dateProvider.advance(bySeconds: 0.5 * performance.minFileAgeForRead)
 
-        XCTAssertNil(orchestrator.getReadableFiles())
+        XCTAssertTrue(orchestrator.getReadableFiles().isEmpty)
     }
 
     func testWhenThereAreMultipleReadableFiles_itReturnsOldestFile() throws {
@@ -226,7 +226,7 @@ class FilesOrchestratorTests: XCTestCase {
         try orchestrator.directory.file(named: fileNames[2]).delete()
         XCTAssertEqual(orchestrator.getReadableFiles().first?.name, fileNames[3])
         try orchestrator.directory.file(named: fileNames[3]).delete()
-        XCTAssertNil(orchestrator.getReadableFiles())
+        XCTAssertTrue(orchestrator.getReadableFiles().isEmpty)
     }
 
     func testsWhenThereAreMultipleReadableFiles_itReturnsFileByExcludingCertainNames() throws {

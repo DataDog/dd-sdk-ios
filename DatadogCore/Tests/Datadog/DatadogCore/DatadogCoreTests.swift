@@ -43,6 +43,7 @@ class DatadogCoreTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
@@ -89,6 +90,7 @@ class DatadogCoreTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
@@ -143,6 +145,7 @@ class DatadogCoreTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
@@ -194,6 +197,7 @@ class DatadogCoreTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         let core2 = DatadogCore(
@@ -205,6 +209,7 @@ class DatadogCoreTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer {

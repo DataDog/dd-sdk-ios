@@ -45,7 +45,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
-            applicationVersion: context.version,
+            applicationVersion: context.version, 
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
 

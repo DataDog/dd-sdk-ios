@@ -66,7 +66,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
         )
 
         // Then
@@ -98,7 +99,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -130,7 +132,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
@@ -159,7 +162,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -194,7 +198,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -230,7 +235,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -265,7 +271,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -303,7 +310,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName,
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -348,7 +356,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -382,7 +391,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -415,7 +425,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -450,7 +461,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: "some-feature",
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
@@ -482,7 +494,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // When
@@ -510,7 +523,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Given
@@ -551,6 +565,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         writer.write(value: ["k1": "v1"])
@@ -580,6 +595,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         writer.write(value: ["k1": "v1"])
@@ -608,6 +624,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         // Then
