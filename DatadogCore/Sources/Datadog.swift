@@ -421,7 +421,7 @@ public struct Datadog {
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider
             ),
-            applicationVersion: applicationVersion, 
+            applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.rawValue,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
