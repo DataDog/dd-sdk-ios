@@ -552,7 +552,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             required init(in core: DatadogCoreProtocol) {
                 ddURLSessionDelegate = DatadogURLSessionDelegate(
                     in: core,
-                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
+                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog, .tracecontext]]
                 )
 
                 super.init()
