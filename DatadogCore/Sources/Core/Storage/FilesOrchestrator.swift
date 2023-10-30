@@ -155,24 +155,23 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             let filesFromOldest = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
+                .sorted(by: { $0.creationDate < $1.creationDate })
 
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
                     .prefix(min(limit ?? filesFromOldest.count, filesFromOldest.count))
-                    .sorted(by: { $0.creationDate < $1.creationDate })
                     .map { $0.file }
             }
             #endif
 
-            let sorted = filesFromOldest
+            let filtered = filesFromOldest
                 .filter {
                     let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
                     return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
                 }
-                .sorted(by: { $0.creationDate < $1.creationDate })
-            return sorted
-                .prefix(upTo: min(limit ?? .max, sorted.count))
+            return filtered
+                .prefix(upTo: min(limit ?? .max, filtered.count))
                 .map { $0.file }
         } catch {
             telemetry.error("Failed to obtain readable file", error: error)
