@@ -95,14 +95,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                             switch error {
                             case .unauthorized:
                                 DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
-                                return
                             case let .httpError(statusCode: statusCode):
                                 telemetry.error("Data upload finished with status code: \(statusCode)")
-                                return
                             case let .networkError(error: error):
                                 telemetry.error("Data upload finished with error", error: error)
-                                return
                             }
+                        }
+                        if uploadStatus.error != nil {
+                            break // finish the cycle if any batch upload encountered an error
                         }
                     } catch let error {
                         // If upload can't be initiated do not retry, so drop the batch:

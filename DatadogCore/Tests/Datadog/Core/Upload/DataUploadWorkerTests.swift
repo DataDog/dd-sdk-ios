@@ -80,7 +80,7 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
-    func testItUploadsAllDataSequentiallyWithMaxBatchesPerUploadWithoutDelay() {
+    func testItUploadsDataSequentiallyWithoutDelay_whenMaxBatchesPerUploadIsSet() {
         let uploadExpectation = self.expectation(description: "Make 2 uploads")
         uploadExpectation.expectedFulfillmentCount = 2
 
@@ -249,8 +249,13 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenBatchFails_thenIntervalIncreases() {
+    func testWhenBatchFails_thenIntervalIncreasesAndUploadCycleEnds() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
+        delayChangeExpectation.expectedFulfillmentCount = 1
+
+        let uploadAttemptExpectation = expectation(description: "Upload was attempted")
+        uploadAttemptExpectation.expectedFulfillmentCount = 1
+
         let initialUploadDelay = 0.01
         let delay = DataUploadDelay(
             performance: UploadPerformanceMock(
@@ -263,11 +268,22 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         writer.write(value: ["k1": "v1"])
+        writer.write(value: ["k2": "v2"])
+        writer.write(value: ["k3": "v3"])
+
+        let dataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(
+                needsRetry: true,
+                error: .httpError(statusCode: 500)
+            )
+        ) {
+            uploadAttemptExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: true)),
+            dataUploader: dataUploader,
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
@@ -282,7 +298,7 @@ class DataUploadWorkerTests: XCTestCase {
                 delay.current > initialUploadDelay
             }
         }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation], timeout: 0.5)
+        wait(for: [delayChangeExpectation, uploadAttemptExpectation], timeout: 0.5)
         worker.cancelSynchronously()
     }
 
