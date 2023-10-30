@@ -160,6 +160,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
                     .prefix(min(limit ?? filesFromOldest.count, filesFromOldest.count))
+                    .sorted(by: { $0.creationDate < $1.creationDate })
                     .map { $0.file }
             }
             #endif
