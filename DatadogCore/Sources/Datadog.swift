@@ -55,10 +55,22 @@ public struct Datadog {
             case rare
         }
 
-        public enum BatchProcessingLevel: Int {
-            case low = 1
-            case medium = 10
-            case high = 100
+        /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
+        public enum BatchProcessingLevel {
+            case low
+            case medium
+            case high
+
+            var maxBatchesPerUpload: Int {
+                switch self {
+                case .low:
+                    return 1
+                case .medium:
+                    return 10
+                case .high:
+                    return 100
+                }
+            }
         }
 
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
@@ -111,7 +123,9 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
+        /// Batch provessing level, defining the maximum number of batches processed sequencially without a delay within one reading/uploading cycle.
         ///
+        /// `.medium` by default.
         public var batchProcessingLevel: BatchProcessingLevel
 
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
@@ -119,7 +133,7 @@ public struct Datadog {
         ///
         /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
         ///
-        /// By default it's set to `false`.
+        /// `false` by default.
         public var backgroundTasksEnabled: Bool
 
         /// Creates a Datadog SDK Configuration object.
@@ -422,7 +436,7 @@ public struct Datadog {
                 serverDateProvider: configuration.serverDateProvider
             ),
             applicationVersion: applicationVersion,
-            maxBatchesPerUpload: configuration.batchProcessingLevel.rawValue,
+            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 

@@ -22,7 +22,7 @@ class FileReaderTests: XCTestCase {
         super.tearDown()
     }
 
-    func testItReadsSingleBatch() throws {
+    func testItReadsBatches() throws {
         let reader = FileReader(
             orchestrator: FilesOrchestrator(
                 directory: directory,
@@ -33,6 +33,7 @@ class FileReaderTests: XCTestCase {
             encryption: nil,
             telemetry: NOPTelemetry()
         )
+        let dataProvider = RelativeDateProvider()
         let dataBlocks = [
             DataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
             DataBlock(type: .event, data: "ABCD".utf8Data)
@@ -41,7 +42,7 @@ class FileReaderTests: XCTestCase {
             .map { try $0.serialize() }
             .reduce(.init(), +)
         _ = try directory
-            .createFile(named: Date.mockAny().toFileName)
+            .createFile(named: dataProvider.now.toFileName)
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
@@ -51,10 +52,17 @@ class FileReaderTests: XCTestCase {
             Event(data: "ABCD".utf8Data, metadata: "EFGH".utf8Data)
         ]
         XCTAssertEqual(batch?.events, expected)
+
+        dataProvider.advance(bySeconds: .mockRandom())
+        _ = try directory
+            .createFile(named: dataProvider.now.toFileName)
+            .append(data: data)
+
+        XCTAssertEqual(try directory.files().count, 2)
+        XCTAssertEqual(reader.readNextBatches(2).count, 2)
     }
 
-    func testItReadsSingleEncryptedBatch() throws {
-        // Given
+    func testItReadsEncryptedBatches() throws {
         let dataBlocks = [
             DataBlock(type: .eventMetadata, data: "foo".utf8Data),
             DataBlock(type: .event, data: "foo".utf8Data),
@@ -66,8 +74,10 @@ class FileReaderTests: XCTestCase {
             .map { Data(try $0.serialize()) }
             .reduce(.init(), +)
 
+        let dataProvider = RelativeDateProvider()
+
         _ = try directory
-            .createFile(named: Date.mockAny().toFileName)
+            .createFile(named: dataProvider.now.toFileName)
             .append(data: data)
 
         let reader = FileReader(
@@ -83,16 +93,21 @@ class FileReaderTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        // When
         let batch = reader.readNextBatches(1).first
 
-        // Then
         let expected = [
             Event(data: "bar".utf8Data, metadata: "bar".utf8Data),
             Event(data: "bar".utf8Data, metadata: nil),
             Event(data: "bar".utf8Data, metadata: "bar".utf8Data)
         ]
         XCTAssertEqual(batch?.events, expected)
+
+        dataProvider.advance(bySeconds: .mockRandom())
+        _ = try directory
+            .createFile(named: dataProvider.now.toFileName)
+            .append(data: data)
+
+        XCTAssertEqual(reader.readNextBatches(2).count, 2)
     }
 
     func testItMarksBatchesAsRead() throws {
@@ -124,18 +139,15 @@ class FileReaderTests: XCTestCase {
             Event(data: "3".utf8Data, metadata: "4".utf8Data)
         ]
 
-        var batch: Batch
+        let batch: Batch
         batch = try reader.readNextBatches(1).first.unwrapOrThrow()
         XCTAssertEqual(batch.events.first, expected[0])
         reader.markBatchAsRead(batch)
 
-        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
-        XCTAssertEqual(batch.events.first, expected[1])
-        reader.markBatchAsRead(batch)
-
-        batch = try reader.readNextBatches(1).first.unwrapOrThrow()
-        XCTAssertEqual(batch.events.first, expected[2])
-        reader.markBatchAsRead(batch)
+        let batches = reader.readNextBatches(2)
+        XCTAssertEqual(batches[0].events.first, expected[1])
+        XCTAssertEqual(batches[1].events.first, expected[2])
+        batches.forEach { reader.markBatchAsRead($0) }
 
         XCTAssertTrue(reader.readNextBatches(1).isEmpty)
         XCTAssertEqual(try directory.files().count, 0)

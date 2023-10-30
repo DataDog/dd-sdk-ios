@@ -159,17 +159,19 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
-                    .prefix(limit ?? filesFromOldest.count)
+                    .prefix(min(limit ?? filesFromOldest.count, filesFromOldest.count))
                     .map { $0.file }
             }
             #endif
 
-            return filesFromOldest
+            let sorted = filesFromOldest
                 .filter {
                     let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
-                    return excludedFileNames.contains($0.file.name) == false || fileAge >= performance.minFileAgeForRead
+                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
                 }
                 .sorted(by: { $0.creationDate < $1.creationDate })
+            return sorted
+                .prefix(upTo: min(limit ?? .max, sorted.count))
                 .map { $0.file }
         } catch {
             telemetry.error("Failed to obtain readable file", error: error)

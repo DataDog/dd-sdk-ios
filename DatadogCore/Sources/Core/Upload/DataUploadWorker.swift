@@ -120,7 +120,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             allUploadsSucceeded
                 ? self.delay.decrease()
                 : self.delay.increase()
-            
+
             self.scheduleNextUpload(after: self.delay.current)
         }
 
@@ -140,19 +140,19 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Sends all unsent data synchronously.
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
-        queue.sync {
-            self.fileReader.readNextBatches(nil).forEach { nextBatch in
+        queue.sync { [fileReader, dataUploader, contextProvider] in
+            fileReader.readNextBatches(nil).forEach { nextBatch in
                 defer {
                     // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
                     // purposes and never run in production apps.
-                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                    fileReader.markBatchAsRead(nextBatch, reason: .flushed)
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.
-                    _ = try self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
                 } catch {
-                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try? dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
                 }
             }
         }

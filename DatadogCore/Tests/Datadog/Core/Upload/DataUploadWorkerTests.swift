@@ -80,6 +80,43 @@ class DataUploadWorkerTests: XCTestCase {
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
     }
 
+    func testItUploadsAllDataSequentiallyWithMaxBatchesPerUploadWithoutDelay() {
+        let uploadExpectation = self.expectation(description: "Make 2 uploads")
+        uploadExpectation.expectedFulfillmentCount = 2
+
+        let dataUploader = DataUploaderMock(
+            uploadStatus: DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 200), ddRequestID: nil),
+            onUpload: uploadExpectation.fulfill
+        )
+
+        // Given
+        writer.write(value: ["k1": "v1"])
+        writer.write(value: ["k2": "v2"])
+        writer.write(value: ["k3": "v3"])
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 2
+        )
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(dataUploader.uploadedEvents.count, 2)
+        XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
+
+        worker.cancelSynchronously()
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
+    }
+
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
         let startUploadExpectation = self.expectation(description: "Upload has started")
 

@@ -35,15 +35,14 @@ internal final class FileReader: Reader {
         guard !files.isEmpty else {
             return []
         }
-
-        do {
-            return try files.map { file in
+        return files.compactMap { file in
+            do {
                 let dataBlocks = try decode(stream: file.stream())
                 return Batch(dataBlocks: dataBlocks, file: file)
+            } catch {
+                telemetry.error("Failed to read data from file", error: error)
+                return nil
             }
-        } catch {
-            telemetry.error("Failed to read data from file", error: error)
-            return []
         }
     }
 
