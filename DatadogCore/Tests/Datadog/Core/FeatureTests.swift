@@ -61,17 +61,12 @@ class FeatureStorageTests: XCTestCase {
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
 
-        var batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
-        XCTAssertEqual(batch.events.count, 1)
-        storage.reader.markBatchAsRead(batch)
-
-        batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
-        XCTAssertEqual(batch.events.count, 1)
-        storage.reader.markBatchAsRead(batch)
-
-        batch = try XCTUnwrap(storage.reader.readNextBatches(1).first)
-        XCTAssertEqual(batch.events.count, 1)
-        storage.reader.markBatchAsRead(batch)
+        let batches = storage.reader.readNextBatches(3)
+        XCTAssertEqual(batches.count, 3)
+        batches.forEach { batch in
+            XCTAssertEqual(batch.events.count, 1)
+            storage.reader.markBatchAsRead(batch)
+        }
 
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
     }
