@@ -221,7 +221,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: viewController,
+                identity: viewController.asRUMViewIdentity(),
                 name: name,
                 path: nil,
                 attributes: attributes
