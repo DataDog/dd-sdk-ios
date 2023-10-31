@@ -66,11 +66,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let batches = isSystemReady ? self.fileReader.readNextBatches(maxBatchesPerUpload) : nil
+            let files = isSystemReady ? self.fileReader.readFiles(maxBatchesPerUpload) : nil
             var allUploadsSucceeded = false
-            if let batches = batches, batches.isEmpty == false {
-                for batch in batches {
+            if let files = files, files.isEmpty == false {
+                for file in files {
                     self.backgroundTaskCoordinator?.beginBackgroundTask()
+                    guard let batch = self.fileReader.readBatch(from: file) else {
+                        continue
+                    }
                     DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
                     do {
                         // Upload batch
@@ -111,7 +114,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
                     }
                 }
             } else {
-                let batchLabel = batches?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
+                let batchLabel = files?.isEmpty == false ? "YES" : (isSystemReady ? "NO" : "NOT CHECKED")
                 DD.logger.debug("💡 (\(self.featureName)) No upload. Batch to upload: \(batchLabel), System conditions: \(blockersForUpload.description)")
 
                 self.backgroundTaskCoordinator?.endBackgroundTask()
@@ -141,7 +144,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
         queue.sync { [fileReader, dataUploader, contextProvider] in
-            fileReader.readNextBatches(nil).forEach { nextBatch in
+            for file in fileReader.readFiles(nil) {
+                guard let nextBatch = fileReader.readBatch(from: file) else {
+                    continue
+                }
                 defer {
                     // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing

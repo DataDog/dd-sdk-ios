@@ -30,19 +30,17 @@ internal final class FileReader: Reader {
 
     // MARK: - Reading batches
 
-    func readNextBatches(_ limit: Int?) -> [Batch] {
-        let files = orchestrator.getReadableFiles(excludingFilesNamed: filesRead, limit: limit)
-        guard !files.isEmpty else {
-            return []
-        }
-        return files.compactMap { file in
-            do {
-                let dataBlocks = try decode(stream: file.stream())
-                return Batch(dataBlocks: dataBlocks, file: file)
-            } catch {
-                telemetry.error("Failed to read data from file", error: error)
-                return nil
-            }
+    func readFiles(_ limit: Int?) -> [ReadableFile] {
+        return orchestrator.getReadableFiles(excludingFilesNamed: filesRead, limit: limit)
+    }
+
+    func readBatch(from file: ReadableFile) -> Batch? {
+        do {
+            let dataBlocks = try decode(stream: file.stream())
+            return Batch(dataBlocks: dataBlocks, file: file)
+        } catch {
+            telemetry.error("Failed to read data from file", error: error)
+            return nil
         }
     }
 

@@ -17,9 +17,15 @@ internal final class DataReader: Reader {
         self.fileReader = fileReader
     }
 
-    func readNextBatches(_ limit: Int?) -> [Batch] {
+    func readFiles(_ limit: Int?) -> [ReadableFile] {
         queue.sync {
-            self.fileReader.readNextBatches(limit)
+            self.fileReader.readFiles(limit)
+        }
+    }
+
+    func readBatch(from file: ReadableFile) -> Batch? {
+        queue.sync {
+            self.fileReader.readBatch(from: file)
         }
     }
 

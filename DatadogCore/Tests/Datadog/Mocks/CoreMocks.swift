@@ -259,7 +259,8 @@ extension FilesOrchestratorType {
 }
 
 class NOPReader: Reader {
-    func readNextBatches(_ limit: Int?) -> [Batch] { [] }
+    func readFiles(_ limit: Int?) -> [ReadableFile] { [] }
+    func readBatch(from file: ReadableFile) -> Batch? { nil }
     func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
