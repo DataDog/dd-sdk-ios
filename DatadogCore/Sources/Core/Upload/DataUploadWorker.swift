@@ -84,6 +84,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
                         if uploadStatus.needsRetry {
                             DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
+                            allUploadsSucceeded = false
                         } else {
                             DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                             allUploadsSucceeded = true
@@ -94,7 +95,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         }
 
                         if let error = uploadStatus.error {
-                            allUploadsSucceeded = false
                             switch error {
                             case .unauthorized:
                                 DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
