@@ -22,13 +22,13 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = vc2.asRUMViewIdentity()
 
         // Then
-        XCTAssertTrue(identity1.equals(vc1))
-        XCTAssertTrue(identity2.equals(vc2))
+        XCTAssertTrue(identity1.equals(vc1.asRUMViewIdentity()))
+        XCTAssertTrue(identity2.equals(vc2.asRUMViewIdentity()))
         XCTAssertTrue(identity1.equals(identity1))
-        XCTAssertFalse(identity1.equals(vc2))
-        XCTAssertFalse(identity2.equals(vc1))
+        XCTAssertFalse(identity1.equals(vc2.asRUMViewIdentity()))
+        XCTAssertFalse(identity2.equals(vc1.asRUMViewIdentity()))
         XCTAssertFalse(identity1.equals(identity2))
-        XCTAssertFalse(identity1.equals(vc3))
+        XCTAssertFalse(identity1.equals(vc3?.asRUMViewIdentity()))
     }
 
     func testGivenTwoStringKeys_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
@@ -42,13 +42,13 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = key2.asRUMViewIdentity()
 
         // Then
-        XCTAssertTrue(identity1.equals(key1))
-        XCTAssertTrue(identity2.equals(key2))
+        XCTAssertTrue(identity1.equals(key1.asRUMViewIdentity()))
+        XCTAssertTrue(identity2.equals(key2.asRUMViewIdentity()))
         XCTAssertTrue(identity1.equals(identity1))
-        XCTAssertFalse(identity1.equals(key2))
-        XCTAssertFalse(identity2.equals(key1))
+        XCTAssertFalse(identity1.equals(key2.asRUMViewIdentity()))
+        XCTAssertFalse(identity2.equals(key1.asRUMViewIdentity()))
         XCTAssertFalse(identity1.equals(identity2))
-        XCTAssertFalse(identity1.equals(key3))
+        XCTAssertFalse(identity1.equals(key3?.asRUMViewIdentity()))
     }
 
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {
@@ -61,8 +61,8 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = key.asRUMViewIdentity()
 
         // Then
-        XCTAssertFalse(identity1.equals(key))
-        XCTAssertFalse(identity2.equals(vc))
+        XCTAssertFalse(identity1.equals(key.asRUMViewIdentity()))
+        XCTAssertFalse(identity2.equals(vc.asRUMViewIdentity()))
     }
 
     // MARK: - Retrieving properties
