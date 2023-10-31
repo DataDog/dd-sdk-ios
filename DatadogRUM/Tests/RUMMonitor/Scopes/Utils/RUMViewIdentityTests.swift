@@ -82,8 +82,8 @@ class RUMViewIdentityTests: XCTestCase {
         let identity1 = vc.asRUMViewIdentity()
         let identity2 = key.asRUMViewIdentity()
 
-        XCTAssertTrue(identity1.identifiable as? UIViewController === vc)
-        XCTAssertEqual(identity2.identifiable as? String, key)
+        XCTAssertTrue(identity1.isIdentifiable)
+        XCTAssertTrue(identity2.isIdentifiable)
     }
 
     // MARK: - Memory management
@@ -94,10 +94,10 @@ class RUMViewIdentityTests: XCTestCase {
         try autoreleasepool {
             var vc: UIViewController? = UIViewController()
             identity = try XCTUnwrap(vc?.asRUMViewIdentity())
-            XCTAssertNotNil(identity.identifiable, "Reference should be available while `vc` is alive.")
+            XCTAssertTrue(identity.isIdentifiable, "Reference should be available while `vc` is alive.")
             vc = nil
         }
 
-        XCTAssertNil(identity.identifiable, "Reference should not be available after `vc` was deallocated.")
+        XCTAssertFalse(identity.isIdentifiable, "Reference should not be available after `vc` was deallocated.")
     }
 }

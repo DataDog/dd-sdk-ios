@@ -75,7 +75,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let view = createMockViewInWindow()
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: view),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: view.asRUMViewIdentity()),
             context: context,
             writer: writer
         )
@@ -116,12 +116,12 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
             context: context,
             writer: writer
         )
         _ = scope.process(
-            command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView),
+            command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
             context: context,
             writer: writer
         )
@@ -139,12 +139,12 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
             context: context,
             writer: writer
         )
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
             context: context,
             writer: writer
         )
@@ -163,12 +163,12 @@ class RUMApplicationScopeTests: XCTestCase {
         let simulatedSessionsCount = 400
         (0..<simulatedSessionsCount).forEach { _ in
             _ = scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockView),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
             _ = scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockView),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )

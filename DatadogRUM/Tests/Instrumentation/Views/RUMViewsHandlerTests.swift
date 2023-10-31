@@ -109,7 +109,9 @@ class RUMViewsHandlerTests: XCTestCase {
     func testGivenAcceptingPredicate_whenViewDidDisappear_itStartsPreviousRUMView() throws {
         // Given
         let view1 = createMockViewInWindow()
+        let view1Identity = view1.asRUMViewIdentity()
         let view2 = createMockViewInWindow()
+        let view2Identity = view2.asRUMViewIdentity()
 
         // When
         predicate.result = .init(name: .mockRandom())
@@ -126,11 +128,11 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
         let startCommand3 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity.equals(view1))
-        XCTAssertTrue(stopCommand1.identity.equals(view1))
-        XCTAssertTrue(startCommand2.identity.equals(view2))
-        XCTAssertTrue(stopCommand2.identity.equals(view2))
-        XCTAssertTrue(startCommand3.identity.equals(view1))
+        XCTAssertTrue(startCommand1.identity.equals(view1Identity))
+        XCTAssertTrue(stopCommand1.identity.equals(view1Identity))
+        XCTAssertTrue(startCommand2.identity.equals(view2Identity))
+        XCTAssertTrue(stopCommand2.identity.equals(view2Identity))
+        XCTAssertTrue(startCommand3.identity.equals(view1Identity))
     }
 
     func testGivenAcceptingPredicate_whenViewDidDisappearButPreviousView_itDoesNotStartAnyRUMView() {
