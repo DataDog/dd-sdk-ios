@@ -66,7 +66,7 @@ extension String: RUMViewIdentifiable {
 // MARK: - `RUMViewIdentity`
 
 /// Manages the `RUMViewIdentifiable` by using either reference or value semantic.
-internal struct RUMViewIdentity {
+internal struct RUMViewIdentity: RUMViewIdentifiable {
     private weak var object: AnyObject?
     private let value: Any?
 
@@ -103,5 +103,21 @@ internal struct RUMViewIdentity {
     /// Returns the managed identifiable.
     var identifiable: RUMViewIdentifiable? {
         return (object as? RUMViewIdentifiable) ?? (value as? RUMViewIdentifiable)
+    }
+
+    // MARK: - RUMViewIdentifiable
+
+    func asRUMViewIdentity() -> RUMViewIdentity {
+        self
+    }
+
+    var defaultViewPath: String {
+        if let selfObject = object as? RUMViewIdentifiable {
+            return selfObject.defaultViewPath
+        } else if let selfValue = value as? RUMViewIdentifiable {
+            return selfValue.defaultViewPath
+        } else {
+            return ""
+        }
     }
 }
