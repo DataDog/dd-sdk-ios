@@ -83,7 +83,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             didStartWithReplay: hasReplay
         )
 
-        if let viewScope = resumingViewScope {
+        if let viewScope = resumingViewScope, viewScope.identity.isIdentifiable {
             viewScopes.append(
                 RUMViewScope(
                     isInitialView: false,

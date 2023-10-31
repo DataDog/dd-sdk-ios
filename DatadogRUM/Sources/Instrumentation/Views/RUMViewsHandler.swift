@@ -151,6 +151,10 @@ internal final class RUMViewsHandler {
             return
         }
 
+        guard view.identity.isIdentifiable else {
+            return
+        }
+
         subscriber.process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -163,6 +167,10 @@ internal final class RUMViewsHandler {
     }
 
     private func stop(view: View) {
+        guard view.identity.isIdentifiable else {
+            return
+        }
+
         guard !view.isUntrackedModal else {
             return
         }

@@ -14,8 +14,7 @@ class RUMMonitorE2ETests: E2ETests {
     let actionTypePool = [RUMActionType.swipe, .scroll, .tap, .custom]
     let nonCustomActionTypePool = [RUMActionType.swipe, .scroll, .tap]
 
-    /// - api-surface: RUMMonitorProtocol.startView(key: String,
-ame: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
+    /// - api-surface: RUMMonitorProtocol.startView(key: String,name: String? = nil,attributes: [AttributeKey: AttributeValue] = [:])
     ///
     /// - data monitor:
     /// ```rum
