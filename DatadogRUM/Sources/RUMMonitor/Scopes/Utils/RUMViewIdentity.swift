@@ -10,7 +10,7 @@ import UIKit
 /// Based on the `equals(_:)` implementation, it decides if two `RUMViewIdentifiables` identify the same
 /// RUM View or not. Each implementation of the `RUMViewIdentifiable` decides by its own if it should use
 /// reference or value semantic for the comparison.
-internal protocol RUMViewIdentifiable {
+protocol RUMViewIdentifiable {
     /// Compares the instance of this identifiable with another `RUMViewIdentifiable`.
     /// It returns `true` if both identify the same RUM View and `false` otherwise.
     func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool
@@ -66,7 +66,7 @@ extension String: RUMViewIdentifiable {
 // MARK: - `RUMViewIdentity`
 
 /// Manages the `RUMViewIdentifiable` by using either reference or value semantic.
-internal struct RUMViewIdentity: RUMViewIdentifiable {
+internal struct RUMViewIdentity {
     private weak var object: AnyObject?
     private let value: Any?
 
@@ -86,13 +86,7 @@ internal struct RUMViewIdentity: RUMViewIdentifiable {
 
     /// Returns `true` if a given identifiable indicates the same RUM View as the identifiable managed internally.
     func equals(_ identifiable: RUMViewIdentifiable?) -> Bool {
-        if let selfObject = object as? RUMViewIdentifiable {
-            return selfObject.equals(identifiable)
-        } else if let selfValue = value as? RUMViewIdentifiable {
-            return selfValue.equals(identifiable)
-        } else {
-            return false
-        }
+        return self.identifiable?.equals(identifiable) ?? false
     }
 
     /// Returns `true` if a given identity indicates the same RUM View as the identifiable managed internally.
@@ -100,24 +94,18 @@ internal struct RUMViewIdentity: RUMViewIdentifiable {
         return equals(identity?.identifiable)
     }
 
-    /// Returns the managed identifiable.
-    var identifiable: RUMViewIdentifiable? {
-        return (object as? RUMViewIdentifiable) ?? (value as? RUMViewIdentifiable)
-    }
-
-    // MARK: - RUMViewIdentifiable
-
-    func asRUMViewIdentity() -> RUMViewIdentity {
-        self
-    }
-
+    /// Return default path name for the managed identifiable.
     var defaultViewPath: String {
-        if let selfObject = object as? RUMViewIdentifiable {
-            return selfObject.defaultViewPath
-        } else if let selfValue = value as? RUMViewIdentifiable {
-            return selfValue.defaultViewPath
-        } else {
-            return ""
-        }
+        return identifiable?.defaultViewPath ?? ""
+    }
+
+    /// Returns `true` if the managed identifiable is still available.
+    var isIdentifiable: Bool {
+        return identifiable != nil
+    }
+
+    /// Returns the managed identifiable.
+    private var identifiable: RUMViewIdentifiable? {
+        return (object as? RUMViewIdentifiable) ?? (value as? RUMViewIdentifiable)
     }
 }

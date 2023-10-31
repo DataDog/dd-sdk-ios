@@ -96,7 +96,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         isInitialView: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        identity: RUMViewIdentifiable,
+        identity: RUMViewIdentity,
         path: String,
         name: String,
         attributes: [AttributeKey: AttributeValue],
@@ -107,7 +107,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
-        self.identity = identity.asRUMViewIdentity()
+        self.identity = identity
         self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()

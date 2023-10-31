@@ -168,7 +168,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: String.mockRandom(),
+            identity: String.mockRandom().asRUMViewIdentity(),
             name: .mockRandom(),
             path: .mockRandom()
         )
@@ -177,7 +177,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: RUMViewIdentifiable = mockView,
+        identity: RUMViewIdentity = mockViewIdentity,
         name: String = .mockAny(),
         path: String? = nil
     ) -> RUMStartViewCommand {
@@ -198,14 +198,14 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: String.mockRandom()
+            identity: String.mockRandom().asRUMViewIdentity()
         )
     }
 
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: RUMViewIdentifiable = mockView
+        identity: RUMViewIdentity = mockViewIdentity
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
             time: time, attributes: attributes, identity: identity
@@ -786,6 +786,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
 
 ///// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
+let mockViewIdentity = mockView.asRUMViewIdentity()
 
 extension RUMViewScope {
     static func mockAny() -> RUMViewScope {
@@ -802,7 +803,7 @@ extension RUMViewScope {
         isInitialView: Bool = false,
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        identity: RUMViewIdentifiable = mockView,
+        identity: RUMViewIdentity = mockViewIdentity,
         path: String = .mockAny(),
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],

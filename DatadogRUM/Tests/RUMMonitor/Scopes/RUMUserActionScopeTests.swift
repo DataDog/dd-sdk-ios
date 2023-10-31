@@ -55,13 +55,13 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockView,
+            identity: mockViewIdentity,
             attributes: [:],
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockView),
+                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -76,7 +76,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -100,13 +100,13 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockView,
+            identity: mockViewIdentity,
             attributes: [:],
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockView),
+                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -146,12 +146,12 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let scope = RUMViewScope.mockWith(
             parent: parent,
-            identity: mockView,
+            identity: mockViewIdentity,
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockView),
+                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
                 context: customContext,
                 writer: writer
             )
@@ -167,7 +167,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: customContext,
                 writer: writer
             )
@@ -656,7 +656,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -690,7 +690,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -721,7 +721,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
@@ -752,7 +752,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockView),
+                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
