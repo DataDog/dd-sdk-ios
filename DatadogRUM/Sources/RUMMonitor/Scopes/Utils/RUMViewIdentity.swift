@@ -100,7 +100,9 @@ internal struct RUMViewIdentity {
     }
 
     /// Returns `true` if the managed identifiable is still available.
-    var isIdentifiable: Bool {
+    /// Underlying `identfiable` is stored as a weak reference, so it may become `nil` at any time.
+    /// For example when the `UIViewController` is deallocated.
+    var exists: Bool {
         return identifiable != nil
     }
 

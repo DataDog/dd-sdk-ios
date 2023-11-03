@@ -22,13 +22,13 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = vc2.asRUMViewIdentity()
 
         // Then
-        XCTAssertTrue(identity1.equals(vc1.asRUMViewIdentity()))
-        XCTAssertTrue(identity2.equals(vc2.asRUMViewIdentity()))
+        XCTAssertTrue(identity1.equals(vc1))
+        XCTAssertTrue(identity2.equals(vc2))
         XCTAssertTrue(identity1.equals(identity1))
-        XCTAssertFalse(identity1.equals(vc2.asRUMViewIdentity()))
-        XCTAssertFalse(identity2.equals(vc1.asRUMViewIdentity()))
+        XCTAssertFalse(identity1.equals(vc2))
+        XCTAssertFalse(identity2.equals(vc1))
         XCTAssertFalse(identity1.equals(identity2))
-        XCTAssertFalse(identity1.equals(vc3?.asRUMViewIdentity()))
+        XCTAssertFalse(identity1.equals(vc3))
     }
 
     func testGivenTwoStringKeys_whenComparingTheirRUMViewIdentity_itEqualsOnlyForTheSameInstance() {
@@ -42,13 +42,13 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = key2.asRUMViewIdentity()
 
         // Then
-        XCTAssertTrue(identity1.equals(key1.asRUMViewIdentity()))
-        XCTAssertTrue(identity2.equals(key2.asRUMViewIdentity()))
+        XCTAssertTrue(identity1.equals(key1))
+        XCTAssertTrue(identity2.equals(key2))
         XCTAssertTrue(identity1.equals(identity1))
-        XCTAssertFalse(identity1.equals(key2.asRUMViewIdentity()))
-        XCTAssertFalse(identity2.equals(key1.asRUMViewIdentity()))
+        XCTAssertFalse(identity1.equals(key2))
+        XCTAssertFalse(identity2.equals(key1))
         XCTAssertFalse(identity1.equals(identity2))
-        XCTAssertFalse(identity1.equals(key3?.asRUMViewIdentity()))
+        XCTAssertFalse(identity1.equals(key3))
     }
 
     func testGivenTwoRUMViewIdentitiesOfDifferentKind_whenComparing_theyDoNotEqual() {
@@ -61,8 +61,8 @@ class RUMViewIdentityTests: XCTestCase {
         let identity2 = key.asRUMViewIdentity()
 
         // Then
-        XCTAssertFalse(identity1.equals(key.asRUMViewIdentity()))
-        XCTAssertFalse(identity2.equals(vc.asRUMViewIdentity()))
+        XCTAssertFalse(identity1.equals(key))
+        XCTAssertFalse(identity2.equals(vc))
     }
 
     // MARK: - Retrieving properties
@@ -82,8 +82,8 @@ class RUMViewIdentityTests: XCTestCase {
         let identity1 = vc.asRUMViewIdentity()
         let identity2 = key.asRUMViewIdentity()
 
-        XCTAssertTrue(identity1.isIdentifiable)
-        XCTAssertTrue(identity2.isIdentifiable)
+        XCTAssertTrue(identity1.exists)
+        XCTAssertTrue(identity2.exists)
     }
 
     // MARK: - Memory management
@@ -94,10 +94,20 @@ class RUMViewIdentityTests: XCTestCase {
         try autoreleasepool {
             var vc: UIViewController? = UIViewController()
             identity = try XCTUnwrap(vc?.asRUMViewIdentity())
-            XCTAssertTrue(identity.isIdentifiable, "Reference should be available while `vc` is alive.")
+            XCTAssertTrue(identity.exists, "Reference should be available while `vc` is alive.")
             vc = nil
         }
 
-        XCTAssertFalse(identity.isIdentifiable, "Reference should not be available after `vc` was deallocated.")
+        XCTAssertFalse(identity.exists, "Reference should not be available after `vc` was deallocated.")
+    }
+}
+
+extension RUMViewIdentity {
+    func equals(_ vc: UIViewController?) -> Bool {
+        return equals(vc?.asRUMViewIdentity())
+    }
+
+    func equals(_ string: String?) -> Bool {
+        return equals(string?.asRUMViewIdentity())
     }
 }

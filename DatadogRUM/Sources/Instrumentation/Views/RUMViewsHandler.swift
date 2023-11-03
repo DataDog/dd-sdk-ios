@@ -151,7 +151,7 @@ internal final class RUMViewsHandler {
             return
         }
 
-        guard view.identity.isIdentifiable else {
+        guard view.identity.exists else {
             return
         }
 
@@ -167,7 +167,7 @@ internal final class RUMViewsHandler {
     }
 
     private func stop(view: View) {
-        guard view.identity.isIdentifiable else {
+        guard view.identity.exists else {
             return
         }
 
