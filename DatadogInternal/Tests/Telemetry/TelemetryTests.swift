@@ -201,6 +201,8 @@ class TelemetryTest: Telemetry {
             actionNameAttribute: configuration.actionNameAttribute,
             allowFallbackToLocalStorage: configuration.allowFallbackToLocalStorage,
             allowUntrustedEvents: configuration.allowUntrustedEvents,
+            backgroundTaskEnabled: configuration.backgroundTaskEnabled,
+            batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,
             batchUploadFrequency: configuration.batchUploadFrequency,
             dartVersion: configuration.dartVersion,
