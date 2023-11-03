@@ -37,33 +37,33 @@ internal struct ViewTreeSnapshot {
 /// is captured on the main thread (the `Recorder` constantly creates `Nodes` for views residing in the hierarchy).
 internal struct Node {
     /// Attributes of the `UIView` that this node was created for.
-    let viewAttributes: ViewAttributes
+    public let viewAttributes: ViewAttributes
     /// A type defining how to build SR wireframes for the UI element described by this node.
-    let wireframesBuilder: NodeWireframesBuilder
+    public let wireframesBuilder: NodeWireframesBuilder
 }
 
 /// Attributes of the `UIView` that the node was created for.
 ///
 /// It is used by the `Recorder` to capture view attributes on the main thread.
 /// It enforces immutability for later (thread safe) access from background queue in `Processor`.
-internal struct ViewAttributes: Equatable {
+@_spi(Internal) public struct SessionReplayViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
-    let frame: CGRect
+    public let frame: CGRect
 
     /// Original view's `.backgorundColor`.
-    let backgroundColor: CGColor?
+    public let backgroundColor: CGColor?
 
     /// Original view's `layer.borderColor`.
-    let layerBorderColor: CGColor?
+    public let layerBorderColor: CGColor?
 
     /// Original view's `layer.borderWidth`.
-    let layerBorderWidth: CGFloat
+    public let layerBorderWidth: CGFloat
 
     /// Original view's `layer.cornerRadius`.
-    let layerCornerRadius: CGFloat
+    public let layerCornerRadius: CGFloat
 
     /// Original view's `.alpha` (between `0.0` and `1.0`).
-    let alpha: CGFloat
+    public let alpha: CGFloat
 
     /// Original view's `.isHidden`.
     let isHidden: Bool
@@ -98,6 +98,8 @@ internal struct ViewAttributes: Equatable {
     /// Example 2: A view with blue semi-transparent background, but alpha `1` is also conisdered "translucent".
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
+
+internal typealias ViewAttributes = SessionReplayViewAttributes
 
 extension ViewAttributes {
     init(frameInRootView: CGRect, view: UIView) {
@@ -153,8 +155,10 @@ extension NodeSemantics {
     var importance: Int { Self.importance }
 }
 
+internal typealias NodeSubtreeStrategy = SessionReplayNodeSubtreeStrategy
+
 /// Strategies for handling node's subtree by `Recorder`.
-internal enum NodeSubtreeStrategy {
+@_spi(Internal) public enum SessionReplayNodeSubtreeStrategy {
     /// Continue traversing subtree of this node to record nested nodes automatically.
     ///
     /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be

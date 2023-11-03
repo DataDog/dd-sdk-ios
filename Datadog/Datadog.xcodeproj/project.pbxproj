@@ -1446,6 +1446,7 @@
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 		E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
+		E1C4C1062AEBFE4F005E65B1 /* SessionReplay+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C4C1052AEBFE4F005E65B1 /* SessionReplay+Internal.swift */; };
 		E1C853142AA9B9A300C74BCF /* TelemetryMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C853132AA9B9A300C74BCF /* TelemetryMocks.swift */; };
 		E1C853152AA9B9A300C74BCF /* TelemetryMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1C853132AA9B9A300C74BCF /* TelemetryMocks.swift */; };
 		E1D5AEA724B4D45B007F194B /* Versioning.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1D5AEA624B4D45A007F194B /* Versioning.swift */; };
@@ -2681,6 +2682,7 @@
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
 		E179FB4D28F80A6400CC2698 /* PerformanceMetric.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceMetric.swift; sourceTree = "<group>"; };
 		E1B082CB25641DF9002DB9D2 /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
+		E1C4C1052AEBFE4F005E65B1 /* SessionReplay+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SessionReplay+Internal.swift"; sourceTree = "<group>"; };
 		E1C853132AA9B9A300C74BCF /* TelemetryMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryMocks.swift; sourceTree = "<group>"; };
 		E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPool.swift; sourceTree = "<group>"; };
 		E1D203FB24C1884500D1AF3A /* ActiveSpansPoolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActiveSpansPoolTests.swift; sourceTree = "<group>"; };
@@ -3101,6 +3103,7 @@
 				61054E482A6EE10A00AAA894 /* Processor */,
 				61054E0D2A6EE10A00AAA894 /* Recorder */,
 				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
+				E1C4C1052AEBFE4F005E65B1 /* SessionReplay+Internal.swift */,
 				61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */,
 				61054E542A6EE10A00AAA894 /* Utilities */,
 				61054E032A6EE10A00AAA894 /* Writer */,
@@ -7609,6 +7612,7 @@
 				61054E692A6EE10A00AAA894 /* ImageDataProvider.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
+				E1C4C1062AEBFE4F005E65B1 /* SessionReplay+Internal.swift in Sources */,
 				61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */,
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,

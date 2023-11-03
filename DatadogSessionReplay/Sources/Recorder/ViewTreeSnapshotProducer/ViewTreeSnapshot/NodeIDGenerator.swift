@@ -18,7 +18,7 @@ internal typealias NodeID = Int64
 /// IDs for the same instance of `UIView` will always give the same values.
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
-internal final class NodeIDGenerator {
+@_spi(Internal) public final class NodeIDGenerator {
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
     private let maxID: NodeID
