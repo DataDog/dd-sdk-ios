@@ -9,7 +9,8 @@ import UIKit
 
 extension SRTextPosition.Alignment {
     /// Custom initializer that allows transforming UIKit's `NSTextAlignment` into `SRTextPosition.Alignment`.
-    init(
+    @_spi(Internal)
+    public init(
         systemTextAlignment: NSTextAlignment,
         vertical: SRTextPosition.Alignment.Vertical = .center
     ) {
