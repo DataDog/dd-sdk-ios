@@ -309,7 +309,8 @@ class DDTracerTests: XCTestCase {
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01",
+            "tracestate": "dd=s:1;o:rum"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -325,7 +326,8 @@ class DDTracerTests: XCTestCase {
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
+            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00",
+            "tracestate": "dd=s:0;o:rum"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
