@@ -70,12 +70,20 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
         typealias Constants = W3CHTTPHeaders.Constants
 
+        let sampled = sampler.sample()
+
         traceHeaderFields[W3CHTTPHeaders.traceparent] = [
             Constants.version,
             String(traceID, representation: .hexadecimal32Chars),
             String(spanID, representation: .hexadecimal16Chars),
-            sampler.sample() ? Constants.sampledValue : Constants.unsampledValue
+            sampled ? Constants.sampledValue : Constants.unsampledValue
         ]
         .joined(separator: Constants.separator)
+
+        let ddtracestate = [
+            "\(Constants.sampling):\(sampled ? 1 : 0)",
+            "\(Constants.origin):\(Constants.originRUM)"
+        ].joined(separator: Constants.tracestateSeparator)
+        traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
     }
 }

@@ -40,10 +40,22 @@ public enum W3CHTTPHeaders {
     /// can troubleshoot the behavior of every recorded request.
     public static let traceparent = "traceparent"
 
+    /// The main purpose of the tracestate HTTP header is to provide additional vendor-specific trace identification
+    /// information across different distributed tracing systems and is a companion header for the traceparent field. It
+    /// also conveys information about the request’s position in multiple distributed tracing graphs.
+    public static let tracestate = "tracestate"
+
     public enum Constants {
         public static let version = "00"
         public static let sampledValue = "01"
         public static let unsampledValue = "00"
         public static let separator = "-"
+
+        // MARK: - Datadog specific tracestate keys
+        public static let dd = "dd"
+        public static let sampling = "s"
+        public static let origin = "o"
+        public static let originRUM = "rum"
+        public static let tracestateSeparator = ";"
     }
 }

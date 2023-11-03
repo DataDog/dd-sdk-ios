@@ -2,6 +2,7 @@
 - [BUGFIX] Optimize Session Replay diffing algorithm. See [#1524][]
 - [FEATURE] Add network instrumentation for async/await URLSession APIs. See [#1394][]
 - [FEATURE] Change default tracing headers for first party hosts to use both Datadog headers and W3C `tracecontext` headers. See [#1529][]
+- [FEATURE] Add tracestate headers when using W3C tracecontext. See [#1536][]
 
 # 2.4.0 / 18-10-2023
 
@@ -550,6 +551,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1394]: https://github.com/DataDog/dd-sdk-ios/pull/1394
 [#1524]: https://github.com/DataDog/dd-sdk-ios/pull/1524
 [#1529]: https://github.com/DataDog/dd-sdk-ios/pull/1529
+[#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

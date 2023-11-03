@@ -221,6 +221,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "X-B3-TraceId": "00000000000000000000000000000001",
                 "b3": "00000000000000000000000000000001-0000000000000001-1",
                 "x-datadog-trace-id": "1",
+                "tracestate": "dd=s:1;o:rum",
                 "x-datadog-parent-id": "1",
                 "x-datadog-sampling-priority": "1"
             ]
