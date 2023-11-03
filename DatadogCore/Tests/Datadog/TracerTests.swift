@@ -879,6 +879,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
+            "tracestate": "dd=s:1;o:rum",
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
@@ -888,6 +889,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders2 = [
+            "tracestate": "dd=s:1;o:rum",
             "traceparent": "00-00000000000000000000000000000004-0000000000000005-01"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
@@ -897,6 +899,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders3 = [
+            "tracestate": "dd=s:1;o:rum",
             "traceparent": "00-0000000000000000000000000000004d-0000000000000058-01"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
@@ -915,6 +918,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders = [
+            "tracestate": "dd=s:0;o:rum",
             "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
