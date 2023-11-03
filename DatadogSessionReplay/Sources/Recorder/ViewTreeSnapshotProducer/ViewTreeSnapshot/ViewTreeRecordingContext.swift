@@ -12,18 +12,20 @@ import SwiftUI
 /// The context of recording subtree hierarchy.
 ///
 /// Some fields are mutable, so `NodeRecorders` can specialise it for their subtree traversal.
-internal struct ViewTreeRecordingContext {
+@_spi(Internal) public struct SessionReplayViewTreeRecordingContext {
     /// The context of the Recorder.
     let recorder: Recorder.Context
     /// The coordinate space to convert node positions to.
     let coordinateSpace: UICoordinateSpace
     /// Generates stable IDs for traversed views.
-    let ids: NodeIDGenerator
+    public let ids: NodeIDGenerator
     /// Provides base64 image data with a built in caching mechanism.
     let imageDataProvider: ImageDataProviding
     /// Variable view controller related context
     var viewControllerContext: ViewControllerContext = .init()
 }
+
+internal typealias ViewTreeRecordingContext = SessionReplayViewTreeRecordingContext
 
 internal extension ViewTreeRecordingContext {
     /// The `ViewControllerContext` struct is used for storing context-related information about the parent view controller and its type.
