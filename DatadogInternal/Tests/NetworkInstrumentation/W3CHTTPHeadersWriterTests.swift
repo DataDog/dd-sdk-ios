@@ -17,7 +17,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
         let headers = w3cHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-000000000000000000000000000004d2-0000000000000929-01")
-        XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=s:1;o:rum")
+        XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=s:1;o:rum;p:0000000000000929")
     }
 
     func testW3CHTTPHeadersWriterwritesSingleHeaderWithSampling() {
@@ -29,6 +29,6 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
         let headers = w3cHTTPHeadersWriter.traceHeaderFields
         XCTAssertEqual(headers[W3CHTTPHeaders.traceparent], "00-000000000000000000000000000004d2-0000000000000929-00")
-        XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=s:0;o:rum")
+        XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=s:0;o:rum;p:0000000000000929")
     }
 }

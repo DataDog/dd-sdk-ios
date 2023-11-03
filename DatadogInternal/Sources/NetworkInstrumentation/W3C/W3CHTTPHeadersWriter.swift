@@ -82,7 +82,8 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
 
         let ddtracestate = [
             "\(Constants.sampling):\(sampled ? 1 : 0)",
-            "\(Constants.origin):\(Constants.originRUM)"
+            "\(Constants.origin):\(Constants.originRUM)",
+            "\(Constants.parentId):\(String(spanID, representation: .hexadecimal16Chars))"
         ].joined(separator: Constants.tracestateSeparator)
         traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
     }
