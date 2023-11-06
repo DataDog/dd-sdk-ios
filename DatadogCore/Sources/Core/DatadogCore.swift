@@ -153,14 +153,14 @@ internal final class DatadogCore {
     /// - Parameter trackingConsent: new consent value, which will be applied for all data collected from now on
     func set(trackingConsent: TrackingConsent) {
         if trackingConsent != consentPublisher.consent {
-            allStorages.forEach { $0.migrateUnauthorizedData(toConsent: trackingConsent) }
+            stores.values.forEach { $0.storage.migrateUnauthorizedData(toConsent: trackingConsent) }
             consentPublisher.consent = trackingConsent
         }
     }
 
     /// Clears all data that has not already yet been uploaded Datadog servers.
     func clearAllData() {
-        allStorages.forEach { $0.clearAllData() }
+        stores.values.forEach { $0.storage.clearAllData() }
     }
 
     /// Adds a message receiver to the bus.
@@ -177,16 +177,6 @@ internal final class DatadogCore {
         }
     }
 
-    /// A list of storage units of currently registered Features.
-    private var allStorages: [FeatureStorage] {
-        stores.values.map { $0.storage }
-    }
-
-    /// A list of upload units of currently registered Features.
-    private var allUploads: [FeatureUpload] {
-        stores.values.map { $0.upload }
-    }
-
     /// Awaits completion of all asynchronous operations, forces uploads (without retrying) and deinitializes
     /// this instance of the SDK. It **blocks the caller thread**.
     ///
@@ -195,15 +185,8 @@ internal final class DatadogCore {
         // temporary semaphore before implementation
         // of the stop mechanism
         let semaphore = DispatchSemaphore(value: 0)
-        harvest.notify { semaphore.signal() }
+        harvestAndUpload.notify { semaphore.signal() }
         semaphore.wait()
-
-        // At this point we can assume that all write operations completed and resulted with writing events to
-        // storage. We now temporarily authorize storage for making all files readable ("uploadable") and perform
-        // arbitrary uploads (without retrying on failure).
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: true) }
-        allUploads.forEach { $0.flushAndTearDown() }
-        allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
         // Deallocate all Features and their storage & upload units:
         stores = [:]
@@ -429,5 +412,20 @@ extension DatadogCore {
             // from "event write context" started on user thread OR if it happens upon receiving an "event" message
             // in other Feature:
             .then(readWriteQueue)
+    }
+
+    /// Returns a ``DispatchContinuation`` instance that will fire a notification after the core finishes
+    /// collecting and uploading all events from registered Features.
+    ///
+    /// The property will force the upload by ignoring the minimum age of files stored on disk.
+    ///
+    /// **This property is meant to be used in tests only.**
+    var harvestAndUpload: DispatchContinuation {
+        DispatchContinuationSequence(first: harvest)
+            // At this point we can assume that all write operations completed and resulted with writing events to
+            // storage. We now perform arbitrary uploads on all files (without retrying on failure).
+            .then { self.stores.values.forEach { $0.storage.setIgnoreFilesAgeWhenReading(to: true) } }
+            .then { self.stores.values.forEach { $0.upload.flushSynchronously() } }
+            .then { self.stores.values.forEach { $0.storage.setIgnoreFilesAgeWhenReading(to: false) } }
     }
 }

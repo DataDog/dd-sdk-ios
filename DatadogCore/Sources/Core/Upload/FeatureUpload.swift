@@ -65,7 +65,7 @@ internal struct FeatureUpload {
     ///
     /// This method is executed synchronously. After return, the upload feature has no more
     /// pending asynchronous operations and all its authorized data should be considered uploaded.
-    internal func flushAndTearDown() {
+    internal func flushSynchronously() {
         uploader.cancelSynchronously()
         uploader.flushSynchronously()
     }
