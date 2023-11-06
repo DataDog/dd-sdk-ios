@@ -47,7 +47,7 @@ extension SessionReplay {
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         
-        internal var _additionalNodeRecorders: [NodeRecorder]? = nil
+        internal var _additionalNodeRecorders: [NodeRecorder] = []
 
         /// Creates Session Replay configuration
         /// - Parameters:
