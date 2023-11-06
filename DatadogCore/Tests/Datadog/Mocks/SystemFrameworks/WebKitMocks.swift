@@ -11,7 +11,7 @@ import DatadogInternal
 #if !os(tvOS)
 import WebKit
 
-final class WKUserContentControllerMock: WKUserContentController, DispatchContinuation {
+final class WKUserContentControllerMock: WKUserContentController {
     private var handlers: [String: WKScriptMessageHandler] = [:]
 
     override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
@@ -23,18 +23,13 @@ final class WKUserContentControllerMock: WKUserContentController, DispatchContin
     }
 
     func send(body: Any) {
-        let handler = handlers[DDScriptMessageHandler.name]
-        let message = WKScriptMessageMock(body: body, name: DDScriptMessageHandler.name)
+        let handler = handlers[WebViewFeature.name]
+        let message = WKScriptMessageMock(body: body, name: WebViewFeature.name)
         handler?.userContentController(self, didReceive: message)
     }
 
     func scriptMessageHandler(forName name: String) -> WKScriptMessageHandler? {
         handlers[name]
-    }
-
-    func notify(_ continuation: @escaping () -> Void) {
-        let handler = handlers[DDScriptMessageHandler.name] as? DDScriptMessageHandler
-        handler?.notify(continuation) ?? continuation()
     }
 }
 

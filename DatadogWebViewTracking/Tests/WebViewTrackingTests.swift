@@ -10,36 +10,8 @@ import XCTest
 import WebKit
 import TestUtilities
 import DatadogInternal
+
 @testable import DatadogWebViewTracking
-
-final class DDUserContentController: WKUserContentController {
-    typealias NameHandlerPair = (name: String, handler: WKScriptMessageHandler)
-    private(set) var messageHandlers = [NameHandlerPair]()
-
-    override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
-        messageHandlers.append((name: name, handler: scriptMessageHandler))
-    }
-
-    override func removeScriptMessageHandler(forName name: String) {
-        messageHandlers = messageHandlers.filter {
-            return $0.name != name
-        }
-    }
-}
-
-final class MockMessageHandler: NSObject, WKScriptMessageHandler {
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { }
-}
-
-final class MockScriptMessage: WKScriptMessage {
-    let mockBody: Any
-
-    init(body: Any) {
-        self.mockBody = body
-    }
-
-    override var body: Any { return mockBody }
-}
 
 class WebViewTrackingTests: XCTestCase {
     func testItAddsUserScriptAndMessageHandler() throws {
@@ -57,7 +29,7 @@ class WebViewTrackingTests: XCTestCase {
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
-        XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
+        XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogWebViewTracking"])
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
         XCTAssertEqual(messageHandler?.emitter.logsSampler.samplingRate, 30)
@@ -89,7 +61,7 @@ class WebViewTrackingTests: XCTestCase {
         }
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
-        XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
+        XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogWebViewTracking"])
 
         XCTAssertGreaterThanOrEqual(mockSanitizer.sanitizations.count, 1)
         let sanitization = try XCTUnwrap(mockSanitizer.sanitizations.first)
@@ -150,7 +122,7 @@ class WebViewTrackingTests: XCTestCase {
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
         // non-string body is passed
         messageHandler?.userContentController(controller, didReceive: MockScriptMessage(body: 123))
-        messageHandler?.queue.sync { }
+        messageHandler?.waitDispatchContinuation()
 
         XCTAssertEqual(dd.logger.errorLog?.message, "Encountered an error when receiving web view event")
         XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
@@ -218,7 +190,7 @@ class WebViewTrackingTests: XCTestCase {
         """)
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
 
-        messageHandler?.queue.sync {}
+        messageHandler?.waitDispatchContinuation()
         let webRUMMessage = MockScriptMessage(body: """
         {
           "eventType": "view",

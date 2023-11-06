@@ -554,6 +554,9 @@
 		D20731CC29A52E6000ECBF94 /* Sampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B8F2768FDDE00870CBF /* Sampler.swift */; };
 		D20731CD29A52E8700ECBF94 /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
 		D20731CE29A52E8700ECBF94 /* SamplerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613C6B912768FF3100870CBF /* SamplerTests.swift */; };
+		D208AC512AF90615002592AB /* WebViewFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = D208AC502AF90615002592AB /* WebViewFeature.swift */; };
+		D208AC542AF917D7002592AB /* WebViewFeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D208AC522AF91744002592AB /* WebViewFeatureTests.swift */; };
+		D208AC562AF9192E002592AB /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D208AC552AF9192E002592AB /* Mocks.swift */; };
 		D20FD9CF2AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */; };
 		D20FD9D02AC6FF42004D3569 /* WebViewLogReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */; };
 		D20FD9D12ACC02F9004D3569 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
@@ -2449,6 +2452,9 @@
 		D207317C29A5226A00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D207318329A5226A00ECBF94 /* DatadogLogsTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D20731B429A5279D00ECBF94 /* DatadogLogs.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogLogs.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D208AC502AF90615002592AB /* WebViewFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewFeature.swift; sourceTree = "<group>"; };
+		D208AC522AF91744002592AB /* WebViewFeatureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewFeatureTests.swift; sourceTree = "<group>"; };
+		D208AC552AF9192E002592AB /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		D20FD9CE2AC6FF42004D3569 /* WebViewLogReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewLogReceiverTests.swift; sourceTree = "<group>"; };
 		D20FD9D22ACC08D1004D3569 /* WebKitMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebKitMocks.swift; sourceTree = "<group>"; };
 		D20FD9D52ACC0934004D3569 /* WebLogIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebLogIntegrationTests.swift; sourceTree = "<group>"; };
@@ -3072,6 +3078,7 @@
 			isa = PBXGroup;
 			children = (
 				3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */,
+				D208AC502AF90615002592AB /* WebViewFeature.swift */,
 				D29732462A5C108700827599 /* DDScriptMessageHandler.swift */,
 				D29732472A5C108700827599 /* MessageEmitter.swift */,
 				D29732482A5C108700827599 /* WebViewMessage.swift */,
@@ -3083,9 +3090,11 @@
 		3CE11A3C29F7BEF300202522 /* DatadogWebViewTrackingTests */ = {
 			isa = PBXGroup;
 			children = (
+				D29732502A5C109A00827599 /* WebViewTrackingTests.swift */,
+				D208AC522AF91744002592AB /* WebViewFeatureTests.swift */,
 				D297324F2A5C109A00827599 /* MessageEmitterTests.swift */,
 				61AE740F2AD6EE4E008DB9BB /* WebViewMessageTests.swift */,
-				D29732502A5C109A00827599 /* WebViewTrackingTests.swift */,
+				D208AC552AF9192E002592AB /* Mocks.swift */,
 			);
 			name = DatadogWebViewTrackingTests;
 			path = ../DatadogWebViewTracking/Tests;
@@ -7351,6 +7360,7 @@
 				3C85D42129F7C5C900AFF894 /* WebViewTracking.swift in Sources */,
 				D297324D2A5C108700827599 /* WebViewMessage.swift in Sources */,
 				D297324B2A5C108700827599 /* MessageEmitter.swift in Sources */,
+				D208AC512AF90615002592AB /* WebViewFeature.swift in Sources */,
 				D29732492A5C108700827599 /* DDScriptMessageHandler.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7359,9 +7369,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D208AC542AF917D7002592AB /* WebViewFeatureTests.swift in Sources */,
 				D29732532A5C109A00827599 /* WebViewTrackingTests.swift in Sources */,
 				D29732512A5C109A00827599 /* MessageEmitterTests.swift in Sources */,
 				61AE74132AD6EF49008DB9BB /* WebViewMessageTests.swift in Sources */,
+				D208AC562AF9192E002592AB /* Mocks.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

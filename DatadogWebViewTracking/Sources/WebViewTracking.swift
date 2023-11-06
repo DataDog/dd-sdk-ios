@@ -55,11 +55,14 @@ public enum WebViewTracking {
     ///
     /// Removes Datadog's ScriptMessageHandler and UserScript from the caller.
     /// - Note: This method **must** be called when the webview can be deinitialized.
-    /// 
-    /// - Parameter webView: The web-view to stop tracking.
-    public static func disable(webView: WKWebView) {
+    /// - Parameters:
+    ///   - webView: The web-view to stop tracking.
+    ///   - core: The core instance the web-view tracking was enable with.
+    public static func disable(webView: WKWebView, in core: DatadogCoreProtocol = CoreRegistry.default) {
         let controller = webView.configuration.userContentController
-        controller.removeScriptMessageHandler(forName: DDScriptMessageHandler.name)
+        controller.removeScriptMessageHandler(forName: WebViewFeature.name)
+        core.unregisterScriptMessageHandler(forIdentifier: .init(controller))
+
         let others = controller.userScripts.filter { !$0.source.starts(with: Self.jsCodePrefix) }
         controller.removeAllUserScripts()
         others.forEach(controller.addUserScript)
@@ -82,7 +85,7 @@ public enum WebViewTracking {
             return
        }
 
-        let bridgeName = DDScriptMessageHandler.name
+        let bridgeName = WebViewFeature.name
 
         let messageHandler = DDScriptMessageHandler(
             emitter: MessageEmitter(
@@ -90,6 +93,15 @@ public enum WebViewTracking {
                 core: core
             )
         )
+
+        do {
+            try core.register(scriptMessageHandler: messageHandler, forIdentifier: .init(controller))
+        } catch {
+            // Report registration failure to telemetry but no need for console print:
+            // registration is only meant for tearing down instrumentation and failure
+            // won't prevent web-view tracking to work.
+            core.telemetry.error("Unable to register `WKUserContentController`", error: error)
+        }
 
         controller.add(messageHandler, name: bridgeName)
 

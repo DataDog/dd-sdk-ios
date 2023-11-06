@@ -11,12 +11,9 @@ import WebKit
 import DatadogInternal
 
 internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
-    static let name = "DatadogEventBridge"
-    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
-
     let emitter: MessageEmitter
 
-    let queue = DispatchQueue(
+    private let queue = DispatchQueue(
         label: "com.datadoghq.JSEventBridge",
         target: .global(qos: .userInteractive)
     )

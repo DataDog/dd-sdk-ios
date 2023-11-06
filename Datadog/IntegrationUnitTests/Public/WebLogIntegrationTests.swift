@@ -9,8 +9,9 @@ import XCTest
 #if !os(tvOS)
 import WebKit
 import DatadogLogs
-@testable import DatadogRUM
 import DatadogWebViewTracking
+
+@testable import DatadogRUM
 
 class WebLogIntegrationTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
@@ -62,7 +63,6 @@ class WebLogIntegrationTests: XCTestCase {
 
         // When
         controller.send(body: body)
-        controller.waitDispatchContinuation()
 
         // Then
         let logMatcher = try XCTUnwrap(core.waitAndReturnLogMatchers().first)
@@ -111,7 +111,6 @@ class WebLogIntegrationTests: XCTestCase {
         // When
         RUMMonitor.shared(in: core).startView(key: "web-view")
         controller.send(body: body)
-        controller.waitDispatchContinuation()
 
         // Then
         let expectedUUID = randomUUID.uuidString.lowercased()
