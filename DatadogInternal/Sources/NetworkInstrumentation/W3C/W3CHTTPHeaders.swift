@@ -56,6 +56,7 @@ public enum W3CHTTPHeaders {
         public static let sampling = "s"
         public static let origin = "o"
         public static let originRUM = "rum"
+        public static let parentId = "p"
         public static let tracestateSeparator = ";"
     }
 }
