@@ -14,9 +14,15 @@ internal class ResourcesFeature: DatadogRemoteFeature {
     var messageReceiver: FeatureMessageReceiver
     var requestBuilder: FeatureRequestBuilder
 
-    init(messageReceiver: FeatureMessageReceiver, requestBuilder: FeatureRequestBuilder) {
-        self.messageReceiver = messageReceiver
-        self.requestBuilder = requestBuilder
+    init(
+        core: DatadogCoreProtocol,
+        configuration: SessionReplay.Configuration
+    ) {
+        self.messageReceiver = RUMContextReceiver()
+        self.requestBuilder = ResourcesRequestBuilder(
+            customUploadURL: configuration.customEndpoint,
+            telemetry: core.telemetry
+        )
     }
 }
 #endif

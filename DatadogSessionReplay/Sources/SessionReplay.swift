@@ -38,8 +38,17 @@ public struct SessionReplay {
             )
         }
 
-        let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
+        let sessionReplay = try SessionReplayFeature(
+            core: core,
+            configuration: configuration
+        )
         try core.register(feature: sessionReplay)
+
+        let resourcesFeature = ResourcesFeature(
+            core: core,
+            configuration: configuration
+        )
+        try core.register(feature: resourcesFeature)
 
         sessionReplay.writer.startWriting(to: core)
     }

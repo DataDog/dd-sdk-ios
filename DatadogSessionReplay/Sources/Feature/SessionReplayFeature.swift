@@ -68,7 +68,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.snapshotProcessor = snapshotProcessor
         self.resourceProcessor = resourceProcessor
         self.writer = writer
-        self.requestBuilder = RequestBuilder(
+        self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )

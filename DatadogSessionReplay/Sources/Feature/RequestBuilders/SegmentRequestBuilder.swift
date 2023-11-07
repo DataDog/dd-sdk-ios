@@ -8,7 +8,7 @@
 import Foundation
 import DatadogInternal
 
-internal struct RequestBuilder: FeatureRequestBuilder {
+internal struct SegmentRequestBuilder: FeatureRequestBuilder {
     private static let newlineByte = "\n".data(using: .utf8)! // swiftlint:disable:this force_unwrapping
 
     /// Custom URL for uploading data to.
@@ -54,7 +54,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
 
         // Session Replay BE accepts compressed segment data followed by newline character (before compression):
         var segmentData = try JSONSerialization.data(withJSONObject: segment.toJSONObject())
-        segmentData.append(RequestBuilder.newlineByte)
+        segmentData.append(SegmentRequestBuilder.newlineByte)
         let compressedSegmentData = try SRCompression.compress(data: segmentData)
 
         // Compressed segment is sent within multipart form data - with some of segment (metadata)
