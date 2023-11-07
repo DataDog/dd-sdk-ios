@@ -23,25 +23,26 @@ internal struct UIDatePickerRecorder: NodeRecorder {
         }
 
         var nodes: [Node] = []
+        var resources: [Resource] = []
 
         if #available(iOS 13.4, *) {
             switch datePicker.datePickerStyle {
             case .wheels:
-                nodes = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
+                (nodes, resources) = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
             case .compact:
-                nodes = compactStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
+                (nodes, resources) = compactStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
             case .inline:
-                nodes = inlineStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
+                (nodes, resources) = inlineStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
             case .automatic:
                 // According to `datePicker.datePickerStyle` documentation:
                 // > "This property always returns a concrete style, never `UIDatePickerStyle.automatic`."
                 break
             @unknown default:
-                nodes = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
+                (nodes, resources) = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
             }
         } else {
             // Observation: older OS versions use the "wheels" style
-            nodes = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
+            (nodes, resources) = wheelsStyleRecorder.recordNodes(of: datePicker, with: attributes, in: context)
         }
 
         let isDisplayedInPopover: Bool = {
@@ -65,7 +66,8 @@ internal struct UIDatePickerRecorder: NodeRecorder {
         )
         return SpecificElement(
             subtreeStrategy: .ignore,
-            nodes: [backgroundNode] + nodes
+            nodes: [backgroundNode] + nodes,
+            resources: resources
         )
     }
 }
@@ -81,7 +83,7 @@ private struct WheelsStyleDatePickerRecorder {
         ]
     )
 
-    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
+    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> ([Node], [Resource]) {
         return pickerTreeRecorder.recordNodes(for: view, in: context)
     }
 }
@@ -108,7 +110,7 @@ private struct InlineStyleDatePickerRecorder {
         )
     }
 
-    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
+    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> ([Node], [Resource]) {
         viewRecorder.semanticsOverride = { _, viewAttributes in
             if context.recorder.privacy.shouldMaskInputElements {
                 let isSquare = viewAttributes.frame.width == viewAttributes.frame.height
@@ -144,7 +146,7 @@ private struct CompactStyleDatePickerRecorder {
         ]
     )
 
-    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> [Node] {
+    func recordNodes(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> ([Node], [Resource]) {
         return subtreeRecorder.recordNodes(for: view, in: context)
     }
 }

@@ -7,6 +7,20 @@
 #if os(iOS)
 import UIKit
 
+protocol Resource {
+    var identifier: String { get }
+    var data: Data { get }
+}
+
+extension UIImage: Resource {
+    var identifier: String {
+        return srIdentifier
+    }
+    var data: Data {
+        return pngData() ?? Data()
+    }
+}
+
 internal struct ViewTreeRecorder {
     /// An array of enabled node recorders.
     ///
@@ -15,15 +29,21 @@ internal struct ViewTreeRecorder {
     let nodeRecorders: [NodeRecorder]
 
     /// Creates `Nodes` for given view and its subtree hierarchy.
-    func recordNodes(for anyView: UIView, in context: ViewTreeRecordingContext) -> [Node] {
+    func recordNodes(for anyView: UIView, in context: ViewTreeRecordingContext) -> ([Node], [Resource]) {
         var nodes: [Node] = []
-        recordRecursively(nodes: &nodes, view: anyView, context: context)
-        return nodes
+        var resources: [Resource] = []
+        recordRecursively(nodes: &nodes, resources: &resources, view: anyView, context: context)
+        return (nodes, resources)
     }
 
     // MARK: - Private
 
-    private func recordRecursively(nodes: inout [Node], view: UIView, context: ViewTreeRecordingContext) {
+    private func recordRecursively(
+        nodes: inout [Node],
+        resources: inout [Resource],
+        view: UIView,
+        context: ViewTreeRecordingContext
+    ) {
         var context = context
         if let viewController = view.next as? UIViewController {
             context.viewControllerContext.parentType = .init(viewController)
@@ -41,7 +61,7 @@ internal struct ViewTreeRecorder {
         switch semantics.subtreeStrategy {
         case .record:
             for subview in view.subviews {
-                recordRecursively(nodes: &nodes, view: subview, context: context)
+                recordRecursively(nodes: &nodes, resources: &resources, view: subview, context: context)
             }
         case .ignore:
             break

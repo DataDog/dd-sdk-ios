@@ -89,14 +89,18 @@ import CryptoKit
 
 private var customHashKey: UInt8 = 11
 fileprivate extension UIImage {
+    private static var associatedObjectQueue = DispatchQueue(label: "com.datadoghq.customHashQueue")
+
     var customHash: String {
-        if let hash = objc_getAssociatedObject(self, &customHashKey) as? String {
+        return UIImage.associatedObjectQueue.sync {
+            if let hash = objc_getAssociatedObject(self, &customHashKey) as? String {
+                return hash
+            }
+
+            let hash = computeHash()
+            objc_setAssociatedObject(self, &customHashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
             return hash
         }
-
-        let hash = computeHash()
-        objc_setAssociatedObject(self, &customHashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        return hash
     }
 
     private func computeHash() -> String {

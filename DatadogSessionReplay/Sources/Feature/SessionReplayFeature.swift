@@ -19,7 +19,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
     /// Processes each new snapshot on a background thread and transforms it into records.
-    let processor: Processing
+    let snapshotProcessor: SnapshotProcessing
+    /// Processes resources on a background thread.
+    let resourceProcessor: ResourceProcessing
     /// Writes records to sdk core.
     let writer: Writing
 
@@ -31,10 +33,16 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     ) throws {
         let writer = Writer()
 
-        let processor = Processor(
-            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
+        let snapshotProcessor = SnapshotProcessor(
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.snapshot-processor"),
             writer: writer,
             srContextPublisher: SRContextPublisher(core: core),
+            telemetry: core.telemetry
+        )
+
+        let resourceProcessor = ResourceProcessor(
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
+            writer: writer,
             telemetry: core.telemetry
         )
 
@@ -42,7 +50,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         let messageReceiver = RUMContextReceiver()
 
         let recorder = try Recorder(
-            processor: processor,
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: resourceProcessor,
             telemetry: core.telemetry
         )
         let recordingCoordinator = RecordingCoordinator(
@@ -56,7 +65,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         self.messageReceiver = messageReceiver
         self.recordingCoordinator = recordingCoordinator
-        self.processor = processor
+        self.snapshotProcessor = snapshotProcessor
+        self.resourceProcessor = resourceProcessor
         self.writer = writer
         self.requestBuilder = RequestBuilder(
             customUploadURL: configuration.customEndpoint,

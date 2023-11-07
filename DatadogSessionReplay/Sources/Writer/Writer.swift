@@ -15,6 +15,9 @@ internal protocol Writing {
 
     /// Writes next records to SDK core.
     func write(nextRecord: EnrichedRecord)
+
+    /// Writes resource to SDK core.
+    func write(resource: EncodableResource)
 }
 
 internal class Writer: Writing {
@@ -43,6 +46,16 @@ internal class Writer: Writing {
 
         scope.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, writer in
             writer.write(value: nextRecord)
+        }
+    }
+
+    func write(resource: EncodableResource) {
+        guard let scope = core?.scope(for: ResourcesFeature.name) else {
+            return
+        }
+
+        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, writer in
+            writer.write(value: resource)
         }
     }
 }

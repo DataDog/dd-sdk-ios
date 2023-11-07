@@ -13,7 +13,7 @@ import DatadogInternal
 /// This is the actual brain of Session Replay. Based on the sequence of snapshots it receives, it computes the sequence
 /// of records that will to be send to SR BE. It implements the logic of reducing snapshots into Full or Incremental
 /// mutation records.
-internal protocol Processing {
+internal protocol SnapshotProcessing {
     /// Accepts next view-tree and touch snapshots.
     /// - Parameter viewTreeSnapshot: the snapshot of a next view tree
     /// - Parameter touchSnapshot: the snapshot of next touch interactions (or `nil` if no interactions happened)
@@ -30,7 +30,7 @@ internal protocol Processing {
 /// - the array of wireframes is attached to SR record (see `RecordsBuidler`);
 /// - succeeding records are enriched with their RUM context and written to `DatadogCore`;
 /// - when `DatadogCore` triggers an upload, batched records are deserialized, grouped into SR segments and then uploaded.
-internal class Processor: Processing {
+internal class SnapshotProcessor: SnapshotProcessing {
     /// Flattens VTS received from `Recorder` by removing invisible nodes.
     private let nodesFlattener = NodesFlattener()
     /// Builds SR wireframes to describe UI elements.

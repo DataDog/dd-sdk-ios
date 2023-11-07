@@ -25,6 +25,8 @@ internal struct ViewTreeSnapshot {
     let viewportSize: CGSize
     /// An array of nodes recorded for this snapshot - sequenced in DFS order.
     let nodes: [Node]
+    /// An array of resources recorded for this snapshot - sequenced in DFS order.
+    let resources: [Resource]
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `Node` describes a single view - similar: an array of nodes describes
@@ -143,6 +145,8 @@ internal protocol NodeSemantics {
     var subtreeStrategy: NodeSubtreeStrategy { get }
     /// Nodes that share this semantics.
     var nodes: [Node] { get }
+    /// Resources collected while traversing the subtree of this node.
+    var resources: [Resource] { get }
 }
 
 extension NodeSemantics {
@@ -172,6 +176,7 @@ internal struct UnknownElement: NodeSemantics {
     static let importance: Int = .min
     let subtreeStrategy: NodeSubtreeStrategy = .record
     let nodes: [Node] = []
+    let resources: [Resource] = []
 
     /// Use `UnknownElement.constant` instead.
     private init () {}
@@ -188,6 +193,7 @@ internal struct InvisibleElement: NodeSemantics {
     static let importance: Int = 0
     let subtreeStrategy: NodeSubtreeStrategy
     let nodes: [Node] = []
+    let resources: [Resource] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -208,6 +214,7 @@ internal struct IgnoredElement: NodeSemantics {
     static var importance: Int = .max
     let subtreeStrategy: NodeSubtreeStrategy
     let nodes: [Node] = []
+    let resources: [Resource] = []
 }
 
 /// A semantics of an UI element that is of `UIView` type. This semantics mean that the element has visual appearance in SR, but
@@ -218,6 +225,7 @@ internal struct AmbiguousElement: NodeSemantics {
     static let importance: Int = 0
     let subtreeStrategy: NodeSubtreeStrategy = .record
     let nodes: [Node]
+    let resources: [Resource]
 }
 
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
@@ -227,5 +235,12 @@ internal struct SpecificElement: NodeSemantics {
     static let importance: Int = .max
     let subtreeStrategy: NodeSubtreeStrategy
     let nodes: [Node]
+    let resources: [Resource]
+
+    init(subtreeStrategy: NodeSubtreeStrategy, nodes: [Node], resources: [Resource] = []) {
+        self.subtreeStrategy = subtreeStrategy
+        self.nodes = nodes
+        self.resources = resources
+    }
 }
 #endif

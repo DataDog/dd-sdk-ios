@@ -42,16 +42,20 @@ internal struct UITextFieldRecorder: NodeRecorder {
 
         // For our "approximation", we render text field's text on top of other TF's appearance.
         // Here we record both kind of nodes separately and order them respectively in returned semantics:
-        let appearanceNodes = recordAppearance(in: textField, textFieldAttributes: attributes, using: context)
+        let (appearanceNodes, apperanceResources) = recordAppearance(
+            in: textField,
+            textFieldAttributes: attributes,
+            using: context
+        )
         if let textNode = recordText(in: textField, attributes: attributes, using: context) {
-            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes + [textNode])
+            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes + [textNode], resources: apperanceResources)
         } else {
-            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes)
+            return SpecificElement(subtreeStrategy: .ignore, nodes: appearanceNodes, resources: apperanceResources)
         }
     }
 
     /// Records `UIView` and `UIImageViewRecorder` nodes that define text field's appearance.
-    private func recordAppearance(in textField: UITextField, textFieldAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> [Node] {
+    private func recordAppearance(in textField: UITextField, textFieldAttributes: ViewAttributes, using context: ViewTreeRecordingContext) -> ([Node], [Resource]) {
         backgroundViewRecorder.semanticsOverride = { _, viewAttributes in
             // We consider view to define text field's appearance if it has the same
             // size as text field:

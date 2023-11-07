@@ -74,7 +74,11 @@ internal struct UIImageViewRecorder: NodeRecorder {
             shouldRecordImage: shouldRecordImagePredicate(imageView)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .record, nodes: [node])
+        return SpecificElement(
+            subtreeStrategy: .record,
+            nodes: [node],
+            resources: [imageView.image].compactMap { $0 }
+        )
     }
 }
 
