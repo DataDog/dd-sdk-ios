@@ -10,7 +10,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let actionNameAttribute: String?
     public let allowFallbackToLocalStorage: Bool?
     public let allowUntrustedEvents: Bool?
-    public let backgroundTaskEnabled: Bool?
+    public let backgroundTasksEnabled: Bool?
     public let batchProcessingLevel: Int64?
     public let batchSize: Int64?
     public let batchUploadFrequency: Int64?
@@ -180,7 +180,7 @@ extension Telemetry {
         actionNameAttribute: String? = nil,
         allowFallbackToLocalStorage: Bool? = nil,
         allowUntrustedEvents: Bool? = nil,
-        backgroundTaskEnabled: Bool? = nil,
+        backgroundTasksEnabled: Bool? = nil,
         batchProcessingLevel: Int64? = nil,
         batchSize: Int64? = nil,
         batchUploadFrequency: Int64? = nil,
@@ -231,7 +231,7 @@ extension Telemetry {
             actionNameAttribute: actionNameAttribute,
             allowFallbackToLocalStorage: allowFallbackToLocalStorage,
             allowUntrustedEvents: allowUntrustedEvents,
-            backgroundTaskEnabled: backgroundTaskEnabled,
+            backgroundTasksEnabled: backgroundTasksEnabled,
             batchProcessingLevel: batchProcessingLevel,
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
@@ -337,7 +337,7 @@ extension ConfigurationTelemetry {
             actionNameAttribute: other.actionNameAttribute ?? actionNameAttribute,
             allowFallbackToLocalStorage: other.allowFallbackToLocalStorage ?? allowFallbackToLocalStorage,
             allowUntrustedEvents: other.allowUntrustedEvents ?? allowUntrustedEvents,
-            backgroundTaskEnabled: other.backgroundTaskEnabled ?? backgroundTaskEnabled,
+            backgroundTasksEnabled: other.backgroundTasksEnabled ?? backgroundTasksEnabled,
             batchProcessingLevel: other.batchProcessingLevel ?? batchProcessingLevel,
             batchSize: other.batchSize ?? batchSize,
             batchUploadFrequency: other.batchUploadFrequency ?? batchUploadFrequency,

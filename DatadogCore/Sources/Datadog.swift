@@ -441,7 +441,7 @@ public struct Datadog {
         )
 
         core.telemetry.configuration(
-            backgroundTaskEnabled: configuration.backgroundTasksEnabled,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
             batchSize: Int64(exactly: performance.maxFileSize),
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
