@@ -84,6 +84,7 @@ internal class Processor: Processing {
         let wireframes: [SRWireframe] = flattenedNodes
             .map { node in node.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
+            .map { wireframe in wireframe.toSRWireframe() }
 
         #if DEBUG
         interceptWireframes?(wireframes)

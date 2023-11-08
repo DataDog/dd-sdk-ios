@@ -38,7 +38,7 @@ internal typealias NodeRecorder = SessionReplayNodeRecorder
     /// Creates wireframes that are later uploaded to SR backend.
     /// - Parameter builder: the generic builder for constructing SR data models.
     /// - Returns: one or more wireframes that describe a node in SR.
-    func buildWireframes(with builder: SessionReplayWireframesBuilder) -> [SRWireframe]
+    func buildWireframes(with builder: SessionReplayWireframesBuilder) -> [Wireframe]
 }
 
 internal typealias NodeWireframesBuilder = SessionReplayNodeWireframesBuilder

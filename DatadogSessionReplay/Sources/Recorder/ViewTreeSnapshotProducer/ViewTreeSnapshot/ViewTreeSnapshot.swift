@@ -197,10 +197,10 @@ internal struct UnknownElement: NodeSemantics {
 /// has no visual appearance that can be presented in SR (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// Unlike `IgnoredElement`, this semantics can be overwritten with another one with higher importance. This means that even
 /// if the root view of certain element has no appearance, other node recorders will continue checking it for strictkier semantics.
-internal struct InvisibleElement: NodeSemantics {
-    static let importance: Int = 0
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node] = []
+@_spi(Internal) public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics {
+    public static let importance: Int = 0
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -212,8 +212,10 @@ internal struct InvisibleElement: NodeSemantics {
     }
 
     /// A constant value of `InvisibleElement` semantics.
-    static let constant = InvisibleElement()
+    public static let constant = SessionReplayInvisibleElement()
 }
+
+internal typealias InvisibleElement = SessionReplayInvisibleElement
 
 /// A semantics of an UI element that should be ignored when traversing view-tree. Unlike `InvisibleElement` this semantics cannot
 /// be overwritten by any other. This means that next node recorders won't be asked for further check of a strictkier semantics.
@@ -236,9 +238,16 @@ internal struct AmbiguousElement: NodeSemantics {
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
-internal struct SpecificElement: NodeSemantics {
-    static let importance: Int = .max
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node]
+@_spi(Internal) public struct SessionReplaySpecificElement: SessionReplayNodeSemantics {
+    public static let importance: Int = .max
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode]
+
+    public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy, nodes: [SessionReplayNode]) {
+        self.subtreeStrategy = subtreeStrategy
+        self.nodes = nodes
+    }
 }
+
+internal typealias SpecificElement = SessionReplaySpecificElement
 #endif

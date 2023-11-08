@@ -1443,6 +1443,7 @@
 		D2FB1258292E0F10005B13F8 /* TrackingConsentPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FB1256292E0F0B005B13F8 /* TrackingConsentPublisherTests.swift */; };
 		D2FB125D292FBB56005B13F8 /* Datadog+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */; };
 		D2FB125E292FBB56005B13F8 /* Datadog+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */; };
+		E12D0FE82AFC04F60094BCB7 /* Wireframes.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12D0FE72AFC04F60094BCB7 /* Wireframes.swift */; };
 		E132727B24B333C700952F8B /* TracingBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */; };
 		E132727D24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */; };
 		E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */; };
@@ -2676,6 +2677,7 @@
 		D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Datadog+Internal.swift"; sourceTree = "<group>"; };
 		D2FCA238271D896E0020286F /* SwiftUIExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIExtensions.swift; sourceTree = "<group>"; };
 		E11625D727B681D200E428C6 /* CITestIntegration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CITestIntegration.swift; sourceTree = "<group>"; };
+		E12D0FE72AFC04F60094BCB7 /* Wireframes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Wireframes.swift; sourceTree = "<group>"; };
 		E132727A24B333C700952F8B /* TracingBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingBenchmarkTests.swift; sourceTree = "<group>"; };
 		E132727C24B35B5F00952F8B /* TracingStorageBenchmarkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingStorageBenchmarkTests.swift; sourceTree = "<group>"; };
 		E143CCAE27D236F600F4018A /* CITestIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CITestIntegrationTests.swift; sourceTree = "<group>"; };
@@ -3319,6 +3321,7 @@
 		61054E4F2A6EE10A00AAA894 /* SRDataModelsBuilder */ = {
 			isa = PBXGroup;
 			children = (
+				E12D0FE72AFC04F60094BCB7 /* Wireframes.swift */,
 				61054E502A6EE10A00AAA894 /* RecordsBuilder.swift */,
 				61054E512A6EE10A00AAA894 /* WireframesBuilder.swift */,
 			);
@@ -7645,6 +7648,7 @@
 				61054E6E2A6EE10A00AAA894 /* RecordingCoordinator.swift in Sources */,
 				61054E9F2A6EE10B00AAA894 /* Errors.swift in Sources */,
 				61054E642A6EE10A00AAA894 /* SessionReplay.swift in Sources */,
+				E12D0FE82AFC04F60094BCB7 /* Wireframes.swift in Sources */,
 				61054E952A6EE10A00AAA894 /* Processor.swift in Sources */,
 				61054E722A6EE10A00AAA894 /* TouchIdentifierGenerator.swift in Sources */,
 				61054E912A6EE10A00AAA894 /* EnrichedRecordJSON.swift in Sources */,

@@ -10,7 +10,7 @@ import UIKit
 
 /// Single unique ID of a view in view-tree hierarchy.
 /// It is used to mark `UIViews` which correspond to single wireframe in the replay.
-internal typealias NodeID = Int64
+@_spi(Internal) public typealias NodeID = Int64
 
 /// Manages `NodeIDs` for `UIView` instances.
 ///
@@ -34,7 +34,7 @@ internal typealias NodeID = Int64
     /// - Parameter view: the `UIView` object
     /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: the `NodeID` of queried instance
-    func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
+    public func nodeID(view: UIView, nodeRecorder: SessionReplayNodeRecorder) -> NodeID {
         if let currentID = view.nodeID?[nodeRecorder.identifier] {
             return currentID
         } else {

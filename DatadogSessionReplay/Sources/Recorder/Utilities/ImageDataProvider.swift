@@ -8,10 +8,12 @@
 import Foundation
 import UIKit
 
-internal struct ImageResource {
+@_spi(Internal) public struct SessionReplayImageResource {
     let identifier: String
     let base64: String
 }
+
+internal typealias ImageResource = SessionReplayImageResource
 
 internal protocol ImageDataProviding {
     func contentBase64String(

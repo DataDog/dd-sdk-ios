@@ -9,10 +9,10 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-internal typealias WireframeID = NodeID
+@_spi(Internal) public typealias WireframeID = NodeID
 
-/// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
-/// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
+/// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in 
+/// records (see `RecordsBuilder`) within  segments (see `SegmentBuilder`).
 /// A wireframe stands for semantic definition of an UI element (i.a.: label, button, tab bar).
 /// It is used by the player to reconstruct individual elements of the recorded app UI.
 ///
@@ -34,17 +34,17 @@ internal typealias WireframeID = NodeID
         static let fontSize: CGFloat = 10
     }
 
-    func createShapeWireframe(
+    public func createShapeWireframe(
         id: WireframeID,
         frame: CGRect,
-        clip: SRContentClip? = nil,
+        clip: ContentClip? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
-    ) -> SRWireframe {
-        let wireframe = SRShapeWireframe(
+    ) -> Wireframe {
+        let wireframe = ShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
@@ -58,19 +58,19 @@ internal typealias WireframeID = NodeID
         return .shapeWireframe(value: wireframe)
     }
 
-    func createImageWireframe(
-        imageResource: ImageResource,
+    public func createImageWireframe(
+        imageResource: SessionReplayImageResource,
         id: WireframeID,
         frame: CGRect,
         mimeType: String = "png",
-        clip: SRContentClip? = nil,
+        clip: ContentClip? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
-    ) -> SRWireframe {
-        let wireframe = SRImageWireframe(
+    ) -> Wireframe {
+        let wireframe = ImageWireframe(
             base64: imageResource.base64,
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
@@ -87,13 +87,13 @@ internal typealias WireframeID = NodeID
         return .imageWireframe(value: wireframe)
     }
 
-    func createTextWireframe(
+    public func createTextWireframe(
         id: WireframeID,
         frame: CGRect,
         text: String,
         textFrame: CGRect? = nil,
-        textAlignment: SRTextPosition.Alignment? = nil,
-        clip: SRContentClip? = nil,
+        textAlignment: TextPosition.Alignment? = nil,
+        clip: ContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
         fontScalingEnabled: Bool = false,
@@ -102,9 +102,9 @@ internal typealias WireframeID = NodeID
         backgroundColor: CGColor? = nil,
         cornerRadius: CGFloat? = nil,
         opacity: CGFloat? = nil
-    ) -> SRWireframe {
+    ) -> Wireframe {
         let textFrame = textFrame ?? frame
-        let textPosition = SRTextPosition(
+        let textPosition = TextPosition(
             alignment: textAlignment,
             padding: .init(
                 bottom: Int64(withNoOverflow: frame.maxY - textFrame.maxY),
@@ -125,13 +125,13 @@ internal typealias WireframeID = NodeID
         }
 
         // TODO: RUMM-2452 Better recognize the font:
-        let textStyle = SRTextStyle(
+        let textStyle = TextStyle(
             color: textColor.flatMap { hexString(from: $0) } ?? Fallback.color,
             family: Fallback.fontFamily,
             size: fontSize
         )
 
-        let wireframe = SRTextWireframe(
+        let wireframe = TextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
@@ -148,13 +148,13 @@ internal typealias WireframeID = NodeID
         return .textWireframe(value: wireframe)
     }
 
-    func createPlaceholderWireframe(
+    public func createPlaceholderWireframe(
         id: Int64,
         frame: CGRect,
         label: String,
-        clip: SRContentClip? = nil
-    ) -> SRWireframe {
-        let wireframe = SRPlaceholderWireframe(
+        clip: ContentClip? = nil
+    ) -> Wireframe {
+        let wireframe = PlaceholderWireframe(
             clip: clip,
             height: Int64(withNoOverflow: frame.size.height),
             id: id,
@@ -168,7 +168,7 @@ internal typealias WireframeID = NodeID
 
     // MARK: - Private
 
-    private func createShapeBorder(borderColor: CGColor?, borderWidth: CGFloat?) -> SRShapeBorder? {
+    private func createShapeBorder(borderColor: CGColor?, borderWidth: CGFloat?) -> ShapeBorder? {
         guard let borderColor = borderColor, let borderWidth = borderWidth, borderWidth > 0.0 else {
             return nil
         }
@@ -179,7 +179,7 @@ internal typealias WireframeID = NodeID
         )
     }
 
-    private func createShapeStyle(backgroundColor: CGColor?, cornerRadius: CGFloat?, opacity: CGFloat?) -> SRShapeStyle? {
+    private func createShapeStyle(backgroundColor: CGColor?, cornerRadius: CGFloat?, opacity: CGFloat?) -> ShapeStyle? {
         guard let backgroundColor = backgroundColor else {
             return nil
         }
@@ -197,7 +197,7 @@ internal typealias WireframesBuilder = SessionReplayWireframesBuilder
 // MARK: - Convenience
 
 internal extension WireframesBuilder {
-    func createShapeWireframe(id: WireframeID, frame: CGRect, attributes: ViewAttributes) -> SRWireframe {
+    func createShapeWireframe(id: WireframeID, frame: CGRect, attributes: ViewAttributes) -> Wireframe {
         return createShapeWireframe(
             id: id,
             frame: frame,
