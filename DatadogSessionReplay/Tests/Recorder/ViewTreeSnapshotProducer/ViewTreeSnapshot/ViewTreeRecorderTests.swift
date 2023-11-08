@@ -7,7 +7,7 @@
 import XCTest
 import SafariServices
 
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 private struct MockSemantics: NodeSemantics {

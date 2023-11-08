@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 class UIStepperRecorderTests: XCTestCase {
     private let recorder = UIStepperRecorder()

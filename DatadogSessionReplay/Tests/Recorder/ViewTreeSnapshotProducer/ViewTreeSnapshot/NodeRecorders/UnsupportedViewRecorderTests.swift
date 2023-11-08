@@ -8,7 +8,7 @@ import XCTest
 import WebKit
 import SwiftUI
 import SafariServices
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 @available(iOS 13.0, *)
 class UnsupportedViewRecorderTests: XCTestCase {

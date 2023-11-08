@@ -6,7 +6,7 @@
 
 import XCTest
 import UIKit
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 class NodeIDGeneratorTests: XCTestCase {
