@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 class UIPickerViewRecorderTests: XCTestCase {
     private let recorder = UIPickerViewRecorder()

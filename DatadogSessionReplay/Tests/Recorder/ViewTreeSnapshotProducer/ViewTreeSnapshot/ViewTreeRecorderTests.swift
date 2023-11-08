@@ -7,7 +7,7 @@
 import XCTest
 import SafariServices
 
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 private struct MockSemantics: NodeSemantics {
@@ -26,7 +26,7 @@ private struct MockSemantics: NodeSemantics {
 private struct MockWireframesBuilder: NodeWireframesBuilder {
     let nodeName: String
     var wireframeRect: CGRect = .mockAny()
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] { [] }
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] { [] }
 }
 
 class ViewTreeRecorderTests: XCTestCase {

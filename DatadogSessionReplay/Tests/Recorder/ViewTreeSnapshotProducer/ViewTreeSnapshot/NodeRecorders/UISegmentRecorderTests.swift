@@ -5,7 +5,7 @@
  */
 
 import XCTest
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 class UISegmentRecorderTests: XCTestCase {
     private let recorder = UISegmentRecorder()

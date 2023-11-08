@@ -5,7 +5,7 @@
  */
 
 import Foundation
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 // MARK: - Wireframe Mocks

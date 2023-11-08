@@ -6,7 +6,7 @@
 
 import XCTest
 import TestUtilities
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 // swiftlint:disable opening_brace
 class UITextFieldRecorderTests: XCTestCase {

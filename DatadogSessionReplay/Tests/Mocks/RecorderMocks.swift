@@ -7,7 +7,7 @@
 import Foundation
 import UIKit
 import XCTest
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 extension PrivacyLevel: AnyMockable, RandomMockable {
@@ -196,7 +196,7 @@ extension ViewAttributes: AnyMockable, RandomMockable {
 struct NOPWireframesBuilderMock: NodeWireframesBuilder {
     let wireframeRect: CGRect = .zero
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return []
     }
 }
@@ -229,12 +229,12 @@ func mockRandomNodeSemantics() -> NodeSemantics {
 struct ShapeWireframesBuilderMock: NodeWireframesBuilder {
     let wireframeRect: CGRect
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [builder.createShapeWireframe(id: .mockAny(), frame: wireframeRect)]
     }
 }
 
-extension Node: AnyMockable, RandomMockable {
+@_spi(Internal) extension Node: AnyMockable, RandomMockable {
     public static func mockAny() -> Node {
         return mockWith()
     }

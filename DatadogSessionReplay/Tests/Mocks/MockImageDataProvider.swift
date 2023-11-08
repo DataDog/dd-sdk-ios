@@ -5,7 +5,7 @@
  */
 
 import UIKit
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 struct MockImageDataProvider: ImageDataProviding {
     var contentBase64String: String

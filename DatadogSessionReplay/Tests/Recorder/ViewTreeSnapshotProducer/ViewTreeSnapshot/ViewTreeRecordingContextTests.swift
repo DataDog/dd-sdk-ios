@@ -6,7 +6,7 @@
 
 import XCTest
 import SafariServices
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 class ViewTreeRecordingContextTests: XCTestCase {
     func testViewControllerTypeInit() {
