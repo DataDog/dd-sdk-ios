@@ -391,7 +391,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 browserSdkVersion: nil,
                 configuration: .init(
                     sessionReplaySampleRate: nil,
-                    sessionSampleRate: Double(self.sessionSampler.samplingRate), 
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
                     startSessionReplayRecordingManually: nil
                 ),
                 documentVersion: original.dd.documentVersion + 1,
