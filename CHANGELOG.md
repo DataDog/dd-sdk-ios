@@ -1,4 +1,7 @@
 # Unreleased
+
+# 2.5.0 / 08-11-2023
+
 - [BUGFIX] Optimize Session Replay diffing algorithm. See [#1524][]
 - [FEATURE] Add network instrumentation for async/await URLSession APIs. See [#1394][]
 - [FEATURE] Change default tracing headers for first party hosts to use both Datadog headers and W3C `tracecontext` headers. See [#1529][]
