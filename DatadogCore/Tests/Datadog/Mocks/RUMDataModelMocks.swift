@@ -96,7 +96,11 @@ extension RUMOperatingSystem: RandomMockable {
 
 extension RUMViewEvent.DD.Configuration: RandomMockable {
     public static func mockRandom() -> RUMViewEvent.DD.Configuration {
-        return .init(sessionReplaySampleRate: .mockRandom(min: 0, max: 100), sessionSampleRate: .mockRandom(min: 0, max: 100))
+        return .init(
+            sessionReplaySampleRate: .mockRandom(min: 0, max: 100),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
+            startSessionReplayRecordingManually: nil
+        )
     }
 }
 
@@ -466,6 +470,8 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     actionNameAttribute: nil,
                     allowFallbackToLocalStorage: nil,
                     allowUntrustedEvents: nil,
+                    backgroundTasksEnabled: .mockRandom(),
+                    batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockAny(),
                     defaultPrivacyLevel: .mockAny(),
