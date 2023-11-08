@@ -11,7 +11,7 @@ FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PA
 LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
 OTHER_LDFLAGS[sdk=iphonesimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
-DD_TEST_RUNNER=1\n
+DD_TEST_RUNNER=$(or $(DD_TEST_RUNNER),1)\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
 DD_SDK_SWIFT_TESTING_ENV=ci\n
