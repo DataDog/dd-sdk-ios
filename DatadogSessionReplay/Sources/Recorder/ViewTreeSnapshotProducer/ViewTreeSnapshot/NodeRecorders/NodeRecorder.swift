@@ -24,6 +24,7 @@ import UIKit
     var identifier: UUID { get }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias NodeRecorder = SessionReplayNodeRecorder
 
 /// A type producing SR wireframes.
@@ -41,5 +42,6 @@ internal typealias NodeRecorder = SessionReplayNodeRecorder
     func buildWireframes(with builder: SessionReplayWireframesBuilder) -> [Wireframe]
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias NodeWireframesBuilder = SessionReplayNodeWireframesBuilder
 #endif

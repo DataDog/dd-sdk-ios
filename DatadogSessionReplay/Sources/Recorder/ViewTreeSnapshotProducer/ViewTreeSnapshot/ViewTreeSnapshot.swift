@@ -47,6 +47,7 @@ internal struct ViewTreeSnapshot {
     }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias Node = SessionReplayNode
 
 /// Attributes of the `UIView` that the node was created for.
@@ -106,6 +107,7 @@ internal typealias Node = SessionReplayNode
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias ViewAttributes = SessionReplayViewAttributes
 
 extension ViewAttributes {
@@ -154,6 +156,7 @@ extension ViewAttributes {
     var nodes: [SessionReplayNode] { get }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias NodeSemantics = SessionReplayNodeSemantics
 
 extension NodeSemantics {
@@ -164,6 +167,7 @@ extension NodeSemantics {
     var importance: Int { Self.importance }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias NodeSubtreeStrategy = SessionReplayNodeSubtreeStrategy
 
 /// Strategies for handling node's subtree by `Recorder`.
@@ -215,6 +219,7 @@ internal struct UnknownElement: NodeSemantics {
     public static let constant = SessionReplayInvisibleElement()
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias InvisibleElement = SessionReplayInvisibleElement
 
 /// A semantics of an UI element that should be ignored when traversing view-tree. Unlike `InvisibleElement` this semantics cannot
@@ -249,5 +254,6 @@ internal struct AmbiguousElement: NodeSemantics {
     }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias SpecificElement = SessionReplaySpecificElement
 #endif

@@ -192,6 +192,7 @@ import UIKit
     }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias WireframesBuilder = SessionReplayWireframesBuilder
 
 // MARK: - Convenience

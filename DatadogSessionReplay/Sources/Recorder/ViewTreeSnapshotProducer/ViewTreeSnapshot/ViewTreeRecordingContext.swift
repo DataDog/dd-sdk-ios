@@ -25,6 +25,7 @@ import SwiftUI
     var viewControllerContext: ViewControllerContext = .init()
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias ViewTreeRecordingContext = SessionReplayViewTreeRecordingContext
 
 internal extension ViewTreeRecordingContext {

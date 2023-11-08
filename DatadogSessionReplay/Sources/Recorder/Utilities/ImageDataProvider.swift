@@ -13,6 +13,7 @@ import UIKit
     let base64: String
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias ImageResource = SessionReplayImageResource
 
 internal protocol ImageDataProviding {
