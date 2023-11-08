@@ -37,7 +37,8 @@ internal class URLSessionDataDelegateSwizzler {
         lock.lock()
         defer { lock.unlock() }
 
-        guard isBinded == false else {
+        let key = MetaTypeExtensions.key(from: delegateClass)
+        guard didReceiveMap[key] == nil else {
             return
         }
 
