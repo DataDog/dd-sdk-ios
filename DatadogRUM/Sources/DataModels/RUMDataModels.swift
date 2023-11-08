@@ -1804,9 +1804,13 @@ public struct RUMViewEvent: RUMDataModel {
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
+            /// Whether session replay recording configured to start manually
+            public let startSessionReplayRecordingManually: Bool?
+
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
+                case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
             }
         }
 
@@ -2826,6 +2830,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether untrusted events are allowed
             public let allowUntrustedEvents: Bool?
 
+            /// Whether UIApplication background tasks are enabled
+            public let backgroundTasksEnabled: Bool?
+
+            /// Maximum number of batches processed sequencially without a delay
+            public let batchProcessingLevel: Int64?
+
             /// The window duration for batches sent by the SDK (in milliseconds)
             public let batchSize: Int64?
 
@@ -2977,6 +2987,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case actionNameAttribute = "action_name_attribute"
                 case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
                 case allowUntrustedEvents = "allow_untrusted_events"
+                case backgroundTasksEnabled = "background_tasks_enabled"
+                case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
                 case dartVersion = "dart_version"
@@ -3398,4 +3410,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4
+// Generated from https://github.com/DataDog/rum-events-format/tree/36e94a0cfb68b6dc0752a9bf4131b952b2aa1859
