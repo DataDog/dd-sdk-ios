@@ -101,7 +101,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let shouldRecordImage: Bool
 
-    private var clip: SRContentClip? {
+    private var clip: ContentClip? {
         guard let contentFrame = contentFrame else {
             return nil
         }
@@ -109,7 +109,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         let left = max(relativeIntersectedRect.origin.x - contentFrame.origin.x, 0)
         let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
         let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
-        return SRContentClip(
+        return ContentClip(
             bottom: Int64(withNoOverflow: bottom),
             left: Int64(withNoOverflow: left),
             right: Int64(withNoOverflow: right),
@@ -124,7 +124,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         return attributes.frame.intersection(contentFrame)
     }
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         var wireframes = [
             builder.createShapeWireframe(
                 id: wireframeID,

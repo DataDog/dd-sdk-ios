@@ -57,7 +57,7 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
     let onTintColor: CGColor?
     let offTintColor: CGColor?
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         if isMasked {
             return createMasked(with: builder)
         } else {
@@ -65,7 +65,7 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         }
     }
 
-    private func createMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+    private func createMasked(with builder: WireframesBuilder) -> [Wireframe] {
         let track = builder.createShapeWireframe(
             id: trackWireframeID,
             frame: wireframeRect,
@@ -86,7 +86,7 @@ internal struct UISwitchWireframesBuilder: NodeWireframesBuilder {
         }
     }
 
-    private func createNotMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+    private func createNotMasked(with builder: WireframesBuilder) -> [Wireframe] {
         let radius = wireframeRect.height * 0.5
 
         // Create track wireframe:

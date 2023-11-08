@@ -71,7 +71,7 @@ internal struct UILabelWireframesBuilder: NodeWireframesBuilder {
         attributes.frame
     }
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createTextWireframe(
                 id: wireframeID,

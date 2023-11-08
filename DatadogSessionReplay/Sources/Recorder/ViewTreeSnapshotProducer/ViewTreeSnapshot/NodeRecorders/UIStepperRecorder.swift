@@ -49,7 +49,7 @@ internal struct UIStepperWireframesBuilder: NodeWireframesBuilder {
     let isMinusEnabled: Bool
     let isPlusEnabled: Bool
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         let background = builder.createShapeWireframe(
             id: backgroundWireframeID,
             frame: wireframeRect,

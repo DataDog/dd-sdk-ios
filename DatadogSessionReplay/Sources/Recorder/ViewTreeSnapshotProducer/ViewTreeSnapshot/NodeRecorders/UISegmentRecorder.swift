@@ -61,7 +61,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
     let selectedSegmentIndex: Int?
     let selectedSegmentTintColor: UIColor?
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         let numberOfSegments = segmentWireframeIDs.count
         guard numberOfSegments > 0, segmentTitles.count == numberOfSegments, (selectedSegmentIndex ?? 0) < numberOfSegments else {
             return [] // illegal, should not happen
@@ -94,7 +94,7 @@ internal struct UISegmentWireframesBuilder: NodeWireframesBuilder {
             segmentRects.append(segmentRect)
         }
 
-        let segments: [SRWireframe] = (0..<numberOfSegments).map { idx in
+        let segments: [Wireframe] = (0..<numberOfSegments).map { idx in
             let isSelected = idx == selectedSegmentIndex
             return builder.createTextWireframe(
                 id: segmentWireframeIDs[idx],

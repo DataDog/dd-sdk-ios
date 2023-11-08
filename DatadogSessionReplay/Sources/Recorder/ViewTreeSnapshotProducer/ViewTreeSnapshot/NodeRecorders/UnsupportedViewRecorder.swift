@@ -47,7 +47,7 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
     let unsupportedClassName: String
     let attributes: ViewAttributes
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createPlaceholderWireframe(
                 id: wireframeID,

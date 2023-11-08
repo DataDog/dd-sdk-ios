@@ -63,7 +63,7 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
         attributes.frame
     }
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createShapeWireframe(id: wireframeID, frame: wireframeRect, attributes: attributes)
         ]

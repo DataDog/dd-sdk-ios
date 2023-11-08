@@ -113,7 +113,7 @@ internal struct UITextFieldWireframesBuilder: NodeWireframesBuilder {
     let fontScalingEnabled: Bool
     let textObfuscator: TextObfuscating
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createTextWireframe(
                 id: wireframeID,

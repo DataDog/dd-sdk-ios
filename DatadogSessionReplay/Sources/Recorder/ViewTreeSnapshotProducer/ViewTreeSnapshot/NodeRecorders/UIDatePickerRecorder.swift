@@ -156,7 +156,7 @@ internal struct UIDatePickerWireframesBuilder: NodeWireframesBuilder {
     /// If date picker is displayed in popover view (possible only in iOS 15.0+).
     let isDisplayedInPopover: Bool
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createShapeWireframe(
                 id: backgroundWireframeID,

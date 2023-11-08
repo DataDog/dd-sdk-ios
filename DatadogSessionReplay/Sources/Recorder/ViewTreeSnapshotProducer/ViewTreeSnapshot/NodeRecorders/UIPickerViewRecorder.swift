@@ -96,7 +96,7 @@ internal struct UIPickerViewWireframesBuilder: NodeWireframesBuilder {
     let attributes: ViewAttributes
     let backgroundWireframeID: WireframeID
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createShapeWireframe(id: backgroundWireframeID, frame: wireframeRect, attributes: attributes)
         ]

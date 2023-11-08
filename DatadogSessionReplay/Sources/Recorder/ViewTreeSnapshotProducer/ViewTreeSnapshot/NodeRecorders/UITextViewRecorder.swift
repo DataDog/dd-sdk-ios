@@ -66,12 +66,12 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         attributes.frame
     }
 
-    private var clip: SRContentClip {
+    private var clip: ContentClip {
         let top = abs(contentRect.origin.y)
         let left = abs(contentRect.origin.x)
         let bottom = max(contentRect.height - attributes.frame.height - top, 0)
         let right = max(contentRect.width - attributes.frame.width - left, 0)
-        return SRContentClip(
+        return ContentClip(
             bottom: Int64(withNoOverflow: bottom),
             left: Int64(withNoOverflow: left),
             right: Int64(withNoOverflow: right),
@@ -90,7 +90,7 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         )
     }
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createTextWireframe(
                 id: wireframeID,

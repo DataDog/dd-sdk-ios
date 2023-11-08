@@ -59,7 +59,7 @@ internal struct UITabBarWireframesBuilder: NodeWireframesBuilder {
     /// The color of navigation bar.
     let color: CGColor
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         return [
             builder.createShapeWireframe(
                 id: wireframeID,

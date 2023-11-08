@@ -55,7 +55,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
     let maxTrackTintColor: CGColor?
     let thumbTintColor: CGColor?
 
-    func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
+    func buildWireframes(with builder: WireframesBuilder) -> [Wireframe] {
         if isMasked {
             return createMasked(with: builder)
         } else {
@@ -63,7 +63,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         }
     }
 
-    private func createMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+    private func createMasked(with builder: WireframesBuilder) -> [Wireframe] {
         let trackFrame = wireframeRect.divided(atDistance: 3, from: .minYEdge)
             .slice
             .putInside(wireframeRect, horizontalAlignment: .left, verticalAlignment: .middle)
@@ -88,7 +88,7 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         }
     }
 
-    private func createNotMasked(with builder: WireframesBuilder) -> [SRWireframe] {
+    private func createNotMasked(with builder: WireframesBuilder) -> [Wireframe] {
         guard value.max > value.min else {
             return [] // illegal, should not happen
         }
