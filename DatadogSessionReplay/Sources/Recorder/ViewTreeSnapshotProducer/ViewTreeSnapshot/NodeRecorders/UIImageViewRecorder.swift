@@ -77,7 +77,12 @@ internal struct UIImageViewRecorder: NodeRecorder {
         return SpecificElement(
             subtreeStrategy: .record,
             nodes: [node],
-            resources: [imageView.image].compactMap { $0 }
+            resources: [imageView.image].compactMap { $0 }.filter { image in
+                defer {
+                    image.recorded = true
+                }
+                return !image.recorded
+            }
         )
     }
 }

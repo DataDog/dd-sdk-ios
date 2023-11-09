@@ -73,9 +73,19 @@ fileprivate extension CGSize {
     }
 }
 
+private var recordedKey: UInt8 = 22
 extension UIImage {
     var srIdentifier: String {
         return customHash
+    }
+
+    var recorded: Bool {
+        get {
+            return objc_getAssociatedObject(self, &recordedKey) as? Bool ?? false
+        }
+        set {
+            objc_setAssociatedObject(self, &recordedKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        }
     }
 }
 
