@@ -121,10 +121,13 @@ internal class Recorder: Recording {
             }
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
-            resourceProcessor.process(
-                resources: viewTreeSnapshot.resources,
-                context: .init(recorderContext.applicationID)
-            )
+
+            if !viewTreeSnapshot.resources.isEmpty {
+                resourceProcessor.process(
+                    resources: viewTreeSnapshot.resources,
+                    context: .init(recorderContext.applicationID)
+                )
+            }
         } catch let error {
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }

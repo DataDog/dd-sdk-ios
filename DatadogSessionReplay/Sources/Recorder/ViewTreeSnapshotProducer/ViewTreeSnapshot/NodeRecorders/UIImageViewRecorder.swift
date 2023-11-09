@@ -62,6 +62,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } else {
             contentFrame = nil
         }
+        let shouldRecordImage = shouldRecordImagePredicate(imageView)
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -71,7 +72,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             image: imageView.image,
             imageDataProvider: context.imageDataProvider,
             tintColor: tintColorProvider(imageView),
-            shouldRecordImage: shouldRecordImagePredicate(imageView)
+            shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
@@ -81,7 +82,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
                 defer {
                     image.recorded = true
                 }
-                return !image.recorded
+                return !image.recorded && shouldRecordImage
             }
         )
     }

@@ -48,7 +48,6 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
                 data: $0.data,
                 mimeType: "image/png"
             )
-
         }
         if let context = resources.first?.context, let data = try? JSONEncoder().encode(context) {
             multipart.addFormData(
