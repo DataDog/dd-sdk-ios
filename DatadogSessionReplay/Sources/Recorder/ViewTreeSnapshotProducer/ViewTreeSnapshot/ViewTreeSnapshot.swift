@@ -35,7 +35,8 @@ internal struct ViewTreeSnapshot {
 ///
 /// **Note:** The purpose of this structure is to be lightweight and create minimal overhead when the view-tree
 /// is captured on the main thread (the `Recorder` constantly creates `Nodes` for views residing in the hierarchy).
-@_spi(Internal) public struct SessionReplayNode {
+@_spi(Internal)
+public struct SessionReplayNode {
     /// Attributes of the `UIView` that this node was created for.
     public let viewAttributes: SessionReplayViewAttributes
     /// A type defining how to build SR wireframes for the UI element described by this node.
@@ -54,7 +55,8 @@ internal typealias Node = SessionReplayNode
 ///
 /// It is used by the `Recorder` to capture view attributes on the main thread.
 /// It enforces immutability for later (thread safe) access from background queue in `Processor`.
-@_spi(Internal) public struct SessionReplayViewAttributes: Equatable {
+@_spi(Internal)
+public struct SessionReplayViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
     public let frame: CGRect
 
@@ -143,7 +145,8 @@ extension ViewAttributes {
 /// be safely ignored in `Recorder` or `Processor` (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// - `UnknownElement` - the element is of unknown kind, which could indicate an error during view tree traversal (e.g. working on
 /// assumption that is not met).
-@_spi(Internal) public protocol SessionReplayNodeSemantics {
+@_spi(Internal)
+public protocol SessionReplayNodeSemantics {
     /// The severity of this semantic.
     ///
     /// While querying certain `view` with an array of supported `NodeRecorders` each recorder can spot different semantics of
@@ -171,7 +174,8 @@ extension NodeSemantics {
 internal typealias NodeSubtreeStrategy = SessionReplayNodeSubtreeStrategy
 
 /// Strategies for handling node's subtree by `Recorder`.
-@_spi(Internal) public enum SessionReplayNodeSubtreeStrategy {
+@_spi(Internal)
+public enum SessionReplayNodeSubtreeStrategy {
     /// Continue traversing subtree of this node to record nested nodes automatically.
     ///
     /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be
@@ -201,7 +205,8 @@ internal struct UnknownElement: NodeSemantics {
 /// has no visual appearance that can be presented in SR (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// Unlike `IgnoredElement`, this semantics can be overwritten with another one with higher importance. This means that even
 /// if the root view of certain element has no appearance, other node recorders will continue checking it for strictkier semantics.
-@_spi(Internal) public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics {
+@_spi(Internal)
+public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics {
     public static let importance: Int = 0
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode] = []
@@ -243,7 +248,8 @@ internal struct AmbiguousElement: NodeSemantics {
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
-@_spi(Internal) public struct SessionReplaySpecificElement: SessionReplayNodeSemantics {
+@_spi(Internal)
+public struct SessionReplaySpecificElement: SessionReplayNodeSemantics {
     public static let importance: Int = .max
     public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
     public let nodes: [SessionReplayNode]

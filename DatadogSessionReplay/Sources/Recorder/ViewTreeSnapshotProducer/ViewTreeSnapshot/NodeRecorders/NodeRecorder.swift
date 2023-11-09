@@ -11,7 +11,8 @@ import UIKit
 /// recognise specialised subclasses of `UIView` and record their semantics accordingly.
 ///
 /// **Note:** The `NodeRecorder` is used on the main thread by `Recorder`.
-@_spi(Internal) public protocol SessionReplayNodeRecorder {
+@_spi(Internal)
+public protocol SessionReplayNodeRecorder {
     /// Finds the semantic of given`view`.
     /// - Parameters:
     ///   - view: the `UIView` to determine semantics for
@@ -32,7 +33,8 @@ internal typealias NodeRecorder = SessionReplayNodeRecorder
 /// Each type of UI element (e.g.: label, text field, toggle, button) should provide their own implementaion of `NodeWireframesBuilder`.
 ///
 /// **Note:** The `NodeWireframesBuilder` is used on background thread by `Processor`.
-@_spi(Internal) public protocol SessionReplayNodeWireframesBuilder {
+@_spi(Internal)
+public protocol SessionReplayNodeWireframesBuilder {
     /// The frame of produced wireframe in screen coordinates.
     var wireframeRect: CGRect { get }
 

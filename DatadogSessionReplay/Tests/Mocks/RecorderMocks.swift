@@ -7,7 +7,8 @@
 import Foundation
 import UIKit
 import XCTest
-@_spi(Internal) @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
 @testable import TestUtilities
 
 extension PrivacyLevel: AnyMockable, RandomMockable {
@@ -234,7 +235,8 @@ struct ShapeWireframesBuilderMock: NodeWireframesBuilder {
     }
 }
 
-@_spi(Internal) extension Node: AnyMockable, RandomMockable {
+@_spi(Internal)
+extension Node: AnyMockable, RandomMockable {
     public static func mockAny() -> Node {
         return mockWith()
     }
