@@ -9,7 +9,7 @@ import Foundation
 import DatadogInternal
 
 internal protocol ResourceProcessing {
-    func process(resources: [Resource])
+    func process(resources: [Resource], context: CodableResource.Context)
 }
 
 internal class ResourceProcessor: ResourceProcessing {
@@ -20,9 +20,9 @@ internal class ResourceProcessor: ResourceProcessing {
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
-    func process(resources: [Resource]) {
+    func process(resources: [Resource], context: CodableResource.Context) {
         queue.run { [writer] in
-            Set(resources.map(CodableResource.init))
+            Set(resources.map { CodableResource(resource: $0, context: context) })
                 .forEach(writer.write(resource:))
         }
     }
@@ -34,13 +34,27 @@ internal class ResourceProcessor: ResourceProcessing {
     }
 }
 
-struct CodableResource: Codable, Hashable, Resource {
-    var identifier: String
-    var data: Data
+internal struct CodableResource: Codable, Hashable, Resource {
+    internal struct Context: Codable, Equatable {
+        internal struct Application: Codable, Equatable {
+            let id: String
+        }
+        let type: String
+        let application: Application
 
-    init(resource: Resource) {
+        init(_ applicationId: String) {
+            self.type = "resource"
+            self.application = .init(id: applicationId)
+        }
+    }
+    internal var identifier: String
+    internal var data: Data
+    internal var context: Context
+
+    internal init(resource: Resource, context: Context) {
         self.identifier = resource.identifier
         self.data = resource.data
+        self.context = context
     }
 
     func hash(into hasher: inout Hasher) {

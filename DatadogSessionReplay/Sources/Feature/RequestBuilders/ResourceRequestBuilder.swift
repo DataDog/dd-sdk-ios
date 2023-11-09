@@ -50,14 +50,14 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             )
 
         }
-
-        context.
-        multipart.addFormData(
-            name: "event",
-            filename: "blob",
-            data: "".data(using: .utf8) ?? Data(),
-            mimeType: "application/json"
-        )
+        if let context = resources.first?.context, let data = try? JSONEncoder().encode(context) {
+            multipart.addFormData(
+                name: "event",
+                filename: "blob",
+                data: data,
+                mimeType: "application/json"
+            )
+        }
 
         return builder.uploadRequest(with: multipart.data, compress: false)
     }
