@@ -22,7 +22,7 @@ internal class ResourceProcessor: ResourceProcessing {
 
     func process(resources: [Resource]) {
         queue.run { [writer] in
-            resources.map(EncodableResource.init)
+            Set(resources.map(CodableResource.init))
                 .forEach(writer.write(resource:))
         }
     }
@@ -34,13 +34,17 @@ internal class ResourceProcessor: ResourceProcessing {
     }
 }
 
-struct EncodableResource: Encodable, Resource {
+struct CodableResource: Codable, Hashable, Resource {
     var identifier: String
     var data: Data
 
     init(resource: Resource) {
         self.identifier = resource.identifier
         self.data = resource.data
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
     }
 }
 #endif

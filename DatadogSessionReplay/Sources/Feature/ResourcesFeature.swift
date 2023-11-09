@@ -19,7 +19,7 @@ internal class ResourcesFeature: DatadogRemoteFeature {
         configuration: SessionReplay.Configuration
     ) {
         self.messageReceiver = RUMContextReceiver()
-        self.requestBuilder = ResourcesRequestBuilder(
+        self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )

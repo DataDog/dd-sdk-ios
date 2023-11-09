@@ -47,6 +47,7 @@ internal struct MultipartFormData: MultipartFormDataBuilder {
     var data: Data {
         var data = body
         data.append(string: "--\(boundary.uuidString)--")
+        let string = data.map { String(format: "%02x", $0) }.joined(separator: "")
         return data
     }
 }

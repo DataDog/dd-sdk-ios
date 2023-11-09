@@ -17,7 +17,7 @@ extension UIImage: Resource {
         return srIdentifier
     }
     var data: Data {
-        return pngData() ?? Data()
+        return scaledDownToApproximateSize(256.KB)
     }
 }
 
@@ -56,6 +56,9 @@ internal struct ViewTreeRecorder {
 
         if !semantics.nodes.isEmpty {
             nodes.append(contentsOf: semantics.nodes)
+        }
+        if !semantics.resources.isEmpty {
+            resources.append(contentsOf: semantics.resources)
         }
 
         switch semantics.subtreeStrategy {

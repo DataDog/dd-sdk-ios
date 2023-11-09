@@ -17,7 +17,7 @@ internal protocol Writing {
     func write(nextRecord: EnrichedRecord)
 
     /// Writes resource to SDK core.
-    func write(resource: EncodableResource)
+    func write(resource: CodableResource)
 }
 
 internal class Writer: Writing {
@@ -49,7 +49,7 @@ internal class Writer: Writing {
         }
     }
 
-    func write(resource: EncodableResource) {
+    func write(resource: CodableResource) {
         guard let scope = core?.scope(for: ResourcesFeature.name) else {
             return
         }
