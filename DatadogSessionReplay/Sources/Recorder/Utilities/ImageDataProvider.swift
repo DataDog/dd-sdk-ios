@@ -8,7 +8,8 @@
 import Foundation
 import UIKit
 
-@_spi(Internal) public struct SessionReplayImageResource {
+@_spi(Internal)
+public struct SessionReplayImageResource {
     let identifier: String
     let base64: String
 }

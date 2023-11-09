@@ -64,7 +64,8 @@ extension SessionReplay {
             self.customEndpoint = customEndpoint
         }
 
-        @_spi(Internal) public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
+        @_spi(Internal)
+public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
             self._additionalNodeRecorders = additionalNodeRecorders
         }
     }

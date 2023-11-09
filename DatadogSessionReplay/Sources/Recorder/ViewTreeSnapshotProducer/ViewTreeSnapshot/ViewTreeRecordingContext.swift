@@ -12,7 +12,8 @@ import SwiftUI
 /// The context of recording subtree hierarchy.
 ///
 /// Some fields are mutable, so `NodeRecorders` can specialise it for their subtree traversal.
-@_spi(Internal) public struct SessionReplayViewTreeRecordingContext {
+@_spi(Internal)
+public struct SessionReplayViewTreeRecordingContext {
     /// The context of the Recorder.
     let recorder: Recorder.Context
     /// The coordinate space to convert node positions to.

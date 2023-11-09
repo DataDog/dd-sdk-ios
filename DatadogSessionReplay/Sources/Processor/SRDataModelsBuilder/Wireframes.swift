@@ -8,7 +8,8 @@
 import UIKit
 
 /// The border properties of this wireframe. The default value is null (no-border).
-@_spi(Internal) public struct ShapeBorder {
+@_spi(Internal)
+public struct ShapeBorder {
     /// The border color as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
     public let color: String
 
@@ -21,7 +22,8 @@ import UIKit
 }
 
 /// Schema of clipping information for a Wireframe.
-@_spi(Internal) public struct ContentClip {
+@_spi(Internal)
+public struct ContentClip {
     /// The amount of space in pixels that needs to be clipped (masked) at the bottom of the wireframe.
     public let bottom: Int64?
 
@@ -47,7 +49,8 @@ import UIKit
 }
 
 /// The style of this wireframe.
-@_spi(Internal) public struct ShapeStyle {
+@_spi(Internal)
+public struct ShapeStyle {
     /// The background color for this wireframe as a String hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional. The default value is #FFFFFF00.
     public let backgroundColor: String?
 
@@ -67,7 +70,8 @@ import UIKit
 }
 
 /// Schema of all properties of a ShapeWireframe.
-@_spi(Internal) public struct ShapeWireframe {
+@_spi(Internal)
+public struct ShapeWireframe {
     /// The border properties of this wireframe. The default value is null (no-border).
     public let border: ShapeBorder?
 
@@ -110,7 +114,8 @@ import UIKit
 }
 
 /// Schema of all properties of a TextPosition.
-@_spi(Internal) public struct TextPosition {
+@_spi(Internal)
+public struct TextPosition {
     public let alignment: Alignment?
 
     public let padding: Padding?
@@ -189,7 +194,8 @@ import UIKit
 }
 
 /// Schema of all properties of a TextStyle.
-@_spi(Internal) public struct TextStyle {
+@_spi(Internal)
+public struct TextStyle {
     /// The font color as a string hexadecimal. Follows the #RRGGBBAA color format with the alpha value as optional.
     public let color: String
 
@@ -205,7 +211,8 @@ import UIKit
 }
 
 /// Schema of all properties of a TextWireframe.
-@_spi(Internal) public struct TextWireframe {
+@_spi(Internal)
+public struct TextWireframe {
     /// The border properties of this wireframe. The default value is null (no-border).
     public let border: ShapeBorder?
 
@@ -260,7 +267,8 @@ import UIKit
 }
 
 /// Schema of all properties of a ImageWireframe.
-@_spi(Internal) public struct ImageWireframe {
+@_spi(Internal)
+public struct ImageWireframe {
     /// base64 representation of the image. Not required as the ImageWireframe can be initialised without any base64
     public var base64: String?
 
@@ -319,7 +327,8 @@ import UIKit
 }
 
 /// Schema of all properties of a PlaceholderWireframe.
-@_spi(Internal) public struct PlaceholderWireframe {
+@_spi(Internal)
+public struct PlaceholderWireframe {
     /// Schema of clipping information for a Wireframe.
     public let clip: ContentClip?
 
@@ -358,7 +367,8 @@ import UIKit
 }
 
 /// Schema of a Wireframe type.
-@_spi(Internal) public enum Wireframe {
+@_spi(Internal)
+public enum Wireframe {
     case shapeWireframe(value: ShapeWireframe)
     case textWireframe(value: TextWireframe)
     case imageWireframe(value: ImageWireframe)

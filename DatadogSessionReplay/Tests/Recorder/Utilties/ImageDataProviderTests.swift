@@ -5,7 +5,8 @@
  */
 
 import XCTest
-@_spi(Internal) @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class ImageDataProviderTests: XCTestCase {
     func test_returnsNil_WhenImageIsNil() {

@@ -6,7 +6,8 @@
 
 import XCTest
 @testable import TestUtilities
-@_spi(Internal) @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class DiffSRWireframes: XCTestCase {
     // MARK: - Diffable Conformance

@@ -9,7 +9,8 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-@_spi(Internal) public typealias WireframeID = NodeID
+@_spi(Internal)
+public typealias WireframeID = NodeID
 
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in 
 /// records (see `RecordsBuilder`) within  segments (see `SegmentBuilder`).
@@ -17,7 +18,8 @@ import UIKit
 /// It is used by the player to reconstruct individual elements of the recorded app UI.
 ///
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
-@_spi(Internal) public class SessionReplayWireframesBuilder {
+@_spi(Internal)
+public class SessionReplayWireframesBuilder {
     /// A set of fallback values to use if the actual value cannot be read or converted.
     ///
     /// The idea is to always provide value, which would make certain element visible in the player.

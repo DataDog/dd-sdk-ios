@@ -5,7 +5,8 @@
  */
 
 import XCTest
-@_spi(Internal) @testable import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
 
 class UITabBarRecorderTests: XCTestCase {
     private let recorder = UITabBarRecorder()
