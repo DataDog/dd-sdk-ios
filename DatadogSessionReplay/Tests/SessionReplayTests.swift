@@ -7,7 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
-@testable import DatadogSessionReplay
+@_spi(Internal) @testable import DatadogSessionReplay
 
 class SessionReplayTests: XCTestCase {
     private var core: SingleFeatureCoreMock<SessionReplayFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
