@@ -19,6 +19,7 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
              * Copyright 2019-Present Datadog, Inc.
              */
 
+            #if os(iOS)
             import DatadogInternal
 
             // This file was generated from JSON Schema. Do not modify it directly.
@@ -26,7 +27,9 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
             internal protocol SRDataModel: Codable {}
 
             """,
-        footer: ""
+        footer: """
+        #endif
+        """
     )
     let printer = SwiftPrinter(
         configuration: .init(
