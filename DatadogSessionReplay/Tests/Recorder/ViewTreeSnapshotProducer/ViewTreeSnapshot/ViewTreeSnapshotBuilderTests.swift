@@ -48,4 +48,22 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         // Then
         XCTAssertGreaterThan(snapshot.date, now)
     }
+
+    func testWhenQueryingNodeRecorders_itCallsAdditionalNodeRecorders() throws {
+        // Given
+        let view = UIView(frame: .mockRandom())
+        let randomRecorderContext: Recorder.Context = .mockRandom()
+        let additionalNodeRecorder = SessionReplayNodeRecorderMock(resultForView: { _ in nil })
+        let builder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder])
+
+        // When
+        let snapshot = builder.createSnapshot(of: view, with: randomRecorderContext)
+
+        // Then
+        XCTAssertEqual(snapshot.context, randomRecorderContext)
+
+        let queryContext = try XCTUnwrap(additionalNodeRecorder.queryContexts.first)
+        XCTAssertTrue(queryContext.coordinateSpace === view)
+        XCTAssertEqual(queryContext.recorder, randomRecorderContext)
+    }
 }

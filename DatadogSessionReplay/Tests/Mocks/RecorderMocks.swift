@@ -333,6 +333,25 @@ class NodeRecorderMock: NodeRecorder {
     }
 }
 
+class SessionReplayNodeRecorderMock: SessionReplayNodeRecorder {
+    var identifier = UUID()
+    var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeRecordingContext] = []
+    var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
+    var resultForView: ((UIView) -> NodeSemantics?)?
+
+    init(resultForView: ((UIView) -> NodeSemantics?)? = nil) {
+        self.resultForView = resultForView
+    }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        queriedViews.insert(view)
+        queryContexts.append(context)
+        queryContextsByView[view] = context
+        return resultForView?(view)
+    }
+}
+
 // MARK: - TouchSnapshot Mocks
 
 extension TouchSnapshot: AnyMockable, RandomMockable {
