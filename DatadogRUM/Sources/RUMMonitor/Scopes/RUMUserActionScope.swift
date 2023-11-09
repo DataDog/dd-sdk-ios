@@ -142,7 +142,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 action: nil,
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1, sessionPrecondition: .userAppLaunch)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: nil
+                )
             ),
             action: .init(
                 crash: .init(count: 0),

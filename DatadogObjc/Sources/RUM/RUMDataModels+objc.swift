@@ -214,7 +214,7 @@ public class DDRUMActionEventDDSession: NSObject {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 
-    @objc public var sessionPrecondition: DDRUMActionEventDDSessionSessionPrecondition {
+    @objc public var sessionPrecondition: DDRUMActionEventDDSessionRUMSessionPrecondition {
         .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
     }
 }
@@ -243,8 +243,8 @@ public enum DDRUMActionEventDDSessionPlan: Int {
 }
 
 @objc
-public enum DDRUMActionEventDDSessionSessionPrecondition: Int {
-    internal init(swift: RUMActionEvent.DD.Session.SessionPrecondition?) {
+public enum DDRUMActionEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
         switch swift {
         case nil: self = .none
         case .userAppLaunch?: self = .userAppLaunch
@@ -257,7 +257,7 @@ public enum DDRUMActionEventDDSessionSessionPrecondition: Int {
         }
     }
 
-    internal var toSwift: RUMActionEvent.DD.Session.SessionPrecondition? {
+    internal var toSwift: RUMSessionPrecondition? {
         switch self {
         case .none: return nil
         case .userAppLaunch: return .userAppLaunch
@@ -1086,7 +1086,7 @@ public class DDRUMErrorEventDDSession: NSObject {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 
-    @objc public var sessionPrecondition: DDRUMErrorEventDDSessionSessionPrecondition {
+    @objc public var sessionPrecondition: DDRUMErrorEventDDSessionRUMSessionPrecondition {
         .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
     }
 }
@@ -1115,8 +1115,8 @@ public enum DDRUMErrorEventDDSessionPlan: Int {
 }
 
 @objc
-public enum DDRUMErrorEventDDSessionSessionPrecondition: Int {
-    internal init(swift: RUMErrorEvent.DD.Session.SessionPrecondition?) {
+public enum DDRUMErrorEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
         switch swift {
         case nil: self = .none
         case .userAppLaunch?: self = .userAppLaunch
@@ -1129,7 +1129,7 @@ public enum DDRUMErrorEventDDSessionSessionPrecondition: Int {
         }
     }
 
-    internal var toSwift: RUMErrorEvent.DD.Session.SessionPrecondition? {
+    internal var toSwift: RUMSessionPrecondition? {
         switch self {
         case .none: return nil
         case .userAppLaunch: return .userAppLaunch
@@ -2180,7 +2180,7 @@ public class DDRUMLongTaskEventDDSession: NSObject {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 
-    @objc public var sessionPrecondition: DDRUMLongTaskEventDDSessionSessionPrecondition {
+    @objc public var sessionPrecondition: DDRUMLongTaskEventDDSessionRUMSessionPrecondition {
         .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
     }
 }
@@ -2209,8 +2209,8 @@ public enum DDRUMLongTaskEventDDSessionPlan: Int {
 }
 
 @objc
-public enum DDRUMLongTaskEventDDSessionSessionPrecondition: Int {
-    internal init(swift: RUMLongTaskEvent.DD.Session.SessionPrecondition?) {
+public enum DDRUMLongTaskEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
         switch swift {
         case nil: self = .none
         case .userAppLaunch?: self = .userAppLaunch
@@ -2223,7 +2223,7 @@ public enum DDRUMLongTaskEventDDSessionSessionPrecondition: Int {
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.DD.Session.SessionPrecondition? {
+    internal var toSwift: RUMSessionPrecondition? {
         switch self {
         case .none: return nil
         case .userAppLaunch: return .userAppLaunch
@@ -2929,7 +2929,7 @@ public class DDRUMResourceEventDDSession: NSObject {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 
-    @objc public var sessionPrecondition: DDRUMResourceEventDDSessionSessionPrecondition {
+    @objc public var sessionPrecondition: DDRUMResourceEventDDSessionRUMSessionPrecondition {
         .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
     }
 }
@@ -2958,8 +2958,8 @@ public enum DDRUMResourceEventDDSessionPlan: Int {
 }
 
 @objc
-public enum DDRUMResourceEventDDSessionSessionPrecondition: Int {
-    internal init(swift: RUMResourceEvent.DD.Session.SessionPrecondition?) {
+public enum DDRUMResourceEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
         switch swift {
         case nil: self = .none
         case .userAppLaunch?: self = .userAppLaunch
@@ -2972,7 +2972,7 @@ public enum DDRUMResourceEventDDSessionSessionPrecondition: Int {
         }
     }
 
-    internal var toSwift: RUMResourceEvent.DD.Session.SessionPrecondition? {
+    internal var toSwift: RUMSessionPrecondition? {
         switch self {
         case .none: return nil
         case .userAppLaunch: return .userAppLaunch
@@ -4109,7 +4109,7 @@ public class DDRUMViewEventDDSession: NSObject {
         .init(swift: root.swiftModel.dd.session!.plan)
     }
 
-    @objc public var sessionPrecondition: DDRUMViewEventDDSessionSessionPrecondition {
+    @objc public var sessionPrecondition: DDRUMViewEventDDSessionRUMSessionPrecondition {
         .init(swift: root.swiftModel.dd.session!.sessionPrecondition)
     }
 }
@@ -4138,8 +4138,8 @@ public enum DDRUMViewEventDDSessionPlan: Int {
 }
 
 @objc
-public enum DDRUMViewEventDDSessionSessionPrecondition: Int {
-    internal init(swift: RUMViewEvent.DD.Session.SessionPrecondition?) {
+public enum DDRUMViewEventDDSessionRUMSessionPrecondition: Int {
+    internal init(swift: RUMSessionPrecondition?) {
         switch swift {
         case nil: self = .none
         case .userAppLaunch?: self = .userAppLaunch
@@ -4152,7 +4152,7 @@ public enum DDRUMViewEventDDSessionSessionPrecondition: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.DD.Session.SessionPrecondition? {
+    internal var toSwift: RUMSessionPrecondition? {
         switch self {
         case .none: return nil
         case .userAppLaunch: return .userAppLaunch

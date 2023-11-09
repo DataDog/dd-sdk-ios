@@ -152,10 +152,16 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
+                ),
                 discarded: nil,
                 rulePsr: traceSamplingRate,
-                session: .init(plan: .plan1, sessionPrecondition: .userAppLaunch),
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: nil
+                ),
                 spanId: spanId,
                 traceId: traceId
             ),
@@ -250,7 +256,10 @@ internal class RUMResourceScope: RUMScope {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1, sessionPrecondition: .userAppLaunch)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: nil
+                )
             ),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
