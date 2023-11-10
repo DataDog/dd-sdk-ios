@@ -371,7 +371,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
             action: .init(
@@ -457,7 +457,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 ),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
             application: .init(id: self.context.rumApplicationID),
@@ -557,7 +557,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
             action: self.context.activeUserActionID.map { rumUUID in
@@ -625,7 +625,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 discarded: nil,
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
             action: self.context.activeUserActionID.map {

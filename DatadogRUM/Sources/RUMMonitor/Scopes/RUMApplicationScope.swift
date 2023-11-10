@@ -131,14 +131,25 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     /// Starts initial RUM Session.
     private func createInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         if didCreateInitialSession { // Sanity check
-            dependencies.telemetry.error("Initial session was created more than once")
+            dependencies.telemetry.error("Initial session was created more than once (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
         didCreateInitialSession = true
+
+        var startPrecondition: RUMSessionPrecondition? = nil
+
+        if context.launchTime?.isActivePrewarm == true {
+            startPrecondition = .prewarm
+        } else if context.applicationStateHistory.currentSnapshot.state == .background {
+            startPrecondition = .backgroundLaunch
+        } else {
+            startPrecondition = .userAppLaunch
+        }
 
         let initialSession = RUMSessionScope(
             isInitialSession: true,
             parent: self,
             startTime: context.sdkInitDate,
+            startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: context.hasReplay
         )
@@ -150,11 +161,22 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
     private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
-        if lastSessionEndReason == .timeOut || lastSessionEndReason == .maxDuration { // Sanity check
-            dependencies.telemetry.error("Session was refreshed but previous one ended with unexpected reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
+        var startPrecondition: RUMSessionPrecondition? = nil
+
+        if lastSessionEndReason == .timeOut {
+            startPrecondition = .inactivityTimeout
+        } else if lastSessionEndReason == .maxDuration {
+            startPrecondition = .maxDuration
+        } else {
+            dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
 
-        let refreshedSession = RUMSessionScope(from: expiredSession, startTime: command.time, context: context)
+        let refreshedSession = RUMSessionScope(
+            from: expiredSession,
+            startTime: command.time,
+            startPrecondition: startPrecondition,
+            context: context
+        )
         sessionScopeDidUpdate(refreshedSession)
         lastSessionEndReason = nil
         _ = refreshedSession.process(command: command, context: context, writer: writer)
@@ -163,8 +185,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Starts new RUM Session some time after previous one was ended with ``RUMMonitorProtocol.stopSession()`` API. It may re-activate the last view from previous session.
     private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
-        if lastSessionEndReason != .stopAPI { // Sanity check
-            dependencies.telemetry.error("New session was started but previous one ended with unexpected reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
+        var startPrecondition: RUMSessionPrecondition? = nil
+
+        if lastSessionEndReason == .stopAPI {
+            startPrecondition = .explicitStop
+        } else {
+            dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
 
         let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
@@ -172,6 +198,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             isInitialSession: false,
             parent: self,
             startTime: command.time,
+            startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: context.hasReplay,
             resumingViewScope: resumingViewScope
@@ -210,3 +237,4 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         )
     }
 }
+

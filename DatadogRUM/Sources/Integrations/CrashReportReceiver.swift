@@ -341,7 +341,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: lastRUMView.dd.session?.sessionPrecondition
                 )
             ),
             action: nil,
@@ -407,7 +407,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 replayStats: nil,
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: original.dd.session?.sessionPrecondition
                 )
             ),
             application: original.application,

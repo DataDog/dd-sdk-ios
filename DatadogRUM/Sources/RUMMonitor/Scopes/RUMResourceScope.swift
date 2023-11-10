@@ -160,7 +160,7 @@ internal class RUMResourceScope: RUMScope {
                 rulePsr: traceSamplingRate,
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 ),
                 spanId: spanId,
                 traceId: traceId
@@ -258,7 +258,7 @@ internal class RUMResourceScope: RUMScope {
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 session: .init(
                     plan: .plan1,
-                    sessionPrecondition: nil
+                    sessionPrecondition: self.context.sessionPrecondition
                 )
             ),
             action: self.context.activeUserActionID.map { rumUUID in

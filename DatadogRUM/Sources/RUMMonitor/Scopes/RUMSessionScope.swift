@@ -60,6 +60,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
+    /// The precondition that led to the creation of this session.
+    /// TODO: RUM-1650 This should become non-optional after all preconditions are implemented.
+    let startPrecondition: RUMSessionPrecondition?
     /// If events from this session should be sampled (send to Datadog).
     let isSampled: Bool
     /// If the session is currently active. Set to `false` upon reaching the `EndReason`.
@@ -77,6 +80,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
+        startPrecondition: RUMSessionPrecondition?,
         dependencies: RUMScopeDependencies,
         hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
@@ -84,6 +88,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.isSampled = dependencies.sessionSampler.sample()
+        self.startPrecondition = startPrecondition
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
@@ -122,12 +127,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
+        startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext
     ) {
         self.init(
             isInitialSession: false,
             parent: expiredSession.parent,
             startTime: startTime,
+            startPrecondition: startPrecondition,
             dependencies: expiredSession.dependencies,
             hasReplay: context.hasReplay
         )
@@ -158,6 +165,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var context = parent.context
         context.sessionID = sessionUUID
         context.isSessionActive = isActive
+        context.sessionPrecondition = startPrecondition
         return context
     }
 
