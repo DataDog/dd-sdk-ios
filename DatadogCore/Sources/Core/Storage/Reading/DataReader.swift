@@ -17,9 +17,9 @@ internal final class DataReader: Reader {
         self.fileReader = fileReader
     }
 
-    func readFiles(_ limit: Int?) -> [ReadableFile] {
+    func readFiles(limit: Int) -> [ReadableFile] {
         queue.sync {
-            self.fileReader.readFiles(limit)
+            self.fileReader.readFiles(limit: limit)
         }
     }
 

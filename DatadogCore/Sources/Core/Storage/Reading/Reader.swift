@@ -25,8 +25,8 @@ extension Batch {
 /// A type, reading batched data.
 internal protocol Reader {
     /// Reads files from the storage.
-    /// - Parameter limit: maximum number of files to read. If `nil`, all files are read.
-    func readFiles(_ limit: Int?) -> [ReadableFile]
+    /// - Parameter limit: maximum number of files to read.
+    func readFiles(limit: Int) -> [ReadableFile]
     /// Reads batch from given file.
     /// - Parameter file: file to read batch from.
     func readBatch(from file: ReadableFile) -> Batch?

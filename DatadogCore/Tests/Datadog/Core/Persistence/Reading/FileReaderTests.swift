@@ -46,7 +46,7 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(try directory.files().count, 1)
-        XCTAssertEqual(reader.readNextBatches(nil).count, 1)
+        XCTAssertEqual(reader.readNextBatches(.max).count, 1)
         let batch = reader.readNextBatches(1).first
 
         let expected = [
@@ -61,7 +61,7 @@ class FileReaderTests: XCTestCase {
 
         XCTAssertEqual(try directory.files().count, 2)
         XCTAssertEqual(reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(reader.readNextBatches(nil).count, 2)
+        XCTAssertEqual(reader.readNextBatches(.max).count, 2)
     }
 
     func testItReadsEncryptedBatches() throws {
@@ -95,7 +95,7 @@ class FileReaderTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
 
-        XCTAssertEqual(reader.readNextBatches(nil).count, 1)
+        XCTAssertEqual(reader.readNextBatches(.max).count, 1)
         let batch = reader.readNextBatches(1).first
 
         let expected = [
@@ -111,7 +111,7 @@ class FileReaderTests: XCTestCase {
             .append(data: data)
 
         XCTAssertEqual(reader.readNextBatches(2).count, 2)
-        XCTAssertEqual(reader.readNextBatches(nil).count, 2)
+        XCTAssertEqual(reader.readNextBatches(.max).count, 2)
     }
 
     func testItMarksBatchesAsRead() throws {
@@ -159,7 +159,7 @@ class FileReaderTests: XCTestCase {
 }
 
 extension Reader {
-    func readNextBatches(_ limit: Int? = nil) -> [Batch] {
-        return readFiles(limit).compactMap { readBatch(from: $0) }
+    func readNextBatches(_ limit: Int) -> [Batch] {
+        return readFiles(limit: limit).compactMap { readBatch(from: $0) }
     }
 }

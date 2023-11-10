@@ -30,7 +30,7 @@ internal final class FileReader: Reader {
 
     // MARK: - Reading batches
 
-    func readFiles(_ limit: Int?) -> [ReadableFile] {
+    func readFiles(limit: Int) -> [ReadableFile] {
         return orchestrator.getReadableFiles(excludingFilesNamed: filesRead, limit: limit)
     }
 

@@ -66,7 +66,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let context = contextProvider.read()
             let blockersForUpload = self.uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
-            let files = isSystemReady ? self.fileReader.readFiles(maxBatchesPerUpload) : nil
+            let files = isSystemReady ? self.fileReader.readFiles(limit: maxBatchesPerUpload) : nil
             var allUploadsSucceeded = false
             var uploadStatuses = [DataUploadStatus]()
             if let files = files, !files.isEmpty {
@@ -150,7 +150,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
         queue.sync { [fileReader, dataUploader, contextProvider] in
-            for file in fileReader.readFiles(nil) {
+            for file in fileReader.readFiles(limit: .max) {
                 guard let nextBatch = fileReader.readBatch(from: file) else {
                     continue
                 }

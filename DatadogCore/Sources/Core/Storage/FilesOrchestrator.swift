@@ -12,7 +12,7 @@ internal protocol FilesOrchestratorType: AnyObject {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int?) -> [ReadableFile]
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile]
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
@@ -150,7 +150,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int? = nil) -> [ReadableFile] {
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
             let filesFromOldest = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
@@ -160,7 +160,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
-                    .prefix(min(limit ?? filesFromOldest.count, filesFromOldest.count))
+                    .prefix(limit)
                     .map { $0.file }
             }
             #endif
@@ -171,7 +171,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
                 }
             return filtered
-                .prefix(upTo: min(limit ?? .max, filtered.count))
+                .prefix(limit)
                 .map { $0.file }
         } catch {
             telemetry.error("Failed to obtain readable file", error: error)
