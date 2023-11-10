@@ -175,7 +175,7 @@ extension SRTextWireframe: MutableWireframe {
     }
 }
 
-extension SRImageWireframe: Hashable {
+extension SRImageWireframe {
     static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool {
         return lhs.id == rhs.id
             && lhs.resourceId == rhs.resourceId
