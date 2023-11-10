@@ -84,7 +84,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
 }
 
 extension Reader {
-    func readNextBatches(_ limit: Int? = nil) -> [Batch] {
-        return readFiles(limit).compactMap { readBatch(from: $0) }
+    func readNextBatches(_ limit: Int = .max) -> [Batch] {
+        return readFiles(limit: limit).compactMap { readBatch(from: $0) }
     }
 }

@@ -159,7 +159,7 @@ class FileReaderTests: XCTestCase {
 }
 
 extension Reader {
-    func readNextBatches(_ limit: Int) -> [Batch] {
+    func readNextBatches(_ limit: Int = .max) -> [Batch] {
         return readFiles(limit: limit).compactMap { readBatch(from: $0) }
     }
 }
