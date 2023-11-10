@@ -100,7 +100,7 @@ class WebViewEventReceiverTests: XCTestCase {
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
-            "_dd": ["session": ["plan": 2]],
+            "_dd": ["browser_sdk_version": "5.2.0"],
             "application": ["id": String.mockRandom()],
             "session": ["id": String.mockRandom()],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
@@ -113,7 +113,10 @@ class WebViewEventReceiverTests: XCTestCase {
         // Then
         let expectedWebEventWritten: JSON = [
             // Known properties:
-            "_dd": ["session": ["plan": 1]],
+            "_dd": [
+                "session": ["plan": 1],
+                "browser_sdk_version": "5.2.0"
+            ] as [String: Any],
             "application": ["id": rumContext.applicationID],
             "session": ["id": rumContext.sessionID],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
@@ -126,7 +129,6 @@ class WebViewEventReceiverTests: XCTestCase {
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 
-    // swiftlint:disable opening_brace
     func testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped() throws {
         let core = PassthroughCoreMock()
 
@@ -145,7 +147,6 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertTrue(result, "It must accept the message")
         XCTAssertTrue(core.events.isEmpty, "The event must be dropped")
     }
-    // swiftlint:enable opening_brace
 
     func testGivenInvalidRUMContext_whenReceivingEvent_itSendsErrorTelemetry() throws {
         struct InvalidRUMContext: Codable {
