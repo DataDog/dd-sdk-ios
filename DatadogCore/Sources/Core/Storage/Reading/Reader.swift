@@ -30,17 +30,8 @@ internal protocol Reader {
     /// Reads batch from given file.
     /// - Parameter file: file to read batch from.
     func readBatch(from file: ReadableFile) -> Batch?
-    /// Reads next batches from the storage.
-    /// - Parameter limit: maximum number of batches to read. If `nil`, all batches are read.
-    func readNextBatches(_ limit: Int?) -> [Batch]
     /// Marks given batch as read.
     /// - Parameter batch: batch to mark as read.
     /// - Parameter reason: reason for removing the batch.
     func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason)
-}
-
-extension Reader {
-    func readNextBatches(_ limit: Int? = nil) -> [Batch] {
-        return readFiles(limit).compactMap { readBatch(from: $0) }
-    }
 }

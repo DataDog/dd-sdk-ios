@@ -68,25 +68,25 @@ internal class DataUploadWorker: DataUploadWorkerType {
             let isSystemReady = blockersForUpload.isEmpty
             let files = isSystemReady ? self.fileReader.readFiles(maxBatchesPerUpload) : nil
             var allUploadsSucceeded = false
-            if let files = files, files.isEmpty == false {
+            var uploadStatuses = [DataUploadStatus]()
+            if let files = files, !files.isEmpty {
+                DD.logger.debug("⏳ (\(self.featureName)) Uploading batches...")
                 for file in files {
                     self.backgroundTaskCoordinator?.beginBackgroundTask()
                     guard let batch = self.fileReader.readBatch(from: file) else {
                         continue
                     }
-                    DD.logger.debug("⏳ (\(self.featureName)) Uploading batch...")
                     do {
                         // Upload batch
                         let uploadStatus = try self.dataUploader.upload(
                             events: batch.events,
                             context: context
                         )
-
+                        uploadStatuses.append(uploadStatus)
                         if uploadStatus.needsRetry {
                             DD.logger.debug("   → (\(self.featureName)) not delivered, will be retransmitted: \(uploadStatus.userDebugDescription)")
                             allUploadsSucceeded = false
                         } else {
-                            DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatus.userDebugDescription)")
                             allUploadsSucceeded = true
                             self.fileReader.markBatchAsRead(
                                 batch,
@@ -120,9 +120,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.backgroundTaskCoordinator?.endBackgroundTask()
             }
 
-            allUploadsSucceeded
-                ? self.delay.decrease()
-                : self.delay.increase()
+            if allUploadsSucceeded {
+                let uploadStatusesDescription = uploadStatuses
+                    .map { $0.userDebugDescription }
+                    .joined(separator: ", ")
+                DD.logger.debug("   → (\(self.featureName)) accepted, won't be retransmitted: \(uploadStatusesDescription)")
+                self.delay.decrease()
+            } else {
+                self.delay.increase()
+            }
 
             self.scheduleNextUpload(after: self.delay.current)
         }

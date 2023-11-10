@@ -157,3 +157,9 @@ class FileReaderTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 0)
     }
 }
+
+extension Reader {
+    func readNextBatches(_ limit: Int? = nil) -> [Batch] {
+        return readFiles(limit).compactMap { readBatch(from: $0) }
+    }
+}
