@@ -376,7 +376,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         XCTAssertEqual(
             dd.logger.debugLogs[0].message,
-            "⏳ (\(randomFeatureName)) Uploading batch...",
+            "⏳ (\(randomFeatureName)) Uploading batches...",
             "Batch start information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
 
