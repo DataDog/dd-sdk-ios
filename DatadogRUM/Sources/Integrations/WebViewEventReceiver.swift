@@ -97,9 +97,10 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     event["session"] = session
                 }
 
-                if var dd = event["_dd"] as? JSON, var dd_sesion = dd["session"] as? [String: Int64] {
-                    dd_sesion["plan"] = 1
-                    dd["session"] = dd_sesion
+                if var dd = event["_dd"] as? JSON {
+                    var session = dd["session"] as? [String: Any] ?? [:]
+                    session["plan"] = 1
+                    dd["session"] = session
                     event["_dd"] = dd
                 }
 
