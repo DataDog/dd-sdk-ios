@@ -32,8 +32,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
     private let maxBatchesPerUpload: Int
 
     /// Batch reading work scheduled by this worker.
+    @ReadWriteLock
     private var batchReadWork: DispatchWorkItem?
     /// Batch upload works scheduled by this worker.
+    @ReadWriteLock
     private var batchUploadWorks: [DispatchWorkItem] = []
 
     /// Telemetry interface.
@@ -155,6 +157,11 @@ internal class DataUploadWorker: DataUploadWorkerType {
         queue.async(execute: uploadWork)
     }
 
+    private func cancelUploads() {
+        self.batchUploadWorks.forEach { $0.cancel() }
+        self.batchUploadWorks.removeAll()
+    }
+
     /// Sends all unsent data synchronously.
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
@@ -192,11 +199,6 @@ internal class DataUploadWorker: DataUploadWorkerType {
             self.batchUploadWorks.forEach { $0.cancel() }
             self.batchUploadWorks.removeAll()
         }
-    }
-
-    internal func cancelUploads() {
-        self.batchUploadWorks.forEach { $0.cancel() }
-        self.batchUploadWorks.removeAll()
     }
 }
 
