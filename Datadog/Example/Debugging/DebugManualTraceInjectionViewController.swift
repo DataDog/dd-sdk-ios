@@ -111,7 +111,10 @@ internal struct DebugManualTraceInjectionView: View {
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .w3c:
-            let writer = W3CHTTPHeadersWriter(sampleRate: sampleRate)
+            let writer = W3CHTTPHeadersWriter(
+                sampleRate: sampleRate,
+                tracestate: [:]
+            )
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Single:
