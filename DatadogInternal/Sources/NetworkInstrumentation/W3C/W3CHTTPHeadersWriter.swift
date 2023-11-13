@@ -34,6 +34,10 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     public private(set) var traceHeaderFields: [String: String] = [:]
 
+    /// A dictionary containing the tracestate to be injected.
+    /// This value will be merged with the tracestate from the trace context.
+    private let tracestate: [String: String]
+
     /// The tracing sampler.
     ///
     /// This value will decide of the `FLAG_SAMPLED` header field value
@@ -43,23 +47,27 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Initializes the headers writer.
     ///
     /// - Parameter samplingRate: The sampling rate applied for headers injection.
+    /// - Parameter tracestate: The tracestate to be injected.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
     public convenience init(samplingRate: Float) {
-        self.init(sampleRate: samplingRate)
+        self.init(sampleRate: samplingRate, tracestate: [:])
     }
 
     /// Initializes the headers writer.
     ///
     /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
-    public convenience init(sampleRate: Float = 20) {
-        self.init(sampler: Sampler(samplingRate: sampleRate))
+    /// - Parameter tracestate: The tracestate to be injected.
+    public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
+        self.init(sampler: Sampler(samplingRate: sampleRate), tracestate: tracestate)
     }
 
     /// Initializes the headers writer.
     ///
     /// - Parameter sampler: The sampler used for headers injection.
-    public init(sampler: Sampler) {
+    /// - Parameter tracestate: The tracestate to be injected.
+    public init(sampler: Sampler, tracestate: [String: String]) {
         self.sampler = sampler
+        self.tracestate = tracestate
     }
 
     /// Writes the trace ID, span ID, and optional parent span ID into the trace propagation headers.
@@ -80,11 +88,20 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         ]
         .joined(separator: Constants.separator)
 
-        let ddtracestate = [
-            "\(Constants.sampling):\(sampled ? 1 : 0)",
-            "\(Constants.origin):\(Constants.originRUM)",
-            "\(Constants.parentId):\(String(spanID, representation: .hexadecimal16Chars))"
-        ].joined(separator: Constants.tracestateSeparator)
+        // while merging, the tracestate values from the tracestate property take precedence
+        // over the ones from the trace context
+        let tracestate: [String: String] = [
+            Constants.sampling: "\(sampled ? 1 : 0)",
+            Constants.parentId: String(spanID, representation: .hexadecimal16Chars)
+        ].merging(tracestate) { old, new in
+            return new
+        }
+
+        let ddtracestate = tracestate
+            .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
+            .sorted()
+            .joined(separator: Constants.tracestatePairSeparator)
+
         traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
     }
 }

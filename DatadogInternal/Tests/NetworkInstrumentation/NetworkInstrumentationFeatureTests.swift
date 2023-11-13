@@ -459,7 +459,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenW3C_whenInterceptingRequests_itInjectsTrace() throws {
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
+        let writer = W3CHTTPHeadersWriter(
+            sampler: .mockKeepAll(),
+            tracestate: [
+                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
+            ]
+        )
         handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
 
         // When

@@ -419,7 +419,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(
             modifiedRequest.allHTTPHeaderFields,
             [
-                "tracestate": "dd=s:1;o:rum;p:0000000000000001",
+                "tracestate": "dd=o:rum;p:0000000000000001;s:1",
                 "traceparent": "00-00000000000000000000000000000001-0000000000000001-01",
                 "X-B3-SpanId": "0000000000000001",
                 "X-B3-Sampled": "1",
