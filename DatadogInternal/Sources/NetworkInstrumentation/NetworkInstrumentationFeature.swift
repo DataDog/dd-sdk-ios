@@ -23,7 +23,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
-    internal let queue = DispatchQueue(
+    private let queue = DispatchQueue(
         label: "com.datadoghq.network-instrumentation",
         target: .global(qos: .utility)
     )
@@ -55,7 +55,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         try URLSessionTaskDelegateSwizzler.bindIfNeeded(
             delegateClass: configuration.delegateClass,
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                self?.queue.async {
+                self?.queue.async { [weak self] in
                     self?._task(task, didFinishCollecting: metrics)
                     session.delegate?.interceptor?.task(task, didFinishCollecting: metrics)
 
@@ -67,7 +67,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     }
                 }
             }, interceptDidCompleteWithError: { [weak self] session, task, error in
-                self?.queue.async {
+                self?.queue.async { [weak self] in
                     // prior to iOS 15, task state doesn't change to completed
                     // hence we use didCompleteWithError to detect task completion
                     self?._task(task, didCompleteWithError: task.error)
@@ -78,7 +78,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         try URLSessionDataDelegateSwizzler.bindIfNeeded(delegateClass: configuration.delegateClass, interceptDidReceive: { [weak self] session, task, data in
             // sync update to task prevents a race condition where the currentRequest could already be sent to the transport
-            self?.queue.sync {
+            self?.queue.sync { [weak self] in
                 self?._task(task, didReceive: data)
                 session.delegate?.interceptor?.task(task, didReceive: data)
             }
@@ -86,7 +86,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         if #available(iOS 13, tvOS 13, *) {
             try URLSessionTaskSwizzler.bindIfNeeded(interceptResume: { [weak self] task in
-                self?.queue.sync {
+                self?.queue.sync { [weak self] in
                     let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
                     self?._intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
                 }
@@ -95,7 +95,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             try URLSessionSwizzler.bindIfNeeded(interceptURLRequest: { request in
                 return self.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts)
             }, interceptTask: { [weak self] task in
-                self?.queue.async {
+                self?.queue.async { [weak self] in
                     let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
                     self?._intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
                 }
