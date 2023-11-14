@@ -172,7 +172,7 @@ extension RUMApplicationStartCommand: AnyMockable, RandomMockable {
 
     static func mockWith(
         time: Date = Date(),
-        attributes: [AttributeKey : AttributeValue] = [:]
+        attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMApplicationStartCommand {
         return RUMApplicationStartCommand(
             time: time,

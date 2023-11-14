@@ -237,4 +237,3 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         )
     }
 }
-
