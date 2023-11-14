@@ -46,7 +46,7 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionHandler: The `URLSession` handlers to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
-        let feature = try get(feature: NetworkInstrumentationFeature.self) ?? .init()
+        let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init()
         feature.handlers.append(urlSessionHandler)
         try register(feature: feature)
     }

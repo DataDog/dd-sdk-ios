@@ -10,7 +10,7 @@ import UIKit
 /// Based on the `equals(_:)` implementation, it decides if two `RUMViewIdentifiables` identify the same
 /// RUM View or not. Each implementation of the `RUMViewIdentifiable` decides by its own if it should use
 /// reference or value semantic for the comparison.
-internal protocol RUMViewIdentifiable {
+fileprivate protocol RUMViewIdentifiable {
     /// Compares the instance of this identifiable with another `RUMViewIdentifiable`.
     /// It returns `true` if both identify the same RUM View and `false` otherwise.
     func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool
@@ -27,7 +27,7 @@ internal protocol RUMViewIdentifiable {
 
 /// Extends `UIViewController` with the ability to identify the RUM View.
 extension UIViewController: RUMViewIdentifiable {
-    func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool {
+    fileprivate func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool {
         if let otherViewController = otherIdentifiable as? UIViewController {
             // Two `UIViewController` identifiables indicate the same RUM View only if their references are equal.
             return self === otherViewController
@@ -47,7 +47,7 @@ extension UIViewController: RUMViewIdentifiable {
 
 /// Extends `String` with the ability to identify the RUM View.
 extension String: RUMViewIdentifiable {
-    func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool {
+    fileprivate func equals(_ otherIdentifiable: RUMViewIdentifiable?) -> Bool {
         if let otherString = otherIdentifiable as? String {
             // Two `String` identifiables indicate the same RUM View only if their values are equal.
             return self == otherString
@@ -85,14 +85,8 @@ internal struct RUMViewIdentity {
     }
 
     /// Returns `true` if a given identifiable indicates the same RUM View as the identifiable managed internally.
-    func equals(_ identifiable: RUMViewIdentifiable?) -> Bool {
-        if let selfObject = object as? RUMViewIdentifiable {
-            return selfObject.equals(identifiable)
-        } else if let selfValue = value as? RUMViewIdentifiable {
-            return selfValue.equals(identifiable)
-        } else {
-            return false
-        }
+    fileprivate func equals(_ identifiable: RUMViewIdentifiable?) -> Bool {
+        return self.identifiable?.equals(identifiable) ?? false
     }
 
     /// Returns `true` if a given identity indicates the same RUM View as the identifiable managed internally.
@@ -100,8 +94,20 @@ internal struct RUMViewIdentity {
         return equals(identity?.identifiable)
     }
 
+    /// Return default path name for the managed identifiable.
+    var defaultViewPath: String {
+        return identifiable?.defaultViewPath ?? ""
+    }
+
+    /// Returns `true` if the managed identifiable is still available.
+    /// Underlying `identfiable` is stored as a weak reference, so it may become `nil` at any time.
+    /// For example when the `UIViewController` is deallocated.
+    var exists: Bool {
+        return identifiable != nil
+    }
+
     /// Returns the managed identifiable.
-    var identifiable: RUMViewIdentifiable? {
+    private var identifiable: RUMViewIdentifiable? {
         return (object as? RUMViewIdentifiable) ?? (value as? RUMViewIdentifiable)
     }
 }

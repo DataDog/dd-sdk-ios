@@ -106,7 +106,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "DD_DISABLE_NETWORK_INSTRUMENTATION"
-            value = "$(DD_DISABLE_NETWORK_INSTRUMENTATION)"
+            value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>
          <EnvironmentVariable

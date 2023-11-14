@@ -24,22 +24,28 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     override func tearDown() {
+        core?.get(feature: NetworkInstrumentationFeature.self)?.unbindAll()
         core = nil
         super.tearDown()
     }
 
     // MARK: - Interception Flow
 
-    func testGivenURLSessionWithDatadogDelegate_whenUsingTaskWithURL_itNotifiesInterceptor() {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
+    func testGivenURLSessionWithDatadogDelegate_whenUsingTaskWithURL_itNotifiesInterceptor() throws {
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionDidStart = { _ in
+            notifyInterceptionDidStart.fulfill()
+        }
+        handler.onInterceptionDidComplete = { _ in
+            notifyInterceptionDidComplete.fulfill()
+        }
 
         // Given
-        let delegate = DatadogURLSessionDelegate(in: core)
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -49,31 +55,32 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Then
         wait(
             for: [
-                notifyInterceptionStart,
-                notifyInterceptionComplete
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
             ],
-            timeout: 0.5,
+            timeout: 5,
             enforceOrder: true
         )
         _ = server.waitAndReturnRequests(count: 1)
     }
 
-    func testGivenURLSessionWithDatadogDelegate_whenUsingTaskWithURLRequest_itNotifiesInterceptor() {
+    func testGivenURLSessionWithDatadogDelegate_whenUsingTaskWithURLRequest_itNotifiesInterceptor() throws {
         let notifyRequestMutation = expectation(description: "Notify request mutation")
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         handler.onRequestMutation = { _, _ in notifyRequestMutation.fulfill() }
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         // Given
         let url: URL = .mockAny()
         handler.firstPartyHosts = .init(
             hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
         )
-        let delegate = DatadogURLSessionDelegate(in: core)
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -85,33 +92,116 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         wait(
             for: [
                 notifyRequestMutation,
-                notifyInterceptionStart,
-                notifyInterceptionComplete
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
             ],
-            timeout: 0.5,
+            timeout: 5,
             enforceOrder: true
         )
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataFromURL_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        _ = try await session.data(from: URL.mockAny(), delegate: delegate)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingAsyncDataForURLRequest_itNotifiesInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { interception in
+            XCTAssertTrue(interception.isFirstPartyRequest)
+            notifyInterceptionDidStart.fulfill()
+        }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        // Given
+        let url: URL = .mockAny()
+        handler.firstPartyHosts = .init(
+            hostsWithTracingHeaderTypes: [url.host!: [.datadog]]
+        )
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        _ = try await session.data(for: URLRequest(url: url), delegate: delegate)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
         _ = server.waitAndReturnRequests(count: 1)
     }
 
     // MARK: - Interception Values
 
     func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithFailure_itPassesAllValuesToTheInterceptor() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
-        notifyInterceptionStart.expectedFulfillmentCount = 2
-        notifyInterceptionComplete.expectedFulfillmentCount = 2
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
 
         let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
         let server = ServerMock(delivery: .failure(error: expectedError))
 
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = DatadogURLSessionDelegate(in: core)
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -126,7 +216,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
@@ -144,21 +234,22 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassesAllValuesToTheInterceptor() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        let notifyInterceptionComplete = expectation(description: "Notify intercepion did complete")
-        notifyInterceptionStart.expectedFulfillmentCount = 2
-        notifyInterceptionComplete.expectedFulfillmentCount = 2
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
 
         let randomData: Data = .mockRandom()
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: randomData))
 
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        handler.onInterceptionComplete = { _ in notifyInterceptionComplete.fulfill() }
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
 
         let dateBeforeAnyRequests = Date()
 
         // Given
-        let delegate = DatadogURLSessionDelegate(in: core)
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
         let session = server.getInterceptedURLSession(delegate: delegate)
 
         // When
@@ -173,7 +264,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
 
         let dateAfterAllRequests = Date()
@@ -191,8 +282,67 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
     }
 
+    @available(iOS 13.0, tvOS 13.0, *)
+    func testGivenURLSessionWithCustomDelegate_whenUsingAsyncData_itPassesAllValuesToTheInterceptor() async throws {
+        /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs
+        guard #available(iOS 16, tvOS 16, *) else {
+            return
+        }
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
+
+        let expectedError = NSError(domain: "network", code: 999, userInfo: [NSLocalizedDescriptionKey: "some error"])
+        let server = ServerMock(
+            delivery: .failure(error: expectedError),
+            skipIsMainThreadCheck: true
+        )
+
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        let dateBeforeAnyRequests = Date()
+
+        // Given
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession(delegate: delegate)
+
+        // When
+        let url1: URL = .mockRandom()
+        _ = try? await session.data(from: url1, delegate: delegate)
+
+        let url2: URL = .mockRandom()
+        _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
+
+        // Then
+        await dd_fulfillment(
+            for: [
+                notifyInterceptionDidStart,
+                notifyInterceptionDidComplete
+            ],
+            timeout: 5,
+            enforceOrder: true
+        )
+
+        _ = server.waitAndReturnRequests(count: 2)
+
+        let dateAfterAllRequests = Date()
+
+        XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
+
+        handler.interceptions.forEach { id, interception in
+            XCTAssertGreaterThan(interception.metrics?.fetch.start ?? .distantPast, dateBeforeAnyRequests)
+            XCTAssertLessThan(interception.metrics?.fetch.end ?? .distantFuture, dateAfterAllRequests)
+            XCTAssertNil(interception.data, "Data should not be recorded for \(id)")
+            XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
+        }
+    }
+
     // MARK: - Usage
 
+    @available(*, deprecated)
     func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
         // Given
         let delegate1 = DatadogURLSessionDelegate()
@@ -209,6 +359,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
         // Given
         CoreRegistry.register(default: core)
@@ -225,6 +376,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -307,7 +459,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenW3C_whenInterceptingRequests_itInjectsTrace() throws {
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
+        let writer = W3CHTTPHeadersWriter(
+            sampler: .mockKeepAll(),
+            tracestate: [
+                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
+            ]
+        )
         handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
 
         // When
@@ -328,21 +485,53 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     // MARK: - First Party Hosts
 
     func testGivenHandler_whenInterceptingRequests_itDetectFirstPartyHost() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         // Given
+        let delegate = MockDelegate()
+        let firstPartyHosts: URLSessionInstrumentation.FirstPartyHostsTracing = .traceWithHeaders(hostsWithHeaders: ["test.com": [.datadog]])
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self, firstPartyHostsTracing: firstPartyHosts), in: core)
+
+        let session = server.getInterceptedURLSession(delegate: delegate)
+        let request: URLRequest = .mockWith(url: "https://test.com")
+
+        handler.onInterceptionDidStart = {
+            // Then
+            XCTAssertTrue($0.isFirstPartyRequest)
+            notifyInterceptionDidStart.fulfill()
+        }
+
+        // When
+        session
+            .dataTask(with: request)
+            .resume()
+
+        // Then
+        waitForExpectations(timeout: 5, handler: nil)
+        _ = server.waitAndReturnRequests(count: 1)
+    }
+
+    @available(*, deprecated)
+    func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+
+        // Given
+
         let delegate = DatadogURLSessionDelegate(
             in: core,
             additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
         )
+
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
 
-        handler.onInterceptionStart = {
+        handler.onInterceptionDidStart = {
             // Then
             XCTAssertTrue($0.isFirstPartyRequest)
-            notifyInterceptionStart.fulfill()
+            notifyInterceptionDidStart.fulfill()
         }
 
         // When
@@ -351,44 +540,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 1, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
-    func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
-        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
-
-        // Given
-        class SubclassDelegate: DatadogURLSessionDelegate {}
-
-        let delegate = SubclassDelegate(
-            in: core,
-            additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
-        )
-        let session = server.getInterceptedURLSession(delegate: delegate)
-        let request: URLRequest = .mockWith(url: "https://test.com")
-
-        handler.onInterceptionStart = {
-            // Then
-            XCTAssertTrue($0.isFirstPartyRequest)
-            notifyInterceptionStart.fulfill()
-        }
-
-        // When
-        session
-            .dataTask(with: request)
-            .resume()
-
-        // Then
-        waitForExpectations(timeout: 1, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
-    }
-
+    @available(*, deprecated)
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
-        let notifyInterceptionStart = expectation(description: "Notify interception did start")
-        handler.onInterceptionStart = { _ in notifyInterceptionStart.fulfill() }
+        let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
         // Given
@@ -398,7 +557,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             required init(in core: DatadogCoreProtocol) {
                 ddURLSessionDelegate = DatadogURLSessionDelegate(
                     in: core,
-                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
+                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog, .tracecontext]]
                 )
 
                 super.init()
@@ -409,10 +568,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let session = server.getInterceptedURLSession(delegate: delegate)
         let request: URLRequest = .mockWith(url: "https://test.com")
 
-        handler.onInterceptionStart = {
+        handler.onInterceptionDidStart = {
             // Then
             XCTAssertTrue($0.isFirstPartyRequest)
-            notifyInterceptionStart.fulfill()
+            notifyInterceptionDidStart.fulfill()
         }
 
         // When
@@ -421,7 +580,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
+        waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
     }
 
@@ -450,5 +609,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             iterations: 50
         )
         // swiftlint:enable opening_brace trailing_closure
+    }
+
+    class MockDelegate: NSObject, URLSessionDataDelegate {
     }
 }

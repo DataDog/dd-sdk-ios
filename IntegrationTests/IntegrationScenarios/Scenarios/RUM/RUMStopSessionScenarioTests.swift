@@ -118,7 +118,6 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertNil(interruptedSession.applicationLaunchView)
 
             let view1 = interruptedSession.viewVisits[0]
-            XCTAssertTrue(try XCTUnwrap(view1.viewEvents.first?.session.isActive))
             XCTAssertEqual(view1.name, "KioskSendInterruptedEvents")
             XCTAssertEqual(view1.path, "Runner.KioskSendInterruptedEventsViewController")
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")

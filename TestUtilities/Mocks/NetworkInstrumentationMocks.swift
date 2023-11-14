@@ -53,8 +53,8 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
 
     public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>) -> Void)?
     public var onRequestInterception: ((URLRequest) -> Void)?
-    public var onInterceptionStart: ((URLSessionTaskInterception) -> Void)?
-    public var onInterceptionComplete: ((URLSessionTaskInterception) -> Void)?
+    public var onInterceptionDidStart: ((URLSessionTaskInterception) -> Void)?
+    public var onInterceptionDidComplete: ((URLSessionTaskInterception) -> Void)?
 
     @ReadWriteLock
     public private(set) var interceptions: [UUID: URLSessionTaskInterception] = [:]
@@ -77,12 +77,12 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     }
 
     public func interceptionDidStart(interception: URLSessionTaskInterception) {
-        onInterceptionStart?(interception)
+        onInterceptionDidStart?(interception)
         interceptions[interception.identifier] = interception
     }
 
     public func interceptionDidComplete(interception: URLSessionTaskInterception) {
-        onInterceptionComplete?(interception)
+        onInterceptionDidComplete?(interception)
         interceptions[interception.identifier] = interception
     }
 }
