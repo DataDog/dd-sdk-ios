@@ -213,4 +213,22 @@ internal extension WireframesBuilder {
         )
     }
 }
+
+extension SRContentClip {
+    /// This method is a convenience for exposing the internal default init.
+    @_spi(Internal)
+    public static func create(
+        bottom: Int64?,
+        left: Int64?,
+        right: Int64?,
+        top: Int64?
+    ) -> SRContentClip {
+        return SRContentClip(
+            bottom: bottom,
+            left: left,
+            right: right,
+            top: top
+        )
+    }
+}
 #endif
