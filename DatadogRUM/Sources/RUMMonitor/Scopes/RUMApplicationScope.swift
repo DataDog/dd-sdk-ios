@@ -56,7 +56,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
         if command is RUMSDKInitCommand {
-            createInitialSession(on: command, context: context, writer: writer)
+            createInitialSession(with: context)
             return true // always keep application scope
         }
 
@@ -66,7 +66,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if sessionScopes.isEmpty && !applicationActive {
             // This flow is likely stale code as`RUMSDKInitCommand` should already start the session before reaching this point
             dependencies.telemetry.debug("Starting initial session from lazy flow")
-            createInitialSession(on: command, context: context, writer: writer)
+            createInitialSession(with: context)
         }
 
         // Create the application launch view on any command
@@ -129,7 +129,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     private var didCreateInitialSession = false
 
     /// Starts initial RUM Session.
-    private func createInitialSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func createInitialSession(with context: DatadogContext) {
         if didCreateInitialSession { // Sanity check
             dependencies.telemetry.error("Initial session was created more than once (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
