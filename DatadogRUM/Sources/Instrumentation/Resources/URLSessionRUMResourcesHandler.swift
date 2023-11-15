@@ -164,7 +164,12 @@ extension DistributedTracing {
                     injectEncoding: .multiple
                 )
             case .tracecontext:
-                writer = W3CHTTPHeadersWriter(sampler: sampler)
+                writer = W3CHTTPHeadersWriter(
+                    sampler: sampler,
+                    tracestate: [
+                        W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
+                    ]
+                )
             }
 
             writer.write(

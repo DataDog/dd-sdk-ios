@@ -85,10 +85,11 @@ extension RUM {
 
         /// The configuration for automatic RUM resources tracking.
         ///
-        /// RUM resources tracking requires using the `DDURLSessionDelegate` in `URLSessions` that you want to track.
+        /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
+        /// ``URLSessionInstrumentation.enable(with:)`.
         ///
-        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession` methods and will not work
-        /// without using `DDURLSessionDelegate`.
+        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession`, `URLSessionTask` and
+        /// `URLSessionDataDelegate` methods.
         ///
         /// Default: `nil` - which means automatic RUM resource tracking is not enabled by default.
         public var urlSessionTracking: URLSessionTracking?

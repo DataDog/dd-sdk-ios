@@ -51,7 +51,8 @@ internal class URLSessionTaskDelegateSwizzler {
         lock.lock()
         defer { lock.unlock() }
 
-        guard isBinded == false else {
+        let key = MetaTypeExtensions.key(from: delegateClass)
+        guard didFinishCollectingMap[key] == nil || didCompleteWithErrorMap[key] == nil else {
             return
         }
 

@@ -10,9 +10,46 @@ import XCTest
 final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
     override func tearDown() {
         URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate.self)
+        URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate1.self)
+        URLSessionTaskDelegateSwizzler.unbind(delegateClass: MockDelegate2.self)
         XCTAssertEqual(URLSessionTaskDelegateSwizzler.didFinishCollectingMap.count, 0)
 
         super.tearDown()
+    }
+
+    func testSwizzling_whenMultipleDelegatesAreGiven() throws {
+        let delegate1 = MockDelegate1()
+        let didFinishCollecting1 = XCTestExpectation(description: "didFinishCollecting1")
+        try URLSessionTaskDelegateSwizzler.bind(
+            delegateClass: MockDelegate1.self,
+            interceptDidFinishCollecting: { _, _, _ in
+                didFinishCollecting1.fulfill()
+            }, interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting1.fulfill()
+            }
+        )
+
+        let delegate2 = MockDelegate2()
+        let didFinishCollecting2 = XCTestExpectation(description: "didFinishCollecting2")
+        try URLSessionTaskDelegateSwizzler.bind(
+            delegateClass: MockDelegate2.self,
+            interceptDidFinishCollecting: { _, _, _ in
+                didFinishCollecting2.fulfill()
+            }, interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting2.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default, delegate: delegate1, delegateQueue: nil)
+        let task1 = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+
+        let session2 = URLSession(configuration: .default, delegate: delegate2, delegateQueue: nil)
+        let task2 = session2.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+
+        task1.resume()
+        task2.resume()
+
+        wait(for: [didFinishCollecting1, didFinishCollecting2], timeout: 5)
     }
 
     func testSwizzling_whenMethodsAreImplemented() throws {
@@ -103,5 +140,11 @@ final class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
     }
 
     class MockDelegate: NSObject, URLSessionTaskDelegate {
+    }
+
+    class MockDelegate1: NSObject, URLSessionTaskDelegate {
+    }
+
+    class MockDelegate2: NSObject, URLSessionTaskDelegate {
     }
 }
