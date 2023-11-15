@@ -56,7 +56,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
         if command is RUMSDKInitCommand {
-            createInitialSession(with: context)
+            createInitialSession(with: context, on: command)
             return true // always keep application scope
         }
 
@@ -66,7 +66,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if sessionScopes.isEmpty && !applicationActive {
             // This flow is likely stale code as`RUMSDKInitCommand` should already start the session before reaching this point
             dependencies.telemetry.debug("Starting initial session from lazy flow")
-            createInitialSession(with: context)
+            createInitialSession(with: context, on: command)
         }
 
         // Create the application launch view on any command
@@ -125,15 +125,15 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Private
 
-    /// Sanity flag to make sure initial session is created only once.
-    private var didCreateInitialSession = false
+    /// Sanity count to make sure initial session is created only once.
+    private var didCreateInitialSessionCount = 0
 
     /// Starts initial RUM Session.
-    private func createInitialSession(with context: DatadogContext) {
-        if didCreateInitialSession { // Sanity check
-            dependencies.telemetry.error("Initial session was created more than once (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
+    private func createInitialSession(with context: DatadogContext, on command: RUMCommand) {
+        if didCreateInitialSessionCount > 0 { // Sanity check
+            dependencies.telemetry.error("Creating initial session \(didCreateInitialSessionCount) extra time(s) due to \(type(of: command)) (previous end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
         }
-        didCreateInitialSession = true
+        didCreateInitialSessionCount += 1
 
         var startPrecondition: RUMSessionPrecondition? = nil
 
@@ -191,6 +191,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             startPrecondition = .explicitStop
         } else {
             dependencies.telemetry.error("Failed to determine session precondition for NEW session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown"))")
+        }
+
+        if didCreateInitialSessionCount > 0 { // Sanity check
+            // We assume this is not an initial session in the app (such is started with `RUMSDKInitCommand`:
+            dependencies.telemetry.error("Starting NEW session on due to \(type(of: command)), but initial sesison never existed")
         }
 
         let resumingViewScope = command is RUMStartViewCommand ? nil : lastActiveView
