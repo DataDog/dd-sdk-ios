@@ -5,25 +5,25 @@
  */
 
 import XCTest
+
 @testable import DatadogInternal
 
-final class URLSessionSwizzlerTests: XCTestCase {
-    override func tearDown() {
-        URLSessionSwizzler.unbind()
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-
-        super.tearDown()
-    }
-
+class URLSessionSwizzlerTests: XCTestCase {
     func testSwizzling_dataTaskWithURLRequestAndCompletion() throws {
         let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
         let didInterceptTask = XCTestExpectation(description: "interceptTask")
-        try URLSessionSwizzler.bind(interceptURLRequest: { request in
-            didInterceptRequest.fulfill()
-            return self.interceptRequest(request: request)
-        }, interceptTask: { _ in
-            didInterceptTask.fulfill()
-        })
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            interceptRequest: { request in
+                didInterceptRequest.fulfill()
+                return request
+            },
+            interceptTask: { _ in
+                didInterceptTask.fulfill()
+            }
+        )
 
         let session = URLSession(configuration: .default)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
@@ -49,12 +49,18 @@ final class URLSessionSwizzlerTests: XCTestCase {
 
         let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
         let didInterceptTask = XCTestExpectation(description: "interceptTask")
-        try URLSessionSwizzler.bind(interceptURLRequest: { request in
-            didInterceptRequest.fulfill()
-            return self.interceptRequest(request: request)
-        }, interceptTask: { _ in
-            didInterceptTask.fulfill()
-        })
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            interceptRequest: { request in
+                didInterceptRequest.fulfill()
+                return request
+            },
+            interceptTask: { _ in
+                didInterceptTask.fulfill()
+            }
+        )
 
         let session = URLSession(configuration: .default)
         let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
@@ -71,37 +77,123 @@ final class URLSessionSwizzlerTests: XCTestCase {
         )
     }
 
-    func testBindings() {
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+    func testSwizzling_whenDidReceiveDataIsImplemented() throws {
+        class MockDelegate: NSObject, URLSessionDataDelegate {
+            func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+            }
+        }
 
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+        let delegate = MockDelegate()
+        let expectation = XCTestExpectation(description: "didReceiveData")
 
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+        let swizzler = URLSessionSwizzler()
 
-        URLSessionSwizzler.unbind()
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-    }
-
-    func testConcurrentBinding() throws {
-        // swiftlint:disable opening_brace trailing_closure
-         callConcurrently(
-            closures: [
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
-                { URLSessionSwizzler.unbind() },
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
-                { URLSessionSwizzler.unbind() },
-            ],
-            iterations: 50
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidReceive: { _, _, _ in
+                expectation.fulfill()
+            }
         )
-        // swiftlint:enable opening_brace trailing_closure
+
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+        task.resume()
+
+        wait(for: [expectation], timeout: 5)
     }
 
-    func interceptRequest(request: URLRequest) -> URLRequest {
-        return request
+    func testSwizzling_whenDidReceiveDataNotImplemented() throws {
+        class MockDelegate: NSObject, URLSessionDataDelegate {
+        }
+
+        let delegate = MockDelegate()
+        let expectation = XCTestExpectation(description: "didReceiveData")
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidReceive: { _, _, _ in
+                expectation.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+        task.resume()
+
+        wait(for: [expectation], timeout: 5)
     }
 
-    func interceptTask(task: URLSessionTask) {
+    func testSwizzling_taskResume() throws {
+        let expectation = XCTestExpectation(description: "resume")
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            interceptResume: { _ in
+                expectation.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+        task.resume()
+
+        wait(for: [expectation], timeout: 5)
+    }
+
+    func testSwizzling_taskDelegate_whenMethodsAreImplemented() throws {
+        class MockDelegate: NSObject, URLSessionTaskDelegate {
+            func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+            }
+        }
+
+        let delegate = MockDelegate()
+        let didFinishCollecting = XCTestExpectation(description: "didFinishCollecting")
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidFinishCollecting: { _, _, _ in
+                didFinishCollecting.fulfill()
+            },
+            interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+        task.resume()
+
+        wait(for: [didFinishCollecting], timeout: 5)
+    }
+
+    func testSwizzling_taskDelegate_whenMethodsAreNotImplemented() throws {
+        class MockDelegate: NSObject, URLSessionTaskDelegate {
+        }
+
+        let delegate = MockDelegate()
+        let didFinishCollecting = XCTestExpectation(description: "didFinishCollecting")
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidFinishCollecting: { _, _, _ in
+                didFinishCollecting.fulfill()
+            },
+            interceptDidCompleteWithError: { _, _, _ in
+                didFinishCollecting.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
+        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
+        task.resume()
+
+        wait(for: [didFinishCollecting], timeout: 5)
     }
 }

@@ -132,34 +132,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
             """
-        ),
-        .init(
-            assert: { URLSessionTaskDelegateSwizzler.isBinded == false },
-            problem: "No URLSessionTaskDelegate swizzling must be applied.",
-            solution: """
-            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskDelegateSwizzler.unbind(delegate:)`.
-            """
-        ),
-        .init(
-            assert: { URLSessionDataDelegateSwizzler.isBinded == false },
-            problem: "No URLSessionDataDelegate swizzling must be applied.",
-            solution: """
-            Make sure all the binded delegates are unbinded by the end of test with `URLSessionDataDelegateSwizzler.unbind(delegate:)`.
-            """
-        ),
-        .init(
-            assert: { URLSessionTaskSwizzler.isBinded == false },
-            problem: "No URLSessionTask swizzling must be applied.",
-            solution: """
-            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskSwizzler.unbind()`.
-            """
-        ),
-        .init(
-            assert: { URLSessionSwizzler.isBinded == false },
-            problem: "No URLSession swizzling must be applied.",
-            solution: """
-            Make sure all the binded delegates are unbinded by the end of test with `URLSessionSwizzler.unbind()`.
-            """
         )
     ]
 

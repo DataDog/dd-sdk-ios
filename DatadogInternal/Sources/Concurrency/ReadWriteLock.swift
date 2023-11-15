@@ -39,20 +39,16 @@ public final class ReadWriteLock<Value> {
             defer { pthread_rwlock_unlock(&rwlock) }
             return value
         }
-        set {
-            pthread_rwlock_wrlock(&rwlock)
-            value = newValue
-            pthread_rwlock_unlock(&rwlock)
-        }
+        set { mutate { $0 = newValue } }
     }
 
     /// Provides a non-escaping closure for mutation.
     /// The lock will be acquired once for writing before invoking the closure.
     ///
     /// - Parameter closure: The closure with the mutable value.
-    public func mutate(_ closure: (inout Value) -> Void) {
+    public func mutate(_ closure: (inout Value) throws -> Void) rethrows {
         pthread_rwlock_wrlock(&rwlock)
-        closure(&value)
-        pthread_rwlock_unlock(&rwlock)
+        defer { pthread_rwlock_unlock(&rwlock) }
+        try closure(&value)
     }
 }

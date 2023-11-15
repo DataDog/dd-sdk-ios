@@ -6,23 +6,30 @@
 
 import Foundation
 
-private var sessionFirstPartyHostsKey: UInt8 = 31
-internal extension URLSessionTask {
-    /// Returns the first party hosts for this task.
-    var firstPartyHosts: FirstPartyHosts {
-        get {
-            return sessionFirstPartyHosts ?? .init()
-        }
+extension URLSessionTask: DatadogExtended {}
+extension DatadogExtension where ExtendedType: URLSessionTask {
+    /// Overrides the current request of the ``URLSessionTask``.
+    ///
+    /// The current request must be overriden before the task resumes.
+    ///
+    /// - Parameter request: The new request.
+    func override(currentRequest request: URLRequest) {
+        type.setValue(request, forKey: "currentRequest")
     }
 
-    /// Extension property for storing first party hosts passed from `URLSession` to `URLSessionTask`.
-    /// This is used for `URLSessionTask` based APIs.
-    var sessionFirstPartyHosts: FirstPartyHosts? {
-        set {
-            objc_setAssociatedObject(self, &sessionFirstPartyHostsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
+    /// Infers if the ``URLSessionTask`` will invoked selectors from the given delegate type.
+    ///
+    /// - Parameter klass: The expected delegate type.
+    /// - Returns: Returns `true` if the task will invoked selectors from the delegate type.
+    func isDelegatingTo(klass: URLSessionTaskDelegate.Type) -> Bool {
+        if #available(iOS 15.0, tvOS 15.0, *), type.delegate?.isKind(of: klass) == true {
+            return true
         }
-        get {
-            return objc_getAssociatedObject(self, &sessionFirstPartyHostsKey) as? FirstPartyHosts
+
+        guard let session = type.value(forKey: "session") as? URLSession else {
+            return false
         }
+
+        return session.delegate?.isKind(of: klass) == true
     }
 }
