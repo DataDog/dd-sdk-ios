@@ -34,9 +34,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Batch upload work scheduled by this worker.
     @ReadWriteLock
     private var uploadWork: DispatchWorkItem?
-
-    @ReadWriteLock
     /// Indicates if the worker was cancelled.
+    @ReadWriteLock
     private var cancelled = false
 
     /// Telemetry interface.
