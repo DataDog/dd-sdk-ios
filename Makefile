@@ -68,6 +68,8 @@ ifndef DD_DISABLE_TEST_INSTRUMENTING
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
 		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
+else
+		@echo "⏩  Skipping CI Visibility instrumentation..."
 endif
 		
 endif
