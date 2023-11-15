@@ -24,7 +24,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     override func tearDown() {
-        core?.get(feature: NetworkInstrumentationFeature.self)?.unbindAll()
         core = nil
         super.tearDown()
     }
@@ -233,6 +232,32 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         }
     }
 
+    func testGivenURLSessionWithCustomDelegate_whenNotInstrumented_itDoesNotInterceptTasks() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: Data()))
+
+        let dateBeforeAnyRequests = Date()
+
+        // Given
+        let delegate = MockDelegate()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession() // no custom delegate
+
+        // When
+        let url1: URL = .mockRandom()
+        session
+            .dataTask(with: url1)
+            .resume()
+
+        let url2: URL = .mockRandom()
+        session
+            .dataTask(with: URLRequest(url: url2))
+            .resume()
+
+        // Then
+        _ = server.waitAndReturnRequests(count: 1)
+        XCTAssertEqual(handler.interceptions.count, 0, "Interceptor should not record tasks")
+    }
+
     func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassesAllValuesToTheInterceptor() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
@@ -307,14 +332,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Given
         let delegate = MockDelegate()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
-        let session = server.getInterceptedURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession()
 
         // When
-        let url1: URL = .mockRandom()
-        _ = try? await session.data(from: url1, delegate: delegate)
-
-        let url2: URL = .mockRandom()
-        _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
+        _ = try? await session.data(from: .mockRandom(), delegate: delegate) // intercepted
+        _ = try? await session.data(for: URLRequest(url: .mockRandom()), delegate: delegate) // intercepted
+        _ = try? await session.data(for: URLRequest(url: .mockRandom())) // not intercepted
 
         // Then
         await dd_fulfillment(
@@ -338,6 +361,41 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             XCTAssertNil(interception.data, "Data should not be recorded for \(id)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
+    }
+
+    func testGivenURLSessionTask_withCustomDelegate_itInterceptsRequests() throws {
+        // pre iOS 15 cannot set delegate per task
+        guard #available(iOS 15, tvOS 15, *) else {
+            return
+        }
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        // Given
+        let delegate1 = MockDelegate()
+        let delegate2 = MockDelegate2()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+
+        let session = server.getInterceptedURLSession()
+
+        // When
+        let task1 = session.dataTask(with: URL.mockRandom()) // intercepted
+        task1.delegate = delegate1
+        task1.resume()
+
+        let task2 = session.dataTask(with: URL.mockRandom()) // intercepted
+        task2.delegate = delegate1
+        task2.resume()
+
+        let task3 = session.dataTask(with: URL.mockRandom()) // not intercepted
+        task3.delegate = delegate2
+        task3.resume()
+
+        // Then
+        _ = server.waitAndReturnRequests(count: 2)
+        XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should intercept 2 tasks")
     }
 
     // MARK: - Usage
@@ -604,7 +662,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 { feature.intercept(task: tasks.randomElement()!, additionalFirstPartyHosts: nil) },
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
-                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) }
+                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
+                { try? feature.bindIfNeeded(configuration: .init(delegateClass: MockDelegate.self)) },
+                { feature.unbind(delegateClass: MockDelegate.self) }
             ],
             iterations: 50
         )
@@ -612,5 +672,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     class MockDelegate: NSObject, URLSessionDataDelegate {
+    }
+
+    class MockDelegate2: NSObject, URLSessionDataDelegate {
     }
 }
