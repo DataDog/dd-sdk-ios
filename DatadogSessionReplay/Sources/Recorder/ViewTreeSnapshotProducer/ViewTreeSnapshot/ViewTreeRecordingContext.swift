@@ -15,7 +15,7 @@ import SwiftUI
 @_spi(Internal)
 public struct SessionReplayViewTreeRecordingContext {
     /// The context of the Recorder.
-    let recorder: Recorder.Context
+    public let recorder: Recorder.Context
     /// The coordinate space to convert node positions to.
     let coordinateSpace: UICoordinateSpace
     /// Generates stable IDs for traversed views.
