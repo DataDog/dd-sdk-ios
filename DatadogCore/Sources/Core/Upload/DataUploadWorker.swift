@@ -31,12 +31,12 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Maximum number of batches to upload in one request.
     private let maxBatchesPerUpload: Int
 
+    /// Batch reading work scheduled by this worker.
+    @ReadWriteLock
+    private var readWork: DispatchWorkItem?
     /// Batch upload work scheduled by this worker.
     @ReadWriteLock
     private var uploadWork: DispatchWorkItem?
-    /// Indicates if the worker was cancelled.
-    @ReadWriteLock
-    private var cancelled = false
 
     /// Telemetry interface.
     private let telemetry: Telemetry
@@ -67,12 +67,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.featureName = featureName
         self.telemetry = telemetry
 
-        scheduleNextCycle()
-    }
-
-    private func scheduleNextCycle() {
-        queue.asyncAfter(deadline: .now() + delay.current) { [weak self] in
-            guard let self = self, !self.cancelled  else {
+        self.readWork = DispatchWorkItem { [weak self] in
+            guard let self = self else {
                 return
             }
             let context = contextProvider.read()
@@ -91,6 +87,14 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.scheduleNextCycle()
             }
         }
+        scheduleNextCycle()
+    }
+
+    private func scheduleNextCycle() {
+        guard let readWork = self.readWork else {
+            return
+        }
+        queue.asyncAfter(deadline: .now() + delay.current, execute: readWork)
     }
 
     private func uploadFile(from files: [ReadableFile], context: DatadogContext) {
@@ -154,22 +158,25 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Sends all unsent data synchronously.
     /// - It performs arbitrary upload (without checking upload condition and without re-transmitting failed uploads).
     internal func flushSynchronously() {
-        queue.sync { [fileReader, dataUploader, contextProvider] in
-            for file in fileReader.readFiles(limit: .max) {
-                guard let nextBatch = fileReader.readBatch(from: file) else {
+        queue.sync { [weak self] in
+            guard let self = self else {
+                return
+            }
+            for file in self.fileReader.readFiles(limit: .max) {
+                guard let nextBatch = self.fileReader.readBatch(from: file) else {
                     continue
                 }
                 defer {
                     // RUMM-3459 Delete the underlying batch with `.flushed` reason that will be ignored in reported
                     // metrics or telemetry. This is legitimate as long as `flush()` routine is only available for testing
                     // purposes and never run in production apps.
-                    fileReader.markBatchAsRead(nextBatch, reason: .flushed)
+                    self.fileReader.markBatchAsRead(nextBatch, reason: .flushed)
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.
-                    _ = try dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try self.dataUploader.upload(events: nextBatch.events, context: self.contextProvider.read())
                 } catch {
-                    _ = try? dataUploader.upload(events: nextBatch.events, context: contextProvider.read())
+                    _ = try? self.dataUploader.upload(events: nextBatch.events, context: self.contextProvider.read())
                 }
             }
         }
@@ -179,13 +186,17 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// - It does not affect the upload that has already begun.
     /// - It blocks the caller thread if called in the middle of upload execution.
     internal func cancelSynchronously() {
-        queue.sync {
+        queue.sync { [weak self] in
+            guard let self = self else {
+                return
+            }
             // This cancellation must be performed on the `queue` to ensure that it is not called
             // in the middle of a `DispatchWorkItem` execution - otherwise, as the pending block would be
             // fully executed, it will schedule another upload by calling `nextScheduledWork(after:)` at the end.
             self.uploadWork?.cancel()
             self.uploadWork = nil
-            self.cancelled = true
+            self.readWork?.cancel()
+            self.readWork = nil
         }
     }
 }
@@ -208,7 +219,9 @@ fileprivate extension Array where Element == DataUploadConditions.Blocker {
         if self.isEmpty {
             return "✅"
         } else {
-            return "❌ [upload was skipped because: " + self.map { $0.description }.joined(separator: " AND ") + "]"
+            return "❌ [upload was skipped because: " + map {
+                $0.description
+            }.joined(separator: " AND ") + "]"
         }
     }
 }
