@@ -8,7 +8,8 @@
 import Foundation
 import UIKit
 
-internal struct ImageResource {
+@_spi(Internal)
+public struct ImageResource {
     let identifier: String
     let base64: String
 }

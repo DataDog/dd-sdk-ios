@@ -8,6 +8,7 @@ import XCTest
 import WebKit
 import SwiftUI
 import SafariServices
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 @available(iOS 13.0, *)

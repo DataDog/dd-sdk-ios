@@ -176,7 +176,8 @@ extension SRTextWireframe: MutableWireframe {
 }
 
 extension SRImageWireframe {
-    static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool {
+    @_spi(Internal)
+    public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool {
         return lhs.id == rhs.id
             && lhs.resourceId == rhs.resourceId
             && lhs.border == rhs.border

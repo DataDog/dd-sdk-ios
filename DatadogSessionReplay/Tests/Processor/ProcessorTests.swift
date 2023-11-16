@@ -8,6 +8,7 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 private class WriterMock: Writing {
@@ -279,7 +280,7 @@ class ProcessorTests: XCTestCase {
 
     // MARK: - `ViewTreeSnapshot` generation
 
-    private let snapshotBuilder = ViewTreeSnapshotBuilder()
+    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [])
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))

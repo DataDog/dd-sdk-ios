@@ -563,4 +563,99 @@ final class SwiftPrinterTests: XCTestCase {
 
         XCTAssertEqual(expected, actual)
     }
+
+    func testPrintingSwiftStructAndEnumWithAttribute() throws {
+        let `struct` = SwiftStruct(
+            name: "Foo",
+            comment: "This comment should be above the attribute",
+            properties: [
+                SwiftStruct.Property(
+                    name: "context",
+                    comment: nil,
+                    type: SwiftDictionary(
+                        value: SwiftCodable()
+                    ),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: nil,
+                    codingKey: .dynamic
+                ),
+                SwiftStruct.Property(
+                    name: "ignoredProperty",
+                    comment: "This property will be ignored in coding because it uses default value and is immutable",
+                    type: SwiftPrimitive<String>(),
+                    isOptional: false,
+                    mutability: .immutable,
+                    defaultValue: "default value",
+                    codingKey: .static(value: "ignoredProperty")
+                )
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let `enum` = SwiftEnum(
+            name: "BizzBuzz",
+            comment: "This comment should be above the attribute",
+            cases: [
+                SwiftEnum.Case(label: "case1", rawValue: .string(value: "case 1")),
+                SwiftEnum.Case(label: "case2", rawValue: .string(value: "case 2")),
+                SwiftEnum.Case(label: "case3", rawValue: .string(value: "case 3")),
+            ],
+            conformance: [codableProtocol]
+        )
+
+        let printer = SwiftPrinter(configuration: .init(accessLevel: .spi))
+        let actual = try printer.print(swiftTypes: [`struct`, `enum`])
+
+        let expected = """
+
+        /// This comment should be above the attribute
+        @_spi(Internal)
+        public struct Foo: Codable {
+            public let context: [String: Codable]
+
+            /// This property will be ignored in coding because it uses default value and is immutable
+            public let ignoredProperty: String = "default value"
+
+            enum StaticCodingKeys: String, CodingKey {
+                case ignoredProperty = "ignoredProperty"
+            }
+        }
+
+        extension Foo {
+            public func encode(to encoder: Encoder) throws {
+                // Encode dynamic properties:
+                var dynamicContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+                try context.forEach {
+                    let key = DynamicCodingKey($0)
+                    try dynamicContainer.encode(AnyEncodable($1), forKey: key)
+                }
+            }
+
+            public init(from decoder: Decoder) throws {
+                // Decode other properties into [String: Codable] dictionary:
+                let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+                let dynamicKeys = dynamicContainer.allKeys
+                var dictionary: [String: Codable] = [:]
+
+                try dynamicKeys.forEach { codingKey in
+                    dictionary[codingKey.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: codingKey)
+                }
+
+                self.context = dictionary
+            }
+        }
+
+        /// This comment should be above the attribute
+        @_spi(Internal)
+        public enum BizzBuzz: String, Codable {
+            case case1 = "case 1"
+            case case2 = "case 2"
+            case case3 = "case 3"
+        }
+
+        """
+
+        XCTAssertEqual(expected, actual)
+    }
 }

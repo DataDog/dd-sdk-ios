@@ -33,7 +33,7 @@ internal func generateSRSwiftModels(from schema: URL) throws -> String {
     )
     let printer = SwiftPrinter(
         configuration: .init(
-            accessLevel: .internal
+            accessLevel: .spi
         )
     )
 
