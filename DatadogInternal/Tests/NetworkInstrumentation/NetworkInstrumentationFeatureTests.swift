@@ -235,10 +235,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenURLSessionWithCustomDelegate_whenNotInstrumented_itDoesNotInterceptTasks() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: Data()))
 
-        let dateBeforeAnyRequests = Date()
-
         // Given
-        let delegate = MockDelegate()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
         let session = server.getInterceptedURLSession() // no custom delegate
 
