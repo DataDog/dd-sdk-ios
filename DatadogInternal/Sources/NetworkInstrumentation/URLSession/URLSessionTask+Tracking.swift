@@ -21,7 +21,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
     ///
     /// - Parameter klass: The expected delegate type.
     /// - Returns: Returns `true` if the task will invoked selectors from the delegate type.
-    func isDelegatingTo(klass: URLSessionTaskDelegate.Type) -> Bool {
+    func isDelegatingTo(klass: URLSessionDelegate.Type) -> Bool {
         if #available(iOS 15.0, tvOS 15.0, *), type.delegate?.isKind(of: klass) == true {
             return true
         }
@@ -31,5 +31,21 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
         }
 
         return session.delegate?.isKind(of: klass) == true
+    }
+
+    /// Infers if the ``URLSessionTask`` will invoked selectors from the given delegate type.
+    ///
+    /// - Parameter klass: The expected delegate type.
+    /// - Returns: Returns `true` if the task will invoked selectors from the delegate type.
+    func isDelegatingTo(protocol: Protocol) -> Bool {
+        if #available(iOS 15.0, tvOS 15.0, *), type.delegate?.conforms(to: `protocol`) == true {
+            return true
+        }
+
+        guard let session = type.value(forKey: "session") as? URLSession else {
+            return false
+        }
+
+        return session.delegate?.conforms(to: `protocol`) == true
     }
 }

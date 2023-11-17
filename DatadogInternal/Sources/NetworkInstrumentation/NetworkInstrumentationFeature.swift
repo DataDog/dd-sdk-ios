@@ -39,7 +39,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     internal var handlers: [DatadogURLSessionHandler] = []
 
     @ReadWriteLock
-    internal var swizzlers: [String: URLSessionSwizzler] = [:]
+    internal var swizzlers: [ObjectIdentifier: URLSessionSwizzler] = [:]
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
@@ -55,10 +55,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     internal func bindIfNeeded(configuration: URLSessionInstrumentation.Configuration) throws {
         let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing) ?? .init()
 
-        let key = MetaTypeExtensions.key(from: configuration.delegateClass)
+        let identifier = ObjectIdentifier(configuration.delegateClass)
 
         let swizzler = URLSessionSwizzler()
-        swizzlers[key] = swizzler
+        swizzlers[identifier] = swizzler
 
         if #available(iOS 13, tvOS 13, *) {
             try swizzler.swizzle(
@@ -119,8 +119,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// Unswizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, `URLSessionTask` and `URLSession` methods
     /// - Parameter delegateClass: The delegate class to unswizzle.
     internal func unbind(delegateClass: URLSessionDataDelegate.Type) {
-        let key = MetaTypeExtensions.key(from: delegateClass)
-        swizzlers.removeValue(forKey: key)
+        let identifier = ObjectIdentifier(delegateClass)
+        swizzlers.removeValue(forKey: identifier)
     }
 }
 
@@ -214,15 +214,8 @@ extension NetworkInstrumentationFeature {
     ///   - data: A data object containing the transferred data.
     func task(_ task: URLSessionTask, didReceive data: Data) {
         queue.async { [weak self] in
-            self?._task(task, didReceive: data)
+            self?.interceptions[task]?.register(nextData: data)
         }
-    }
-
-    private func _task(_ task: URLSessionTask, didReceive data: Data) {
-        guard let interception = self.interceptions[task] else {
-            return
-        }
-        interception.register(nextData: data)
     }
 
     /// Tells the interceptors that the task did complete.

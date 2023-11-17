@@ -28,7 +28,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         return URLSessionInterceptor.shared(in: core)
     }
 
-    /* private */ public let firstPartyHosts: FirstPartyHosts
+    let swizzler = URLSessionSwizzler()
 
     /// The instance of the SDK core notified by this delegate.
     ///
@@ -39,17 +39,8 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     @objc
     override public init() {
         core = nil
-        firstPartyHosts = .init()
-
-        URLSessionInstrumentation.enable(
-            with: .init(
-                delegateClass: Self.self,
-                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
-            ),
-            in: core ?? CoreRegistry.default
-        )
-
         super.init()
+        try? swizzle(firstPartyHosts: .init())
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -94,16 +85,8 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:]
     ) {
         self.core = core
-        self.firstPartyHosts = FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes)
-
-        URLSessionInstrumentation.enable(
-            with: .init(
-                delegateClass: Self.self,
-                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
-            ),
-            in: core ?? CoreRegistry.default
-        )
         super.init()
+        try? swizzle(firstPartyHosts: FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes))
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
@@ -118,6 +101,42 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
         interceptor?.task(task, didCompleteWithError: error)
+    }
+
+    private func swizzle(firstPartyHosts: FirstPartyHosts) throws {
+        if #available(iOS 13, tvOS 13, *) {
+            try swizzler.swizzle(
+                interceptResume: { [weak self] task in
+                    guard let interceptor = self?.interceptor else {
+                        return
+                    }
+
+                    if let currentRequest = task.currentRequest {
+                        let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                        task.dd.override(currentRequest: request)
+                    }
+
+                    if task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
+                        interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                    }
+                }
+            )
+        } else {
+            try swizzler.swizzle(
+                interceptRequest: { [weak self] request in
+                    self?.interceptor?.intercept(request: request, additionalFirstPartyHosts: firstPartyHosts) ?? request
+                },
+                interceptTask: { [weak self] task in
+                    if let interceptor = self?.interceptor, task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
+                        interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                    }
+                }
+            )
+        }
+    }
+
+    deinit {
+        swizzler.unswizzle()
     }
 }
 
