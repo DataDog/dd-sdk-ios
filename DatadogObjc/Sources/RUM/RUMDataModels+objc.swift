@@ -3639,6 +3639,10 @@ public class DDRUMViewEventDDConfiguration: NSObject {
     @objc public var sessionSampleRate: NSNumber {
         root.swiftModel.dd.configuration!.sessionSampleRate as NSNumber
     }
+
+    @objc public var startSessionReplayRecordingManually: NSNumber? {
+        root.swiftModel.dd.configuration!.startSessionReplayRecordingManually as NSNumber?
+    }
 }
 
 @objc
@@ -5204,6 +5208,14 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.allowUntrustedEvents as NSNumber?
     }
 
+    @objc public var backgroundTasksEnabled: NSNumber? {
+        root.swiftModel.telemetry.configuration.backgroundTasksEnabled as NSNumber?
+    }
+
+    @objc public var batchProcessingLevel: NSNumber? {
+        root.swiftModel.telemetry.configuration.batchProcessingLevel as NSNumber?
+    }
+
     @objc public var batchSize: NSNumber? {
         root.swiftModel.telemetry.configuration.batchSize as NSNumber?
     }
@@ -5544,4 +5556,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f69ca4664ed6e69c929855d02c4ce3d4b85d0bb4
+// Generated from https://github.com/DataDog/rum-events-format/tree/36e94a0cfb68b6dc0752a9bf4131b952b2aa1859

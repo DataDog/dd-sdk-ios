@@ -65,7 +65,11 @@ internal final class DatadogCore {
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
 
+    /// Flag defining if background tasks are enabled.
     internal let backgroundTasksEnabled: Bool
+
+    /// Maximum number of batches per upload.
+    internal let maxBatchesPerUpload: Int
 
     /// Creates a core instance.
     ///
@@ -87,6 +91,7 @@ internal final class DatadogCore {
     	encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
+        maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool
     ) {
         self.directory = directory
@@ -95,6 +100,7 @@ internal final class DatadogCore {
         self.httpClient = httpClient
         self.encryption = encryption
         self.contextProvider = contextProvider
+        self.maxBatchesPerUpload = maxBatchesPerUpload
         self.backgroundTasksEnabled = backgroundTasksEnabled
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
@@ -246,6 +252,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 httpClient: httpClient,
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
+                maxBatchesPerUpload: maxBatchesPerUpload,
                 telemetry: telemetry
             )
 

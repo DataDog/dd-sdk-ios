@@ -67,6 +67,7 @@ class DatadogLogsFeatureTests: XCTestCase {
                 )
             ),
             applicationVersion: randomApplicationVersion,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
         defer { core.flushAndTearDown() }
@@ -129,6 +130,7 @@ class DatadogLogsFeatureTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }

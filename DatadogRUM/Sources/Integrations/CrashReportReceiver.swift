@@ -389,7 +389,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
@@ -472,7 +476,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,

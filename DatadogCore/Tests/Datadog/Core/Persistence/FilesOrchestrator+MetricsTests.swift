@@ -83,7 +83,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - wait more than batch obsolescence limit
         // - then request readable file, which should trigger obsolete files deletion
         dateProvider.advance(bySeconds: storage.maxFileAgeForRead + 1)
-        _ = orchestrator.getReadableFile()
+        _ = orchestrator.getReadableFiles()
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))

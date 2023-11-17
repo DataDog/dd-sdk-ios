@@ -14,6 +14,8 @@ extension ConfigurationTelemetry {
             actionNameAttribute: .mockRandom(),
             allowFallbackToLocalStorage: .mockRandom(),
             allowUntrustedEvents: .mockRandom(),
+            backgroundTasksEnabled: .mockRandom(),
+            batchProcessingLevel: .mockRandom(),
             batchSize: .mockRandom(),
             batchUploadFrequency: .mockRandom(),
             dartVersion: .mockRandom(),

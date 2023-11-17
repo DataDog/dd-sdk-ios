@@ -260,6 +260,8 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             actionNameAttribute: nil,
             allowFallbackToLocalStorage: nil,
             allowUntrustedEvents: nil,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,
             batchUploadFrequency: configuration.batchUploadFrequency,
             dartVersion: configuration.dartVersion,
