@@ -720,6 +720,7 @@ extension URLSessionTaskTransactionMetrics {
 private class URLSessionDataTaskMock: URLSessionDataTask {
     private let _originalRequest: URLRequest
     override var originalRequest: URLRequest? { _originalRequest }
+    override var currentRequest: URLRequest? { _originalRequest }
 
     private let _response: URLResponse
     override var response: URLResponse? { _response }
