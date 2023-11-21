@@ -251,7 +251,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        _ = server.waitAndReturnRequests(count: 1)
+        _ = server.waitAndReturnRequests(count: 2)
         XCTAssertEqual(handler.interceptions.count, 0, "Interceptor should not record tasks")
     }
 
@@ -346,7 +346,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             enforceOrder: true
         )
 
-        _ = server.waitAndReturnRequests(count: 2)
+        _ = server.waitAndReturnRequests(count: 3)
 
         let dateAfterAllRequests = Date()
 
@@ -365,6 +365,11 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         guard #available(iOS 15, tvOS 15, *) else {
             return
         }
+
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
         let server = ServerMock(
             delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
             skipIsMainThreadCheck: true
@@ -377,21 +382,26 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let session = server.getInterceptedURLSession()
 
+        handler.onInterceptionDidStart = {
+            print($0.request)
+        }
+
         // When
-        let task1 = session.dataTask(with: URL.mockRandom()) // intercepted
+        let task1 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/1")) // intercepted
         task1.delegate = delegate1
         task1.resume()
 
-        let task2 = session.dataTask(with: URL.mockRandom()) // intercepted
+        let task2 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/2")) // intercepted
         task2.delegate = delegate1
         task2.resume()
 
-        let task3 = session.dataTask(with: URL.mockRandom()) // not intercepted
+        let task3 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/3")) // not intercepted
         task3.delegate = delegate2
         task3.resume()
 
         // Then
-        _ = server.waitAndReturnRequests(count: 2)
+        _ = server.waitAndReturnRequests(count: 3)
+        waitForExpectations(timeout: 5, handler: nil)
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should intercept 2 tasks")
     }
 
