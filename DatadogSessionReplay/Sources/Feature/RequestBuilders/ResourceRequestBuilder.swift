@@ -65,4 +65,32 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
         customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
     }
 }
+
+internal struct CodableResource: Codable, Hashable, Resource {
+    internal struct Context: Codable, Equatable {
+        internal struct Application: Codable, Equatable {
+            let id: String
+        }
+        let type: String
+        let application: Application
+
+        init(_ applicationId: String) {
+            self.type = "resource"
+            self.application = .init(id: applicationId)
+        }
+    }
+    internal var identifier: String
+    internal var data: Data
+    internal var context: Context
+
+    internal init(resource: Resource, context: Context) {
+        self.identifier = resource.identifier
+        self.data = resource.data
+        self.context = context
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(identifier)
+    }
+}
 #endif
