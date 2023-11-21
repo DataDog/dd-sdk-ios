@@ -27,7 +27,7 @@ public final class NodeIDGenerator {
     /// Tracks next `NodeID` to assign.
     private var currentID: NodeID
 
-    init(currentID: NodeID = 0, maxID: NodeID = .max) {
+    init(currentID: NodeID = 0, maxID: NodeID = Int64(Int32.max)) {
         self.currentID = currentID
         self.maxID = maxID
     }
