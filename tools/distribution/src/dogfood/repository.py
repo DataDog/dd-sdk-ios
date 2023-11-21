@@ -66,6 +66,11 @@ class Repository:
             print(f'⚙️️️️ Committing changes using git user from current git config')
         print('    → commit message:')
         print(message)
+
+        # Add GPG signing
+        signer = self.repo.config_reader().get_value("user", "signingkey")
+        self.repo.head.commit.sign(signer)
+
         self.repo.git.add(update=True)
         self.repo.index.commit(message=message, author=author, committer=author)
 
