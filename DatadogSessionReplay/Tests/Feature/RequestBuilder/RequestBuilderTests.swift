@@ -22,7 +22,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItCreatesPOSTRequest() throws {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockAny())
@@ -33,7 +33,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsIntakeURL() {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -53,7 +53,7 @@ class RequestBuilderTests: XCTestCase {
     func testItSetsCustomIntakeURL() {
         // Given
         let randomURL: URL = .mockRandom()
-        let builder = RequestBuilder(customUploadURL: randomURL, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: randomURL, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -73,7 +73,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsNoQueryParameters() throws {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockRandom()
 
         // When
@@ -94,7 +94,7 @@ class RequestBuilderTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
 
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockWith(
             clientToken: randomClientToken,
             version: randomVersion,
@@ -143,7 +143,7 @@ class RequestBuilderTests: XCTestCase {
 
         // Given
         let multipartSpy = MultipartBuilderSpy()
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockWith(source: "ios"))
@@ -166,7 +166,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testWhenBatchDataIsMalformed_itThrows() {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
         XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny()))
@@ -175,7 +175,7 @@ class RequestBuilderTests: XCTestCase {
     func testWhenSourceIsInvalid_itSendsErrorTelemetry() throws {
         // Given
         let telemetry = TelemetryMock()
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: telemetry)
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: telemetry)
 
         // When
         _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"))
