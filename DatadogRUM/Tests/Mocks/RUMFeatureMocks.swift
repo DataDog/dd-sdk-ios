@@ -37,6 +37,7 @@ extension CrashReportReceiver: AnyMockable {
         trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
@@ -46,6 +47,7 @@ extension CrashReportReceiver: AnyMockable {
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             telemetry: telemetry
         )
     }
@@ -661,6 +663,7 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
@@ -674,6 +677,7 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart
         )
@@ -689,6 +693,7 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil
     ) -> RUMScopeDependencies {
@@ -702,6 +707,7 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             ciTest: ciTest ?? self.ciTest,
+            syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart
         )

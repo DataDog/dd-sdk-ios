@@ -131,7 +131,7 @@ extension RUMViewEvent: RandomMockable {
                 documentVersion: .mockRandom(),
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!)
+                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
             ),
             application: .init(id: .mockRandom()),
             buildVersion: .mockRandom(),
@@ -142,6 +142,7 @@ extension RUMViewEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             os: .mockRandom(),
+            parentView: nil,
             privacy: nil,
             service: .mockRandom(),
             session: .init(
@@ -149,7 +150,6 @@ extension RUMViewEvent: RandomMockable {
                 id: .mockRandom(),
                 isActive: true,
                 sampledForReplay: nil,
-                startPrecondition: .appLaunch,
                 type: .user
             ),
             source: .ios,
@@ -223,7 +223,7 @@ extension RUMResourceEvent: RandomMockable {
                 configuration: .mockRandom(),
                 discarded: nil,
                 rulePsr: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!),
+                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement()),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
@@ -237,6 +237,7 @@ extension RUMResourceEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             os: .mockRandom(),
+            parentView: nil,
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
                 dns: .init(duration: .mockRandom(), start: .mockRandom()),
@@ -296,7 +297,7 @@ extension RUMActionEvent: RandomMockable {
                 ),
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: [.plan1, .plan2].randomElement()!)
+                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
             ),
             action: .init(
                 crash: .init(count: .mockRandom()),
@@ -318,6 +319,7 @@ extension RUMActionEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             os: .mockRandom(),
+            parentView: nil,
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
@@ -356,7 +358,7 @@ extension RUMErrorEvent: RandomMockable {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: [.plan1, .plan2].randomElement()!)
+                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
@@ -389,6 +391,7 @@ extension RUMErrorEvent: RandomMockable {
                 type: .mockRandom()
             ),
             os: .mockRandom(),
+            parentView: nil,
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
@@ -435,7 +438,7 @@ extension RUMLongTaskEvent: RandomMockable {
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
                 discarded: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!)
+                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
@@ -448,6 +451,7 @@ extension RUMLongTaskEvent: RandomMockable {
             display: nil,
             longTask: .init(duration: .mockRandom(), id: .mockRandom(), isFrozenFrame: .mockRandom()),
             os: .mockRandom(),
+            parentView: nil,
             service: .mockRandom(),
             session: .init(
                 hasReplay: false,
