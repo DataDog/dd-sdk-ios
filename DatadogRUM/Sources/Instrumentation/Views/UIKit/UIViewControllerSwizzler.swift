@@ -34,11 +34,11 @@ internal class UIViewControllerSwizzler {
         @convention(block) (UIViewController, Bool) -> Void
     > {
         private static let selector = #selector(UIViewController.viewDidAppear(_:))
-        private let method: FoundMethod
+        private let method: Method
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try Self.findMethod(with: Self.selector, in: UIViewController.self)
+            self.method = try dd_sel_findMethod(Self.selector, in: UIViewController.self)
             self.handler = handler
         }
 
@@ -59,11 +59,11 @@ internal class UIViewControllerSwizzler {
         @convention(block) (UIViewController, Bool) -> Void
     > {
         private static let selector = #selector(UIViewController.viewDidDisappear(_:))
-        private let method: FoundMethod
+        private let method: Method
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try Self.findMethod(with: Self.selector, in: UIViewController.self)
+            self.method = try dd_sel_findMethod(Self.selector, in: UIViewController.self)
             self.handler = handler
         }
 

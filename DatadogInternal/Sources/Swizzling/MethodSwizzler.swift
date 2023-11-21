@@ -6,127 +6,184 @@
 
 import Foundation
 
-public enum Swizzling {
-    /// The list of active swizzlings to ensure integrity in unit tests.
-    @ReadWriteLock
-    public static var activeSwizzlingNames: [String] = []
+/// Swizzling interface holds references and hierarchy of swizzled
+/// methods.
+internal enum Swizzling {
+    /// List of currently swizzled methods.
+    static var methods: [Method] {
+        sync { Array($0.keys) }
+    }
+
+    /// Describes the current swizzled methods.
+    static var description: String {
+        methods.map { method_getName($0) }.description
+    }
+
+    /// The hierarchy of swizzling per method.
+    private static var swizzlings: [Method: MethodSwizzling] = [:]
+
+    /// lock for synchronizing `swizzlings` mutuations.
+    private static let lock = NSLock()
+
+    /// Synchronization point to access the swizzling nodes.
+    @discardableResult
+    fileprivate static func sync<T>(block: (inout [Method: MethodSwizzling]) -> T) -> T {
+        lock.lock()
+        defer { lock.unlock() }
+        return block(&swizzlings)
+    }
 }
 
-open class MethodSwizzler<TypedIMP, TypedBlockIMP> {
-    public struct FoundMethod: Hashable {
-        let method: Method
-        let klass: AnyClass
+/// Linked list of swizzled implementations.
+///
+/// This object hold the previous (origin) implementation of a
+/// method, the override closure reference, and a reference to its
+/// parent closure.
+private final class MethodSwizzling {
+    /// original implementation
+    let origin: IMP
+    /// type-erased override closure
+    let override: OverrideBox
+    /// parent swizzling
+    let parent: MethodSwizzling?
 
-        fileprivate init(method: Method, klass: AnyClass) {
-            self.method = method
-            self.klass = klass
-        }
-
-        public static func == (lhs: FoundMethod, rhs: FoundMethod) -> Bool {
-            let methodParity = (lhs.method == rhs.method)
-            let classParity = (NSStringFromClass(lhs.klass) == NSStringFromClass(rhs.klass))
-            return methodParity && classParity
-        }
-
-        public func hash(into hasher: inout Hasher) {
-            let methodName = NSStringFromSelector(method_getName(method))
-            let klassName = NSStringFromClass(klass)
-            let identifier = "\(methodName)|||\(klassName)"
-            hasher.combine(identifier)
-        }
+    init(origin: IMP, override: OverrideBox, parent: MethodSwizzling? = nil) {
+        self.origin = origin
+        self.override = override
+        self.parent = parent
     }
+}
 
-    private var implementationCache: [FoundMethod: IMP] = [:]
-    var swizzledMethods: [FoundMethod] {
-        return Array(implementationCache.keys)
+/// Reference to type-erased override closure.
+private final class OverrideBox {
+    let closure: Any
+    init(_ closure: Any) {
+        self.closure = closure
     }
+}
 
-    public static func findMethod(with selector: Selector, in klass: AnyClass) throws -> FoundMethod {
-        /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
-        /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
-        var headKlass: AnyClass? = klass
-        while let someKlass = headKlass {
-            if let foundMethod = findMethod(with: selector, in: someKlass) {
-                return FoundMethod(method: foundMethod, klass: someKlass)
-            }
-            headKlass = class_getSuperclass(headKlass)
-        }
-        throw InternalError(description: "\(NSStringFromSelector(selector)) is not found in \(NSStringFromClass(klass))")
-    }
+open class MethodSwizzler<Signature, Override> {
+    /// List of swizzling managed by this instance.
+    private var overrides: [(method: Method, `override`: OverrideBox)] = []
 
     public init() { }
 
-    func originalImplementation(of found: FoundMethod) -> TypedIMP {
-        return sync {
-            let originalImp: IMP = implementationCache[found] ?? method_getImplementation(found.method)
-            return unsafeBitCast(originalImp, to: TypedIMP.self)
-        }
-    }
+    /// Swizzle a method with a closure.
+    ///
+    /// - Parameters:
+    ///   - method: The method pointer to swizzle.
+    ///   - override: The closure to apply.
+    public func swizzle(_ method: Method, override: @escaping (Signature) -> Override) {
+        Swizzling.sync { swizzlings in
+            let org_imp = method_getImplementation(method)
+            let org = unsafeBitCast(org_imp, to: Signature.self)
+            let ovr: Override = override(org)
+            let ovr_imp: IMP = imp_implementationWithBlock(ovr)
 
-    public func swizzle(
-        _ foundMethod: FoundMethod,
-        impProvider: (TypedIMP) -> TypedBlockIMP
-    ) {
-        sync {
-            let currentIMP = method_getImplementation(foundMethod.method)
-            let current_typedIMP = unsafeBitCast(currentIMP, to: TypedIMP.self)
-            let newImpBlock: TypedBlockIMP = impProvider(current_typedIMP)
-            let newImp: IMP = imp_implementationWithBlock(newImpBlock)
+            let override = OverrideBox(override)
+            overrides.append((method, override))
 
-            set(newIMP: newImp, for: foundMethod)
+            swizzlings[method] = MethodSwizzling(
+                origin: org_imp,
+                override: override,
+                parent: swizzlings[method]
+            )
 
-            #if DD_SDK_COMPILED_FOR_TESTING
-            Swizzling.activeSwizzlingNames.append(foundMethod.swizzlingName)
-            #endif
+            method_setImplementation(method, ovr_imp)
         }
     }
 
     /// Removes swizzling and resets the method to its original implementation.
     public func unswizzle() {
-        for foundMethod in swizzledMethods {
-            let originalTypedIMP = originalImplementation(of: foundMethod)
-            let originalIMP: IMP = unsafeBitCast(originalTypedIMP, to: IMP.self)
-            method_setImplementation(foundMethod.method, originalIMP)
+        Swizzling.sync { swizzlings in
+            while let (method, override) = overrides.popLast() {
+                guard let swizzling = swizzlings[method] else {
+                    continue
+                }
 
-            Swizzling.activeSwizzlingNames.removeAll { $0 == foundMethod.swizzlingName }
-        }
-    }
-
-    // MARK: - Private methods
-
-    @discardableResult
-    private func sync<T>(block: () -> T) -> T {
-        objc_sync_enter(self)
-        defer { objc_sync_exit(self) }
-        return block()
-    }
-
-    private static func findMethod(with selector: Selector, in klass: AnyClass) -> Method? {
-        var methodsCount: UInt32 = 0
-        let methodsCountPtr = withUnsafeMutablePointer(to: &methodsCount) { $0 }
-        guard let methods: UnsafeMutablePointer<Method> = class_copyMethodList(klass, methodsCountPtr) else {
-            return nil
-        }
-        defer {
-            free(methods)
-        }
-        for index in 0..<Int(methodsCount) {
-            let method = methods.advanced(by: index).pointee
-            if method_getName(method) == selector {
-                return method
+                swizzlings[method] = _unswizzle(
+                    method: method,
+                    override: override,
+                    in: swizzling
+                )
             }
         }
-        return nil
     }
 
-    private func set(newIMP: IMP, for found: FoundMethod) {
-        if implementationCache[found] == nil {
-            implementationCache[found] = method_getImplementation(found.method)
+    /// Unswizzle a method override.
+    ///
+    /// If found, the given override will be remove from the hierachy and swizzling will
+    /// be re-applied for children to also remove the override from the callstack.
+    ///
+    /// - Parameters:
+    ///   - method: The method to unswizzle.
+    ///   - override: The override closure to remove from swizzling.
+    ///   - node: The swizzling hierarchy.
+    /// - Returns: The new swizzling hierarchy if any.
+    private func _unswizzle(method: Method, override: OverrideBox, in swizzling: MethodSwizzling) -> MethodSwizzling? {
+        if swizzling.override === override {
+            // If found, reset the method implementation
+            method_setImplementation(method, swizzling.origin)
+            // return the parent to remove the node from the list
+            return swizzling.parent
         }
-        method_setImplementation(found.method, newIMP)
+
+        // depth-first traversal
+        let parent = swizzling.parent.flatMap {
+            _unswizzle(method: method, override: override, in: $0)
+        }
+
+        if let override = swizzling.override.closure as? (Signature) -> Override {
+            // Re-apply swizzling for current override
+            let org_imp = method_getImplementation(method)
+            let org = unsafeBitCast(org_imp, to: Signature.self)
+            let ovr: Override = override(org)
+            let ovr_imp: IMP = imp_implementationWithBlock(ovr)
+
+            method_setImplementation(method, ovr_imp)
+            return MethodSwizzling(
+                origin: org_imp,
+                override: swizzling.override,
+                parent: parent
+            )
+        }
+
+        // We should never get here as the closure will always
+        // satify the type: return the node anyway.
+        return swizzling
     }
 }
 
-internal extension MethodSwizzler.FoundMethod {
-    var swizzlingName: String { "\(klass).\(method_getName(method))" }
+// MARK: - Find Method
+
+public func dd_sel_findMethod(_ sel: Selector, in klass: AnyClass) throws -> Method {
+    /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
+    /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
+    var headKlass: AnyClass? = klass
+    while let someKlass = headKlass {
+        if let method = sel_findMethod(sel, in: someKlass) {
+            return method
+        }
+        headKlass = class_getSuperclass(headKlass)
+    }
+    throw InternalError(description: "\(NSStringFromSelector(sel)) is not found in \(NSStringFromClass(klass))")
+}
+
+private func sel_findMethod(_ sel: Selector, in klass: AnyClass) -> Method? {
+    var methodsCount: UInt32 = 0
+    let methodsCountPtr = withUnsafeMutablePointer(to: &methodsCount) { $0 }
+    guard let methods: UnsafeMutablePointer<Method> = class_copyMethodList(klass, methodsCountPtr) else {
+        return nil
+    }
+
+    defer { free(methods) }
+
+    for index in 0..<Int(methodsCount) {
+        let method = methods.advanced(by: index).pointee
+        if method_getName(method) == sel {
+            return method
+        }
+    }
+
+    return nil
 }

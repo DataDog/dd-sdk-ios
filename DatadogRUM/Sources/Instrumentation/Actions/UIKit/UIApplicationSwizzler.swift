@@ -30,11 +30,11 @@ internal class UIApplicationSwizzler {
         @convention(block) (UIApplication, UIEvent) -> Bool
     > {
         private static let selector = #selector(UIApplication.sendEvent(_:))
-        private let method: FoundMethod
+        private let method: Method
         private let handler: UIEventHandler
 
         init(handler: UIEventHandler) throws {
-            self.method = try Self.findMethod(with: Self.selector, in: UIApplication.self)
+            self.method = try dd_sel_findMethod(Self.selector, in: UIApplication.self)
             self.handler = handler
         }
 

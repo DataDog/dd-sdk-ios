@@ -33,13 +33,13 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             """
         ),
         .init(
-            assert: { Swizzling.activeSwizzlingNames.isEmpty },
+            assert: { Swizzling.methods.isEmpty },
             problem: "No swizzling must be applied.",
             solution: """
             Make sure all applied swizzling are reset by the end of test with `unswizzle()`.
 
-            `DatadogTestsObserver` found \(Swizzling.activeSwizzlingNames.count) leaked swizzlings:
-            \(Swizzling.activeSwizzlingNames.joined(separator: ", "))
+            `DatadogTestsObserver` found \(Swizzling.methods.count) leaked swizzlings:
+            \(Swizzling.methods)
             """
         ),
         .init(
