@@ -111,7 +111,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             interceptDidCompleteWithError: { [weak self] session, task, error in
                 // prior to iOS 15, task state doesn't change to completed
                 // hence we use didCompleteWithError to detect task completion
-                self?.task(task, didCompleteWithError: task.error)
+                self?.task(task, didCompleteWithError: error)
             }
         )
     }

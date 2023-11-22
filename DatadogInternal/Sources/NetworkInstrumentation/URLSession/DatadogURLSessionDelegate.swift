@@ -14,6 +14,13 @@ public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
 @objc
 @available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
+    /// Datadog delegate object.
+    /// 
+    /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
+    /// - `func urlSession(_:task:didFinishCollecting:)`
+    /// - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:dataTask:didReceive:)`
+    var ddURLSessionDelegate: DatadogURLSessionDelegate { get }
 }
 
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
@@ -91,6 +98,11 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         interceptor?.task(task, didFinishCollecting: metrics)
+        // iOS 16 and above, didCompleteWithError is not called hence we use task state to detect task completion
+        // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+        if #available(iOS 15, tvOS 15, *) {
+            interceptor?.task(task, didCompleteWithError: task.error)
+        }
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {

@@ -47,7 +47,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
     }
     
-    func testRUMURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMURLSessionResourcesScenario_directWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
             expectations: Expectations(
@@ -55,7 +55,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .directWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -70,6 +70,34 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             ),
             urlSessionSetup: .init(
                 instrumentationMethod: .inheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_customWithFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_customWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -103,7 +131,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         )
     }
     
-    func testRUMNSURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMNSURLSessionResourcesScenario_directWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMNSURLSessionResourcesScenario",
             expectations: Expectations(
@@ -111,7 +139,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .directWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -126,6 +154,34 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
             ),
             urlSessionSetup: .init(
                 instrumentationMethod: .inheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_customWithFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_customWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
