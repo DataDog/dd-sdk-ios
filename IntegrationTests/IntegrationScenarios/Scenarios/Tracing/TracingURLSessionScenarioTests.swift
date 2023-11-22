@@ -38,7 +38,27 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         try runTest(
             for: "TracingURLSessionScenario",
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .directWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testTracingURLSessionScenario_customWithFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testTracingURLSessionScenario_customWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "TracingURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -63,12 +83,42 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
             )
         )
     }
+
+    func testTracingNSURLSessionScenario_directWithFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .directWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
     
     func testTracingNSURLSessionScenario_directWithAdditionalFirstyPartyHosts() throws {
         try runTest(
             for: "TracingNSURLSessionScenario",
             urlSessionSetup: .init(
                 instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testTracingNSURLSessionScenario_customWithFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testTracingNSURLSessionScenario_customWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "TracingNSURLSessionScenario",
+            urlSessionSetup: .init(
+                instrumentationMethod: .customWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
