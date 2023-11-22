@@ -92,7 +92,7 @@ internal class URLSessionDataDelegateSwizzler {
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionDataDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionDataDelegate, URLSession, URLSessionDataTask, Data) -> Void = { delegate, session, task, data in
@@ -108,7 +108,7 @@ internal class URLSessionDataDelegateSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()

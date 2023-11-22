@@ -68,7 +68,7 @@ internal class URLSessionTaskSwizzler {
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try dd_sel_findMethod(selector, in: klass)
+            self.method = try dd_class_getInstanceMethod(klass, selector)
             super.init()
         }
 

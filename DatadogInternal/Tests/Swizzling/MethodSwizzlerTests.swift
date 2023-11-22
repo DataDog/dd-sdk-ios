@@ -37,7 +37,7 @@ class MethodSwizzlerTests: XCTestCase {
         // before
         XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
         // swizzle
-        let foundMethod = try dd_sel_findMethod(selToSwizzle, in: BaseClass.self)
+        let foundMethod = try dd_class_getInstanceMethod(BaseClass.self, selToSwizzle)
         swizzler.swizzle(foundMethod) { currentImp -> MethodOverride in
             return { impSelf in
                 return currentImp(impSelf, self.selToSwizzle).appending(String.mockAny())
@@ -52,7 +52,7 @@ class MethodSwizzlerTests: XCTestCase {
         let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
 
         let expectedErrorDescription = "\(NSStringFromSelector(wrongSelToSwizzle)) is not found in \(NSStringFromClass(BaseClass.self))"
-        XCTAssertThrowsError(try dd_sel_findMethod(wrongSelToSwizzle, in: BaseClass.self), "Wrong selector should throw") { error in
+        XCTAssertThrowsError(try dd_class_getInstanceMethod(BaseClass.self, wrongSelToSwizzle), "Wrong selector should throw") { error in
             let internalError = error as? InternalError
             XCTAssertEqual(internalError?.description, expectedErrorDescription)
         }
@@ -60,12 +60,13 @@ class MethodSwizzlerTests: XCTestCase {
 
     func test_findSubclassMethod() throws {
         class EmptySubclass: BaseClass { }
-        let subclassMethod = try dd_sel_findMethod(selToSwizzle, in: EmptySubclass.self)
-        XCTAssertNotNil(subclassMethod)
+        class EmptySubSubclass: EmptySubclass { }
+        XCTAssertNotNil(try dd_class_getInstanceMethod(EmptySubclass.self, selToSwizzle))
+        XCTAssertNotNil(try dd_class_getInstanceMethod(EmptySubSubclass.self, selToSwizzle))
     }
 
     func test_swizzle_alreadySwizzledSelector() throws {
-        let method = try dd_sel_findMethod(selToSwizzle, in: BaseClass.self)
+        let method = try dd_class_getInstanceMethod(BaseClass.self, selToSwizzle)
         let obj = BaseClass()
         let before_imp = method_getImplementation(method)
 
@@ -113,7 +114,7 @@ class MethodSwizzlerTests: XCTestCase {
         }
 
         // Given
-        let method = try dd_sel_findMethod(Swizzler.selector, in: BaseClass.self)
+        let method = try dd_class_getInstanceMethod(BaseClass.self, Swizzler.selector)
         let swizzler1 = Swizzler(method: method)
         let swizzler2 = Swizzler(method: method)
         let swizzler3 = Swizzler(method: method)

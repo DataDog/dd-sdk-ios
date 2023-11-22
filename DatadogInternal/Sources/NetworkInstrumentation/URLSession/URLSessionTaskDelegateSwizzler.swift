@@ -121,7 +121,7 @@ internal class URLSessionTaskDelegateSwizzler {
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionTaskDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void = { delegate, session, task, metrics in
@@ -137,7 +137,7 @@ internal class URLSessionTaskDelegateSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()
@@ -165,7 +165,7 @@ internal class URLSessionTaskDelegateSwizzler {
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionTaskDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void = { delegate, session, task, error in
@@ -181,7 +181,7 @@ internal class URLSessionTaskDelegateSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try dd_sel_findMethod(selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()

@@ -34,7 +34,7 @@ internal class UIApplicationSwizzler {
         private let handler: UIEventHandler
 
         init(handler: UIEventHandler) throws {
-            self.method = try dd_sel_findMethod(Self.selector, in: UIApplication.self)
+            self.method = try dd_class_getInstanceMethod(UIApplication.self, Self.selector)
             self.handler = handler
         }
 

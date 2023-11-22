@@ -38,7 +38,7 @@ internal class UIViewControllerSwizzler {
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try dd_sel_findMethod(Self.selector, in: UIViewController.self)
+            self.method = try dd_class_getInstanceMethod(UIViewController.self, Self.selector)
             self.handler = handler
         }
 
@@ -63,7 +63,7 @@ internal class UIViewControllerSwizzler {
         private let handler: UIViewControllerHandler
 
         init(handler: UIViewControllerHandler) throws {
-            self.method = try dd_sel_findMethod(Self.selector, in: UIViewController.self)
+            self.method = try dd_class_getInstanceMethod(UIViewController.self, Self.selector)
             self.handler = handler
         }
 

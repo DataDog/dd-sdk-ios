@@ -156,34 +156,10 @@ open class MethodSwizzler<Signature, Override> {
 
 // MARK: - Find Method
 
-public func dd_sel_findMethod(_ sel: Selector, in klass: AnyClass) throws -> Method {
-    /// NOTE: RUMM-452 as we never add/remove methods/classes at runtime,
-    /// search operation doesn't have to wrapped in sync {...} although it's visible in the interface
-    var headKlass: AnyClass? = klass
-    while let someKlass = headKlass {
-        if let method = sel_findMethod(sel, in: someKlass) {
-            return method
-        }
-        headKlass = class_getSuperclass(headKlass)
-    }
-    throw InternalError(description: "\(NSStringFromSelector(sel)) is not found in \(NSStringFromClass(klass))")
-}
-
-private func sel_findMethod(_ sel: Selector, in klass: AnyClass) -> Method? {
-    var methodsCount: UInt32 = 0
-    let methodsCountPtr = withUnsafeMutablePointer(to: &methodsCount) { $0 }
-    guard let methods: UnsafeMutablePointer<Method> = class_copyMethodList(klass, methodsCountPtr) else {
-        return nil
+public func dd_class_getInstanceMethod(_ cls: AnyClass, _ name: Selector) throws -> Method {
+    guard let method = class_getInstanceMethod(cls, name) else {
+        throw InternalError(description: "\(NSStringFromSelector(name)) is not found in \(NSStringFromClass(cls))")
     }
 
-    defer { free(methods) }
-
-    for index in 0..<Int(methodsCount) {
-        let method = methods.advanced(by: index).pointee
-        if method_getName(method) == sel {
-            return method
-        }
-    }
-
-    return nil
+    return method
 }
