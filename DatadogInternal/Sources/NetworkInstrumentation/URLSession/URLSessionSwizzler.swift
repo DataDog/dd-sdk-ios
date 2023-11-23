@@ -8,6 +8,8 @@ import Foundation
 
 /// Swizzles `URLSession*` methods.
 internal final class URLSessionSwizzler {
+    private let lock = NSRecursiveLock()
+
     private var dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion?
     private var taskResume: TaskResume?
     private var didFinishCollecting: DidFinishCollecting?
@@ -19,16 +21,20 @@ internal final class URLSessionSwizzler {
         interceptRequest: @escaping (URLRequest) -> URLRequest?,
         interceptTask: @escaping (URLSessionTask) -> Void
     ) throws {
+        lock.lock()
         dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion.build()
         dataTaskWithURLRequestAndCompletion?.swizzle(interceptRequest: interceptRequest, interceptTask: interceptTask)
+        lock.unlock()
     }
 
     /// Swizzles `URLSessionTask.resume()` method.
     func swizzle(
         interceptResume: @escaping (URLSessionTask) -> Void
     ) throws {
+        lock.lock()
         taskResume = try TaskResume.build()
         taskResume?.swizzle(intercept: interceptResume)
+        lock.unlock()
     }
 
     /// Swizzles  `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)` method.
@@ -36,8 +42,10 @@ internal final class URLSessionSwizzler {
         delegateClass: AnyClass,
         interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void
     ) throws {
+        lock.lock()
         didReceive = try DidReceive.build(klass: delegateClass)
         didReceive?.swizzle(intercept: interceptDidReceive)
+        lock.unlock()
     }
 
     /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)` and
@@ -47,21 +55,25 @@ internal final class URLSessionSwizzler {
         interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
         interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
+        lock.lock()
         didFinishCollecting = try DidFinishCollecting.build(klass: delegateClass)
         didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
         didFinishCollecting?.swizzle(intercept: interceptDidFinishCollecting)
         didCompleteWithError?.swizzle(intercept: interceptDidCompleteWithError)
+        lock.unlock()
     }
 
     /// Unswizzles all.
     ///
     /// This method is called during deinit.
     func unswizzle() {
+        lock.lock()
         dataTaskWithURLRequestAndCompletion?.unswizzle()
         taskResume?.unswizzle()
         didFinishCollecting?.unswizzle()
         didCompleteWithError?.unswizzle()
         didReceive?.unswizzle()
+        lock.unlock()
     }
 
     deinit {
