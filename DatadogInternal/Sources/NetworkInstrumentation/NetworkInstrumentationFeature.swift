@@ -52,10 +52,21 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// - Parameter configuration: The configuration to use for swizzling.
     /// Note: We are only concerned with type of the delegate here but to provide compile time safety, we
     ///      use the instance of the delegate to get the type.
-    internal func bindIfNeeded(configuration: URLSessionInstrumentation.Configuration) throws {
+    internal func bind(configuration: URLSessionInstrumentation.Configuration) throws {
         let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing) ?? .init()
 
         let identifier = ObjectIdentifier(configuration.delegateClass)
+
+        if let swizzler = swizzlers[identifier] {
+            DD.logger.warn(
+                """
+                The delegate class \(configuration.delegateClass) is already instrumented.
+                The previous instrumentation wil be disabled in favor of the new one.
+                """
+            )
+
+            swizzler.unswizzle()
+        }
 
         let swizzler = URLSessionSwizzler()
         swizzlers[identifier] = swizzler
