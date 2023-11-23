@@ -454,6 +454,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(delegate.interceptor)
     }
 
+    func testWhenEnableInstrumentationOnTheSameDelegate_thenItPrintsAWarning() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
+        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.warnLog?.message,
+            """
+            The delegate class MockDelegate is already instrumented.
+            The previous instrumentation wil be disabled in favor of the new one.
+            """
+        )
+    }
+
     // MARK: - URLRequest Interception
 
     func testGivenOpenTracing_whenInterceptingRequests_itInjectsTrace() throws {
@@ -670,7 +687,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
                 { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
-                { try? feature.bindIfNeeded(configuration: .init(delegateClass: MockDelegate.self)) },
+                { try? feature.bind(configuration: .init(delegateClass: MockDelegate.self)) },
                 { feature.unbind(delegateClass: MockDelegate.self) }
             ],
             iterations: 50
