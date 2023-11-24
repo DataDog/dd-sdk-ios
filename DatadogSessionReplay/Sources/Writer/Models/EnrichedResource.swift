@@ -26,8 +26,16 @@ internal struct EnrichedResource: Codable, Resource {
     internal var context: Context
 
     internal init(resource: Resource, context: Context) {
-        self.identifier = resource.identifier
-        self.data = resource.data
+        self.init(identifier: resource.identifier, data: resource.data, context: context)
+    }
+
+    internal init(
+        identifier: String,
+        data: Data,
+        context: Context
+    ) {
+        self.identifier = identifier
+        self.data = data
         self.context = context
     }
 }
