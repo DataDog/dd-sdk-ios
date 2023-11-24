@@ -7,7 +7,8 @@
 #if os(iOS)
 import Foundation
 
-internal struct EnrichedResource: Codable, Hashable, Resource {
+/// Extends the resource information with context.
+internal struct EnrichedResource: Codable, Resource {
     internal struct Context: Codable, Equatable {
         internal struct Application: Codable, Equatable {
             let id: String
@@ -28,10 +29,6 @@ internal struct EnrichedResource: Codable, Hashable, Resource {
         self.identifier = resource.identifier
         self.data = resource.data
         self.context = context
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
     }
 }
 #endif
