@@ -63,8 +63,12 @@ private final class OverrideBox {
 }
 
 open class MethodSwizzler<Signature, Override> {
-    /// List of swizzling managed by this instance.
-    private var overrides: [(method: Method, `override`: OverrideBox)] = []
+    /// A `MethodOverride` associates an override reference to a method
+    /// of the Objective-C runtime.
+    private typealias MethodOverride = (method: Method, `override`: OverrideBox)
+
+    /// List of overrides managed by this instance.
+    private var overrides: [MethodOverride] = []
 
     public init() { }
 
@@ -73,27 +77,31 @@ open class MethodSwizzler<Signature, Override> {
     /// - Parameters:
     ///   - method: The method pointer to swizzle.
     ///   - override: The closure to apply.
+    ///
+    /// - Complexity: O(1) on average, over many calls to `swizzle(_:,override:)` on the
+    ///   same array. When a swizzler needs to reallocate storage before swizzling, swizzling is O(*n*),
+    ///   where *n* is the number of method swizzling managed by this instance.
     public func swizzle(_ method: Method, override: @escaping (Signature) -> Override) {
         Swizzling.sync { swizzlings in
-            let org_imp = method_getImplementation(method)
-            let org = unsafeBitCast(org_imp, to: Signature.self)
-            let ovr: Override = override(org)
-            let ovr_imp: IMP = imp_implementationWithBlock(ovr)
-
+            let origin = method_override(method, override)
             let override = OverrideBox(override)
-            overrides.append((method, override))
 
             swizzlings[method] = MethodSwizzling(
-                origin: org_imp,
+                origin: origin,
                 override: override,
                 parent: swizzlings[method]
             )
 
-            method_setImplementation(method, ovr_imp)
+            overrides.append((method, override))
         }
     }
 
-    /// Removes swizzling and resets the method to its original implementation.
+    /// Removes swizzling and resets the method to its previous implementation.
+    ///
+    /// This method will remove all swizzles that have been created by the instance
+    /// only. Other overrides will stay in the callstack.
+    /// 
+    /// - Complexity: O(*n*), where *n* is the number of the swizzle per method.
     public func unswizzle() {
         Swizzling.sync { swizzlings in
             while let (method, override) = overrides.popLast() {
@@ -104,7 +112,7 @@ open class MethodSwizzler<Signature, Override> {
                 swizzlings[method] = _unswizzle(
                     method: method,
                     override: override,
-                    in: swizzling
+                    swizzling: swizzling
                 )
             }
         }
@@ -118,39 +126,48 @@ open class MethodSwizzler<Signature, Override> {
     /// - Parameters:
     ///   - method: The method to unswizzle.
     ///   - override: The override closure to remove from swizzling.
-    ///   - node: The swizzling hierarchy.
+    ///   - swizzling: The swizzling list.
     /// - Returns: The new swizzling hierarchy if any.
-    private func _unswizzle(method: Method, override: OverrideBox, in swizzling: MethodSwizzling) -> MethodSwizzling? {
+    private func _unswizzle(method: Method, override: OverrideBox, swizzling: MethodSwizzling) -> MethodSwizzling? {
+        // reset the method to its previous implementation
+        method_setImplementation(method, swizzling.origin)
+        // if override is found, stop the recursion and remove the node
+        // from the list by returning the parent
         if swizzling.override === override {
-            // If found, reset the method implementation
-            method_setImplementation(method, swizzling.origin)
-            // return the parent to remove the node from the list
             return swizzling.parent
         }
-
-        // depth-first traversal
+        // if override is not found, go to parent (depth-first traversal)
         let parent = swizzling.parent.flatMap {
-            _unswizzle(method: method, override: override, in: $0)
+            _unswizzle(method: method, override: override, swizzling: $0)
         }
-
-        if let override = swizzling.override.closure as? (Signature) -> Override {
-            // Re-apply swizzling for current override
-            let org_imp = method_getImplementation(method)
-            let org = unsafeBitCast(org_imp, to: Signature.self)
-            let ovr: Override = override(org)
-            let ovr_imp: IMP = imp_implementationWithBlock(ovr)
-
-            method_setImplementation(method, ovr_imp)
-            return MethodSwizzling(
-                origin: org_imp,
-                override: swizzling.override,
-                parent: parent
-            )
+        // at this point, parents have been processed and we can re-apply
+        // swizzling override
+        guard let override = swizzling.override.closure as? (Signature) -> Override else {
+            // we should never get here as the closure will always
+            // satify the type: remove the node by returning its
+            // parent
+            return swizzling.parent
         }
+        // re-apply swizzling for current override
+        return MethodSwizzling(
+            origin: method_override(method, override),
+            override: swizzling.override,
+            parent: parent
+        )
+    }
 
-        // We should never get here as the closure will always
-        // satify the type: return the node anyway.
-        return swizzling
+    /// Overrides the implementation of a method.
+    ///
+    /// - Parameters:
+    ///   - method: The methods to override.
+    ///   - override: The overriding closure.
+    /// - Returns: The previous implementation of the method.
+    private func method_override(_ method: Method, _ override: @escaping (Signature) -> Override) -> IMP {
+        let org_imp = method_getImplementation(method)
+        let org = unsafeBitCast(org_imp, to: Signature.self)
+        let ovr: Override = override(org)
+        let ovr_imp: IMP = imp_implementationWithBlock(ovr)
+        return method_setImplementation(method, ovr_imp)
     }
 }
 
