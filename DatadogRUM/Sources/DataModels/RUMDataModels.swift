@@ -400,19 +400,12 @@ public struct RUMActionEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -869,19 +862,12 @@ public struct RUMErrorEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1201,19 +1187,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1729,19 +1708,12 @@ public struct RUMResourceEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -2112,7 +2084,7 @@ public struct RUMViewEvent: RUMDataModel {
         public let sampledForReplay: Bool?
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
@@ -2120,13 +2092,6 @@ public struct RUMViewEvent: RUMDataModel {
             case isActive = "is_active"
             case sampledForReplay = "sampled_for_replay"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -3411,6 +3376,13 @@ public struct RUMOperatingSystem: Codable {
         case version = "version"
         case versionMajor = "version_major"
     }
+}
+
+/// Type of the session
+public enum RUMSessionType: String, Codable {
+    case user = "user"
+    case synthetics = "synthetics"
+    case ciTest = "ci_test"
 }
 
 /// Synthetics properties

@@ -22,9 +22,4 @@ internal struct RUMContext {
     var activeViewName: String?
     /// The ID of active user action.
     var activeUserActionID: RUMUUID?
-
-    // The Test ID of the synthetics test being ran
-    var syntheticsTestId: String?
-    // The Result ID of the synthetics test being ran
-    var syntheticsResultId: String?
 }

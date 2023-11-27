@@ -368,12 +368,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
-                type: lastRUMView.ciTest != nil ? .ciTest : (lastRUMView.synthetics != nil ? .synthetics : .user)
+                type: lastRUMView.session.type
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
-            synthetics: lastRUMView.synthetics.map({ st in
-                    .init(injected: false, resultId: st.resultId, testId: st.testId)
-            }),
+            synthetics: lastRUMView.synthetics,
             usr: lastRUMView.usr,
             version: lastRUMView.version,
             view: .init(

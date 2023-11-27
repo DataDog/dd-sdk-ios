@@ -793,14 +793,14 @@ public class DDRUMActionEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var type: DDRUMActionEventSessionSessionType {
+    @objc public var type: DDRUMActionEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMActionEventSessionSessionType: Int {
-    internal init(swift: RUMActionEvent.Session.SessionType) {
+public enum DDRUMActionEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -808,7 +808,7 @@ public enum DDRUMActionEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMActionEvent.Session.SessionType {
+    internal var toSwift: RUMSessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
@@ -1887,14 +1887,14 @@ public class DDRUMErrorEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var type: DDRUMErrorEventSessionSessionType {
+    @objc public var type: DDRUMErrorEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMErrorEventSessionSessionType: Int {
-    internal init(swift: RUMErrorEvent.Session.SessionType) {
+public enum DDRUMErrorEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -1902,7 +1902,7 @@ public enum DDRUMErrorEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMErrorEvent.Session.SessionType {
+    internal var toSwift: RUMSessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
@@ -2628,14 +2628,14 @@ public class DDRUMLongTaskEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var type: DDRUMLongTaskEventSessionSessionType {
+    @objc public var type: DDRUMLongTaskEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMLongTaskEventSessionSessionType: Int {
-    internal init(swift: RUMLongTaskEvent.Session.SessionType) {
+public enum DDRUMLongTaskEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -2643,7 +2643,7 @@ public enum DDRUMLongTaskEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMLongTaskEvent.Session.SessionType {
+    internal var toSwift: RUMSessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
@@ -3740,14 +3740,14 @@ public class DDRUMResourceEventSession: NSObject {
         root.swiftModel.session.id
     }
 
-    @objc public var type: DDRUMResourceEventSessionSessionType {
+    @objc public var type: DDRUMResourceEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMResourceEventSessionSessionType: Int {
-    internal init(swift: RUMResourceEvent.Session.SessionType) {
+public enum DDRUMResourceEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -3755,7 +3755,7 @@ public enum DDRUMResourceEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMResourceEvent.Session.SessionType {
+    internal var toSwift: RUMSessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics
@@ -4586,14 +4586,14 @@ public class DDRUMViewEventSession: NSObject {
         root.swiftModel.session.sampledForReplay as NSNumber?
     }
 
-    @objc public var type: DDRUMViewEventSessionSessionType {
+    @objc public var type: DDRUMViewEventSessionRUMSessionType {
         .init(swift: root.swiftModel.session.type)
     }
 }
 
 @objc
-public enum DDRUMViewEventSessionSessionType: Int {
-    internal init(swift: RUMViewEvent.Session.SessionType) {
+public enum DDRUMViewEventSessionRUMSessionType: Int {
+    internal init(swift: RUMSessionType) {
         switch swift {
         case .user: self = .user
         case .synthetics: self = .synthetics
@@ -4601,7 +4601,7 @@ public enum DDRUMViewEventSessionSessionType: Int {
         }
     }
 
-    internal var toSwift: RUMViewEvent.Session.SessionType {
+    internal var toSwift: RUMSessionType {
         switch self {
         case .user: return .user
         case .synthetics: return .synthetics

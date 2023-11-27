@@ -44,4 +44,14 @@ internal struct RUMScopeDependencies {
     var telemetry: Telemetry {
         core?.telemetry ?? NOPTelemetry()
     }
+
+    var sessionType: RUMSessionType {
+        if ciTest != nil {
+            return .ciTest
+        } else if syntheticsTest != nil {
+            return .synthetics
+        } else {
+            return .user
+        }
+    }
 }

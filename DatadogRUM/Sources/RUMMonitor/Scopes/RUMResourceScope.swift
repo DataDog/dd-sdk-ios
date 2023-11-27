@@ -223,7 +223,7 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : (dependencies.syntheticsTest != nil ? .synthetics : .user)
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
             synthetics: dependencies.syntheticsTest,
@@ -286,7 +286,7 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : (dependencies.syntheticsTest != nil ? .synthetics : .user)
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
             synthetics: dependencies.syntheticsTest,
