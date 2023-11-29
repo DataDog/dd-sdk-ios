@@ -267,7 +267,10 @@ extension DatadogCore: DatadogCoreProtocol {
         }
 
         features[T.name] = feature
-        add(messageReceiver: feature.messageReceiver, forKey: T.name)
+
+        if let messageReceiver = feature.messageReceiver {
+            add(messageReceiver: messageReceiver, forKey: T.name)
+        }
     }
 
     /// Retrieves a Feature by its name and type.

@@ -14,7 +14,7 @@ class WriterTests: XCTestCase {
     func testWhenFeatureScopeIsConnected_itWritesRecordsToCore() {
         // Given
         let core = PassthroughCoreMock()
-        let writer = Writer()
+        let writer = RecordsWriter()
 
         // When
         writer.startWriting(to: core)

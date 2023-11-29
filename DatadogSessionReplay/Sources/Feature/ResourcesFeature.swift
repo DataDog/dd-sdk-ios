@@ -11,14 +11,12 @@ import DatadogInternal
 internal class ResourcesFeature: DatadogRemoteFeature {
     static var name = "session-replay-resources"
 
-    var messageReceiver: FeatureMessageReceiver
     var requestBuilder: FeatureRequestBuilder
 
     init(
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) {
-        self.messageReceiver = RUMContextReceiver()
         self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry

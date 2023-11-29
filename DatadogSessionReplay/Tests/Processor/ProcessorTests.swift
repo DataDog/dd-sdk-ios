@@ -11,7 +11,7 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-private class WriterMock: Writing {
+private class WriterMock: RecordsWriting {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
