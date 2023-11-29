@@ -74,9 +74,6 @@
 		49D8C0BE2AC5F2BC0075E427 /* Logs+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */; };
 		61020C2A2757AD91005EEAEA /* BackgroundLocationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */; };
 		61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */; };
-		61054E5E2A6EE10A00AAA894 /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */; };
-		61054E5F2A6EE10A00AAA894 /* SRDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E062A6EE10A00AAA894 /* SRDataModels.swift */; };
-		61054E602A6EE10A00AAA894 /* SRDataModels+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E072A6EE10A00AAA894 /* SRDataModels+UIKit.swift */; };
 		61054E612A6EE10A00AAA894 /* SRCompression.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E082A6EE10A00AAA894 /* SRCompression.swift */; };
 		61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E092A6EE10A00AAA894 /* RecordWriter.swift */; };
 		61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */; };
@@ -502,13 +499,16 @@
 		A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
 		A71265862B17980C007D63CE /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
+		A712658F2B179C94007D63CE /* EnrichedResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A712658B2B179C93007D63CE /* EnrichedResource.swift */; };
+		A71265902B179C94007D63CE /* SRDataModels+UIKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = A712658C2B179C93007D63CE /* SRDataModels+UIKit.swift */; };
+		A71265912B179C94007D63CE /* SRDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A712658D2B179C93007D63CE /* SRDataModels.swift */; };
+		A71265922B179C94007D63CE /* EnrichedRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A712658E2B179C93007D63CE /* EnrichedRecord.swift */; };
 		A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */; };
 		A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */; };
-		A74A72832B0CFF6800771FEB /* EnrichedResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72822B0CFF6800771FEB /* EnrichedResource.swift */; };
 		A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */; };
 		A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72862B10CE4100771FEB /* ResourceMocks.swift */; };
 		A74A72892B10D95D00771FEB /* MultipartBuilderSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */; };
@@ -1902,9 +1902,6 @@
 		49D8C0B92AC5F21F0075E427 /* Logs+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Logs+Internal.swift"; sourceTree = "<group>"; };
 		61020C292757AD91005EEAEA /* BackgroundLocationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundLocationMonitor.swift; sourceTree = "<group>"; };
 		61020C2B2758E853005EEAEA /* DebugBackgroundEventsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugBackgroundEventsViewController.swift; sourceTree = "<group>"; };
-		61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecord.swift; sourceTree = "<group>"; };
-		61054E062A6EE10A00AAA894 /* SRDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRDataModels.swift; sourceTree = "<group>"; };
-		61054E072A6EE10A00AAA894 /* SRDataModels+UIKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SRDataModels+UIKit.swift"; sourceTree = "<group>"; };
 		61054E082A6EE10A00AAA894 /* SRCompression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRCompression.swift; sourceTree = "<group>"; };
 		61054E092A6EE10A00AAA894 /* RecordWriter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordWriter.swift; sourceTree = "<group>"; };
 		61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayConfiguration.swift; sourceTree = "<group>"; };
@@ -2424,6 +2421,10 @@
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
 		A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriterTests.swift; sourceTree = "<group>"; };
 		A71265852B17980C007D63CE /* MockFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFeature.swift; sourceTree = "<group>"; };
+		A712658B2B179C93007D63CE /* EnrichedResource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EnrichedResource.swift; path = ../../Models/EnrichedResource.swift; sourceTree = "<group>"; };
+		A712658C2B179C93007D63CE /* SRDataModels+UIKit.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "SRDataModels+UIKit.swift"; path = "../../Models/SRDataModels+UIKit.swift"; sourceTree = "<group>"; };
+		A712658D2B179C93007D63CE /* SRDataModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SRDataModels.swift; path = ../../Models/SRDataModels.swift; sourceTree = "<group>"; };
+		A712658E2B179C93007D63CE /* EnrichedRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EnrichedRecord.swift; path = ../../Models/EnrichedRecord.swift; sourceTree = "<group>"; };
 		A728AD9C2934CE4400397996 /* W3CHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeaders.swift; sourceTree = "<group>"; };
 		A728AD9E2934CE5000397996 /* W3CHTTPHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReader.swift; sourceTree = "<group>"; };
@@ -2433,7 +2434,6 @@
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		A73A54972B16406900E1F7E3 /* ResourcesFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesFeature.swift; sourceTree = "<group>"; };
 		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
-		A74A72822B0CFF6800771FEB /* EnrichedResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResource.swift; sourceTree = "<group>"; };
 		A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilderTests.swift; sourceTree = "<group>"; };
 		A74A72862B10CE4100771FEB /* ResourceMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceMocks.swift; sourceTree = "<group>"; };
 		A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartBuilderSpy.swift; sourceTree = "<group>"; };
@@ -3121,6 +3121,7 @@
 				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
 				61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */,
 				61054E542A6EE10A00AAA894 /* Utilities */,
+				61054E042A6EE10A00AAA894 /* Models */,
 				61054E032A6EE10A00AAA894 /* Writers */,
 			);
 			name = DatadogSessionReplay;
@@ -3147,7 +3148,6 @@
 		61054E032A6EE10A00AAA894 /* Writers */ = {
 			isa = PBXGroup;
 			children = (
-				61054E042A6EE10A00AAA894 /* Models */,
 				61054E082A6EE10A00AAA894 /* SRCompression.swift */,
 				61054E092A6EE10A00AAA894 /* RecordWriter.swift */,
 				A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */,
@@ -3158,12 +3158,13 @@
 		61054E042A6EE10A00AAA894 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */,
-				61054E062A6EE10A00AAA894 /* SRDataModels.swift */,
-				61054E072A6EE10A00AAA894 /* SRDataModels+UIKit.swift */,
-				A74A72822B0CFF6800771FEB /* EnrichedResource.swift */,
+				A712658E2B179C93007D63CE /* EnrichedRecord.swift */,
+				A712658B2B179C93007D63CE /* EnrichedResource.swift */,
+				A712658D2B179C93007D63CE /* SRDataModels.swift */,
+				A712658C2B179C93007D63CE /* SRDataModels+UIKit.swift */,
 			);
-			path = Models;
+			name = Models;
+			path = Writers/Models;
 			sourceTree = "<group>";
 		};
 		61054E0D2A6EE10A00AAA894 /* Recorder */ = {
@@ -7630,7 +7631,6 @@
 			files = (
 				61054EA22A6EE10B00AAA894 /* Scheduler.swift in Sources */,
 				A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */,
-				61054E5F2A6EE10A00AAA894 /* SRDataModels.swift in Sources */,
 				61054E8D2A6EE10A00AAA894 /* RUMContextReceiver.swift in Sources */,
 				61054E922A6EE10A00AAA894 /* SegmentJSONBuilder.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
@@ -7639,6 +7639,7 @@
 				61054E822A6EE10A00AAA894 /* UILabelRecorder.swift in Sources */,
 				A73A54982B16406900E1F7E3 /* ResourcesFeature.swift in Sources */,
 				61054E6C2A6EE10A00AAA894 /* SystemColors.swift in Sources */,
+				A71265902B179C94007D63CE /* SRDataModels+UIKit.swift in Sources */,
 				61054E812A6EE10A00AAA894 /* UIStepperRecorder.swift in Sources */,
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
@@ -7656,15 +7657,16 @@
 				D22C5BD02A98A6660024CC1F /* Baggages.swift in Sources */,
 				61054E902A6EE10A00AAA894 /* SegmentJSON.swift in Sources */,
 				61054E672A6EE10A00AAA894 /* Recorder.swift in Sources */,
-				61054E5E2A6EE10A00AAA894 /* EnrichedRecord.swift in Sources */,
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
 				61054E982A6EE10A00AAA894 /* RecordsBuilder.swift in Sources */,
 				61054E9C2A6EE10B00AAA894 /* UIImage+Scaling.swift in Sources */,
 				61054EA12A6EE10B00AAA894 /* MainThreadScheduler.swift in Sources */,
 				61054E7C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift in Sources */,
+				A71265922B179C94007D63CE /* EnrichedRecord.swift in Sources */,
 				61054E772A6EE10A00AAA894 /* ViewTreeRecorder.swift in Sources */,
 				61054E9E2A6EE10B00AAA894 /* Queue.swift in Sources */,
+				A712658F2B179C94007D63CE /* EnrichedResource.swift in Sources */,
 				61054E872A6EE10A00AAA894 /* ViewAttributes+Copy.swift in Sources */,
 				61054E6A2A6EE10A00AAA894 /* UIKitExtensions.swift in Sources */,
 				61054E7D2A6EE10A00AAA894 /* UITextFieldRecorder.swift in Sources */,
@@ -7683,16 +7685,15 @@
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,
 				61054E6D2A6EE10A00AAA894 /* CGRect+ContentFrame.swift in Sources */,
 				61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */,
-				A74A72832B0CFF6800771FEB /* EnrichedResource.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
+				A71265912B179C94007D63CE /* SRDataModels.swift in Sources */,
 				61054E752A6EE10A00AAA894 /* ViewTreeSnapshot.swift in Sources */,
 				61054EA02A6EE10B00AAA894 /* Colors.swift in Sources */,
-				61054E602A6EE10A00AAA894 /* SRDataModels+UIKit.swift in Sources */,
 				61054E7F2A6EE10A00AAA894 /* UISliderRecorder.swift in Sources */,
 				61054E842A6EE10A00AAA894 /* UITabBarRecorder.swift in Sources */,
 				61054E9D2A6EE10B00AAA894 /* Cache.swift in Sources */,

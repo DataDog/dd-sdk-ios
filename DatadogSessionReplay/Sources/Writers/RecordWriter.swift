@@ -9,12 +9,12 @@ import Foundation
 import DatadogInternal
 
 /// A type writing Session Replay records to `DatadogCore`.
-internal protocol RecordsWriting {
+internal protocol RecordWriting {
     /// Writes next records to SDK core.
     func write(nextRecord: EnrichedRecord)
 }
 
-internal class RecordsWriter: RecordsWriting {
+internal class RecordWriter: RecordWriting {
     /// An instance of SDK core the SR feature is registered to.
     private weak var core: DatadogCoreProtocol?
 

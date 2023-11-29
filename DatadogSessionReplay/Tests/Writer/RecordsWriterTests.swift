@@ -16,7 +16,7 @@ class RecordsWriterTests: XCTestCase {
         let core = PassthroughCoreMock()
 
         // When
-        let writer = RecordsWriter(core: core)
+        let writer = RecordWriter(core: core)
 
         // Then
         writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
@@ -33,7 +33,7 @@ class RecordsWriterTests: XCTestCase {
         try core.register(feature: feature)
 
         // When
-        let writer = RecordsWriter(core: core)
+        let writer = RecordWriter(core: core)
 
         // Then
         writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
@@ -48,7 +48,7 @@ class RecordsWriterTests: XCTestCase {
         let core = PassthroughCoreMock(forceNewBatchExpectation: forceNewBatchExpectation)
 
         // When
-        let writer = RecordsWriter(core: core)
+        let writer = RecordWriter(core: core)
 
         // Then
         writer.write(nextRecord: EnrichedRecord(context: .mockWith(rumContext: .mockWith(viewID: "view1")), records: .mockRandom()))

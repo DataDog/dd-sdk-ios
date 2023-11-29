@@ -29,7 +29,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     ) throws {
         let processor = Processor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
-            writer: RecordsWriter(core: core),
+            writer: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
