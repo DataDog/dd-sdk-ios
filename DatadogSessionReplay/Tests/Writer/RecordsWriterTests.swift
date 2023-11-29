@@ -10,14 +10,13 @@ import XCTest
 @testable import TestUtilities
 
 // swiftlint:disable empty_xctest_method
-class WriterTests: XCTestCase {
+class RecordsWriterTests: XCTestCase {
     func testWhenFeatureScopeIsConnected_itWritesRecordsToCore() {
         // Given
         let core = PassthroughCoreMock()
-        let writer = RecordsWriter()
 
         // When
-        writer.startWriting(to: core)
+        let writer = RecordsWriter(core: core)
 
         // Then
         writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))

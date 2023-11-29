@@ -15,7 +15,6 @@ private class WriterMock: RecordsWriting {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
-    func startWriting(to core: DatadogCoreProtocol) {}
 }
 
 class ProcessorTests: XCTestCase {
