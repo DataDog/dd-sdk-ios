@@ -501,6 +501,7 @@
 		A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
+		A71265862B17980C007D63CE /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
 		A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
@@ -2422,6 +2423,7 @@
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
 		A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriterTests.swift; sourceTree = "<group>"; };
+		A71265852B17980C007D63CE /* MockFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFeature.swift; sourceTree = "<group>"; };
 		A728AD9C2934CE4400397996 /* W3CHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeaders.swift; sourceTree = "<group>"; };
 		A728AD9E2934CE5000397996 /* W3CHTTPHeadersWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersWriter.swift; sourceTree = "<group>"; };
 		A728ADA02934CE5D00397996 /* W3CHTTPHeadersReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReader.swift; sourceTree = "<group>"; };
@@ -3561,6 +3563,7 @@
 				61054F872A6EE1BA00AAA894 /* RUMContextObserverMock.swift */,
 				A74A72862B10CE4100771FEB /* ResourceMocks.swift */,
 				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
+				A71265852B17980C007D63CE /* MockFeature.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -7743,6 +7746,7 @@
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,
 				A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */,
+				A71265862B17980C007D63CE /* MockFeature.swift in Sources */,
 				61054FB62A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift in Sources */,
 				61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,

@@ -28,11 +28,8 @@ class RecordsWriterTests: XCTestCase {
 
     func testWhenFeatureScopeIsNotConnected_itDoesNotWriteRecordsToCore() throws {
         // Given
-        let core = SingleFeatureCoreMock<ResourcesFeature>()
-        let feature = ResourcesFeature(
-            core: core,
-            configuration: .init(replaySampleRate: .mockAny())
-        )
+        let core = SingleFeatureCoreMock<MockFeature>()
+        let feature = MockFeature()
         try core.register(feature: feature)
 
         // When
