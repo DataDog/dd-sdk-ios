@@ -59,12 +59,12 @@ public class Recorder: Recording {
     /// Captures touch snapshot.
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
-    private let snapshotProcessor: Processing
+    private let snapshotProcessor: SnapshotProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
     convenience init(
-        processor: Processing,
+        processor: SnapshotProcessing,
         telemetry: Telemetry,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
@@ -90,7 +90,7 @@ public class Recorder: Recording {
         uiApplicationSwizzler: UIApplicationSwizzler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
-        snapshotProcessor: Processing,
+        snapshotProcessor: SnapshotProcessing,
         telemetry: Telemetry
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler

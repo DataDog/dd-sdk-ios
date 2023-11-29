@@ -19,7 +19,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
     /// Processes each new snapshot on a background thread and transforms it into records.
-    let processor: Processing
+    let processor: SnapshotProcessing
 
     // MARK: - Initialization
 
@@ -27,7 +27,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let processor = Processor(
+        let processor = SnapshotProcessor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
             writer: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
