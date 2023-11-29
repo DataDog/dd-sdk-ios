@@ -51,7 +51,7 @@ public struct SessionReplayNode {
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias Node = SessionReplayNode
 
-// An individual resource in `ViewTreeSnapshot`. It is used to describe binary representation of heavy resources such us images.
+// An individual resource in `ViewTreeSnapshot`. It is used to describe binary representation of heavy resources such as images.
 @_spi(Internal)
 public protocol SessionReplayResource {
     /// The unique identifier of the resource.

@@ -14,7 +14,17 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
     /// Sends telemetry through sdk core.
     let telemetry: Telemetry
     /// Builds multipart form for request's body.
-    var multipartBuilder: MultipartFormDataBuilder = MultipartFormData(boundary: UUID())
+    let multipartBuilder: MultipartFormDataBuilder
+
+    init(
+        customUploadURL: URL?,
+        telemetry: Telemetry,
+        multipartBuilder: MultipartFormDataBuilder = MultipartFormData(boundary: UUID())
+    ) {
+        self.customUploadURL = customUploadURL
+        self.telemetry = telemetry
+        self.multipartBuilder = multipartBuilder
+    }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         let decoder = JSONDecoder()
@@ -49,7 +59,8 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
                 mimeType: "image/png"
             )
         }
-        if let context = resources.first?.context, let data = try? JSONEncoder().encode(context) {
+        if let context = resources.first?.context {
+            let data = try JSONEncoder().encode(context)
             multipart.addFormData(
                 name: "event",
                 filename: "blob",
@@ -58,7 +69,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             )
         }
 
-        return builder.uploadRequest(with: multipart.data, compress: false)
+        return builder.uploadRequest(with: multipart.data, compress: true)
     }
 
     private func url(with context: DatadogContext) -> URL {
