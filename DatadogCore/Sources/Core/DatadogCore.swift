@@ -70,6 +70,11 @@ internal final class DatadogCore {
 
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
+    
+#if DD_SDK_COMPILED_FOR_TESTING
+    /// Internal scope overrides for internal testing.
+    internal var scopeOverrides: [String: FeatureScope] = [:]
+#endif
 
     /// Creates a core instance.
     ///
@@ -289,6 +294,12 @@ extension DatadogCore: DatadogCoreProtocol {
         guard let storage = stores[feature]?.storage else {
             return nil
         }
+
+#if DD_SDK_COMPILED_FOR_TESTING
+        if let scopeOverride = scopeOverrides[feature] {
+            return scopeOverride
+        }
+#endif
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
