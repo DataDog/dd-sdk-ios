@@ -68,7 +68,7 @@ class DDSessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.RequestBuilder)
+        let requestBuilder = try XCTUnwrap(sr.requestBuilder as? DatadogSessionReplay.SegmentRequestBuilder)
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertNil(requestBuilder.customUploadURL)

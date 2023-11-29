@@ -122,7 +122,7 @@
 		61054E8B2A6EE10A00AAA894 /* SessionReplayFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E3C2A6EE10A00AAA894 /* SessionReplayFeature.swift */; };
 		61054E8D2A6EE10A00AAA894 /* RUMContextReceiver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */; };
 		61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */; };
-		61054E8F2A6EE10A00AAA894 /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E412A6EE10A00AAA894 /* RequestBuilder.swift */; };
+		61054E8F2A6EE10A00AAA894 /* SegmentRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E412A6EE10A00AAA894 /* SegmentRequestBuilder.swift */; };
 		61054E902A6EE10A00AAA894 /* SegmentJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E432A6EE10A00AAA894 /* SegmentJSON.swift */; };
 		61054E912A6EE10A00AAA894 /* EnrichedRecordJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E442A6EE10A00AAA894 /* EnrichedRecordJSON.swift */; };
 		61054E922A6EE10A00AAA894 /* SegmentJSONBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E452A6EE10A00AAA894 /* SegmentJSONBuilder.swift */; };
@@ -204,7 +204,7 @@
 		61054FD12A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F8D2A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift */; };
 		61054FD22A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F8E2A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift */; };
 		61054FD32A6EE1BA00AAA894 /* MultipartFormDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */; };
-		61054FD42A6EE1BA00AAA894 /* RequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F912A6EE1BA00AAA894 /* RequestBuilderTests.swift */; };
+		61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */; };
 		61054FD52A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */; };
 		610ABD4C2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610ABD4B2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift */; };
 		610ABD4D2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610ABD4B2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift */; };
@@ -504,6 +504,11 @@
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
 		A728ADB12934EB0C00397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
+		A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */; };
+		A74A72832B0CFF6800771FEB /* EnrichedResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72822B0CFF6800771FEB /* EnrichedResource.swift */; };
+		A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */; };
+		A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72862B10CE4100771FEB /* ResourceMocks.swift */; };
+		A74A72892B10D95D00771FEB /* MultipartBuilderSpy.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */; };
 		A79B0F64292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
 		A79B0F65292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F63292BD074008742B3 /* DDB3HTTPHeadersWriter+apiTests.m */; };
 		A79B0F66292BD7CA008742B3 /* B3HTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */; };
@@ -1941,7 +1946,7 @@
 		61054E3C2A6EE10A00AAA894 /* SessionReplayFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayFeature.swift; sourceTree = "<group>"; };
 		61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMContextReceiver.swift; sourceTree = "<group>"; };
 		61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRContextPublisher.swift; sourceTree = "<group>"; };
-		61054E412A6EE10A00AAA894 /* RequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
+		61054E412A6EE10A00AAA894 /* SegmentRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentRequestBuilder.swift; sourceTree = "<group>"; };
 		61054E432A6EE10A00AAA894 /* SegmentJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSON.swift; sourceTree = "<group>"; };
 		61054E442A6EE10A00AAA894 /* EnrichedRecordJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecordJSON.swift; sourceTree = "<group>"; };
 		61054E452A6EE10A00AAA894 /* SegmentJSONBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSONBuilder.swift; sourceTree = "<group>"; };
@@ -2023,7 +2028,7 @@
 		61054F8D2A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSONBuilderTests.swift; sourceTree = "<group>"; };
 		61054F8E2A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecordJSONTests.swift; sourceTree = "<group>"; };
 		61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultipartFormDataTests.swift; sourceTree = "<group>"; };
-		61054F912A6EE1BA00AAA894 /* RequestBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RequestBuilderTests.swift; sourceTree = "<group>"; };
+		61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentRequestBuilderTests.swift; sourceTree = "<group>"; };
 		61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCTAssertRectsEqual.swift; sourceTree = "<group>"; };
 		610ABD4B2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryCoreIntegrationTests.swift; sourceTree = "<group>"; };
 		61112F8D2A4417D6006FFCA6 /* DDRUM+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDRUM+apiTests.m"; sourceTree = "<group>"; };
@@ -2420,6 +2425,11 @@
 		A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "W3CHTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDW3CHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
+		A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilder.swift; sourceTree = "<group>"; };
+		A74A72822B0CFF6800771FEB /* EnrichedResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnrichedResource.swift; sourceTree = "<group>"; };
+		A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceRequestBuilderTests.swift; sourceTree = "<group>"; };
+		A74A72862B10CE4100771FEB /* ResourceMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourceMocks.swift; sourceTree = "<group>"; };
+		A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MultipartBuilderSpy.swift; sourceTree = "<group>"; };
 		A79B0F5A292B7C06008742B3 /* B3HTTPHeadersWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersWriterTests.swift; sourceTree = "<group>"; };
 		A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "B3HTTPHeadersWriter+objc.swift"; sourceTree = "<group>"; };
 		A79B0F60292BB071008742B3 /* B3HTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = B3HTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
@@ -3142,6 +3152,7 @@
 				61054E052A6EE10A00AAA894 /* EnrichedRecord.swift */,
 				61054E062A6EE10A00AAA894 /* SRDataModels.swift */,
 				61054E072A6EE10A00AAA894 /* SRDataModels+UIKit.swift */,
+				A74A72822B0CFF6800771FEB /* EnrichedResource.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -3254,19 +3265,20 @@
 				61054E3E2A6EE10A00AAA894 /* RUMContextReceiver.swift */,
 				61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */,
 				D22C5BCD2A98A65D0024CC1F /* Baggages.swift */,
-				61054E402A6EE10A00AAA894 /* RequestBuilder */,
+				61054E402A6EE10A00AAA894 /* RequestBuilders */,
 			);
 			path = Feature;
 			sourceTree = "<group>";
 		};
-		61054E402A6EE10A00AAA894 /* RequestBuilder */ = {
+		61054E402A6EE10A00AAA894 /* RequestBuilders */ = {
 			isa = PBXGroup;
 			children = (
-				61054E412A6EE10A00AAA894 /* RequestBuilder.swift */,
+				A74A72802B0CEE4900771FEB /* ResourceRequestBuilder.swift */,
+				61054E412A6EE10A00AAA894 /* SegmentRequestBuilder.swift */,
 				61054E422A6EE10A00AAA894 /* JSON */,
 				61054E462A6EE10A00AAA894 /* Multipart */,
 			);
-			path = RequestBuilder;
+			path = RequestBuilders;
 			sourceTree = "<group>";
 		};
 		61054E422A6EE10A00AAA894 /* JSON */ = {
@@ -3538,6 +3550,8 @@
 				61054F852A6EE1BA00AAA894 /* MockImageDataProvider.swift */,
 				61054F862A6EE1BA00AAA894 /* SnapshotProducerMocks.swift */,
 				61054F872A6EE1BA00AAA894 /* RUMContextObserverMock.swift */,
+				A74A72862B10CE4100771FEB /* ResourceMocks.swift */,
+				A74A72882B10D95D00771FEB /* MultipartBuilderSpy.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -3557,7 +3571,8 @@
 			children = (
 				61054F8C2A6EE1BA00AAA894 /* JSON */,
 				61054F8F2A6EE1BA00AAA894 /* Multipart */,
-				61054F912A6EE1BA00AAA894 /* RequestBuilderTests.swift */,
+				61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */,
+				A74A72842B10CC6700771FEB /* ResourceRequestBuilderTests.swift */,
 			);
 			path = RequestBuilder;
 			sourceTree = "<group>";
@@ -7614,11 +7629,12 @@
 				61054E632A6EE10A00AAA894 /* SessionReplayConfiguration.swift in Sources */,
 				61054E702A6EE10A00AAA894 /* TouchSnapshotProducer.swift in Sources */,
 				61054E652A6EE10A00AAA894 /* AppWindowObserver.swift in Sources */,
+				A74A72812B0CEE4900771FEB /* ResourceRequestBuilder.swift in Sources */,
 				61054E7B2A6EE10A00AAA894 /* UIViewRecorder.swift in Sources */,
 				61054E762A6EE10A00AAA894 /* ViewTreeSnapshotBuilder.swift in Sources */,
 				61054E802A6EE10A00AAA894 /* UIPickerViewRecorder.swift in Sources */,
 				61054E612A6EE10A00AAA894 /* SRCompression.swift in Sources */,
-				61054E8F2A6EE10A00AAA894 /* RequestBuilder.swift in Sources */,
+				61054E8F2A6EE10A00AAA894 /* SegmentRequestBuilder.swift in Sources */,
 				61054E8B2A6EE10A00AAA894 /* SessionReplayFeature.swift in Sources */,
 				61054E992A6EE10A00AAA894 /* WireframesBuilder.swift in Sources */,
 				61054E892A6EE10A00AAA894 /* NodeIDGenerator.swift in Sources */,
@@ -7653,6 +7669,7 @@
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,
 				61054E6D2A6EE10A00AAA894 /* CGRect+ContentFrame.swift in Sources */,
 				61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */,
+				A74A72832B0CFF6800771FEB /* EnrichedResource.swift in Sources */,
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
@@ -7677,7 +7694,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				61054FD42A6EE1BA00AAA894 /* RequestBuilderTests.swift in Sources */,
+				61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */,
 				61054FB52A6EE1BA00AAA894 /* UISliderRecorderTests.swift in Sources */,
 				61054FB22A6EE1BA00AAA894 /* UILabelRecorderTests.swift in Sources */,
 				61054FCE2A6EE1BA00AAA894 /* RUMContextObserverMock.swift in Sources */,
@@ -7710,8 +7727,10 @@
 				61054FAC2A6EE1BA00AAA894 /* CGRect+ContentFrameTests.swift in Sources */,
 				61054FC72A6EE1BA00AAA894 /* SRDataModelsMocks.swift in Sources */,
 				61054FC82A6EE1BA00AAA894 /* ProcessorSpy.swift in Sources */,
+				A74A72872B10CE4100771FEB /* ResourceMocks.swift in Sources */,
 				61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */,
 				61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */,
+				A74A72852B10CC6700771FEB /* ResourceRequestBuilderTests.swift in Sources */,
 				61054FB62A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift in Sources */,
 				61054F9F2A6EE1BA00AAA894 /* WriterTests.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,
@@ -7722,6 +7741,7 @@
 				61054FB92A6EE1BA00AAA894 /* UINavigationBarRecorderTests.swift in Sources */,
 				61054FA62A6EE1BA00AAA894 /* ProcessorTests.swift in Sources */,
 				61054FB72A6EE1BA00AAA894 /* UISegmentRecorderTests.swift in Sources */,
+				A74A72892B10D95D00771FEB /* MultipartBuilderSpy.swift in Sources */,
 				61054FCF2A6EE1BA00AAA894 /* RUMContextReceiverTests.swift in Sources */,
 				61054FC92A6EE1BA00AAA894 /* RecorderMocks.swift in Sources */,
 				61054FBB2A6EE1BA00AAA894 /* UISwitchRecorderTests.swift in Sources */,

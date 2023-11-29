@@ -27,7 +27,7 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
 }
 
-/// An individual node in `ViewTreeSnapshot`. A `Node` describes a single view - similar: an array of nodes describes
+/// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes
 /// view and its subtree (in depth-first order).
 ///
 /// Typically, to describe certain view-tree we need significantly less nodes than number of views, because some views
@@ -50,6 +50,18 @@ public struct SessionReplayNode {
 
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias Node = SessionReplayNode
+
+// An individual resource in `ViewTreeSnapshot`. It is used to describe binary representation of heavy resources such as images.
+@_spi(Internal)
+public protocol SessionReplayResource {
+    /// The unique identifier of the resource.
+    var identifier: String { get }
+    /// The data of the resource.
+    var data: Data { get }
+}
+
+/// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias Resource = SessionReplayResource
 
 /// Attributes of the `UIView` that the node was created for.
 ///
