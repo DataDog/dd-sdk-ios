@@ -11,7 +11,7 @@ internal final class TraceFeature: DatadogRemoteFeature {
     static let name = "tracing"
 
     let requestBuilder: FeatureRequestBuilder
-    let messageReceiver: FeatureMessageReceiver
+    let messageReceiver: FeatureMessageReceiver?
     let tracer: DatadogTracer
 
     init(

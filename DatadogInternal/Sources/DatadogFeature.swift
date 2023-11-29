@@ -19,7 +19,7 @@ public struct DatadogFeatureConfiguration {
     ///
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
-    public let messageReceiver: FeatureMessageReceiver
+    public let messageReceiver: FeatureMessageReceiver?
 
     public init(name: String, requestBuilder: FeatureRequestBuilder, messageReceiver: FeatureMessageReceiver) {
         self.name = name
