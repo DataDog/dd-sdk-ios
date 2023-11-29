@@ -14,7 +14,7 @@ internal protocol ResourceWriting {
     func write(resources: [EnrichedResource])
 }
 
-internal class ResourceWriter: ResourceWriting {
+internal class ResourcesWriter: ResourceWriting {
     /// An instance of SDK core the SR feature is registered to.
     private weak var core: DatadogCoreProtocol?
 

@@ -26,16 +26,39 @@ class RecordsWriterTests: XCTestCase {
         XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 3)
     }
 
-    func testWhenFeatureScopeIsNotConnected_itDoesNotWriteRecordsToCore() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureScope`),
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    func testWhenFeatureScopeIsNotConnected_itDoesNotWriteRecordsToCore() throws {
+        // Given
+        let core = SingleFeatureCoreMock<ResourcesFeature>()
+        let feature = ResourcesFeature(
+            core: core,
+            configuration: .init(replaySampleRate: .mockAny())
+        )
+        try core.register(feature: feature)
+
+        // When
+        let writer = RecordsWriter(core: core)
+
+        // Then
+        writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
+
+        XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 0)
     }
 
-    func testWhenSucceedingRecordsDescribeDifferentRUMViews_itWritesThemToSeparateBatches() {
-        // TODO: RUMM-2690
-        // Implementing this test requires creating mocks for `DatadogContext` (passed in `FeatureScope`),
-        // which is yet not possible as we lack separate, shared module to facilitate tests.
+    func testWhenSucceedingRecordsDescribeDifferentRUMViews_itWritesThemToSeparateBatches() throws {
+        // Given
+        let forceNewBatchExpectation = expectation(description: "Should force new batch on view-id change")
+        forceNewBatchExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(forceNewBatchExpectation: forceNewBatchExpectation)
+
+        // When
+        let writer = RecordsWriter(core: core)
+
+        // Then
+        writer.write(nextRecord: EnrichedRecord(context: .mockWith(rumContext: .mockWith(viewID: "view1")), records: .mockRandom()))
+        writer.write(nextRecord: EnrichedRecord(context: .mockWith(rumContext: .mockWith(viewID: "view2")), records: .mockRandom()))
+
+        XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 2)
+        waitForExpectations(timeout: 0.5, handler: nil)
     }
 }
 // swiftlint:enable empty_xctest_method
