@@ -237,7 +237,7 @@ public struct Datadog {
     ///
     /// - Parameter name: The name of the SDK instance to verify.
     public static func isInitialized(instanceName name: String = CoreRegistry.defaultInstanceName) -> Bool {
-        CoreRegistry.instance(named: name) is DatadogCore
+        CoreRegistry.instance(named: name) is DatadogCoreProxy
     }
 
     /// Returns the Datadog SDK instance for the given name.
@@ -405,7 +405,7 @@ public struct Datadog {
         )
 
         // Set default `DatadogCore`:
-        let core = DatadogCore(
+        let coreUnproxied = DatadogCore(
             directory: try CoreDirectory(
                 in: configuration.systemDirectory(),
                 instancenName: instanceName,
@@ -439,6 +439,8 @@ public struct Datadog {
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
+        
+        let core = DatadogCoreProxy(core: coreUnproxied)
 
         core.telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
@@ -452,7 +454,7 @@ public struct Datadog {
         CITestIntegration.active?.startIntegration()
 
         CoreRegistry.register(core, named: instanceName)
-        deleteV1Folders(in: core)
+//        deleteV1Folders(in: core)
 
         DD.logger = InternalLogger(
             dateProvider: configuration.dateProvider,
