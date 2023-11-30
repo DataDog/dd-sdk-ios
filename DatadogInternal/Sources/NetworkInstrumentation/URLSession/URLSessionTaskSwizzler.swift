@@ -61,14 +61,14 @@ internal class URLSessionTaskSwizzler {
     class Resume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
         private static let selector = #selector(URLSessionTask.resume)
 
-        private let method: FoundMethod
+        private let method: Method
 
         static func build() throws -> Resume {
             return try Resume(selector: self.selector, klass: URLSessionTask.self)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try Self.findMethod(with: selector, in: klass)
+            self.method = try dd_class_getInstanceMethod(klass, selector)
             super.init()
         }
 
