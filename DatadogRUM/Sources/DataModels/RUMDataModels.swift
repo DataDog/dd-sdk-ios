@@ -45,6 +45,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -55,7 +58,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "action"
@@ -81,6 +84,7 @@ public struct RUMActionEvent: RUMDataModel {
         case device = "device"
         case display = "display"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -181,14 +185,29 @@ public struct RUMActionEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: SessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+
+            /// The precondition that led to the creation of the session
+            public enum SessionPrecondition: String, Codable {
+                case userAppLaunch = "user_app_launch"
+                case inactivityTimeout = "inactivity_timeout"
+                case maxDuration = "max_duration"
+                case backgroundLaunch = "background_launch"
+                case prewarm = "prewarm"
+                case fromNonInteractiveSession = "from_non_interactive_session"
+                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -348,6 +367,30 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -357,19 +400,12 @@ public struct RUMActionEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -381,24 +417,6 @@ public struct RUMActionEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -469,6 +487,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -479,7 +500,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "error"
@@ -507,6 +528,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case error = "error"
         case featureFlags = "feature_flags"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -557,14 +579,29 @@ public struct RUMErrorEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: SessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+
+            /// The precondition that led to the creation of the session
+            public enum SessionPrecondition: String, Codable {
+                case userAppLaunch = "user_app_launch"
+                case inactivityTimeout = "inactivity_timeout"
+                case maxDuration = "max_duration"
+                case backgroundLaunch = "background_launch"
+                case prewarm = "prewarm"
+                case fromNonInteractiveSession = "from_non_interactive_session"
+                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -792,6 +829,30 @@ public struct RUMErrorEvent: RUMDataModel {
         public internal(set) var featureFlagsInfo: [String: Encodable]
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -801,19 +862,12 @@ public struct RUMErrorEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -825,24 +879,6 @@ public struct RUMErrorEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -934,6 +970,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -944,7 +983,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "long_task"
@@ -971,6 +1010,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case display = "display"
         case longTask = "long_task"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -1025,14 +1065,29 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: SessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+
+            /// The precondition that led to the creation of the session
+            public enum SessionPrecondition: String, Codable {
+                case userAppLaunch = "user_app_launch"
+                case inactivityTimeout = "inactivity_timeout"
+                case maxDuration = "max_duration"
+                case backgroundLaunch = "background_launch"
+                case prewarm = "prewarm"
+                case fromNonInteractiveSession = "from_non_interactive_session"
+                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1099,6 +1154,30 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -1108,19 +1187,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1132,24 +1204,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -1210,6 +1264,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// Resource properties
     public var resource: Resource
 
@@ -1223,7 +1280,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "resource"
@@ -1249,6 +1306,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case device = "device"
         case display = "display"
         case os = "os"
+        case parentView = "parent_view"
         case resource = "resource"
         case service = "service"
         case session = "session"
@@ -1316,14 +1374,29 @@ public struct RUMResourceEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: SessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+
+            /// The precondition that led to the creation of the session
+            public enum SessionPrecondition: String, Codable {
+                case userAppLaunch = "user_app_launch"
+                case inactivityTimeout = "inactivity_timeout"
+                case maxDuration = "max_duration"
+                case backgroundLaunch = "background_launch"
+                case prewarm = "prewarm"
+                case fromNonInteractiveSession = "from_non_interactive_session"
+                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1369,6 +1442,30 @@ public struct RUMResourceEvent: RUMDataModel {
                 case height = "height"
                 case width = "width"
             }
+        }
+    }
+
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
         }
     }
 
@@ -1611,19 +1708,12 @@ public struct RUMResourceEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1635,24 +1725,6 @@ public struct RUMResourceEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -1713,6 +1785,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// Privacy properties
     public let privacy: Privacy?
 
@@ -1726,7 +1801,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "view"
@@ -1752,6 +1827,7 @@ public struct RUMViewEvent: RUMDataModel {
         case display = "display"
         case featureFlags = "feature_flags"
         case os = "os"
+        case parentView = "parent_view"
         case privacy = "privacy"
         case service = "service"
         case session = "session"
@@ -1860,14 +1936,29 @@ public struct RUMViewEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: SessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
+            }
+
+            /// The precondition that led to the creation of the session
+            public enum SessionPrecondition: String, Codable {
+                case userAppLaunch = "user_app_launch"
+                case inactivityTimeout = "inactivity_timeout"
+                case maxDuration = "max_duration"
+                case backgroundLaunch = "background_launch"
+                case prewarm = "prewarm"
+                case fromNonInteractiveSession = "from_non_interactive_session"
+                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1937,6 +2028,30 @@ public struct RUMViewEvent: RUMDataModel {
         public internal(set) var featureFlagsInfo: [String: Encodable]
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Privacy properties
     public struct Privacy: Codable {
         /// The replay privacy level
@@ -1968,35 +2083,15 @@ public struct RUMViewEvent: RUMDataModel {
         /// Whether this session has been sampled for replay
         public let sampledForReplay: Bool?
 
-        /// The precondition that led to the creation of the session
-        public let startPrecondition: StartPrecondition?
-
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
             case sampledForReplay = "sampled_for_replay"
-            case startPrecondition = "start_precondition"
             case type = "type"
-        }
-
-        /// The precondition that led to the creation of the session
-        public enum StartPrecondition: String, Codable {
-            case appLaunch = "app_launch"
-            case inactivityTimeout = "inactivity_timeout"
-            case maxDuration = "max_duration"
-            case explicitStop = "explicit_stop"
-            case backgroundEvent = "background_event"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -2008,24 +2103,6 @@ public struct RUMViewEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -3301,6 +3378,31 @@ public struct RUMOperatingSystem: Codable {
     }
 }
 
+/// Type of the session
+public enum RUMSessionType: String, Codable {
+    case user = "user"
+    case synthetics = "synthetics"
+    case ciTest = "ci_test"
+}
+
+/// Synthetics properties
+public struct RUMSyntheticsTest: Codable {
+    /// Whether the event comes from a SDK instance injected by Synthetics
+    public let injected: Bool?
+
+    /// The identifier of the current Synthetics test results
+    public let resultId: String
+
+    /// The identifier of the current Synthetics test
+    public let testId: String
+
+    enum CodingKeys: String, CodingKey {
+        case injected = "injected"
+        case resultId = "result_id"
+        case testId = "test_id"
+    }
+}
+
 /// User properties
 public struct RUMUser: Codable {
     /// Email of the user
@@ -3410,4 +3512,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/36e94a0cfb68b6dc0752a9bf4131b952b2aa1859
+// Generated from https://github.com/DataDog/rum-events-format/tree/f75c6c9346aea8371e1c26bb5107310ee9f2942b

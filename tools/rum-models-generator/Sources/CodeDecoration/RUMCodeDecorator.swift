@@ -20,6 +20,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMMethod",
                 "RUMEventAttributes",
                 "RUMCITest",
+                "RUMSessionType",
+                "RUMSyntheticsTest",
                 "RUMDevice",
                 "RUMOperatingSystem",
                 "RUMActionID",
@@ -90,6 +92,14 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
 
         if fixedName == "CiTest" {
             fixedName = "RUMCITest"
+        }
+
+        if fixedName == "SessionType" {
+            fixedName = "RUMSessionType"
+        }
+
+        if fixedName == "Synthetics" {
+            fixedName = "RUMSyntheticsTest"
         }
 
         if fixedName == "Device" {
