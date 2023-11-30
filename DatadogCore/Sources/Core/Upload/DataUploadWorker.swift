@@ -43,18 +43,16 @@ internal class DataUploadWorker: DataUploadWorkerType {
 
     /// Background task coordinator responsible for registering and ending background tasks for UIKit targets.
     private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
-    /// The current context
+
+    private var contextReceiver: ContextValueReceiver<DatadogContext>?
     @ReadWriteLock
-    private var context: DatadogContext? {
+    private var isBackground: Bool = false {
         didSet {
-            if backgroundTaskCoordinator != nil && context?.applicationStateHistory.currentSnapshot.state == .background {
-                readWork?.cancel()
-                scheduleNextCycle()
+            if backgroundTaskCoordinator != nil && isBackground == true {
+                self.scheduleNextCycle(applyingDelay: false)
             }
         }
     }
-    /// Context receiver
-    private var contextReceiver: ContextValueReceiver<DatadogContext>?
 
     init(
         queue: DispatchQueue,
@@ -78,11 +76,28 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.featureName = featureName
         self.telemetry = telemetry
-        self.readWork = DispatchWorkItem { [weak self] in
+        self.contextReceiver = { [weak self] context in
+            queue.async {
+                let isBackground = context.applicationStateHistory.currentSnapshot.state == .background
+                if self?.isBackground != isBackground {
+                    self?.isBackground = isBackground
+                }
+            }
+        }
+        if let contextReceiver = self.contextReceiver {
+            self.contextProvider.publish(to: contextReceiver)
+        }
+        scheduleNextCycle()
+    }
+
+    private func scheduleNextCycle(applyingDelay: Bool = true) {
+        readWork?.cancel()
+        uploadWork?.cancel()
+        let readWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
-            let context = self.context ?? contextProvider.read()
+            let context = contextProvider.read()
             let blockersForUpload = uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
             let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil
@@ -98,23 +113,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.scheduleNextCycle()
             }
         }
-
-        self.contextReceiver = { [weak self] context in
-            queue.async {
-                self?.context = context
-            }
-        }
-        if let contextReceiver = self.contextReceiver {
-            self.contextProvider.publish(to: contextReceiver)
-        }
-        scheduleNextCycle()
-    }
-
-    private func scheduleNextCycle() {
-        guard let readWork = self.readWork else {
-            return
-        }
-        queue.asyncAfter(deadline: .now() + delay.current, execute: readWork)
+        self.readWork = readWork
+        queue.asyncAfter(deadline: .now() + (applyingDelay ? delay.current : 0), execute: readWork)
     }
 
     private func uploadFile(from files: [ReadableFile], context: DatadogContext) {
@@ -194,10 +194,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 }
                 do {
                     // Try uploading the batch and do one more retry on failure.
-                    let context = self.context ?? self.contextProvider.read()
+                    let context = self.contextProvider.read()
                     _ = try self.dataUploader.upload(events: nextBatch.events, context: context)
                 } catch {
-                    let context = self.context ?? self.contextProvider.read()
+                    let context = self.contextProvider.read()
                     _ = try? self.dataUploader.upload(events: nextBatch.events, context: context)
                 }
             }

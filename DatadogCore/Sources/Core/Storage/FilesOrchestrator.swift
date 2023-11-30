@@ -165,11 +165,18 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             }
             #endif
 
-            let filtered = filesFromOldest
+            var filtered = filesFromOldest
                 .filter {
-                    let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
-                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
+                    return excludedFileNames.contains($0.file.name) == false
                 }
+
+            if let newestFile = filtered.last {
+                let fileAge = dateProvider.now.timeIntervalSince(newestFile.creationDate)
+                if fileAge < performance.minFileAgeForRead {
+                    filtered = filtered.dropLast()
+                }
+            }
+
             return filtered
                 .prefix(limit)
                 .map { $0.file }
