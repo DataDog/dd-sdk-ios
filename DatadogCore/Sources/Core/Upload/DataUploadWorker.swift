@@ -104,7 +104,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
             }
             var files = files
             guard let file = files.popLast() else {
-                scheduleNextCycle()
+                self.scheduleNextCycle()
                 return
             }
             if let batch = self.fileReader.readBatch(from: file) {
@@ -134,15 +134,15 @@ internal class DataUploadWorker: DataUploadWorkerType {
                         case .unauthorized:
                             DD.logger.error("⚠️ Make sure that the provided token still exists and you're targeting the relevant Datadog site.")
                         case let .httpError(statusCode: statusCode):
-                            telemetry.error("Data upload finished with status code: \(statusCode)")
+                            self.telemetry.error("Data upload finished with status code: \(statusCode)")
                         case let .networkError(error: error):
-                            telemetry.error("Data upload finished with error", error: error)
+                            self.telemetry.error("Data upload finished with error", error: error)
                         }
                     }
                 } catch let error {
                     // If upload can't be initiated do not retry, so drop the batch:
                     self.fileReader.markBatchAsRead(batch, reason: .invalid)
-                    telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
+                    self.telemetry.error("Failed to initiate '\(self.featureName)' data upload", error: error)
                 }
             }
             if files.isEmpty {
