@@ -677,6 +677,64 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNotEqual(view1Events[0].view.id, view2Events[0].view.id)
     }
 
+    func testWhenEventsAreSent_theyIncludeSessionPrecondition() throws {
+        let randomPrecondition: RUMSessionPrecondition = .mockRandom()
+        parent.context.sessionPrecondition = randomPrecondition
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: mockViewIdentity,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        // When
+        _ = scope.process(command: RUMApplicationStartCommand.mockWith(time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .custom), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: .mockAny()), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddLongTaskCommand.mockWith(time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertGreaterThan(viewEvents.count, 1)
+        viewEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertGreaterThan(actionEvents.count, 1)
+        actionEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let errorEvents = writer.events(ofType: RUMErrorEvent.self)
+        XCTAssertGreaterThan(errorEvents.count, 0)
+        errorEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let longTaskEvents = writer.events(ofType: RUMLongTaskEvent.self)
+        XCTAssertGreaterThan(longTaskEvents.count, 0)
+        longTaskEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertGreaterThan(resourceEvents.count, 0)
+        resourceEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+    }
+
     // MARK: - Resources Tracking
 
     func testItManagesResourceScopesLifecycle() throws {

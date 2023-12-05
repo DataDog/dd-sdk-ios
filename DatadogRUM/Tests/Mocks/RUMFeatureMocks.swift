@@ -160,6 +160,29 @@ extension RUMCommand {
     }
 }
 
+extension RUMApplicationStartCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMApplicationStartCommand { mockWith() }
+
+    public static func mockRandom() -> RUMApplicationStartCommand {
+        return .mockWith(
+            time: .mockRandomInThePast(),
+            attributes: mockRandomAttributes()
+        )
+    }
+
+    static func mockWith(
+        time: Date = Date(),
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) -> RUMApplicationStartCommand {
+        return RUMApplicationStartCommand(
+            time: time,
+            attributes: attributes,
+            canStartBackgroundView: false,
+            isUserInteraction: false
+        )
+    }
+}
+
 extension RUMStartViewCommand: AnyMockable, RandomMockable {
     public static func mockAny() -> RUMStartViewCommand { mockWith() }
 
@@ -613,6 +636,7 @@ extension RUMContext {
         rumApplicationID: String = .mockAny(),
         sessionID: RUMUUID = .mockRandom(),
         isSessionActive: Bool = true,
+        sessionPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         activeViewID: RUMUUID? = nil,
         activeViewPath: String? = nil,
         activeViewName: String? = nil,
@@ -730,6 +754,7 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
+        startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         dependencies: RUMScopeDependencies = .mockAny(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
@@ -737,6 +762,7 @@ extension RUMSessionScope {
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
+            startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: hasReplay
         )

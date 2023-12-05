@@ -186,7 +186,7 @@ public struct RUMActionEvent: RUMDataModel {
             public let plan: Plan?
 
             /// The precondition that led to the creation of the session
-            public let sessionPrecondition: SessionPrecondition?
+            public let sessionPrecondition: RUMSessionPrecondition?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
@@ -197,17 +197,6 @@ public struct RUMActionEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-
-            /// The precondition that led to the creation of the session
-            public enum SessionPrecondition: String, Codable {
-                case userAppLaunch = "user_app_launch"
-                case inactivityTimeout = "inactivity_timeout"
-                case maxDuration = "max_duration"
-                case backgroundLaunch = "background_launch"
-                case prewarm = "prewarm"
-                case fromNonInteractiveSession = "from_non_interactive_session"
-                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -580,7 +569,7 @@ public struct RUMErrorEvent: RUMDataModel {
             public let plan: Plan?
 
             /// The precondition that led to the creation of the session
-            public let sessionPrecondition: SessionPrecondition?
+            public let sessionPrecondition: RUMSessionPrecondition?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
@@ -591,17 +580,6 @@ public struct RUMErrorEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-
-            /// The precondition that led to the creation of the session
-            public enum SessionPrecondition: String, Codable {
-                case userAppLaunch = "user_app_launch"
-                case inactivityTimeout = "inactivity_timeout"
-                case maxDuration = "max_duration"
-                case backgroundLaunch = "background_launch"
-                case prewarm = "prewarm"
-                case fromNonInteractiveSession = "from_non_interactive_session"
-                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1066,7 +1044,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             public let plan: Plan?
 
             /// The precondition that led to the creation of the session
-            public let sessionPrecondition: SessionPrecondition?
+            public let sessionPrecondition: RUMSessionPrecondition?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
@@ -1077,17 +1055,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-
-            /// The precondition that led to the creation of the session
-            public enum SessionPrecondition: String, Codable {
-                case userAppLaunch = "user_app_launch"
-                case inactivityTimeout = "inactivity_timeout"
-                case maxDuration = "max_duration"
-                case backgroundLaunch = "background_launch"
-                case prewarm = "prewarm"
-                case fromNonInteractiveSession = "from_non_interactive_session"
-                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1375,7 +1342,7 @@ public struct RUMResourceEvent: RUMDataModel {
             public let plan: Plan?
 
             /// The precondition that led to the creation of the session
-            public let sessionPrecondition: SessionPrecondition?
+            public let sessionPrecondition: RUMSessionPrecondition?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
@@ -1386,17 +1353,6 @@ public struct RUMResourceEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-
-            /// The precondition that led to the creation of the session
-            public enum SessionPrecondition: String, Codable {
-                case userAppLaunch = "user_app_launch"
-                case inactivityTimeout = "inactivity_timeout"
-                case maxDuration = "max_duration"
-                case backgroundLaunch = "background_launch"
-                case prewarm = "prewarm"
-                case fromNonInteractiveSession = "from_non_interactive_session"
-                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -1937,7 +1893,7 @@ public struct RUMViewEvent: RUMDataModel {
             public let plan: Plan?
 
             /// The precondition that led to the creation of the session
-            public let sessionPrecondition: SessionPrecondition?
+            public let sessionPrecondition: RUMSessionPrecondition?
 
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
@@ -1948,17 +1904,6 @@ public struct RUMViewEvent: RUMDataModel {
             public enum Plan: Int, Codable {
                 case plan1 = 1
                 case plan2 = 2
-            }
-
-            /// The precondition that led to the creation of the session
-            public enum SessionPrecondition: String, Codable {
-                case userAppLaunch = "user_app_launch"
-                case inactivityTimeout = "inactivity_timeout"
-                case maxDuration = "max_duration"
-                case backgroundLaunch = "background_launch"
-                case prewarm = "prewarm"
-                case fromNonInteractiveSession = "from_non_interactive_session"
-                case explicitStop = "explicit_stop"
             }
         }
     }
@@ -3227,6 +3172,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             case id = "id"
         }
     }
+}
+
+/// The precondition that led to the creation of the session
+public enum RUMSessionPrecondition: String, Codable {
+    case userAppLaunch = "user_app_launch"
+    case inactivityTimeout = "inactivity_timeout"
+    case maxDuration = "max_duration"
+    case backgroundLaunch = "background_launch"
+    case prewarm = "prewarm"
+    case fromNonInteractiveSession = "from_non_interactive_session"
+    case explicitStop = "explicit_stop"
 }
 
 /// CI Visibility properties

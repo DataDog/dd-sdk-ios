@@ -51,6 +51,12 @@ extension RUMMethod: RandomMockable {
     }
 }
 
+extension RUMSessionPrecondition: RandomMockable {
+    public static func mockRandom() -> RUMSessionPrecondition {
+        return [.userAppLaunch, .inactivityTimeout, .maxDuration, .backgroundLaunch, .prewarm, .fromNonInteractiveSession, .explicitStop].randomElement()!
+    }
+}
+
 extension RUMEventAttributes: RandomMockable {
     public static func mockRandom() -> RUMEventAttributes {
         return .init(contextInfo: mockRandomAttributes())
@@ -109,7 +115,11 @@ extension RUMOperatingSystem: RandomMockable {
 
 extension RUMViewEvent.DD.Configuration: RandomMockable {
     public static func mockRandom() -> RUMViewEvent.DD.Configuration {
-        return .init(sessionReplaySampleRate: .mockRandom(min: 0, max: 100), sessionSampleRate: .mockRandom(min: 0, max: 100), startSessionReplayRecordingManually: nil)
+        return .init(
+            sessionReplaySampleRate: .mockRandom(min: 0, max: 100),
+            sessionSampleRate: .mockRandom(min: 0, max: 100),
+            startSessionReplayRecordingManually: nil
+        )
     }
 }
 
@@ -131,7 +141,10 @@ extension RUMViewEvent: RandomMockable {
                 documentVersion: .mockRandom(),
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
+                session: .init(
+                    plan: [.plan1, .plan2].randomElement()!,
+                    sessionPrecondition: .mockRandom()
+                )
             ),
             application: .init(id: .mockRandom()),
             buildVersion: .mockRandom(),
@@ -223,7 +236,10 @@ extension RUMResourceEvent: RandomMockable {
                 configuration: .mockRandom(),
                 discarded: nil,
                 rulePsr: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement()),
+                session: .init(
+                    plan: [.plan1, .plan2].randomElement()!,
+                    sessionPrecondition: .mockRandom()
+                ),
                 spanId: .mockRandom(),
                 traceId: .mockRandom()
             ),
@@ -297,7 +313,10 @@ extension RUMActionEvent: RandomMockable {
                 ),
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
+                session: .init(
+                    plan: [.plan1, .plan2].randomElement()!,
+                    sessionPrecondition: .mockRandom()
+                )
             ),
             action: .init(
                 crash: .init(count: .mockRandom()),
@@ -358,7 +377,10 @@ extension RUMErrorEvent: RandomMockable {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
-                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
+                session: .init(
+                    plan: [.plan1, .plan2].randomElement()!,
+                    sessionPrecondition: .mockRandom()
+                )
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
@@ -438,7 +460,10 @@ extension RUMLongTaskEvent: RandomMockable {
                 browserSdkVersion: nil,
                 configuration: .mockRandom(),
                 discarded: nil,
-                session: .init(plan: [.plan1, .plan2].randomElement()!, sessionPrecondition: [.userAppLaunch, .backgroundLaunch].randomElement())
+                session: .init(
+                    plan: [.plan1, .plan2].randomElement()!,
+                    sessionPrecondition: .mockRandom()
+                )
             ),
             action: .init(id: .mockRandom()),
             application: .init(id: .mockRandom()),
@@ -483,8 +508,8 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     actionNameAttribute: nil,
                     allowFallbackToLocalStorage: nil,
                     allowUntrustedEvents: nil,
-                    backgroundTasksEnabled: .mockAny(),
-                    batchProcessingLevel: .mockAny(),
+                    backgroundTasksEnabled: .mockRandom(),
+                    batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockRandom(),
                     defaultPrivacyLevel: .mockRandom(),

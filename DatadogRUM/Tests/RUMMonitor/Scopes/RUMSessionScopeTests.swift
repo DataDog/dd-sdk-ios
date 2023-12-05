@@ -461,28 +461,27 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertFalse(result)
     }
 
-    func testWhenSessionScopeHasViewsWithPendingResources_whenStopSetssion_itReturnsTrueFromProcess() throws {
+    func testWhenSessionScopeHasViewsWithPendingResources_whenStopSession_itKeepsTheScope() throws {
         // Given
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date()
         )
-        _ = scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer)
-        _ = scope.process(command: RUMStartResourceCommand.mockWith(time: Date()), context: context, writer: writer)
+        XCTAssertTrue(scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer))
+        XCTAssertTrue(scope.process(command: RUMStartResourceCommand.mockWith(time: Date()), context: context, writer: writer))
         let view = try XCTUnwrap(scope.viewScopes.first)
 
         // When
         let command = RUMStopSessionCommand(time: Date())
-        let result = scope.process(command: command, context: context, writer: writer)
+        let keep = scope.process(command: command, context: context, writer: writer)
 
         // Then
         XCTAssertFalse(scope.isActive)
         XCTAssertFalse(view.isActiveView)
-        // This still needs to return true because we have pending events
-        XCTAssertTrue(result)
+        XCTAssertTrue(keep, "The scope should be kept because it has pending events")
     }
 
-    func testWhenSessionScopeHasViewsWithPendingResources_itReturnsTrueFromProcessWhenResourcesFinish() throws {
+    func testWhenSessionScopeHasViewsWithPendingResources_itClosesTheScopeWhenResourcesFinish() throws {
         // Given
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
@@ -490,16 +489,16 @@ class RUMSessionScopeTests: XCTestCase {
         )
         _ = scope.process(command: RUMStartViewCommand.mockWith(time: Date()), context: context, writer: writer)
         let startResourceCommand = RUMStartResourceCommand.mockWith(time: Date())
-        _ = scope.process(command: startResourceCommand, context: context, writer: writer)
-        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
+        XCTAssertTrue(scope.process(command: startResourceCommand, context: context, writer: writer))
+        XCTAssertTrue(scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer))
 
         // When
         let command = RUMStopResourceCommand.mockWith(resourceKey: startResourceCommand.resourceKey, time: Date())
-        let result = scope.process(command: command, context: context, writer: writer)
+        let keep = scope.process(command: command, context: context, writer: writer)
 
         // Then
         XCTAssertFalse(scope.isActive)
-        XCTAssertFalse(result)
+        XCTAssertFalse(keep, "The scope should be closed")
     }
 
     func testWhenScopeEnded_itDoesNotStartNewViews() throws {
