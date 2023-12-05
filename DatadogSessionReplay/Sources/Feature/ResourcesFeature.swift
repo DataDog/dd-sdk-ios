@@ -11,7 +11,9 @@ import DatadogInternal
 internal class ResourcesFeature: DatadogRemoteFeature {
     static var name = "session-replay-resources"
 
-    var requestBuilder: FeatureRequestBuilder
+    let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+
+    let requestBuilder: FeatureRequestBuilder
 
     init(
         core: DatadogCoreProtocol,

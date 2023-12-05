@@ -29,7 +29,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     )
 
     /// A no-op message bus receiver.
-    internal let messageReceiver: FeatureMessageReceiver? = NOPFeatureMessageReceiver()
+    internal let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 
     /// The list of registered handlers.
     ///

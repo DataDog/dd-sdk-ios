@@ -12,7 +12,7 @@ internal struct LogsFeature: DatadogRemoteFeature {
 
     let requestBuilder: FeatureRequestBuilder
 
-    let messageReceiver: FeatureMessageReceiver?
+    let messageReceiver: FeatureMessageReceiver
 
     let logEventMapper: LogEventMapper?
 

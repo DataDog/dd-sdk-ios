@@ -10,7 +10,7 @@ import DatadogInternal
 internal final class CrashReportingFeature: DatadogFeature {
     static let name = "crash-reporter"
 
-    let messageReceiver: FeatureMessageReceiver?
+    let messageReceiver: FeatureMessageReceiver
 
     /// Queue for synchronizing internal operations.
     private let queue: DispatchQueue

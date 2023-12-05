@@ -12,7 +12,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let requestBuilder: FeatureRequestBuilder
 
-    let messageReceiver: FeatureMessageReceiver?
+    let messageReceiver: FeatureMessageReceiver
 
     let monitor: Monitor
 

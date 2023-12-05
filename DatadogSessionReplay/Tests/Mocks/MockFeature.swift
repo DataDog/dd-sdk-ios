@@ -12,6 +12,7 @@ import DatadogSessionReplay
 internal class MockFeature: DatadogRemoteFeature {
     static var name = "mock-feature"
 
+    var messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     var requestBuilder: FeatureRequestBuilder = MockRequestBuilder()
 }
 

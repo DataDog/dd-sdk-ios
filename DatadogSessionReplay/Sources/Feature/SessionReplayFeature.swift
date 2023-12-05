@@ -11,7 +11,7 @@ import DatadogInternal
 internal class SessionReplayFeature: DatadogRemoteFeature {
     static let name: String = "session-replay"
     let requestBuilder: FeatureRequestBuilder
-    let messageReceiver: FeatureMessageReceiver?
+    let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
 
     // MARK: - Main Components
