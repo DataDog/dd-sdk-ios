@@ -105,6 +105,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    /// Integration with Synthetics tests. It contains the Synthetics test context when active.
+    let syntheticsTest: RUMSyntheticsTest?
     /// Telemetry interface.
     let telemetry: Telemetry
 
@@ -117,6 +119,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?,
+        syntheticsTest: RUMSyntheticsTest?,
         telemetry: Telemetry
     ) {
         self.applicationID = applicationID
@@ -125,6 +128,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
+        self.syntheticsTest = syntheticsTest
         self.telemetry = telemetry
     }
 
@@ -335,7 +339,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: lastRUMView.dd.session?.sessionPrecondition
+                )
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
@@ -359,14 +366,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 type: errorType
             ),
             os: lastRUMView.os,
+            parentView: nil,
             service: lastRUMView.service,
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
-                type: lastRUMView.ciTest != nil ? .ciTest : .user
+                type: lastRUMView.session.type
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
-            synthetics: nil,
+            synthetics: lastRUMView.synthetics,
             usr: lastRUMView.usr,
             version: lastRUMView.version,
             view: .init(
@@ -389,11 +397,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: original.dd.session?.sessionPrecondition
+                )
             ),
             application: original.application,
             buildVersion: original.buildVersion,
@@ -404,6 +419,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             device: original.device,
             display: nil,
             os: original.os,
+            parentView: nil,
             privacy: nil,
             service: original.service,
             session: original.session,
@@ -472,11 +488,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: nil
+                )
             ),
             application: .init(
                 id: applicationID
@@ -496,6 +519,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // before restarting the app after crash. To solve this, the OS information would have to be
             // persisted in `crashContext` the same way as we do for other dynamic information.
             os: .init(device: context.device),
+            parentView: nil,
             privacy: nil,
             service: context.service,
             session: .init(
@@ -503,11 +527,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
                 sampledForReplay: nil,
-                startPrecondition: nil,
-                type: ciTest != nil ? .ciTest : .user
+                type: ciTest != nil ? .ciTest : (syntheticsTest != nil ? .synthetics : .user)
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: syntheticsTest,
             usr: context.userInfo.map { RUMUser(userInfo: $0) },
             version: context.version,
             view: .init(

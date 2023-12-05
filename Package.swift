@@ -186,7 +186,7 @@ let package = Package(
                 .target(name: "DatadogInternal"),
             ],
             path: "TestUtilities",
-            sources: ["Mocks", "Helpers"]
+            sources: ["Mocks", "Helpers", "Matchers"]
         )
     ]
 )

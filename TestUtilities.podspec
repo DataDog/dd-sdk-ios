@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "TestUtilities"
-  s.version      = "2.3.0"
+  s.version      = "2.5.0"
   s.summary      = "Datadog Testing Utilities. This module is for internal testing and should not be published."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -28,7 +28,8 @@ Pod::Spec.new do |s|
   
   s.source_files = [
     "TestUtilities/Helpers/**/*.swift",
-    "TestUtilities/Mocks/**/*.swift"
+    "TestUtilities/Mocks/**/*.swift",
+    "TestUtilities/Matchers/**/*.swift",
   ]
 
   s.dependency 'DatadogInternal'

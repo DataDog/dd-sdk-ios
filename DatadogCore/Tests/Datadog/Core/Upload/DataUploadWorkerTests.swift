@@ -66,7 +66,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 1
         )
 
         // Then
@@ -77,6 +78,43 @@ class DataUploadWorkerTests: XCTestCase {
 
         worker.cancelSynchronously()
         XCTAssertEqual(try orchestrator.directory.files().count, 0)
+    }
+
+    func testItUploadsDataSequentiallyWithoutDelay_whenMaxBatchesPerUploadIsSet() {
+        let uploadExpectation = self.expectation(description: "Make 2 uploads")
+        uploadExpectation.expectedFulfillmentCount = 2
+
+        let dataUploader = DataUploaderMock(
+            uploadStatus: DataUploadStatus(httpResponse: .mockResponseWith(statusCode: 200), ddRequestID: nil),
+            onUpload: uploadExpectation.fulfill
+        )
+
+        // Given
+        writer.write(value: ["k1": "v1"])
+        writer.write(value: ["k2": "v2"])
+        writer.write(value: ["k3": "v3"])
+
+        // When
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockAny(),
+            uploadConditions: DataUploadConditions.alwaysUpload(),
+            delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: 2
+        )
+
+        // Then
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(dataUploader.uploadedEvents.count, 2)
+        XCTAssertEqual(dataUploader.uploadedEvents[0], Event(data: #"{"k1":"v1"}"#.utf8Data))
+        XCTAssertEqual(dataUploader.uploadedEvents[1], Event(data: #"{"k2":"v2"}"#.utf8Data))
+
+        worker.cancelSynchronously()
+        XCTAssertEqual(try orchestrator.directory.files().count, 1)
     }
 
     func testGivenDataToUpload_whenUploadFinishesAndDoesNotNeedToBeRetried_thenDataIsDeleted() {
@@ -98,7 +136,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -130,7 +169,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
@@ -159,7 +199,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -194,7 +235,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -207,8 +249,13 @@ class DataUploadWorkerTests: XCTestCase {
         worker.cancelSynchronously()
     }
 
-    func testWhenBatchFails_thenIntervalIncreases() {
+    func testWhenBatchFails_thenIntervalIncreasesAndUploadCycleEnds() {
         let delayChangeExpectation = expectation(description: "Upload delay is increased")
+        delayChangeExpectation.expectedFulfillmentCount = 1
+
+        let uploadAttemptExpectation = expectation(description: "Upload was attempted")
+        uploadAttemptExpectation.expectedFulfillmentCount = 1
+
         let initialUploadDelay = 0.01
         let delay = DataUploadDelay(
             performance: UploadPerformanceMock(
@@ -221,16 +268,28 @@ class DataUploadWorkerTests: XCTestCase {
 
         // When
         writer.write(value: ["k1": "v1"])
+        writer.write(value: ["k2": "v2"])
+        writer.write(value: ["k3": "v3"])
+
+        let dataUploader = DataUploaderMock(
+            uploadStatus: .mockWith(
+                needsRetry: true,
+                error: .httpError(statusCode: 500)
+            )
+        ) {
+            uploadAttemptExpectation.fulfill()
+        }
 
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
-            dataUploader: DataUploaderMock(uploadStatus: .mockWith(needsRetry: true)),
+            dataUploader: dataUploader,
             contextProvider: .mockAny(),
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -239,7 +298,7 @@ class DataUploadWorkerTests: XCTestCase {
                 delay.current > initialUploadDelay
             }
         }, andThenFulfill: delayChangeExpectation)
-        wait(for: [delayChangeExpectation], timeout: 0.5)
+        wait(for: [delayChangeExpectation, uploadAttemptExpectation], timeout: 0.5)
         worker.cancelSynchronously()
     }
 
@@ -265,7 +324,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: delay,
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Then
@@ -303,7 +363,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: randomFeatureName,
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -315,7 +376,7 @@ class DataUploadWorkerTests: XCTestCase {
 
         XCTAssertEqual(
             dd.logger.debugLogs[0].message,
-            "⏳ (\(randomFeatureName)) Uploading batch...",
+            "⏳ (\(randomFeatureName)) Uploading batches...",
             "Batch start information should be printed to `userLogger`. All captured logs:\n\(dd.logger.recordedLogs)"
         )
 
@@ -348,7 +409,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -382,7 +444,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -415,7 +478,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockRandom(),
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [startUploadExpectation], timeout: 0.5)
@@ -450,7 +514,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: .alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: "some-feature",
-            telemetry: telemetry
+            telemetry: telemetry,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         wait(for: [initiatingUploadExpectation], timeout: 0.5)
@@ -482,7 +547,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.neverUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // When
@@ -510,7 +576,8 @@ class DataUploadWorkerTests: XCTestCase {
             uploadConditions: DataUploadConditions.alwaysUpload(),
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
         )
 
         // Given
@@ -551,6 +618,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         writer.write(value: ["k1": "v1"])
@@ -580,6 +648,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuick),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         writer.write(value: ["k1": "v1"])
@@ -608,6 +677,7 @@ class DataUploadWorkerTests: XCTestCase {
             delay: DataUploadDelay(performance: UploadPerformanceMock.veryQuickInitialUpload),
             featureName: .mockAny(),
             telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
         // Then

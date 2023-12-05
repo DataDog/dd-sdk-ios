@@ -23,6 +23,6 @@ public class DDW3CHTTPHeadersWriter: NSObject {
 
     @objc
     public init(sampleRate: Float = 20) {
-        swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(sampleRate: sampleRate)
+        swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(sampleRate: sampleRate, tracestate: [:])
     }
 }

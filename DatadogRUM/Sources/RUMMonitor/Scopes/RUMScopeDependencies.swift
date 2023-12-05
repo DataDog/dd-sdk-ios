@@ -37,10 +37,21 @@ internal struct RUMScopeDependencies {
     let rumUUIDGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    let syntheticsTest: RUMSyntheticsTest?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
 
     var telemetry: Telemetry {
         core?.telemetry ?? NOPTelemetry()
+    }
+
+    var sessionType: RUMSessionType {
+        if ciTest != nil {
+            return .ciTest
+        } else if syntheticsTest != nil {
+            return .synthetics
+        } else {
+            return .user
+        }
     }
 }

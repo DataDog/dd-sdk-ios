@@ -6,6 +6,7 @@
 
 import XCTest
 @testable import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class DiffSRWireframes: XCTestCase {
@@ -117,6 +118,26 @@ class DiffSRWireframes: XCTestCase {
                 // Then
                 XCTAssertEqual(error as? WireframeMutationError, WireframeMutationError.typeMismatch)
             }
+        }
+    }
+
+    func testWhenComputingMutationsForImageWireframe_isNotDifferentButUpdateBase64() {
+        // Given
+        let randomID: WireframeID = .mockRandom()
+        let base64: String = .mockRandom()
+        let wireframeA: SRWireframe = .imageWireframe(value: .mockWith(base64: .mockRandom(), id: randomID))
+        let wireframeB: SRWireframe = .imageWireframe(value: .mockWith(base64: base64, id: randomID))
+
+        // When
+        let mutations = try? XCTUnwrap(wireframeB.mutations(from: wireframeA))
+        let isDifferent = wireframeA.isDifferent(than: wireframeB)
+
+        // Then
+        XCTAssertFalse(isDifferent)
+        if case let .imageWireframeUpdate(update) = mutations {
+            XCTAssertEqual(update.base64, base64)
+        } else {
+            XCTFail("mutations are expected to be `.imageWireframeUpdate`")
         }
     }
 }

@@ -166,6 +166,18 @@ extension LaunchTime: AnyMockable {
             isActivePrewarm: .mockAny()
         )
     }
+
+    public static func mockWith(
+        launchTime: TimeInterval? = 1,
+        launchDate: Date = Date(),
+        isActivePrewarm: Bool = false
+    ) -> LaunchTime {
+        .init(
+            launchTime: launchTime,
+            launchDate: launchDate,
+            isActivePrewarm: isActivePrewarm
+        )
+    }
 }
 
 extension AppState: AnyMockable, RandomMockable {

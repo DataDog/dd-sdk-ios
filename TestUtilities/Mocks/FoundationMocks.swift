@@ -285,6 +285,12 @@ extension String: AnyMockable, RandomMockable {
         return characters.random(ofLength: length)
     }
 
+    public static func mockRandom(otherThan values: Set<String> = []) -> String {
+        var random: String = .mockRandom()
+        while values.contains(random) { random = .mockRandom() }
+        return random
+    }
+
     public static func mockRepeating(character: Character, times: Int) -> String {
         let characters = (0..<times).map { _ in character }
         return String(characters)

@@ -43,7 +43,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         let recorder = try Recorder(
             processor: processor,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            additionalNodeRecorders: configuration._additionalNodeRecorders
         )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
@@ -58,7 +59,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.recordingCoordinator = recordingCoordinator
         self.processor = processor
         self.writer = writer
-        self.requestBuilder = RequestBuilder(
+        self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )

@@ -75,23 +75,19 @@ internal extension PerformancePreset {
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
             switch (bundleType, batchSize) {
-            case (.iOSApp, .small): return 5
-            case (.iOSApp, .medium): return 15
-            case (.iOSApp, .large): return 60
-            case (.iOSAppExtension, .small): return 1
-            case (.iOSAppExtension, .medium): return 3
-            case (.iOSAppExtension, .large): return 12
+            case (.iOSApp, .small): return 3
+            case (.iOSApp, .medium): return 10
+            case (.iOSApp, .large): return 35
+            case (.iOSAppExtension, _): return 1
             }
         }()
 
         let minUploadDelayInSeconds: TimeInterval = {
             switch (bundleType, uploadFrequency) {
-            case (.iOSApp, .frequent): return 1
-            case (.iOSApp, .average): return 5
-            case (.iOSApp, .rare): return 10
-            case (.iOSAppExtension, .frequent): return 0.5
-            case (.iOSAppExtension, .average): return 1
-            case (.iOSAppExtension, .rare): return 5
+            case (.iOSApp, .frequent): return 0.5
+            case (.iOSApp, .average): return 2
+            case (.iOSApp, .rare): return 5
+            case (.iOSAppExtension, _): return 0.5
             }
         }()
 

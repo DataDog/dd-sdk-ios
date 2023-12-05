@@ -7,6 +7,16 @@
 import Foundation
 import DatadogInternal
 
+/// Simple `DateProvider` mock that returns given date.
+public class DateProviderMock: DateProvider {
+    public init(now: Date = Date()) {
+        self.now = now
+    }
+
+    @ReadWriteLock
+    public var now: Date
+}
+
 /// `DateProvider` mock returning consecutive dates in custom intervals, starting from given reference date.
 public class RelativeDateProvider: DateProvider {
     private(set) var date: Date

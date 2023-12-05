@@ -291,6 +291,8 @@ class TelemetryReceiverTests: XCTestCase {
             )
         )
 
+        let backgroundTasksEnabled: Bool? = .mockRandom()
+        let batchProcessingLevel: Int64? = .mockRandom()
         let batchSize: Int64? = .mockRandom()
         let batchUploadFrequency: Int64? = .mockRandom()
         let dartVersion: String? = .mockRandom()
@@ -316,6 +318,8 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         core.telemetry.configuration(
+            backgroundTasksEnabled: backgroundTasksEnabled,
+            batchProcessingLevel: batchProcessingLevel,
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
             dartVersion: dartVersion,
@@ -346,6 +350,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.version, core.context.sdkVersion)
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source.rawValue, core.context.source)
+        XCTAssertEqual(event?.telemetry.configuration.backgroundTasksEnabled, backgroundTasksEnabled)
+        XCTAssertEqual(event?.telemetry.configuration.batchProcessingLevel, batchProcessingLevel)
         XCTAssertEqual(event?.telemetry.configuration.batchSize, batchSize)
         XCTAssertEqual(event?.telemetry.configuration.batchUploadFrequency, batchUploadFrequency)
         XCTAssertEqual(event?.telemetry.configuration.dartVersion, dartVersion)

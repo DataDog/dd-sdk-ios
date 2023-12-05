@@ -65,6 +65,8 @@ internal final class ContextMessageReceiver: FeatureMessageReceiver {
                     core.telemetry
                         .error("Fails to decode RUM context from Trace", error: error)
                 }
+            } else {
+                $0.rum = nil
             }
         }
 

@@ -41,10 +41,11 @@ extension Trace {
 
         /// The configuration for automatic network requests tracing.
         ///
-        /// Requests tracing requires using the `DDURLSessionDelegate` in `URLSessions` that you want to trace.
+        /// RUM resources tracking requires enabling `URLSessionInstrumentation`. See
+        /// `URLSessionInstrumentation.enable(with:)`.
         ///
-        /// Note: Automatic network tracing involves swizzling the `URLSession` methods and will not work
-        /// without using `DDURLSessionDelegate`.
+        /// Note: Automatic RUM resources tracking involves swizzling the `URLSession`, `URLSessionTask` and
+        /// `URLSessionDataDelegate` methods.
         ///
         /// Default: `nil` - which means automatic tracing is not enabled by default.
         public var urlSessionTracking: URLSessionTracking?
@@ -97,7 +98,7 @@ extension Trace {
 
             /// Defines configuration for first-party hosts in distributed tracing.
             public enum FirstPartyHostsTracing {
-                /// Trace the specified hosts using Datadog tracing headers.
+                /// Trace the specified hosts using Datadog and W3C `tracecontext` tracing headers.
                 ///
                 /// - Parameters:
                 ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.

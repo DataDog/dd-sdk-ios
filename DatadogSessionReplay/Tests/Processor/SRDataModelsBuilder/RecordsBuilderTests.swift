@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class RecordsBuilderTests: XCTestCase {

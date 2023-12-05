@@ -79,6 +79,7 @@ class DatadogConfigurationTests: XCTestCase {
         configuration.site = .eu1
         configuration.batchSize = .small
         configuration.uploadFrequency = .frequent
+        configuration.batchProcessingLevel = .high
         configuration.proxyConfiguration = [
             kCFNetworkProxiesHTTPEnable: true,
             kCFNetworkProxiesHTTPPort: 123,
@@ -103,6 +104,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(configuration.batchSize, .small)
         XCTAssertEqual(configuration.uploadFrequency, .frequent)
+        XCTAssertEqual(configuration.batchProcessingLevel, .high)
         XCTAssertTrue(configuration.encryption is DataEncryptionMock)
         XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
 

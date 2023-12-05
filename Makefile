@@ -60,13 +60,16 @@ dependencies:
 ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
+ifndef DD_DISABLE_TEST_INSTRUMENTING
+		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;	
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
 		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
+endif
+		
 endif
 
 xcodeproj-session-replay:

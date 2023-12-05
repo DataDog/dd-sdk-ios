@@ -23,7 +23,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
     /// Network Instrumentation serial queue for safe and serialized access to the
     /// `URLSessionTask` interceptions.
-    internal let queue = DispatchQueue(
+    private let queue = DispatchQueue(
         label: "com.datadoghq.network-instrumentation",
         target: .global(qos: .utility)
     )
@@ -55,38 +55,38 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         try URLSessionTaskDelegateSwizzler.bindIfNeeded(
             delegateClass: configuration.delegateClass,
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                self?.queue.async {
+                self?.queue.async { [weak self, weak session] in
                     self?._task(task, didFinishCollecting: metrics)
-                    session.delegate?.interceptor?.task(task, didFinishCollecting: metrics)
+                    session?.delegate?.interceptor?.task(task, didFinishCollecting: metrics)
 
                     // iOS 16 and above, didCompleteWithError is not called hence we use task state to detect task completion
                     // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
                     if #available(iOS 15, tvOS 15, *) {
                         self?._task(task, didCompleteWithError: task.error)
-                        session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
+                        session?.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
                     }
                 }
             }, interceptDidCompleteWithError: { [weak self] session, task, error in
-                self?.queue.async {
+                self?.queue.async { [weak self, weak session] in
                     // prior to iOS 15, task state doesn't change to completed
                     // hence we use didCompleteWithError to detect task completion
                     self?._task(task, didCompleteWithError: task.error)
-                    session.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
+                    session?.delegate?.interceptor?.task(task, didCompleteWithError: task.error)
                 }
             }
         )
 
         try URLSessionDataDelegateSwizzler.bindIfNeeded(delegateClass: configuration.delegateClass, interceptDidReceive: { [weak self] session, task, data in
             // sync update to task prevents a race condition where the currentRequest could already be sent to the transport
-            self?.queue.sync {
+            self?.queue.sync { [weak self, weak session] in
                 self?._task(task, didReceive: data)
-                session.delegate?.interceptor?.task(task, didReceive: data)
+                session?.delegate?.interceptor?.task(task, didReceive: data)
             }
         })
 
         if #available(iOS 13, tvOS 13, *) {
             try URLSessionTaskSwizzler.bindIfNeeded(interceptResume: { [weak self] task in
-                self?.queue.sync {
+                self?.queue.sync { [weak self] in
                     let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
                     self?._intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
                 }
@@ -95,23 +95,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             try URLSessionSwizzler.bindIfNeeded(interceptURLRequest: { request in
                 return self.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts)
             }, interceptTask: { [weak self] task in
-                self?.queue.async {
+                self?.queue.async { [weak self] in
                     let additionalFirstPartyHosts = configuredFirstPartyHosts + task.firstPartyHosts
                     self?._intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
                 }
             })
         }
     }
-
-    private func firstPartyHosts(configuration: URLSessionInstrumentation.Configuration, delegate: URLSessionDelegate) -> FirstPartyHosts? {
-         var firstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing)
-
-         if let datadogDelegate = delegate as? DatadogURLSessionDelegate {
-             firstPartyHosts += datadogDelegate.firstPartyHosts
-         }
-
-         return firstPartyHosts
-     }
 
     internal func unbindAll() {
         URLSessionTaskDelegateSwizzler.unbindAll()

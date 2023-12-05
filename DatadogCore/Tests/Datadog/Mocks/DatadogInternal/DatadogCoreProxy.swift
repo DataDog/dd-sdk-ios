@@ -46,6 +46,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
 
@@ -79,7 +80,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
-    func set<Baggage>(baggage: @escaping () -> Baggage?, forKey key: String) where Baggage: Encodable {
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         core.set(baggage: baggage, forKey: key)
     }
 
