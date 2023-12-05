@@ -4,9 +4,11 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UIDatePickerRecorder: NodeRecorder {
+    let identifier = UUID()
     private let wheelsStyleRecorder = WheelsStyleDatePickerRecorder()
     private let compactStyleRecorder = CompactStyleDatePickerRecorder()
     private let inlineStyleRecorder = InlineStyleDatePickerRecorder()
@@ -54,7 +56,7 @@ internal struct UIDatePickerRecorder: NodeRecorder {
         let builder = UIDatePickerWireframesBuilder(
             wireframeRect: attributes.frame,
             attributes: attributes,
-            backgroundWireframeID: context.ids.nodeID(for: datePicker),
+            backgroundWireframeID: context.ids.nodeID(view: datePicker, nodeRecorder: self),
             isDisplayedInPopover: isDisplayedInPopover
         )
         let backgroundNode = Node(
@@ -169,3 +171,4 @@ internal struct UIDatePickerWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

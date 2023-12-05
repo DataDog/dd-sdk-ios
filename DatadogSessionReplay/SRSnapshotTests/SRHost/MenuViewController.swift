@@ -5,6 +5,50 @@
  */
 
 import UIKit
+import SRFixtures
+
+internal extension Fixture {
+    var menuItemTitle: String {
+        switch self {
+        case .basicShapes:
+            return "Basic Shapes"
+        case .basicTexts:
+            return "Basic Texts"
+        case .sliders:
+            return "Sliders"
+        case .segments:
+            return "Segments"
+        case .pickers:
+            return "Pickers"
+        case .switches:
+            return "Switches"
+        case .textFields:
+            return "Text Fields"
+        case .steppers:
+            return "Steppers"
+        case .datePickersInline:
+            return "Date Picker (inline)"
+        case .datePickersCompact:
+            return "Date Picker (compact)"
+        case .datePickersWheels:
+            return "Date Picker (wheels)"
+        case .timePickersCountDown:
+            return "Time Picker (count down)"
+        case .timePickersWheels:
+            return "Time Picker (wheels)"
+        case .timePickersCompact:
+            return "Time Picker (compact)"
+        case .images:
+            return "Images"
+        case .unsupportedViews:
+            return "Unsupported Views"
+        case .popups:
+            return "Popups"
+        case .swiftUI:
+            return "SwiftUI"
+        }
+    }
+}
 
 internal class MenuViewController: UITableViewController {
     override func numberOfSections(in tableView: UITableView) -> Int {

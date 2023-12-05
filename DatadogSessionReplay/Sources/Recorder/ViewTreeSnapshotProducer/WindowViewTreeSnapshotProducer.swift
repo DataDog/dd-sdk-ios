@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import UIKit
 
@@ -21,3 +22,4 @@ internal struct WindowViewTreeSnapshotProducer: ViewTreeSnapshotProducer {
         return snapshotBuilder.createSnapshot(of: window, with: context)
     }
 }
+#endif

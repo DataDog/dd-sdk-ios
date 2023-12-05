@@ -36,9 +36,10 @@ class DatadogTraceFeatureTests: XCTestCase {
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
+        let randomBackgroundTasksEnabled: Bool = .mockRandom()
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -65,7 +66,9 @@ class DatadogTraceFeatureTests: XCTestCase {
                     )
                 )
             ),
-            applicationVersion: randomApplicationVersion
+            applicationVersion: randomApplicationVersion,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
         defer { core.flushAndTearDown() }
 
@@ -101,7 +104,7 @@ class DatadogTraceFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -127,7 +130,9 @@ class DatadogTraceFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 

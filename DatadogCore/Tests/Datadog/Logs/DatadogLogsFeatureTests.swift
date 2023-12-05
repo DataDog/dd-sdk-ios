@@ -36,9 +36,10 @@ class DatadogLogsFeatureTests: XCTestCase {
         let randomDeviceOSName: String = .mockRandom()
         let randomDeviceOSVersion: String = .mockRandom()
         let randomEncryption: DataEncryption? = Bool.random() ? DataEncryptionMock() : nil
+        let randomBackgroundTasksEnabled: Bool = .mockRandom()
 
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -65,17 +66,14 @@ class DatadogLogsFeatureTests: XCTestCase {
                     )
                 )
             ),
-            applicationVersion: randomApplicationVersion
+            applicationVersion: randomApplicationVersion,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: randomUploadURL
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(customEndpoint: randomUploadURL), in: core)
 
         // When
         let logger = Logger.create(in: core)
@@ -105,7 +103,7 @@ class DatadogLogsFeatureTests: XCTestCase {
 
     func testItUsesExpectedPayloadFormatForUploads() throws {
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
-        let httpClient = HTTPClient(session: server.getInterceptedURLSession())
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
 
         let core = DatadogCore(
             directory: temporaryCoreDirectory,
@@ -131,17 +129,14 @@ class DatadogLogsFeatureTests: XCTestCase {
             httpClient: httpClient,
             encryption: nil,
             contextProvider: .mockAny(),
-            applicationVersion: .mockAny()
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
 
         // Given
-        let feature = LogsFeature(
-            logEventMapper: nil,
-            dateProvider: SystemDateProvider(),
-            customIntakeURL: .mockAny()
-        )
-        try core.register(feature: feature)
+        Logs.enable(with: .init(), in: core)
 
         let logger = Logger.create(in: core)
         logger.debug("log 1")

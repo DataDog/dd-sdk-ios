@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -21,8 +22,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     let processor: Processing
     /// Writes records to sdk core.
     let writer: Writing
-    /// Sends telemetry through sdk core.
-    let telemetry: Telemetry
 
     // MARK: - Initialization
 
@@ -31,13 +30,12 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         configuration: SessionReplay.Configuration
     ) throws {
         let writer = Writer()
-        let telemetry = TelemetryCore(core: core)
 
         let processor = Processor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
             writer: writer,
             srContextPublisher: SRContextPublisher(core: core),
-            telemetry: telemetry
+            telemetry: core.telemetry
         )
 
         let scheduler = MainThreadScheduler(interval: 0.1)
@@ -45,7 +43,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         let recorder = try Recorder(
             processor: processor,
-            telemetry: telemetry
+            telemetry: core.telemetry,
+            additionalNodeRecorders: configuration._additionalNodeRecorders
         )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
@@ -60,13 +59,13 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.recordingCoordinator = recordingCoordinator
         self.processor = processor
         self.writer = writer
-        self.requestBuilder = RequestBuilder(
+        self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
-            telemetry: telemetry
+            telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(
-            maxFileSize: UInt64(10).MB,
-            maxObjectSize: UInt64(10).MB,
+            maxFileSize: 10.MB.asUInt64(),
+            maxObjectSize: 10.MB.asUInt64(),
             meanFileAge: 2, // vs 5s with `batchSize: .small` - see `DatadogCore.PerformancePreset`
             uploadDelay: (
                 initial: 2, // vs 5s with `uploadFrequency: .frequent`
@@ -74,6 +73,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
                 changeRate: 0.75 // vs 0.1 with `uploadFrequency: .frequent`
             )
         )
-        self.telemetry = telemetry
     }
 }
+#endif

@@ -10,6 +10,28 @@ import DatadogInternal
 
 @testable import DatadogLogs
 
+extension RemoteLogger.Configuration: AnyMockable {
+    public static func mockAny() -> Self { .mockWith() }
+
+    static func mockWith(
+        service: String? = "logger.tests",
+        name: String? = "TestLogger",
+        networkInfoEnabled: Bool = false,
+        threshold: LogLevel = .info,
+        eventMapper: LogEventMapper? = nil,
+        sampler: Sampler = .mockKeepAll()
+    ) -> Self {
+        return .init(
+            service: service,
+            name: name,
+            networkInfoEnabled: networkInfoEnabled,
+            threshold: threshold,
+            eventMapper: eventMapper,
+            sampler: sampler
+        )
+    }
+}
+
 extension LogsFeature {
     /// Mocks an instance of the feature that performs no writes to file system and does no uploads.
     static func mockAny() -> Self { .mockWith() }
@@ -94,6 +116,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         loggerVersion: String = .mockAny(),
         threadName: String = .mockAny(),
         applicationVersion: String = .mockAny(),
+        applicationBuildNumber: String = .mockAny(),
         dd: LogEvent.Dd = .mockAny(),
         os: LogEvent.OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
@@ -113,6 +136,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: loggerVersion,
             threadName: threadName,
             applicationVersion: applicationVersion,
+            applicationBuildNumber: applicationBuildNumber,
             dd: dd,
             os: os,
             userInfo: userInfo,
@@ -135,6 +159,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             loggerVersion: .mockRandom(),
             threadName: .mockRandom(),
             applicationVersion: .mockRandom(),
+            applicationBuildNumber: .mockRandom(),
             dd: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),

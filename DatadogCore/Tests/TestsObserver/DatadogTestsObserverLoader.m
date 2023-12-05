@@ -6,7 +6,12 @@
 
 #import <Foundation/Foundation.h>
 #import <objc/runtime.h>
-#import "DatadogCoreTests-Swift.h"
+
+#if TARGET_OS_IOS
+#import "DatadogCoreTests_iOS-Swift.h"
+#elif TARGET_OS_TV
+#import "DatadogCoreTests_tvOS-Swift.h"
+#endif
 
 /// This code runs when the `DatadogTests` bundle is loaded into memory and tests start.
 /// Reference: https://developer.apple.com/documentation/objectivec/nsobject/1418815-load

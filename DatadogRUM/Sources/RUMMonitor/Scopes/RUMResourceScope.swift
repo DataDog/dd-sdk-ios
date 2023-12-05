@@ -121,6 +121,22 @@ internal class RUMResourceScope: RUMScope {
         let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
         let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
 
+        // Check GraphQL attributes
+        var graphql: RUMResourceEvent.Resource.Graphql? = nil
+        let graphqlOperationName = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationName) as? String)
+        let graphqlPayload = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlPayload) as? String)
+        let graphqlVariables = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlVariables) as? String)
+        if let rawGraphqlOperationType = (attributes.removeValue(forKey: CrossPlatformAttributes.graphqlOperationType) as? String) {
+            if let graphqlOperationType = RUMResourceEvent.Resource.Graphql.OperationType(rawValue: rawGraphqlOperationType) {
+                graphql = .init(
+                    operationName: graphqlOperationName,
+                    operationType: graphqlOperationType,
+                    payload: graphqlPayload,
+                    variables: graphqlVariables
+                )
+            }
+        }
+
         /// Metrics values take precedence over other values.
         if let metrics = resourceMetrics {
             resourceStartTime = metrics.fetch.start
@@ -136,10 +152,16 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
+                ),
                 discarded: nil,
                 rulePsr: traceSamplingRate,
-                session: .init(plan: .plan1),
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                ),
                 spanId: spanId,
                 traceId: traceId
             ),
@@ -147,13 +169,15 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
+            parentView: nil,
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
@@ -180,6 +204,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
+                graphql: graphql,
                 id: resourceUUID.toRUMDataFormat,
                 method: resourceHTTPMethod,
                 provider: resourceEventProvider,
@@ -202,12 +227,12 @@ internal class RUMResourceScope: RUMScope {
             ),
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(
@@ -230,18 +255,22 @@ internal class RUMResourceScope: RUMScope {
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: nil,
-                session: .init(plan: .plan1)
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
                 handling: nil,
@@ -261,14 +290,15 @@ internal class RUMResourceScope: RUMScope {
                 type: command.errorType
             ),
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(

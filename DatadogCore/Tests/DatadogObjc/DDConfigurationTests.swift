@@ -62,6 +62,12 @@ class DDConfigurationTests: XCTestCase {
         objcConfig.uploadFrequency = .rare
         XCTAssertEqual(objcConfig.sdkConfiguration.uploadFrequency, .rare)
 
+        objcConfig.batchProcessingLevel = .low
+        XCTAssertEqual(objcConfig.sdkConfiguration.batchProcessingLevel, .low)
+
+        objcConfig.batchProcessingLevel = .high
+        XCTAssertEqual(objcConfig.sdkConfiguration.batchProcessingLevel, .high)
+
         objcConfig.proxyConfiguration = [kCFNetworkProxiesHTTPEnable: true, kCFNetworkProxiesHTTPPort: 123, kCFNetworkProxiesHTTPProxy: "www.example.com", kCFProxyUsernameKey: "proxyuser", kCFProxyPasswordKey: "proxypass" ]
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPEnable] as? Bool, true)
         XCTAssertEqual(objcConfig.sdkConfiguration.proxyConfiguration?[kCFNetworkProxiesHTTPPort] as? Int, 123)

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -46,6 +47,8 @@ extension SessionReplay {
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
 
+        internal var _additionalNodeRecorders: [NodeRecorder] = []
+
         /// Creates Session Replay configuration
         /// - Parameters:
         ///   - replaySampleRate: The sampling rate for Session Replay. It is applied in addition to the RUM session sample rate.
@@ -60,5 +63,11 @@ extension SessionReplay {
             self.defaultPrivacyLevel = defaultPrivacyLevel
             self.customEndpoint = customEndpoint
         }
+
+        @_spi(Internal)
+public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
+            self._additionalNodeRecorders = additionalNodeRecorders
+        }
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import CoreGraphics
 import UIKit
@@ -26,7 +27,7 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
 }
 
-/// An individual node in `ViewTreeSnapshot`. A `Node` describes a single view - similar: an array of nodes describes
+/// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes
 /// view and its subtree (in depth-first order).
 ///
 /// Typically, to describe certain view-tree we need significantly less nodes than number of views, because some views
@@ -34,35 +35,57 @@ internal struct ViewTreeSnapshot {
 ///
 /// **Note:** The purpose of this structure is to be lightweight and create minimal overhead when the view-tree
 /// is captured on the main thread (the `Recorder` constantly creates `Nodes` for views residing in the hierarchy).
-internal struct Node {
+@_spi(Internal)
+public struct SessionReplayNode {
     /// Attributes of the `UIView` that this node was created for.
-    let viewAttributes: ViewAttributes
+    public let viewAttributes: SessionReplayViewAttributes
     /// A type defining how to build SR wireframes for the UI element described by this node.
-    let wireframesBuilder: NodeWireframesBuilder
+    public let wireframesBuilder: SessionReplayNodeWireframesBuilder
+
+    public init(viewAttributes: SessionReplayViewAttributes, wireframesBuilder: SessionReplayNodeWireframesBuilder) {
+        self.viewAttributes = viewAttributes
+        self.wireframesBuilder = wireframesBuilder
+    }
 }
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias Node = SessionReplayNode
+
+// An individual resource in `ViewTreeSnapshot`. It is used to describe binary representation of heavy resources such as images.
+@_spi(Internal)
+public protocol SessionReplayResource {
+    /// The unique identifier of the resource.
+    var identifier: String { get }
+    /// The data of the resource.
+    var data: Data { get }
+}
+
+/// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias Resource = SessionReplayResource
 
 /// Attributes of the `UIView` that the node was created for.
 ///
 /// It is used by the `Recorder` to capture view attributes on the main thread.
 /// It enforces immutability for later (thread safe) access from background queue in `Processor`.
-internal struct ViewAttributes: Equatable {
+@_spi(Internal)
+public struct SessionReplayViewAttributes: Equatable {
     /// The view's `frame`, in VTS's root view's coordinate space (usually, the screen coordinate space).
-    let frame: CGRect
+    public let frame: CGRect
 
     /// Original view's `.backgorundColor`.
-    let backgroundColor: CGColor?
+    public let backgroundColor: CGColor?
 
     /// Original view's `layer.borderColor`.
-    let layerBorderColor: CGColor?
+    public let layerBorderColor: CGColor?
 
     /// Original view's `layer.borderWidth`.
-    let layerBorderWidth: CGFloat
+    public let layerBorderWidth: CGFloat
 
     /// Original view's `layer.cornerRadius`.
-    let layerCornerRadius: CGFloat
+    public let layerCornerRadius: CGFloat
 
     /// Original view's `.alpha` (between `0.0` and `1.0`).
-    let alpha: CGFloat
+    public let alpha: CGFloat
 
     /// Original view's `.isHidden`.
     let isHidden: Bool
@@ -98,6 +121,9 @@ internal struct ViewAttributes: Equatable {
     var isTranslucent: Bool { !isVisible || alpha < 1 || backgroundColor?.alpha ?? 0 < 1 }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias ViewAttributes = SessionReplayViewAttributes
+
 extension ViewAttributes {
     init(frameInRootView: CGRect, view: UIView) {
         self.frame = frameInRootView
@@ -131,7 +157,8 @@ extension ViewAttributes {
 /// be safely ignored in `Recorder` or `Processor` (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// - `UnknownElement` - the element is of unknown kind, which could indicate an error during view tree traversal (e.g. working on
 /// assumption that is not met).
-internal protocol NodeSemantics {
+@_spi(Internal)
+public protocol SessionReplayNodeSemantics {
     /// The severity of this semantic.
     ///
     /// While querying certain `view` with an array of supported `NodeRecorders` each recorder can spot different semantics of
@@ -139,10 +166,13 @@ internal protocol NodeSemantics {
     static var importance: Int { get }
 
     /// Defines the strategy which `Recorder` should apply to subtree of this node.
-    var subtreeStrategy: NodeSubtreeStrategy { get }
+    var subtreeStrategy: SessionReplayNodeSubtreeStrategy { get }
     /// Nodes that share this semantics.
-    var nodes: [Node] { get }
+    var nodes: [SessionReplayNode] { get }
 }
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias NodeSemantics = SessionReplayNodeSemantics
 
 extension NodeSemantics {
     /// The severity of this semantic.
@@ -152,8 +182,12 @@ extension NodeSemantics {
     var importance: Int { Self.importance }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias NodeSubtreeStrategy = SessionReplayNodeSubtreeStrategy
+
 /// Strategies for handling node's subtree by `Recorder`.
-internal enum NodeSubtreeStrategy {
+@_spi(Internal)
+public enum SessionReplayNodeSubtreeStrategy {
     /// Continue traversing subtree of this node to record nested nodes automatically.
     ///
     /// This strategy is particularly useful for semantics that do not make assumption on node's content (e.g. this strategy can be
@@ -183,10 +217,11 @@ internal struct UnknownElement: NodeSemantics {
 /// has no visual appearance that can be presented in SR (e.g. a `UILabel` with no text, no border and fully transparent color).
 /// Unlike `IgnoredElement`, this semantics can be overwritten with another one with higher importance. This means that even
 /// if the root view of certain element has no appearance, other node recorders will continue checking it for strictkier semantics.
-internal struct InvisibleElement: NodeSemantics {
-    static let importance: Int = 0
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node] = []
+@_spi(Internal)
+public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics {
+    public static let importance: Int = 0
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode] = []
 
     /// Use `InvisibleElement.constant` instead.
     private init () {
@@ -198,8 +233,11 @@ internal struct InvisibleElement: NodeSemantics {
     }
 
     /// A constant value of `InvisibleElement` semantics.
-    static let constant = InvisibleElement()
+    public static let constant = SessionReplayInvisibleElement()
 }
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias InvisibleElement = SessionReplayInvisibleElement
 
 /// A semantics of an UI element that should be ignored when traversing view-tree. Unlike `InvisibleElement` this semantics cannot
 /// be overwritten by any other. This means that next node recorders won't be asked for further check of a strictkier semantics.
@@ -222,8 +260,18 @@ internal struct AmbiguousElement: NodeSemantics {
 /// A semantics of an UI element that is one of `UIView` subclasses. This semantics mean that we know its full identity along with set of
 /// subclass-specific attributes that will be used to render it in SR (e.g. all base `UIView` attributes plus the text in `UILabel` or the
 /// "on" / "off" state of `UISwitch` control).
-internal struct SpecificElement: NodeSemantics {
-    static let importance: Int = .max
-    let subtreeStrategy: NodeSubtreeStrategy
-    let nodes: [Node]
+@_spi(Internal)
+public struct SessionReplaySpecificElement: SessionReplayNodeSemantics {
+    public static let importance: Int = .max
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode]
+
+    public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy, nodes: [SessionReplayNode]) {
+        self.subtreeStrategy = subtreeStrategy
+        self.nodes = nodes
+    }
 }
+
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias SpecificElement = SessionReplaySpecificElement
+#endif

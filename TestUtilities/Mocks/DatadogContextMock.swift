@@ -16,6 +16,7 @@ extension DatadogContext: AnyMockable {
         service: String = .mockAny(),
         env: String = .mockAny(),
         version: String = .mockAny(),
+        buildNumber: String = .mockAny(),
         variant: String? = nil,
         source: String = .mockAny(),
         sdkVersion: String = .mockAny(),
@@ -33,7 +34,7 @@ extension DatadogContext: AnyMockable {
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
-        featuresAttributes: [String: FeatureBaggage] = [:]
+        baggages: [String: FeatureBaggage] = [:]
     ) -> DatadogContext {
         .init(
             site: site,
@@ -41,6 +42,7 @@ extension DatadogContext: AnyMockable {
             service: service,
             env: env,
             version: version,
+            buildNumber: buildNumber,
             variant: variant,
             source: source,
             sdkVersion: sdkVersion,
@@ -58,7 +60,7 @@ extension DatadogContext: AnyMockable {
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
             isLowPowerModeEnabled: isLowPowerModeEnabled,
-            featuresAttributes: featuresAttributes
+            baggages: baggages
         )
     }
 
@@ -69,6 +71,7 @@ extension DatadogContext: AnyMockable {
             service: .mockRandom(),
             env: .mockRandom(),
             version: .mockRandom(),
+            buildNumber: .mockRandom(),
             variant: .mockRandom(),
             source: .mockAnySource(),
             sdkVersion: .mockRandom(),
@@ -86,7 +89,7 @@ extension DatadogContext: AnyMockable {
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
             isLowPowerModeEnabled: .mockRandom(),
-            featuresAttributes: .mockRandom()
+            baggages: .mockRandom()
         )
     }
 }
@@ -161,6 +164,18 @@ extension LaunchTime: AnyMockable {
             launchTime: .mockAny(),
             launchDate: .mockAny(),
             isActivePrewarm: .mockAny()
+        )
+    }
+
+    public static func mockWith(
+        launchTime: TimeInterval? = 1,
+        launchDate: Date = Date(),
+        isActivePrewarm: Bool = false
+    ) -> LaunchTime {
+        .init(
+            launchTime: launchTime,
+            launchDate: launchDate,
+            isActivePrewarm: isActivePrewarm
         )
     }
 }

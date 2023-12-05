@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import CoreGraphics
 
 /// Sanitizes and validates Core Foundation types.
@@ -39,3 +40,4 @@ internal extension CGColor {
     /// Returns value only if this underlying `CFTypeRef` is of `CGColor.typeID` type.
     var safeCast: CGColor? { sanitize(value: self, expectedTypeID: CGColor.typeID) }
 }
+#endif

@@ -59,6 +59,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserViewEvent.session.id, expectedBrowserSessionID, "Webview events should use iOS SDK session ID")
             XCTAssertEqual(browserViewEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserViewEvent.source, .browser, "Webview events should use Browser SDK `source`")
+            XCTAssertEqual(browserViewEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
         }
         XCTAssertGreaterThan(browserView.resourceEvents.count, 0, "It should track some Webview resources")
         browserView.resourceEvents.forEach { browserResourceEvent in
@@ -66,6 +67,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserResourceEvent.session.id, expectedBrowserSessionID, "Webview events should use iOS SDK session ID")
             XCTAssertEqual(browserResourceEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserResourceEvent.source, .browser, "Webview events should use Browser SDK `source`")
+            XCTAssertEqual(browserResourceEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
         }
 
         // Get `LogMatchers`
@@ -75,7 +77,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         let logMatchers = try LogMatcher.from(requests: recordedRequests)
 
         let browserLog = logMatchers[0]
-        browserLog.assertServiceName(equals: expectedBrowserServiceName)
+        browserLog.assertService(equals: expectedBrowserServiceName)
         browserLog.assertAttributes(equal: [
             "application_id": expectedBrowserRUMApplicationID,
             "session_id": expectedBrowserSessionID,

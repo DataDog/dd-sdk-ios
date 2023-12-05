@@ -19,7 +19,7 @@
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testInitWithSamplingRate {
-    [[DDW3CHTTPHeadersWriter alloc] initWithSamplingRate:50];
+    [[DDW3CHTTPHeadersWriter alloc] initWithSampleRate:50];
 }
 
 #pragma clang diagnostic pop

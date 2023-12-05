@@ -232,7 +232,8 @@ extension FeatureStorage {
             directories: temporaryFeatureDirectories,
             authorizedFilesOrchestrator: NOPFilesOrchestrator(),
             unauthorizedFilesOrchestrator: NOPFilesOrchestrator(),
-            encryption: nil
+            encryption: nil,
+            telemetry: NOPTelemetry()
         )
     }
 }
@@ -258,7 +259,8 @@ extension FilesOrchestratorType {
 }
 
 class NOPReader: Reader {
-    func readNextBatch() -> Batch? { nil }
+    func readFiles(limit: Int) -> [ReadableFile] { [] }
+    func readBatch(from file: ReadableFile) -> Batch? { nil }
     func markBatchAsRead(_ batch: Batch, reason: BatchDeletedMetric.RemovalReason) {}
 }
 
@@ -275,7 +277,7 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile? { NOPFile() }
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile] { [] }
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }
 
     var ignoreFilesAgeWhenReading = false
@@ -299,23 +301,27 @@ extension DataFormat {
     }
 }
 
-extension HTTPClient {
-    static func mockAny() -> HTTPClient {
-        return HTTPClient(session: .mockAny())
-    }
-}
-
 class NOPDataUploadWorker: DataUploadWorkerType {
     func flushSynchronously() {}
     func cancelSynchronously() {}
 }
 
-struct DataUploaderMock: DataUploaderType {
+internal class DataUploaderMock: DataUploaderType {
     let uploadStatus: DataUploadStatus
 
-    var onUpload: (() throws -> Void)? = nil
+    /// Notifies on each started upload.
+    var onUpload: (() throws -> Void)?
+
+    /// Tracks uploaded events.
+    private(set) var uploadedEvents: [Event] = []
+
+    init(uploadStatus: DataUploadStatus, onUpload: (() -> Void)? = nil) {
+        self.uploadStatus = uploadStatus
+        self.onUpload = onUpload
+    }
 
     func upload(events: [Event], context: DatadogContext) throws -> DataUploadStatus {
+        uploadedEvents += events
         try onUpload?()
         return uploadStatus
     }

@@ -4,9 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UITextViewRecorder: NodeRecorder {
+    let identifier = UUID()
+
     var textObfuscator: (ViewTreeRecordingContext, _ isSensitive: Bool, _ isEditable: Bool) -> TextObfuscating = { context, isSensitive, isEditable in
         if isSensitive {
             return context.recorder.privacy.sensitiveTextObfuscator
@@ -28,7 +31,7 @@ internal struct UITextViewRecorder: NodeRecorder {
         }
 
         let builder = UITextViewWireframesBuilder(
-            wireframeID: context.ids.nodeID(for: textView),
+            wireframeID: context.ids.nodeID(view: textView, nodeRecorder: self),
             attributes: attributes,
             text: textView.text,
             textAlignment: textView.textAlignment,
@@ -106,3 +109,4 @@ internal struct UITextViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

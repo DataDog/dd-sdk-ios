@@ -151,14 +151,14 @@ internal final class RUMViewsHandler {
             return
         }
 
-        guard let identity = view.identity.identifiable else {
+        guard view.identity.exists else {
             return
         }
 
         subscriber.process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: identity,
+                identity: view.identity,
                 name: view.name,
                 path: view.path,
                 attributes: view.attributes
@@ -167,7 +167,7 @@ internal final class RUMViewsHandler {
     }
 
     private func stop(view: View) {
-        guard let identity = view.identity.identifiable else {
+        guard view.identity.exists else {
             return
         }
 
@@ -179,7 +179,7 @@ internal final class RUMViewsHandler {
             command: RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: [:],
-                identity: identity
+                identity: view.identity
             )
         )
     }
@@ -201,14 +201,15 @@ internal final class RUMViewsHandler {
 
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
-        if let view = stack.first(where: { $0.identity.equals(viewController) }) {
+        let identity = viewController.asRUMViewIdentity()
+        if let view = stack.first(where: { $0.identity.equals(identity) }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
         } else if let rumView = predicate?.rumView(for: viewController) {
             add(
                 view: .init(
-                    identity: viewController.asRUMViewIdentity(),
+                    identity: identity,
                     name: rumView.name,
                     path: rumView.path,
                     isUntrackedModal: rumView.isUntrackedModal,
@@ -218,7 +219,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
         } else if #available(iOS 13, tvOS 13, *), viewController.isModalInPresentation {
             add(
                 view: .init(
-                    identity: viewController.asRUMViewIdentity(),
+                    identity: identity,
                     name: "RUMUntrackedModal",
                     path: nil,
                     isUntrackedModal: true,

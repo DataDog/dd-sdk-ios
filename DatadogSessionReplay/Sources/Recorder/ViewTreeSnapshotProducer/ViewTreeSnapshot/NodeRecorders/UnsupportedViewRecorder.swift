@@ -4,11 +4,13 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 import WebKit
 import SwiftUI
 
 internal struct UnsupportedViewRecorder: NodeRecorder {
+    let identifier = UUID()
     // swiftlint:disable opening_brace
     private let unsupportedViewsPredicates: [(UIView, ViewTreeRecordingContext) -> Bool] = [
         { _, context in context.viewControllerContext.isRootView(of: .safari) },
@@ -29,7 +31,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         }
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
-            wireframeID: context.ids.nodeID(for: view),
+            wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
             unsupportedClassName: context.viewControllerContext.name ?? String(reflecting: type(of: view)),
             attributes: attributes
         )
@@ -55,3 +57,4 @@ internal struct UnsupportedViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

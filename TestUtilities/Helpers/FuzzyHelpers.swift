@@ -7,11 +7,12 @@
 import Foundation
 
 /// Randomly picks and executes one of provided effects.
-public func oneOf(_ effects: [() -> Void]) {
+@discardableResult
+public func oneOf<T>(_ effects: [() -> T]) -> T {
     guard let randomEffect = effects.randomElement() else {
-        return
+        preconditionFailure("At least one effect must be specified")
     }
-    randomEffect()
+    return randomEffect()
 }
 
 /// Randomly picks and executes one or more of provided effects.

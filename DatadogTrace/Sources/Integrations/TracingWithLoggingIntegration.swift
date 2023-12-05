@@ -9,11 +9,6 @@ import DatadogInternal
 
 /// Integration between Tracing and Logging Features to allow sending logs for spans (`span.log(fields:timestamp:)`)
 internal struct TracingWithLoggingIntegration {
-    internal struct TracingAttributes {
-        static let traceID = "dd.trace_id"
-        static let spanID = "dd.span_id"
-    }
-
     private struct Constants {
         static let defaultLogMessage = "Span event"
         static let defaultErrorProperty = "Unknown"
@@ -28,6 +23,30 @@ internal struct TracingWithLoggingIntegration {
         case warn
         case error
         case critical
+    }
+
+    struct LogMessage: Encodable {
+        static let key = "log"
+        /// The Logger name
+        let logger: String = "trace"
+        /// The Logger service
+        let service: String?
+        /// The Log date
+        let date: Date
+        /// The Log message
+        let message: String
+        /// The Log error
+        let error: DDError?
+        /// The Log level
+        let level: LogLevel
+        /// The thread name
+        let thread: String
+        /// The thread name
+        let networkInfoEnabled: Bool
+        /// The Log user custom attributes
+        let userAttributes: AnyEncodable
+        /// The Log internal attributes
+        let internalAttributes: SpanCoreContext
     }
 
     /// `DatadogCore` instance managing this integration.
@@ -58,12 +77,6 @@ internal struct TracingWithLoggingIntegration {
         let hasErrorKind = errorKind != nil
         let level: LogLevel = (isErrorEvent || hasErrorKind) ? .error : .info
 
-        // set tracing attributes
-        let internalAttributes = [
-            TracingAttributes.traceID: String(spanContext.traceID),
-            TracingAttributes.spanID: String(spanContext.spanID)
-        ]
-
         var extractedError: DDError?
         if level == .error {
             extractedError = DDError(
@@ -74,20 +87,22 @@ internal struct TracingWithLoggingIntegration {
         }
 
         core.send(
-            message: .custom(
-                key: "log",
-                baggage: [
-                    "date": date,
-                    "loggerName": "trace",
-                    "service": service,
-                    "threadName": Thread.current.dd.name,
-                    "message": message,
-                    "level": level,
-                    "error": extractedError,
-                    "userAttributes": AnyEncodable(userAttributes),
-                    "internalAttributes": internalAttributes,
-                    "networkInfoEnabled": networkInfoEnabled
-                ]
+            message: .baggage(
+                key: LogMessage.key,
+                value: LogMessage(
+                    service: service,
+                    date: date,
+                    message: message,
+                    error: extractedError,
+                    level: level,
+                    thread: Thread.current.dd.name,
+                    networkInfoEnabled: networkInfoEnabled,
+                    userAttributes: AnyEncodable(userAttributes),
+                    internalAttributes: SpanCoreContext(
+                        traceID: String(spanContext.traceID),
+                        spanID: String(spanContext.spanID)
+                    )
+                )
             ),
             else: fallback
         )

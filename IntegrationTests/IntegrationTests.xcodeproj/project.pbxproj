@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -24,6 +24,14 @@
 		611EA14825810E2600BC0E56 /* TSPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA14725810E2600BC0E56 /* TSPictureViewController.swift */; };
 		611EA14E25810E3700BC0E56 /* TSConsentSettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA14D25810E3700BC0E56 /* TSConsentSettingViewController.swift */; };
 		611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611EA16525825FB300BC0E56 /* TrackingConsentScenarioTests.swift */; };
+		612C13702A9CF9140086B5D1 /* SRScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C136F2A9CF9140086B5D1 /* SRScenarios.swift */; };
+		612C13732A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13722A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift */; };
+		612C13752A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */; };
+		612C13772A9E1BA40086B5D1 /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 612C13762A9E1BA40086B5D1 /* SRFixtures */; };
+		612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */; };
+		612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */; };
+		612C13DD2AAB537F0086B5D1 /* SRRequestMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */; };
+		612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */; };
 		612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */; };
 		612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */; };
 		612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612D8F8025AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift */; };
@@ -146,6 +154,14 @@
 		611EA14725810E2600BC0E56 /* TSPictureViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSPictureViewController.swift; sourceTree = "<group>"; };
 		611EA14D25810E3700BC0E56 /* TSConsentSettingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TSConsentSettingViewController.swift; sourceTree = "<group>"; };
 		611EA16525825FB300BC0E56 /* TrackingConsentScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingConsentScenarioTests.swift; sourceTree = "<group>"; };
+		612C136D2A9CF1380086B5D1 /* SRFixtures */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SRFixtures; path = ../DatadogSessionReplay/SRSnapshotTests/SRFixtures; sourceTree = "<group>"; };
+		612C136F2A9CF9140086B5D1 /* SRScenarios.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRScenarios.swift; sourceTree = "<group>"; };
+		612C13722A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRMultipleViewsRecordingViewController.swift; sourceTree = "<group>"; };
+		612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SRMultipleViewsRecordingScenario.storyboard; sourceTree = "<group>"; };
+		612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRMultipleViewsRecordingScenarioTests.swift; sourceTree = "<group>"; };
+		612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRSegmentMatcher.swift; sourceTree = "<group>"; };
+		612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRRequestMatcher.swift; sourceTree = "<group>"; };
+		612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRCommonAsserts.swift; sourceTree = "<group>"; };
 		612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMScrubbingScenario.storyboard; sourceTree = "<group>"; };
 		612D8F6E25AEE6A7000E2E09 /* RUMScrubbingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingViewController.swift; sourceTree = "<group>"; };
 		612D8F8025AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMScrubbingScenarioTests.swift; sourceTree = "<group>"; };
@@ -252,6 +268,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				638925C797CD9A7F6A08AC6B /* libPods-Runner iOS.a in Frameworks */,
+				612C13772A9E1BA40086B5D1 /* SRFixtures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +377,33 @@
 			path = TrackingConsent;
 			sourceTree = "<group>";
 		};
+		612C136E2A9CF8AB0086B5D1 /* SessionReplay */ = {
+			isa = PBXGroup;
+			children = (
+				612C136F2A9CF9140086B5D1 /* SRScenarios.swift */,
+				612C13712A9DFE020086B5D1 /* MultipleViewsRecording */,
+			);
+			path = SessionReplay;
+			sourceTree = "<group>";
+		};
+		612C13712A9DFE020086B5D1 /* MultipleViewsRecording */ = {
+			isa = PBXGroup;
+			children = (
+				612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */,
+				612C13722A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift */,
+			);
+			path = MultipleViewsRecording;
+			sourceTree = "<group>";
+		};
+		612C13CA2A9F94890086B5D1 /* SessionReplay */ = {
+			isa = PBXGroup;
+			children = (
+				612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */,
+				612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */,
+			);
+			path = SessionReplay;
+			sourceTree = "<group>";
+		};
 		612D8F6725AEE65F000E2E09 /* Scrubbing */ = {
 			isa = PBXGroup;
 			children = (
@@ -376,6 +420,7 @@
 				61337030250F829E00236D58 /* Logging */,
 				61337033250F847500236D58 /* Tracing */,
 				61337036250F84F100236D58 /* RUM */,
+				612C136E2A9CF8AB0086B5D1 /* SessionReplay */,
 				6111542325C992D9007C84C9 /* CrashReporting */,
 				611EA12B2580F40E00BC0E56 /* TrackingConsent */,
 				6164AE7D252B4CE2000D78C4 /* URLSession */,
@@ -565,6 +610,7 @@
 				61F3CD9D251106FA00C816E5 /* Logging */,
 				61F3CD9E251106FF00C816E5 /* Tracing */,
 				61F3CD9F2511070300C816E5 /* RUM */,
+				612C13CA2A9F94890086B5D1 /* SessionReplay */,
 				61B6811D25F0E8480015B4AF /* CrashReporting */,
 				611EA15325815EDC00BC0E56 /* TrackingConsent */,
 				9EA95C1F2791C9E200F6C1F3 /* WebView */,
@@ -669,6 +715,8 @@
 		D2774EDE299E2E90004EC36A /* Matchers */ = {
 			isa = PBXGroup;
 			children = (
+				612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */,
+				612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */,
 				D2774EDF299E2E90004EC36A /* RUMSessionMatcher.swift */,
 				D2774EE0299E2E90004EC36A /* RUMEventMatcher.swift */,
 				D2774EE1299E2E90004EC36A /* SpanMatcher.swift */,
@@ -691,6 +739,7 @@
 		D29495F329967780003518CD /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				612C136D2A9CF1380086B5D1 /* SRFixtures */,
 				D29495F429967780003518CD /* http-server-mock */,
 			);
 			name = Packages;
@@ -738,6 +787,7 @@
 			);
 			name = "Runner iOS";
 			packageProductDependencies = (
+				612C13762A9E1BA40086B5D1 /* SRFixtures */,
 			);
 			productName = Example;
 			productReference = 61441C0224616DE9003D8BB8 /* Integration Tests Runner.app */;
@@ -821,6 +871,7 @@
 				6111543625C993C2007C84C9 /* CrashReportingScenario.storyboard in Resources */,
 				D240688627CFA64A00C04F44 /* LaunchScreen.storyboard in Resources */,
 				61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */,
+				612C13752A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard in Resources */,
 				6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */,
 				615AAC36251E353700C89EE9 /* RUMTabBarAutoInstrumentationScenario.storyboard in Resources */,
 				9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */,
@@ -897,6 +948,7 @@
 				9EA95C1E2791C9BE00F6C1F3 /* WebViewScenarios.swift in Sources */,
 				61F9CA8025125C01000A5E61 /* RUMNCSScreen3ViewController.swift in Sources */,
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
+				612C13732A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
@@ -923,6 +975,7 @@
 				6164AF0E252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m in Sources */,
 				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
 				6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */,
+				612C13702A9CF9140086B5D1 /* SRScenarios.swift in Sources */,
 				61098D2F27FF16A20021237A /* RUMSessionEndView.swift in Sources */,
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
@@ -949,12 +1002,15 @@
 				61163C4A252E03D6007DD5BF /* RUMModalViewsScenarioTests.swift in Sources */,
 				61B9ED212462089600C0DCFF /* TracingManualInstrumentationScenarioTests.swift in Sources */,
 				61B6811F25F0EA860015B4AF /* CrashReportingWithLoggingScenarioTests.swift in Sources */,
+				612C13DD2AAB537F0086B5D1 /* SRRequestMatcher.swift in Sources */,
 				61C2C20D24C1831700C0321C /* RUMManualInstrumentationScenarioTests.swift in Sources */,
 				61098D2D27FEE4130021237A /* MessagePortChannel.swift in Sources */,
 				D218665029967CBC006F5B23 /* RUMDataModels.swift in Sources */,
 				9EC2835A26CFEE0B00FACF1C /* RUMMobileVitalsScenarioTests.swift in Sources */,
 				61B9ED1F2461E57700C0DCFF /* UITestsHelpers.swift in Sources */,
+				612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */,
 				61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */,
+				612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */,
 				613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */,
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
@@ -965,6 +1021,7 @@
 				61B6815E25F135890015B4AF /* CrashReportingWithRUMScenarioTests.swift in Sources */,
 				D2774EE4299E2E90004EC36A /* RUMSessionMatcher.swift in Sources */,
 				61F9CA92251266F7000A5E61 /* RUMNavigationControllerScenarioTests.swift in Sources */,
+				612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
 				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
 				D2774EE7299E2E90004EC36A /* LogMatcher.swift in Sources */,
@@ -1134,6 +1191,7 @@
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};
@@ -1155,6 +1213,7 @@
 				PRODUCT_MODULE_NAME = Runner;
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};
@@ -1176,6 +1235,7 @@
 				PRODUCT_MODULE_NAME = Runner;
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};
@@ -1338,6 +1398,10 @@
 /* End XCConfigurationList section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		612C13762A9E1BA40086B5D1 /* SRFixtures */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SRFixtures;
+		};
 		61441C43246174CE003D8BB8 /* HTTPServerMock */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = HTTPServerMock;

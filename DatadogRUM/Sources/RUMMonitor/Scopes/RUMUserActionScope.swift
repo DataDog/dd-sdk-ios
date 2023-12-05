@@ -141,8 +141,11 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             dd: .init(
                 action: nil,
                 browserSdkVersion: nil,
-                configuration: nil,
-                session: .init(plan: .plan1)
+                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: .init(
                 crash: .init(count: 0),
@@ -156,21 +159,23 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             context: .init(contextInfo: attributes),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(context: context),
+            device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
-                hasReplay: context.srBaggage?.hasReplay,
+                hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(

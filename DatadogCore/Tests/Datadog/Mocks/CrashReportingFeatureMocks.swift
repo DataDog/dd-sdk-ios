@@ -28,13 +28,15 @@ extension CrashReportingFeature {
         integration: CrashReportSender,
         crashReportingPlugin: CrashReportingPlugin = NOPCrashReportingPlugin(),
         crashContextProvider: CrashContextProvider = CrashContextProviderMock(),
-        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+        messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
+        telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
             crashReportingPlugin: crashReportingPlugin,
             crashContextProvider: crashContextProvider,
             sender: integration,
-            messageReceiver: messageReceiver
+            messageReceiver: messageReceiver,
+            telemetry: telemetry
         )
     }
 }
@@ -94,12 +96,12 @@ class CrashReportSenderMock: CrashReportSender {
 }
 
 class RUMCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: FeatureBaggage = [:]
+    var receivedBaggage: FeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
-        case .custom(let key, let attributes) where key == CrashReportReceiver.MessageKeys.crash:
-            receivedBaggage = attributes
+        case .baggage(let label, let baggage) where label == CrashReportReceiver.MessageKeys.crash:
+            receivedBaggage = baggage
             return true
         default:
             return false
@@ -108,12 +110,12 @@ class RUMCrashReceiverMock: FeatureMessageReceiver {
 }
 
 class LogsCrashReceiverMock: FeatureMessageReceiver {
-    var receivedBaggage: FeatureBaggage = [:]
+    var receivedBaggage: FeatureBaggage?
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
-        case .custom(let key, let attributes) where key == LoggingMessageKeys.crash:
-            receivedBaggage = attributes
+        case .baggage(let label, let baggage) where label == LoggingMessageKeys.crash:
+            receivedBaggage = baggage
             return true
         default:
             return false
@@ -131,6 +133,7 @@ extension CrashContext {
         service: String = .mockAny(),
         env: String = .mockAny(),
         version: String = .mockAny(),
+        buildNumber: String = .mockAny(),
         device: DeviceInfo = .mockAny(),
         sdkVersion: String = .mockAny(),
         source: String = .mockAny(),
@@ -147,6 +150,7 @@ extension CrashContext {
             service: service,
             env: env,
             version: version,
+            buildNumber: buildNumber,
             device: device,
             sdkVersion: service,
             source: source,
@@ -166,6 +170,7 @@ extension CrashContext {
             service: .mockRandom(),
             env: .mockRandom(),
             version: .mockRandom(),
+            buildNumber: .mockRandom(),
             device: .mockRandom(),
             sdkVersion: .mockRandom(),
             source: .mockRandom(),

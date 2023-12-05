@@ -154,17 +154,22 @@ extension DistributedTracing {
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
                 request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
-                writer = OTelHTTPHeadersWriter(
+                writer = B3HTTPHeadersWriter(
                     sampler: sampler,
                     injectEncoding: .single
                 )
             case .b3multi:
-                writer = OTelHTTPHeadersWriter(
+                writer = B3HTTPHeadersWriter(
                     sampler: sampler,
                     injectEncoding: .multiple
                 )
             case .tracecontext:
-                writer = W3CHTTPHeadersWriter(sampler: sampler)
+                writer = W3CHTTPHeadersWriter(
+                    sampler: sampler,
+                    tracestate: [
+                        W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
+                    ]
+                )
             }
 
             writer.write(

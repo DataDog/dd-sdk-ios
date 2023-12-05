@@ -4,9 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UIImageViewRecorder: NodeRecorder {
+    internal let identifier = UUID()
+
     private let tintColorProvider: (UIImageView) -> UIColor?
     private let shouldRecordImagePredicate: (UIImageView) -> Bool
     /// An option for overriding default semantics from parent recorder.
@@ -49,7 +52,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let ids = context.ids.nodeIDs(2, for: imageView)
+        let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
         let contentFrame: CGRect?
         if let image = imageView.image {
             contentFrame = attributes.frame.contentFrame(
@@ -133,18 +136,18 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        var base64: String?
+        var imageResource: ImageResource?
         if shouldRecordImage {
-            base64 = imageDataProvider.contentBase64String(
+            imageResource = imageDataProvider.contentBase64String(
                 of: image,
                 tintColor: tintColor
             )
         }
         if let contentFrame = contentFrame {
-            if let base64 = base64 {
+            if let imageResource = imageResource {
                 wireframes.append(
                     builder.createImageWireframe(
-                        base64: base64,
+                        imageResource: imageResource,
                         id: imageWireframeID,
                         frame: contentFrame,
                         clip: clipsToBounds ? clip : nil
@@ -211,3 +214,4 @@ fileprivate extension UIImageView {
         return superViewType == "_UIBarBackground"
     }
 }
+#endif

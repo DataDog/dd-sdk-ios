@@ -28,14 +28,15 @@ public final class CrashReporting {
                 crashReportingPlugin: PLCrashReporterPlugin(),
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
-                messageReceiver: contextProvider
+                messageReceiver: contextProvider,
+                telemetry: core.telemetry
             )
 
             try core.register(feature: reporter)
 
             reporter.sendCrashReportIfFound()
 
-            TelemetryCore(core: core)
+            core.telemetry
                 .configuration(trackErrors: true)
         } catch {
             consolePrint("\(error)")

@@ -97,7 +97,9 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
         )
 
         // Assert other characteristics important for crash reporting
-        crashLog.assertServiceName(equals: "ui-tests-service-name")
+        crashLog.assertService(equals: "ui-tests-service-name")
         crashLog.assertLoggerName(equals: "crash-reporter")
+        crashLog.assertApplicationVersion(equals: "1.0")
+        crashLog.assertApplicationBuildNumber(equals: "1")
     }
 }

@@ -65,6 +65,12 @@ internal final class DatadogCore {
     /// The core context provider.
     internal let contextProvider: DatadogContextProvider
 
+    /// Flag defining if background tasks are enabled.
+    internal let backgroundTasksEnabled: Bool
+
+    /// Maximum number of batches per upload.
+    internal let maxBatchesPerUpload: Int
+
     /// Creates a core instance.
     ///
     /// - Parameters:
@@ -84,7 +90,9 @@ internal final class DatadogCore {
     	httpClient: HTTPClient,
     	encryption: DataEncryption?,
         contextProvider: DatadogContextProvider,
-        applicationVersion: String
+        applicationVersion: String,
+        maxBatchesPerUpload: Int,
+        backgroundTasksEnabled: Bool
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -92,6 +100,8 @@ internal final class DatadogCore {
         self.httpClient = httpClient
         self.encryption = encryption
         self.contextProvider = contextProvider
+        self.maxBatchesPerUpload = maxBatchesPerUpload
+        self.backgroundTasksEnabled = backgroundTasksEnabled
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
@@ -213,7 +223,7 @@ extension DatadogCore: DatadogCoreProtocol {
     /// A Feature can also communicate to other Features by sending message on the bus that is managed by the core.
     ///
     /// - Parameter feature: The Feature instance.
-    /* public */ func register<T>(feature: T) throws where T: DatadogFeature {
+    func register<T>(feature: T) throws where T: DatadogFeature {
         let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
 
         let performancePreset: PerformancePreset
@@ -230,7 +240,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 directories: featureDirectories,
                 dateProvider: dateProvider,
                 performance: performancePreset,
-                encryption: encryption
+                encryption: encryption,
+                telemetry: telemetry
             )
 
             let upload = FeatureUpload(
@@ -239,7 +250,10 @@ extension DatadogCore: DatadogCoreProtocol {
                 fileReader: storage.reader,
                 requestBuilder: feature.requestBuilder,
                 httpClient: httpClient,
-                performance: performancePreset
+                performance: performancePreset,
+                backgroundTasksEnabled: backgroundTasksEnabled,
+                maxBatchesPerUpload: maxBatchesPerUpload,
+                telemetry: telemetry
             )
 
             stores[T.name] = (
@@ -267,36 +281,27 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    /* public */ func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
+    func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
         features[T.name] as? T
     }
 
-    /* public */ func scope(for feature: String) -> FeatureScope? {
+    func scope(for feature: String) -> FeatureScope? {
         guard let storage = stores[feature]?.storage else {
             return nil
         }
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
-            storage: storage
+            storage: storage,
+            telemetry: telemetry
         )
     }
 
-    /* public */ func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        contextProvider.write { $0.featuresAttributes[feature] = attributes() }
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        contextProvider.write { $0.baggages[key] = baggage() }
     }
 
-    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        contextProvider.write {
-            if $0.featuresAttributes[feature] != nil {
-                $0.featuresAttributes[feature]?.merge(with: attributes())
-            } else {
-                $0.featuresAttributes[feature] = attributes()
-            }
-        }
-    }
-
-    /* public */ func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         bus.send(message: message, else: fallback)
     }
 }
@@ -304,6 +309,7 @@ extension DatadogCore: DatadogCoreProtocol {
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
+    let telemetry: Telemetry
 
     func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
         // On user thread: request SDK context.
@@ -319,7 +325,7 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
             do {
                 try block(context, writer)
             } catch {
-                DD.telemetry.error("Failed to execute feature scope", error: error)
+                telemetry.error("Failed to execute feature scope", error: error)
             }
         }
     }
@@ -333,6 +339,7 @@ extension DatadogContextProvider {
         service: String,
         env: String,
         version: String,
+        buildNumber: String,
         variant: String?,
         source: String,
         sdkVersion: String,
@@ -351,6 +358,7 @@ extension DatadogContextProvider {
             service: service,
             env: env,
             version: applicationVersion,
+            buildNumber: buildNumber,
             variant: variant,
             source: source,
             sdkVersion: sdkVersion,

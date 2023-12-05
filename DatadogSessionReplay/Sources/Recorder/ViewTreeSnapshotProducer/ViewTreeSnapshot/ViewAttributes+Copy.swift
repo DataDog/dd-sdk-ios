@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 extension ViewAttributes {
@@ -50,3 +51,4 @@ extension ViewAttributes {
         }
     }
 }
+#endif

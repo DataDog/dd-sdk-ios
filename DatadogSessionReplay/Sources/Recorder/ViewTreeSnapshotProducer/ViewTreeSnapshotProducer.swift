@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Produces `ViewTreeSnapshot` describing the user interface in current app.
@@ -14,3 +15,4 @@ internal protocol ViewTreeSnapshotProducer {
     /// - Throws: can throw an `InternalError` if any problem occurs.
     func takeSnapshot(with context: Recorder.Context) throws -> ViewTreeSnapshot?
 }
+#endif

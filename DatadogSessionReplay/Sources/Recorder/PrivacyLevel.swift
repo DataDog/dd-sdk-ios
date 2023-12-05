@@ -4,16 +4,21 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-internal typealias PrivacyLevel = SessionReplay.Configuration.PrivacyLevel
+#if os(iOS)
+@_spi(Internal)
+public typealias SessionReplayPrivacyLevel = SessionReplay.Configuration.PrivacyLevel
+
+internal typealias PrivacyLevel = SessionReplayPrivacyLevel
 
 /// Text obfuscation strategies for different text types.
-internal extension SessionReplay.Configuration.PrivacyLevel {
+@_spi(Internal)
+public extension SessionReplay.Configuration.PrivacyLevel {
     /// Returns "Sensitive Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Sensitive Text" is:
     /// - passwords, e-mails and phone numbers marked in a platform-specific way
     /// - AND other forms of sensitivity in text available to each platform
-    var sensitiveTextObfuscator: TextObfuscating {
+    var sensitiveTextObfuscator: SessionReplayTextObfuscating {
         return FixLengthMaskObfuscator()
     }
 
@@ -22,7 +27,7 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
     /// In Session Replay, "Input & Option Text" is:
     /// - a text entered by the user with a keyboard or other text-input device
     /// - OR a custom (non-generic) value in selection elements
-    var inputAndOptionTextObfuscator: TextObfuscating {
+    var inputAndOptionTextObfuscator: SessionReplayTextObfuscating {
         switch self {
         case .allow:         return NOPTextObfuscator()
         case .mask:          return FixLengthMaskObfuscator()
@@ -33,7 +38,7 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
     /// Returns "Static Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Static Text" is a text not directly entered by the user.
-    var staticTextObfuscator: TextObfuscating {
+    var staticTextObfuscator: SessionReplayTextObfuscating {
         switch self {
         case .allow:         return NOPTextObfuscator()
         case .mask:          return SpacePreservingMaskObfuscator()
@@ -44,7 +49,7 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
     /// Returns "Hint Text" obfuscator for given `privacyLevel`.
     ///
     /// In Session Replay, "Hint Text" is a static text in editable text elements or option selectors, displayed when there isn't any value set.
-    var hintTextObfuscator: TextObfuscating {
+    var hintTextObfuscator: SessionReplayTextObfuscating {
         switch self {
         case .allow:         return NOPTextObfuscator()
         case .mask:          return FixLengthMaskObfuscator()
@@ -63,3 +68,4 @@ internal extension SessionReplay.Configuration.PrivacyLevel {
         }
     }
 }
+#endif

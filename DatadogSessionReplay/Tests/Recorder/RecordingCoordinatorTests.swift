@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
@@ -45,7 +46,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         XCTAssertFalse(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
+        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
@@ -60,10 +61,10 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         XCTAssertTrue(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, true)
-        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.applicationID, rumContext.ids.applicationID)
-        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.sessionID, rumContext.ids.sessionID)
-        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewID, rumContext.ids.viewID)
+        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), true)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.applicationID, rumContext.applicationID)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.sessionID, rumContext.sessionID)
+        XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewID, rumContext.viewID)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.viewServerTimeOffset, rumContext.viewServerTimeOffset)
         XCTAssertEqual(recordingMock.captureNextRecordReceivedRecorderContext?.privacy, privacy)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 1)
@@ -77,7 +78,7 @@ class RecordingCoordinatorTests: XCTestCase {
         rumContextObserver.notify(rumContext: nil)
 
         // Then
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
+        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
@@ -87,7 +88,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         XCTAssertTrue(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
+        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 
@@ -101,7 +102,7 @@ class RecordingCoordinatorTests: XCTestCase {
 
         // Then
         XCTAssertTrue(scheduler.isRunning)
-        XCTAssertEqual(core.context.featuresAttributes["session-replay"]?.attributes["has_replay"] as? Bool, false)
+        XCTAssertEqual(try core.context.baggages["sr_has_replay"]?.decode(), false)
         XCTAssertEqual(recordingMock.captureNextRecordCallsCount, 0)
     }
 

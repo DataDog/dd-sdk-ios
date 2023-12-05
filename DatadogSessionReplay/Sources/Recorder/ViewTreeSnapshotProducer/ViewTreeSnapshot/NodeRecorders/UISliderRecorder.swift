@@ -4,9 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal struct UISliderRecorder: NodeRecorder {
+    let identifier = UUID()
+
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
         guard let slider = view as? UISlider else {
             return nil
@@ -16,7 +19,7 @@ internal struct UISliderRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
-        let ids = context.ids.nodeIDs(4, for: slider)
+        let ids = context.ids.nodeIDs(4, view: slider, nodeRecorder: self)
 
         let builder = UISliderWireframesBuilder(
             wireframeRect: attributes.frame,
@@ -149,3 +152,4 @@ internal struct UISliderWireframesBuilder: NodeWireframesBuilder {
         }
     }
 }
+#endif

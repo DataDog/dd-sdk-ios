@@ -98,28 +98,23 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
-            let rum = rumAttributes?.compactMapValues { $0 }
-            let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
-            let viewId = rum?[RUMContextAttributes.IDs.viewID]
-            let actionId = rum?[RUMContextAttributes.IDs.userActionID]
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
-                action: actionId.map { .init(id: $0) },
-                application: applicationId.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
-                session: sessionId.map { .init(id: $0) },
+                session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: message,
                     telemetryInfo: attributes ?? [:]
                 ),
                 version: context.sdkVersion,
-                view: viewId.map { .init(id: $0) }
+                view: rum?.viewID.map { .init(id: $0) }
             )
 
             writer.write(value: event)
@@ -141,25 +136,20 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: id, in: core) { context, writer in
-            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
-            let attributes = rumAttributes?.compactMapValues { $0 }
-            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
-            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
-            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryErrorEvent(
                 dd: .init(),
-                action: actionId.map { .init(id: $0) },
-                application: applicationId.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
-                session: sessionId.map { .init(id: $0) },
+                session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(error: .init(kind: kind, stack: stack), message: message),
                 version: context.sdkVersion,
-                view: viewId.map { .init(id: $0) }
+                view: rum?.viewID.map { .init(id: $0) }
             )
 
             writer.write(value: event)
@@ -180,25 +170,20 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         self.record(event: "_dd.configuration", in: core) { context, writer in
-            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
-            let attributes = rumAttributes?.compactMapValues { $0 }
-            let applicationId = attributes?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
-            let viewId = attributes?[RUMContextAttributes.IDs.viewID]
-            let actionId = attributes?[RUMContextAttributes.IDs.userActionID]
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryConfigurationEvent(
                 dd: .init(),
-                action: actionId.map { .init(id: $0) },
-                application: applicationId.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
-                session: sessionId.map { .init(id: $0) },
+                session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(configuration: .init(configuration)),
                 version: context.sdkVersion,
-                view: viewId.map { .init(id: $0) }
+                view: rum?.viewID.map { .init(id: $0) }
             )
 
             writer.write(value: event)
@@ -213,28 +198,23 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         let date = dateProvider.now
 
         record(event: nil, in: core) { context, writer in
-            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
-            let rum = rumAttributes?.compactMapValues { $0 }
-            let applicationId = rum?[RUMContextAttributes.IDs.applicationID]
-            let sessionId = rum?[RUMContextAttributes.IDs.sessionID]
-            let viewId = rum?[RUMContextAttributes.IDs.viewID]
-            let actionId = rum?[RUMContextAttributes.IDs.userActionID]
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryDebugEvent(
                 dd: .init(),
-                action: actionId.map { .init(id: $0) },
-                application: applicationId.map { .init(id: $0) },
+                action: rum?.userActionID.map { .init(id: $0) },
+                application: rum.map { .init(id: $0.applicationID) },
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
-                session: sessionId.map { .init(id: $0) },
+                session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: "[Mobile Metric] \(name)",
                     telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
-                view: viewId.map { .init(id: $0) }
+                view: rum?.viewID.map { .init(id: $0) }
             )
 
             writer.write(value: event)
@@ -251,12 +231,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
 
         rum.eventWriteContext { context, writer in
             // reset recorded events on session renewal
-            let rumAttributes: [String: String?]? = context.featuresAttributes[RUMFeature.name]?.ids
-            let attributes = rumAttributes?.compactMapValues { $0 }
-            let sessionId = attributes?[RUMContextAttributes.IDs.sessionID]
+            let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
-            if sessionId != self.currentSessionID {
-                self.currentSessionID = sessionId
+            if rum?.sessionID != self.currentSessionID {
+                self.currentSessionID = rum?.sessionID
                 self.eventIDs = []
                 self.eventsCount = 0
             }
@@ -280,6 +258,10 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
     init(_ configuration: DatadogInternal.ConfigurationTelemetry) {
         self.init(
             actionNameAttribute: nil,
+            allowFallbackToLocalStorage: nil,
+            allowUntrustedEvents: nil,
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,
             batchUploadFrequency: configuration.batchUploadFrequency,
             dartVersion: configuration.dartVersion,
@@ -297,6 +279,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             sessionReplaySampleRate: nil,
             sessionSampleRate: configuration.sessionSampleRate,
             silentMultipleInit: nil,
+            storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
             traceSampleRate: configuration.traceSampleRate,
@@ -324,6 +307,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useProxy: configuration.useProxy,
             useSecureSessionCookie: nil,
             useTracing: configuration.useTracing,
+            useWorkerUrl: nil,
             viewTrackingStrategy: nil
         )
     }

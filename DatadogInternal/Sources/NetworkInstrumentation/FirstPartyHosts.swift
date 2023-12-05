@@ -8,7 +8,7 @@ import Foundation
 
 /// A struct that represents a dictionary of host names and tracing header types.
 public struct FirstPartyHosts: Equatable {
-    fileprivate var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
+    internal var hostsWithTracingHeaderTypes: [String: Set<TracingHeaderType>]
 
     public var hosts: Set<String> {
         return Set(hostsWithTracingHeaderTypes.keys)
@@ -21,13 +21,13 @@ public struct FirstPartyHosts: Equatable {
         self.init(hostsWithTracingHeaderTypes: hostsWithTracingHeaderTypes)
     }
 
-    /// Creates a `FirstPartyHosts` instance with the given set of host names by assigning `.datadog` header type to each.
+    /// Creates a `FirstPartyHosts` instance with the given set of host names by assigning `.datadog` and `.tracecontext` header types to each.
     ///
     /// - Parameter hosts: The set of host names.
     public init(_ hosts: Set<String>) {
         self.init(
             hostsWithTracingHeaderTypes: hosts.reduce(into: [:], { partialResult, host in
-                partialResult[host] = [.datadog]
+                partialResult[host] = [.datadog, .tracecontext]
             })
         )
     }
@@ -35,6 +35,17 @@ public struct FirstPartyHosts: Equatable {
     /// Creates empty (no hosts) `FirstPartyHosts`.
     public init() {
         self.init(hostsWithTracingHeaderTypes: [:])
+    }
+
+    internal init?(firstPartyHosts: URLSessionInstrumentation.FirstPartyHostsTracing?) {
+        switch firstPartyHosts {
+        case .trace(let hosts):
+            self.init(hosts)
+        case .traceWithHeaders(let hostsWithHeaders):
+            self.init(hostsWithTracingHeaderTypes: hostsWithHeaders)
+        default:
+            return nil
+        }
     }
 
     internal init(

@@ -115,17 +115,25 @@ internal final class RemoteLogger: LoggerProtocol {
         // that are up-to-date for the caller.
         self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
-            let contextAttributes = context.featuresAttributes
 
-            if self.rumContextIntegration, let attributes: [String: AnyCodable?] = contextAttributes["rum"]?.ids {
-                let attributes = attributes.compactMapValues { $0 }
-                let mappedAttributes = Dictionary(uniqueKeysWithValues: attributes.map { key, value in (mapRUMContextAttributeKeyToLogAttributeKey(key), value) })
-                internalAttributes.merge(mappedAttributes) { $1 }
+            if self.rumContextIntegration, let rum = context.baggages[RUMContext.key] {
+                do {
+                    let attributes = try rum.decode(type: RUMContext.self).internalAttributes
+                    internalAttributes.merge(attributes) { $1 }
+                } catch {
+                    self.core.telemetry
+                        .error("Fails to decode RUM context from Logs", error: error)
+                }
             }
 
-            if self.activeSpanIntegration, let attributes = contextAttributes["tracing"] {
-                let attributes = attributes.compactMapValues(AnyEncodable.init)
-                internalAttributes.merge(attributes) { $1 }
+            if self.activeSpanIntegration, let span = context.baggages[SpanContext.key] {
+                do {
+                    let attributes = try span.decode(type: SpanContext.self).internalAttributes
+                    internalAttributes.merge(attributes) { $1 }
+                } catch {
+                    self.core.telemetry
+                        .error("Fails to decode Span context from Logs", error: error)
+                }
             }
 
             let builder = LogEventBuilder(
@@ -155,14 +163,14 @@ internal final class RemoteLogger: LoggerProtocol {
                 }
 
                 self.core.send(
-                    message: .error(
-                        message: log.error?.message ?? log.message,
-                        baggage: [
-                            "type": log.error?.kind,
-                            "stack": log.error?.stack,
-                            "source": "logger",
-                            "attributes": userAttributes
-                        ]
+                    message: .baggage(
+                        key: ErrorMessage.key,
+                        value: ErrorMessage(
+                            message: log.error?.message ?? log.message,
+                            type: log.error?.kind,
+                            stack: log.error?.stack,
+                            attributes: .init(userAttributes)
+                        )
                     )
                 )
             }

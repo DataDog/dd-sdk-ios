@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -17,17 +18,12 @@ internal class SRContextPublisher {
 
     /// Notifies other Features if Session Replay is recording.
     func setHasReplay(_ value: Bool) {
-        core?.update(
-            feature: RUMDependency.srBaggageKey,
-            attributes: { [RUMDependency.hasReplay: value] }
-        )
+        core?.set(baggage: value, forKey: RUMDependency.hasReplay)
     }
 
     /// Notifies other Features on the state of Session Replay records count.
     func setRecordsCountByViewID(_ value: [String: Int64]) {
-        core?.update(
-            feature: RUMDependency.srBaggageKey,
-            attributes: { [RUMDependency.recordsCountByViewID: value] }
-        )
+        core?.set(baggage: value, forKey: RUMDependency.recordsCountByViewID)
     }
 }
+#endif

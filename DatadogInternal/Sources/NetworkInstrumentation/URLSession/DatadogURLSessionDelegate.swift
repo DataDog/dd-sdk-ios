@@ -6,18 +6,14 @@
 
 import Foundation
 
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
 
 /// An interface for forwarding `URLSessionDelegate` calls to `DDURLSessionDelegate`.
 /// The implementation must ensure that required methods are called on the `ddURLSessionDelegate`.
 @objc
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
-    /// Datadog delegate object.
-    /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
-    /// - `func urlSession(_:task:didFinishCollecting:)`
-    /// - `func urlSession(_:task:didCompleteWithError:)`
-    /// - `func urlSession(_:dataTask:didReceive:)`
-    var ddURLSessionDelegate: DatadogURLSessionDelegate { get }
 }
 
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
@@ -25,6 +21,7 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 ///
 /// All requests made with the `URLSession` instrumented with this delegate will be intercepted by the SDK.
 @objc
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     var interceptor: URLSessionInterceptor? {
         let core = self.core ?? CoreRegistry.default
@@ -34,7 +31,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     /* private */ public let firstPartyHosts: FirstPartyHosts
 
     /// The instance of the SDK core notified by this delegate.
-    /// 
+    ///
     /// It must be a weak reference, because `URLSessionDelegate` can last longer than core instance.
     /// Any `URLSession` will retain its delegate until `.invalidateAndCancel()` is called.
     private weak var core: DatadogCoreProtocol?
@@ -43,6 +40,15 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     override public init() {
         core = nil
         firstPartyHosts = .init()
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: Self.self,
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
+            ),
+            in: core ?? CoreRegistry.default
+        )
+
         super.init()
     }
 
@@ -70,7 +76,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         self.init(
             in: nil,
             additionalFirstPartyHostsWithHeaderTypes: additionalFirstPartyHosts.reduce(into: [:], { partialResult, host in
-                partialResult[host] = [.datadog]
+                partialResult[host] = [.datadog, .tracecontext]
             })
         )
     }
@@ -89,6 +95,14 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     ) {
         self.core = core
         self.firstPartyHosts = FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes)
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: Self.self,
+                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
+            ),
+            in: core ?? CoreRegistry.default
+        )
         super.init()
     }
 
@@ -107,6 +121,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 }
 
+@available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 extension DatadogURLSessionDelegate: __URLSessionDelegateProviding {
     public var ddURLSessionDelegate: DatadogURLSessionDelegate { self }
 }

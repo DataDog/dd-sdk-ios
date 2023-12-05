@@ -12,7 +12,7 @@ internal protocol FilesOrchestratorType: AnyObject {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile]
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
@@ -26,7 +26,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     let dateProvider: DateProvider
     /// Performance rules for writing and reading files.
     let performance: StoragePerformancePreset
-
     /// Name of the last file returned by `getWritableFile()`.
     private var lastWritableFileName: String? = nil
     /// Tracks number of times the last file was returned from `getWritableFile(writeSize:)`.
@@ -35,11 +34,15 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Tracks the size of last writable file by accumulating the total `writeSize:` requested in `getWritableFile(writeSize:)`
     /// This is approximated value as it assumes that all requested writes succed. The actual difference should be negligible.
     private var lastWritableFileApproximatedSize: UInt64 = 0
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
         /// The name of the track reported for this orchestrator.
         let trackName: String
+        /// The label indicating the value of tracking consent that this orchestrator manages files for.
+        let consentLabel: String
         /// The preset for uploader performance in this feature to include in metric.
         let uploaderPerformance: UploadPerformancePreset
     }
@@ -51,11 +54,13 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         directory: Directory,
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
+        telemetry: Telemetry,
         metricsData: MetricsData? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
+        self.telemetry = telemetry
         self.metricsData = metricsData
     }
 
@@ -136,7 +141,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     return lastFile
                 }
             } catch {
-                DD.telemetry.error("Failed to reuse last writable file", error: error)
+                telemetry.error("Failed to reuse last writable file", error: error)
             }
         }
 
@@ -145,33 +150,32 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
-            let filesWithCreationDate = try directory.files()
+            let filesFromOldest = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
-
-            guard let (oldestFile, creationDate) = filesWithCreationDate
-                .filter({ excludedFileNames.contains($0.file.name) == false })
                 .sorted(by: { $0.creationDate < $1.creationDate })
-                .first
-            else {
-                return nil
-            }
 
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
-                return oldestFile
+                return filesFromOldest
+                    .prefix(limit)
+                    .map { $0.file }
             }
             #endif
 
-            let oldestFileAge = dateProvider.now.timeIntervalSince(creationDate)
-            let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
-
-            return fileIsOldEnough ? oldestFile : nil
+            let filtered = filesFromOldest
+                .filter {
+                    let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
+                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
+                }
+            return filtered
+                .prefix(limit)
+                .map { $0.file }
         } catch {
-            DD.telemetry.error("Failed to obtain readable file", error: error)
-            return nil
+            telemetry.error("Failed to obtain readable file", error: error)
+            return []
         }
     }
 
@@ -180,7 +184,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             try readableFile.delete()
             sendBatchDeletedMetric(batchFile: readableFile, deletionReason: deletionReason)
         } catch {
-            DD.telemetry.error("Failed to delete file", error: error)
+            telemetry.error("Failed to delete file", error: error)
         }
     }
 
@@ -240,7 +244,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchAge = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: batchFile.name))
 
-        DD.telemetry.metric(
+        telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
                 BatchMetric.typeKey: BatchDeletedMetric.typeValue,
@@ -249,10 +253,11 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
                     BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
                 ],
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
-                BatchDeletedMetric.inBackgroundKey: false,
+                BatchDeletedMetric.inBackgroundKey: false
             ]
         )
     }
@@ -268,11 +273,12 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
         let batchDuration = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: fileName))
 
-        DD.telemetry.metric(
+        telemetry.metric(
             name: BatchClosedMetric.name,
             attributes: [
                 BatchMetric.typeKey: BatchClosedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,

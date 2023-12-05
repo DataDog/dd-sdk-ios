@@ -59,7 +59,9 @@ extension CrashReportReceiver: AnyMockable {
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
-        ciTest: RUMCITest? = nil
+        ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -67,7 +69,9 @@ extension CrashReportReceiver: AnyMockable {
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
-            ciTest: ciTest
+            ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
+            telemetry: telemetry
         )
     }
 }
@@ -108,14 +112,16 @@ extension RUMEventsMapper {
         errorEventMapper: RUM.ErrorEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
         actionEventMapper: RUM.ActionEventMapper? = nil,
-        longTaskEventMapper: RUM.LongTaskEventMapper? = nil
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) -> RUMEventsMapper {
         return RUMEventsMapper(
             viewEventMapper: viewEventMapper,
             errorEventMapper: errorEventMapper,
             resourceEventMapper: resourceEventMapper,
             actionEventMapper: actionEventMapper,
-            longTaskEventMapper: longTaskEventMapper
+            longTaskEventMapper: longTaskEventMapper,
+            telemetry: telemetry
         )
     }
 }
@@ -164,7 +170,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: String.mockRandom(),
+            identity: String.mockRandom().asRUMViewIdentity(),
             name: .mockRandom(),
             path: .mockRandom()
         )
@@ -173,7 +179,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: RUMViewIdentifiable = mockView,
+        identity: RUMViewIdentity = mockViewIdentity,
         name: String = .mockAny(),
         path: String? = nil
     ) -> RUMStartViewCommand {
@@ -194,14 +200,14 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: String.mockRandom()
+            identity: String.mockRandom().asRUMViewIdentity()
         )
     }
 
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: RUMViewIdentifiable = mockView
+        identity: RUMViewIdentity = mockViewIdentity
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
             time: time, attributes: attributes, identity: identity
@@ -596,6 +602,11 @@ extension RUMUUID {
     }
 }
 
+struct RUMUUIDGeneratorMock: RUMUUIDGenerator {
+    let uuid: UUID
+    func generateUnique() -> RUMUUID { RUMUUID(rawValue: uuid) }
+}
+
 extension RUMContext {
     public static func mockAny() -> RUMContext {
         return mockWith()
@@ -672,6 +683,7 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
     ) -> RUMScopeDependencies {
@@ -685,6 +697,7 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
             ciTest: ciTest,
+            syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart
         )
@@ -700,6 +713,7 @@ extension RUMScopeDependencies {
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
         ciTest: RUMCITest? = nil,
+        syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil
     ) -> RUMScopeDependencies {
@@ -713,6 +727,7 @@ extension RUMScopeDependencies {
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
             ciTest: ciTest ?? self.ciTest,
+            syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart
         )
@@ -735,6 +750,7 @@ extension RUMSessionScope {
         isInitialSession: Bool = .mockAny(),
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
+        startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
         dependencies: RUMScopeDependencies = .mockAny(),
         hasReplay: Bool? = .mockAny()
     ) -> RUMSessionScope {
@@ -742,6 +758,7 @@ extension RUMSessionScope {
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
+            startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: hasReplay
         )
@@ -777,6 +794,7 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
 
 ///// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
+let mockViewIdentity = mockView.asRUMViewIdentity()
 
 extension RUMViewScope {
     static func mockAny() -> RUMViewScope {
@@ -793,7 +811,7 @@ extension RUMViewScope {
         isInitialView: Bool = false,
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        identity: RUMViewIdentifiable = mockView,
+        identity: RUMViewIdentity = mockViewIdentity,
         path: String = .mockAny(),
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],

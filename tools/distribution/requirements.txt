@@ -1,4 +1,5 @@
 gitdb==4.0.10
-GitPython==3.1.29
+GitPython==3.1.37
 smmap==5.0.0
 packaging==23.1
+pytest==7.4.0

@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import SRFixtures
 
 /// Session Replay scenario - switches between SR snapshots with changing the RUM view each time.
 internal class SessionReplayScenario: ScenarioConfiguration {

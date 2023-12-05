@@ -4,9 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import UIKit
 
 internal class UIViewRecorder: NodeRecorder {
+    let identifier = UUID()
+
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
 
@@ -43,7 +46,7 @@ internal class UIViewRecorder: NodeRecorder {
         }
 
         let builder = UIViewWireframesBuilder(
-            wireframeID: context.ids.nodeID(for: view),
+            wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
             attributes: attributes
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -66,3 +69,4 @@ internal struct UIViewWireframesBuilder: NodeWireframesBuilder {
         ]
     }
 }
+#endif

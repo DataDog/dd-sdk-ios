@@ -17,7 +17,10 @@ internal struct FeatureUpload {
         fileReader: Reader,
         requestBuilder: FeatureRequestBuilder,
         httpClient: HTTPClient,
-        performance: PerformancePreset
+        performance: PerformancePreset,
+        backgroundTasksEnabled: Bool,
+        maxBatchesPerUpload: Int,
+        telemetry: Telemetry
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -30,6 +33,14 @@ internal struct FeatureUpload {
             requestBuilder: requestBuilder
         )
 
+        #if canImport(UIKit)
+        let backgroundTaskCoordinator = backgroundTasksEnabled
+            ? UIKitBackgroundTaskCoordinator()
+            : nil
+        #else
+        let backgroundTaskCoordinator = nil
+        #endif
+
         self.init(
             uploader: DataUploadWorker(
                 queue: uploadQueue,
@@ -38,7 +49,10 @@ internal struct FeatureUpload {
                 contextProvider: contextProvider,
                 uploadConditions: DataUploadConditions(),
                 delay: DataUploadDelay(performance: performance),
-                featureName: featureName
+                featureName: featureName,
+                telemetry: telemetry,
+                maxBatchesPerUpload: maxBatchesPerUpload,
+                backgroundTaskCoordinator: backgroundTaskCoordinator
             )
         )
     }

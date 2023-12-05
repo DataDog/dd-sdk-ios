@@ -32,25 +32,37 @@ final class HTTPServerMockTests: XCTestCase {
             return
         }
 
+        // Given
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
 
-        sendPOSTRequestSynchronouslyTo(
-            url: session.recordingURL.appendingPathComponent("/resource/1"),
-            body: "1st request body".data(using: .utf8)!
-        )
-        sendPOSTRequestSynchronouslyTo(
-            url: session.recordingURL.appendingPathComponent("/resource/2"),
-            body: "2nd request body".data(using: .utf8)!
-        )
+        var request1 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/1"))
+        request1.httpMethod = "POST"
+        request1.httpBody = "1st request body".data(using: .utf8)!
+        request1.setValue("Value1", forHTTPHeaderField: "Header1")
+        request1.setValue("multipart/form-data; boundary=00000000-0000-0000-0000-000000000000", forHTTPHeaderField: "Content-Type")
 
+        var request2 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/2"))
+        request2.httpMethod = "POST"
+        request2.httpBody = "2nd request body".data(using: .utf8)!
+        request2.setValue("Value2", forHTTPHeaderField: "Header2")
+
+        // When
+        sendSynchronously(request: request1)
+        sendSynchronously(request: request2)
+
+        // Then
         let recordedRequests = try session.getRecordedRequests()
 
         XCTAssertEqual(recordedRequests.count, 2)
         XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
         XCTAssertEqual(recordedRequests[0].httpBody, "1st request body".data(using: .utf8)!)
+        XCTAssertEqual(recordedRequests[0].httpHeaders["Header1"], "Value1")
+        XCTAssertEqual(recordedRequests[0].httpHeaders["Content-Type"], "multipart/form-data; boundary=00000000-0000-0000-0000-000000000000")
+
         XCTAssertTrue(recordedRequests[1].path.hasSuffix("/resource/2"))
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
+        XCTAssertEqual(recordedRequests[1].httpHeaders["Header2"], "Value2")
     }
 
     func testItPullsRecordedRequests() throws {
@@ -60,23 +72,31 @@ final class HTTPServerMockTests: XCTestCase {
             return
         }
 
+        // Given
         let server = ServerMock(serverProcess: serverProces)
         let session = server.obtainUniqueRecordingSession()
 
+        var request1 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/1"))
+        request1.httpMethod = "POST"
+        request1.httpBody = "1st request body".data(using: .utf8)!
+        request1.setValue("Value1", forHTTPHeaderField: "Header1")
+
+        var request2 = URLRequest(url: session.recordingURL.appendingPathComponent("/resource/2"))
+        request2.httpMethod = "POST"
+        request2.httpBody = "2nd request body".data(using: .utf8)!
+        request2.setValue("Value2", forHTTPHeaderField: "Header2")
+
+        // When
         let initialTime = Date()
         DispatchQueue.global(qos: .userInitiated).async {
             Thread.sleep(forTimeInterval: 0.5)
-            sendPOSTRequestAsynchronouslyTo(
-                url: session.recordingURL.appendingPathComponent("/resource/1"),
-                body: "1st request body".data(using: .utf8)!
-            )
+            sendAsynchronously(request: request1)
             Thread.sleep(forTimeInterval: 0.5)
-            sendPOSTRequestAsynchronouslyTo(
-                url: session.recordingURL.appendingPathComponent("/resource/2"),
-                body: "2nd request body".data(using: .utf8)!
-            )
+            sendAsynchronously(request: request2)
         }
         let timeoutTime: TimeInterval = 2
+
+        // Then
         let recordedRequests = try session.pullRecordedRequests(timeout: timeoutTime) { requests in
             requests.count == 2
         }
@@ -84,8 +104,11 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertEqual(recordedRequests.count, 2)
         XCTAssertTrue(recordedRequests[0].path.hasSuffix("/resource/1"))
         XCTAssertEqual(recordedRequests[0].httpBody, "1st request body".data(using: .utf8)!)
+        XCTAssertEqual(recordedRequests[0].httpHeaders["Header1"], "Value1")
+
         XCTAssertTrue(recordedRequests[1].path.hasSuffix("/resource/2"))
         XCTAssertEqual(recordedRequests[1].httpBody, "2nd request body".data(using: .utf8)!)
+        XCTAssertEqual(recordedRequests[1].httpHeaders["Header2"], "Value2")
     }
 
     func testWhenPullingRecordedRequestExceedsTimeout_itThrowsAnError() throws {
@@ -131,11 +154,7 @@ private func resolveSwiftPackageFolder() -> URL {
     fatalError("Cannot resolve the URL to folder containing `Package.swift`.")
 }
 
-private func sendPOSTRequestSynchronouslyTo(url: URL, body: Data) {
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.httpBody = body
-
+private func sendSynchronously(request: URLRequest) {
     let semaphore = DispatchSemaphore(value: 0)
     let task = URLSession.shared.dataTask(with: request) { _, _, error in
         XCTAssertNil(error)
@@ -146,11 +165,7 @@ private func sendPOSTRequestSynchronouslyTo(url: URL, body: Data) {
     task.resume()
 }
 
-private func sendPOSTRequestAsynchronouslyTo(url: URL, body: Data) {
-    var request = URLRequest(url: url)
-    request.httpMethod = "POST"
-    request.httpBody = body
-
+private func sendAsynchronously(request: URLRequest) {
     let task = URLSession.shared.dataTask(with: request) { _, _, error in
         XCTAssertNil(error)
     }

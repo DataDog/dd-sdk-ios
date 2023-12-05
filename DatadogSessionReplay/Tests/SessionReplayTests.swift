@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class SessionReplayTests: XCTestCase {
@@ -59,7 +60,7 @@ class SessionReplayTests: XCTestCase {
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
-        XCTAssertNil((sr.requestBuilder as? RequestBuilder)?.customUploadURL)
+        XCTAssertNil((sr.requestBuilder as? SegmentRequestBuilder)?.customUploadURL)
     }
 
     func testWhenEnabledWithReplaySampleRate() throws {
@@ -95,7 +96,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        XCTAssertEqual((sr.requestBuilder as? RequestBuilder)?.customUploadURL, random)
+        XCTAssertEqual((sr.requestBuilder as? SegmentRequestBuilder)?.customUploadURL, random)
     }
 
     func testWhenEnabledWithDebugSDKArgument() throws {

@@ -23,17 +23,6 @@
 		6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */; };
 		614550652A7B991700991762 /* DatadogInternal in Frameworks */ = {isa = PBXBuildFile; productRef = 614550642A7B991700991762 /* DatadogInternal */; };
 		614550712A7BB99400991762 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614550702A7BB99400991762 /* Utils.swift */; };
-		614C809C2A7CF420004AF448 /* UnsupportedViewsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80902A7CF420004AF448 /* UnsupportedViewsViewController.swift */; };
-		614C809D2A7CF420004AF448 /* Images.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80912A7CF420004AF448 /* Images.storyboard */; };
-		614C809E2A7CF420004AF448 /* ImagesViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80922A7CF420004AF448 /* ImagesViewControllers.swift */; };
-		614C809F2A7CF420004AF448 /* BasicViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80932A7CF420004AF448 /* BasicViewControllers.swift */; };
-		614C80A02A7CF420004AF448 /* Basic.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80942A7CF420004AF448 /* Basic.storyboard */; };
-		614C80A12A7CF420004AF448 /* InputViewControllers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80952A7CF420004AF448 /* InputViewControllers.swift */; };
-		614C80A22A7CF420004AF448 /* InputElements.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80962A7CF420004AF448 /* InputElements.storyboard */; };
-		614C80A32A7CF420004AF448 /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80972A7CF420004AF448 /* Fixtures.swift */; };
-		614C80A42A7CF420004AF448 /* InputElements-DatePickers.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80982A7CF420004AF448 /* InputElements-DatePickers.storyboard */; };
-		614C80A52A7CF420004AF448 /* UnsupportedViews.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 614C80992A7CF420004AF448 /* UnsupportedViews.storyboard */; };
-		614C80A62A7CF420004AF448 /* UIViewController+KeyboardControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C809B2A7CF420004AF448 /* UIViewController+KeyboardControlling.swift */; };
 		614C80A82A7CF440004AF448 /* SessionReplayScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80A72A7CF440004AF448 /* SessionReplayScenario.swift */; };
 		614C80AA2A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80A92A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift */; };
 		614C80AD2A7D573A004AF448 /* LogsScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614C80AC2A7D573A004AF448 /* LogsScenario.swift */; };
@@ -65,6 +54,7 @@
 		619249CA2A7BD9330073AD6B /* Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249C92A7BD9330073AD6B /* Helpers.swift */; };
 		619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249CC2A7C05AC0073AD6B /* DebugViewController.swift */; };
 		619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 619249CE2A7C06B20073AD6B /* Debug.storyboard */; };
+		61CFB4C32B1F57FD00612D3B /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 61CFB4C22B1F57FD00612D3B /* SRFixtures */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,17 +116,6 @@
 		614550592A7A6EEC00991762 /* DroppedFramesInstrument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DroppedFramesInstrument.swift; sourceTree = "<group>"; };
 		6145505B2A7A6F0400991762 /* FrameDurationInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameDurationInstrument.swift; sourceTree = "<group>"; };
 		614550702A7BB99400991762 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
-		614C80902A7CF420004AF448 /* UnsupportedViewsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnsupportedViewsViewController.swift; sourceTree = "<group>"; };
-		614C80912A7CF420004AF448 /* Images.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Images.storyboard; sourceTree = "<group>"; };
-		614C80922A7CF420004AF448 /* ImagesViewControllers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagesViewControllers.swift; sourceTree = "<group>"; };
-		614C80932A7CF420004AF448 /* BasicViewControllers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BasicViewControllers.swift; sourceTree = "<group>"; };
-		614C80942A7CF420004AF448 /* Basic.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Basic.storyboard; sourceTree = "<group>"; };
-		614C80952A7CF420004AF448 /* InputViewControllers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InputViewControllers.swift; sourceTree = "<group>"; };
-		614C80962A7CF420004AF448 /* InputElements.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = InputElements.storyboard; sourceTree = "<group>"; };
-		614C80972A7CF420004AF448 /* Fixtures.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
-		614C80982A7CF420004AF448 /* InputElements-DatePickers.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "InputElements-DatePickers.storyboard"; sourceTree = "<group>"; };
-		614C80992A7CF420004AF448 /* UnsupportedViews.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = UnsupportedViews.storyboard; sourceTree = "<group>"; };
-		614C809B2A7CF420004AF448 /* UIViewController+KeyboardControlling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController+KeyboardControlling.swift"; sourceTree = "<group>"; };
 		614C80A72A7CF440004AF448 /* SessionReplayScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayScenario.swift; sourceTree = "<group>"; };
 		614C80A92A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayScenarioViewController.swift; sourceTree = "<group>"; };
 		614C80AC2A7D573A004AF448 /* LogsScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogsScenario.swift; sourceTree = "<group>"; };
@@ -175,6 +154,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				614550292A79760E00991762 /* DatadogLogs in Frameworks */,
+				61CFB4C32B1F57FD00612D3B /* SRFixtures in Frameworks */,
 				6145502F2A79760E00991762 /* DatadogTrace in Frameworks */,
 				614C80D12A7E173B004AF448 /* DatadogProfiler.framework in Frameworks */,
 				614550652A7B991700991762 /* DatadogInternal in Frameworks */,
@@ -283,45 +263,8 @@
 			children = (
 				614C80A72A7CF440004AF448 /* SessionReplayScenario.swift */,
 				614C80A92A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift */,
-				614C808A2A7CF3CE004AF448 /* SnapshotsLibrary */,
 			);
 			path = SessionReplay;
-			sourceTree = "<group>";
-		};
-		614C808A2A7CF3CE004AF448 /* SnapshotsLibrary */ = {
-			isa = PBXGroup;
-			children = (
-				614C808F2A7CF420004AF448 /* Fixtures */,
-				614C809A2A7CF420004AF448 /* Utils */,
-			);
-			name = SnapshotsLibrary;
-			sourceTree = "<group>";
-		};
-		614C808F2A7CF420004AF448 /* Fixtures */ = {
-			isa = PBXGroup;
-			children = (
-				614C80902A7CF420004AF448 /* UnsupportedViewsViewController.swift */,
-				614C80912A7CF420004AF448 /* Images.storyboard */,
-				614C80922A7CF420004AF448 /* ImagesViewControllers.swift */,
-				614C80932A7CF420004AF448 /* BasicViewControllers.swift */,
-				614C80942A7CF420004AF448 /* Basic.storyboard */,
-				614C80952A7CF420004AF448 /* InputViewControllers.swift */,
-				614C80962A7CF420004AF448 /* InputElements.storyboard */,
-				614C80972A7CF420004AF448 /* Fixtures.swift */,
-				614C80982A7CF420004AF448 /* InputElements-DatePickers.storyboard */,
-				614C80992A7CF420004AF448 /* UnsupportedViews.storyboard */,
-			);
-			name = Fixtures;
-			path = ../../../../DatadogSessionReplay/SRSnapshotTests/SRHost/Fixtures;
-			sourceTree = "<group>";
-		};
-		614C809A2A7CF420004AF448 /* Utils */ = {
-			isa = PBXGroup;
-			children = (
-				614C809B2A7CF420004AF448 /* UIViewController+KeyboardControlling.swift */,
-			);
-			name = Utils;
-			path = ../../../../DatadogSessionReplay/SRSnapshotTests/SRHost/Utils;
 			sourceTree = "<group>";
 		};
 		614C80AB2A7D572C004AF448 /* Logs */ = {
@@ -476,6 +419,7 @@
 				6145502C2A79760E00991762 /* DatadogSessionReplay */,
 				6145502E2A79760E00991762 /* DatadogTrace */,
 				614550642A7B991700991762 /* DatadogInternal */,
+				61CFB4C22B1F57FD00612D3B /* SRFixtures */,
 			);
 			productName = BenchmarkTests;
 			productReference = 6145500A2A796C0D00991762 /* Runner iOS.app */;
@@ -566,13 +510,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				614C80A22A7CF420004AF448 /* InputElements.storyboard in Resources */,
 				6145501A2A796C0E00991762 /* LaunchScreen.storyboard in Resources */,
-				614C80A02A7CF420004AF448 /* Basic.storyboard in Resources */,
-				614C809D2A7CF420004AF448 /* Images.storyboard in Resources */,
-				614C80A42A7CF420004AF448 /* InputElements-DatePickers.storyboard in Resources */,
 				614550172A796C0E00991762 /* Assets.xcassets in Resources */,
-				614C80A52A7CF420004AF448 /* UnsupportedViews.storyboard in Resources */,
 				619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */,
 				614550152A796C0D00991762 /* Main.storyboard in Resources */,
 			);
@@ -601,9 +540,6 @@
 			files = (
 				6145500E2A796C0D00991762 /* AppDelegate.swift in Sources */,
 				614C80AD2A7D573A004AF448 /* LogsScenario.swift in Sources */,
-				614C80A62A7CF420004AF448 /* UIViewController+KeyboardControlling.swift in Sources */,
-				614C80A32A7CF420004AF448 /* Fixtures.swift in Sources */,
-				614C809F2A7CF420004AF448 /* BasicViewControllers.swift in Sources */,
 				6145505C2A7A6F0400991762 /* FrameDurationInstrument.swift in Sources */,
 				614C80B12A7D5965004AF448 /* LogsScenarioViewController.swift in Sources */,
 				614C80B62A7D6A3F004AF448 /* RUMScenarioViewController.swift in Sources */,
@@ -613,10 +549,8 @@
 				614550562A7A5D1400991762 /* Profiler.swift in Sources */,
 				614550532A7A5CB800991762 /* Environment.swift in Sources */,
 				614C80AF2A7D5947004AF448 /* GenericViewController.swift in Sources */,
-				614C809C2A7CF420004AF448 /* UnsupportedViewsViewController.swift in Sources */,
 				614550712A7BB99400991762 /* Utils.swift in Sources */,
 				619249CA2A7BD9330073AD6B /* Helpers.swift in Sources */,
-				614C809E2A7CF420004AF448 /* ImagesViewControllers.swift in Sources */,
 				614C80B42A7D6981004AF448 /* RUMScenario.swift in Sources */,
 				614C80F52A7EC824004AF448 /* Benchmark.swift in Sources */,
 				614C80B82A7D79FA004AF448 /* Synthetics.swift in Sources */,
@@ -627,7 +561,6 @@
 				614C80F12A7E4F1C004AF448 /* BenchmarkRunner.swift in Sources */,
 				614550102A796C0D00991762 /* SceneDelegate.swift in Sources */,
 				614C80AA2A7CFA0A004AF448 /* SessionReplayScenarioViewController.swift in Sources */,
-				614C80A12A7CF420004AF448 /* InputViewControllers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1045,6 +978,10 @@
 		614550642A7B991700991762 /* DatadogInternal */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogInternal;
+		};
+		61CFB4C22B1F57FD00612D3B /* SRFixtures */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SRFixtures;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

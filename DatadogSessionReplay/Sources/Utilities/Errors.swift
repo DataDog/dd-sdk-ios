@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// An exception thrown by the SDK.
@@ -28,3 +29,4 @@ internal struct FatalError: Error, CustomStringConvertible {
         self.description = "🔥 Datadog Session Replay error: \(description) (\(fileID):\(line))"
     }
 }
+#endif

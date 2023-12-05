@@ -7,6 +7,7 @@
 import Foundation
 import UIKit
 import XCTest
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
@@ -234,6 +235,7 @@ struct ShapeWireframesBuilderMock: NodeWireframesBuilder {
     }
 }
 
+@_spi(Internal)
 extension Node: AnyMockable, RandomMockable {
     public static func mockAny() -> Node {
         return mockWith()
@@ -315,12 +317,13 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 }
 
 class NodeRecorderMock: NodeRecorder {
+    var identifier = UUID()
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []
     var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
-    var resultForView: (UIView) -> NodeSemantics?
+    var resultForView: ((UIView) -> NodeSemantics?)?
 
-    init(resultForView: @escaping (UIView) -> NodeSemantics?) {
+    init(resultForView: ((UIView) -> NodeSemantics?)? = nil) {
         self.resultForView = resultForView
     }
 
@@ -328,7 +331,26 @@ class NodeRecorderMock: NodeRecorder {
         queriedViews.insert(view)
         queryContexts.append(context)
         queryContextsByView[view] = context
-        return resultForView(view)
+        return resultForView?(view)
+    }
+}
+
+class SessionReplayNodeRecorderMock: SessionReplayNodeRecorder {
+    var identifier = UUID()
+    var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeRecordingContext] = []
+    var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
+    var resultForView: ((UIView) -> NodeSemantics?)?
+
+    init(resultForView: ((UIView) -> NodeSemantics?)? = nil) {
+        self.resultForView = resultForView
+    }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        queriedViews.insert(view)
+        queryContexts.append(context)
+        queryContextsByView[view] = context
+        return resultForView?(view)
     }
 }
 
@@ -395,11 +417,9 @@ extension RUMContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMContext {
         return RUMContext(
-            ids: .init(
-                applicationID: .mockRandom(),
-                sessionID: .mockRandom(),
-                viewID: .mockRandom()
-            ),
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
             viewServerTimeOffset: .mockRandom()
         )
     }
@@ -411,11 +431,9 @@ extension RUMContext: AnyMockable, RandomMockable {
         serverTimeOffset: TimeInterval = .mockAny()
     ) -> RUMContext {
         return RUMContext(
-            ids: .init(
-                applicationID: applicationID,
-                sessionID: sessionID,
-                viewID: viewID
-            ),
+            applicationID: applicationID,
+            sessionID: sessionID,
+            viewID: viewID,
             viewServerTimeOffset: serverTimeOffset
         )
     }
@@ -453,9 +471,9 @@ extension Recorder.Context: AnyMockable, RandomMockable {
     ) {
         self.init(
             privacy: privacy,
-            applicationID: rumContext.ids.applicationID,
-            sessionID: rumContext.ids.sessionID,
-            viewID: rumContext.ids.viewID ?? "",
+            applicationID: rumContext.applicationID,
+            sessionID: rumContext.sessionID,
+            viewID: rumContext.viewID ?? "",
             viewServerTimeOffset: rumContext.viewServerTimeOffset,
             date: date
         )

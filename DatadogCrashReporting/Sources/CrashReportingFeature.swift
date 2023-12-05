@@ -21,12 +21,15 @@ internal final class CrashReportingFeature: DatadogFeature {
     let plugin: CrashReportingPlugin
     /// Integration enabling sending crash reports as Logs or RUM Errors.
     let sender: CrashReportSender
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     init(
         crashReportingPlugin: CrashReportingPlugin,
         crashContextProvider: CrashContextProvider,
         sender: CrashReportSender,
-        messageReceiver: FeatureMessageReceiver
+        messageReceiver: FeatureMessageReceiver,
+        telemetry: Telemetry
     ) {
         self.queue = DispatchQueue(
             label: "com.datadoghq.crash-reporter",
@@ -36,6 +39,7 @@ internal final class CrashReportingFeature: DatadogFeature {
         self.sender = sender
         self.crashContextProvider = crashContextProvider
         self.messageReceiver = messageReceiver
+        self.telemetry = telemetry
 
         // Inject current `CrashContext`
         if let context = crashContextProvider.currentCrashContext {
@@ -102,7 +106,7 @@ internal final class CrashReportingFeature: DatadogFeature {
                 error: error
             )
 
-            DD.telemetry.error("Failed to encode crash report context", error: error)
+            telemetry.error("Failed to encode crash report context", error: error)
             return nil
         }
     }
@@ -118,7 +122,7 @@ internal final class CrashReportingFeature: DatadogFeature {
                 """,
                 error: error
             )
-            DD.telemetry.error("Failed to decode crash report context", error: error)
+            telemetry.error("Failed to decode crash report context", error: error)
             return nil
         }
     }

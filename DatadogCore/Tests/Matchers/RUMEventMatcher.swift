@@ -82,6 +82,8 @@ internal class RUMEventMatcher {
 
     func eventType()            throws -> String { try jsonMatcher.value(forKeyPath: "type") }
 
+    func sessionHasReplay()     throws -> Bool? { try jsonMatcher.value(forKeyPath: "session.has_replay") }
+
     func userID()               throws -> String { try jsonMatcher.value(forKeyPath: "usr.id") }
     func userName()             throws -> String { try jsonMatcher.value(forKeyPath: "usr.name") }
     func userEmail()            throws -> String { try jsonMatcher.value(forKeyPath: "usr.email") }
@@ -124,6 +126,12 @@ extension Array where Element == RUMEventMatcher {
     func filterApplicationLaunchView() -> [RUMEventMatcher] {
         return filter {
             (try? $0.attribute(forKeyPath: "view.url")) != "com/datadog/application-launch/view"
+        }
+    }
+
+    func filterTelemetry() -> [RUMEventMatcher] {
+        return filter {
+            (try? $0.attribute(forKeyPath: "type")) != "telemetry"
         }
     }
 

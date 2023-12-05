@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 /// Schedules operations and repeats them on the main thread.
@@ -70,3 +71,4 @@ internal class MainThreadScheduler: Scheduler {
         }
     }
 }
+#endif

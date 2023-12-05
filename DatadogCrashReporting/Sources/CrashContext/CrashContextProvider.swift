@@ -56,31 +56,37 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     internal enum RUMBaggageKeys {
         /// The key references RUM view event.
         /// The view event associated with the key conforms to `Codable`.
-        static let viewEvent = "view-event"
+        static let viewEvent = "rum-view-event"
 
         /// The key references a `true` value if the RUM view is reset.
-        static let viewReset = "view-reset"
+        static let viewReset = "rum-view-reset"
 
         /// The key references RUM session state.
         /// The state associated with the key conforms to `Codable`.
-        static let sessionState = "session-state"
+        static let sessionState = "rum-session-state"
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case .context(let context):
-            return update(context: context)
-        case .custom(let key, let attributes) where key == "rum":
-            return rum(attributes: attributes, to: core)
+            update(context: context)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewEvent:
+            updateRUMView(with: baggage, to: core)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.viewReset:
+            resetRUMView(with: baggage, to: core)
+        case .baggage(let label, let baggage) where label == RUMBaggageKeys.sessionState:
+            updateSessionState(with: baggage, to: core)
         default:
             return false
         }
+
+        return true
     }
 
     /// Updates crash context.
     ///
     /// - Parameter context: The updated core context.
-    private func update(context: DatadogContext) -> Bool {
+    private func update(context: DatadogContext) {
         queue.async {
             let crashContext = CrashContext(
                 context,
@@ -92,26 +98,49 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                 self._context = crashContext
             }
         }
-
-        return true
     }
 
-    private func rum(attributes: FeatureBaggage, to core: DatadogCoreProtocol) -> Bool {
-        if attributes["view-reset", type: Bool.self] == true {
-            queue.async { self.viewEvent = nil }
-            return true
+    private func updateRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async { [weak core] in
+            do {
+                self.viewEvent = try baggage.decode(type: AnyCodable.self)
+            } catch {
+                core?.telemetry
+                    .error("Fails to decode RUM view event from Crash Reporting", error: error)
+            }
         }
+    }
 
-        if let event = attributes[RUMBaggageKeys.viewEvent, type: AnyCodable.self] {
-            queue.async { self.viewEvent = event }
-            return true
+    private func resetRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async { [weak core] in
+            do {
+                if try baggage.decode(type: Bool.self) {
+                    self.viewEvent = nil
+                }
+            } catch {
+                core?.telemetry
+                    .error("Fails to decode RUM view reset from Crash Reporting", error: error)
+            }
         }
+    }
 
-        if let state = attributes["session-state", type: AnyCodable.self] {
-            queue.async { self.sessionState = state }
-            return true
+    private func updateSessionState(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
+        queue.async { [weak core] in
+            do {
+                self.sessionState = try baggage.decode(type: AnyCodable.self)
+            } catch {
+                core?.telemetry
+                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
+            }
         }
+    }
+}
 
-        return false
+extension CrashContextCoreProvider: Flushable {
+    /// Awaits completion of all asynchronous operations.
+    ///
+    /// **blocks the caller thread**
+    func flush() {
+        queue.sync { }
     }
 }

@@ -13,6 +13,8 @@ internal struct RUMContext {
     var sessionID: RUMUUID
     /// Whether the session for this context is currently active
     var isSessionActive: Bool
+    /// The precondition that led to the creation of current session.
+    var sessionPrecondition: RUMSessionPrecondition?
 
     /// The ID of currently displayed view.
     var activeViewID: RUMUUID?

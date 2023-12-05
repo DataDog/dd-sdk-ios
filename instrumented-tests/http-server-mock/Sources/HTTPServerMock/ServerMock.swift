@@ -16,7 +16,7 @@ fileprivate struct IntermediateRequest: Codable {
     let method: String
     /// Request path.
     let path: String
-    /// Request headers encoded as base64 string.
+    /// Request headers encoded as base64 string. Succeeding headers are separated with `\n`.
     let headers: String
     /// Request body encoded as base64 string.
     let body: String
@@ -33,11 +33,18 @@ fileprivate extension Request {
             throw Exception(description: "Failed to decode data retrieved from Python server.")
         }
 
+        var headers: [String: String] = [:]
+        headersString.split(separator: "\n").forEach { header in
+            let components = header.components(separatedBy: ": ")
+            if let field = components.first {
+                let value = components.dropFirst().joined(separator: ": ")
+                headers[field] = value
+            }
+        }
+
         self.path = intermediateRequest.path
         self.httpMethod = intermediateRequest.method
-        self.httpHeaders = headersString
-            .split(separator: "\n")
-            .map { String($0) }
+        self.httpHeaders = headers
         self.httpBody = bodyData
     }
 }

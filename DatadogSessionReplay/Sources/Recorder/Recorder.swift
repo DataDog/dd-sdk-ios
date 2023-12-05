@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
 
@@ -17,11 +18,12 @@ internal protocol Recording {
 /// It instruments running application by observing current window(s) and
 /// captures intermediate representation of the view hierarchy. This representation
 /// is later passed to `Processor` and turned into wireframes uploaded to the BE.
-internal class Recorder: Recording {
+@_spi(Internal)
+public class Recorder: Recording {
     /// The context of recording next snapshot.
-    struct Context: Equatable {
+    public struct Context: Equatable {
         /// The content recording policy from the moment of requesting snapshot.
-        let privacy: PrivacyLevel
+        public let privacy: SessionReplayPrivacyLevel
         /// Current RUM application ID - standard UUID string, lowecased.
         let applicationID: String
         /// Current RUM session ID - standard UUID string, lowecased.
@@ -63,12 +65,13 @@ internal class Recorder: Recording {
 
     convenience init(
         processor: Processing,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        additionalNodeRecorders: [NodeRecorder]
     ) throws {
         let windowObserver = KeyWindowObserver()
         let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
             windowObserver: windowObserver,
-            snapshotBuilder: ViewTreeSnapshotBuilder()
+            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: additionalNodeRecorders)
         )
         let touchSnapshotProducer = WindowTouchSnapshotProducer(
             windowObserver: windowObserver
@@ -119,3 +122,4 @@ internal class Recorder: Recording {
         }
     }
 }
+#endif

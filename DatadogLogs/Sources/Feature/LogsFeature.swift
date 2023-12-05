@@ -22,11 +22,15 @@ internal struct LogsFeature: DatadogRemoteFeature {
     init(
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
-        customIntakeURL: URL? = nil
+        customIntakeURL: URL? = nil,
+        telemetry: Telemetry = NOPTelemetry()
     ) {
         self.init(
             logEventMapper: logEventMapper,
-            requestBuilder: RequestBuilder(customIntakeURL: customIntakeURL),
+            requestBuilder: RequestBuilder(
+                customIntakeURL: customIntakeURL,
+                telemetry: telemetry
+            ),
             messageReceiver: CombinedFeatureMessageReceiver(
                 LogMessageReceiver(logEventMapper: logEventMapper),
                 CrashLogReceiver(dateProvider: dateProvider),

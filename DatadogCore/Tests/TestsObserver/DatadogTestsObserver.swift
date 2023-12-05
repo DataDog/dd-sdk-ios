@@ -23,38 +23,23 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
     /// A list of checks ensuring global state integrity before and after each tests.
     private let checks: [TestIntegrityCheck] = [
         .init(
-            assert: { !Datadog.isInitialized() },
-            problem: "`Datadog` must not be initialized.",
+            assert: { CoreRegistry.instances.isEmpty },
+            problem: "No instance of `DatadogCore` must be left initialized after test completion.",
             solution: """
-            Make sure `Datadog.flushAndDeinitialize()` is called before the end of test that uses `Datadog.initialize()`.
+            Make sure deinitialization APIs are called before the end of test that registers `DatadogCore`.
+            If registering directly to `CoreRegistry`, make sure the test cleans it up properly.
+
+            `DatadogTestsObserver` found following instances still being registered: \(CoreRegistry.instances.map({ "'\($0.key)'" }))
             """
         ),
         .init(
-            assert: {
-                CoreRegistry.default is NOPDatadogCore
-            },
-            problem: "`CoreRegistry.default` must be reset after each test.",
-            solution: """
-            Make sure `CoreRegistry.unregisterDefault()` is called after the end of test that register a default core.
-            """
-        ),
-        .init(
-            assert: { activeSwizzlingNames.isEmpty },
+            assert: { Swizzling.methods.isEmpty },
             problem: "No swizzling must be applied.",
             solution: """
             Make sure all applied swizzling are reset by the end of test with `unswizzle()`.
 
-            `DatadogTestsObserver` found \(activeSwizzlingNames.count) leaked swizzlings:
-            \(activeSwizzlingNames.joined(separator: ", "))
-            """
-        ),
-        .init(
-            assert: { URLSessionSwizzler.bindingsCount == 0 },
-            problem: "No `URLSessionSwizzler` must be bonded.",
-            solution: """
-            Make sure all applied `URLSessionSwizzler.bind()` are reset by the end of test with `URLSessionSwizzler.unbind()`.
-
-            `DatadogTestsObserver` found \(URLSessionSwizzler.bindingsCount) bindings left.
+            `DatadogTestsObserver` found \(Swizzling.methods.count) leaked swizzlings:
+            \(Swizzling.methods)
             """
         ),
         .init(
@@ -65,18 +50,6 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
 
             ```
             let dd = DD.mockWith(logger: CoreLoggerMock())
-            defer { dd.reset() }
-            ```
-            """
-        ),
-        .init(
-            assert: { DD.telemetry is NOPTelemetry },
-            problem: "`DD.telemetry` must use `NOPTelemetry` implementation.",
-            solution: """
-            Make sure the `DD` bundle is reset after test to use previous dependencies, e.g.:
-
-            ```
-            let dd = DD.mockWith(telemetry: TelemetryMock())
             defer { dd.reset() }
             ```
             """
@@ -158,6 +131,34 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             - it must be deallocated before test ends (e.g. in `tearDown()`)
 
             If all above conditions are met, this failure might indicate a memory leak in the implementation.
+            """
+        ),
+        .init(
+            assert: { URLSessionTaskDelegateSwizzler.isBinded == false },
+            problem: "No URLSessionTaskDelegate swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskDelegateSwizzler.unbind(delegate:)`.
+            """
+        ),
+        .init(
+            assert: { URLSessionDataDelegateSwizzler.isBinded == false },
+            problem: "No URLSessionDataDelegate swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionDataDelegateSwizzler.unbind(delegate:)`.
+            """
+        ),
+        .init(
+            assert: { URLSessionTaskSwizzler.isBinded == false },
+            problem: "No URLSessionTask swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionTaskSwizzler.unbind()`.
+            """
+        ),
+        .init(
+            assert: { URLSessionSwizzler.isBinded == false },
+            problem: "No URLSession swizzling must be applied.",
+            solution: """
+            Make sure all the binded delegates are unbinded by the end of test with `URLSessionSwizzler.unbind()`.
             """
         )
     ]

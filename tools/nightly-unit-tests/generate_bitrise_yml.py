@@ -25,11 +25,11 @@ from src.semver import Version
 
 def get_environment() -> (Simulators, Runtimes, Devices):
     """
-    Uses `xcversion simulators` and `xcrun simctl` CLIs to load available
+    Uses `xcodes runtimes` and `xcrun simctl` CLIs to load available
     simulators, runtimes and devices.
     """
     simulators = Simulators(
-        xcversion_simulators_output=shell_output('xcversion simulators')
+        xcodes_runtimes_output=shell_output('xcodes runtimes')
     )
     runtimes = Runtimes(
         xcrun_simctl_list_runtimes_json_output=shell_output('xcrun simctl list runtimes --json')
@@ -76,9 +76,8 @@ def generate_bitrise_yml(test_plan: TestPlan, dry_run: bool):
     else:
         for simulator in missing_simulators:
             start = time.time()
-            print(f' → xcversion simulators --install="{simulator.os_name} {simulator.os_version}"')
             if not dry_run:
-                print(shell_output(f'xcversion simulators --install="{simulator.os_name} {simulator.os_version}"'))
+                print(shell_output(f'sudo xcodes runtimes install "{simulator.os_name} {simulator.os_version}"'))
             else:
                 print(f' → skipping installation (dry-run mode enabled 🐞)')
             minutes_elapsed = datetime.timedelta(seconds=(time.time() - start))
@@ -128,7 +127,7 @@ def create_random_test_plan(os_name: str) -> TestPlan:
     simulators and running tests does not exceed Bitrise build limit.
     """
     supported_simulators = Simulators(
-        xcversion_simulators_output=shell_output('xcversion simulators')
+        xcodes_runtimes_output=shell_output('xcodes runtimes')
     )
     return TestPlan.create_randomized_plan(
         simulators=supported_simulators.get_all_simulators(os_name=os_name)
@@ -141,7 +140,7 @@ def create_test_plan(os_name: str, os_versions: [Version]) -> TestPlan:
     Missing simulators will be installed.
     """
     supported_simulators = Simulators(
-        xcversion_simulators_output=shell_output('xcversion simulators')
+        xcodes_runtimes_output=shell_output('xcodes runtimes')
     )
 
     simulators: [Simulator] = []

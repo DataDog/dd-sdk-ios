@@ -6,7 +6,6 @@
 
 #if DEBUG
 
-import DatadogInternal
 import UIKit
 
 class ConsoleOutputInterceptor {

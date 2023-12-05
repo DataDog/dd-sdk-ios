@@ -4,36 +4,9 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import DatadogInternal
-
-/// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Decodable, Equatable {
-    internal struct IDs: Decodable, Equatable {
-        enum CodingKeys: String, CodingKey {
-            case applicationID = "application.id"
-            case sessionID = "session.id"
-            case viewID = "view.id"
-        }
-        /// Current RUM application ID - standard UUID string, lowecased.
-        let applicationID: String
-        /// Current RUM session ID - standard UUID string, lowecased.
-        let sessionID: String
-        /// Current RUM view ID - standard UUID string, lowecased. It can be empty when view is being loaded.
-        let viewID: String?
-    }
-
-    enum CodingKeys: String, CodingKey {
-        case ids = "ids"
-        case viewServerTimeOffset = "server_time_offset"
-    }
-
-    /// Wrapper for all RUM related IDs
-    let ids: IDs
-
-    /// Current view related server time offset
-    let viewServerTimeOffset: TimeInterval?
-}
 
 /// An observer notifying on`RUMContext` changes.
 internal protocol RUMContextObserver {
@@ -54,13 +27,19 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
     // MARK: - FeatureMessageReceiver
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard let rumBaggage = message.contextMessage?.rumBaggage else {
-            // No RUM baggage in the message
+        guard case let .context(context) = message else {
             return false
         }
 
-        // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-        let new = rumBaggage.rumContext
+        var new: RUMContext? = nil
+
+        do {
+            // Extract the `RUMContext` or `nil` if RUM session is not sampled:
+            new = try context.baggages[RUMContext.key].map { try $0.decode() }
+        } catch {
+            core.telemetry
+                .error("Fails to decode RUM context from Session Replay", error: error)
+        }
 
         // Notify only if it has changed:
         if new != previous {
@@ -82,30 +61,4 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
     }
 }
 
-// MARK: - Extracting RUM context from `DatadogCore` message
-
-private extension FeatureMessage {
-    var contextMessage: DatadogContext? {
-        guard case let .context(datadogContext) = self else {
-            return nil
-        }
-        return datadogContext
-    }
-}
-
-private extension DatadogContext {
-    var rumBaggage: FeatureBaggage? {
-        return featuresAttributes[RUMDependency.rumBaggageKey]
-    }
-}
-
-private extension FeatureBaggage {
-    var rumContext: RUMContext? { try? unwrap() }
-}
-
-extension FeatureBaggage {
-    func unwrap<T>() throws -> T where T: Decodable {
-        let decoder = AnyDecoder()
-        return try decoder.decode(from: attributes)
-    }
-}
+#endif

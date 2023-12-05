@@ -13,8 +13,6 @@ import DatadogInternal
 class TelemetryReceiverTests: XCTestCase {
     private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
 
-    lazy var telemetry = TelemetryCore(core: core)
-
     override func setUp() {
         super.setUp()
         core = PassthroughCoreMock(
@@ -42,7 +40,7 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
-        telemetry.debug("Hello world!", attributes: ["foo": 42])
+        core.telemetry.debug("Hello world!", attributes: ["foo": 42])
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first
@@ -63,7 +61,7 @@ class TelemetryReceiverTests: XCTestCase {
         )
 
         // When
-        telemetry.error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
+        core.telemetry.error("Oops", kind: "OutOfMemory", stack: "a\nhay\nneedle\nstack")
 
         // Then
         let event = core.events(ofType: TelemetryErrorEvent.self).first
@@ -84,17 +82,19 @@ class TelemetryReceiverTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
-        telemetry.debug("telemetry debug", attributes: ["foo": 42])
+        core.telemetry.debug("telemetry debug", attributes: ["foo": 42])
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first
@@ -114,17 +114,19 @@ class TelemetryReceiverTests: XCTestCase {
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
-        telemetry.error("telemetry error")
+        core.telemetry.error("telemetry error")
 
         // Then
         let event = core.events(ofType: TelemetryErrorEvent.self).first
@@ -140,22 +142,22 @@ class TelemetryReceiverTests: XCTestCase {
         core.messageReceiver = TelemetryReceiver.mockAny()
 
         // When
-        telemetry.debug(id: "0", message: "telemetry debug 0")
-        telemetry.error(id: "0", message: "telemetry debug 1", kind: nil, stack: nil)
-        telemetry.debug(id: "0", message: "telemetry debug 2")
-        telemetry.debug(id: "1", message: "telemetry debug 3")
+        core.telemetry.debug(id: "0", message: "telemetry debug 0")
+        core.telemetry.error(id: "0", message: "telemetry debug 1", kind: nil, stack: nil)
+        core.telemetry.debug(id: "0", message: "telemetry debug 2")
+        core.telemetry.debug(id: "1", message: "telemetry debug 3")
 
         for _ in 0...10 {
             // telemetry id is composed of the file, line number, and message
-            telemetry.debug("telemetry debug 4")
+            core.telemetry.debug("telemetry debug 4")
         }
 
         for index in 5...10 {
             // telemetry id is composed of the file, line number, and message
-            telemetry.debug("telemetry debug \(index)")
+            core.telemetry.debug("telemetry debug \(index)")
         }
 
-        telemetry.debug("telemetry debug 11")
+        core.telemetry.debug("telemetry debug 11")
 
         // Then
         let events = core.events(ofType: TelemetryDebugEvent.self)
@@ -177,9 +179,9 @@ class TelemetryReceiverTests: XCTestCase {
         for index in 0..<(TelemetryReceiver.maxEventsPerSessions * 2) {
             // swiftlint:disable opening_brace
             oneOf([
-                { self.telemetry.debug(id: "\(index)", message: .mockAny()) },
-                { self.telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
-                { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { self.core.telemetry.debug(id: "\(index)", message: .mockAny()) },
+                { self.core.telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
+                { self.core.telemetry.metric(name: .mockAny(), attributes: [:]) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -199,10 +201,10 @@ class TelemetryReceiverTests: XCTestCase {
         for index in 0..<10 {
             // swiftlint:disable opening_brace
             oneOf([
-                { self.telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
-                { self.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
-                { self.telemetry.configuration(batchSize: .mockAny()) },
-                { self.telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { self.core.telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
+                { self.core.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
+                { self.core.telemetry.configuration(batchSize: .mockAny()) },
+                { self.core.telemetry.metric(name: .mockAny(), attributes: [:]) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -221,10 +223,10 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         for index in 0..<10 {
-            telemetry.debug(id: "debug-\(index)", message: .mockAny())
-            telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
-            telemetry.metric(name: .mockAny(), attributes: [:])
-            telemetry.configuration(batchSize: .mockAny())
+            core.telemetry.debug(id: "debug-\(index)", message: .mockAny())
+            core.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
+            core.telemetry.metric(name: .mockAny(), attributes: [:])
+            core.telemetry.configuration(batchSize: .mockAny())
         }
 
         // Then
@@ -242,10 +244,10 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         for index in 0..<10 {
-            telemetry.debug(id: "debug-\(index)", message: .mockAny())
-            telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
-            telemetry.metric(name: .mockAny(), attributes: [:])
-            telemetry.configuration(batchSize: .mockAny())
+            core.telemetry.debug(id: "debug-\(index)", message: .mockAny())
+            core.telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
+            core.telemetry.metric(name: .mockAny(), attributes: [:])
+            core.telemetry.configuration(batchSize: .mockAny())
         }
 
         // Then
@@ -259,24 +261,20 @@ class TelemetryReceiverTests: XCTestCase {
         core.messageReceiver = TelemetryReceiver.mockAny()
         let applicationId: String = .mockRandom()
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: String.mockRandom()
-            ]
-        ]})
+        core.set(baggage: [
+            RUMContextAttributes.IDs.applicationID: applicationId,
+            RUMContextAttributes.IDs.sessionID: String.mockRandom()
+        ], forKey: "rum")
 
         // When
-        telemetry.debug(id: "0", message: "telemetry debug")
+        core.telemetry.debug(id: "0", message: "telemetry debug")
 
-        core.set(feature: "rum", attributes: {[
-            "ids": [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: String.mockRandom() // new session
-            ]
-        ]})
+        core.set(baggage: [
+            RUMContextAttributes.IDs.applicationID: applicationId,
+            RUMContextAttributes.IDs.sessionID: String.mockRandom()
+        ], forKey: "rum")
 
-        telemetry.debug(id: "0", message: "telemetry debug")
+        core.telemetry.debug(id: "0", message: "telemetry debug")
 
         // Then
         let events = core.events(ofType: TelemetryDebugEvent.self)
@@ -293,6 +291,8 @@ class TelemetryReceiverTests: XCTestCase {
             )
         )
 
+        let backgroundTasksEnabled: Bool? = .mockRandom()
+        let batchProcessingLevel: Int64? = .mockRandom()
         let batchSize: Int64? = .mockRandom()
         let batchUploadFrequency: Int64? = .mockRandom()
         let dartVersion: String? = .mockRandom()
@@ -317,7 +317,9 @@ class TelemetryReceiverTests: XCTestCase {
         let useTracing: Bool? = .mockRandom()
 
         // When
-        telemetry.configuration(
+        core.telemetry.configuration(
+            backgroundTasksEnabled: backgroundTasksEnabled,
+            batchProcessingLevel: batchProcessingLevel,
             batchSize: batchSize,
             batchUploadFrequency: batchUploadFrequency,
             dartVersion: dartVersion,
@@ -348,6 +350,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.version, core.context.sdkVersion)
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source.rawValue, core.context.source)
+        XCTAssertEqual(event?.telemetry.configuration.backgroundTasksEnabled, backgroundTasksEnabled)
+        XCTAssertEqual(event?.telemetry.configuration.batchProcessingLevel, batchProcessingLevel)
         XCTAssertEqual(event?.telemetry.configuration.batchSize, batchSize)
         XCTAssertEqual(event?.telemetry.configuration.batchUploadFrequency, batchUploadFrequency)
         XCTAssertEqual(event?.telemetry.configuration.dartVersion, dartVersion)
@@ -385,7 +389,7 @@ class TelemetryReceiverTests: XCTestCase {
         // When
         let randomName: String = .mockRandom()
         let randomAttributes = mockRandomAttributes()
-        telemetry.metric(name: randomName, attributes: randomAttributes)
+        core.telemetry.metric(name: randomName, attributes: randomAttributes)
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first
@@ -409,17 +413,20 @@ class TelemetryReceiverTests: XCTestCase {
         let sessionId: String = .mockRandom()
         let viewId: String = .mockRandom()
         let actionId: String = .mockRandom()
-        core.set(feature: RUMFeature.name, attributes: {[
-            RUMContextAttributes.ids: [
-                RUMContextAttributes.IDs.applicationID: applicationId,
-                RUMContextAttributes.IDs.sessionID: sessionId,
-                RUMContextAttributes.IDs.viewID: viewId,
-                RUMContextAttributes.IDs.userActionID: actionId
-            ]
-        ]})
+
+        core.set(
+            baggage: RUMCoreContext(
+                applicationID: applicationId,
+                sessionID: sessionId,
+                viewID: viewId,
+                userActionID: actionId,
+                viewServerTimeOffset: .mockRandom()
+            ),
+            forKey: "rum"
+        )
 
         // When
-        telemetry.metric(name: .mockRandom(), attributes: mockRandomAttributes())
+        core.telemetry.metric(name: .mockRandom(), attributes: mockRandomAttributes())
 
         // Then
         let event = core.events(ofType: TelemetryDebugEvent.self).first

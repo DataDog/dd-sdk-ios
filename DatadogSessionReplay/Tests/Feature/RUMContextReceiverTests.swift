@@ -13,119 +13,232 @@ import DatadogInternal
 class RUMContextReceiverTests: XCTestCase {
     private let receiver = RUMContextReceiver()
 
-    func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() {
-        // Given
-        let context = DatadogContext.mockWith(featuresAttributes: [
-            RUMDependency.rumBaggageKey: [
-                RUMDependency.ids: [
-                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id",
-                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id",
-                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id"
-                ],
-                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
-            ]
-        ])
-        let message = FeatureMessage.context(context)
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+    internal struct RUMContextMock: Encodable {
+        enum CodingKeys: String, CodingKey {
+            case applicationID = "application.id"
+            case sessionID = "session.id"
+            case viewID = "view.id"
+            case viewServerTimeOffset = "server_time_offset"
+        }
 
-        // When
+        let applicationID: String
+        let sessionID: String
+        let viewID: String?
+        let viewServerTimeOffset: TimeInterval?
+    }
+
+    func testWhenMessageContainsNonEmptyRUMBaggage_itNotifiesRUMContext() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let coreContext: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id",
+                sessionID: "session-id",
+                viewID: "view-id",
+                viewServerTimeOffset: 123
+            ))
+        ])
+
         var rumContext: RUMContext?
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
-        core.send(message: message, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
+
+        // When
+        XCTAssert(
+            receiver.receive(message: .context(coreContext), from: core)
+        )
 
         // Then
-        XCTAssertEqual(rumContext?.ids.applicationID, "app-id")
-        XCTAssertEqual(rumContext?.ids.sessionID, "session-id")
-        XCTAssertEqual(rumContext?.ids.viewID, "view-id")
+        XCTAssertEqual(rumContext?.applicationID, "app-id")
+        XCTAssertEqual(rumContext?.sessionID, "session-id")
+        XCTAssertEqual(rumContext?.viewID, "view-id")
         XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
     }
 
-    func testWhenMessageContainsEmptyRUMBaggage_itNotifiesNoRUMContext() {
-        let context = DatadogContext.mockWith(featuresAttributes: [
-            RUMDependency.rumBaggageKey: [:]
+    func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let coreContext1: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id-1",
+                sessionID: "session-id-1",
+                viewID: "view-id-1",
+                viewServerTimeOffset: 123
+            ))
         ])
-        let message = FeatureMessage.context(context)
-        let core = PassthroughCoreMock(messageReceiver: receiver)
 
+        let coreContext2: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id-2",
+                sessionID: "session-id-2",
+                viewID: "view-id-2",
+                viewServerTimeOffset: 345
+            ))
+        ])
+
+        var rumContexts: [RUMContext] = []
+        receiver.observe(on: NoQueue()) { context in
+            context.flatMap { rumContexts.append($0) }
+        }
         // When
-        var rumContext: RUMContext?
+        XCTAssert(
+            receiver.receive(message: .context(coreContext1), from: core)
+        )
+
+        XCTAssert(
+            receiver.receive(message: .context(coreContext2), from: core)
+        )
+
+        // Then
+        XCTAssertEqual(rumContexts.count, 2)
+        XCTAssertEqual(rumContexts[0].applicationID, "app-id-1")
+        XCTAssertEqual(rumContexts[0].sessionID, "session-id-1")
+        XCTAssertEqual(rumContexts[0].viewID, "view-id-1")
+        XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
+        XCTAssertEqual(rumContexts[1].applicationID, "app-id-2")
+        XCTAssertEqual(rumContexts[1].sessionID, "session-id-2")
+        XCTAssertEqual(rumContexts[1].viewID, "view-id-2")
+        XCTAssertEqual(rumContexts[1].viewServerTimeOffset, 345)
+    }
+
+    func testWhenSucceedingMessagesContainSameRUMBaggages_itNotifiesRUMContextChangeOnce() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let coreContext1: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id",
+                sessionID: "session-id",
+                viewID: "view-id",
+                viewServerTimeOffset: 123
+            ))
+        ])
+
+        let coreContext2: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id",
+                sessionID: "session-id",
+                viewID: "view-id",
+                viewServerTimeOffset: 123
+            ))
+        ])
+
+        var rumContexts: [RUMContext] = []
+        receiver.observe(on: NoQueue()) { context in
+            context.flatMap { rumContexts.append($0) }
+        }
+        // When
+        XCTAssert(
+            receiver.receive(message: .context(coreContext1), from: core)
+        )
+
+        XCTAssert(
+            receiver.receive(message: .context(coreContext2), from: core)
+        )
+
+        // Then
+        XCTAssertEqual(rumContexts.count, 1)
+        XCTAssertEqual(rumContexts[0].applicationID, "app-id")
+        XCTAssertEqual(rumContexts[0].sessionID, "session-id")
+        XCTAssertEqual(rumContexts[0].viewID, "view-id")
+        XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
+    }
+
+    func testWhenMessageContainsNoRUMBaggage_itResetRUMContext() throws {
+        // Given
+        let core = PassthroughCoreMock()
+        let coreContext1: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id",
+                sessionID: "session-id",
+                viewID: "view-id",
+                viewServerTimeOffset: 123
+            ))
+        ])
+
+        let coreContext2: DatadogContext = .mockWith()
+
+        var rumContext: RUMContext? = .mockAny()
         receiver.observe(on: NoQueue()) { context in
             rumContext = context
         }
-        core.send(message: message, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
 
+        // When
+        XCTAssert(
+            receiver.receive(message: .context(coreContext1), from: core)
+        )
+
+        XCTAssertEqual(rumContext?.applicationID, "app-id")
+        XCTAssertEqual(rumContext?.sessionID, "session-id")
+        XCTAssertEqual(rumContext?.viewID, "view-id")
+        XCTAssertEqual(rumContext?.viewServerTimeOffset, 123)
+
+        // When
+        XCTAssert(
+            receiver.receive(message: .context(coreContext2), from: core)
+        )
         // Then
         XCTAssertNil(rumContext)
     }
 
-    func testWhenSucceedingMessagesContainDifferentRUMBaggages_itNotifiesRUMContextChange() {
+    func testWhenMessageContainsMalformedRUMBaggage_itSendsTelemetry() throws {
         // Given
-        let context1 = DatadogContext.mockWith(featuresAttributes: [
-            RUMDependency.rumBaggageKey: [
-                RUMDependency.ids: [
-                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id-1",
-                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id-1",
-                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id-1"
-                ],
-                RUMDependency.serverTimeOffsetKey: TimeInterval(123)
-            ]
+        let telemetryReceiver = TelemetryReceiverMock()
+        let core = PassthroughCoreMock(
+            messageReceiver: telemetryReceiver
+        )
+
+        let coreContext1: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init(RUMContextMock(
+                applicationID: "app-id-1",
+                sessionID: "session-id-1",
+                viewID: "view-id-1",
+                viewServerTimeOffset: 123
+            ))
         ])
-        let message1 = FeatureMessage.context(context1)
-        let context2 = DatadogContext.mockWith(featuresAttributes: [
-            RUMDependency.rumBaggageKey: [
-                RUMDependency.ids: [
-                    RUMContext.IDs.CodingKeys.applicationID.rawValue: "app-id-2",
-                    RUMContext.IDs.CodingKeys.sessionID.rawValue: "session-id-2",
-                    RUMContext.IDs.CodingKeys.viewID.rawValue: "view-id-2"
-                ],
-                RUMDependency.serverTimeOffsetKey: TimeInterval(345)
-            ]
+
+        let coreContext2: DatadogContext = .mockWith(baggages: [
+            RUMContext.key: .init("malformed RUM context")
         ])
-        let message2 = FeatureMessage.context(context2)
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+
+        var rumContext: RUMContext? = .mockAny()
+        receiver.observe(on: NoQueue()) { context in
+            rumContext = context
+        }
 
         // When
-        var rumContexts = [RUMContext]()
-        receiver.observe(on: NoQueue()) { context in
-            context.flatMap { rumContexts.append($0) }
-        }
-        core.send(message: message1, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
-        core.send(message: message2, else: {
-            XCTFail("Fallback shouldn't be called")
-        })
+        XCTAssert(
+            receiver.receive(message: .context(coreContext1), from: core)
+        )
+
+        // When
+        XCTAssert(
+            receiver.receive(message: .context(coreContext2), from: core)
+        )
 
         // Then
-        XCTAssertEqual(rumContexts.count, 2)
-        XCTAssertEqual(rumContexts[0].ids.applicationID, "app-id-1")
-        XCTAssertEqual(rumContexts[0].ids.sessionID, "session-id-1")
-        XCTAssertEqual(rumContexts[0].ids.viewID, "view-id-1")
-        XCTAssertEqual(rumContexts[0].viewServerTimeOffset, 123)
-        XCTAssertEqual(rumContexts[1].ids.applicationID, "app-id-2")
-        XCTAssertEqual(rumContexts[1].ids.sessionID, "session-id-2")
-        XCTAssertEqual(rumContexts[1].ids.viewID, "view-id-2")
-        XCTAssertEqual(rumContexts[1].viewServerTimeOffset, 345)
+        XCTAssertNil(rumContext)
+
+        let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
+        XCTAssert(error.message.contains("Fails to decode RUM context from Session Replay - typeMismatch"))
     }
 
-    func testWhenMessageDoesntContainRUMBaggage_itCallsFallback() {
-        let context = DatadogContext.mockAny()
-        let message = FeatureMessage.context(context)
-        let core = PassthroughCoreMock(messageReceiver: receiver)
+    func testWhenMessageIsNotContext_itReturnsFalse() throws {
+        // Given
+        let expectation = expectation(description: "observe not called")
+        expectation.isInverted = true
+        let core = PassthroughCoreMock()
+
+        receiver.observe(on: NoQueue()) { _ in
+            expectation.fulfill()
+        }
 
         // When
-        var fallbackCalled = false
-        core.send(message: message, else: {
-            fallbackCalled = true
-        })
+        XCTAssertFalse(
+            receiver.receive(message: .baggage(key: "key", value: "value"), from: core)
+        )
 
         // Then
-        XCTAssertTrue(fallbackCalled)
+        waitForExpectations(timeout: 0.1)
     }
 }

@@ -5,7 +5,9 @@
  */
 
 import XCTest
-import DatadogSessionReplay
+@_spi(Internal)
+@testable import DatadogSessionReplay
+@testable import TestUtilities
 
 class SessionReplayConfigurationTests: XCTestCase {
     func testDefaultConfiguration() {
@@ -18,5 +20,19 @@ class SessionReplayConfigurationTests: XCTestCase {
         XCTAssertEqual(config.replaySampleRate, random)
         XCTAssertEqual(config.defaultPrivacyLevel, .mask)
         XCTAssertNil(config.customEndpoint)
+        XCTAssertEqual(config._additionalNodeRecorders.count, 0)
+    }
+
+    func testConfigurationWithAdditionalNodeRecorders() {
+        let random: Float = .mockRandom(min: 0, max: 100)
+        let mockNodeRecorder = SessionReplayNodeRecorderMock()
+
+        // When
+        var config = SessionReplay.Configuration(replaySampleRate: random)
+        config.setAdditionalNodeRecorders([mockNodeRecorder])
+
+        // Then
+        XCTAssertEqual(config._additionalNodeRecorders.count, 1)
+        XCTAssertEqual(config._additionalNodeRecorders[0].identifier, mockNodeRecorder.identifier)
     }
 }

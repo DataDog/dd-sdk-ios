@@ -21,6 +21,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -42,6 +45,9 @@ public struct RUMActionEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -52,7 +58,7 @@ public struct RUMActionEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "action"
@@ -70,6 +76,7 @@ public struct RUMActionEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -77,6 +84,7 @@ public struct RUMActionEvent: RUMDataModel {
         case device = "device"
         case display = "display"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -161,7 +169,7 @@ public struct RUMActionEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -177,8 +185,12 @@ public struct RUMActionEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
@@ -344,6 +356,30 @@ public struct RUMActionEvent: RUMDataModel {
         }
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -353,19 +389,12 @@ public struct RUMActionEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -377,24 +406,6 @@ public struct RUMActionEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -435,6 +446,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -462,6 +476,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -472,7 +489,7 @@ public struct RUMErrorEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "error"
@@ -490,6 +507,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -499,6 +517,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case error = "error"
         case featureFlags = "feature_flags"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -533,7 +552,7 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -549,8 +568,12 @@ public struct RUMErrorEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
@@ -784,6 +807,30 @@ public struct RUMErrorEvent: RUMDataModel {
         public internal(set) var featureFlagsInfo: [String: Encodable]
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -793,19 +840,12 @@ public struct RUMErrorEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -817,24 +857,6 @@ public struct RUMErrorEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -899,6 +921,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -923,6 +948,9 @@ public struct RUMLongTaskEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// The service name for this application
     public let service: String?
 
@@ -933,7 +961,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "long_task"
@@ -951,6 +979,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -959,6 +988,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case display = "display"
         case longTask = "long_task"
         case os = "os"
+        case parentView = "parent_view"
         case service = "service"
         case session = "session"
         case source = "source"
@@ -997,7 +1027,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1013,8 +1043,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
@@ -1087,6 +1121,30 @@ public struct RUMLongTaskEvent: RUMDataModel {
         }
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable {
         /// Whether this session has a replay
@@ -1096,19 +1154,12 @@ public struct RUMLongTaskEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1120,24 +1171,6 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -1174,6 +1207,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1195,6 +1231,9 @@ public struct RUMResourceEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// Resource properties
     public var resource: Resource
 
@@ -1208,7 +1247,7 @@ public struct RUMResourceEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "resource"
@@ -1226,6 +1265,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case dd = "_dd"
         case action = "action"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1233,6 +1273,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case device = "device"
         case display = "display"
         case os = "os"
+        case parentView = "parent_view"
         case resource = "resource"
         case service = "service"
         case session = "session"
@@ -1284,7 +1325,7 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
@@ -1300,8 +1341,12 @@ public struct RUMResourceEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
@@ -1356,6 +1401,30 @@ public struct RUMResourceEvent: RUMDataModel {
         }
     }
 
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
+    }
+
     /// Resource properties
     public struct Resource: Codable {
         /// Connect phase properties
@@ -1372,6 +1441,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// First Byte phase properties
         public let firstByte: FirstByte?
+
+        /// GraphQL requests parameters
+        public var graphql: Graphql?
 
         /// UUID of the resource
         public let id: String?
@@ -1406,6 +1478,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case download = "download"
             case duration = "duration"
             case firstByte = "first_byte"
+            case graphql = "graphql"
             case id = "id"
             case method = "method"
             case provider = "provider"
@@ -1470,6 +1543,35 @@ public struct RUMResourceEvent: RUMDataModel {
             enum CodingKeys: String, CodingKey {
                 case duration = "duration"
                 case start = "start"
+            }
+        }
+
+        /// GraphQL requests parameters
+        public struct Graphql: Codable {
+            /// Name of the GraphQL operation
+            public let operationName: String?
+
+            /// Type of the GraphQL operation
+            public let operationType: OperationType
+
+            /// Content of the GraphQL operation
+            public var payload: String?
+
+            /// String representation of the operation variables
+            public var variables: String?
+
+            enum CodingKeys: String, CodingKey {
+                case operationName = "operationName"
+                case operationType = "operationType"
+                case payload = "payload"
+                case variables = "variables"
+            }
+
+            /// Type of the GraphQL operation
+            public enum OperationType: String, Codable {
+                case query = "query"
+                case mutation = "mutation"
+                case subscription = "subscription"
             }
         }
 
@@ -1562,19 +1664,12 @@ public struct RUMResourceEvent: RUMDataModel {
         public let id: String
 
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case type = "type"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1586,24 +1681,6 @@ public struct RUMResourceEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -1637,6 +1714,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Application properties
     public let application: Application
 
+    /// The build version for this application
+    public let buildVersion: String?
+
     /// CI Visibility properties
     public let ciTest: RUMCITest?
 
@@ -1661,6 +1741,9 @@ public struct RUMViewEvent: RUMDataModel {
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
+    /// Parent view properties (view wrapping the current view)
+    public let parentView: ParentView?
+
     /// Privacy properties
     public let privacy: Privacy?
 
@@ -1674,7 +1757,7 @@ public struct RUMViewEvent: RUMDataModel {
     public let source: Source?
 
     /// Synthetics properties
-    public let synthetics: Synthetics?
+    public let synthetics: RUMSyntheticsTest?
 
     /// RUM event type
     public let type: String = "view"
@@ -1691,6 +1774,7 @@ public struct RUMViewEvent: RUMDataModel {
     enum CodingKeys: String, CodingKey {
         case dd = "_dd"
         case application = "application"
+        case buildVersion = "build_version"
         case ciTest = "ci_test"
         case connectivity = "connectivity"
         case context = "context"
@@ -1699,6 +1783,7 @@ public struct RUMViewEvent: RUMDataModel {
         case display = "display"
         case featureFlags = "feature_flags"
         case os = "os"
+        case parentView = "parent_view"
         case privacy = "privacy"
         case service = "service"
         case session = "session"
@@ -1746,14 +1831,18 @@ public struct RUMViewEvent: RUMDataModel {
         /// Subset of the SDK configuration options in use during its execution
         public struct Configuration: Codable {
             /// The percentage of sessions with RUM & Session Replay pricing tracked
-            public let sessionReplaySampleRate: Double
+            public let sessionReplaySampleRate: Double?
 
             /// The percentage of sessions tracked
             public let sessionSampleRate: Double
 
+            /// Whether session replay recording configured to start manually
+            public let startSessionReplayRecordingManually: Bool?
+
             enum CodingKeys: String, CodingKey {
                 case sessionReplaySampleRate = "session_replay_sample_rate"
                 case sessionSampleRate = "session_sample_rate"
+                case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
             }
         }
 
@@ -1803,8 +1892,12 @@ public struct RUMViewEvent: RUMDataModel {
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
             public let plan: Plan?
 
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
             enum CodingKeys: String, CodingKey {
                 case plan = "plan"
+                case sessionPrecondition = "session_precondition"
             }
 
             /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
@@ -1843,20 +1936,20 @@ public struct RUMViewEvent: RUMDataModel {
             /// Distance between the top and the lowest point reached on this view (in pixels)
             public let maxDepth: Double
 
-            /// Page scroll height (total height) when the maximum scroll depth was reached for this view (in pixels)
-            public let maxDepthScrollHeight: Double
-
             /// Page scroll top (scrolled distance) when the maximum scroll depth was reached for this view (in pixels)
             public let maxDepthScrollTop: Double
 
-            /// Duration between the view start and the scroll event that reached the maximum scroll depth for this view (in nanoseconds)
-            public let maxDepthTime: Double
+            /// Maximum page scroll height (total height) for this view (in pixels)
+            public let maxScrollHeight: Double
+
+            /// Duration between the view start and the time the max scroll height was reached for this view (in nanoseconds)
+            public let maxScrollHeightTime: Double
 
             enum CodingKeys: String, CodingKey {
                 case maxDepth = "max_depth"
-                case maxDepthScrollHeight = "max_depth_scroll_height"
                 case maxDepthScrollTop = "max_depth_scroll_top"
-                case maxDepthTime = "max_depth_time"
+                case maxScrollHeight = "max_scroll_height"
+                case maxScrollHeightTime = "max_scroll_height_time"
             }
         }
 
@@ -1878,6 +1971,30 @@ public struct RUMViewEvent: RUMDataModel {
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
+    }
+
+    /// Parent view properties (view wrapping the current view)
+    public struct ParentView: Codable {
+        /// ID of the parent view
+        public let id: String
+
+        /// Source of the parent view
+        public let source: Source
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case source = "source"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+        }
     }
 
     /// Privacy properties
@@ -1911,35 +2028,15 @@ public struct RUMViewEvent: RUMDataModel {
         /// Whether this session has been sampled for replay
         public let sampledForReplay: Bool?
 
-        /// The precondition that led to the creation of the session
-        public let startPrecondition: StartPrecondition?
-
         /// Type of the session
-        public let type: SessionType
+        public let type: RUMSessionType
 
         enum CodingKeys: String, CodingKey {
             case hasReplay = "has_replay"
             case id = "id"
             case isActive = "is_active"
             case sampledForReplay = "sampled_for_replay"
-            case startPrecondition = "start_precondition"
             case type = "type"
-        }
-
-        /// The precondition that led to the creation of the session
-        public enum StartPrecondition: String, Codable {
-            case appLaunch = "app_launch"
-            case inactivityTimeout = "inactivity_timeout"
-            case maxDuration = "max_duration"
-            case explicitStop = "explicit_stop"
-            case backgroundEvent = "background_event"
-        }
-
-        /// Type of the session
-        public enum SessionType: String, Codable {
-            case user = "user"
-            case synthetics = "synthetics"
-            case ciTest = "ci_test"
         }
     }
 
@@ -1951,24 +2048,6 @@ public struct RUMViewEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
-    }
-
-    /// Synthetics properties
-    public struct Synthetics: Codable {
-        /// Whether the event comes from a SDK instance injected by Synthetics
-        public let injected: Bool?
-
-        /// The identifier of the current Synthetics test results
-        public let resultId: String
-
-        /// The identifier of the current Synthetics test
-        public let testId: String
-
-        enum CodingKeys: String, CodingKey {
-            case injected = "injected"
-            case resultId = "result_id"
-            case testId = "test_id"
-        }
     }
 
     /// View properties
@@ -1987,6 +2066,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Total layout shift score that occurred on the view
         public let cumulativeLayoutShift: Double?
+
+        /// CSS selector path of the first element (in document order) of the largest layout shift contributing to CLS
+        public let cumulativeLayoutShiftTargetSelector: String?
 
         /// User custom timings of the view. As timing name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
         public let customTimings: [String: Int64]?
@@ -2012,6 +2094,9 @@ public struct RUMViewEvent: RUMDataModel {
         /// Duration in ns of the first input event delay
         public let firstInputDelay: Int64?
 
+        /// CSS selector path of the first input target element
+        public let firstInputTargetSelector: String?
+
         /// Duration in ns to the first input
         public let firstInputTime: Int64?
 
@@ -2033,6 +2118,12 @@ public struct RUMViewEvent: RUMDataModel {
         /// List of the periods of time the user had the view in foreground (focused in the browser)
         public let inForegroundPeriods: [InForegroundPeriods]?
 
+        /// Longest duration in ns between an interaction and the next paint
+        public let interactionToNextPaint: Int64?
+
+        /// CSS selector path of the interacted element corresponding to INP
+        public let interactionToNextPaintTargetSelector: String?
+
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
@@ -2044,6 +2135,9 @@ public struct RUMViewEvent: RUMDataModel {
 
         /// Duration in ns to the largest contentful paint
         public let largestContentfulPaint: Int64?
+
+        /// CSS selector path of the largest contentful paint element
+        public let largestContentfulPaintTargetSelector: String?
 
         /// Duration in ns to the end of the load event handler execution
         public let loadEvent: Int64?
@@ -2090,6 +2184,7 @@ public struct RUMViewEvent: RUMDataModel {
             case cpuTicksPerSecond = "cpu_ticks_per_second"
             case crash = "crash"
             case cumulativeLayoutShift = "cumulative_layout_shift"
+            case cumulativeLayoutShiftTargetSelector = "cumulative_layout_shift_target_selector"
             case customTimings = "custom_timings"
             case domComplete = "dom_complete"
             case domContentLoaded = "dom_content_loaded"
@@ -2098,6 +2193,7 @@ public struct RUMViewEvent: RUMDataModel {
             case firstByte = "first_byte"
             case firstContentfulPaint = "first_contentful_paint"
             case firstInputDelay = "first_input_delay"
+            case firstInputTargetSelector = "first_input_target_selector"
             case firstInputTime = "first_input_time"
             case flutterBuildTime = "flutter_build_time"
             case flutterRasterTime = "flutter_raster_time"
@@ -2105,10 +2201,13 @@ public struct RUMViewEvent: RUMDataModel {
             case frustration = "frustration"
             case id = "id"
             case inForegroundPeriods = "in_foreground_periods"
+            case interactionToNextPaint = "interaction_to_next_paint"
+            case interactionToNextPaintTargetSelector = "interaction_to_next_paint_target_selector"
             case isActive = "is_active"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
+            case largestContentfulPaintTargetSelector = "largest_contentful_paint_target_selector"
             case loadEvent = "load_event"
             case loadingTime = "loading_time"
             case loadingType = "loading_type"
@@ -2747,6 +2846,18 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Attribute to be used to name actions
             public let actionNameAttribute: String?
 
+            /// Whether it is allowed to use LocalStorage when cookies are not available
+            public let allowFallbackToLocalStorage: Bool?
+
+            /// Whether untrusted events are allowed
+            public let allowUntrustedEvents: Bool?
+
+            /// Whether UIApplication background tasks are enabled
+            public let backgroundTasksEnabled: Bool?
+
+            /// Maximum number of batches processed sequencially without a delay
+            public let batchProcessingLevel: Int64?
+
             /// The window duration for batches sent by the SDK (in milliseconds)
             public let batchSize: Int64?
 
@@ -2800,6 +2911,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the session replay start is handled manually
             public var startSessionReplayRecordingManually: Bool?
+
+            /// Whether contexts are stored in local storage
+            public let storeContextsAcrossPages: Bool?
 
             /// The percentage of telemetry configuration events sent after being sampled by telemetry_sample_rate
             public let telemetryConfigurationSampleRate: Int64?
@@ -2876,7 +2990,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether local encryption is used
             public let useLocalEncryption: Bool?
 
-            /// Whether a proxy configured is used
+            /// Whether a proxy is used
             public var useProxy: Bool?
 
             /// Whether a secure session cookie is used
@@ -2885,11 +2999,18 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether tracing features are enabled
             public let useTracing: Bool?
 
+            /// Whether the Worker is loaded from an external URL
+            public let useWorkerUrl: Bool?
+
             /// View tracking strategy
             public let viewTrackingStrategy: ViewTrackingStrategy?
 
             enum CodingKeys: String, CodingKey {
                 case actionNameAttribute = "action_name_attribute"
+                case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
+                case allowUntrustedEvents = "allow_untrusted_events"
+                case backgroundTasksEnabled = "background_tasks_enabled"
+                case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
                 case dartVersion = "dart_version"
@@ -2908,6 +3029,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case sessionSampleRate = "session_sample_rate"
                 case silentMultipleInit = "silent_multiple_init"
                 case startSessionReplayRecordingManually = "start_session_replay_recording_manually"
+                case storeContextsAcrossPages = "store_contexts_across_pages"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
@@ -2936,6 +3058,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
+                case useWorkerUrl = "use_worker_url"
                 case viewTrackingStrategy = "view_tracking_strategy"
             }
 
@@ -3049,6 +3172,17 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             case id = "id"
         }
     }
+}
+
+/// The precondition that led to the creation of the session
+public enum RUMSessionPrecondition: String, Codable {
+    case userAppLaunch = "user_app_launch"
+    case inactivityTimeout = "inactivity_timeout"
+    case maxDuration = "max_duration"
+    case backgroundLaunch = "background_launch"
+    case prewarm = "prewarm"
+    case fromNonInteractiveSession = "from_non_interactive_session"
+    case explicitStop = "explicit_stop"
 }
 
 /// CI Visibility properties
@@ -3200,6 +3334,31 @@ public struct RUMOperatingSystem: Codable {
     }
 }
 
+/// Type of the session
+public enum RUMSessionType: String, Codable {
+    case user = "user"
+    case synthetics = "synthetics"
+    case ciTest = "ci_test"
+}
+
+/// Synthetics properties
+public struct RUMSyntheticsTest: Codable {
+    /// Whether the event comes from a SDK instance injected by Synthetics
+    public let injected: Bool?
+
+    /// The identifier of the current Synthetics test results
+    public let resultId: String
+
+    /// The identifier of the current Synthetics test
+    public let testId: String
+
+    enum CodingKeys: String, CodingKey {
+        case injected = "injected"
+        case resultId = "result_id"
+        case testId = "test_id"
+    }
+}
+
 /// User properties
 public struct RUMUser: Codable {
     /// Email of the user
@@ -3309,4 +3468,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/2b1615693d269368ed91f061103ee98bfecafb00
+// Generated from https://github.com/DataDog/rum-events-format/tree/f75c6c9346aea8371e1c26bb5107310ee9f2942b

@@ -5,7 +5,9 @@
  */
 
 import XCTest
+import SRFixtures
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import SRHost
 
@@ -44,7 +46,7 @@ internal class SnapshotTestCase: XCTestCase {
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
             telemetry: TelemetryMock()
         )
-        let recorder = try Recorder(processor: processor, telemetry: TelemetryMock())
+        let recorder = try Recorder(processor: processor, telemetry: TelemetryMock(), additionalNodeRecorders: [])
 
         // Set up wireframes interception :
         var wireframes: [SRWireframe]?

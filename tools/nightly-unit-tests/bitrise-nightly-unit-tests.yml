@@ -16,7 +16,7 @@ project_type: other
 #   This logic is implemented in Python (`generate_bitrise_yml.py`). It creates randomized Test Plan,
 #   installs missing simulators and generates another YML file: `bitrise.yml`, to execute the plan.
 # * The second part, defined in generated `bitrise.yml`, executes the Test Plan by running tests for given
-#   device and OS version. All is followed by sending Slack notification on the build status. 
+#   device and OS version. All is followed by sending Slack notification on the build status.
 #
 # The content of generated `bitrise.yml` file can be previewed in `bitrise.yml.src` template used by Python
 # script. The generated version is also attached to build artifacts.
@@ -42,12 +42,12 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -e
-            gem install xcode-install
+            brew install xcodesorg/made/xcodes
 
             # Record env logs before installing new simulators
             mkdir -p tools/nightly-unit-tests/env-logs
             xcrun simctl list --json > tools/nightly-unit-tests/env-logs/xcrun-simctl-list-before.json
-            xcversion simulators > tools/nightly-unit-tests/env-logs/xcversion-simulators-before
+            xcodes runtimes > tools/nightly-unit-tests/env-logs/xcodes-simulators-before
 
             # Read OS name or default to 'iOS'
             DD_OS_NAME="${DD_SIMULATOR_OS_NAME:-iOS}"
@@ -70,7 +70,7 @@ workflows:
 
             # Record env logs after installing new simulators
             xcrun simctl list --json > tools/nightly-unit-tests/env-logs/xcrun-simctl-list-after.json
-            xcversion simulators > tools/nightly-unit-tests/env-logs/xcversion-simulators-after
+            xcodes runtimes > tools/nightly-unit-tests/env-logs/xcodes-simulators-after
     - deploy-to-bitrise-io:
         inputs:
         - deploy_path: tools/nightly-unit-tests/bitrise.yml

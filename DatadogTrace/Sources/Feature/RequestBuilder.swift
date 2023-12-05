@@ -16,9 +16,8 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
     /// The tracing request body format.
     let format = DataFormat(prefix: "", suffix: "", separator: "\n")
 
-    init(customIntakeURL: URL? = nil) {
-        self.customIntakeURL = customIntakeURL
-    }
+    /// Telemetry interface.
+    let telemetry: Telemetry
 
     func request(for events: [Event], with context: DatadogContext) -> URLRequest {
         let builder = URLRequestBuilder(
@@ -35,7 +34,8 @@ internal struct TracingRequestBuilder: FeatureRequestBuilder {
                 .ddEVPOriginHeader(source: context.ciAppOrigin ?? context.source),
                 .ddEVPOriginVersionHeader(sdkVersion: context.sdkVersion),
                 .ddRequestIDHeader(),
-            ]
+            ],
+            telemetry: telemetry
         )
 
         let data = format.format(events.map { $0.data })

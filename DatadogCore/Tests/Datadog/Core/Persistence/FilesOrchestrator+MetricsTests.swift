@@ -10,7 +10,6 @@ import DatadogInternal
 @testable import DatadogCore
 
 class FilesOrchestrator_MetricsTests: XCTestCase {
-    private var dd: DDMock<CoreLoggerMock, TelemetryMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private let telemetry = TelemetryMock()
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private var storage: StoragePerformanceMock! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -18,7 +17,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        dd = DD.mockWith(telemetry: telemetry)
         CreateTemporaryDirectory()
 
         let performance: PerformancePreset = .mockRandom()
@@ -28,7 +26,6 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
 
     override func tearDown() {
         DeleteTemporaryDirectory()
-        dd.reset()
         super.tearDown()
     }
 
@@ -37,7 +34,12 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             directory: Directory(url: temporaryDirectory),
             performance: PerformancePreset.combining(storagePerformance: storage, uploadPerformance: upload),
             dateProvider: dateProvider,
-            metricsData: .init(trackName: "track name", uploaderPerformance: upload)
+            telemetry: telemetry,
+            metricsData: FilesOrchestrator.MetricsData(
+                trackName: "track name",
+                consentLabel: "consent value",
+                uploaderPerformance: upload
+            )
         )
     }
 
@@ -59,6 +61,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
+            "consent": "consent value",
             "uploader_delay": [
                 "min": upload.minUploadDelay.toMilliseconds,
                 "max": upload.maxUploadDelay.toMilliseconds
@@ -80,13 +83,14 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // - wait more than batch obsolescence limit
         // - then request readable file, which should trigger obsolete files deletion
         dateProvider.advance(bySeconds: storage.maxFileAgeForRead + 1)
-        _ = orchestrator.getReadableFile()
+        _ = orchestrator.getReadableFiles()
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
+            "consent": "consent value",
             "uploader_delay": [
                 "min": upload.minUploadDelay.toMilliseconds,
                 "max": upload.maxUploadDelay.toMilliseconds
@@ -118,6 +122,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch deleted",
             "track": "track name",
+            "consent": "consent value",
             "uploader_delay": [
                 "min": upload.minUploadDelay.toMilliseconds,
                 "max": upload.maxUploadDelay.toMilliseconds
@@ -152,6 +157,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch closed",
             "track": "track name",
+            "consent": "consent value",
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "batch_size": expectedWrites.reduce(0, +),
             "batch_events_count": expectedWrites.count,
@@ -182,6 +188,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         DDAssertReflectionEqual(metric.attributes, [
             "metric_type": "batch closed",
             "track": "track name",
+            "consent": "consent value",
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "batch_size": expectedWrites.reduce(0, +),
             "batch_events_count": expectedWrites.count,

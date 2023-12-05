@@ -75,23 +75,19 @@ internal extension PerformancePreset {
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
             switch (bundleType, batchSize) {
-            case (.iOSApp, .small): return 5
-            case (.iOSApp, .medium): return 15
-            case (.iOSApp, .large): return 60
-            case (.iOSAppExtension, .small): return 1
-            case (.iOSAppExtension, .medium): return 3
-            case (.iOSAppExtension, .large): return 12
+            case (.iOSApp, .small): return 3
+            case (.iOSApp, .medium): return 10
+            case (.iOSApp, .large): return 35
+            case (.iOSAppExtension, _): return 1
             }
         }()
 
         let minUploadDelayInSeconds: TimeInterval = {
             switch (bundleType, uploadFrequency) {
-            case (.iOSApp, .frequent): return 1
-            case (.iOSApp, .average): return 5
-            case (.iOSApp, .rare): return 10
-            case (.iOSAppExtension, .frequent): return 0.5
-            case (.iOSAppExtension, .average): return 1
-            case (.iOSAppExtension, .rare): return 5
+            case (.iOSApp, .frequent): return 0.5
+            case (.iOSApp, .average): return 2
+            case (.iOSApp, .rare): return 5
+            case (.iOSAppExtension, _): return 0.5
             }
         }()
 
@@ -126,13 +122,13 @@ internal extension PerformancePreset {
         minUploadDelay: TimeInterval,
         uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double)
     ) {
-        self.maxFileSize = UInt64(4).MB
-        self.maxDirectorySize = UInt64(512).MB
+        self.maxFileSize = 4.MB.asUInt64()
+        self.maxDirectorySize = 512.MB.asUInt64()
         self.maxFileAgeForWrite = meanFileAge * 0.95 // 5% below the mean age
         self.minFileAgeForRead = meanFileAge * 1.05 //  5% above the mean age
         self.maxFileAgeForRead = 18.hours
         self.maxObjectsInFile = 500
-        self.maxObjectSize = UInt64(512).KB
+        self.maxObjectSize = 512.KB.asUInt64()
         self.initialUploadDelay = minUploadDelay * uploadDelayFactors.initial
         self.minUploadDelay = minUploadDelay * uploadDelayFactors.min
         self.maxUploadDelay = minUploadDelay * uploadDelayFactors.max

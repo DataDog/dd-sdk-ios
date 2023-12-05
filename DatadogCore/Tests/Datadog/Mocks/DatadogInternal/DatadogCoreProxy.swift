@@ -42,10 +42,12 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             dateProvider: SystemDateProvider(),
             initialConsent: context.trackingConsent,
             performance: .mockAny(),
-            httpClient: .mockAny(),
+            httpClient: HTTPClientMock(),
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
-            applicationVersion: context.version
+            applicationVersion: context.version,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
         )
 
         // override the message-bus's core instance
@@ -78,12 +80,8 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         }
     }
 
-    func set(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        core.set(feature: feature, attributes: attributes)
-    }
-
-    func update(feature: String, attributes: @escaping () -> FeatureBaggage) {
-        core.update(feature: feature, attributes: attributes)
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        core.set(baggage: baggage, forKey: key)
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {

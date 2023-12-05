@@ -24,8 +24,8 @@ class RUMInstrumentationTests: XCTestCase {
         // Then
         withExtendedLifetime(instrumentation) {
             DDAssertActiveSwizzlings([
-                "UIViewController.viewDidAppear:",
-                "UIViewController.viewDidDisappear:",
+                "viewDidAppear:",
+                "viewDidDisappear:",
             ])
             XCTAssertNil(instrumentation.longTasks)
         }
@@ -42,7 +42,7 @@ class RUMInstrumentationTests: XCTestCase {
 
         // Then
         withExtendedLifetime(instrumentation) {
-            DDAssertActiveSwizzlings(["UIApplication.sendEvent:"])
+            DDAssertActiveSwizzlings(["sendEvent:"])
             XCTAssertNil(instrumentation.longTasks)
         }
     }
@@ -105,7 +105,7 @@ class RUMInstrumentationTests: XCTestCase {
 
 internal func DDAssertActiveSwizzlings(_ expectedSwizzledSelectors: [String], file: StaticString = #filePath, line: UInt = #line) {
     _DDEvaluateAssertion(message: "Only \(expectedSwizzledSelectors) swizzlings should be active", file: file, line: line) {
-        let actual = activeSwizzlingNames.sorted()
+        let actual = Swizzling.methods.map { "\(method_getName($0))" }.sorted()
         let expected = expectedSwizzledSelectors.sorted()
 
         guard actual == expected else {

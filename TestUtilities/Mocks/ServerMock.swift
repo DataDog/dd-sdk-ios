@@ -91,6 +91,7 @@ public class ServerMock {
     /// An unique identifier of the `URLSession` produced by this instance of `ServerMock`.
     public let urlSessionUUID = UUID()
     private let queue: DispatchQueue
+    private let skipIsMainThreadCheck: Bool
 
     fileprivate let mockedResponse: HTTPURLResponse?
     fileprivate let mockedData: Data?
@@ -101,7 +102,7 @@ public class ServerMock {
         case failure(error: NSError)
     }
 
-    public init(delivery: Delivery) {
+    public init(delivery: Delivery, skipIsMainThreadCheck: Bool = false) {
         switch delivery {
         case let .success(response: response, data: data):
             self.mockedResponse = response
@@ -112,7 +113,8 @@ public class ServerMock {
             self.mockedData = nil
             self.mockedError = error
         }
-        precondition(Thread.isMainThread, "`ServerMock` should be initialized on the main thread.")
+        self.skipIsMainThreadCheck = skipIsMainThreadCheck
+        precondition(skipIsMainThreadCheck || Thread.isMainThread, "`ServerMock` should be initialized on the main thread.")
         precondition(ServerMock.activeInstance == nil, "Only one active instance of `ServerMock` is allowed at a time.")
         self.queue = DispatchQueue(label: "com.datadoghq.ServerMock-\(urlSessionUUID.uuidString)")
 
@@ -136,7 +138,7 @@ public class ServerMock {
         ///
         /// NOTE: one of the `wait*` methods **must be called** within the test using `ServerMock`.
         ///
-        precondition(Thread.isMainThread, "`ServerMock` should be deinitialized on the main thread.")
+        precondition(Thread.isMainThread || skipIsMainThreadCheck, "`ServerMock` should be deinitialized on the main thread.")
     }
 
     fileprivate func record(newRequest: URLRequest) {
@@ -218,7 +220,7 @@ public class ServerMock {
         _ = waitAndReturnRequests(count: requestsCount, timeout: timeout)
     }
 
-    /// Waits an arbitrary amount of time and asserts that no requests were sent to `ServerMock`. 
+    /// Waits an arbitrary amount of time and asserts that no requests were sent to `ServerMock`.
     public func waitAndAssertNoRequestsSent(file: StaticString = #file, line: UInt = #line) {
         waitFor(requestsCompletion: 0)
     }

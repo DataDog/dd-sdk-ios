@@ -34,10 +34,12 @@ class RUMEventFileOutputTests: XCTestCase {
                     storagePerformance: .writeEachObjectToNewFileAndReadAllFiles,
                     uploadPerformance: .noOp
                 ),
-                dateProvider: fileCreationDateProvider
+                dateProvider: fileCreationDateProvider,
+                telemetry: NOPTelemetry()
             ),
+            forceNewFile: false,
             encryption: nil,
-            forceNewFile: false
+            telemetry: NOPTelemetry()
         )
 
         let dataModel1 = RUMDataModelMock(attribute: "foo", context: RUMEventAttributes(contextInfo: ["custom.attribute": "value"]))

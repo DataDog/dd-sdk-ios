@@ -87,7 +87,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startResource(resourceKey: "/resource/1", request: .mockWith(httpMethod: "GET"))
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
@@ -227,6 +230,32 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
     }
 
+    func testLoadingResourceWithURLString_thenLoadingResourceWithGraphQLAttributes() throws {
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
+        monitor.startView(viewController: mockView)
+        monitor.startResource(resourceKey: "/resource/1", httpMethod: .post, urlString: "/some/url/string", attributes: [
+            "_dd.graphql.operation_name": "GetCountry",
+            "_dd.graphql.operation_type": "query",
+            "_dd.graphql.payload": "{country(code:$code){name}}",
+            "_dd.graphql.variables": "{\"code\":\"BE\"}"
+        ])
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "text/json"))
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+        verifyGlobalAttributes(in: rumEventMatchers)
+
+        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationName, "GetCountry")
+        XCTAssertEqual(resourceEvent.resource.graphql?.operationType.rawValue, "query")
+        XCTAssertEqual(resourceEvent.resource.graphql?.payload, "{country(code:$code){name}}")
+        XCTAssertEqual(resourceEvent.resource.graphql?.variables, "{\"code\":\"BE\"}")
+    }
+
     func testStartingView_thenTappingButton() throws {
         RUM.enable(with: config, in: core)
 
@@ -281,7 +310,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/2", response: .mockWith(statusCode: 202))
         monitor.stopAction(type: .scroll)
 
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         verifyGlobalAttributes(in: rumEventMatchers)
         try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
             XCTAssertEqual(rumModel.view.action.count, 0)
@@ -547,7 +579,7 @@ class RUMMonitorTests: XCTestCase {
             "int": AnyEncodable(11_235),
             "bool": AnyEncodable(true)
         ])
-        try rumEventMatchers.forEach { event in
+        try rumEventMatchers.filterTelemetry().forEach { event in
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.str"), "value")
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.int"), 11_235)
             XCTAssertEqual(try event.attribute(forKeyPath: "usr.bool"), true) // swiftlint:disable:this xct_specific_matcher
@@ -1089,7 +1121,10 @@ class RUMMonitorTests: XCTestCase {
         monitor.startView(viewController: mockView, attributes: randomViewEventAttributes)
 
         // Then
-        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers().filterApplicationLaunchView()
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+            .filterApplicationLaunchView()
+            .filterTelemetry()
+
         let lastRUMViewEventSent: RUMViewEvent = try rumEventMatchers[0].model()
 
         let currentLastRUMViewEventSent = try XCTUnwrap(crashReporter.crashContextProvider.currentCrashContext?.lastRUMViewEvent)
@@ -1250,6 +1285,60 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(try resourceEvents[0].attribute(forKeyPath: "context.def"), "789")
     }
 
+    // MARK: - Configuration
+
+    func testRUMEvents_containSessionSampleRate() throws {
+        // Given
+        RUM.enable(with: config, in: core)
+
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        monitor.startView(viewController: mockView)
+        monitor.startAction(type: .scroll, name: .mockAny())
+        monitor.startResource(resourceKey: "/resource/1", request: .mockAny())
+        monitor.startResource(resourceKey: "/resource/2", request: .mockAny())
+        monitor.stopAction(type: .scroll)
+        monitor.stopResource(resourceKey: "/resource/1", response: .mockAny())
+        monitor.stopResourceWithError(resourceKey: "/resource/2", message: .mockAny())
+        monitor.addError(message: .mockAny(), source: .source)
+        monitor._internal?.addLongTask(at: Date(), duration: 1.0)
+        monitor.stopView(viewController: mockView)
+
+        let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
+
+        // Then
+        let viewEvents = rumEventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        XCTAssertNotEqual(viewEvents.count, 0)
+        for event in viewEvents {
+            XCTAssertEqual(try event.attribute(forKeyPath: "_dd.configuration.session_sample_rate"), config.sessionSampleRate)
+        }
+
+        let actionEvents = rumEventMatchers.filterRUMEvents(ofType: RUMActionEvent.self)
+        XCTAssertNotEqual(actionEvents.count, 0)
+        for event in actionEvents {
+            XCTAssertEqual(try event.attribute(forKeyPath: "_dd.configuration.session_sample_rate"), config.sessionSampleRate)
+        }
+
+        let resourceEvents = rumEventMatchers.filterRUMEvents(ofType: RUMResourceEvent.self)
+        XCTAssertNotEqual(resourceEvents.count, 0)
+        for event in resourceEvents {
+            XCTAssertEqual(try event.attribute(forKeyPath: "_dd.configuration.session_sample_rate"), config.sessionSampleRate)
+        }
+
+        let errorEvents = rumEventMatchers.filterRUMEvents(ofType: RUMErrorEvent.self)
+        XCTAssertNotEqual(errorEvents.count, 0)
+        for event in errorEvents {
+            XCTAssertEqual(try event.attribute(forKeyPath: "_dd.configuration.session_sample_rate"), config.sessionSampleRate)
+        }
+
+        let longTaskEvents = rumEventMatchers.filterRUMEvents(ofType: RUMLongTaskEvent.self)
+        XCTAssertNotEqual(longTaskEvents.count, 0)
+        for event in longTaskEvents {
+            XCTAssertEqual(try event.attribute(forKeyPath: "_dd.configuration.session_sample_rate"), config.sessionSampleRate)
+        }
+    }
+
     // MARK: - Internal attributes
 
     func testHandlingInternalTimestampAttribute() throws {
@@ -1278,7 +1367,7 @@ class RUMMonitorTests: XCTestCase {
     }
 
     private func verifyGlobalAttributes(in matchers: [RUMEventMatcher]) {
-        for matcher in matchers {
+        for matcher in matchers.filterTelemetry() {
             // Application Start/Launch happens too early to have attributes set.
             if (try? matcher.attribute(forKeyPath: "action.type")) == "application_start" ||
                (try? matcher.attribute(forKeyPath: "view.name")) == "ApplicationLaunch"{

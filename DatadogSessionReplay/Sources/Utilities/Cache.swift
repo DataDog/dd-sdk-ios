@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 
 internal final class Cache<Key: Hashable, Value> {
@@ -13,8 +14,8 @@ internal final class Cache<Key: Hashable, Value> {
     private let keyTracker = KeyTracker()
 
     init(dateProvider: @escaping () -> Date = Date.init,
-         entryLifetime: TimeInterval = 12 * 60 * 60,
-         totalBytesLimit: Int = 5_000_000,
+         entryLifetime: TimeInterval = 10.minutes,
+         totalBytesLimit: Int = 5.MB,
          maximumEntryCount: Int = 50
     ) {
         self.dateProvider = dateProvider
@@ -40,6 +41,7 @@ internal final class Cache<Key: Hashable, Value> {
             removeValue(forKey: key)
             return nil
         }
+        entry.expirationDate = entry.expirationDate.addingTimeInterval(entryLifetime)
 
         return entry.value
     }
@@ -71,7 +73,7 @@ private extension Cache {
     final class Entry {
         let key: Key
         let value: Value
-        let expirationDate: Date
+        var expirationDate: Date
 
         init(key: Key, value: Value, expirationDate: Date) {
             self.key = key
@@ -109,3 +111,4 @@ extension Cache {
         }
     }
 }
+#endif

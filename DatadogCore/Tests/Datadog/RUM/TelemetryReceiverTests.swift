@@ -25,23 +25,22 @@ class TelemetryReceiverTests: XCTestCase {
 
         RUM.enable(with: .mockAny(), in: core)
 
-        let telemetry = TelemetryCore(core: core)
-
         // swiftlint:disable opening_brace
         callConcurrently(
             closures: [
-                { telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
-                { telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
-                { telemetry.configuration(batchSize: .mockRandom()) },
+                { core.telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
+                { core.telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
+                { core.telemetry.configuration(batchSize: .mockRandom()) },
                 {
-                    core.set(feature: "rum", attributes: {[
-                        RUMContextAttributes.ids: [
+                    core.set(
+                        baggage: [
                             RUMContextAttributes.IDs.applicationID: String.mockRandom(),
                             RUMContextAttributes.IDs.sessionID: String.mockRandom(),
                             RUMContextAttributes.IDs.viewID: String.mockRandom(),
                             RUMContextAttributes.IDs.userActionID: String.mockRandom()
-                        ]
-                    ]})
+                        ],
+                        forKey: "rum"
+                    )
                 }
             ],
             iterations: 50

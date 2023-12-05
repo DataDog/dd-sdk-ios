@@ -1,4 +1,4 @@
-// swift-tools-version: 5.5
+// swift-tools-version: 5.7.1
 
 import PackageDescription
 import Foundation
@@ -48,7 +48,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.0"),
+        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.1"),
     ],
     targets: [
         .target(
@@ -67,6 +67,7 @@ let package = Package(
                 .target(name: "DatadogLogs"),
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogRUM"),
+                .target(name: "DatadogSessionReplay"),
             ],
             path: "DatadogObjc/Sources"
         ),
@@ -189,7 +190,7 @@ let package = Package(
                 .target(name: "DatadogInternal"),
             ],
             path: "TestUtilities",
-            sources: ["Mocks", "Helpers"]
+            sources: ["Mocks", "Helpers", "Matchers"]
         )
     ]
 )

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import UIKit
 
@@ -43,9 +44,9 @@ internal struct ViewTreeSnapshotBuilder {
 }
 
 extension ViewTreeSnapshotBuilder {
-    init() {
+    init(additionalNodeRecorders: [NodeRecorder]) {
         self.init(
-            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders()),
+            viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
             idsGenerator: NodeIDGenerator(),
             imageDataProvider: ImageDataProvider()
         )
@@ -71,3 +72,4 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UIDatePickerRecorder(),
     ]
 }
+#endif

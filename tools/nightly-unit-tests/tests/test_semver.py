@@ -4,23 +4,22 @@
 # Copyright 2019-Present Datadog, Inc.
 # -----------------------------------------------------------
 
-import unittest
 from src.semver import Version
 
 
-class VersionTestCase(unittest.TestCase):
-    def test_parsing(self):
-        self.assertEqual(Version.parse('10.0.3'), Version(major=10, minor=0, patch=3))
-        self.assertEqual(Version.parse('11.4'), Version(major=11, minor=4, patch=0))
-        self.assertEqual(Version.parse('12'), Version(major=12, minor=0, patch=0))
+def test_parsing():
+    assert Version.parse('10.0.3') == Version(major=10, minor=0, patch=3)
+    assert Version.parse('11.4') == Version(major=11, minor=4, patch=0)
+    assert Version.parse('12') == Version(major=12, minor=0, patch=0)
 
-    def test_comparing(self):
-        self.assertTrue(Version.parse('14.0.0').is_newer_than(Version.parse('13.1.2')))
-        self.assertTrue(Version.parse('14.1.1').is_newer_than(Version.parse('14.1.0')))
-        self.assertTrue(Version.parse('14.2.3').is_newer_than(Version.parse('14.2.2')))
-        self.assertFalse(Version.parse('14.0.3').is_newer_than(Version.parse('15.0.2')))
-        self.assertFalse(Version.parse('14.0.3').is_newer_than(Version.parse('14.1.0')))
-        self.assertFalse(Version.parse('14.0.3').is_newer_than(Version.parse('14.0.4')))
-        self.assertFalse(Version.parse('14.0.3').is_newer_than(Version.parse('14.0.3')))
-        self.assertTrue(Version.parse('14.0.3').is_newer_than_or_equal(Version.parse('14.0.3')))
-        self.assertFalse(Version.parse('14.0.2').is_newer_than_or_equal(Version.parse('14.0.3')))
+
+def test_comparing():
+    assert Version.parse('14.0.0').is_newer_than(Version.parse('13.1.2')) == True
+    assert Version.parse('14.1.1').is_newer_than(Version.parse('14.1.0')) == True
+    assert Version.parse('14.2.3').is_newer_than(Version.parse('14.2.2')) == True
+    assert Version.parse('14.0.3').is_newer_than(Version.parse('15.0.2')) == False
+    assert Version.parse('14.0.3').is_newer_than(Version.parse('14.1.0')) == False
+    assert Version.parse('14.0.3').is_newer_than(Version.parse('14.0.4')) == False
+    assert Version.parse('14.0.3').is_newer_than(Version.parse('14.0.3')) == False
+    assert Version.parse('14.0.3').is_newer_than_or_equal(Version.parse('14.0.3')) == True
+    assert Version.parse('14.0.2').is_newer_than_or_equal(Version.parse('14.0.3')) == False

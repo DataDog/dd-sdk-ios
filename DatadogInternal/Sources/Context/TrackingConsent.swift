@@ -10,7 +10,7 @@ import Foundation
 ///
 /// This value should be used to grant the permission for Datadog SDK to store data collected in
 /// Logging, Tracing or RUM and upload it to Datadog servers.
-public enum TrackingConsent: Codable, DictionaryEncodable {
+public enum TrackingConsent: Codable, PassthroughAnyCodable {
     /// The permission to persist and send data to the Datadog servers was granted.
     /// Any previously stored pending data will be marked as ready for sent.
     case granted

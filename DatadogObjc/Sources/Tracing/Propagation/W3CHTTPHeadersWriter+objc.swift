@@ -16,7 +16,13 @@ public class DDW3CHTTPHeadersWriter: NSObject {
     }
 
     @objc
-    public init(samplingRate: Float = 20) {
-        swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(samplingRate: samplingRate)
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
+    public convenience init(samplingRate: Float) {
+        self.init(sampleRate: samplingRate)
+    }
+
+    @objc
+    public init(sampleRate: Float = 20) {
+        swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(sampleRate: sampleRate, tracestate: [:])
     }
 }

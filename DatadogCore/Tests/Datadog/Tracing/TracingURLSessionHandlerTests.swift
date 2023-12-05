@@ -120,15 +120,15 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
             AnyCodable(String(span.traceID))
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID] as? AnyCodable,
+            log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
             AnyCodable(String(span.traceID))
         )
         XCTAssertEqual(
-            log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID] as? AnyCodable,
+            log.attributes.internalAttributes?["dd.span_id"] as? AnyCodable,
             AnyCodable(String(span.spanID))
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
@@ -188,11 +188,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.status, .error)
         XCTAssertEqual(log.message, "404 not found")
         DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.traceID]),
+            AnyEncodable(log.attributes.internalAttributes?["dd.trace_id"]),
             String(span.traceID)
         )
         DDAssertJSONEqual(
-            AnyEncodable(log.attributes.internalAttributes?[TracingWithLoggingIntegration.TracingAttributes.spanID]),
+            AnyEncodable(log.attributes.internalAttributes?["dd.span_id"]),
             String(span.spanID)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
@@ -206,5 +206,25 @@ class TracingURLSessionHandlerTests: XCTestCase {
             "Error Domain=HTTPURLResponse Code=404 \"404 not found\" UserInfo={NSLocalizedDescription=404 not found}"
         )
         XCTAssertEqual(log.attributes.userAttributes.count, 1)
+    }
+
+    func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
+        let request: URLRequest = .mockWith(httpMethod: "GET")
+        let modifiedRequest = handler.modify(request: request, headerTypes: [.datadog, .tracecontext, .b3, .b3multi])
+
+        XCTAssertEqual(
+            modifiedRequest.allHTTPHeaderFields,
+            [
+                "traceparent": "00-00000000000000000000000000000001-0000000000000001-01",
+                "X-B3-SpanId": "0000000000000001",
+                "X-B3-Sampled": "1",
+                "X-B3-TraceId": "00000000000000000000000000000001",
+                "b3": "00000000000000000000000000000001-0000000000000001-1",
+                "x-datadog-trace-id": "1",
+                "tracestate": "dd=p:0000000000000001;s:1",
+                "x-datadog-parent-id": "1",
+                "x-datadog-sampling-priority": "1"
+            ]
+        )
     }
 }

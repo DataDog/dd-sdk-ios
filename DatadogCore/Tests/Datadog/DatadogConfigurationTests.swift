@@ -53,8 +53,9 @@ class DatadogConfigurationTests: XCTestCase {
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let urlSessionClient = try XCTUnwrap(core.httpClient as? URLSessionClient)
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
-        XCTAssertNil(core.httpClient.session.configuration.connectionProxyDictionary)
+        XCTAssertNil(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertNil(core.encryption)
 
         let context = core.contextProvider.read()
@@ -78,6 +79,7 @@ class DatadogConfigurationTests: XCTestCase {
         configuration.site = .eu1
         configuration.batchSize = .small
         configuration.uploadFrequency = .frequent
+        configuration.batchProcessingLevel = .high
         configuration.proxyConfiguration = [
             kCFNetworkProxiesHTTPEnable: true,
             kCFNetworkProxiesHTTPPort: 123,
@@ -102,6 +104,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(configuration.batchSize, .small)
         XCTAssertEqual(configuration.uploadFrequency, .frequent)
+        XCTAssertEqual(configuration.batchProcessingLevel, .high)
         XCTAssertTrue(configuration.encryption is DataEncryptionMock)
         XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
 
@@ -115,7 +118,8 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertTrue(core.dateProvider is SystemDateProvider)
         XCTAssertTrue(core.encryption is DataEncryptionMock)
 
-        let connectionProxyDictionary = try XCTUnwrap(core.httpClient.session.configuration.connectionProxyDictionary)
+        let urlSessionClient = try XCTUnwrap(core.httpClient as? URLSessionClient)
+        let connectionProxyDictionary = try XCTUnwrap(urlSessionClient.session.configuration.connectionProxyDictionary)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPEnable] as? Bool, true)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPPort] as? Int, 123)
         XCTAssertEqual(connectionProxyDictionary[kCFNetworkProxiesHTTPProxy] as? String, "www.example.com")
@@ -174,7 +178,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(
             printFunction.printedMessage,
-            "🔥 Datadog SDK usage error: SDK is already initialized."
+            "🔥 Datadog SDK usage error: The 'main' instance of SDK is already initialized."
         )
 
         Datadog.flushAndDeinitialize()
@@ -253,6 +257,26 @@ class DatadogConfigurationTests: XCTestCase {
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
         let context = core.contextProvider.read()
         XCTAssertEqual(context.version, "0.0.0")
+        XCTAssertEqual(context.buildNumber, "0")
+    }
+
+    func testGivenNoBundleVersion_itUsesDefaultValue() throws {
+        var configuration = defaultConfig
+
+        configuration.bundle = .mockWith(
+            CFBundleVersion: "FFFFF",
+            CFBundleShortVersionString: nil
+        )
+
+        Datadog.initialize(
+            with: configuration,
+            trackingConsent: .mockRandom()
+        )
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.buildNumber, "FFFFF")
     }
 
     func testGivenNoBundleIdentifier_itUsesDefaultValues() throws {
@@ -324,5 +348,18 @@ class DatadogConfigurationTests: XCTestCase {
         verify(invalidEnv: "*^@!&#")
         verify(invalidEnv: "*^@!&#\nsome_env")
         verify(invalidEnv: String(repeating: "a", count: 197))
+    }
+
+    func testApplicationVersionOverride() throws {
+        var configuration = defaultConfig
+        configuration.additionalConfiguration[CrossPlatformAttributes.version] = "5.23.2"
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.version, "5.23.2")
     }
 }
