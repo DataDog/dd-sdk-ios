@@ -267,7 +267,6 @@ extension DatadogCore: DatadogCoreProtocol {
         }
 
         features[T.name] = feature
-
         add(messageReceiver: feature.messageReceiver, forKey: T.name)
     }
 

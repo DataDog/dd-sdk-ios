@@ -16,6 +16,9 @@ public protocol DatadogFeature {
     /// The `FeatureMessageReceiver` defines an interface for Feature to receive any message
     /// from a bus that is shared between Features registered in a core.
     var messageReceiver: FeatureMessageReceiver { get }
+
+    /// (Optional) `PerformancePresetOverride` allows overriding certain performance presets if needed.
+    var performanceOverride: PerformancePresetOverride? { get }
 }
 
 /// A Datadog Feature with remote data store.
@@ -28,9 +31,6 @@ public protocol DatadogRemoteFeature: DatadogFeature {
     /// A Feature should use this interface for creating requests that needs be sent to its Datadog Intake.
     /// The request will be transported by `DatadogCore`.
     var requestBuilder: FeatureRequestBuilder { get }
-
-    /// (Optional) `PerformancePresetOverride` allows overriding certain performance presets if needed.
-    var performanceOverride: PerformancePresetOverride? { get }
 }
 
 extension DatadogFeature {
