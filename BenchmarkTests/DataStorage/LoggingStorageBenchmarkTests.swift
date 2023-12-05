@@ -71,7 +71,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
 
         measureMetrics([.wallClockTime], automaticallyStartMeasuring: false) {
             self.startMeasuring()
-            let batch = reader.readNextBatch()
+            let batch = reader.readNextBatches(1).first
             self.stopMeasuring()
 
             XCTAssertNotNil(batch, "Not enough batch files were created for this benchmark.")

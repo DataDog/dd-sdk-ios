@@ -9,7 +9,7 @@ import DatadogInternal
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
-class RequestBuilderTests: XCTestCase {
+class SegmentRequestBuilderTests: XCTestCase {
     private let rumContext: RUMContext = .mockRandom() // all records must reference the same RUM context
     private var mockEvents: [Event] {
         let records = [
@@ -22,7 +22,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItCreatesPOSTRequest() throws {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockAny())
@@ -33,7 +33,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsIntakeURL() {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -53,7 +53,7 @@ class RequestBuilderTests: XCTestCase {
     func testItSetsCustomIntakeURL() {
         // Given
         let randomURL: URL = .mockRandom()
-        let builder = RequestBuilder(customUploadURL: randomURL, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: randomURL, telemetry: TelemetryMock())
 
         // When
         func url(for site: DatadogSite) throws -> String {
@@ -73,7 +73,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testItSetsNoQueryParameters() throws {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockRandom()
 
         // When
@@ -94,7 +94,7 @@ class RequestBuilderTests: XCTestCase {
         let randomDeviceOSVersion: String = .mockRandom()
 
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
         let context: DatadogContext = .mockWith(
             clientToken: randomClientToken,
             version: randomVersion,
@@ -128,22 +128,9 @@ class RequestBuilderTests: XCTestCase {
     }
 
     func testItSetsHTTPBodyInExpectedFormat() throws {
-        class MultipartBuilderSpy: MultipartFormDataBuilder {
-            var formFields: [String: String] = [:]
-            var formFiles: [String: (filename: String, data: Data, mimeType: String)] = [:]
-            var returnedData: Data = .mockRandom()
-
-            var boundary = UUID()
-            func addFormField(name: String, value: String) { formFields[name] = value }
-            func addFormData(name: String, filename: String, data: Data, mimeType: String) {
-                formFiles[name] = (filename: filename, data: data, mimeType: mimeType)
-            }
-            var data: Data { returnedData }
-        }
-
         // Given
         let multipartSpy = MultipartBuilderSpy()
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
 
         // When
         let request = try builder.request(for: mockEvents, with: .mockWith(source: "ios"))
@@ -151,8 +138,8 @@ class RequestBuilderTests: XCTestCase {
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
         XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary.uuidString)"))
-        XCTAssertEqual(multipartSpy.formFiles["segment"]?.filename, rumContext.sessionID)
-        XCTAssertEqual(multipartSpy.formFiles["segment"]?.mimeType, "application/octet-stream")
+        XCTAssertEqual(multipartSpy.formFiles.first?.filename, rumContext.sessionID)
+        XCTAssertEqual(multipartSpy.formFiles.first?.mimeType, "application/octet-stream")
         XCTAssertEqual(multipartSpy.formFields["segment"], rumContext.sessionID)
         XCTAssertEqual(multipartSpy.formFields["application.id"], rumContext.applicationID)
         XCTAssertEqual(multipartSpy.formFields["view.id"], rumContext.viewID!)
@@ -166,7 +153,7 @@ class RequestBuilderTests: XCTestCase {
 
     func testWhenBatchDataIsMalformed_itThrows() {
         // Given
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock())
 
         // When, Then
         XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockAny()))
@@ -175,7 +162,7 @@ class RequestBuilderTests: XCTestCase {
     func testWhenSourceIsInvalid_itSendsErrorTelemetry() throws {
         // Given
         let telemetry = TelemetryMock()
-        let builder = RequestBuilder(customUploadURL: nil, telemetry: telemetry)
+        let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: telemetry)
 
         // When
         _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"))

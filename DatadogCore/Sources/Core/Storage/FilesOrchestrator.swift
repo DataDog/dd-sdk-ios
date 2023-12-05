@@ -12,7 +12,7 @@ internal protocol FilesOrchestratorType: AnyObject {
 
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String>) -> ReadableFile?
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile]
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
 
     var ignoreFilesAgeWhenReading: Bool { get set }
@@ -41,6 +41,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     struct MetricsData {
         /// The name of the track reported for this orchestrator.
         let trackName: String
+        /// The label indicating the value of tracking consent that this orchestrator manages files for.
+        let consentLabel: String
         /// The preset for uploader performance in this feature to include in metric.
         let uploaderPerformance: UploadPerformancePreset
     }
@@ -148,33 +150,32 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `ReadableFile` orchestration
 
-    func getReadableFile(excludingFilesNamed excludedFileNames: Set<String> = []) -> ReadableFile? {
+    func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
-            let filesWithCreationDate = try directory.files()
+            let filesFromOldest = try directory.files()
                 .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
                 .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
-
-            guard let (oldestFile, creationDate) = filesWithCreationDate
-                .filter({ excludedFileNames.contains($0.file.name) == false })
                 .sorted(by: { $0.creationDate < $1.creationDate })
-                .first
-            else {
-                return nil
-            }
 
             #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
-                return oldestFile
+                return filesFromOldest
+                    .prefix(limit)
+                    .map { $0.file }
             }
             #endif
 
-            let oldestFileAge = dateProvider.now.timeIntervalSince(creationDate)
-            let fileIsOldEnough = oldestFileAge >= performance.minFileAgeForRead
-
-            return fileIsOldEnough ? oldestFile : nil
+            let filtered = filesFromOldest
+                .filter {
+                    let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
+                    return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
+                }
+            return filtered
+                .prefix(limit)
+                .map { $0.file }
         } catch {
             telemetry.error("Failed to obtain readable file", error: error)
-            return nil
+            return []
         }
     }
 
@@ -252,6 +253,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                     BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
                     BatchDeletedMetric.uploaderDelayMaxKey: metricsData.uploaderPerformance.maxUploadDelay.toMilliseconds,
                 ],
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchDeletedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchDeletedMetric.batchAgeKey: batchAge.toMilliseconds,
                 BatchDeletedMetric.batchRemovalReasonKey: deletionReason.toString(),
@@ -276,6 +278,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             attributes: [
                 BatchMetric.typeKey: BatchClosedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
+                BatchMetric.consentKey: metricsData.consentLabel,
                 BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,

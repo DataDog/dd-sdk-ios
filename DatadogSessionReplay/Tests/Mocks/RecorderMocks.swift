@@ -7,6 +7,7 @@
 import Foundation
 import UIKit
 import XCTest
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
@@ -234,6 +235,7 @@ struct ShapeWireframesBuilderMock: NodeWireframesBuilder {
     }
 }
 
+@_spi(Internal)
 extension Node: AnyMockable, RandomMockable {
     public static func mockAny() -> Node {
         return mockWith()
@@ -315,6 +317,25 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
 }
 
 class NodeRecorderMock: NodeRecorder {
+    var identifier = UUID()
+    var queriedViews: Set<UIView> = []
+    var queryContexts: [ViewTreeRecordingContext] = []
+    var queryContextsByView: [UIView: ViewTreeRecordingContext] = [:]
+    var resultForView: ((UIView) -> NodeSemantics?)?
+
+    init(resultForView: ((UIView) -> NodeSemantics?)? = nil) {
+        self.resultForView = resultForView
+    }
+
+    func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
+        queriedViews.insert(view)
+        queryContexts.append(context)
+        queryContextsByView[view] = context
+        return resultForView?(view)
+    }
+}
+
+class SessionReplayNodeRecorderMock: SessionReplayNodeRecorder {
     var identifier = UUID()
     var queriedViews: Set<UIView> = []
     var queryContexts: [ViewTreeRecordingContext] = []

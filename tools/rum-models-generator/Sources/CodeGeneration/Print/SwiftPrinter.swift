@@ -14,6 +14,7 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
             case `public`
             /// Use to make all generated models visible in internal interface.
             case `internal`
+            case `spi`
         }
 
         /// Access level for for entities within printed code.
@@ -66,6 +67,9 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
 
         printComment(swiftStruct.comment)
+        if let attribute = configuration.accessLevel.attribute {
+            writeLine("\(attribute)")
+        }
         writeLine("\(configuration.accessLevel) struct \(swiftStruct.name)\(conformance) {")
         indentRight()
         try printPropertiesList(swiftStruct.properties)
@@ -303,6 +307,9 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         }()
 
         printComment(enumeration.comment)
+        if let attribute = configuration.accessLevel.attribute {
+            writeLine("\(attribute)")
+        }
         writeLine("\(configuration.accessLevel) enum \(enumeration.name): \(rawValueType)\(conformance) {")
         indentRight()
         enumeration.cases.forEach { `case` in
@@ -373,6 +380,9 @@ public class SwiftPrinter: BasePrinter, CodePrinter {
         let conformance = implementedProtocols.isEmpty ? "" : ": \(implementedProtocols.joined(separator: ", "))"
 
         printComment(enumeration.comment)
+        if let attribute = configuration.accessLevel.attribute {
+            writeLine("\(attribute)")
+        }
         writeLine("\(configuration.accessLevel) enum \(enumeration.name)\(conformance) {")
         indentRight()
         try enumeration.cases.forEach { `case` in
@@ -476,6 +486,19 @@ extension SwiftPrinter.Configuration.AccessLevel: CustomStringConvertible {
             return "public"
         case .internal:
             return "internal"
+        case .spi:
+            return "public"
+        }
+    }
+
+    public var attribute: String? {
+        switch self {
+        case .public:
+            return nil
+        case .internal:
+            return nil
+        case .spi:
+            return "@_spi(Internal)"
         }
     }
 }

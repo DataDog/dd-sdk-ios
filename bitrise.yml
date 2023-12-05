@@ -197,6 +197,14 @@ workflows:
             #!/usr/bin/env zsh
             set -e
             make rum-models-verify ci=${CI}
+    - script:
+        title: Verify SR data models
+        run_if: '{{enveq "DD_RUN_SR_UNIT_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env zsh
+            set -e
+            make sr-models-verify ci=${CI}
     - xcode-test:
         title: Run unit tests for Datadog - iOS Simulator
         run_if: '{{enveq "DD_RUN_UNIT_TESTS" "1"}}'

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 52;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,7 +30,6 @@
 		612C13772A9E1BA40086B5D1 /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 612C13762A9E1BA40086B5D1 /* SRFixtures */; };
 		612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */; };
 		612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */; };
-		612C13DC2AAB537F0086B5D1 /* JSONObjectMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13D92AAB537F0086B5D1 /* JSONObjectMatcher.swift */; };
 		612C13DD2AAB537F0086B5D1 /* SRRequestMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */; };
 		612C13DF2AAB6E940086B5D1 /* SRCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */; };
 		612D8F6925AEE68F000E2E09 /* RUMScrubbingScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */; };
@@ -161,7 +160,6 @@
 		612C13742A9DFEF70086B5D1 /* SRMultipleViewsRecordingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SRMultipleViewsRecordingScenario.storyboard; sourceTree = "<group>"; };
 		612C13CB2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRMultipleViewsRecordingScenarioTests.swift; sourceTree = "<group>"; };
 		612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRSegmentMatcher.swift; sourceTree = "<group>"; };
-		612C13D92AAB537F0086B5D1 /* JSONObjectMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONObjectMatcher.swift; sourceTree = "<group>"; };
 		612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRRequestMatcher.swift; sourceTree = "<group>"; };
 		612C13DE2AAB6E940086B5D1 /* SRCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRCommonAsserts.swift; sourceTree = "<group>"; };
 		612D8F6825AEE68F000E2E09 /* RUMScrubbingScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMScrubbingScenario.storyboard; sourceTree = "<group>"; };
@@ -717,7 +715,6 @@
 		D2774EDE299E2E90004EC36A /* Matchers */ = {
 			isa = PBXGroup;
 			children = (
-				612C13D92AAB537F0086B5D1 /* JSONObjectMatcher.swift */,
 				612C13DA2AAB537F0086B5D1 /* SRRequestMatcher.swift */,
 				612C13D82AAB537F0086B5D1 /* SRSegmentMatcher.swift */,
 				D2774EDF299E2E90004EC36A /* RUMSessionMatcher.swift */,
@@ -1016,7 +1013,6 @@
 				612C13DB2AAB537F0086B5D1 /* SRSegmentMatcher.swift in Sources */,
 				612D8F8125AF1C74000E2E09 /* RUMScrubbingScenarioTests.swift in Sources */,
 				613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */,
-				612C13DC2AAB537F0086B5D1 /* JSONObjectMatcher.swift in Sources */,
 				9EA95C212791C9E200F6C1F3 /* WebViewScenarioTest.swift in Sources */,
 				6167ACFD251A22E00012B4D0 /* TracingURLSessionScenarioTests.swift in Sources */,
 				611EA16625825FB300BC0E56 /* TrackingConsentScenarioTests.swift in Sources */,
@@ -1195,6 +1191,7 @@
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};
@@ -1216,6 +1213,7 @@
 				PRODUCT_MODULE_NAME = Runner;
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};
@@ -1237,6 +1235,7 @@
 				PRODUCT_MODULE_NAME = Runner;
 				PRODUCT_NAME = "Integration Tests Runner";
 				SWIFT_OBJC_BRIDGING_HEADER = "Runner/Runner-Bridging-Header.h";
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				VALIDATE_WORKSPACE = YES;
 			};

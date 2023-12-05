@@ -53,7 +53,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                     injectEncoding: .multiple
                 )
             case .tracecontext:
-                writer = W3CHTTPHeadersWriter(sampler: tracingSampler)
+                writer = W3CHTTPHeadersWriter(sampler: tracingSampler, tracestate: [:])
             }
 
             writer.write(

@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogInternal
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 

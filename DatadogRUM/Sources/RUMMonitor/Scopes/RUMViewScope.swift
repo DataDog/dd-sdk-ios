@@ -96,7 +96,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         isInitialView: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
-        identity: RUMViewIdentifiable,
+        identity: RUMViewIdentity,
         path: String,
         name: String,
         attributes: [AttributeKey: AttributeValue],
@@ -107,7 +107,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.isInitialView = isInitialView
-        self.identity = identity.asRUMViewIdentity()
+        self.identity = identity
         self.attributes = attributes
         self.customTimings = customTimings
         self.viewUUID = dependencies.rumUUIDGenerator.generateUnique()
@@ -369,7 +369,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 action: nil,
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: .init(
                 crash: .init(count: 0),
@@ -391,14 +394,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(
@@ -439,7 +443,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let viewEvent = RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: version.toInt64,
                 pageStates: nil,
                 replayStats: .init(
@@ -447,7 +455,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                     segmentsCount: nil,
                     segmentsTotalRawSize: nil
                 ),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             application: .init(id: self.context.rumApplicationID),
             buildVersion: context.buildNumber,
@@ -459,6 +470,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
+            parentView: nil,
             privacy: nil,
             service: context.service,
             session: .init(
@@ -466,11 +478,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 id: self.context.sessionID.toRUMDataFormat,
                 isActive: self.context.isSessionActive,
                 sampledForReplay: nil,
-                startPrecondition: nil,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(
@@ -544,7 +555,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
@@ -572,14 +586,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(
@@ -608,7 +623,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
                 discarded: nil,
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: self.context.activeUserActionID.map {
                 .init(id: .string(value: $0.toRUMDataFormat))
@@ -623,14 +641,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(

@@ -48,7 +48,7 @@ public class CoreLoggerMock: CoreLogger {
     public var criticalLog: RecordedLog? { criticalLogs.last }
 }
 
-/// `Telemetry` recording received telemetry.
+/// `Telemetry` recording sent telemetry.
 public class TelemetryMock: Telemetry, CustomStringConvertible {
     public let expectation: XCTestExpectation?
 
@@ -80,26 +80,20 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
     }
 }
 
-extension TelemetryMock: FeatureMessageReceiver {
-    public func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
-        guard case let .telemetry(message) = message else {
-            return false
-        }
-
-        send(telemetry: message)
-        return true
-    }
-}
-
 public extension Array where Element == TelemetryMessage {
     /// Returns properties of the first metric message of given name.
     func firstMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
         return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).first
     }
+
+    /// Returns attributes of the first ERROR telemetry in this array.
+    func firstError() -> (id: String, message: String, kind: String?, stack: String?)? {
+        return compactMap { $0.asError }.first
+    }
 }
 
 public extension TelemetryMessage {
-    /// Extracts debug from telemetry message.
+    /// Extracts debug attributes from telemetry message.
     var asDebug: (id: String, message: String, attributes: [String: Encodable]?)? {
         guard case let .debug(id, message, attributes) = self else {
             return nil
@@ -107,7 +101,7 @@ public extension TelemetryMessage {
         return (id: id, message: message, attributes: attributes)
     }
 
-    /// Extracts debug from telemetry message.
+    /// Extracts error attributes from telemetry message.
     var asError: (id: String, message: String, kind: String?, stack: String?)? {
         guard case let .error(id, message, kind, stack) = self else {
             return nil

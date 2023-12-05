@@ -70,7 +70,7 @@ internal class URLSessionSwizzler {
             URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
         )
 
-        private let method: FoundMethod
+        private let method: Method
 
         static func build() throws -> DataTaskWithURLRequestAndCompletion {
             return try DataTaskWithURLRequestAndCompletion(
@@ -80,7 +80,7 @@ internal class URLSessionSwizzler {
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try Self.findMethod(with: selector, in: klass)
+            self.method = try dd_class_getInstanceMethod(klass, selector)
             super.init()
         }
 

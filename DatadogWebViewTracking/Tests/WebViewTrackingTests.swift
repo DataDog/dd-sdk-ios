@@ -52,11 +52,15 @@ class WebViewTrackingTests: XCTestCase {
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
+            logsSampleRate: 30,
             in: PassthroughCoreMock()
         )
 
         XCTAssertEqual(controller.userScripts.count, initialUserScriptCount + 1)
         XCTAssertEqual(controller.messageHandlers.map({ $0.name }), ["DatadogEventBridge"])
+
+        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
+        XCTAssertEqual(messageHandler?.emitter.logsSampler.samplingRate, 30)
 
         XCTAssertEqual(mockSanitizer.sanitizations.count, 1)
         let sanitization = try XCTUnwrap(mockSanitizer.sanitizations.first)
@@ -79,6 +83,7 @@ class WebViewTrackingTests: XCTestCase {
                 tracking: controller,
                 hosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
+                logsSampleRate: 100,
                 in: PassthroughCoreMock()
             )
         }
@@ -138,6 +143,7 @@ class WebViewTrackingTests: XCTestCase {
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
             in: PassthroughCoreMock()
         )
 
@@ -184,6 +190,7 @@ class WebViewTrackingTests: XCTestCase {
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
             in: core
         )
 

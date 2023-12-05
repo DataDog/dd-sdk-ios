@@ -342,6 +342,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
     // MARK: - Usage
 
+    @available(*, deprecated)
     func testItCanBeInitializedBeforeInitializingDefaultSDKCore() throws {
         // Given
         let delegate1 = DatadogURLSessionDelegate()
@@ -358,6 +359,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItCanBeInitializedAfterInitializingDefaultSDKCore() throws {
         // Given
         CoreRegistry.register(default: core)
@@ -374,6 +376,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNotNil(delegate3.interceptor)
     }
 
+    @available(*, deprecated)
     func testItOnlyKeepsInstrumentationWhileSDKCoreIsAvailableInMemory() throws {
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
@@ -456,7 +459,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     func testGivenW3C_whenInterceptingRequests_itInjectsTrace() throws {
         // Given
         var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = W3CHTTPHeadersWriter(sampler: .mockKeepAll())
+        let writer = W3CHTTPHeadersWriter(
+            sampler: .mockKeepAll(),
+            tracestate: [
+                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
+            ]
+        )
         handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
 
         // When
@@ -504,6 +512,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(*, deprecated)
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -535,6 +544,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         _ = server.waitAndReturnRequests(count: 1)
     }
 
+    @available(*, deprecated)
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
@@ -547,7 +557,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             required init(in core: DatadogCoreProtocol) {
                 ddURLSessionDelegate = DatadogURLSessionDelegate(
                     in: core,
-                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog]]
+                    additionalFirstPartyHostsWithHeaderTypes: ["test.com": [.datadog, .tracecontext]]
                 )
 
                 super.init()

@@ -5,6 +5,7 @@
  */
 
 import DatadogInternal
+import Foundation
 
 /// An entry point to Datadog RUM feature.
 public struct RUM {

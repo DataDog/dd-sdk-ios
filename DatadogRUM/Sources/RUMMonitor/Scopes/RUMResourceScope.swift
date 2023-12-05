@@ -152,10 +152,16 @@ internal class RUMResourceScope: RUMScope {
         let resourceEvent = RUMResourceEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)
+                ),
                 discarded: nil,
                 rulePsr: traceSamplingRate,
-                session: .init(plan: .plan1),
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                ),
                 spanId: spanId,
                 traceId: traceId
             ),
@@ -171,6 +177,7 @@ internal class RUMResourceScope: RUMScope {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
+            parentView: nil,
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
@@ -222,10 +229,10 @@ internal class RUMResourceScope: RUMScope {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(
@@ -249,7 +256,10 @@ internal class RUMResourceScope: RUMScope {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
@@ -280,14 +290,15 @@ internal class RUMResourceScope: RUMScope {
                 type: command.errorType
             ),
             os: .init(context: context),
+            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(

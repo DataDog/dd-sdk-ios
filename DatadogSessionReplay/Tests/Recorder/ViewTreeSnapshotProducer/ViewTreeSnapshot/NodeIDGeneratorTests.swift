@@ -6,6 +6,7 @@
 
 import XCTest
 import UIKit
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
