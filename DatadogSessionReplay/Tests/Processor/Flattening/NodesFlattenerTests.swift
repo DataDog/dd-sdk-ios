@@ -90,7 +90,7 @@ class NodesFlattenerTests: XCTestCase {
         DDAssertReflectionEqual(flattenedNodes, [coveringNode])
     }
 
-    func testFlattenNodes_removesNodeWhenItsOutsideOfViewport() {
+    func testFlattenNodes_removesNodeWhenItsOutsideOfViewportSize() {
         // Given
         let viewportSize = CGSize.mockRandom()
         let outsideFrame = CGRect(origin: .init(x: viewportSize.width, y: viewportSize.height), size: .mockRandom())
@@ -106,5 +106,23 @@ class NodesFlattenerTests: XCTestCase {
 
         // Then
         DDAssertReflectionEqual(flattenedNodes, [])
+    }
+
+    func testFlattenNodes_doesntRemovesNodeWhenItIntersectsWithViewportSize() {
+        // Given
+        let viewportSize = CGSize.mockRandom()
+        let intersectingFrame = CGRect(origin: .init(x: viewportSize.width - 1, y: viewportSize.height - 1), size: .mockRandom())
+        let intersectingNode = Node.mockWith(
+            viewAttributes: .mock(fixture: .opaque),
+            wireframesBuilder: ShapeWireframesBuilderMock(wireframeRect: intersectingFrame)
+        )
+        let snapshot = ViewTreeSnapshot.mockWith(viewportSize: viewportSize, nodes: [intersectingNode])
+        let flattener = NodesFlattener()
+
+        // When
+        let flattenedNodes = flattener.flattenNodes(in: snapshot)
+
+        // Then
+        DDAssertReflectionEqual(flattenedNodes, [intersectingNode])
     }
 }
