@@ -25,5 +25,25 @@ public struct DD {
     )
 }
 
+import OSLog
+
 /// Function printing `String` content to console.
-public var consolePrint: (String) -> Void = { print($0) }
+public var consolePrint: (String, CoreLoggerLevel) -> Void = { message, level in
+    if #available(iOS 14.0, *) {
+        switch level {
+        case .debug: Logger.datadog.debug("\(message)")
+        case .warn: Logger.datadog.warning("\(message)")
+        case .error: Logger.datadog.critical("\(message)")
+        case .critical: Logger.datadog.fault("\(message)")
+        }
+    } else {
+        print(message)
+    }
+}
+
+#if canImport(OSLog)
+@available(iOS 14.0, *)
+extension Logger {
+    static let datadog = Logger(subsystem: "dd-sdk-ios", category: "insights")
+}
+#endif

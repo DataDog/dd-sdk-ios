@@ -73,7 +73,7 @@ public class Tracer {
 
             return feature.tracer
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
             return DDNoopTracer()
         }
     }

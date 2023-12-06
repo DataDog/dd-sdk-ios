@@ -40,7 +40,7 @@ public class RUMMonitor {
 
             return feature.monitor
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
             return NOPMonitor()
         }
     }

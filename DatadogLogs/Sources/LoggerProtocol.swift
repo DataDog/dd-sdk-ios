@@ -16,6 +16,15 @@ public enum LogLevel: Int, Codable {
     case warn
     case error
     case critical
+
+    func asCoreLoggerLevel() -> CoreLoggerLevel {
+        switch self {
+        case .debug, .info, .notice: return .debug
+        case .warn: return .warn
+        case .error: return .error
+        case .critical: return .critical
+        }
+    }
 }
 
 /// Datadog Logger.

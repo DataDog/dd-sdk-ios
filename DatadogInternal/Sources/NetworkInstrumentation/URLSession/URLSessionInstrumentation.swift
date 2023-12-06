@@ -17,7 +17,7 @@ public enum URLSessionInstrumentation {
         do {
             try enableOrThrow(with: configuration, in: core)
         } catch let error {
-           consolePrint("\(error)")
+            consolePrint("\(error)", .error)
         }
     }
 
@@ -37,7 +37,7 @@ public enum URLSessionInstrumentation {
         do {
             try disableOrThrow(delegateClass: delegateClass, in: core)
         } catch let error {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
         }
     }
 

@@ -39,7 +39,7 @@ public final class CrashReporting {
             core.telemetry
                 .configuration(trackErrors: true)
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
         }
     }
 }
