@@ -17,8 +17,8 @@ extension CGFloat: AnyMockable, RandomMockable {
         return mockRandom(min: .leastNormalMagnitude, max: .greatestFiniteMagnitude)
     }
 
-    static func mockRandom(min: CGFloat, max: CGFloat) -> CGFloat {
-        return .random(in: min...max)
+    static func mockRandom(min: CGFloat, max: CGFloat?) -> CGFloat {
+        return .random(in: min...(max ?? .greatestFiniteMagnitude))
     }
 }
 
@@ -32,13 +32,17 @@ extension CGRect: AnyMockable, RandomMockable {
     }
 
     static func mockRandom(
+        minX: CGFloat = 0,
+        maxX: CGFloat? = nil,
+        minY: CGFloat = 0,
+        maxY: CGFloat? = nil,
         minWidth: CGFloat = 0,
         maxWidth: CGFloat? = nil,
         minHeight: CGFloat = 0,
         maxHeight: CGFloat? = nil
     ) -> CGRect {
         return .init(
-            origin: .mockRandom(),
+            origin: .mockRandom(minX: minX, maxX: maxX, minY: minY, maxY: maxY),
             size: .mockRandom(minWidth: minWidth, maxWidth: maxWidth, minHeight: minHeight, maxHeight: maxHeight)
         )
     }
@@ -50,9 +54,18 @@ extension CGPoint: AnyMockable, RandomMockable {
     }
 
     public static func mockRandom() -> CGPoint {
+        return mockRandom(minX: -1000, maxX: 1000, minY: -1000, maxY: 1000)
+    }
+
+    public static func mockRandom(
+        minX: CGFloat,
+        maxX: CGFloat?,
+        minY: CGFloat,
+        maxY: CGFloat?
+    ) -> CGPoint {
         return .init(
-            x: .mockRandom(min: -1_000, max: 1_000),
-            y: .mockRandom(min: -1_000, max: 1_000)
+            x: .mockRandom(min: minX, max: maxX),
+            y: .mockRandom(min: minY, max: maxY)
         )
     }
 }
