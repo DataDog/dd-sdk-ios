@@ -38,7 +38,7 @@ public struct CodeProfilingInstrumentConfiguration: InstrumentConfiguration {
 
     public var description: String {
         """
-        Code Profiling Instrument Configuration:
+        Code Profiling Instrument:
         - profileName: \(profileName)
         - estimatedSampleInterval: \(estimatedSampleInterval)s
         - metricName:

@@ -33,7 +33,7 @@ public struct MemoryInstrumentConfiguration: InstrumentConfiguration {
 
     public var description: String {
         """
-        Memory Instrument Configuration:
+        Memory Instrument:
         - samplingInterval: \(samplingInterval)s
         - metricName:
             - \(metricName)

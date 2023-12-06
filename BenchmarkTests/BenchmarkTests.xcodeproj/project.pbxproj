@@ -55,6 +55,7 @@
 		619249CD2A7C05AC0073AD6B /* DebugViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619249CC2A7C05AC0073AD6B /* DebugViewController.swift */; };
 		619249CF2A7C06B20073AD6B /* Debug.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 619249CE2A7C06B20073AD6B /* Debug.storyboard */; };
 		61CFB4C32B1F57FD00612D3B /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 61CFB4C22B1F57FD00612D3B /* SRFixtures */; };
+		61CFB4C62B20627000612D3B /* MetricInstrument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CFB4C52B20627000612D3B /* MetricInstrument.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -146,6 +147,7 @@
 		619249C92A7BD9330073AD6B /* Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Helpers.swift; sourceTree = "<group>"; };
 		619249CC2A7C05AC0073AD6B /* DebugViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugViewController.swift; sourceTree = "<group>"; };
 		619249CE2A7C06B20073AD6B /* Debug.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Debug.storyboard; sourceTree = "<group>"; };
+		61CFB4C52B20627000612D3B /* MetricInstrument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricInstrument.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -308,6 +310,7 @@
 		614C80DA2A7E17C5004AF448 /* Instruments */ = {
 			isa = PBXGroup;
 			children = (
+				61CFB4C42B20625E00612D3B /* Metric */,
 				614C80FD2A815EDD004AF448 /* CodeProfiler */,
 				614C80E92A7E2016004AF448 /* Memory */,
 				614C80EC2A7E2305004AF448 /* Instrument.swift */,
@@ -381,6 +384,14 @@
 				619249CE2A7C06B20073AD6B /* Debug.storyboard */,
 			);
 			path = Debug;
+			sourceTree = "<group>";
+		};
+		61CFB4C42B20625E00612D3B /* Metric */ = {
+			isa = PBXGroup;
+			children = (
+				61CFB4C52B20627000612D3B /* MetricInstrument.swift */,
+			);
+			path = Metric;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -570,6 +581,7 @@
 			files = (
 				614C80E02A7E185C004AF448 /* MetricEvent.swift in Sources */,
 				614C80E22A7E18B2004AF448 /* MetricUploader.swift in Sources */,
+				61CFB4C62B20627000612D3B /* MetricInstrument.swift in Sources */,
 				614C80DC2A7E17E4004AF448 /* MemoryInstrument.swift in Sources */,
 				614C80E42A7E18EE004AF448 /* Utils.swift in Sources */,
 				614C80ED2A7E2305004AF448 /* Instrument.swift in Sources */,

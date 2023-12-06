@@ -25,11 +25,13 @@ internal class BenchmarkViewModel: ObservableObject {
     @Published var isMemoryInstrumentEnabled: Bool
     @Published var memorySamplingInterval: Double
 
+    @Published var isBatchingAndUploadInstrumentEnabled: Bool
+
     @Published var showSummary: Bool
 
     var canGoNext: Bool {
         let hasScenario = selectedScenario != nil
-        let hasAnyInstrument = isMemoryInstrumentEnabled
+        let hasAnyInstrument = isMemoryInstrumentEnabled || isBatchingAndUploadInstrumentEnabled
         return hasScenario && hasAnyInstrument
     }
 
@@ -53,6 +55,7 @@ internal class BenchmarkViewModel: ObservableObject {
 
         // Instruments:
         self.isMemoryInstrumentEnabled = false
+        self.isBatchingAndUploadInstrumentEnabled = false
         self.memorySamplingInterval = 1
 
         for instrument in benchmark.instruments {
@@ -60,6 +63,8 @@ internal class BenchmarkViewModel: ObservableObject {
             case let .memory(samplingInterval):
                 self.isMemoryInstrumentEnabled = true
                 self.memorySamplingInterval = samplingInterval
+            case .batchingAndUpload:
+                self.isBatchingAndUploadInstrumentEnabled = true
             }
         }
 
@@ -78,6 +83,9 @@ internal class BenchmarkViewModel: ObservableObject {
                 var enabled: [Benchmark.Instrument] = []
                 if isMemoryInstrumentEnabled {
                     enabled.append(.memory(samplingInterval: memorySamplingInterval))
+                }
+                if isBatchingAndUploadInstrumentEnabled {
+                    enabled.append(.batchingAndUpload)
                 }
                 return enabled
             }(),
@@ -143,6 +151,10 @@ struct BenchmarkConfigurationView: View {
                                     .font(.system(.footnote))
                                 Slider(value: $vm.memorySamplingInterval, in: 0.1...5.0, step: 0.1)
                             }
+                        }
+
+                        Toggle(isOn: $vm.isBatchingAndUploadInstrumentEnabled) {
+                            Text("Batching & Upload")
                         }
                     }
                 }

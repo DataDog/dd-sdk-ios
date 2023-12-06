@@ -61,6 +61,7 @@ internal struct Benchmark {
 
     enum Instrument {
         case memory(samplingInterval: TimeInterval)
+        case batchingAndUpload
     }
 
     var instrumentConfigurations: [InstrumentConfiguration] {
@@ -68,15 +69,31 @@ internal struct Benchmark {
             return []
         }
 
-        return instruments.map { instrument in
+        var configurations: [InstrumentConfiguration] = []
+
+        instruments.forEach { instrument in
             switch instrument {
             case let .memory(samplingInterval):
-                return MemoryInstrumentConfiguration(
+                let memory = MemoryInstrumentConfiguration(
                     samplingInterval: samplingInterval,
                     metricName: "benchmark.ios.\(scenarioConfiguration.id).memory",
                     metricTags: metricTags
                 )
+                configurations.append(memory)
+            case .batchingAndUpload:
+                let writes = MetricInstrumentConfiguration(
+                    metricName: "benchmark.ios.\(scenarioConfiguration.id).data_writes",
+                    metricTags: metricTags
+                )
+                let uploads = MetricInstrumentConfiguration(
+                    metricName: "benchmark.ios.\(scenarioConfiguration.id).data_upload",
+                    metricTags: metricTags
+                )
+                configurations.append(writes)
+                configurations.append(uploads)
             }
         }
+
+        return configurations
     }
 }
