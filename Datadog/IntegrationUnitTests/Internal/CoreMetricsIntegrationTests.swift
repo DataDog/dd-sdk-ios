@@ -20,6 +20,7 @@ class CoreMetricsIntegrationTests: XCTestCase {
         XCTAssertEqual(BatchMetric.trackValue(for: LogsFeature.name), "logs")
         #if !os(tvOS)
         XCTAssertEqual(BatchMetric.trackValue(for: SessionReplayFeature.name), "sr")
+        XCTAssertEqual(BatchMetric.trackValue(for: ResourcesFeature.name), "sr-resources")
         #endif
     }
 }
