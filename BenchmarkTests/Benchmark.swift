@@ -25,7 +25,10 @@ internal struct Benchmark {
     var runType: RunType = .baseline
     var skipUploads = Environment.isDebug ? Environment.skipBenchmarkDataUpload : false
     var scenario: Scenario? = Environment.isDebug ? .debug : nil
-    var instruments: [Instrument] = [.memory(samplingInterval: 1)]
+    var instruments: [Instrument] = [
+        .memory(samplingInterval: 1),
+        .batchingAndUpload
+    ]
 
     let service: String = "ios-benchmark"
     var env: Env = Environment.isDebug ? .local : .synthetics
@@ -82,11 +85,11 @@ internal struct Benchmark {
                 configurations.append(memory)
             case .batchingAndUpload:
                 let writes = MetricInstrumentConfiguration(
-                    metricName: "benchmark.ios.\(scenarioConfiguration.id).data_writes",
+                    metricName: dataWriteMetricName(for: scenarioConfiguration),
                     metricTags: metricTags
                 )
                 let uploads = MetricInstrumentConfiguration(
-                    metricName: "benchmark.ios.\(scenarioConfiguration.id).data_upload",
+                    metricName: dataUploadMetricName(for: scenarioConfiguration),
                     metricTags: metricTags
                 )
                 configurations.append(writes)
@@ -96,4 +99,12 @@ internal struct Benchmark {
 
         return configurations
     }
+}
+
+func dataWriteMetricName(for scenarioConfiguration: ScenarioConfiguration) -> String {
+    "benchmark.ios.\(scenarioConfiguration.id).data_write"
+}
+
+func dataUploadMetricName(for scenarioConfiguration: ScenarioConfiguration) -> String {
+    "benchmark.ios.\(scenarioConfiguration.id).data_upload"
 }

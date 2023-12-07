@@ -88,6 +88,8 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - fallback: The fallback closure to call when the message could not be
     ///               processed by any Features on the bus.
     func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+
+    var profilingHooks: Profiling { get }
 }
 
 extension DatadogCoreProtocol {
@@ -256,4 +258,11 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+
+    public var profilingHooks: Profiling { NOPProfiling() }
+}
+
+public class NOPProfiling: Profiling {
+    public var onDataWrite: ((UInt64) -> Void)?
+    public var onDataUpload: ((UInt64) -> Void)?
 }

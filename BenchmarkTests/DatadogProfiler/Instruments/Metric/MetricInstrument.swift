@@ -20,7 +20,7 @@ public struct MetricInstrumentConfiguration: InstrumentConfiguration {
 
     public func createInstrument(with profilerConfiguration: ProfilerConfiguration) -> Any {
         return MetricInstrument(
-            instrumentName: metricName,
+            metricName: metricName,
             metricUploader: MetricUploader(
                 apiKey: profilerConfiguration.apiKey,
                 metricConfiguration: MetricConfiguration(name: metricName, tags: metricTags, type: .gauge)
@@ -47,15 +47,22 @@ internal class MetricInstrument: Instrument {
         var value: Double
     }
 
+    let metricName: String
+
     private let uploader: MetricUploader
     private var samples: [Sample] = []
 
     init(
-        instrumentName: String,
+        metricName: String,
         metricUploader: MetricUploader
     ) {
-        self.instrumentName = instrumentName
+        self.metricName = metricName
+        self.instrumentName = metricName
         self.uploader = metricUploader
+    }
+
+    func collect(value: Double) {
+        samples.append(Sample(timestamp: Date().timeIntervalSince1970, value: value))
     }
 
     let instrumentName: String

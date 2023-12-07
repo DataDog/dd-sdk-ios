@@ -53,6 +53,8 @@ internal final class DataUploader: DataUploaderType {
 
         _ = semaphore.wait(timeout: .distantFuture)
 
+        uploadStatus?.requestBodySize = request.httpBody?.count
+
         return uploadStatus ?? DataUploader.unreachableUploadStatus
     }
 }

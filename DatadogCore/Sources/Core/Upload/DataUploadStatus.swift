@@ -63,6 +63,8 @@ internal struct DataUploadStatus {
     let userDebugDescription: String
 
     let error: DataUploadError?
+
+    var requestBodySize: Int? = nil
 }
 
 extension DataUploadStatus {

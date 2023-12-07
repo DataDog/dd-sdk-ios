@@ -36,6 +36,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     private var lastWritableFileApproximatedSize: UInt64 = 0
     /// Telemetry interface.
     let telemetry: Telemetry
+    let profiling: Profiling
 
     /// Extra information for metrics set from this orchestrator.
     struct MetricsData {
@@ -55,12 +56,14 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         performance: StoragePerformancePreset,
         dateProvider: DateProvider,
         telemetry: Telemetry,
+        profiling: Profiling,
         metricsData: MetricsData? = nil
     ) {
         self.directory = directory
         self.performance = performance
         self.dateProvider = dateProvider
         self.telemetry = telemetry
+        self.profiling = profiling
         self.metricsData = metricsData
     }
 
@@ -75,6 +78,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// - Returns: `WritableFile` capable of writing data of given size
     func getNewWritableFile(writeSize: UInt64) throws -> WritableFile {
         try validate(writeSize: writeSize)
+        profiling.onDataWrite?(writeSize)
         if let closedBatchName = lastWritableFileName {
             sendBatchClosedMetric(fileName: closedBatchName, forcedNew: true)
         }
@@ -87,6 +91,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// - Returns: `WritableFile` capable of writing data of given size
     func getWritableFile(writeSize: UInt64) throws -> WritableFile {
         try validate(writeSize: writeSize)
+        profiling.onDataWrite?(writeSize)
 
         if let lastWritableFile = reuseLastWritableFileIfPossible(writeSize: writeSize) { // if last writable file can be reused
             lastWritableFileObjectsCount += 1

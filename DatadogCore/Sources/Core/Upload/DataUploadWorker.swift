@@ -41,6 +41,8 @@ internal class DataUploadWorker: DataUploadWorkerType {
     /// Telemetry interface.
     private let telemetry: Telemetry
 
+    private let profiling: Profiling
+
     /// Background task coordinator responsible for registering and ending background tasks for UIKit targets.
     private var backgroundTaskCoordinator: BackgroundTaskCoordinator?
 
@@ -53,6 +55,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         delay: DataUploadDelay,
         featureName: String,
         telemetry: Telemetry,
+        profiling: Profiling,
         maxBatchesPerUpload: Int,
         backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
     ) {
@@ -66,6 +69,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.featureName = featureName
         self.telemetry = telemetry
+        self.profiling = profiling
 
         self.readWork = DispatchWorkItem { [weak self] in
             guard let self = self else {
@@ -127,6 +131,9 @@ internal class DataUploadWorker: DataUploadWorkerType {
                             batch,
                             reason: .intakeCode(responseCode: uploadStatus.responseCode)
                         )
+                        if let requestBodySize = uploadStatus.requestBodySize {
+                            self.profiling.onDataUpload?(UInt64(requestBodySize))
+                        }
                     }
 
                     if let error = uploadStatus.error {

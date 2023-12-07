@@ -20,7 +20,8 @@ internal struct FeatureUpload {
         performance: PerformancePreset,
         backgroundTasksEnabled: Bool,
         maxBatchesPerUpload: Int,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        profiling: Profiling
     ) {
         let uploadQueue = DispatchQueue(
             label: "com.datadoghq.ios-sdk-\(featureName)-upload",
@@ -51,6 +52,7 @@ internal struct FeatureUpload {
                 delay: DataUploadDelay(performance: performance),
                 featureName: featureName,
                 telemetry: telemetry,
+                profiling: profiling,
                 maxBatchesPerUpload: maxBatchesPerUpload,
                 backgroundTaskCoordinator: backgroundTaskCoordinator
             )

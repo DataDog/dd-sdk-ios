@@ -468,6 +468,10 @@
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
+		61E8C4FA2B20CDF600E709B4 /* Profiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C4F92B20CDF500E709B4 /* Profiling.swift */; };
+		61E8C4FB2B20CDF600E709B4 /* Profiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C4F92B20CDF500E709B4 /* Profiling.swift */; };
+		61E8C4FF2B20CE2600E709B4 /* CoreProfiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C4FC2B20CE1400E709B4 /* CoreProfiling.swift */; };
+		61E8C5002B20CE2700E709B4 /* CoreProfiling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C4FC2B20CE1400E709B4 /* CoreProfiling.swift */; };
 		61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */; };
 		61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED39D326C2A36B002C0F26 /* DataUploadStatus.swift */; };
 		61EF78C1257F842000EDCCB3 /* FeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78C0257F842000EDCCB3 /* FeatureTests.swift */; };
@@ -1541,13 +1545,6 @@
 			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
 			remoteInfo = Example;
 		};
-		61441C7424619FED003D8BB8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 61133B79242393DE00786299 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
-			remoteInfo = Example;
-		};
 		6158155A2AB4534F002C60D7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -2348,6 +2345,8 @@
 		61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureMocks.swift; sourceTree = "<group>"; };
 		61E5333524B84B43003D6C4E /* RUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitor.swift; sourceTree = "<group>"; };
 		61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMViewController.swift; sourceTree = "<group>"; };
+		61E8C4F92B20CDF500E709B4 /* Profiling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Profiling.swift; sourceTree = "<group>"; };
+		61E8C4FC2B20CE1400E709B4 /* CoreProfiling.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreProfiling.swift; sourceTree = "<group>"; };
 		61E909E624A24DD3005EA2DE /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
 		61E909E724A24DD3005EA2DE /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
 		61E909E924A24DD3005EA2DE /* OTTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTTracer.swift; sourceTree = "<group>"; };
@@ -3731,6 +3730,7 @@
 		61133B9E2423979B00786299 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				61E8C4FC2B20CE1400E709B4 /* CoreProfiling.swift */,
 				D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */,
 				D214DAA429E072D7004D0AE8 /* MessageBus.swift */,
 				D2EFA866286DA82700F1FAA6 /* Context */,
@@ -5255,6 +5255,7 @@
 		D23039CD298D5235001A1FA3 /* Telemetry */ = {
 			isa = PBXGroup;
 			children = (
+				61E8C4F92B20CDF500E709B4 /* Profiling.swift */,
 				D23039CE298D5235001A1FA3 /* InternalLogger.swift */,
 				D23039CF298D5235001A1FA3 /* CoreLogger.swift */,
 				D23039D0298D5235001A1FA3 /* Telemetry.swift */,
@@ -7320,6 +7321,7 @@
 				D20605A92874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
 				614396722A67D74F00197326 /* CoreMetrics.swift in Sources */,
 				D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */,
+				61E8C4FF2B20CE2600E709B4 /* CoreProfiling.swift in Sources */,
 				613E792F2577B0F900DFCC17 /* Reader.swift in Sources */,
 				61D3E0D3277B23F1008BE766 /* KronosDNSResolver.swift in Sources */,
 				D2DC4BF627F484AA00E4FB96 /* DataEncryption.swift in Sources */,
@@ -7876,7 +7878,6 @@
 				D2303A03298D5236001A1FA3 /* DDError.swift in Sources */,
 				D23039F4298D5236001A1FA3 /* AnyCodable.swift in Sources */,
 				61454FE32A7916FB00991762 /* FastProfilers.swift in Sources */,
-				D23039ED298D5236001A1FA3 /* FeatureBaggage.swift in Sources */,
 				D29A9F9529DDB1DB005C54A4 /* UIKitExtensions.swift in Sources */,
 				D2EBEE2529BA160F00B15732 /* TraceID.swift in Sources */,
 				D2EBEE2129BA160F00B15732 /* W3CHTTPHeaders.swift in Sources */,
@@ -7914,6 +7915,7 @@
 				D2EBEE2429BA160F00B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				D23039E8298D5236001A1FA3 /* DatadogContext.swift in Sources */,
 				D23039FF298D5236001A1FA3 /* Foundation+Datadog.swift in Sources */,
+				61E8C4FA2B20CDF600E709B4 /* Profiling.swift in Sources */,
 				D2F8235329915E12003C7E99 /* DatadogSite.swift in Sources */,
 				D2D3199A29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				D2EBEE2729BA160F00B15732 /* B3HTTPHeadersWriter.swift in Sources */,
@@ -8417,6 +8419,7 @@
 				D2DC4BF727F484AA00E4FB96 /* DataEncryption.swift in Sources */,
 				614396732A67D74F00197326 /* CoreMetrics.swift in Sources */,
 				D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */,
+				61E8C5002B20CE2700E709B4 /* CoreProfiling.swift in Sources */,
 				D20605A7287476230047275C /* ServerOffsetPublisher.swift in Sources */,
 				D21C26C628A3B49C005DD405 /* FeatureStorage.swift in Sources */,
 				D2CB6E4D27C50EAE00A62B57 /* Globals.swift in Sources */,
@@ -8685,7 +8688,6 @@
 				D2DA2360298D57AA00C6C7E6 /* DDError.swift in Sources */,
 				D2DA2361298D57AA00C6C7E6 /* AnyCodable.swift in Sources */,
 				61454FE42A7916FB00991762 /* FastProfilers.swift in Sources */,
-				D2DA2362298D57AA00C6C7E6 /* FeatureBaggage.swift in Sources */,
 				D29A9F9629DDB1DB005C54A4 /* UIKitExtensions.swift in Sources */,
 				D2EBEE3329BA161100B15732 /* TraceID.swift in Sources */,
 				D2EBEE2F29BA161100B15732 /* W3CHTTPHeaders.swift in Sources */,
@@ -8723,6 +8725,7 @@
 				D2EBEE3229BA161100B15732 /* W3CHTTPHeadersReader.swift in Sources */,
 				D2DA2374298D57AA00C6C7E6 /* DatadogContext.swift in Sources */,
 				D2DA2375298D57AA00C6C7E6 /* Foundation+Datadog.swift in Sources */,
+				61E8C4FB2B20CDF600E709B4 /* Profiling.swift in Sources */,
 				D2F8235429915E12003C7E99 /* DatadogSite.swift in Sources */,
 				D2D3199B29E98D970004F169 /* DefaultJSONEncoder.swift in Sources */,
 				D2EBEE3529BA161100B15732 /* B3HTTPHeadersWriter.swift in Sources */,
@@ -8754,7 +8757,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61BCC1B42A790EFD000963FB /* ProfilersTests.swift in Sources */,
-				D2160CD629C0DF6700FAA9A5 /* URLSessionSwizzlerTests.swift in Sources */,
 				3C394EFA2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
 				D26416B62A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
 				D2EBEE3C29BA163E00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
@@ -8799,7 +8801,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				61BCC1B52A790EFD000963FB /* ProfilersTests.swift in Sources */,
-				D2160CD729C0DF6700FAA9A5 /* URLSessionSwizzlerTests.swift in Sources */,
 				3C394EFB2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */,
 				D26416B72A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
 				D2EBEE4029BA163F00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
@@ -8906,11 +8907,6 @@
 			isa = PBXTargetDependency;
 			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
 			targetProxy = 61441C5924619A08003D8BB8 /* PBXContainerItemProxy */;
-		};
-		61441C7524619FED003D8BB8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 61441C0124616DE9003D8BB8 /* Example iOS */;
-			targetProxy = 61441C7424619FED003D8BB8 /* PBXContainerItemProxy */;
 		};
 		6158155B2AB4534F002C60D7 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

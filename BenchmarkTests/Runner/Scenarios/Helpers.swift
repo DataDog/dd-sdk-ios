@@ -10,6 +10,8 @@ import DatadogLogs
 import DatadogRUM
 import DatadogSessionReplay
 
+import DatadogProfiler
+
 extension UIStoryboard {
     static var main: UIStoryboard { UIStoryboard(name: "Main", bundle: nil) }
     static var debug: UIStoryboard { UIStoryboard(name: "Debug", bundle: nil) }
@@ -20,10 +22,20 @@ extension ScenarioConfiguration {
         debug("ScenarioConfiguration.enableDatadogCore()")
         var config = Datadog.Configuration(clientToken: Environment.readClientToken(), env: benchmark.env.rawValue)
         config.service = benchmark.service
-        Datadog.initialize(with: config, trackingConsent: .granted)
+        let core = Datadog.initialize(with: config, trackingConsent: .granted)
 
         if Environment.isDebug {
             Datadog.verbosityLevel = .debug
+        }
+
+        core.profilingHooks.onDataUpload = { size in
+            let size = Double(size)
+            Profiler.instance?.collect(dataPoint: size, metricName: dataUploadMetricName(for: benchmark.scenario!.configuration))
+        }
+
+        core.profilingHooks.onDataWrite = { size in
+            let size = Double(size)
+            Profiler.instance?.collect(dataPoint: size, metricName: dataWriteMetricName(for: benchmark.scenario!.configuration))
         }
     }
 

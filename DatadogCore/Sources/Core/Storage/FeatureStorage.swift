@@ -118,7 +118,8 @@ extension FeatureStorage {
         dateProvider: DateProvider,
         performance: PerformancePreset,
         encryption: DataEncryption?,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        profiling: Profiling
     ) {
         let trackName = BatchMetric.trackValue(for: featureName)
 
@@ -131,6 +132,7 @@ extension FeatureStorage {
             performance: performance,
             dateProvider: dateProvider,
             telemetry: telemetry,
+            profiling: profiling,
             metricsData: trackName.map { trackName in
                 return FilesOrchestrator.MetricsData(
                     trackName: trackName,
@@ -144,6 +146,7 @@ extension FeatureStorage {
             performance: performance,
             dateProvider: dateProvider,
             telemetry: telemetry,
+            profiling: profiling,
             metricsData: trackName.map { trackName in
                 return FilesOrchestrator.MetricsData(
                     trackName: trackName,

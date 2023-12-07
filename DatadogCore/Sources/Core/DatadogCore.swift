@@ -211,6 +211,8 @@ internal final class DatadogCore {
         stores = [:]
         features = [:]
     }
+
+    var profilingHooks: Profiling = ProfilingHooks()
 }
 
 extension DatadogCore: DatadogCoreProtocol {
@@ -241,7 +243,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 dateProvider: dateProvider,
                 performance: performancePreset,
                 encryption: encryption,
-                telemetry: telemetry
+                telemetry: telemetry,
+                profiling: profilingHooks
             )
 
             let upload = FeatureUpload(
@@ -253,7 +256,8 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
                 maxBatchesPerUpload: maxBatchesPerUpload,
-                telemetry: telemetry
+                telemetry: telemetry,
+                profiling: profilingHooks
             )
 
             stores[T.name] = (

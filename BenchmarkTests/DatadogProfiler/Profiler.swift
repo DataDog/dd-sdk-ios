@@ -116,6 +116,19 @@ public class Profiler {
     }
 }
 
+/// TODO: Abstraction leaks here, heavily.
+public extension Profiler {
+    func collect(dataPoint: Double, metricName: String) {
+        for instrument in self.instruments {
+            if let instrument = instrument as? MetricInstrument {
+                if instrument.metricName == metricName {
+                    instrument.collect(value: dataPoint)
+                }
+            }
+        }
+    }
+}
+
 internal extension ProfilerUploadResult {
     init(instrumentResults: [(String, InstrumentUploadResult)]) {
         var summary: [String] = []
