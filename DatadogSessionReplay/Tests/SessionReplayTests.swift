@@ -11,18 +11,18 @@ import TestUtilities
 @testable import DatadogSessionReplay
 
 class SessionReplayTests: XCTestCase {
-    private var core: SingleFeatureCoreMock<SessionReplayFeature>! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
     private var config: SessionReplay.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUpWithError() throws {
-        core = SingleFeatureCoreMock()
+        core = FeatureRegistrationCoreMock()
         config = SessionReplay.Configuration(replaySampleRate: 100)
     }
 
     override func tearDown() {
         core = nil
         config = nil
-        XCTAssertEqual(SingleFeatureCoreMock<SessionReplayFeature>.referenceCount, 0)
+        XCTAssertEqual(FeatureRegistrationCoreMock.referenceCount, 0)
     }
 
     func testWhenEnabled_itRegistersSessionReplayFeature() {
@@ -31,6 +31,7 @@ class SessionReplayTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(core.get(feature: SessionReplayFeature.self))
+        XCTAssertNotNil(core.get(feature: ResourcesFeature.self))
     }
 
     func testWhenEnabledInNOPCore_itPrintsError() {
@@ -61,6 +62,8 @@ class SessionReplayTests: XCTestCase {
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, 42)
         XCTAssertEqual(sr.recordingCoordinator.privacy, .mask)
         XCTAssertNil((sr.requestBuilder as? SegmentRequestBuilder)?.customUploadURL)
+        let r = try XCTUnwrap(core.get(feature: ResourcesFeature.self))
+        XCTAssertNil((r.requestBuilder as? ResourceRequestBuilder)?.customUploadURL)
     }
 
     func testWhenEnabledWithReplaySampleRate() throws {
@@ -124,17 +127,5 @@ class SessionReplayTests: XCTestCase {
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
-    }
-
-    // MARK: - Behaviour Tests
-
-    func testWhenEnabled_itWritesEventsToCore() throws {
-        // When
-        SessionReplay.enable(with: config, in: core)
-
-        // Then
-        let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
-        sr.writer.write(nextRecord: EnrichedRecord(context: .mockRandom(), records: .mockRandom()))
-        XCTAssertEqual(core.events.count, 1)
     }
 }

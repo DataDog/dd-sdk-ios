@@ -20,6 +20,7 @@ internal enum BatchMetric {
         case "logging":         return "logs"
         case "tracing":         return "trace"
         case "session-replay":  return "sr"
+        case "session-replay-resources":  return "sr-resources"
         default:                return nil
         }
     }

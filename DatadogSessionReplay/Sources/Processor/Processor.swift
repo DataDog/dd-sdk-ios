@@ -41,7 +41,7 @@ internal class Processor: Processing {
     /// The background queue for executing all logic.
     private let queue: Queue
     /// Writes records to `DatadogCore`.
-    private let writer: Writing
+    private let writer: RecordWriting
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
@@ -62,7 +62,7 @@ internal class Processor: Processing {
 
     init(
         queue: Queue,
-        writer: Writing,
+        writer: RecordWriting,
         srContextPublisher: SRContextPublisher,
         telemetry: Telemetry
     ) {

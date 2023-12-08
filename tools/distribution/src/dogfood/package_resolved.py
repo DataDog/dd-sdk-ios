@@ -165,6 +165,7 @@ class PackageResolvedContentV1(PackageResolvedContent):
         return package_id.v1 in [p['package'] for p in pins]
 
     def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+        print(f'⚙️ ️ Updating "{package_id.v1}" in {self.path} (V1):')
         package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])
@@ -264,6 +265,7 @@ class PackageResolvedContentV2(PackageResolvedContent):
         return package_id.v2 in [p['identity'] for p in pins]
 
     def update_dependency(self, package_id: PackageID, new_branch: Optional[str], new_revision: str, new_version: Optional[str]):
+        print(f'⚙️ ️ Updating "{package_id.v2}" in {self.path} (V2):')
         package = self.__get_package(package_id=package_id)
 
         old_state = deepcopy(package['state'])

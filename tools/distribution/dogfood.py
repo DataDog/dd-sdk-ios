@@ -27,6 +27,7 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
     dd_sdk_package_path = '../..'
     os.system(f'swift package --package-path {dd_sdk_package_path} resolve')
     dd_sdk_ios_package = PackageResolvedFile(path=f'{dd_sdk_package_path}/Package.resolved')
+    dd_sdk_ios_package.print()
 
     if dd_sdk_ios_package.version > 2:
         raise Exception(
@@ -49,8 +50,8 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
                 map(lambda path: PackageResolvedFile(path=path), repository_package_resolved_paths)
             )
 
-            # Update version of `dd-sdk-ios`:
             for package in packages:
+                # Update version of `dd-sdk-ios`:
                 package.update_dependency(
                     package_id=PackageID(v1='DatadogSDK', v2='dd-sdk-ios'),
                     new_branch='dogfooding',
@@ -58,24 +59,24 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
                     new_version=None
                 )
 
-                # Add or update `dd-sdk-ios` dependencies
+                # Add or update `dd-sdk-ios` dependencies:
                 for dependency_id in dd_sdk_ios_package.read_dependency_ids():
                     dependency = dd_sdk_ios_package.read_dependency(package_id=dependency_id)
 
                     if package.has_dependency(package_id=dependency_id):
                         package.update_dependency(
                             package_id=dependency_id,
-                            new_branch=dependency['state']['branch'],
+                            new_branch=dependency['state'].get('branch'),
                             new_revision=dependency['state']['revision'],
-                            new_version=dependency['state']['version'],
+                            new_version=dependency['state'].get('version'),
                         )
                     else:
                         package.add_dependency(
                             package_id=dependency_id,
                             repository_url=dependency['repositoryURL'],
-                            branch=dependency['state']['branch'],
+                            branch=dependency['state'].get('branch'),
                             revision=dependency['state']['revision'],
-                            version=dependency['state']['version']
+                            version=dependency['state'].get('version'),
                         )
 
                 package.save()

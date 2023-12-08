@@ -42,7 +42,7 @@ internal class SnapshotTestCase: XCTestCase {
         // Set up SR recorder:
         let processor = Processor(
             queue: NoQueue(),
-            writer: Writer(),
+            writer: RecordWriter(core: PassthroughCoreMock()),
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
             telemetry: TelemetryMock()
         )
