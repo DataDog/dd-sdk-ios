@@ -10,6 +10,7 @@ import DatadogInternal
 
 internal class SessionReplayFeature: DatadogRemoteFeature {
     static let name: String = "session-replay"
+    
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
@@ -18,8 +19,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
     /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
-    /// Processes each new snapshot on a background thread and transforms it into records.
-    let processor: SnapshotProcessing
 
     // MARK: - Initialization
 
@@ -27,10 +26,15 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let processor = SnapshotProcessor(
-            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
-            writer: RecordWriter(core: core),
+        let snapshotProcessor = SnapshotProcessor(
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.snapshot-processor"),
+            recordsWriter: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
+            telemetry: core.telemetry
+        )
+        let resourceProcessor = ResourceProcessor(
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
+            writer: ResourcesWriter(core: core),
             telemetry: core.telemetry
         )
 
@@ -38,7 +42,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         let messageReceiver = RUMContextReceiver()
 
         let recorder = try Recorder(
-            processor: processor,
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: resourceProcessor,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
@@ -53,7 +58,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         self.messageReceiver = messageReceiver
         self.recordingCoordinator = recordingCoordinator
-        self.processor = processor
+
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry

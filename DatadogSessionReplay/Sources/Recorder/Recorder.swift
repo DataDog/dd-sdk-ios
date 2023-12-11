@@ -60,11 +60,14 @@ public class Recorder: Recording {
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: SnapshotProcessing
+    /// Processes resources on a background thread.
+    private let resourceProcessor: ResourceProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
     convenience init(
-        processor: SnapshotProcessing,
+        snapshotProcessor: SnapshotProcessing,
+        resourceProcessor: ResourceProcessing,
         telemetry: Telemetry,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
@@ -81,7 +84,8 @@ public class Recorder: Recording {
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: processor,
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: resourceProcessor,
             telemetry: telemetry
         )
     }
@@ -91,12 +95,14 @@ public class Recorder: Recording {
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: SnapshotProcessing,
+        resourceProcessor: ResourceProcessing,
         telemetry: Telemetry
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
+        self.resourceProcessor = resourceProcessor
         self.telemetry = telemetry
         uiApplicationSwizzler.swizzle()
     }
@@ -117,6 +123,13 @@ public class Recorder: Recording {
             }
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
+
+            if !viewTreeSnapshot.resources.isEmpty {
+                resourceProcessor.process(
+                    resources: viewTreeSnapshot.resources,
+                    context: .init(recorderContext.applicationID)
+                )
+            }
         } catch let error {
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }

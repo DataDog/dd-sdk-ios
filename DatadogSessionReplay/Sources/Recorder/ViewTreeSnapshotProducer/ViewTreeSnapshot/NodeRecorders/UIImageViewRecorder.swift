@@ -6,6 +6,16 @@
 
 #if os(iOS)
 import UIKit
+@_spi(Internal)
+
+extension UIImage: SessionReplayResource {
+    public var identifier: String {
+        return srIdentifier
+    }
+    public var data: Data {
+        return scaledDownToApproximateSize(256.KB)
+    }
+}
 
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier = UUID()
@@ -62,6 +72,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } else {
             contentFrame = nil
         }
+        let shouldRecordImage = shouldRecordImagePredicate(imageView)
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -71,10 +82,19 @@ internal struct UIImageViewRecorder: NodeRecorder {
             image: imageView.image,
             imageDataProvider: context.imageDataProvider,
             tintColor: tintColorProvider(imageView),
-            shouldRecordImage: shouldRecordImagePredicate(imageView)
+            shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .record, nodes: [node])
+        return SpecificElement(
+           subtreeStrategy: .record,
+           nodes: [node],
+           resources: [imageView.image].filter { image in
+               defer {
+                   image?.recorded = true
+               }
+               return image?.recorded == false && shouldRecordImage
+           }.compactMap { $0 }
+       )
     }
 }
 

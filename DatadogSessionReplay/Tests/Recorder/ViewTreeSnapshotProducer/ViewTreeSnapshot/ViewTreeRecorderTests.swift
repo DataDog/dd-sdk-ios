@@ -15,6 +15,7 @@ private struct MockSemantics: NodeSemantics {
     static var importance: Int = .mockAny()
     var subtreeStrategy: NodeSubtreeStrategy
     var nodes: [Node]
+    var resources: [Resource]
 
     init(subtreeStrategy: NodeSubtreeStrategy, nodeNames: [String]) {
         self.subtreeStrategy = subtreeStrategy
@@ -48,7 +49,7 @@ class ViewTreeRecorderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in nil }),
         ]
         let recorder = ViewTreeRecorder(nodeRecorders: recorders)
-        _ = recorder.recordNodes(for: rootView, in: .mockAny())
+        _ = recorder.record(rootView, in: .mockAny())
 
         // Then
         XCTAssertEqual(recorders[0].queriedViews, [rootView, childView, grandchildView])
@@ -59,9 +60,9 @@ class ViewTreeRecorderTests: XCTestCase {
     func testItQueriesNodeRecordersUntilOneFindsBestSemantics() {
         // Given
         let view = UIView(frame: .mockRandom())
-
+        Node.mockAny()
         let unknownElement = UnknownElement.constant
-        let ambiguousElement = AmbiguousElement(nodes: .mockAny())
+        let ambiguousElement = AmbiguousElement(nodes: .mockAny(), resources: .mockAny())
         let specificElement = SpecificElement(subtreeStrategy: .mockRandom(), nodes: .mockAny())
 
         // When
@@ -73,7 +74,7 @@ class ViewTreeRecorderTests: XCTestCase {
             NodeRecorderMock(resultForView: { _ in specificElement }), // ... so this one should not be queried
         ]
         let recorder = ViewTreeRecorder(nodeRecorders: recorders)
-        _ = recorder.recordNodes(for: view, in: .mockAny())
+        _ = recorder.record(view, in: .mockAny())
 
         // Then
         XCTAssertEqual(recorders[0].queriedViews, [view], "It should be queried as semantics is not known")
@@ -131,7 +132,7 @@ class ViewTreeRecorderTests: XCTestCase {
         // When
         let nodeRecorder = NodeRecorderMock(resultForView: { view in semanticsByView[view] })
         let recorder = ViewTreeRecorder(nodeRecorders: [nodeRecorder])
-        let nodes = recorder.recordNodes(for: rootView, in: .mockRandom())
+        let nodes = recorder.record(rootView, in: .mockRandom())
 
         // Then
         let expectedNodes = ["rootView", "a", "aa", "aav1", "aav2", "aav3", "ab", "aba", "abb", "b", "c"]
@@ -161,7 +162,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         views.forEach { view in
             // When
-            let nodes = recorder.recordNodes(for: view, in: .mockRandom())
+            let nodes = recorder.record(view, in: .mockRandom())
 
             // Then
             XCTAssertTrue(nodes.isEmpty, "No nodes should be recorded for \(type(of: view)) when it is not visible")
@@ -179,19 +180,19 @@ class ViewTreeRecorderTests: XCTestCase {
         let `switch` = UISwitch.mock(withFixture: .visible(.noAppearance))
 
         // When
-        let viewNodes = recorder.recordNodes(for: view, in: .mockRandom())
+        let viewNodes = recorder.record(view, in: .mockRandom())
         XCTAssertTrue(viewNodes.isEmpty, "No nodes should be recorded for `UIView` when it has no appearance")
 
-        let labelNodes = recorder.recordNodes(for: label, in: .mockRandom())
+        let labelNodes = recorder.record(label, in: .mockRandom())
         XCTAssertTrue(labelNodes.isEmpty, "No nodes should be recorded for `UILabel` when it has no appearance")
 
-        let imageViewNodes = recorder.recordNodes(for: imageView, in: .mockRandom())
+        let imageViewNodes = recorder.record(imageView, in: .mockRandom())
         XCTAssertTrue(imageViewNodes.isEmpty, "No nodes should be recorded for `UIImageView` when it has no appearance")
 
-        let textFieldNodes = recorder.recordNodes(for: textField, in: .mockRandom())
+        let textFieldNodes = recorder.record(textField, in: .mockRandom())
         XCTAssertTrue(textFieldNodes.isEmpty, "No nodes should be recorded for `UITextField` when it has no appearance")
 
-        let switchNodes = recorder.recordNodes(for: `switch`, in: .mockRandom())
+        let switchNodes = recorder.record(`switch`, in: .mockRandom())
         XCTAssertFalse(
             switchNodes.isEmpty,
             "`UISwitch` with no appearance should record some nodes as it has style coming from its internal subtree."
@@ -213,7 +214,7 @@ class ViewTreeRecorderTests: XCTestCase {
 
         views.forEach { view in
             // When
-            let nodes = recorder.recordNodes(for: view, in: .mockRandom())
+            let nodes = recorder.record(view, in: .mockRandom())
 
             // Then
             XCTAssertFalse(nodes.isEmpty, "Some nodes should be recorded for \(type(of: view)) when it has some appearance")
@@ -239,7 +240,7 @@ class ViewTreeRecorderTests: XCTestCase {
         }
 
         // When
-        _ = recorder.recordNodes(for: views.first!, in: .mockRandom())
+        _ = recorder.record(views.first!, in: .mockRandom())
 
         // Then
         var context = nodeRecorder.queryContextsByView[views[0]]
