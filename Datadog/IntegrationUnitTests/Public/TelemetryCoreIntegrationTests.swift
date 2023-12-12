@@ -60,6 +60,10 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         config.metricsTelemetrySampleRate = 100
         RUM.enable(with: config, in: core)
 
+        // When
+        RUMMonitor.shared(in: core).startView(key: "View")
+        RUMMonitor.shared(in: core).stopView(key: "View")
+
         // Then
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")

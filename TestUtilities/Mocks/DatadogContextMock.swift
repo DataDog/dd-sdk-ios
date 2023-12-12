@@ -110,12 +110,12 @@ extension DeviceInfo {
     }
 
     public static func mockWith(
-        name: String = .mockAny(),
-        model: String = .mockAny(),
-        osName: String = .mockAny(),
-        osVersion: String = .mockAny(),
-        osBuildNumber: String = .mockAny(),
-        architecture: String = .mockAny()
+        name: String = "iPhone",
+        model: String = "iPhone10,1",
+        osName: String = "iOS",
+        osVersion: String = "15.4.1",
+        osBuildNumber: String = "13D20",
+        architecture: String = "arm64e"
     ) -> DeviceInfo {
         return .init(
             name: name,
