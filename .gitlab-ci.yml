@@ -1,0 +1,33 @@
+stages:
+  - .pre
+  - tools
+
+tools versions:
+  stage: .pre
+  tags:
+    - mac-ventura-preview
+  script:
+    - system_profiler SPSoftwareDataType
+    - python3 -V
+    - curl --version
+    - wget --version
+    - gcc --version
+    - cmake --version
+    - xcodebuild -version
+    - jq --version
+    - gh --version
+    - aws --version
+    - bundler --version
+    - node --version
+    - yarn --version
+    - swiftlint --version
+    - carthage version
+
+swift tools:
+  stage: tools
+  tags:
+    - mac-ventura-preview
+  script: 
+    - swift test --package-path instrumented-tests/http-server-mock
+    - swift test --package-path tools/rum-models-generator
+    - swift test --package-path tools/sr-snapshots
