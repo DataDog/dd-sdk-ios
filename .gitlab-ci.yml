@@ -1,6 +1,7 @@
 stages:
   - .pre
   - tools
+  - sdk
 
 tools versions:
   stage: .pre
@@ -43,3 +44,18 @@ python tools:
     - |
       cd tools/nightly-unit-tests && make
       venv/bin/python3 -m pytest tests
+
+dependencies:
+  stage: sdk
+  tags:
+    - mac-ventura-preview
+  script:
+    - carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+
+lint:
+  stage: sdk
+  tags:
+    - mac-ventura-preview
+  script:
+    - ./tools/lint/run-linter.sh
+    - ./tools/license/check-license.sh
