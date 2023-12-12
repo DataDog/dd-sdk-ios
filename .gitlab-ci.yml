@@ -31,3 +31,15 @@ swift tools:
     - swift test --package-path instrumented-tests/http-server-mock
     - swift test --package-path tools/rum-models-generator
     - swift test --package-path tools/sr-snapshots
+
+python tools:
+  stage: tools
+  tags:
+    - mac-ventura-preview
+  script:
+    - |
+      cd tools/distribution && make
+      venv/bin/python3 -m pytest tests
+    - |
+      cd tools/nightly-unit-tests && make
+      venv/bin/python3 -m pytest tests
