@@ -287,7 +287,27 @@ class ProcessorTests: XCTestCase {
 
     private func generateSimpleViewTree() -> UIView {
         let root = UIView.mock(withFixture: .visible(.someAppearance))
+        root.frame = .mockRandom(
+            minX: 0,
+            maxX: 0,
+            minY: 0,
+            maxY: 0,
+            minWidth: 1_000,
+            maxWidth: 2_000,
+            minHeight: 1_000,
+            maxHeight: 2_000
+        )
         let child = UIView.mock(withFixture: .visible(.someAppearance))
+        child.frame = .mockRandom(
+            minX: 0,
+            maxX: 100,
+            minY: 0,
+            maxY: 100,
+            minWidth: 100,
+            maxWidth: 200,
+            minHeight: 100,
+            maxHeight: 200
+        )
         root.addSubview(child)
         return root
     }

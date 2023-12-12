@@ -11,8 +11,8 @@ import XCTest
 
 class RecorderTests: XCTestCase {
     func testAfterCapturingSnapshot_itIsPassesToProcessor() {
-        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom()
-        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom()
+        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
+        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let processor = ProcessorSpy()
 
         // Given
