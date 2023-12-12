@@ -41,7 +41,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
     /// The background queue for executing all logic.
     private let queue: Queue
     /// Writes records to `DatadogCore`.
-    private let recordsWriter: RecordWriting
+    private let recordWriter: RecordWriting
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
@@ -62,12 +62,12 @@ internal class SnapshotProcessor: SnapshotProcessing {
 
     init(
         queue: Queue,
-        recordsWriter: RecordWriting,
+        recordWriter: RecordWriting,
         srContextPublisher: SRContextPublisher,
         telemetry: Telemetry
     ) {
         self.queue = queue
-        self.recordsWriter = recordsWriter
+        self.recordWriter = recordWriter
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.recordsBuilder = RecordsBuilder(telemetry: telemetry)
@@ -132,7 +132,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
             let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
             trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
 
-            recordsWriter.write(nextRecord: enrichedRecord)
+            recordWriter.write(nextRecord: enrichedRecord)
         }
 
         // Track state:

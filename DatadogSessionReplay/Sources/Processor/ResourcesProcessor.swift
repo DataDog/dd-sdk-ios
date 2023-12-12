@@ -16,19 +16,19 @@ internal class ResourceProcessor: ResourceProcessing {
     /// The background queue for executing all logic.
     private let queue: Queue
     /// Writes records to `DatadogCore`.
-    private let writer: ResourcesWriting
+    private let resourcesWriter: ResourcesWriting
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
-        queue.run { [writer] in
-            writer.write(resources: Set(resources.map { EnrichedResource(resource: $0, context: context) }))
+        queue.run { [resourcesWriter] in
+            resourcesWriter.write(resources: Set(resources.map { EnrichedResource(resource: $0, context: context) }))
         }
     }
 
-    init(queue: Queue, writer: ResourcesWriting, telemetry: Telemetry) {
+    init(queue: Queue, resourcesWriter: ResourcesWriting, telemetry: Telemetry) {
         self.queue = queue
-        self.writer = writer
+        self.resourcesWriter = resourcesWriter
         self.telemetry = telemetry
     }
 }

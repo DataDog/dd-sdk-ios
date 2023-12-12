@@ -42,8 +42,8 @@ internal class RecordWriter: RecordWriting {
             return
         }
 
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, writer in
-            writer.write(value: nextRecord)
+        scope.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, recordsWriter in
+            recordsWriter.write(value: nextRecord)
         }
     }
 }
