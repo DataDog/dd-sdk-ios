@@ -72,6 +72,10 @@ endif
 		
 endif
 
+source-xcconfigs:
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj
