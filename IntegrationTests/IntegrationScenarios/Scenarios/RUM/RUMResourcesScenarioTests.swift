@@ -208,7 +208,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Requesting this first party by the app should create the RUM Resource and inject tracing headers into the request.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
         // Requesting this first party by the app should create the RUM Error.
-        let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
+        let firstPartyBadResourceURL = URL(string: "https://foo.bar/")!
 
         // Requesting this third party by the app should create the RUM Resource.
         let thirdPartyGETResourceURL = URL(string: "https://shopist.io/categories.json")!

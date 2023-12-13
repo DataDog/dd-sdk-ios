@@ -153,7 +153,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         // Requesting this first party by the app should create the `SpanEvent`.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
         // Requesting this first party by the app should create the `SpanEvent` with error.
-        let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
+        let firstPartyBadResourceURL = URL(string: "https://foo.bar/")!
 
         // Requesting this third party by the app should NOT create the `SpanEvent`.
         let thirdPartyGETResourceURL = URL(string: "https://bitrise.io")!

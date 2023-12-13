@@ -215,9 +215,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
-        waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
+        _ = server.waitAndReturnRequests(count: 2)
 
+        waitForExpectations(timeout: 5, handler: nil)
         let dateAfterAllRequests = Date()
 
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
@@ -286,11 +286,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
+        _ = server.waitAndReturnRequests(count: 2)
+
         waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
-
         let dateAfterAllRequests = Date()
-
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
@@ -381,10 +380,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
 
         let session = server.getInterceptedURLSession()
-
-        handler.onInterceptionDidStart = {
-            print($0.request)
-        }
 
         // When
         let task1 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/1")) // intercepted

@@ -163,7 +163,6 @@ class URLSessionBaseScenario: NSObject {
             delegate = InheritedURLSessionDelegate()
         case .composition:
             delegate = CompositedURLSessionDelegate()
-//            URLSessionInstrumentation.enable(with: .init(delegateClass: CompositedURLSessionDelegate.self))
         case .customWithFeatureFirstPartyHosts:
             URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
             delegate = CustomURLSessionDelegate()

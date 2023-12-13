@@ -65,14 +65,14 @@ internal final class URLSessionSwizzler {
     class TaskResume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
         private static let selector = #selector(URLSessionTask.resume)
 
-        private let method: FoundMethod
+        private let method: Method
 
         static func build() throws -> TaskResume {
             return try TaskResume(selector: self.selector, klass: URLSessionTask.self)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try Self.findMethod(with: selector, in: klass)
+            self.method = try dd_class_getInstanceMethod(klass, selector)
             super.init()
         }
 
@@ -93,7 +93,7 @@ internal final class URLSessionSwizzler {
     class DidReceive: MethodSwizzler<@convention(c) (URLSessionDataDelegate, Selector, URLSession, URLSessionDataTask, Data) -> Void, @convention(block) (URLSessionDataDelegate, URLSession, URLSessionDataTask, Data) -> Void> {
         private static let selector = #selector(URLSessionDataDelegate.urlSession(_:dataTask:didReceive:))
 
-        private let method: FoundMethod
+        private let method: Method
 
         static func build(klass: AnyClass) throws -> DidReceive {
             return try DidReceive(selector: self.selector, klass: klass)
@@ -101,7 +101,7 @@ internal final class URLSessionSwizzler {
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionDataDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionDataDelegate, URLSession, URLSessionDataTask, Data) -> Void = { delegate, session, task, data in
@@ -117,7 +117,7 @@ internal final class URLSessionSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()
@@ -138,7 +138,7 @@ internal final class URLSessionSwizzler {
     class DidFinishCollecting: MethodSwizzler<@convention(c) (URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void, @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void> {
         private static let selector = #selector(URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:))
 
-        private let method: FoundMethod
+        private let method: Method
 
         static func build(klass: AnyClass) throws -> DidFinishCollecting {
             return try DidFinishCollecting(selector: self.selector, klass: klass)
@@ -146,7 +146,7 @@ internal final class URLSessionSwizzler {
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionTaskDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void = { delegate, session, task, metrics in
@@ -162,7 +162,7 @@ internal final class URLSessionSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()

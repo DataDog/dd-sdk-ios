@@ -151,6 +151,7 @@ extension NetworkInstrumentationFeature {
                 )
 
             // observe the state for completion
+            // note: all task properties support Key-Value Observing
             interception.stateValueObserver = task.observe(\.state, options: [.initial, .new]) { [weak self] task, _ in
                 if task.state == .completed {
                     self?.task(task, didCompleteWithError: task.error)

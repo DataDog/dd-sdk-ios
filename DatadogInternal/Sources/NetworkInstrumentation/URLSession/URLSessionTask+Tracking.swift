@@ -14,6 +14,8 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
     ///
     /// - Parameter request: The new request.
     func override(currentRequest request: URLRequest) {
+        // The `URLSessionTask` is Key-Value Coding compliant and we can
+        // set the `currentRequest` property
         type.setValue(request, forKey: "currentRequest")
     }
 
@@ -26,6 +28,8 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
             return true
         }
 
+        // The `URLSessionTask` is Key-Value Coding compliant and retains a
+        // `session` property
         guard let session = type.value(forKey: "session") as? URLSession else {
             return false
         }
@@ -33,15 +37,17 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
         return session.delegate?.isKind(of: klass) == true
     }
 
-    /// Infers if the ``URLSessionTask`` will invoked selectors from the given delegate type.
+    /// Infers if the ``URLSessionTask`` will invoked selectors from the given delegate protocol.
     ///
-    /// - Parameter klass: The expected delegate type.
+    /// - Parameter protocol: The expected delegate protocol.
     /// - Returns: Returns `true` if the task will invoked selectors from the delegate type.
     func isDelegatingTo(protocol: Protocol) -> Bool {
         if #available(iOS 15.0, tvOS 15.0, *), type.delegate?.conforms(to: `protocol`) == true {
             return true
         }
 
+        // The `URLSessionTask` is Key-Value Coding compliant and retains a
+        // `session` property
         guard let session = type.value(forKey: "session") as? URLSession else {
             return false
         }
