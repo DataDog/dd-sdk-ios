@@ -45,21 +45,30 @@ lint:
 #     - make source-xcconfigs
 #     - xcodebuild -workspace Datadog.xcworkspace -scheme "DatadogCore iOS" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' test | xcbeautify
 
-SDK integration tests:
+# SDK integration tests:
+#   stage: test
+#   tags:
+#     - mac-ventura-preview
+#   script:
+#     - brew install xcbeautify
+#     - make prepare-integration-tests
+#     - ./tools/config/generate-http-server-mock-config.sh
+#     - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogIntegrationTests test | xcbeautify
+#     # We suspect Apple Crash Reporter causing flakiness in our CR integration tests, so we disable it.
+#     # It makes the system prompt ("Example iOS quit unexpectedly") not appear:
+#     - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+#     - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
+
+SDK smoke tests:
   stage: test
   tags:
     - mac-ventura-preview
   script:
     - brew install xcbeautify
-    - make prepare-integration-tests
-    - ./tools/config/generate-http-server-mock-config.sh
-    - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogIntegrationTests test | xcbeautify
-    # We suspect Apple Crash Reporter causing flakiness in our CR integration tests, so we disable it.
-    # It makes the system prompt ("Example iOS quit unexpectedly") not appear:
-    - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
-    - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
+    - make test-spm ci=1
+    - xcodebuild -project dependency-manager-tests/spm/SPMProject.xcodeproj -scheme "App iOS" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' test | xcbeautify
 
-# swift tools:
+# Swift tools tests:
 #   stage: test
 #   tags:
 #     - mac-ventura-preview
@@ -68,7 +77,7 @@ SDK integration tests:
 #     - swift test --package-path tools/rum-models-generator
 #     - swift test --package-path tools/sr-snapshots
 
-# python tools:
+# Python tools tests:
 #   stage: test
 #   tags:
 #     - mac-ventura-preview
