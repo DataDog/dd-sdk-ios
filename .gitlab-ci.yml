@@ -54,6 +54,10 @@ SDK integration tests:
     - make prepare-integration-tests
     - ./tools/config/generate-http-server-mock-config.sh
     - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogIntegrationTests test | xcbeautify
+    # We suspect Apple Crash Reporter causing flakiness in our CR integration tests, so we disable it.
+    # It makes the system prompt ("Example iOS quit unexpectedly") not appear:
+    - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+    - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
 
 # swift tools:
 #   stage: test
