@@ -116,35 +116,22 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 
     private func swizzle(firstPartyHosts: FirstPartyHosts) throws {
-        if #available(iOS 13, tvOS 13, *) {
-            try swizzler.swizzle(
-                interceptResume: { [weak self] task in
-                    guard let interceptor = self?.interceptor else {
-                        return
-                    }
-
-                    if let currentRequest = task.currentRequest {
-                        let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
-                        task.dd.override(currentRequest: request)
-                    }
-
-                    if task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
-                        interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
-                    }
+        try swizzler.swizzle(
+            interceptResume: { [weak self] task in
+                guard let interceptor = self?.interceptor else {
+                    return
                 }
-            )
-        } else {
-            try swizzler.swizzle(
-                interceptRequest: { [weak self] request in
-                    self?.interceptor?.intercept(request: request, additionalFirstPartyHosts: firstPartyHosts) ?? request
-                },
-                interceptTask: { [weak self] task in
-                    if let interceptor = self?.interceptor, task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
-                        interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
-                    }
+
+                if let currentRequest = task.currentRequest {
+                    let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                    task.dd.override(currentRequest: request)
                 }
-            )
-        }
+
+                if task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
+                    interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                }
+            }
+        )
     }
 
     deinit {

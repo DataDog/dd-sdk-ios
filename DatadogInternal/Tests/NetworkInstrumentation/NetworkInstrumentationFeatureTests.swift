@@ -211,7 +211,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let url2: URL = .mockRandom()
         session
-            .dataTask(with: URLRequest(url: url2))
+            .dataTask(with: URLRequest(url: url2)) { _,_,_ in }
             .resume()
 
         // Then
@@ -466,7 +466,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             dd.logger.warnLog?.message,
             """
             The delegate class MockDelegate is already instrumented.
-            The previous instrumentation wil be disabled in favor of the new one.
+            The previous instrumentation will be disabled in favor of the new one.
             """
         )
     }

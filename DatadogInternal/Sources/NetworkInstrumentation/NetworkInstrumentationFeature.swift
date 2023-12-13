@@ -61,7 +61,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             DD.logger.warn(
                 """
                 The delegate class \(configuration.delegateClass) is already instrumented.
-                The previous instrumentation wil be disabled in favor of the new one.
+                The previous instrumentation will be disabled in favor of the new one.
                 """
             )
 
@@ -71,35 +71,22 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         let swizzler = URLSessionSwizzler()
         swizzlers[identifier] = swizzler
 
-        if #available(iOS 13, tvOS 13, *) {
-            try swizzler.swizzle(
-                interceptResume: { [weak self] task in
-                    guard let self = self else {
-                        return
-                    }
-
-                    if let currentRequest = task.currentRequest {
-                        let request = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                        task.dd.override(currentRequest: request)
-                    }
-
-                    if task.dd.isDelegatingTo(klass: configuration.delegateClass) {
-                        self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                    }
+        try swizzler.swizzle(
+            interceptResume: { [weak self] task in
+                guard let self = self else {
+                    return
                 }
-            )
-        } else {
-            try swizzler.swizzle(
-                interceptRequest: { [weak self] request in
-                    self?.intercept(request: request, additionalFirstPartyHosts: configuredFirstPartyHosts) ?? request
-                },
-                interceptTask: { [weak self] task in
-                    if let self = self, task.dd.isDelegatingTo(klass: configuration.delegateClass) {
-                        self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                    }
+
+                if let currentRequest = task.currentRequest {
+                    let request = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                    task.dd.override(currentRequest: request)
                 }
-            )
-        }
+
+                if task.dd.isDelegatingTo(klass: configuration.delegateClass) {
+                    self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                }
+            }
+        )
 
         try swizzler.swizzle(
             delegateClass: configuration.delegateClass,
@@ -112,17 +99,6 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             delegateClass: configuration.delegateClass,
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
                 self?.task(task, didFinishCollecting: metrics)
-
-                // iOS 16 and above, didCompleteWithError is not called hence we use task state to detect task completion
-                // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
-                if #available(iOS 15, tvOS 15, *) {
-                    self?.task(task, didCompleteWithError: task.error)
-                }
-            },
-            interceptDidCompleteWithError: { [weak self] session, task, error in
-                // prior to iOS 15, task state doesn't change to completed
-                // hence we use didCompleteWithError to detect task completion
-                self?.task(task, didCompleteWithError: error)
             }
         )
     }
@@ -162,35 +138,38 @@ extension NetworkInstrumentationFeature {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
         queue.async { [weak self] in
-            self?._intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
+            guard let self = self, let request = task.currentRequest else {
+                return
+            }
+
+            let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
+
+            let interception = self.interceptions[task] ??
+                URLSessionTaskInterception(
+                    request: request,
+                    isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
+                )
+
+            // observe the state for completion
+            interception.stateValueObserver = task.observe(\.state, options: [.initial, .new]) { [weak self] task, _ in
+                if task.state == .completed {
+                    self?.task(task, didCompleteWithError: task.error)
+                }
+            }
+
+            interception.register(request: request)
+
+            if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
+                interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
+            }
+
+            if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
+                interception.register(origin: origin)
+            }
+
+            self.interceptions[task] = interception
+            self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
         }
-    }
-
-    private func _intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
-        guard let request = task.currentRequest else {
-            return
-        }
-
-        let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
-
-        let interception = self.interceptions[task] ??
-            URLSessionTaskInterception(
-                request: request,
-                isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
-            )
-
-        interception.register(request: request)
-
-        if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
-            interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
-        }
-
-        if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
-            interception.register(origin: origin)
-        }
-
-        self.interceptions[task] = interception
-        self.handlers.forEach { $0.interceptionDidStart(interception: interception) }
     }
 
     /// Tells the interceptors that metrics were collected for the given task.
@@ -200,21 +179,17 @@ extension NetworkInstrumentationFeature {
     ///   - metrics: The collected metrics.
     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         queue.async { [weak self] in
-            self?._task(task, didFinishCollecting: metrics)
-        }
-    }
+            guard let self = self, let interception = self.interceptions[task] else {
+                return
+            }
 
-    private func _task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        guard let interception = self.interceptions[task] else {
-            return
-        }
+            interception.register(
+                metrics: ResourceMetrics(taskMetrics: metrics)
+            )
 
-        interception.register(
-            metrics: ResourceMetrics(taskMetrics: metrics)
-        )
-
-        if interception.isDone {
-            self.finish(task: task, interception: interception)
+            if interception.isDone {
+                self.finish(task: task, interception: interception)
+            }
         }
     }
 
@@ -236,22 +211,18 @@ extension NetworkInstrumentationFeature {
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         queue.async { [weak self] in
-            self?._task(task, didCompleteWithError: error)
-        }
-    }
+            guard let self = self, let interception = self.interceptions[task] else {
+                return
+            }
 
-    private func _task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
-        guard let interception = self.interceptions[task] else {
-            return
-        }
+            interception.register(
+                response: task.response,
+                error: error
+            )
 
-        interception.register(
-            response: task.response,
-            error: error
-        )
-
-        if interception.isDone {
-            self.finish(task: task, interception: interception)
+            if interception.isDone {
+                self.finish(task: task, interception: interception)
+            }
         }
     }
 

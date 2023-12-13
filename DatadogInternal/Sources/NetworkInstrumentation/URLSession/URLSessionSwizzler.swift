@@ -10,22 +10,9 @@ import Foundation
 internal final class URLSessionSwizzler {
     private let lock = NSRecursiveLock()
 
-    private var dataTaskWithURLRequestAndCompletion: DataTaskWithURLRequestAndCompletion?
     private var taskResume: TaskResume?
     private var didFinishCollecting: DidFinishCollecting?
     private var didReceive: DidReceive?
-    private var didCompleteWithError: DidCompleteWithError?
-
-    /// Swizzles `URLSession.dataTask(with:completionHandler:)` method.
-    func swizzle(
-        interceptRequest: @escaping (URLRequest) -> URLRequest?,
-        interceptTask: @escaping (URLSessionTask) -> Void
-    ) throws {
-        lock.lock()
-        dataTaskWithURLRequestAndCompletion = try DataTaskWithURLRequestAndCompletion.build()
-        dataTaskWithURLRequestAndCompletion?.swizzle(interceptRequest: interceptRequest, interceptTask: interceptTask)
-        lock.unlock()
-    }
 
     /// Swizzles `URLSessionTask.resume()` method.
     func swizzle(
@@ -48,18 +35,14 @@ internal final class URLSessionSwizzler {
         lock.unlock()
     }
 
-    /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)` and
-    /// `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)` methods.
+    /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)` method.
     func swizzle(
         delegateClass: AnyClass,
-        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
-        interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
+        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void
     ) throws {
         lock.lock()
         didFinishCollecting = try DidFinishCollecting.build(klass: delegateClass)
-        didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
         didFinishCollecting?.swizzle(intercept: interceptDidFinishCollecting)
-        didCompleteWithError?.swizzle(intercept: interceptDidCompleteWithError)
         lock.unlock()
     }
 
@@ -68,54 +51,14 @@ internal final class URLSessionSwizzler {
     /// This method is called during deinit.
     func unswizzle() {
         lock.lock()
-        dataTaskWithURLRequestAndCompletion?.unswizzle()
         taskResume?.unswizzle()
         didFinishCollecting?.unswizzle()
-        didCompleteWithError?.unswizzle()
         didReceive?.unswizzle()
         lock.unlock()
     }
 
     deinit {
         unswizzle()
-    }
-
-    typealias CompletionHandler = (Data?, URLResponse?, Error?) -> Void
-
-    /// Swizzles `URLSession.dataTask(with:completionHandler:)` method.
-    class DataTaskWithURLRequestAndCompletion: MethodSwizzler<@convention(c) (URLSession, Selector, URLRequest, CompletionHandler?) -> URLSessionDataTask, @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask> {
-        private static let selector = #selector(
-            URLSession.dataTask(with:completionHandler:) as (URLSession) -> (URLRequest, @escaping CompletionHandler) -> URLSessionDataTask
-        )
-
-        private let method: Method
-
-        static func build() throws -> DataTaskWithURLRequestAndCompletion {
-            return try DataTaskWithURLRequestAndCompletion(
-                selector: self.selector,
-                klass: URLSession.self
-            )
-        }
-
-        private init(selector: Selector, klass: AnyClass) throws {
-            self.method = try dd_class_getInstanceMethod(klass, selector)
-            super.init()
-        }
-
-        func swizzle(
-            interceptRequest: @escaping (URLRequest) -> URLRequest?,
-            interceptTask: @escaping (URLSessionTask) -> Void
-        ) {
-            typealias Signature = @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask
-            swizzle(method) { previousImplementation -> Signature in
-                return { session, request, completionHandler -> URLSessionDataTask in
-                    let interceptedRequest = interceptRequest(request) ?? request
-                    let task = previousImplementation(session, Self.selector, interceptedRequest, completionHandler)
-                    interceptTask(task)
-                    return task
-                }
-            }
-        }
     }
 
     /// Swizzles `URLSessionTask.resume()` method.
@@ -231,50 +174,6 @@ internal final class URLSessionSwizzler {
                 return { delegate, session, task, metrics in
                     intercept(session, task, metrics)
                     return previousImplementation(delegate, Self.selector, session, task, metrics)
-                }
-            }
-        }
-    }
-
-    class DidCompleteWithError: MethodSwizzler<@convention(c) (URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, Error?) -> Void, @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void> {
-        private static let selector = #selector(URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:))
-
-        private let method: FoundMethod
-
-        static func build(klass: AnyClass) throws -> DidCompleteWithError {
-            return try DidCompleteWithError(selector: self.selector, klass: klass)
-        }
-
-        private init(selector: Selector, klass: AnyClass) throws {
-            do {
-                method = try Self.findMethod(with: selector, in: klass)
-            } catch {
-                // URLSessionTaskDelegate doesn't implement the selector, so we inject it and swizzle it
-                let block: @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void = { delegate, session, task, error in
-                }
-                let imp = imp_implementationWithBlock(block)
-                /*
-                v@:@@@ means:
-                v - return type is void
-                @ - self
-                : - selector
-                @ - first argument is an object
-                @ - second argument is an object
-                @ - third argument is an object
-                */
-                class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try Self.findMethod(with: selector, in: klass)
-            }
-
-            super.init()
-        }
-
-        func swizzle(intercept: @escaping (URLSession, URLSessionTask, Error?) -> Void) {
-            typealias Signature = @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void
-            swizzle(method) { previousImplementation -> Signature in
-                return { delegate, session, task, error in
-                    intercept(session, task, error)
-                    return previousImplementation(delegate, Self.selector, session, task, error)
                 }
             }
         }
