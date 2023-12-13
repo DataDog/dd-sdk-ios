@@ -4,7 +4,7 @@ stages:
   - lint
   - test
 
-tools versions:
+Tools versions:
   stage: .pre
   tags:
     - mac-ventura-preview
@@ -26,7 +26,7 @@ tools versions:
     - carthage version
     - brew -v
 
-lint:
+Lint:
   stage: lint
   tags:
     - mac-ventura-preview
@@ -34,30 +34,30 @@ lint:
     - ./tools/lint/run-linter.sh
     - ./tools/license/check-license.sh
 
-# SDK unit tests:
-#   stage: test
-#   tags:
-#     - mac-ventura-preview
-#   script:
-#     - brew install xcbeautify
-#     - carthage bootstrap --platform iOS,tvOS --use-xcframeworks
-#     - xcodebuild -workspace Datadog.xcworkspace -scheme "DatadogCore iOS" -showdestinations
-#     - make source-xcconfigs
-#     - xcodebuild -workspace Datadog.xcworkspace -scheme "DatadogCore iOS" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' test | xcbeautify
+SDK unit tests:
+  stage: test
+  tags:
+    - mac-ventura-preview
+  script:
+    - brew install xcbeautify
+    - carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+    - xcodebuild -workspace Datadog.xcworkspace -scheme "DatadogCore iOS" -showdestinations
+    - make source-xcconfigs
+    - xcodebuild -workspace Datadog.xcworkspace -scheme "DatadogCore iOS" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' test | xcbeautify
 
-# SDK integration tests:
-#   stage: test
-#   tags:
-#     - mac-ventura-preview
-#   script:
-#     - brew install xcbeautify
-#     - make prepare-integration-tests
-#     - ./tools/config/generate-http-server-mock-config.sh
-#     - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogIntegrationTests test | xcbeautify
-#     # We suspect Apple Crash Reporter causing flakiness in our CR integration tests, so we disable it.
-#     # It makes the system prompt ("Example iOS quit unexpectedly") not appear:
-#     - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
-#     - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
+SDK integration tests:
+  stage: test
+  tags:
+    - mac-ventura-preview
+  script:
+    - brew install xcbeautify
+    - make prepare-integration-tests
+    - ./tools/config/generate-http-server-mock-config.sh
+    - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogIntegrationTests test | xcbeautify
+    # We suspect Apple Crash Reporter causing flakiness in our CR integration tests, so we disable it.
+    # It makes the system prompt ("Example iOS quit unexpectedly") not appear:
+    - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+    - xcodebuild -workspace IntegrationTests/IntegrationTests.xcworkspace -scheme "IntegrationScenarios" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
 
 SDK smoke tests:
   stage: test
@@ -68,23 +68,24 @@ SDK smoke tests:
     - make test-spm ci=1
     - xcodebuild -project dependency-manager-tests/spm/SPMProject.xcodeproj -scheme "App iOS" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0.1' test | xcbeautify
 
-# Swift tools tests:
-#   stage: test
-#   tags:
-#     - mac-ventura-preview
-#   script: 
-#     - swift test --package-path instrumented-tests/http-server-mock
-#     - swift test --package-path tools/rum-models-generator
-#     - swift test --package-path tools/sr-snapshots
+Swift tools tests:
+  stage: test
+  tags:
+    - mac-ventura-preview
+  script: 
+    - swift test --package-path instrumented-tests/http-server-mock
+    - swift test --package-path tools/rum-models-generator
+    - swift test --package-path tools/sr-snapshots
 
-# Python tools tests:
-#   stage: test
-#   tags:
-#     - mac-ventura-preview
-#   script:
-#     - |
-#       cd tools/distribution && make
-#       venv/bin/python3 -m pytest tests
-#     - |
-#       cd tools/nightly-unit-tests && make
-#       venv/bin/python3 -m pytest tests
+Python tools tests:
+  stage: test
+  tags:
+    - mac-ventura-preview
+  script:
+    - |
+      cd tools/distribution && make
+      venv/bin/python3 -m pytest tests
+    - |
+      cd tools/nightly-unit-tests && make
+      venv/bin/python3 -m pytest tests
+
