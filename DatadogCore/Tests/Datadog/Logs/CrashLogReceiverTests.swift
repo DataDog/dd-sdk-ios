@@ -145,6 +145,7 @@ class CrashLogReceiverTests: XCTestCase {
             threadName: nil,
             applicationVersion: crashContext.version,
             applicationBuildNumber: crashContext.buildNumber,
+            buildId: nil,
             dd: .init(device: .init(architecture: mockArchitecture)),
             os: .init(
                 name: mockOSName,

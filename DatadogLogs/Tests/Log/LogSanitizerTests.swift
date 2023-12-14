@@ -42,6 +42,7 @@ class LogSanitizerTests: XCTestCase {
                     "message": mockValue(),
                     "status": mockValue(),
                     "service": mockValue(),
+                    "build_id": mockValue(),
                     "source": mockValue(),
                     "ddtags": mockValue(),
 

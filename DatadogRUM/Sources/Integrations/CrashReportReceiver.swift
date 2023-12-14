@@ -63,6 +63,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let device: DeviceInfo
         /// The version of the application that data is generated from.
         let version: String
+        /// The build Id of the applicaiton that data is generated from
+        let buildId: String?
         /// The build number of the application that data is generated from.
         let buildNumber: String
         /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
@@ -346,9 +348,11 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            buildId: lastRUMView.buildId,
             buildVersion: lastRUMView.buildVersion,
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
+            container: nil,
             context: lastRUMView.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
@@ -366,7 +370,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 type: errorType
             ),
             os: lastRUMView.os,
-            parentView: nil,
             service: lastRUMView.service,
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
@@ -411,15 +414,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 )
             ),
             application: original.application,
+            buildId: original.buildId,
             buildVersion: original.buildVersion,
             ciTest: original.ciTest,
             connectivity: original.connectivity,
+            container: nil,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             device: original.device,
             display: nil,
             os: original.os,
-            parentView: nil,
             privacy: nil,
             service: original.service,
             session: original.session,
@@ -504,12 +508,14 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             application: .init(
                 id: applicationID
             ),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: ciTest,
             connectivity: RUMConnectivity(
                 networkInfo: context.networkConnectionInfo,
                 carrierInfo: context.carrierInfo
             ),
+            container: nil,
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
             device: .init(device: context.device, telemetry: telemetry),
@@ -519,7 +525,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             // before restarting the app after crash. To solve this, the OS information would have to be
             // persisted in `crashContext` the same way as we do for other dynamic information.
             os: .init(device: context.device),
-            parentView: nil,
             privacy: nil,
             service: context.service,
             session: .init(
