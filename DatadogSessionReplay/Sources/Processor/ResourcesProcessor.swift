@@ -17,8 +17,11 @@ internal class ResourceProcessor: ResourceProcessing {
     private let resourcesWriter: ResourcesWriting
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
+        guard !resources.isEmpty else {
+            return
+        }
         queue.run { [resourcesWriter] in
-            resourcesWriter.write(resources: Set(resources.map { EnrichedResource(resource: $0, context: context) }))
+            resourcesWriter.write(resources: resources.map { EnrichedResource(resource: $0, context: context) })
         }
     }
 

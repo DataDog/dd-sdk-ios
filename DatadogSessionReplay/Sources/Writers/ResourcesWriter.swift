@@ -11,7 +11,7 @@ import DatadogInternal
 /// A type writing Session Replay records to `DatadogCore`.
 internal protocol ResourcesWriting {
     /// Writes next records to SDK core.
-    func write(resources: Set<EnrichedResource>)
+    func write(resources: [EnrichedResource])
 }
 
 internal class ResourcesWriter: ResourcesWriting {
@@ -26,7 +26,7 @@ internal class ResourcesWriter: ResourcesWriting {
 
     // MARK: - Writing
 
-    func write(resources: Set<EnrichedResource>) {
+    func write(resources: [EnrichedResource]) {
         guard let scope = core?.scope(for: ResourcesFeature.name) else {
             return
         }

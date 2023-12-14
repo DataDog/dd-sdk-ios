@@ -12,9 +12,9 @@ import TestUtilities
 @testable import DatadogSessionReplay
 
 private class ResourceWriterMock: ResourcesWriting {
-    var resources: [Set<EnrichedResource>] = []
+    var resources: [[EnrichedResource]] = []
 
-    func write(resources: Set<EnrichedResource>) {
+    func write(resources: [EnrichedResource]) {
         self.resources.append(resources)
     }
 }
@@ -36,31 +36,22 @@ class ResourceProcessorTests: XCTestCase {
         XCTAssertEqual(writer.resources.count, 1)
         XCTAssertEqual(
             writer.resources[0],
-            Set([
+            [
                 EnrichedResource(resource: resource1, context: context),
                 EnrichedResource(resource: resource2, context: context)
-            ])
+            ]
         )
     }
 
-    func testItRemovesDuplicateResources() {
+    func testItDoesNotTryToWriteEmptyResources() {
         let writer = ResourceWriterMock()
         let processor = ResourceProcessor(
             queue: NoQueue(),
             resourcesWriter: writer
         )
 
-        let resource: MockResource = .mockRandom()
-        let context: EnrichedResource.Context = .mockRandom()
+        processor.process(resources: [], context: .mockRandom())
 
-        processor.process(resources: [resource, resource], context: context)
-
-        XCTAssertEqual(writer.resources.count, 1)
-        XCTAssertEqual(
-            writer.resources[0],
-            Set([
-                EnrichedResource(resource: resource, context: context)
-            ])
-        )
+        XCTAssertTrue(writer.resources.isEmpty)
     }
 }

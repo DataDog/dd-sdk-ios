@@ -8,7 +8,7 @@
 import Foundation
 
 /// Extends the resource information with context.
-internal struct EnrichedResource: Hashable, Codable, Resource {
+internal struct EnrichedResource: Codable, Resource, Equatable {
     internal struct Context: Codable, Equatable {
         internal struct Application: Codable, Equatable {
             let id: String
@@ -37,10 +37,6 @@ internal struct EnrichedResource: Hashable, Codable, Resource {
         self.identifier = identifier
         self.data = data
         self.context = context
-    }
-
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(identifier)
     }
 }
 #endif
