@@ -24,8 +24,7 @@ class ResourceProcessorTests: XCTestCase {
         let writer = ResourceWriterMock()
         let processor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: writer,
-            telemetry: NOPTelemetry()
+            resourcesWriter: writer
         )
 
         let resource1: MockResource = .mockAny()

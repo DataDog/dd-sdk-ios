@@ -17,8 +17,6 @@ internal class ResourceProcessor: ResourceProcessing {
     private let queue: Queue
     /// Writes records to `DatadogCore`.
     private let resourcesWriter: ResourcesWriting
-    /// Sends telemetry through sdk core.
-    private let telemetry: Telemetry
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
         queue.run { [resourcesWriter] in
@@ -26,10 +24,9 @@ internal class ResourceProcessor: ResourceProcessing {
         }
     }
 
-    init(queue: Queue, resourcesWriter: ResourcesWriting, telemetry: Telemetry) {
+    init(queue: Queue, resourcesWriter: ResourcesWriting) {
         self.queue = queue
         self.resourcesWriter = resourcesWriter
-        self.telemetry = telemetry
     }
 }
 #endif

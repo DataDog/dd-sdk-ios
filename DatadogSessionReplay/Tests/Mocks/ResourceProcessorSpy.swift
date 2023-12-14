@@ -14,5 +14,4 @@ internal class ResourceProcessorSpy: ResourceProcessing {
     func process(resources: [Resource], context: EnrichedResource.Context) {
         processedResources.append((resources, context))
     }
-
 }

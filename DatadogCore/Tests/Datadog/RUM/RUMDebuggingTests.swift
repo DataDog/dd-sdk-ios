@@ -24,7 +24,7 @@ class RUMDebuggingTests: XCTestCase {
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "FirstView"),
             context: .mockAny(),
-            recordsWriter: FileWriterMock()
+            writer: FileWriterMock()
         )
 
         let debugging = RUMDebugging()
@@ -47,7 +47,7 @@ class RUMDebuggingTests: XCTestCase {
 
     func testWhenOneRUMViewIsInactive_andSecondIsActive_itDisplaysTwoRUMViewOutlines() throws {
         let context: DatadogContext = .mockAny()
-        let recordsWriter = FileWriterMock()
+        let writer = FileWriterMock()
 
         let expectation = self.expectation(description: "Render RUMDebugging")
 
@@ -58,17 +58,17 @@ class RUMDebuggingTests: XCTestCase {
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "FirstView"),
             context: context,
-            recordsWriter: recordsWriter
+            writer: writer
         )
         _ = applicationScope.process(
             command: RUMStartResourceCommand.mockAny(),
             context: context,
-            recordsWriter: recordsWriter
+            writer: writer
         )
         _ = applicationScope.process(
             command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "SecondView"),
             context: context,
-            recordsWriter: recordsWriter
+            writer: writer
         )
 
         let debugging = RUMDebugging()

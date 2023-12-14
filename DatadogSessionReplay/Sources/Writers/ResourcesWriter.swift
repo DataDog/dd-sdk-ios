@@ -30,8 +30,8 @@ internal class ResourcesWriter: ResourcesWriting {
         guard let scope = core?.scope(for: ResourcesFeature.name) else {
             return
         }
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, recordsWriter in
-            recordsWriter.write(value: resources)
+        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, recordWriter in
+            recordWriter.write(value: resources)
         }
     }
 }

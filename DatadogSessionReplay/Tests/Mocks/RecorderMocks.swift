@@ -274,11 +274,11 @@ struct MockResource: Resource, AnyMockable, RandomMockable {
         self.data = data
     }
 
-    static func mockAny() -> MockResource {
-        return MockResource(identifier: .mockAny(), data: .mockAny())
+    static func mockAny() -> Self {
+        return .init(identifier: .mockAny(), data: .mockAny())
     }
 
-    static func mockRandom() -> MockResource {
+    static func mockRandom() -> Self {
         return MockResource(identifier: . mockRandom(), data: .mockRandom())
     }
 }

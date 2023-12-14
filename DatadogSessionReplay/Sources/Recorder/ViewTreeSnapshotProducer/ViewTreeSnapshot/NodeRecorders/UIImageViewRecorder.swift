@@ -8,7 +8,7 @@
 import UIKit
 @_spi(Internal)
 
-extension UIImage: SessionReplayResource {
+extension UIImage: Resource {
     public var identifier: String {
         return srIdentifier
     }

@@ -34,20 +34,19 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         )
         let resourceProcessor = ResourceProcessor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
-            resourcesWriter: ResourcesWriter(core: core),
-            telemetry: core.telemetry
+            resourcesWriter: ResourcesWriter(core: core)
         )
-
-        let scheduler = MainThreadScheduler(interval: 0.1)
-        let messageReceiver = RUMContextReceiver()
-
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
             resourceProcessor: resourceProcessor,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
-        let recordingCoordinator = RecordingCoordinator(
+        let scheduler = MainThreadScheduler(interval: 0.1)
+        let messageReceiver = RUMContextReceiver()
+
+        self.messageReceiver = messageReceiver
+        self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: configuration.defaultPrivacyLevel,
             rumContextObserver: messageReceiver,
@@ -55,10 +54,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)
         )
-
-        self.messageReceiver = messageReceiver
-        self.recordingCoordinator = recordingCoordinator
-
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry

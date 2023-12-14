@@ -26,7 +26,7 @@ internal struct ViewTreeSnapshot {
     /// An array of nodes recorded for this snapshot - sequenced in DFS order.
     let nodes: [Node]
     /// An array of resource references recorded for this snapshot - sequenced in DFS order.
-    /// May contain references to the same resource if it appears multiple times in the snapshot.
+    /// May contain multiple references to the same resource, if it appears multiple times in the snapshot.
     let resources: [Resource]
 }
 
