@@ -32,7 +32,7 @@ extension EnrichedResource.Context: RandomMockable, AnyMockable {
             .mockAny()
         )
     }
-    
+
     public static func mockRandom() -> Self {
         return .init(
             .mockRandom()

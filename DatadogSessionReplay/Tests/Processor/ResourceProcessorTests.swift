@@ -27,9 +27,9 @@ class ResourceProcessorTests: XCTestCase {
             resourcesWriter: writer
         )
 
-        let resource1: MockResource = .mockAny()
-        let resource2: MockResource = .mockAny()
-        let context: EnrichedResource.Context = .mockAny()
+        let resource1: MockResource = .mockRandom()
+        let resource2: MockResource = .mockRandom()
+        let context: EnrichedResource.Context = .mockRandom()
 
         processor.process(resources: [resource1, resource2], context: context)
 
@@ -39,6 +39,27 @@ class ResourceProcessorTests: XCTestCase {
             Set([
                 EnrichedResource(resource: resource1, context: context),
                 EnrichedResource(resource: resource2, context: context)
+            ])
+        )
+    }
+
+    func testItRemovesDuplicateResources() {
+        let writer = ResourceWriterMock()
+        let processor = ResourceProcessor(
+            queue: NoQueue(),
+            resourcesWriter: writer
+        )
+
+        let resource: MockResource = .mockRandom()
+        let context: EnrichedResource.Context = .mockRandom()
+
+        processor.process(resources: [resource, resource], context: context)
+
+        XCTAssertEqual(writer.resources.count, 1)
+        XCTAssertEqual(
+            writer.resources[0],
+            Set([
+                EnrichedResource(resource: resource, context: context)
             ])
         )
     }

@@ -9,9 +9,9 @@ import Foundation
 
 /// Spies the interaction with `Processing`.
 internal class ResourceProcessorSpy: ResourceProcessing {
-    var processedResources: [([Resource], EnrichedResource.Context)] = []
+    var processedResources: [(resources: [Resource], context: EnrichedResource.Context)] = []
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
-        processedResources.append((resources, context))
+        processedResources.append((resources: resources, context: context))
     }
 }

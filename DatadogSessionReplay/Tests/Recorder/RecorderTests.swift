@@ -25,12 +25,16 @@ class RecorderTests: XCTestCase {
             resourceProcessor: resourceProcessor,
             telemetry: TelemetryMock()
         )
+        let recorderContext = Recorder.Context.mockRandom()
+
         // When
-        recorder.captureNextRecord(.mockRandom())
+        recorder.captureNextRecord(recorderContext)
 
         // Then
         DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.viewTreeSnapshot }, mockViewTreeSnapshots)
         DDAssertReflectionEqual(snapshotProcessor.processedSnapshots.map { $0.touchSnapshot }, mockTouchSnapshots)
+        DDAssertReflectionEqual(resourceProcessor.processedResources.map { $0.resources }, mockViewTreeSnapshots.map { $0.resources })
+        DDAssertReflectionEqual(resourceProcessor.processedResources.map { $0.context }, mockViewTreeSnapshots.map { _ in EnrichedResource.Context(recorderContext.applicationID) })
     }
 
     func testWhenCapturingSnapshots_itUsesDefaultRecorderContext() {

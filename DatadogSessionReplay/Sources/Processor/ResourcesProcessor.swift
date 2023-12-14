@@ -13,9 +13,7 @@ internal protocol ResourceProcessing {
 }
 
 internal class ResourceProcessor: ResourceProcessing {
-    /// The background queue for executing all logic.
     private let queue: Queue
-    /// Writes records to `DatadogCore`.
     private let resourcesWriter: ResourcesWriting
 
     func process(resources: [Resource], context: EnrichedResource.Context) {

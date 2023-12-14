@@ -33,7 +33,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             date: .mockRandom(),
             context: .mockRandom(),
             viewportSize: .mockRandom(),
-            nodes: .mockRandom(count: .random(in: (5..<50))), 
+            nodes: .mockRandom(count: .random(in: (5..<50))),
             resources: .mockRandom(count: .random(in: (5..<50)))
         )
     }
@@ -49,7 +49,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             date: date,
             context: context,
             viewportSize: viewportSize,
-            nodes: nodes, 
+            nodes: nodes,
             resources: resources
         )
     }
@@ -274,11 +274,11 @@ struct MockResource: Resource, AnyMockable, RandomMockable {
         self.data = data
     }
 
-    static func mockAny() -> Self {
-        return .init(identifier: .mockAny(), data: .mockAny())
+    static func mockAny() -> MockResource {
+        return MockResource(identifier: .mockAny(), data: .mockAny())
     }
 
-    static func mockRandom() -> Self {
+    static func mockRandom() -> MockResource {
         return MockResource(identifier: . mockRandom(), data: .mockRandom())
     }
 }

@@ -7,7 +7,6 @@
 #if os(iOS)
 import UIKit
 @_spi(Internal)
-
 extension UIImage: Resource {
     public var identifier: String {
         return srIdentifier
@@ -88,12 +87,14 @@ internal struct UIImageViewRecorder: NodeRecorder {
         return SpecificElement(
            subtreeStrategy: .record,
            nodes: [node],
-           resources: [imageView.image].filter { image in
+           resources: [imageView.image]
+            .filter { image in
                defer {
-                   image?.recorded = true
+                   image?.recorded = shouldRecordImage
                }
                return image?.recorded == false && shouldRecordImage
-           }.compactMap { $0 }
+            }
+            .compactMap { $0 }
        )
     }
 }
