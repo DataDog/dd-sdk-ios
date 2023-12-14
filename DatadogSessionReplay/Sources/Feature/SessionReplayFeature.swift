@@ -32,13 +32,15 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
-        let resourceProcessor = ResourceProcessor(
+        // RUM-2154 Disabled until prod backend is ready
+        _ = ResourceProcessor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
+
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: resourceProcessor,
+            resourceProcessor: nil,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
