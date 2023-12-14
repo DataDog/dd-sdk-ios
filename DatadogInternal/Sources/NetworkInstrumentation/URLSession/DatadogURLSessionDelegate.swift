@@ -113,7 +113,11 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     private func swizzle(firstPartyHosts: FirstPartyHosts) throws {
         try swizzler.swizzle(
             interceptResume: { [weak self] task in
-                guard let interceptor = self?.interceptor else {
+                guard
+                    let interceptor = self?.interceptor,
+                    let provider = task.dd.delegate as? __URLSessionDelegateProviding,
+                    provider.ddURLSessionDelegate == self // intercept task with self as delegate
+                else {
                     return
                 }
 
@@ -122,9 +126,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
                     task.dd.override(currentRequest: request)
                 }
 
-                if task.dd.isDelegatingTo(protocol: __URLSessionDelegateProviding.self) {
-                    interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
-                }
+                interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
             }
         )
     }

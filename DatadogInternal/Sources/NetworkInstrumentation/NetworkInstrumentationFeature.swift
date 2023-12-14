@@ -73,7 +73,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         try swizzler.swizzle(
             interceptResume: { [weak self] task in
-                guard let self = self else {
+                // intercept task if delegate match
+                guard let self = self, task.dd.delegate?.isKind(of: configuration.delegateClass) == true else {
                     return
                 }
 
@@ -82,9 +83,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     task.dd.override(currentRequest: request)
                 }
 
-                if task.dd.isDelegatingTo(klass: configuration.delegateClass) {
-                    self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
-                }
+                self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
             }
         )
 
