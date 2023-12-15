@@ -404,4 +404,37 @@ class RUMTests: XCTestCase {
 
         waitForExpectations(timeout: 2.5)
     }
+
+    // MARK: RUM+Internal tests
+    func testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows() {
+        // Given
+        let core = NOPDatadogCore()
+        let lateConfig = RUM.Configuration.LateURLSessionTracking()
+
+        // When + Then
+        XCTAssertThrowsError(try RUM._internal.enableUrlSessionTracking(with: lateConfig, in: core))
+    }
+
+    func testWhenRumNotEnabled_lateEnableUrlSessionTrackingThrows() {
+        // Given
+        let core = PassthroughCoreMock()
+        let lateConfig = RUM.Configuration.LateURLSessionTracking()
+
+        // When + Then
+        XCTAssertThrowsError(try RUM._internal.enableUrlSessionTracking(with: lateConfig, in: core))
+    }
+
+    func testLateEnableUrlSessionTracking() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let rumConfig = RUM.Configuration(applicationID: .mockAny())
+        RUM.enable(with: rumConfig, in: core)
+        let lateConfig = RUM.Configuration.LateURLSessionTracking()
+
+        // When
+        try RUM._internal.enableUrlSessionTracking(with: lateConfig, in: core)
+
+        // Then
+        XCTAssertNotNil(core.get(feature: NetworkInstrumentationFeature.self))
+    }
 }

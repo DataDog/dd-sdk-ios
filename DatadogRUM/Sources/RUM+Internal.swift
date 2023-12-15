@@ -9,6 +9,42 @@ import DatadogInternal
 
 extension RUM: InternalExtended {}
 
+extension RUM.Configuration {
+    /// Used to perform late initialization of URLSessionTracking. This is needed in order to allow override of
+    /// properties normally provided by the base `RUM.Configuration` object
+    public struct LateURLSessionTracking {
+        /// See RUM.Configuration.URLSessionTracking.firstPartyHostsTracing
+        public var firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing?
+
+        /// See RUM.Configuration.URLSessionTracking.resourceAttributesProvider
+        public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
+
+        // MARK: - Internal
+
+        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
+        internal var dateProvider: DateProvider = SystemDateProvider()
+        internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
+
+        /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
+        private init() {}
+
+        public init(
+            firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
+            resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil
+        ) {
+            self.firstPartyHostsTracing = firstPartyHostsTracing
+            self.resourceAttributesProvider = resourceAttributesProvider
+        }
+
+        public init(from: URLSessionTracking) {
+            self.firstPartyHostsTracing = from.firstPartyHostsTracing
+            self.resourceAttributesProvider = from.resourceAttributesProvider
+        }
+    }
+}
+
+/// NOTE: Methods in this extension are NOT considered part of the public of the Datadog SDK, and
+/// may change or be removed in minor updates of the Datadog SDK.
 extension InternalExtension where ExtendedType == RUM {
     /// Check whether `RUM` has been enabled for a specific SDK instance.
     ///
@@ -18,5 +54,57 @@ extension InternalExtension where ExtendedType == RUM {
     /// - Returns: true if `RUM` has been enabled for the supplied core.
     public static func isEnabled(in core: DatadogCoreProtocol = CoreRegistry.default) -> Bool {
         return core.get(feature: RUMFeature.self) != nil
+    }
+
+    /// Enable URL session tracking after RUM has already been enabled. This method
+    /// is only needed if the configuration of URL session tracking is not known at initialization time,
+    /// or in the case of cross platform frameworks that do not initalize native URL session tracking.
+    ///
+    /// - Parameters:
+    ///    - in: the configuration for URL session tracking
+    public static func enableUrlSessionTracking(
+        with configuration: RUM.Configuration.LateURLSessionTracking,
+        in core: DatadogCoreProtocol = CoreRegistry.default) throws {
+        guard !(core is NOPDatadogCore) else {
+            throw ProgrammerError(
+                description: "Datadog SDK and RUM must be initialized before calling `RUM.enableUrlSessionTracking`."
+            )
+        }
+
+        guard let rum = core.get(feature: RUMFeature.self) else {
+            throw ProgrammerError(
+                description: "RUM must be initialized before calling `RUM.enableUrlSessionTracking`."
+            )
+        }
+
+        let distributedTracing: DistributedTracing?
+
+        // If first party hosts are configured, enable distributed tracing:
+        switch configuration.firstPartyHostsTracing {
+        case let .trace(hosts, sampleRate):
+            distributedTracing = DistributedTracing(
+                sampler: Sampler(samplingRate: sampleRate),
+                firstPartyHosts: FirstPartyHosts(hosts),
+                traceIDGenerator: configuration.traceIDGenerator
+            )
+        case let .traceWithHeaders(hostsWithHeaders, sampleRate):
+            distributedTracing = DistributedTracing(
+                sampler: Sampler(samplingRate: sampleRate),
+                firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
+                traceIDGenerator: configuration.traceIDGenerator
+            )
+        case .none:
+            distributedTracing = nil
+        }
+
+        let urlSessionHandler = URLSessionRUMResourcesHandler(
+            dateProvider: configuration.dateProvider,
+            rumAttributesProvider: configuration.resourceAttributesProvider,
+            distributedTracing: distributedTracing
+        )
+
+        // Connect URLSession instrumentation to RUM monitor:
+        urlSessionHandler.publish(to: rum.monitor)
+        try core.register(urlSessionHandler: urlSessionHandler)
     }
 }
