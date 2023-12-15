@@ -38,7 +38,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
-
             snapshotProcessor: snapshotProcessor,
             resourceProcessor: nil,
             telemetry: core.telemetry,
