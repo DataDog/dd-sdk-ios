@@ -1,4 +1,5 @@
 # Unreleased
+- [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 
 # 2.5.0 / 08-11-2023
 
@@ -7,7 +8,6 @@
 - [FEATURE] Change default tracing headers for first party hosts to use both Datadog headers and W3C `tracecontext` headers. See [#1529][]
 - [FEATURE] Add tracestate headers when using W3C tracecontext. See [#1536][]
 - [BUGFIX] Fix RUM ViewController leaks. See [#1533][]
-- [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 
 # 2.4.0 / 18-10-2023
 
