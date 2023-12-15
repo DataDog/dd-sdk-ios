@@ -6,13 +6,31 @@
 
 #if os(iOS)
 import UIKit
+
 @_spi(Internal)
-extension UIImage: Resource {
-    public var identifier: String {
-        return srIdentifier
+public struct UIImageResource: Resource {
+    let image: UIImage
+    let tintColor: UIColor?
+
+    init(image: UIImage, tintColor: UIColor?) {
+        self.image = image
+        self.tintColor = tintColor
     }
+
+    public var identifier: String {
+        var identifier = image.srIdentifier
+        if let tintColorIdentifier = tintColor?.srIdentifier {
+            identifier += tintColorIdentifier
+        }
+        return identifier
+    }
+
     public var data: Data {
-        return scaledDownToApproximateSize(256.KB)
+        var image = self.image
+        if #available(iOS 13.0, *), let tintColor = tintColor {
+            image = image.withTintColor(tintColor)
+        }
+        return image.scaledDownToApproximateSize(512.KB)
     }
 }
 
@@ -72,6 +90,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             contentFrame = nil
         }
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
+        let tintColor = tintColorProvider(imageView)
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -80,7 +99,7 @@ internal struct UIImageViewRecorder: NodeRecorder {
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
             imageDataProvider: context.imageDataProvider,
-            tintColor: tintColorProvider(imageView),
+            tintColor: tintColor,
             shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
@@ -94,7 +113,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
                }
                return image?.recorded == false && shouldRecordImage
             }
-            .compactMap { $0 }
+            .compactMap { image in
+                image.map { UIImageResource(image: $0, tintColor: tintColor) }
+            }
        )
     }
 }

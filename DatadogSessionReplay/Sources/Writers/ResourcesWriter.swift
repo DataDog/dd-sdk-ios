@@ -31,7 +31,9 @@ internal class ResourcesWriter: ResourcesWriting {
             return
         }
         scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, recordWriter in
-            recordWriter.write(value: resources)
+            resources.forEach {
+                recordWriter.write(value: $0)
+            }
         }
     }
 }
