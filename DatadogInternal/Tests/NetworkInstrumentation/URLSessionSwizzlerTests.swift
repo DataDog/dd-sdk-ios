@@ -9,6 +9,25 @@ import XCTest
 @testable import DatadogInternal
 
 class URLSessionSwizzlerTests: XCTestCase {
+    func testSwizzling_dataTaskWithCompletion() throws {
+        let didInterceptCompletion = XCTestExpectation(description: "interceptCompletion")
+
+        let swizzler = URLSessionSwizzler()
+
+        try swizzler.swizzle(
+            interceptCompletionHandler: { _, _, _ in
+                didInterceptCompletion.fulfill()
+            }
+        )
+
+        let session = URLSession(configuration: .default)
+        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        let task = session.dataTask(with: request) { _, _, _ in }
+        task.resume()
+
+        wait(for: [didInterceptCompletion], timeout: 5)
+    }
+
     func testSwizzling_whenDidReceiveDataIsImplemented() throws {
         class MockDelegate: NSObject, URLSessionDataDelegate {
             func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
@@ -77,12 +96,13 @@ class URLSessionSwizzlerTests: XCTestCase {
 
     func testSwizzling_taskDelegate_whenMethodsAreImplemented() throws {
         class MockDelegate: NSObject, URLSessionTaskDelegate {
-            func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-            }
+            func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) { }
+            func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) { }
         }
 
         let delegate = MockDelegate()
         let didFinishCollecting = XCTestExpectation(description: "didFinishCollecting")
+        let didCompleteWithError = XCTestExpectation(description: "didCompleteWithError")
 
         let swizzler = URLSessionSwizzler()
 
@@ -93,11 +113,18 @@ class URLSessionSwizzlerTests: XCTestCase {
             }
         )
 
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidCompleteWithError: { _, _, _ in
+                didCompleteWithError.fulfill()
+            }
+        )
+
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
         task.resume()
 
-        wait(for: [didFinishCollecting], timeout: 5)
+        wait(for: [didFinishCollecting, didCompleteWithError], timeout: 5)
     }
 
     func testSwizzling_taskDelegate_whenMethodsAreNotImplemented() throws {
@@ -106,6 +133,7 @@ class URLSessionSwizzlerTests: XCTestCase {
 
         let delegate = MockDelegate()
         let didFinishCollecting = XCTestExpectation(description: "didFinishCollecting")
+        let didCompleteWithError = XCTestExpectation(description: "didCompleteWithError")
 
         let swizzler = URLSessionSwizzler()
 
@@ -116,10 +144,17 @@ class URLSessionSwizzlerTests: XCTestCase {
             }
         )
 
+        try swizzler.swizzle(
+            delegateClass: MockDelegate.self,
+            interceptDidCompleteWithError: { _, _, _ in
+                didCompleteWithError.fulfill()
+            }
+        )
+
         let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: nil)
         let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
         task.resume()
 
-        wait(for: [didFinishCollecting], timeout: 5)
+        wait(for: [didFinishCollecting, didCompleteWithError], timeout: 5)
     }
 }

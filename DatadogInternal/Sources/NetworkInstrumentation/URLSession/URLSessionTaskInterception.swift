@@ -31,9 +31,6 @@ public class URLSessionTaskInterception {
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
-    /// A KVO token observing the ``URLSessionTask``'s state.
-    /// The token is invalidated at deinit.
-    internal var stateValueObserver: NSKeyValueObservation?
 
     init(request: URLRequest, isFirstParty: Bool) {
         self.identifier = UUID()

@@ -94,12 +94,37 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             }
         )
 
-        try swizzler.swizzle(
-            delegateClass: configuration.delegateClass,
-            interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                self?.task(task, didFinishCollecting: metrics)
-            }
-        )
+        if #available(iOS 15, tvOS 15, *) {
+            try swizzler.swizzle(
+                delegateClass: configuration.delegateClass,
+                interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                    self?.task(task, didFinishCollecting: metrics)
+                    // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
+                    // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+                    self?.task(task, didCompleteWithError: task.error)
+                }
+            )
+        } else {
+            try swizzler.swizzle(
+                delegateClass: configuration.delegateClass,
+                interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                    self?.task(task, didFinishCollecting: metrics)
+                }
+            )
+
+            try swizzler.swizzle(
+                delegateClass: configuration.delegateClass,
+                interceptDidCompleteWithError: { [weak self] session, task, error in
+                    self?.task(task, didCompleteWithError: error)
+                }
+            )
+
+            try swizzler.swizzle(
+                interceptCompletionHandler: { [weak self] task, _, error in
+                    self?.task(task, didCompleteWithError: error)
+                }
+            )
+        }
     }
 
     /// Unswizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, `URLSessionTask` and `URLSession` methods
@@ -148,14 +173,6 @@ extension NetworkInstrumentationFeature {
                     request: request,
                     isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
                 )
-
-            // observe the state for completion
-            // note: all task properties support Key-Value Observing
-            interception.stateValueObserver = task.observe(\.state, options: [.initial, .new]) { [weak self] task, _ in
-                if task.state == .completed {
-                    self?.task(task, didCompleteWithError: task.error)
-                }
-            }
 
             interception.register(request: request)
 

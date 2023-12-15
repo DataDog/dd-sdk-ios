@@ -98,6 +98,11 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         interceptor?.task(task, didFinishCollecting: metrics)
+        if #available(iOS 15, tvOS 15, *) {
+            // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
+            // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+            interceptor?.task(task, didCompleteWithError: task.error)
+        }
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
@@ -129,6 +134,16 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
                 interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
             }
         )
+
+        if #unavailable(iOS 15, tvOS 15) {
+            // prior to iOS 15, task state doesn't change to completed
+            // hence we use didCompleteWithError to detect task completion
+            try swizzler.swizzle(
+                interceptCompletionHandler: { [weak self] task, _, error in
+                    self?.interceptor?.task(task, didCompleteWithError: error)
+                }
+            )
+        }
     }
 
     deinit {
