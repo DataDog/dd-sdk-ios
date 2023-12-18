@@ -94,37 +94,31 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             }
         )
 
-        if #available(iOS 15, tvOS 15, *) {
-            try swizzler.swizzle(
-                delegateClass: configuration.delegateClass,
-                interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                    self?.task(task, didFinishCollecting: metrics)
+        try swizzler.swizzle(
+            delegateClass: configuration.delegateClass,
+            interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                self?.task(task, didFinishCollecting: metrics)
+
+                if #available(iOS 15, tvOS 15, *) {
                     // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
                     // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
                     self?.task(task, didCompleteWithError: task.error)
                 }
-            )
-        } else {
-            try swizzler.swizzle(
-                delegateClass: configuration.delegateClass,
-                interceptDidFinishCollecting: { [weak self] session, task, metrics in
-                    self?.task(task, didFinishCollecting: metrics)
-                }
-            )
+            }
+        )
 
-            try swizzler.swizzle(
-                delegateClass: configuration.delegateClass,
-                interceptDidCompleteWithError: { [weak self] session, task, error in
-                    self?.task(task, didCompleteWithError: error)
-                }
-            )
+        try swizzler.swizzle(
+            delegateClass: configuration.delegateClass,
+            interceptDidCompleteWithError: { [weak self] session, task, error in
+                self?.task(task, didCompleteWithError: error)
+            }
+        )
 
-            try swizzler.swizzle(
-                interceptCompletionHandler: { [weak self] task, _, error in
-                    self?.task(task, didCompleteWithError: error)
-                }
-            )
-        }
+        try swizzler.swizzle(
+            interceptCompletionHandler: { [weak self] task, _, error in
+                self?.task(task, didCompleteWithError: error)
+            }
+        )
     }
 
     /// Unswizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, `URLSessionTask` and `URLSession` methods

@@ -11,6 +11,7 @@ import XCTest
 class URLSessionSwizzlerTests: XCTestCase {
     func testSwizzling_dataTaskWithCompletion() throws {
         let didInterceptCompletion = XCTestExpectation(description: "interceptCompletion")
+        didInterceptCompletion.expectedFulfillmentCount = 2
 
         let swizzler = URLSessionSwizzler()
 
@@ -21,9 +22,9 @@ class URLSessionSwizzlerTests: XCTestCase {
         )
 
         let session = URLSession(configuration: .default)
-        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
-        let task = session.dataTask(with: request) { _, _, _ in }
-        task.resume()
+        let url = URL(string: "https://www.datadoghq.com/")!
+        session.dataTask(with: url) { _, _, _ in }.resume()
+        session.dataTask(with: URLRequest(url: url)) { _, _, _ in }.resume()
 
         wait(for: [didInterceptCompletion], timeout: 5)
     }

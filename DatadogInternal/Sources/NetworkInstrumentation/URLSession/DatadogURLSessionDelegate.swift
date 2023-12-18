@@ -135,15 +135,11 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
             }
         )
 
-        if #unavailable(iOS 15, tvOS 15) {
-            // prior to iOS 15, task state doesn't change to completed
-            // hence we use didCompleteWithError to detect task completion
-            try swizzler.swizzle(
-                interceptCompletionHandler: { [weak self] task, _, error in
-                    self?.interceptor?.task(task, didCompleteWithError: error)
-                }
-            )
-        }
+        try swizzler.swizzle(
+            interceptCompletionHandler: { [weak self] task, _, error in
+                self?.interceptor?.task(task, didCompleteWithError: error)
+            }
+        )
     }
 
     deinit {
