@@ -63,45 +63,45 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let launchView = try XCTUnwrap(session.applicationLaunchView)
-        XCTAssertEqual(launchView.actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(launchView.actionEvents[0].action.loadingTime!, 0)
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(initialView.actionEvents[0].action.loadingTime!, 0)
 
-        let visits = session.viewVisits
-        XCTAssertEqual(visits[0].name, "Screen")
-        XCTAssertEqual(visits[0].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to modal "Modal"
+        XCTAssertEqual(session.views[1].name, "Screen")
+        XCTAssertEqual(session.views[1].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1]) // go to modal "Modal"
 
-        XCTAssertEqual(visits[1].name, "Modal")
-        XCTAssertEqual(visits[1].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1]) // dismiss to "Screen"
+        XCTAssertEqual(session.views[2].name, "Modal")
+        XCTAssertEqual(session.views[2].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[2]) // dismiss to "Screen"
 
-        XCTAssertEqual(visits[2].name, "Screen")
-        XCTAssertEqual(visits[2].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2]) // go to modal "Modal"
+        XCTAssertEqual(session.views[3].name, "Screen")
+        XCTAssertEqual(session.views[3].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[3]) // go to modal "Modal"
 
-        XCTAssertEqual(visits[3].name, "Modal")
-        XCTAssertEqual(visits[3].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3]) // interactive dismiss to "Screen"
+        XCTAssertEqual(session.views[4].name, "Modal")
+        XCTAssertEqual(session.views[4].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[4]) // interactive dismiss to "Screen"
 
-        XCTAssertEqual(visits[4].name, "Screen")
-        XCTAssertEqual(visits[4].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4]) // go to modal "Modal"
+        XCTAssertEqual(session.views[5].name, "Screen")
+        XCTAssertEqual(session.views[5].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[5]) // go to modal "Modal"
 
-        XCTAssertEqual(visits[5].name, "Modal")
-        XCTAssertEqual(visits[5].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5]) // interactive and cancelled dismiss, stay on "Modal"
+        XCTAssertEqual(session.views[6].name, "Modal")
+        XCTAssertEqual(session.views[6].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[6]) // interactive and cancelled dismiss, stay on "Modal"
 
-        XCTAssertEqual(visits[6].name, "Screen")
-        XCTAssertEqual(visits[6].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6]) // interactive and cancelled dismiss, stay on "Modal"
+        XCTAssertEqual(session.views[7].name, "Screen")
+        XCTAssertEqual(session.views[7].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[7]) // interactive and cancelled dismiss, stay on "Modal"
 
-        XCTAssertEqual(visits[7].name, "Modal")
-        XCTAssertEqual(visits[7].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7]) // dismiss to "Screen"
+        XCTAssertEqual(session.views[8].name, "Modal")
+        XCTAssertEqual(session.views[8].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[8]) // dismiss to "Screen"
 
-        XCTAssertEqual(visits[8].name, "Screen")
-        XCTAssertEqual(visits[8].path, "Runner.RUMMVSViewController")
+        XCTAssertEqual(session.views[9].name, "Screen")
+        XCTAssertEqual(session.views[9].path, "Runner.RUMMVSViewController")
     }
 
     func testRUMUntrackedModalViewsScenario() throws {
@@ -141,40 +141,40 @@ class RUMModalViewsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let applicationLaunchView = try XCTUnwrap(session.applicationLaunchView)
-        XCTAssertEqual(applicationLaunchView.actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(applicationLaunchView.actionEvents[0].action.loadingTime!, 0)
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+        XCTAssertGreaterThan(initialView.actionEvents[0].action.loadingTime!, 0)
 
-        let visits = session.viewVisits
-        XCTAssertEqual(visits[0].name, "Screen")
-        XCTAssertEqual(visits[0].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to modal "Modal"
+        XCTAssertEqual(session.views[1].name, "Screen")
+        XCTAssertEqual(session.views[1].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1]) // go to modal "Modal"
 
-        XCTAssertEqual(visits[1].name, "Modal")
-        XCTAssertEqual(visits[1].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1]) // dismiss to "Screen"
+        XCTAssertEqual(session.views[2].name, "Modal")
+        XCTAssertEqual(session.views[2].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[2]) // dismiss to "Screen"
 
-        XCTAssertEqual(visits[2].name, "Screen")
-        XCTAssertEqual(visits[2].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2]) // go to modal "Modal", which is untracked
+        XCTAssertEqual(session.views[3].name, "Screen")
+        XCTAssertEqual(session.views[3].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[3]) // go to modal "Modal", which is untracked
 
-        XCTAssertEqual(visits[3].name, "Screen")    // Screen restarts properly
-        XCTAssertEqual(visits[3].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4]) // go to modal "Modal"
+        XCTAssertEqual(session.views[4].name, "Screen")    // Screen restarts properly
+        XCTAssertEqual(session.views[4].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[4]) // go to modal "Modal"
 
-        XCTAssertEqual(visits[4].name, "Modal")
-        XCTAssertEqual(visits[4].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5]) // interactive and cancelled dismiss, stay on "Modal"
+        XCTAssertEqual(session.views[5].name, "Modal")
+        XCTAssertEqual(session.views[5].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[5]) // interactive and cancelled dismiss, stay on "Modal"
 
-        XCTAssertEqual(visits[5].name, "Screen")
-        XCTAssertEqual(visits[5].path, "Runner.RUMMVSViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6]) // interactive and cancelled dismiss, stay on "Modal"
+        XCTAssertEqual(session.views[6].name, "Screen")
+        XCTAssertEqual(session.views[6].path, "Runner.RUMMVSViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[6]) // interactive and cancelled dismiss, stay on "Modal"
 
-        XCTAssertEqual(visits[6].name, "Modal")
-        XCTAssertEqual(visits[6].path, "Runner.RUMMVSModalViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7]) // dismiss to "Screen"
+        XCTAssertEqual(session.views[7].name, "Modal")
+        XCTAssertEqual(session.views[7].path, "Runner.RUMMVSModalViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[7]) // dismiss to "Screen"
 
-        XCTAssertEqual(visits[7].name, "Screen")
-        XCTAssertEqual(visits[7].path, "Runner.RUMMVSViewController")
+        XCTAssertEqual(session.views[8].name, "Screen")
+        XCTAssertEqual(session.views[8].path, "Runner.RUMMVSViewController")
     }
 }

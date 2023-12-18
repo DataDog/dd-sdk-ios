@@ -41,8 +41,9 @@ class RUMInternalProxyTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
         // Then
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let longTask = session.viewVisits[0].longTaskEvents.first
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let longTask = views[0].longTaskEvents.first
         XCTAssertEqual(longTask?.date, (date - duration).timeIntervalSince1970.toInt64Milliseconds)
         XCTAssertEqual(longTask?.longTask.duration, duration.toInt64Nanoseconds)
     }
@@ -114,8 +115,10 @@ class RUMInternalProxyTests: XCTestCase {
         // Then
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+
+        let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
 

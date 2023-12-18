@@ -52,7 +52,7 @@ internal class RUMSessionMatcher {
 
     /// Single RUM View visit tracked in this RUM Session.
     /// Groups all the `RUMEvents` send during this visit.
-    class ViewVisit {
+    class View {
         /// The identifier of all `RUM Views` tracked during this visit.
         let viewID: String
 
@@ -93,11 +93,9 @@ internal class RUMSessionMatcher {
     /// The ID of this session in RUM.
     let sessionID: String
 
-    let applicationLaunchView: ViewVisit?
-
-    /// An array of view visits tracked during this RUM Session.
+    /// An array of view visits tracked during this RUM session.
     /// Each `ViewVisit` is determined by unique `view.id` and groups all RUM events linked to that `view.id`.'
-    let viewVisits: [ViewVisit]
+    let views: [View]
 
     /// All RUM events in this session.
     let allEvents: [RUMEventMatcher]
@@ -154,9 +152,9 @@ internal class RUMSessionMatcher {
 
         // Group RUMView events into ViewVisits:
         let uniqueViewIDs = Set(viewEvents.map { $0.view.id })
-        let visits = uniqueViewIDs.map { viewID in ViewVisit(viewID: viewID) }
+        let visits = uniqueViewIDs.map { viewID in View(viewID: viewID) }
 
-        var visitsByViewID: [String: ViewVisit] = [:]
+        var visitsByViewID: [String: View] = [:]
         visits.forEach { visit in visitsByViewID[visit.viewID] = visit }
 
         // Group RUM Events and their matchers by View Visits:
@@ -226,7 +224,7 @@ internal class RUMSessionMatcher {
         }
 
         // Sort visits by time
-        var visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
+        let visitsEventOrderedByTime = visits.sorted { firstVisit, secondVisit in
             let firstVisitTime = firstVisit.viewEvents[0].date
             let secondVisitTime = secondVisit.viewEvents[0].date
             return firstVisitTime < secondVisitTime
@@ -258,23 +256,14 @@ internal class RUMSessionMatcher {
             }
         }
 
-        if let applicationLaunchIndex = visitsEventOrderedByTime.firstIndex(
-            where: { $0.name == "ApplicationLaunch" }
-        ) {
-            self.applicationLaunchView = visitsEventOrderedByTime[applicationLaunchIndex]
-            visitsEventOrderedByTime.remove(at: applicationLaunchIndex)
-        } else {
-            self.applicationLaunchView = nil
-        }
-
-        self.viewVisits = visitsEventOrderedByTime
+        self.views = visitsEventOrderedByTime
     }
 
     /// Checks if this session contains a view with a specific ID.
     /// - Parameter viewID: The ID of the view to check.
     /// - Returns: `true` if a view with the given `viewID` is present in this session; otherwise, `false`.
     func containsView(with viewID: String) -> Bool {
-        let allIDs = Set(viewVisits.map { $0.viewID })
+        let allIDs = Set(views.map { $0.viewID })
         return allIDs.contains(viewID)
     }
 }
@@ -446,18 +435,57 @@ private func strictValidate(os: RUMOperatingSystem) throws {
     #endif
 }
 
+// MARK: - Matching
+
+extension Array where Element == RUMSessionMatcher {
+    /// Returns the only session in this array.
+    /// Throws if there is more than one session or the array has no elements.
+    func takeSingle() throws -> RUMSessionMatcher {
+        guard !isEmpty else {
+            throw RUMSessionConsistencyException(description: "There are no sessions in this array")
+        }
+        guard count == 1 else {
+            throw RUMSessionConsistencyException(description: "Expected to find only one session, but found \(count)")
+        }
+        return self[0]
+    }
+}
+
+extension Array where Element == RUMSessionMatcher.View {
+    /// Returns list of views by dropping "application launch" view.
+    /// Throws if "application launch" is not the first view in this array.
+    ///
+    /// Use it to explicitly ignore the "application launch" view with running strict check of its existence.
+    func dropApplicationLaunchView() throws -> [RUMSessionMatcher.View] {
+        guard let first = first else {
+            throw RUMSessionConsistencyException(description: "Cannot drop 'application launch' view in empty array")
+        }
+        guard first.isApplicationLaunchView() else {
+            throw RUMSessionConsistencyException(description: "The first view in this array is not 'application launch' view (\(first.name ?? "???")")
+        }
+        return Array(dropFirst())
+    }
+}
+
+extension RUMSessionMatcher.View {
+    /// Whether this is "application launch" view.
+    func isApplicationLaunchView() -> Bool {
+        return name == "ApplicationLaunch" && path == "com/datadog/application-launch/view"
+    }
+}
+
 // MARK: - Debugging
 
 extension RUMSessionMatcher: CustomStringConvertible {
     var description: String {
-        var description = "[🎞 RUM session (application.id: \(applicationID), session.id: \(sessionID), number of views: \(viewVisits.count))]"
-        viewVisits.forEach { view in
+        var description = "[🎞 RUM session (application.id: \(applicationID), session.id: \(sessionID), number of views: \(views.count))]"
+        views.forEach { view in
             description += "\n\(describe(viewVisit: view))"
         }
         return description
     }
 
-    private func describe(viewVisit: ViewVisit) -> String {
+    private func describe(viewVisit: View) -> String {
         guard let lastViewEvent = viewVisit.viewEvents.last else {
             return "    → [⛔️ Invalid View - it has no view events]"
         }
