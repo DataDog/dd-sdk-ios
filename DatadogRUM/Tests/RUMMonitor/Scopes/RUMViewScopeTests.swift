@@ -15,6 +15,7 @@ class RUMViewScopeTests: XCTestCase {
         service: "test-service",
         version: "test-version",
         buildNumber: "test-build",
+        buildId: .mockRandom(),
         device: .mockWith(
             name: "device-name",
             osName: "device-os",
@@ -236,6 +237,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -321,6 +323,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -390,6 +393,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -460,6 +464,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -532,6 +537,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -1091,6 +1097,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1141,6 +1148,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1269,6 +1277,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.service, "test-service")
         XCTAssertEqual(error.version, "test-version")
         XCTAssertEqual(error.buildVersion, "test-build")
+        XCTAssertEqual(error.buildId, context.buildId)
         XCTAssertEqual(error.device?.name, "device-name")
         XCTAssertEqual(error.os?.name, "device-os")
         XCTAssertEqual(error.os?.version, "os-version")
@@ -1531,6 +1540,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")

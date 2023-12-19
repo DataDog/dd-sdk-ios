@@ -362,4 +362,19 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(context.version, "5.23.2")
     }
+
+    func testGivenBuildId_itSetsContext() throws {
+        // Given
+        let buildId: String = .mockRandom(length: 32)
+        var configuration = defaultConfig
+        configuration.additionalConfiguration[CrossPlatformAttributes.buildId] = buildId
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.buildId, buildId)
+    }
 }

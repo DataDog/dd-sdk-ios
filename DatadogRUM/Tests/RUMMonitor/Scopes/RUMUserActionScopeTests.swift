@@ -14,6 +14,7 @@ class RUMUserActionScopeTests: XCTestCase {
         service: "test-service",
         version: "test-version",
         buildNumber: "test-build",
+        buildId: .mockRandom(),
         device: .mockWith(
             name: "device-name",
             osName: "device-os"
@@ -92,6 +93,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.version, "test-version")
         XCTAssertEqual(recordedAction.buildVersion, "test-build")
+        XCTAssertEqual(recordedAction.buildId, context.buildId)
         XCTAssertEqual(recordedAction.device?.name, "device-name")
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
@@ -136,6 +138,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(recordedAction.service, "test-service")
         XCTAssertEqual(recordedAction.version, "test-version")
         XCTAssertEqual(recordedAction.buildVersion, "test-build")
+        XCTAssertEqual(recordedAction.buildId, context.buildId)
         XCTAssertEqual(recordedAction.device?.name, "device-name")
         XCTAssertEqual(recordedAction.os?.name, "device-os")
     }
@@ -222,6 +225,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
     }
@@ -270,6 +274,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
@@ -320,6 +325,7 @@ class RUMUserActionScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)

@@ -208,6 +208,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             threadName: nil,
             applicationVersion: context.version,
             applicationBuildNumber: context.buildNumber,
+            buildId: nil,
             dd: .init(
                 device: .init(architecture: deviceInfo.architecture)
             ),

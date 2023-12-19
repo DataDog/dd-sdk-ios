@@ -101,6 +101,7 @@ class LoggingStorageBenchmarkTests: XCTestCase {
             threadName: "main",
             applicationVersion: "0.0.0",
             applicationBuildNumber: "0",
+            buildId: "0",
             dd: .init(device: .init(architecture: "testArch")),
             os: .init(
                 name: "OS",

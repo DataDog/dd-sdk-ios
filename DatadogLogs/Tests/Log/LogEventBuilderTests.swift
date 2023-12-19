@@ -132,6 +132,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.applicationVersion, randomSDKContext.version)
             XCTAssertEqual(log.applicationBuildNumber, randomSDKContext.buildNumber)
             XCTAssertEqual(log.loggerVersion, randomSDKContext.sdkVersion)
+            XCTAssertNil(log.buildId)
             XCTAssertEqual(log.userInfo.id, randomUserInfo.id)
             XCTAssertEqual(log.userInfo.name, randomUserInfo.name)
             XCTAssertEqual(log.userInfo.email, randomUserInfo.email)
@@ -144,6 +145,35 @@ class LogEventBuilderTests: XCTestCase {
         }
 
         wait(for: [expectation], timeout: 0)
+    }
+
+    func testGivenContextWithBuildID_whenBuildingLog_itSetsBuildId() throws {
+        // Given
+        let buildId: String = .mockRandom()
+        let randomSDKContext: DatadogContext = .mockWith(
+            buildId: buildId
+        )
+
+        // When
+        let builder = LogEventBuilder(
+            service: .mockAny(),
+            loggerName: .mockAny(),
+            networkInfoEnabled: true,
+            eventMapper: nil
+        )
+
+        builder.createLogEvent(
+            date: .mockRandom(),
+            level: .mockAny(),
+            message: .mockAny(),
+            error: .mockAny(),
+            attributes: .mockAny(),
+            tags: .mockAny(),
+            context: randomSDKContext,
+            threadName: .mockAny()
+        ) { log in
+            XCTAssertEqual(log.buildId, buildId)
+        }
     }
 
     func testGivenSendNetworkInfoDisabled_whenBuildingLog_itDoesNotSetConnectionAndCarrierInfo() throws {

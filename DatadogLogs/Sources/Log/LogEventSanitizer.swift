@@ -16,6 +16,7 @@ internal struct LogEventSanitizer {
             "host", "message", "status", "service", "source", "ddtags",
             "dd.trace_id", "dd.span_id",
             "application_id", "session_id", "view.id", "user_action.id",
+            "build_id",
         ]
         /// Allowed first character of a tag name (given as ASCII values ranging from lowercased `a` to `z`) .
         /// Tags with name starting with different character will be dropped.
