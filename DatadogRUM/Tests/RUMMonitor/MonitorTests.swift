@@ -60,6 +60,28 @@ class MonitorTests: XCTestCase {
         // Then
         XCTAssertNil(core.context.baggages[RUMFeature.name])
     }
+
+    func testWhenStartView_itDoesNotRetainUIViewController() throws {
+        // Given
+        let sampler = Sampler(samplingRate: 0)
+
+        // When
+        let monitor = Monitor(
+            core: core,
+            dependencies: .mockWith(core: core, sessionSampler: .mockKeepAll()),
+            dateProvider: DateProviderMock()
+        )
+
+        var vc: UIViewController? = nil
+
+        autoreleasepool {
+            vc = createMockViewInWindow()
+            monitor.startView(viewController: vc!)
+            vc = nil
+        }
+
+        XCTAssertNil(vc)
+    }
 }
 
 // MARK: - Convenience

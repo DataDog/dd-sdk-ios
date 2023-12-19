@@ -144,6 +144,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             guard expiredView.identity.exists else {
                 return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
             }
+
             return RUMViewScope(
                 isInitialView: false,
                 parent: self,
@@ -260,7 +261,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialView: true,
             parent: self,
             dependencies: dependencies,
-            identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL.asRUMViewIdentity(),
+            identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL),
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
             name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
             attributes: command.attributes,
@@ -305,7 +306,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
-                identity: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL.asRUMViewIdentity(),
+                identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
                 path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 attributes: command.attributes,
