@@ -49,9 +49,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     /// Number of Resources started during this User Action's lifespan.
     private var resourcesCount: UInt = 0
-    /// Number of Errors occured during this User Action's lifespan.
+    /// Number of Errors occurred during this User Action's lifespan.
     private var errorsCount: UInt = 0
-    /// Number of Long Tasks occured during this User Action's lifespan.
+    /// Number of Long Tasks occurred during this User Action's lifespan.
     private var longTasksCount: Int64 = 0
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0

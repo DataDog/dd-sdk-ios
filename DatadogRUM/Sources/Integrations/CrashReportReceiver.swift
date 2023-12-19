@@ -180,7 +180,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return true
     }
 
-    /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
+    /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
     /// the crash to that view. The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
     private func sendCrashReportLinkedToLastViewInPreviousSession(
         _ crashReport: CrashReport,
@@ -201,7 +201,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
     }
 
-    /// If the crash occured in an existing RUM session and we know its `lastRUMSessionState` but there was no `lastRUMViewEvent` we can
+    /// If the crash occurred in an existing RUM session and we know its `lastRUMSessionState` but there was no `lastRUMViewEvent` we can
     /// still send the error using that session UUID. Lack of `lastRUMViewEvent` means that there was no **active** view, but the presence of
     /// `lastRUMSessionState` indicates that some views were tracked before.
     private func sendCrashReportToPreviousSession(
@@ -233,7 +233,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 hasReplay: lastRUMSessionState.didStartWithReplay
             )
         case .handleInBackgroundView:
-            // It means that the crash occured as the very first event after sending app to background in previous session.
+            // It means that the crash occurred as the very first event after sending app to background in previous session.
             // This is why we don't have the `lastRUMViewEvent` (no view was active), but we know the `lastRUMSessionState`.
             newRUMView = createNewRUMViewEvent(
                 named: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
@@ -280,7 +280,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 context: crashContext,
-                // As the crash occured after initializing SDK but before starting the first view,
+                // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
                 hasReplay: false
@@ -292,7 +292,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 context: crashContext,
-                // As the crash occured after initializing SDK but before starting the first view,
+                // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
                 hasReplay: false
