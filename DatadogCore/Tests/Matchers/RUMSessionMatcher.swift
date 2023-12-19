@@ -472,6 +472,53 @@ extension RUMSessionMatcher.View {
     func isApplicationLaunchView() -> Bool {
         return name == "ApplicationLaunch" && path == "com/datadog/application-launch/view"
     }
+
+    /// Whether this is "background" view.
+    func isBackgroundView() -> Bool {
+        return name == "Background" && path == "com/datadog/background/view"
+    }
+}
+
+private extension Date {
+    init(millisecondsSince1970: Int64) {
+        self.init(timeIntervalSince1970: TimeInterval(millisecondsSince1970) / 1_000)
+    }
+}
+
+private extension TimeInterval {
+    init(fromNanoseconds nanoseconds: Int64) {
+        self = TimeInterval(nanoseconds) / 1_000_000_000
+    }
+}
+
+extension RUMSessionMatcher {
+    /// Asserts that all events in this session have certain `sessionPrecondition` set.
+    /// Throws if there are no views in this session.
+    func has(sessionPrecondition: RUMSessionPrecondition) throws -> Bool {
+        guard !views.isEmpty else {
+            throw RUMSessionConsistencyException(description: "There are no views in this session")
+        }
+
+        for view in views {
+            guard view.viewEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
+                return false
+            }
+            guard view.actionEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
+                return false
+            }
+            guard view.resourceEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
+                return false
+            }
+            guard view.errorEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
+                return false
+            }
+            guard view.longTaskEvents.allSatisfy({ $0.dd.session?.sessionPrecondition == sessionPrecondition }) else {
+                return false
+            }
+        }
+
+        return true
+    }
 }
 
 // MARK: - Debugging

@@ -468,8 +468,8 @@
 		61E45BE724519A3700F2C652 /* JSONDataMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BE624519A3700F2C652 /* JSONDataMatcher.swift */; };
 		61E45ED12451A8730061DAC7 /* SpanMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45ED02451A8730061DAC7 /* SpanMatcher.swift */; };
 		61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */; };
-		61E8C5082B28898800E709B4 /* InitialSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C5072B28898800E709B4 /* InitialSessionTests.swift */; };
-		61E8C5092B28898800E709B4 /* InitialSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C5072B28898800E709B4 /* InitialSessionTests.swift */; };
+		61E8C5082B28898800E709B4 /* StartingRUMSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */; };
+		61E8C5092B28898800E709B4 /* StartingRUMSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */; };
 		61E95D882695C00200EA3115 /* DDCrashReportExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E95D872695C00200EA3115 /* DDCrashReportExporterTests.swift */; };
 		61ED39D426C2A36B002C0F26 /* DataUploadStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61ED39D326C2A36B002C0F26 /* DataUploadStatus.swift */; };
 		61EF78C1257F842000EDCCB3 /* FeatureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61EF78C0257F842000EDCCB3 /* FeatureTests.swift */; };
@@ -2362,7 +2362,7 @@
 		61E5333024B75DFC003D6C4E /* RUMFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMFeatureMocks.swift; sourceTree = "<group>"; };
 		61E5333524B84B43003D6C4E /* RUMMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitor.swift; sourceTree = "<group>"; };
 		61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMViewController.swift; sourceTree = "<group>"; };
-		61E8C5072B28898800E709B4 /* InitialSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialSessionTests.swift; sourceTree = "<group>"; };
+		61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingRUMSessionTests.swift; sourceTree = "<group>"; };
 		61E909E624A24DD3005EA2DE /* OTSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTSpan.swift; sourceTree = "<group>"; };
 		61E909E724A24DD3005EA2DE /* OTFormat.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTFormat.swift; sourceTree = "<group>"; };
 		61E909E924A24DD3005EA2DE /* OTTracer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTTracer.swift; sourceTree = "<group>"; };
@@ -4906,7 +4906,7 @@
 		61E8C5062B28896100E709B4 /* RUM */ = {
 			isa = PBXGroup;
 			children = (
-				61E8C5072B28898800E709B4 /* InitialSessionTests.swift */,
+				61E8C5072B28898800E709B4 /* StartingRUMSessionTests.swift */,
 			);
 			path = RUM;
 			sourceTree = "<group>";
@@ -7512,7 +7512,7 @@
 				D224430D29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */,
 				D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */,
 				61D3E0E4277B3D92008BE766 /* KronosNTPPacketTests.swift in Sources */,
-				61E8C5082B28898800E709B4 /* InitialSessionTests.swift in Sources */,
+				61E8C5082B28898800E709B4 /* StartingRUMSessionTests.swift in Sources */,
 				616B668E259CC28E00968EE8 /* DDRUMMonitorTests.swift in Sources */,
 				9EE5AD8226205B82001E699E /* DDNSURLSessionDelegateTests.swift in Sources */,
 				61133C4A2423990D00786299 /* DDConfigurationTests.swift in Sources */,
@@ -8691,7 +8691,7 @@
 				D2CB6F6427C520D400A62B57 /* LoggerTests.swift in Sources */,
 				D29A9FD929DDC687005C54A4 /* UIKitRUMViewsPredicateTests.swift in Sources */,
 				D2CB6F6627C520D400A62B57 /* RUMMonitorTests.swift in Sources */,
-				61E8C5092B28898800E709B4 /* InitialSessionTests.swift in Sources */,
+				61E8C5092B28898800E709B4 /* StartingRUMSessionTests.swift in Sources */,
 				D22743DF29DEB8B5001A7EF9 /* VitalMemoryReaderTests.swift in Sources */,
 				D2CB6F6827C520D400A62B57 /* SwiftUIExtensionsTests.swift in Sources */,
 				D2CB6F6A27C520D400A62B57 /* DDRUMMonitor+apiTests.m in Sources */,
