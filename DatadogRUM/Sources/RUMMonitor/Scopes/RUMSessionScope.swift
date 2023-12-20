@@ -102,13 +102,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             didStartWithReplay: hasReplay
         )
 
-        if let viewScope = resumingViewScope, viewScope.identity.exists {
+        if let viewScope = resumingViewScope {
             viewScopes.append(
                 RUMViewScope(
                     isInitialView: false,
                     parent: self,
                     dependencies: dependencies,
-                    identity: viewScope.identity,
+                    identifier: viewScope.identifier,
                     path: viewScope.viewPath,
                     name: viewScope.viewName,
                     attributes: viewScope.attributes,
@@ -141,15 +141,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard expiredView.identity.exists else {
-                return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
-            }
-
             return RUMViewScope(
                 isInitialView: false,
                 parent: self,
                 dependencies: dependencies,
-                identity: expiredView.identity,
+                identifier: expiredView.identifier,
                 path: expiredView.viewPath,
                 name: expiredView.viewName,
                 attributes: expiredView.attributes,
@@ -240,7 +236,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
-                identity: command.identity,
+                identifier: command.identifier,
                 path: command.path,
                 name: command.name,
                 attributes: command.attributes,
@@ -261,7 +257,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialView: true,
             parent: self,
             dependencies: dependencies,
-            identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL),
+            identifier: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL.hashValue,
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
             name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
             attributes: command.attributes,
@@ -306,7 +302,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
-                identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
+                identifier: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL.hashValue,
                 path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 attributes: command.attributes,

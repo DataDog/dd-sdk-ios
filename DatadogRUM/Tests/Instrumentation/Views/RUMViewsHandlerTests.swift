@@ -41,7 +41,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
-        XCTAssertTrue(command.identity == ViewIdentifier(view))
+        XCTAssertTrue(command.identifier == view.hashValue)
         XCTAssertEqual(command.path, viewControllerClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
@@ -68,11 +68,11 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
+        XCTAssertTrue(startCommand1.identifier == view1.hashValue)
         XCTAssertEqual(startCommand1.attributes as? [String: String], ["key1": "val1"])
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1))
+        XCTAssertTrue(stopCommand.identifier == view1.hashValue)
         XCTAssertEqual(stopCommand.attributes.count, 0)
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
+        XCTAssertTrue(startCommand2.identifier == view2.hashValue)
         XCTAssertEqual(startCommand2.attributes as? [String: String], ["key2": "val2"])
     }
 
@@ -126,11 +126,11 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
         let startCommand3 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1))
-        XCTAssertTrue(stopCommand1.identity == ViewIdentifier(view1))
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2))
-        XCTAssertTrue(stopCommand2.identity == ViewIdentifier(view2))
-        XCTAssertTrue(startCommand3.identity == ViewIdentifier(view1))
+        XCTAssertTrue(startCommand1.identifier == view1.hashValue)
+        XCTAssertTrue(stopCommand1.identifier == view1.hashValue)
+        XCTAssertTrue(startCommand2.identifier == view2.hashValue)
+        XCTAssertTrue(stopCommand2.identifier == view2.hashValue)
+        XCTAssertTrue(startCommand3.identifier == view1.hashValue)
     }
 
     func testGivenAcceptingPredicate_whenViewDidDisappearButPreviousView_itDoesNotStartAnyRUMView() {
@@ -180,12 +180,12 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(view))
+        XCTAssertTrue(stopCommand.identifier == view.hashValue)
         XCTAssertEqual(stopCommand.attributes.count, 0)
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
 
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-        XCTAssertTrue(startCommand.identity == ViewIdentifier(view))
+        XCTAssertTrue(startCommand.identifier == view.hashValue)
         XCTAssertEqual(startCommand.path, viewControllerClassName)
         XCTAssertEqual(startCommand.name, viewName)
         XCTAssertEqual(startCommand.attributes as? [String: String], ["foo": "bar"])
@@ -269,8 +269,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
 
-        XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
+        XCTAssertTrue(startCommand.identifier == someView.hashValue)
+        XCTAssertTrue(stopCommand.identifier == someView.hashValue)
     }
 
     func testGivenUntrackedModal_whenTransitioningToAppearedView_viewDoesStart() throws {
@@ -306,9 +306,9 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
+        XCTAssertTrue(startCommand.identifier == someView.hashValue)
+        XCTAssertTrue(stopCommand.identifier == someView.hashValue)
+        XCTAssertTrue(startCommand2.identifier == someView.hashValue)
     }
 
     func testGiveniOS13AppearedView_whenTransitioningToModal_viewDoesStop() throws {
@@ -344,8 +344,8 @@ class RUMViewsHandlerTests: XCTestCase {
             let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
             let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
 
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
+            XCTAssertTrue(startCommand.identifier == someView.hashValue)
+            XCTAssertTrue(stopCommand.identifier == someView.hashValue)
         }
     }
 
@@ -386,9 +386,9 @@ class RUMViewsHandlerTests: XCTestCase {
             let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
             let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-            XCTAssertTrue(startCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(stopCommand.identity == ViewIdentifier(someView))
-            XCTAssertTrue(startCommand2.identity == ViewIdentifier(someView))
+            XCTAssertTrue(startCommand.identifier == someView.hashValue)
+            XCTAssertTrue(stopCommand.identifier == someView.hashValue)
+            XCTAssertTrue(startCommand2.identifier == someView.hashValue)
         }
     }
 
@@ -396,14 +396,14 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnAppear_itStartsRUMView() throws {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: viewIdentity,
+            identifier: viewIdentifier,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -414,7 +414,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
-        XCTAssertTrue(command.identity == ViewIdentifier(viewIdentity))
+        XCTAssertTrue(command.identifier == viewIdentifier)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.path, viewPath)
         DDAssertDictionariesEqual(command.attributes, viewAttributes)
@@ -422,26 +422,26 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnAppear_itStopsPreviousRUMView() throws {
         // Given
-        let view1Identity: String = UUID().uuidString
+        let view1Identifier: Int = .mockRandom()
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Identity: String = UUID().uuidString
+        let view2Identifier: Int = .mockRandom()
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: view1Identity,
+            identifier: view1Identifier,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.notify_onAppear(
-            identity: view2Identity,
+            identifier: view2Identifier,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
@@ -454,31 +454,31 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1Identity))
+        XCTAssertTrue(startCommand1.identifier == view1Identifier)
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(view1Identity))
+        XCTAssertTrue(stopCommand.identifier == view1Identifier)
         XCTAssertEqual(stopCommand.attributes.count, 0)
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2Identity))
+        XCTAssertTrue(startCommand2.identifier == view2Identifier)
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testWhenOnAppear_itDoesNotStartTheSameRUMViewTwice() throws {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: viewIdentity,
+            identifier: viewIdentifier,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
         handler.notify_onAppear(
-            identity: viewIdentity,
+            identifier: viewIdentifier,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -493,10 +493,10 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testWhenOnDisappear_itDoesNotSendAnyCommand() {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
 
         // When
-        handler.notify_onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identifier: viewIdentifier)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -504,20 +504,20 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testGivenAppearedView_whenOnDisappear_itSopsTheRUMView() throws {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: viewIdentity,
+            identifier: viewIdentifier,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
         )
 
-        handler.notify_onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identifier: viewIdentifier)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -525,40 +525,40 @@ class RUMViewsHandlerTests: XCTestCase {
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
 
-        XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
+        XCTAssertTrue(startCommand.identifier == viewIdentifier)
         DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
+        XCTAssertTrue(stopCommand.identifier == viewIdentifier)
         XCTAssertEqual(stopCommand.attributes.count, 0)
     }
 
     func testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice() throws {
         // Given
-        let view1Identity: String = UUID().uuidString
+        let view1Identifier: Int = .mockRandom()
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Identity: String = UUID().uuidString
+        let view2Identifier: Int = .mockRandom()
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: view1Identity,
+            identifier: view1Identifier,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.notify_onAppear(
-            identity: view2Identity,
+            identifier: view2Identifier,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.notify_onDisappear(identity: view1Identity)
+        handler.notify_onDisappear(identifier: view1Identifier)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -567,41 +567,41 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand1 = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1Identity))
+        XCTAssertTrue(startCommand1.identifier == view1Identifier)
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand1.identity == ViewIdentifier(view1Identity))
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2Identity))
+        XCTAssertTrue(stopCommand1.identifier == view1Identifier)
+        XCTAssertTrue(startCommand2.identifier == view2Identifier)
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
     }
 
     func testGiven2AppearedView_whenTheLastDisappears_itRestartsThePreviousRUMView() throws {
         // Given
-        let view1Identity: String = UUID().uuidString
+        let view1Identifier: Int = .mockRandom()
         let view1Name: String = .mockRandom()
         let view1Path: String = .mockRandom()
         let view1Attributes = mockRandomAttributes()
 
-        let view2Identity: String = UUID().uuidString
+        let view2Identifier: Int = .mockRandom()
         let view2Name: String = .mockRandom()
         let view2Path: String = .mockRandom()
         let view2Attributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: view1Identity,
+            identifier: view1Identifier,
             name: view1Name,
             path: view1Path,
             attributes: view1Attributes
         )
 
         handler.notify_onAppear(
-            identity: view2Identity,
+            identifier: view2Identifier,
             name: view2Name,
             path: view2Path,
             attributes: view2Attributes
         )
 
-        handler.notify_onDisappear(identity: view2Identity)
+        handler.notify_onDisappear(identifier: view2Identifier)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -612,13 +612,13 @@ class RUMViewsHandlerTests: XCTestCase {
         let stopCommand2 = try XCTUnwrap(commandSubscriber.receivedCommands[3] as? RUMStopViewCommand)
         let startCommand3 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
 
-        XCTAssertTrue(startCommand1.identity == ViewIdentifier(view1Identity))
+        XCTAssertTrue(startCommand1.identifier == view1Identifier)
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
-        XCTAssertTrue(stopCommand1.identity == ViewIdentifier(view1Identity))
-        XCTAssertTrue(startCommand2.identity == ViewIdentifier(view2Identity))
+        XCTAssertTrue(stopCommand1.identifier == view1Identifier)
+        XCTAssertTrue(startCommand2.identifier == view2Identifier)
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
-        XCTAssertTrue(stopCommand2.identity == ViewIdentifier(view2Identity))
-        XCTAssertTrue(startCommand3.identity == ViewIdentifier(view1Identity))
+        XCTAssertTrue(stopCommand2.identifier == view2Identifier)
+        XCTAssertTrue(startCommand3.identifier == view1Identifier)
         DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
     }
 
@@ -626,14 +626,14 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testGivenSwiftUIViewStarted_whenAppStateChanges_itStopsAndRestartsRUMView() throws {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
         let viewName: String = .mockRandom()
         let viewPath: String = .mockRandom()
         let viewAttributes = mockRandomAttributes()
 
         // When
         handler.notify_onAppear(
-            identity: viewIdentity,
+            identifier: viewIdentifier,
             name: viewName,
             path: viewPath,
             attributes: viewAttributes
@@ -648,10 +648,10 @@ class RUMViewsHandlerTests: XCTestCase {
 
         let stopCommand = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopViewCommand)
         let startCommand = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
-        XCTAssertTrue(stopCommand.identity == ViewIdentifier(viewIdentity))
+        XCTAssertTrue(stopCommand.identifier == viewIdentifier)
         XCTAssertEqual(stopCommand.attributes.count, 0)
         XCTAssertEqual(stopCommand.time, .mockDecember15th2019At10AMUTC())
-        XCTAssertTrue(startCommand.identity == ViewIdentifier(viewIdentity))
+        XCTAssertTrue(startCommand.identifier == viewIdentifier)
         XCTAssertEqual(startCommand.path, viewPath)
         XCTAssertEqual(startCommand.name, viewName)
         DDAssertDictionariesEqual(startCommand.attributes, viewAttributes)
@@ -660,10 +660,10 @@ class RUMViewsHandlerTests: XCTestCase {
 
     func testGivenSwiftUIViewDidNotStart_whenAppStateChanges_itDoesNothing() throws {
         // Given
-        let viewIdentity: String = UUID().uuidString
+        let viewIdentifier: Int = .mockRandom()
 
         // When
-        handler.notify_onDisappear(identity: viewIdentity)
+        handler.notify_onDisappear(identifier: viewIdentifier)
 
         notificationCenter.post(name: UIApplication.willResignActiveNotification, object: nil)
         dateProvider.advance(bySeconds: 1)

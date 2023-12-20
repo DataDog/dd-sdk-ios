@@ -221,7 +221,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: ViewIdentifier(viewController),
+                identifier: viewController.hashValue,
                 name: name ?? viewController.canonicalClassName,
                 path: viewController.canonicalClassName,
                 attributes: attributes
@@ -234,7 +234,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: attributes,
-                identity: ViewIdentifier(viewController)
+                identifier: viewController.hashValue
             )
         )
     }
@@ -243,7 +243,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: ViewIdentifier(key),
+                identifier: key.hashValue,
                 name: name ?? key,
                 path: key,
                 attributes: attributes
@@ -256,7 +256,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: attributes,
-                identity: ViewIdentifier(key)
+                identifier: key.hashValue
             )
         )
     }

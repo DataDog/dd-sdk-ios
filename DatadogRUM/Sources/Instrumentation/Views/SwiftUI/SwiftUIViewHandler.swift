@@ -11,8 +11,8 @@ import DatadogInternal
 /// Publisher generating RUM Commands on `SwiftUI.View` events.
 internal protocol SwiftUIViewHandler: RUMCommandPublisher {
     /// Respond to a `SwiftUI.View.onAppear` event.
-    func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue])
+    func notify_onAppear(identifier: Int, name: String, path: String, attributes: [AttributeKey: AttributeValue])
 
     /// Respond to a `SwiftUI.View.onDisappear` event.
-    func notify_onDisappear(identity: String)
+    func notify_onDisappear(identifier: Int)
 }

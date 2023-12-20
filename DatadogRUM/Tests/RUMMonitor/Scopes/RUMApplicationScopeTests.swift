@@ -81,7 +81,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let view = createMockViewInWindow()
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(view)),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identifier: view.hashValue),
             context: .mockAny(),
             writer: writer
         )
@@ -107,7 +107,7 @@ class RUMApplicationScopeTests: XCTestCase {
         let initialViewScope = try XCTUnwrap(initialSession.viewScopes.first)
         let transferredViewScope = try XCTUnwrap(nextSession.viewScopes.first)
         XCTAssertNotEqual(initialViewScope.viewUUID, transferredViewScope.viewUUID, "Transferred view scope must have different view id")
-        XCTAssertTrue(transferredViewScope.identity == ViewIdentifier(view), "Transferred view scope must track the same view")
+        XCTAssertTrue(transferredViewScope.identifier == view.hashValue, "Transferred view scope must track the same view")
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
 
@@ -122,12 +122,12 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
             context: .mockAny(),
             writer: writer
         )
         _ = scope.process(
-            command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            command: RUMStopViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
             context: .mockAny(),
             writer: writer
         )
@@ -145,12 +145,12 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
             context: .mockAny(),
             writer: writer
         )
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+            command: RUMStartViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
             context: .mockAny(),
             writer: writer
         )
@@ -169,12 +169,12 @@ class RUMApplicationScopeTests: XCTestCase {
         let simulatedSessionsCount = 400
         (0..<simulatedSessionsCount).forEach { _ in
             _ = scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
                 context: .mockAny(),
                 writer: writer
             )
             _ = scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identifier: .mockAny()),
                 context: .mockAny(),
                 writer: writer
             )

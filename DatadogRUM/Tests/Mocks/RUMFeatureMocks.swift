@@ -128,16 +128,6 @@ extension RUMEventsMapper {
 ///// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 let mockView: UIViewController = createMockViewInWindow()
 
-extension ViewIdentifier {
-    static func mockViewIdentifier() -> ViewIdentifier {
-        ViewIdentifier(mockView)
-    }
-
-    static func mockRandomString() -> ViewIdentifier {
-        ViewIdentifier(String.mockRandom())
-    }
-}
-
 struct RUMCommandMock: RUMCommand {
     var time = Date()
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -203,7 +193,7 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: .mockRandomString(),
+            identifier: .mockRandom(),
             name: .mockRandom(),
             path: .mockRandom()
         )
@@ -212,13 +202,13 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: ViewIdentifier = .mockViewIdentifier(),
+        identifier: Int = .mockAny(),
         name: String = .mockAny(),
         path: String = .mockAny()
     ) -> RUMStartViewCommand {
         return RUMStartViewCommand(
             time: time,
-            identity: identity,
+            identifier: identifier,
             name: name,
             path: path,
             attributes: attributes
@@ -233,17 +223,17 @@ extension RUMStopViewCommand: AnyMockable, RandomMockable {
         return .mockWith(
             time: .mockRandomInThePast(),
             attributes: mockRandomAttributes(),
-            identity: .mockRandomString()
+            identifier: .mockRandom()
         )
     }
 
     static func mockWith(
         time: Date = Date(),
         attributes: [AttributeKey: AttributeValue] = [:],
-        identity: ViewIdentifier = .mockViewIdentifier()
+        identifier: Int = .mockAny()
     ) -> RUMStopViewCommand {
         return RUMStopViewCommand(
-            time: time, attributes: attributes, identity: identity
+            time: time, attributes: attributes, identifier: identifier
         )
     }
 }
@@ -824,7 +814,7 @@ extension RUMViewScope {
         isInitialView: Bool = false,
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
-        identity: ViewIdentifier = .mockViewIdentifier(),
+        identifier: Int = .mockAny(),
         path: String = .mockAny(),
         name: String = .mockAny(),
         attributes: [AttributeKey: AttributeValue] = [:],
@@ -836,7 +826,7 @@ extension RUMViewScope {
             isInitialView: isInitialView,
             parent: parent,
             dependencies: dependencies,
-            identity: identity,
+            identifier: identifier,
             path: path,
             name: name,
             attributes: attributes,
