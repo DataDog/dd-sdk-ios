@@ -41,11 +41,14 @@ public struct RUM {
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {
-            var lateConfig = RUM.Configuration.LateURLSessionTracking(from: urlSessionConfig)
-            lateConfig.debugSDK = configuration.debugSDK
-            lateConfig.dateProvider = configuration.dateProvider
-            lateConfig.traceIDGenerator = configuration.traceIDGenerator
-            try RUM._internal.enableUrlSessionTracking(with: lateConfig, in: core)
+            let lateConfig = RUM.Configuration.LateURLSessionTracking(
+                from: urlSessionConfig,
+                debugSDK: configuration.debugSDK,
+                dateProvider: configuration.dateProvider,
+                traceIDGenerator: configuration.traceIDGenerator
+            )
+
+            try RUM._internal.enableURLSessionTracking(with: lateConfig, in: core)
         }
 
         if configuration.debugViews {

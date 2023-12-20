@@ -25,20 +25,29 @@ extension RUM.Configuration {
         internal var dateProvider: DateProvider = SystemDateProvider()
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
 
-        /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
-        private init() {}
-
         public init(
             firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
-            resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil
+            resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
+            debugSDK: Bool = false
         ) {
             self.firstPartyHostsTracing = firstPartyHostsTracing
             self.resourceAttributesProvider = resourceAttributesProvider
+            self.debugSDK = debugSDK
+            self.dateProvider = SystemDateProvider()
+            self.traceIDGenerator = DefaultTraceIDGenerator()
         }
 
-        public init(from: URLSessionTracking) {
-            self.firstPartyHostsTracing = from.firstPartyHostsTracing
-            self.resourceAttributesProvider = from.resourceAttributesProvider
+        internal init(
+            from configuration: URLSessionTracking,
+            debugSDK: Bool,
+            dateProvider: DateProvider,
+            traceIDGenerator: TraceIDGenerator
+        ) {
+            self.firstPartyHostsTracing = configuration.firstPartyHostsTracing
+            self.resourceAttributesProvider = configuration.resourceAttributesProvider
+            self.debugSDK = debugSDK
+            self.dateProvider = dateProvider
+            self.traceIDGenerator = traceIDGenerator
         }
     }
 }
@@ -61,8 +70,9 @@ extension InternalExtension where ExtendedType == RUM {
     /// or in the case of cross platform frameworks that do not initalize native URL session tracking.
     ///
     /// - Parameters:
-    ///    - in: the configuration for URL session tracking
-    public static func enableUrlSessionTracking(
+    ///    - configuration: the configuration for URL session tracking
+    ///    - in: the core to enable URL session in
+    public static func enableURLSessionTracking(
         with configuration: RUM.Configuration.LateURLSessionTracking,
         in core: DatadogCoreProtocol = CoreRegistry.default) throws {
         guard !(core is NOPDatadogCore) else {
@@ -83,13 +93,13 @@ extension InternalExtension where ExtendedType == RUM {
         switch configuration.firstPartyHostsTracing {
         case let .trace(hosts, sampleRate):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: sampleRate),
+                sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: configuration.traceIDGenerator
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: sampleRate),
+                sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: configuration.traceIDGenerator
             )
