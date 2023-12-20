@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogInternal
 @testable import DatadogTrace
+import OpenTelemetryApi
 
 class TraceTests: XCTestCase {
     private var core: FeatureRegistrationCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
