@@ -179,9 +179,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             didReceiveStartCommand = true
             needsViewUpdate = true
-        case let command as RUMStartViewCommand where !identity.equals(command.identity):
+        case let command as RUMStartViewCommand where !identity.equals(command.identity) && isActiveView:
+            // This gets effective in case when the user didn't end the view explicitly.
+            // If the view is flagged as "active" but another view is started, we know it needs to be
+            // deactivated. This is achieved by setting `isActiveView` to `false` and sending one more view update.
             isActiveView = false
-            needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
+            needsViewUpdate = true
         case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
