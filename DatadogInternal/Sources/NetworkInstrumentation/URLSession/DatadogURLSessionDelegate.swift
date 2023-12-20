@@ -35,7 +35,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         return URLSessionInterceptor.shared(in: core)
     }
 
-    let swizzler = URLSessionSwizzler()
+    let swizzler = NetworkInstrumentationSwizzler()
 
     /// The instance of the SDK core notified by this delegate.
     ///

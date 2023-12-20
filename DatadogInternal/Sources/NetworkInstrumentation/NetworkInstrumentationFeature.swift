@@ -39,7 +39,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     internal var handlers: [DatadogURLSessionHandler] = []
 
     @ReadWriteLock
-    internal var swizzlers: [ObjectIdentifier: URLSessionSwizzler] = [:]
+    internal var swizzlers: [ObjectIdentifier: NetworkInstrumentationSwizzler] = [:]
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///
@@ -68,7 +68,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             swizzler.unswizzle()
         }
 
-        let swizzler = URLSessionSwizzler()
+        let swizzler = NetworkInstrumentationSwizzler()
         swizzlers[identifier] = swizzler
 
         try swizzler.swizzle(
@@ -91,11 +91,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             delegateClass: configuration.delegateClass,
             interceptDidReceive: { [weak self] session, task, data in
                 self?.task(task, didReceive: data)
-            }
-        )
-
-        try swizzler.swizzle(
-            delegateClass: configuration.delegateClass,
+            },
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
                 self?.task(task, didFinishCollecting: metrics)
 
@@ -104,11 +100,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
                     self?.task(task, didCompleteWithError: task.error)
                 }
-            }
-        )
-
-        try swizzler.swizzle(
-            delegateClass: configuration.delegateClass,
+            },
             interceptDidCompleteWithError: { [weak self] session, task, error in
                 self?.task(task, didCompleteWithError: error)
             }
