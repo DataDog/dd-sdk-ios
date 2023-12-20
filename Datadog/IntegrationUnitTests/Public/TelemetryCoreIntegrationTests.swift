@@ -54,7 +54,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
     }
 
     func testGivenRUMEnabled_whenNoViewIsActive_telemetryEventsAreLinkedToSession() throws {
-        // Given & When
+        // Given
         var config = RUM.Configuration(applicationID: "rum-app-id")
         config.telemetrySampleRate = 100
         config.metricsTelemetrySampleRate = 100
