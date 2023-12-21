@@ -43,6 +43,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewName: nil,
             activeUserActionID: nil
         )
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil {
+            print("_dd.application.id=" + dependencies.rumApplicationID)
+        }
     }
 
     // MARK: - RUMContextProvider

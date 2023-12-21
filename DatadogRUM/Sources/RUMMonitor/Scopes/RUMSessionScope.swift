@@ -121,6 +121,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Update `CrashContext` with recent RUM session state:
         dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: state))
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil && self.sessionUUID != .nullUUID {
+            print("_dd.session.id=" + self.sessionUUID.toRUMDataFormat)
+        }
     }
 
     /// Creates a new Session upon expiration of the previous one.
