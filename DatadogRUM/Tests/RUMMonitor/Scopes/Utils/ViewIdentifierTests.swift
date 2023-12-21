@@ -53,30 +53,4 @@ class ViewIdentifierTests: XCTestCase {
         // Then
         XCTAssertFalse(identity1 == identity2)
     }
-
-    func testItReturnsManagedIdentifiable() {
-            let vc = createMockView(viewControllerClassName: "SomeViewController")
-            let key = "SomeKey"
-
-            let identity1 = ViewIdentifier(vc)
-            let identity2 = ViewIdentifier(key)
-
-            XCTAssertTrue(identity1.exists)
-            XCTAssertTrue(identity2.exists)
-        }
-
-    // MARK: - Memory management
-
-    func testItStoresWeakReferenceToUIViewController() {
-        var identity: ViewIdentifier! // swiftlint:disable:this implicitly_unwrapped_optional
-
-        autoreleasepool {
-            var vc: UIViewController? = UIViewController()
-            identity = ViewIdentifier(vc!)
-            XCTAssertTrue(identity.exists, "Reference should be available while `vc` is alive.")
-            vc = nil
-        }
-
-        XCTAssertFalse(identity.exists, "Reference should not be available after `vc` was deallocated.")
-    }
 }

@@ -7,25 +7,14 @@
 import Foundation
 
 /// A unique identifier for a RUM view.
-internal struct ViewIdentifier {
-    private let hash: Int
-    private let isNil: () -> Bool
-
-    /// Returns `true` if the view identifier refers to an object and
-    /// that object is still allocated
-    internal var exists: Bool { !isNil() }
-}
-
-extension ViewIdentifier: Equatable {
-    static func == (lhs: ViewIdentifier, rhs: ViewIdentifier) -> Bool {
-        lhs.hash == rhs.hash
-    }
+internal enum ViewIdentifier: Equatable {
+    case viewController(ObjectIdentifier)
+    case key(String)
 }
 
 extension ViewIdentifier {
     init(_ str: String) {
-        hash = str.hash
-        isNil = { false }
+        self = .key(str)
     }
 }
 
@@ -34,8 +23,7 @@ import UIKit
 
 extension ViewIdentifier {
     init(_ vc: UIViewController) {
-        hash = vc.hash
-        isNil = { [weak vc] in vc == nil }
+        self = .viewController(ObjectIdentifier(vc))
     }
 }
 

@@ -102,7 +102,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             didStartWithReplay: hasReplay
         )
 
-        if let viewScope = resumingViewScope, viewScope.identity.exists {
+        if let viewScope = resumingViewScope {
             viewScopes.append(
                 RUMViewScope(
                     isInitialView: false,
@@ -141,10 +141,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard expiredView.identity.exists else {
-                return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
-            }
-
             return RUMViewScope(
                 isInitialView: false,
                 parent: self,

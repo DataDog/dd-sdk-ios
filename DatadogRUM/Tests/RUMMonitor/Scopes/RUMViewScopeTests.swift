@@ -897,7 +897,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent() throws {
         let view1StartTime = Date()
         var currentTime = view1StartTime
-        let view1 = "view1".asRUMViewIdentity()
+        let view1 = ViewIdentifier("view1")
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -932,13 +932,13 @@ class RUMViewScopeTests: XCTestCase {
         // when (start 2 next views)
         currentTime.addTimeInterval(1)
         let nextViewStartTime = currentTime
-        var nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        var nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(String.mockRandom()))
         XCTAssertTrue(
             scope.process(command: nextViewStartCommand, context: context, writer: writer),
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
         )
         currentTime.addTimeInterval(1)
-        nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(String.mockRandom()))
         XCTAssertTrue(
             scope.process(command: nextViewStartCommand, context: context, writer: writer),
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
