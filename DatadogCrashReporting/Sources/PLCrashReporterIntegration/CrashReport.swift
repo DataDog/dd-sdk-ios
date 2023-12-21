@@ -26,7 +26,7 @@ internal struct CrashReport {
     var threads: [ThreadInfo]
     /// Information about binary images loaded by the process.
     var binaryImages: [BinaryImageInfo]
-    /// Custom user data injected before the crash occured.
+    /// Custom user data injected before the crash occurred.
     var contextData: Data?
     /// Additional flag (for telemetry) meaning if any of the stack traces was truncated due to minification.
     var wasTruncated: Bool

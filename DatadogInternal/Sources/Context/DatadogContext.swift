@@ -29,6 +29,9 @@ public struct DatadogContext {
     /// The build number of the application that data is generated from.
     public let buildNumber: String
 
+    /// The id of the build, specifically for cross platform frameworks
+    public let buildId: String?
+
     /// The variant of the build, equivelent to Android's "Flavor".  Only used by cross platform SDKs
     public let variant: String?
 
@@ -111,6 +114,7 @@ public struct DatadogContext {
         env: String,
         version: String,
         buildNumber: String,
+        buildId: String?,
         variant: String?,
         source: String,
         sdkVersion: String,
@@ -136,6 +140,7 @@ public struct DatadogContext {
         self.env = env
         self.version = version
         self.buildNumber = buildNumber
+        self.buildId = buildId
         self.variant = variant
         self.source = source
         self.sdkVersion = sdkVersion

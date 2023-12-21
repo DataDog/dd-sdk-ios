@@ -87,7 +87,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         guard let subscriber = subscriber else {
             return DD.logger.warn(
                 """
-                RUM Resource was completed, but no `RUMMonitor` is initiaized in the core. RUM auto instrumentation will not work.
+                RUM Resource was completed, but no `RUMMonitor` is initialized in the core. RUM auto instrumentation will not work.
                 Make sure `RUMMonitor.initialize()` is called before any network request is send.
                 """
             )

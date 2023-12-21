@@ -169,15 +169,16 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: attributes),
             date: resourceStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
-            parentView: nil,
             resource: .init(
                 connect: resourceMetrics?.connect.map { metric in
                     .init(
@@ -265,9 +266,11 @@ internal class RUMResourceScope: RUMScope {
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
@@ -290,7 +293,6 @@ internal class RUMResourceScope: RUMScope {
                 type: command.errorType
             ),
             os: .init(context: context),
-            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

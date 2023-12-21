@@ -1,4 +1,9 @@
 # Unreleased
+- [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
+
+# 2.5.1 / 20-12-2023
+
+- [BUGFIX] Fix `view.time_spent` in RUM view events. See [#1596][]
 
 # 2.5.0 / 08-11-2023
 
@@ -7,7 +12,6 @@
 - [FEATURE] Change default tracing headers for first party hosts to use both Datadog headers and W3C `tracecontext` headers. See [#1529][]
 - [FEATURE] Add tracestate headers when using W3C tracecontext. See [#1536][]
 - [BUGFIX] Fix RUM ViewController leaks. See [#1533][]
-- [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 
 # 2.4.0 / 18-10-2023
 
@@ -561,6 +565,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1533]: https://github.com/DataDog/dd-sdk-ios/pull/1533
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
+[#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -99,7 +99,7 @@ extension FixedWidthInteger {
     public init<T: BinaryFloatingPoint>(withNoOverflow floatingPoint: T) {
         if let converted = Self(exactly: floatingPoint.rounded()) {
             self = converted
-        } else { // overflow occured
+        } else { // overflow occurred
             switch floatingPoint.sign {
             case .minus: self = .min
             case .plus: self = .max

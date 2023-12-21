@@ -54,15 +54,15 @@ private func _DDAssertReflectionEqual(_ expression1: @autoclosure () throws -> A
     let mirror1 = Mirror(reflecting: value1)
     let mirror2 = Mirror(reflecting: value2)
 
-    guard mirror1.displayStyle == mirror1.displayStyle else {
+    guard mirror1.displayStyle == mirror2.displayStyle else {
         throw DDAssertError.expectedFailure("(\"\(value1)\") and (\"\(value2)\") have different types", keyPath: keyPath)
     }
 
-    guard mirror1.children.count == mirror1.children.count else {
+    guard mirror1.children.count == mirror2.children.count else {
         throw DDAssertError.expectedFailure("(\"\(value1)\") and (\"\(value2)\") have different number of children", keyPath: keyPath)
     }
 
-    if mirror1.children.isEmpty, mirror1.children.isEmpty {
+    if mirror1.children.isEmpty && mirror2.children.isEmpty {
         guard String(describing: value1) == String(describing: value2) else { // plain values, compare debug strings
             throw DDAssertError.expectedFailure("(\"\(value1)\") is not equal to (\"\(value2)\")", keyPath: keyPath)
         }

@@ -32,8 +32,10 @@ internal struct NodesFlattener {
 
                 return dropPreviousNode ? nil : previousNode
             }
-
-            flattened.append(nextNode)
+            // Add only node that intersects with the screen bounds
+            if CGRect(origin: .zero, size: snapshot.viewportSize).intersects(nextNode.wireframesBuilder.wireframeRect) {
+                flattened.append(nextNode)
+            }
         }
 
         return flattened

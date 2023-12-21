@@ -15,6 +15,7 @@ class RUMViewScopeTests: XCTestCase {
         service: "test-service",
         version: "test-version",
         buildNumber: "test-build",
+        buildId: .mockRandom(),
         device: .mockWith(
             name: "device-name",
             osName: "device-os",
@@ -236,6 +237,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -243,7 +245,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.replayStats?.recordsCount, 1)
     }
 
-    func testWhenInitialViewHasCconfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
+    func testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource() throws {
         // GIVEN
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let source = String.mockAnySource()
@@ -321,6 +323,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -390,6 +393,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -460,6 +464,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -532,6 +537,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -805,6 +811,8 @@ class RUMViewScopeTests: XCTestCase {
     }
 
     func testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete() throws {
+        let viewStartTime = Date()
+        var currentTime = viewStartTime
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
@@ -814,37 +822,40 @@ class RUMViewScopeTests: XCTestCase {
             name: .mockAny(),
             attributes: [:],
             customTimings: [:],
-            startTime: Date(),
+            startTime: currentTime,
             serverTimeOffset: .zero
         )
 
         // given
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
                 context: context,
                 writer: writer
             )
         )
+        currentTime.addTimeInterval(1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1"),
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime),
                 context: context,
                 writer: writer
             )
         )
+        currentTime.addTimeInterval(1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2"),
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/resource/2", time: currentTime),
                 context: context,
                 writer: writer
             )
         )
 
         // when
+        currentTime.addTimeInterval(1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
                 context: context,
                 writer: writer
             ),
@@ -852,9 +863,10 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         // then
+        currentTime.addTimeInterval(1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1"),
+                command: RUMStopResourceCommand.mockWith(resourceKey: "/resource/1", time: currentTime),
                 context: context,
                 writer: writer
             ),
@@ -864,9 +876,11 @@ class RUMViewScopeTests: XCTestCase {
         var event = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertTrue(event.view.isActive ?? false, "View should stay active")
 
+        currentTime.addTimeInterval(1)
+        let lastResourceCompletionTime = currentTime
         XCTAssertFalse(
             scope.process(
-                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2"),
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "/resource/2", time: currentTime),
                 context: context,
                 writer: writer
             ),
@@ -877,6 +891,63 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.view.resource.count, 1, "View should record 1 successful Resource")
         XCTAssertEqual(event.view.error.count, 1, "View should record 1 error due to second Resource failure")
         XCTAssertFalse(event.view.isActive ?? true, "View should be inactive")
+        XCTAssertEqual(event.view.timeSpent, lastResourceCompletionTime.timeIntervalSince(viewStartTime).toInt64Nanoseconds, "View should last until the last resource completes")
+    }
+
+    func testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent() throws {
+        let view1StartTime = Date()
+        var currentTime = view1StartTime
+        let view1 = "view1".asRUMViewIdentity()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: view1,
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        // given
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: view1),
+                context: context,
+                writer: writer
+            )
+        )
+        currentTime.addTimeInterval(1)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: "/dangling/resource", time: currentTime),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // when (start 2 next views)
+        currentTime.addTimeInterval(1)
+        let nextViewStartTime = currentTime
+        var nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        XCTAssertTrue(
+            scope.process(command: nextViewStartCommand, context: context, writer: writer),
+            "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
+        )
+        currentTime.addTimeInterval(1)
+        nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        XCTAssertTrue(
+            scope.process(command: nextViewStartCommand, context: context, writer: writer),
+            "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
+        )
+
+        let lastEvent = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        XCTAssertEqual(lastEvent.view.resource.count, 0, "View should record no resources as `/dangling/resource` never finished")
+        XCTAssertEqual(lastEvent.view.isActive, true, "View should remain active because it has pending resource")
+        XCTAssertEqual(lastEvent.view.timeSpent, nextViewStartTime.timeIntervalSince(view1StartTime).toInt64Nanoseconds, "View should last until next view was started")
     }
 
     // MARK: - User Action Tracking
@@ -1091,6 +1162,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1141,6 +1213,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1269,6 +1342,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.service, "test-service")
         XCTAssertEqual(error.version, "test-version")
         XCTAssertEqual(error.buildVersion, "test-build")
+        XCTAssertEqual(error.buildId, context.buildId)
         XCTAssertEqual(error.device?.name, "device-name")
         XCTAssertEqual(error.os?.name, "device-os")
         XCTAssertEqual(error.os?.version, "os-version")
@@ -1531,6 +1605,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
