@@ -21,11 +21,11 @@ internal final class URLSessionSwizzler {
         interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void
     ) throws {
         lock.lock()
+        defer { lock.unlock() }
         dataTaskURLRequestCompletionHandler = try DataTaskURLRequestCompletionHandler.build()
         dataTaskURLRequestCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
         dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
         dataTaskURLCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
-        lock.unlock()
     }
 
     /// Unswizzles all.

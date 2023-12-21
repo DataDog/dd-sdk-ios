@@ -39,7 +39,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     internal var handlers: [DatadogURLSessionHandler] = []
 
     @ReadWriteLock
-    internal var swizzlers: [ObjectIdentifier: NetworkInstrumentationSwizzler] = [:]
+    private var swizzlers: [ObjectIdentifier: NetworkInstrumentationSwizzler] = [:]
 
     /// Maps `URLSessionTask` to its `TaskInterception` object.
     ///

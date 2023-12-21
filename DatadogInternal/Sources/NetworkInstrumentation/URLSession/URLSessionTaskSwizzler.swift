@@ -19,9 +19,9 @@ internal final class URLSessionTaskSwizzler {
         interceptResume: @escaping (URLSessionTask) -> Void
     ) throws {
         lock.lock()
+        defer { lock.unlock() }
         taskResume = try TaskResume.build()
         taskResume?.swizzle(intercept: interceptResume)
-        lock.unlock()
     }
 
     /// Unswizzles all.

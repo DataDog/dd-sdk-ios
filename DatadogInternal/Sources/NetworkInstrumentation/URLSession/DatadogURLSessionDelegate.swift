@@ -47,7 +47,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     override public init() {
         core = nil
         super.init()
-        try? swizzle(firstPartyHosts: .init())
+        swizzle(firstPartyHosts: .init())
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -93,7 +93,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     ) {
         self.core = core
         super.init()
-        try? swizzle(firstPartyHosts: FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes))
+        swizzle(firstPartyHosts: FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes))
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
@@ -115,31 +115,35 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         interceptor?.task(task, didCompleteWithError: error)
     }
 
-    private func swizzle(firstPartyHosts: FirstPartyHosts) throws {
-        try swizzler.swizzle(
-            interceptResume: { [weak self] task in
-                guard
-                    let interceptor = self?.interceptor,
-                    let provider = task.dd.delegate as? __URLSessionDelegateProviding,
-                    provider.ddURLSessionDelegate == self // intercept task with self as delegate
-                else {
-                    return
+    private func swizzle(firstPartyHosts: FirstPartyHosts) {
+        do {
+            try swizzler.swizzle(
+                interceptResume: { [weak self] task in
+                    guard
+                        let interceptor = self?.interceptor,
+                        let provider = task.dd.delegate as? __URLSessionDelegateProviding,
+                        provider.ddURLSessionDelegate === self // intercept task with self as delegate
+                    else {
+                        return
+                    }
+
+                    if let currentRequest = task.currentRequest {
+                        let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                        task.dd.override(currentRequest: request)
+                    }
+
+                    interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
                 }
+            )
 
-                if let currentRequest = task.currentRequest {
-                    let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
-                    task.dd.override(currentRequest: request)
+            try swizzler.swizzle(
+                interceptCompletionHandler: { [weak self] task, _, error in
+                    self?.interceptor?.task(task, didCompleteWithError: error)
                 }
-
-                interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
-            }
-        )
-
-        try swizzler.swizzle(
-            interceptCompletionHandler: { [weak self] task, _, error in
-                self?.interceptor?.task(task, didCompleteWithError: error)
-            }
-        )
+            )
+        } catch {
+            DD.logger.error("Fails to apply swizzling for instrumenting \(Self.self)", error: error)
+        }
     }
 
     deinit {

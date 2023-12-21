@@ -28,13 +28,13 @@ internal class URLSessionTaskDelegateSwizzler {
         interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
         lock.lock()
+        defer { lock.unlock() }
         didReceive = try DidReceive.build(klass: delegateClass)
         didFinishCollecting = try DidFinishCollecting.build(klass: delegateClass)
         didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
         didReceive?.swizzle(intercept: interceptDidReceive)
         didFinishCollecting?.swizzle(intercept: interceptDidFinishCollecting)
         didCompleteWithError?.swizzle(intercept: interceptDidCompleteWithError)
-        lock.unlock()
     }
 
     /// Unswizzles all.
