@@ -54,7 +54,7 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
     let isUserInteraction = true // a new View means there was a navigation, it's considered a User interaction
 
     /// The value holding stable identity of the RUM View.
-    let identifier: Int
+    let identity: ViewIdentifier
 
     /// The name of this View, rendered in RUM Explorer as `VIEW NAME`.
     let name: String
@@ -64,14 +64,14 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
 
     init(
         time: Date,
-        identifier: Int,
+        identity: ViewIdentifier,
         name: String,
         path: String,
         attributes: [AttributeKey: AttributeValue]
     ) {
         self.time = time
         self.attributes = attributes
-        self.identifier = identifier
+        self.identity = identity
         self.name = name
         self.path = path
     }
@@ -84,7 +84,7 @@ internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttribut
     let isUserInteraction = false // a view can be stopped and in most cases should not be considered an interaction (if it's stopped because the user navigate inside the same app, the startView will happen shortly after this)
 
     /// The value holding stable identity of the RUM View.
-    let identifier: Int
+    let identity: ViewIdentifier
 }
 
 internal struct RUMAddCurrentViewErrorCommand: RUMCommand {

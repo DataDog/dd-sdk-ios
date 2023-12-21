@@ -17,7 +17,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
 
     /// The Content View identifier.
     /// The id will be unique per modified view.
-    let identifier: Int = .random(in: Int.min...Int.max)
+    let identity: String = UUID().uuidString
 
     /// View Name used for RUM Explorer.
     let name: String
@@ -32,7 +32,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
         content.onAppear {
             instrumentation?.viewsHandler
                 .notify_onAppear(
-                    identifier: identifier,
+                    identity: identity,
                     name: name,
                     path: path,
                     attributes: attributes
@@ -40,7 +40,7 @@ internal struct RUMViewModifier: SwiftUI.ViewModifier {
         }
         .onDisappear {
             instrumentation?.viewsHandler
-                .notify_onDisappear(identifier: identifier)
+                .notify_onDisappear(identity: identity)
         }
     }
 }
