@@ -11,6 +11,14 @@ assignees: ''
 
 📝 Give us the crash report or stack trace, describe the problem in details and answer the questions.
 
+### Reproduction
+
+Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
+For more complex issues provide a repo with the smallest sample that reproduces the bug.
+
+Avoid including business logic or unrelated code, it makes diagnosis more difficult.
+The code sample should be an SSCCE. See http://sscce.org/ for details. In short, please provide a code sample that we can copy/paste, run and reproduce.
+
 ---
 
 #### Datadog SDK versions:

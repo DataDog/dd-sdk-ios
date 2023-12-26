@@ -7,32 +7,50 @@ assignees: ''
 
 ---
 
-**Describe the bug**
+### Describe the bug
 A clear and concise description of what the bug is.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+### Reproduction
 
-**Expected behavior**
+Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
+For more complex issues provide a repo with the smallest sample that reproduces the bug.
+
+Avoid including business logic or unrelated code, it makes diagnosis more difficult.
+The code sample should be an SSCCE. See http://sscce.org/ for details. In short, please provide a code sample that we can copy/paste, run and reproduce.
+
+### Expected behavior
 A clear and concise description of what you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+---
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+#### Datadog SDK version:
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+_Which version of the Datadog SDK causes this problem? e.g. `1.2.0`_
 
-**Additional context**
-Add any other context about the problem here.
+#### Last working Datadog SDK version:
+
+_What is the last Datadog SDK version where this problem didn't occur? e.g. `1.1.0`_
+
+#### Dependency Manager:
+
+_Which dependency manager do you use? e.g. Cocoapods / Carthage / SPM / ..._
+
+#### Other toolset:
+
+_Do you use additional tools with your dependency manager? e.g. [CarthageCache](https://github.com/Wolox/carthage_cache)_
+
+#### Xcode version:
+
+_e.g. `Xcode 11.5 (11E608c)`_
+
+#### Swift version:
+
+_e.g. `5.1`_
+
+#### Deployment Target:
+
+_What is the Deployment Target of your app? e.g. `iOS 12`, `iPhone` + `iPad`_
+
+#### macOS version:
+
+_e.g. `macOS Catalina 10.15.5 (19F96)`_
