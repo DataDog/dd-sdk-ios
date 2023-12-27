@@ -18,6 +18,8 @@ For more complex issues provide a repo with the smallest sample that reproduces 
 Avoid including business logic or unrelated code, it makes diagnosis more difficult.
 The code sample should be an SSCCE. See http://sscce.org/ for details. In short, please provide a code sample that we can copy/paste, run and reproduce.
 
+Do not share secrets or sensitive information in the code sample.
+
 ### Expected behavior
 A clear and concise description of what you expected to happen.
 
