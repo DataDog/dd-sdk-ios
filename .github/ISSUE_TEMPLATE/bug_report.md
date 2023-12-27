@@ -25,7 +25,7 @@ A clear and concise description of what you expected to happen.
 
 #### Datadog SDK version:
 
-_Which version of the Datadog SDK causes this problem? e.g. `1.2.0`_
+_Which version of the Datadog SDK causes this problem? e.g. `2.5.0`_
 
 #### Last working Datadog SDK version:
 
