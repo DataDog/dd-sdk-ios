@@ -14,7 +14,7 @@ import DatadogInternal
 /// - Use default and add custom attributes to each log sent.
 /// - Record real client IP addresses and User-Agents.
 /// - Leverage optimized network usage with automatic bulk posts.
-public struct Logs {
+public enum Logs {
     /// The Logs general configuration.
     ///
     /// This configuration will be applied to all Logger instances.
