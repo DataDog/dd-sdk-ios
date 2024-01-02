@@ -159,18 +159,18 @@ extension NetworkInstrumentationFeature {
     }
 
     private func _intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
-        guard let currentRequest = task.currentRequest else {
+        guard let request = task.currentRequest ?? task.originalRequest else {
             return
         }
 
         var interceptedRequest: URLRequest
         /// task.setValue is not available on iOS 12, hence for iOS 12 we modify the request by swizzling URLSession methods
         if #available(iOS 13, tvOS 13, *) {
-            let request = self.intercept(request: currentRequest, additionalFirstPartyHosts: additionalFirstPartyHosts)
+            let request = self.intercept(request: request, additionalFirstPartyHosts: additionalFirstPartyHosts)
             interceptedRequest = request
             task.setValue(interceptedRequest, forKey: "currentRequest")
         } else {
-            interceptedRequest = currentRequest
+            interceptedRequest = request
         }
 
         let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
