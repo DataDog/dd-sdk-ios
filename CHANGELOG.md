@@ -1,5 +1,6 @@
 # Unreleased
 - [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
+- [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception
 
 # 2.5.1 / 20-12-2023
 
