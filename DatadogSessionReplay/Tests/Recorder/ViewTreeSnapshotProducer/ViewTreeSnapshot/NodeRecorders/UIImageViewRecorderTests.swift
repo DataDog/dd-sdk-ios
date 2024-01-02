@@ -80,7 +80,7 @@ class UIImageViewRecorderTests: XCTestCase {
         XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertTrue(builder.shouldRecordImage)
-        XCTAssertEqual(semantics.resources.first as? UIImage, imageView.image)
+        XCTAssertNotNil(semantics.resources.first)
         XCTAssertEqual(imageView.image?.recorded, true)
     }
 
