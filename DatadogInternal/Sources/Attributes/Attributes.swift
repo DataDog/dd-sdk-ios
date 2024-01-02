@@ -87,6 +87,10 @@ public struct CrossPlatformAttributes {
     /// It does not replace any default native properties as iOS does not have the concept of 'flavors' or variants.
     public static let variant: String = "_dd.variant"
 
+    /// A custom unique id that identifies this build of the application, used from symbolication and deobfuscation
+    ///  Id does not replace any default native properties and is sent in addition to version and build number
+    public static let buildId: String = "_dd.build_id"
+
     /// Event timestamp passed from CP SDK. Used for all RUM events issued by cross platform SDK.
     /// It should replace event time obtained from `DateProvider` to ensure that events are not skewed due to time difference in native and cross-platform SDKs.
     /// Expects `Int64` value (milliseconds).

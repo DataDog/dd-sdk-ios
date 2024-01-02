@@ -31,7 +31,7 @@ import DatadogInternal
 /// )
 /// ```
 ///     
-public struct Datadog {
+public enum Datadog {
     /// Configuration of Datadog SDK.
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
@@ -397,6 +397,7 @@ public struct Datadog {
         let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
         let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
+        let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
 
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
@@ -423,6 +424,7 @@ public struct Datadog {
                 env: try ifValid(env: configuration.env),
                 version: applicationVersion,
                 buildNumber: applicationBuildNumber,
+                buildId: buildId,
                 variant: variant,
                 source: source,
                 sdkVersion: sdkVersion,

@@ -45,7 +45,7 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         let recordedRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
             let sessions = try RUMSessionMatcher.sessions(maxCount: 2, from: requests)
             let thereAreTwoSessions = sessions.count == 2
-            let firstSessionHasError = sessions.first?.viewVisits.first?.errorEvents.count == 1
+            let firstSessionHasError = sessions.first?.errorEventMatchers.count == 1
             return thereAreTwoSessions && firstSessionHasError
         }
 
@@ -54,23 +54,28 @@ class CrashReportingWithRUMScenarioTests: IntegrationTests, RUMCommonAsserts {
         let sessions = try RUMSessionMatcher.sessions(maxCount: 2, from: recordedRequests)
             .sorted { session1, session2 in
                 // Sort sessions by their "application_start" action date
-                return session1.applicationLaunchView!.actionEvents[0].date < session2.applicationLaunchView!.actionEvents[0].date
+                return session1.views[0].actionEvents[0].date < session2.views[0].actionEvents[0].date
             }
         let crashedSession = try XCTUnwrap(sessions.first)
+        sendCIAppLog("Crashed session: \n\(crashedSession)")
 
-        XCTAssertEqual(crashedSession.viewVisits[0].name, "Runner.CrashReportingViewController")
+        let initialView = crashedSession.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+
+        XCTAssertEqual(crashedSession.views[1].name, "Runner.CrashReportingViewController")
         XCTAssertEqual(
-            crashedSession.viewVisits[0].viewEvents.last?.view.crash?.count,
+            crashedSession.views[1].viewEvents.last?.view.crash?.count,
             1,
             "The RUM View should count the crash."
         )
         XCTAssertEqual(
-            crashedSession.viewVisits[0].errorEvents.count,
+            crashedSession.views[1].errorEvents.count,
             1,
             "The RUM View should count 1 error in total."
         )
 
-        let crashRUMError = try XCTUnwrap(crashedSession.viewVisits[0].errorEvents.last)
+        let crashRUMError = try XCTUnwrap(crashedSession.views[1].errorEvents.last)
         XCTAssertEqual(crashRUMError.version, "1.0")
         XCTAssertEqual(crashRUMError.buildVersion, "1")
 

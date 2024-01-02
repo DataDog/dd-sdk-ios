@@ -31,16 +31,19 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let viewVisit = session.viewVisits[0]
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
-        XCTAssertGreaterThan(viewVisit.viewEvents.count, 0)
-        viewVisit.viewEvents.forEach { event in
+        let view = session.views[1]
+        XCTAssertGreaterThan(view.viewEvents.count, 0)
+        view.viewEvents.forEach { event in
             XCTAssertTrue(event.view.url.isRedacted)
             XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
-        XCTAssertGreaterThan(viewVisit.errorEvents.count, 0)
-        viewVisit.errorEvents.forEach { event in
+        XCTAssertGreaterThan(view.errorEvents.count, 0)
+        view.errorEvents.forEach { event in
             XCTAssertTrue(event.error.message.isRedacted)
             XCTAssertTrue(event.view.url.isRedacted)
             XCTAssertTrue(event.view.name?.isRedacted == true)
@@ -48,14 +51,14 @@ class RUMScrubbingScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertTrue(event.error.stack?.isRedacted ?? true)
         }
 
-        XCTAssertGreaterThan(viewVisit.resourceEvents.count, 0)
-        viewVisit.resourceEvents.forEach { event in
+        XCTAssertGreaterThan(view.resourceEvents.count, 0)
+        view.resourceEvents.forEach { event in
             XCTAssertTrue(event.resource.url.isRedacted)
             XCTAssertTrue(event.view.name?.isRedacted == true)
         }
 
-        XCTAssertGreaterThan(viewVisit.actionEvents.count, 0)
-        viewVisit.actionEvents.forEach { event in
+        XCTAssertGreaterThan(view.actionEvents.count, 0)
+        view.actionEvents.forEach { event in
             XCTAssertTrue(event.action.target?.name.isRedacted ?? true)
             XCTAssertTrue(event.view.name?.isRedacted == true)
         }

@@ -1,15 +1,14 @@
 ---
-name: Compilation Issue
-about: Having a Cocoapods / Carthage / SPM problem when linking the SDK?
+name: Bug report
+about: Create a report to help us improve the SDK.
 title: ''
-labels: compilation issue
+labels: 'bug'
 assignees: ''
 
 ---
 
-### The issue
-
-📝 Give us the error message you receive, describe the problem and answer the questions.
+### Describe the bug
+A clear and concise description of what the bug is.
 
 ### Reproduction
 
@@ -20,6 +19,9 @@ Avoid including business logic or unrelated code, it makes diagnosis more diffic
 The code sample should be an SSCCE. See http://sscce.org/ for details. In short, please provide a code sample that we can copy/paste, run and reproduce.
 
 Do not share secrets or sensitive information in the code sample.
+
+### Expected behavior
+A clear and concise description of what you expected to happen.
 
 ---
 

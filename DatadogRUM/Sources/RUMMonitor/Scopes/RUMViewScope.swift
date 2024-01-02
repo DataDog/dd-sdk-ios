@@ -179,9 +179,12 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
             didReceiveStartCommand = true
             needsViewUpdate = true
-        case let command as RUMStartViewCommand where !identity.equals(command.identity):
+        case let command as RUMStartViewCommand where !identity.equals(command.identity) && isActiveView:
+            // This gets effective in case when the user didn't end the view explicitly.
+            // If the view is flagged as "active" but another view is started, we know it needs to be
+            // deactivated. This is achieved by setting `isActiveView` to `false` and sending one more view update.
             isActiveView = false
-            needsViewUpdate = true // sanity update (in case if the user forgets to end this View)
+            needsViewUpdate = true
         case let command as RUMStopViewCommand where identity.equals(command.identity):
             isActiveView = false
             needsViewUpdate = true
@@ -386,15 +389,16 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 type: .applicationStart
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             os: .init(context: context),
-            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -461,16 +465,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 )
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: attributes),
             date: viewStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
-            parentView: nil,
             privacy: nil,
             service: context.service,
             session: .init(
@@ -564,9 +569,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: command.attributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
@@ -586,7 +593,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
-            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,
@@ -632,16 +638,17 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 .init(id: .string(value: $0.toRUMDataFormat))
             },
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: command.attributes),
             date: (command.time - command.duration).addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             longTask: .init(duration: taskDurationInNs, id: nil, isFrozenFrame: isFrozenFrame),
             os: .init(context: context),
-            parentView: nil,
             service: context.service,
             session: .init(
                 hasReplay: context.hasReplay,

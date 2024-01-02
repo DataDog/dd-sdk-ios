@@ -8,7 +8,7 @@ import DatadogInternal
 import Foundation
 
 /// An entry point to Datadog RUM feature.
-public struct RUM {
+public enum RUM {
     /// Enables Datadog RUM feature.
     ///
     /// After RUM is enabled, use `RUMMonitor.shared(in:)` to collect RUM events.

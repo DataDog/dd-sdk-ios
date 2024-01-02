@@ -17,6 +17,7 @@ extension DatadogContext: AnyMockable {
         env: String = .mockAny(),
         version: String = .mockAny(),
         buildNumber: String = .mockAny(),
+        buildId: String? = nil,
         variant: String? = nil,
         source: String = .mockAny(),
         sdkVersion: String = .mockAny(),
@@ -43,6 +44,7 @@ extension DatadogContext: AnyMockable {
             env: env,
             version: version,
             buildNumber: buildNumber,
+            buildId: buildId,
             variant: variant,
             source: source,
             sdkVersion: sdkVersion,
@@ -72,6 +74,7 @@ extension DatadogContext: AnyMockable {
             env: .mockRandom(),
             version: .mockRandom(),
             buildNumber: .mockRandom(),
+            buildId: .mockRandom(),
             variant: .mockRandom(),
             source: .mockAnySource(),
             sdkVersion: .mockRandom(),
@@ -110,12 +113,12 @@ extension DeviceInfo {
     }
 
     public static func mockWith(
-        name: String = .mockAny(),
-        model: String = .mockAny(),
-        osName: String = .mockAny(),
-        osVersion: String = .mockAny(),
-        osBuildNumber: String = .mockAny(),
-        architecture: String = .mockAny()
+        name: String = "iPhone",
+        model: String = "iPhone10,1",
+        osName: String = "iOS",
+        osVersion: String = "15.4.1",
+        osBuildNumber: String = "13D20",
+        architecture: String = "arm64e"
     ) -> DeviceInfo {
         return .init(
             name: name,

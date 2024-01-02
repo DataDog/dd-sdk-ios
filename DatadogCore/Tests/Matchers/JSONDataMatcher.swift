@@ -91,12 +91,29 @@ internal class JSONDataMatcher {
         let description: String
     }
 
+    /// Returns value at given key-path by casting it to expected type.
+    /// Throws an error if  value at given key-path does not exist.
     func value<T>(forKeyPath keyPath: String) throws -> T {
         let dictionary = json as NSDictionary
         guard let anyValue = dictionary.value(forKeyPath: keyPath) else {
             throw Exception(
                 description: "No value for key path `\(keyPath)`"
             )
+        }
+        guard let tValue = anyValue as? T else {
+            throw Exception(
+                description: "Cannot cast value for key path `\(keyPath)` to type `\(T.self)`: \(String(describing: anyValue))"
+            )
+        }
+        return tValue
+    }
+
+    /// Returns value at given key-path by casting it to expected type.
+    /// Returns `nil` if no value at given key-path exist.
+    func valueOrNil<T>(forKeyPath keyPath: String) throws -> T? {
+        let dictionary = json as NSDictionary
+        guard let anyValue = dictionary.value(forKeyPath: keyPath) else {
+            return nil
         }
         guard let tValue = anyValue as? T else {
             throw Exception(

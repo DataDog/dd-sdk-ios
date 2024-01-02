@@ -95,6 +95,8 @@ public struct LogEvent: Encodable {
     public let applicationVersion: String
     /// The current application build number.
     public let applicationBuildNumber: String
+    /// The id of the current build (used for some cross platform frameworks)
+    public let buildId: String?
     /// Datadog specific attributes
     public let dd: Dd
     /// The associated log error
@@ -138,6 +140,7 @@ internal struct LogEventEncoder {
 
         case applicationVersion = "version"
         case applicationBuildNumber = "build_version"
+        case buildId = "build_id"
 
         // MARK: - Dd info
         case dd = "_dd"
@@ -203,6 +206,9 @@ internal struct LogEventEncoder {
         // Encode application info
         try container.encode(log.applicationVersion, forKey: .applicationVersion)
         try container.encode(log.applicationBuildNumber, forKey: .applicationBuildNumber)
+        if let buildId = log.buildId {
+            try container.encode(buildId, forKey: .buildId)
+        }
 
         try container.encode(log.dd, forKey: .dd)
 

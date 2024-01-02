@@ -32,6 +32,10 @@ public class DDRUMActionEvent: NSObject {
         DDRUMActionEventApplication(root: root)
     }
 
+    @objc public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
     @objc public var buildVersion: String? {
         root.swiftModel.buildVersion
     }
@@ -42,6 +46,10 @@ public class DDRUMActionEvent: NSObject {
 
     @objc public var connectivity: DDRUMActionEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMActionEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var container: DDRUMActionEventContainer? {
+        root.swiftModel.container != nil ? DDRUMActionEventContainer(root: root) : nil
     }
 
     @objc public var context: DDRUMActionEventRUMEventAttributes? {
@@ -62,10 +70,6 @@ public class DDRUMActionEvent: NSObject {
 
     @objc public var os: DDRUMActionEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMActionEventRUMOperatingSystem(root: root) : nil
-    }
-
-    @objc public var parentView: DDRUMActionEventParentView? {
-        root.swiftModel.parentView != nil ? DDRUMActionEventParentView(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -597,6 +601,68 @@ public enum DDRUMActionEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMActionEventContainer: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var source: DDRUMActionEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    @objc public var view: DDRUMActionEventContainerView {
+        DDRUMActionEventContainerView(root: root)
+    }
+}
+
+@objc
+public enum DDRUMActionEventContainerSource: Int {
+    internal init(swift: RUMActionEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        }
+    }
+
+    internal var toSwift: RUMActionEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+}
+
+@objc
+public class DDRUMActionEventContainerView: NSObject {
+    internal let root: DDRUMActionEvent
+
+    internal init(root: DDRUMActionEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.container!.view.id
+    }
+}
+
+@objc
 public class DDRUMActionEventRUMEventAttributes: NSObject {
     internal let root: DDRUMActionEvent
 
@@ -726,55 +792,6 @@ public class DDRUMActionEventRUMOperatingSystem: NSObject {
     @objc public var versionMajor: String {
         root.swiftModel.os!.versionMajor
     }
-}
-
-@objc
-public class DDRUMActionEventParentView: NSObject {
-    internal let root: DDRUMActionEvent
-
-    internal init(root: DDRUMActionEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.parentView!.id
-    }
-
-    @objc public var source: DDRUMActionEventParentViewSource {
-        .init(swift: root.swiftModel.parentView!.source)
-    }
-}
-
-@objc
-public enum DDRUMActionEventParentViewSource: Int {
-    internal init(swift: RUMActionEvent.ParentView.Source) {
-        switch swift {
-        case .android: self = .android
-        case .ios: self = .ios
-        case .browser: self = .browser
-        case .flutter: self = .flutter
-        case .reactNative: self = .reactNative
-        case .roku: self = .roku
-        }
-    }
-
-    internal var toSwift: RUMActionEvent.ParentView.Source {
-        switch self {
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        case .roku: return .roku
-        }
-    }
-
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
 }
 
 @objc
@@ -955,6 +972,10 @@ public class DDRUMErrorEvent: NSObject {
         DDRUMErrorEventApplication(root: root)
     }
 
+    @objc public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
     @objc public var buildVersion: String? {
         root.swiftModel.buildVersion
     }
@@ -965,6 +986,10 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var connectivity: DDRUMErrorEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMErrorEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var container: DDRUMErrorEventContainer? {
+        root.swiftModel.container != nil ? DDRUMErrorEventContainer(root: root) : nil
     }
 
     @objc public var context: DDRUMErrorEventRUMEventAttributes? {
@@ -993,10 +1018,6 @@ public class DDRUMErrorEvent: NSObject {
 
     @objc public var os: DDRUMErrorEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMErrorEventRUMOperatingSystem(root: root) : nil
-    }
-
-    @objc public var parentView: DDRUMErrorEventParentView? {
-        root.swiftModel.parentView != nil ? DDRUMErrorEventParentView(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -1314,6 +1335,68 @@ public enum DDRUMErrorEventRUMConnectivityStatus: Int {
     case connected
     case notConnected
     case maybe
+}
+
+@objc
+public class DDRUMErrorEventContainer: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var source: DDRUMErrorEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    @objc public var view: DDRUMErrorEventContainerView {
+        DDRUMErrorEventContainerView(root: root)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventContainerSource: Int {
+    internal init(swift: RUMErrorEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+}
+
+@objc
+public class DDRUMErrorEventContainerView: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.container!.view.id
+    }
 }
 
 @objc
@@ -1823,55 +1906,6 @@ public class DDRUMErrorEventRUMOperatingSystem: NSObject {
 }
 
 @objc
-public class DDRUMErrorEventParentView: NSObject {
-    internal let root: DDRUMErrorEvent
-
-    internal init(root: DDRUMErrorEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.parentView!.id
-    }
-
-    @objc public var source: DDRUMErrorEventParentViewSource {
-        .init(swift: root.swiftModel.parentView!.source)
-    }
-}
-
-@objc
-public enum DDRUMErrorEventParentViewSource: Int {
-    internal init(swift: RUMErrorEvent.ParentView.Source) {
-        switch swift {
-        case .android: self = .android
-        case .ios: self = .ios
-        case .browser: self = .browser
-        case .flutter: self = .flutter
-        case .reactNative: self = .reactNative
-        case .roku: self = .roku
-        }
-    }
-
-    internal var toSwift: RUMErrorEvent.ParentView.Source {
-        switch self {
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        case .roku: return .roku
-        }
-    }
-
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
-}
-
-@objc
 public class DDRUMErrorEventSession: NSObject {
     internal let root: DDRUMErrorEvent
 
@@ -2049,6 +2083,10 @@ public class DDRUMLongTaskEvent: NSObject {
         DDRUMLongTaskEventApplication(root: root)
     }
 
+    @objc public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
     @objc public var buildVersion: String? {
         root.swiftModel.buildVersion
     }
@@ -2059,6 +2097,10 @@ public class DDRUMLongTaskEvent: NSObject {
 
     @objc public var connectivity: DDRUMLongTaskEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMLongTaskEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var container: DDRUMLongTaskEventContainer? {
+        root.swiftModel.container != nil ? DDRUMLongTaskEventContainer(root: root) : nil
     }
 
     @objc public var context: DDRUMLongTaskEventRUMEventAttributes? {
@@ -2083,10 +2125,6 @@ public class DDRUMLongTaskEvent: NSObject {
 
     @objc public var os: DDRUMLongTaskEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMLongTaskEventRUMOperatingSystem(root: root) : nil
-    }
-
-    @objc public var parentView: DDRUMLongTaskEventParentView? {
-        root.swiftModel.parentView != nil ? DDRUMLongTaskEventParentView(root: root) : nil
     }
 
     @objc public var service: String? {
@@ -2411,6 +2449,68 @@ public enum DDRUMLongTaskEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMLongTaskEventContainer: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var source: DDRUMLongTaskEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    @objc public var view: DDRUMLongTaskEventContainerView {
+        DDRUMLongTaskEventContainerView(root: root)
+    }
+}
+
+@objc
+public enum DDRUMLongTaskEventContainerSource: Int {
+    internal init(swift: RUMLongTaskEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        }
+    }
+
+    internal var toSwift: RUMLongTaskEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+}
+
+@objc
+public class DDRUMLongTaskEventContainerView: NSObject {
+    internal let root: DDRUMLongTaskEvent
+
+    internal init(root: DDRUMLongTaskEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.container!.view.id
+    }
+}
+
+@objc
 public class DDRUMLongTaskEventRUMEventAttributes: NSObject {
     internal let root: DDRUMLongTaskEvent
 
@@ -2561,55 +2661,6 @@ public class DDRUMLongTaskEventRUMOperatingSystem: NSObject {
     @objc public var versionMajor: String {
         root.swiftModel.os!.versionMajor
     }
-}
-
-@objc
-public class DDRUMLongTaskEventParentView: NSObject {
-    internal let root: DDRUMLongTaskEvent
-
-    internal init(root: DDRUMLongTaskEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.parentView!.id
-    }
-
-    @objc public var source: DDRUMLongTaskEventParentViewSource {
-        .init(swift: root.swiftModel.parentView!.source)
-    }
-}
-
-@objc
-public enum DDRUMLongTaskEventParentViewSource: Int {
-    internal init(swift: RUMLongTaskEvent.ParentView.Source) {
-        switch swift {
-        case .android: self = .android
-        case .ios: self = .ios
-        case .browser: self = .browser
-        case .flutter: self = .flutter
-        case .reactNative: self = .reactNative
-        case .roku: self = .roku
-        }
-    }
-
-    internal var toSwift: RUMLongTaskEvent.ParentView.Source {
-        switch self {
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        case .roku: return .roku
-        }
-    }
-
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
 }
 
 @objc
@@ -2786,6 +2837,10 @@ public class DDRUMResourceEvent: NSObject {
         DDRUMResourceEventApplication(root: root)
     }
 
+    @objc public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
     @objc public var buildVersion: String? {
         root.swiftModel.buildVersion
     }
@@ -2796,6 +2851,10 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var connectivity: DDRUMResourceEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMResourceEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var container: DDRUMResourceEventContainer? {
+        root.swiftModel.container != nil ? DDRUMResourceEventContainer(root: root) : nil
     }
 
     @objc public var context: DDRUMResourceEventRUMEventAttributes? {
@@ -2816,10 +2875,6 @@ public class DDRUMResourceEvent: NSObject {
 
     @objc public var os: DDRUMResourceEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMResourceEventRUMOperatingSystem(root: root) : nil
-    }
-
-    @objc public var parentView: DDRUMResourceEventParentView? {
-        root.swiftModel.parentView != nil ? DDRUMResourceEventParentView(root: root) : nil
     }
 
     @objc public var resource: DDRUMResourceEventResource {
@@ -3160,6 +3215,68 @@ public enum DDRUMResourceEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMResourceEventContainer: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var source: DDRUMResourceEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    @objc public var view: DDRUMResourceEventContainerView {
+        DDRUMResourceEventContainerView(root: root)
+    }
+}
+
+@objc
+public enum DDRUMResourceEventContainerSource: Int {
+    internal init(swift: RUMResourceEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+}
+
+@objc
+public class DDRUMResourceEventContainerView: NSObject {
+    internal let root: DDRUMResourceEvent
+
+    internal init(root: DDRUMResourceEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.container!.view.id
+    }
+}
+
+@objc
 public class DDRUMResourceEventRUMEventAttributes: NSObject {
     internal let root: DDRUMResourceEvent
 
@@ -3289,55 +3406,6 @@ public class DDRUMResourceEventRUMOperatingSystem: NSObject {
     @objc public var versionMajor: String {
         root.swiftModel.os!.versionMajor
     }
-}
-
-@objc
-public class DDRUMResourceEventParentView: NSObject {
-    internal let root: DDRUMResourceEvent
-
-    internal init(root: DDRUMResourceEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.parentView!.id
-    }
-
-    @objc public var source: DDRUMResourceEventParentViewSource {
-        .init(swift: root.swiftModel.parentView!.source)
-    }
-}
-
-@objc
-public enum DDRUMResourceEventParentViewSource: Int {
-    internal init(swift: RUMResourceEvent.ParentView.Source) {
-        switch swift {
-        case .android: self = .android
-        case .ios: self = .ios
-        case .browser: self = .browser
-        case .flutter: self = .flutter
-        case .reactNative: self = .reactNative
-        case .roku: self = .roku
-        }
-    }
-
-    internal var toSwift: RUMResourceEvent.ParentView.Source {
-        switch self {
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        case .roku: return .roku
-        }
-    }
-
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
 }
 
 @objc
@@ -3894,6 +3962,10 @@ public class DDRUMViewEvent: NSObject {
         DDRUMViewEventApplication(root: root)
     }
 
+    @objc public var buildId: String? {
+        root.swiftModel.buildId
+    }
+
     @objc public var buildVersion: String? {
         root.swiftModel.buildVersion
     }
@@ -3904,6 +3976,10 @@ public class DDRUMViewEvent: NSObject {
 
     @objc public var connectivity: DDRUMViewEventRUMConnectivity? {
         root.swiftModel.connectivity != nil ? DDRUMViewEventRUMConnectivity(root: root) : nil
+    }
+
+    @objc public var container: DDRUMViewEventContainer? {
+        root.swiftModel.container != nil ? DDRUMViewEventContainer(root: root) : nil
     }
 
     @objc public var context: DDRUMViewEventRUMEventAttributes? {
@@ -3928,10 +4004,6 @@ public class DDRUMViewEvent: NSObject {
 
     @objc public var os: DDRUMViewEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMViewEventRUMOperatingSystem(root: root) : nil
-    }
-
-    @objc public var parentView: DDRUMViewEventParentView? {
-        root.swiftModel.parentView != nil ? DDRUMViewEventParentView(root: root) : nil
     }
 
     @objc public var privacy: DDRUMViewEventPrivacy? {
@@ -4304,6 +4376,68 @@ public enum DDRUMViewEventRUMConnectivityStatus: Int {
 }
 
 @objc
+public class DDRUMViewEventContainer: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var source: DDRUMViewEventContainerSource {
+        .init(swift: root.swiftModel.container!.source)
+    }
+
+    @objc public var view: DDRUMViewEventContainerView {
+        DDRUMViewEventContainerView(root: root)
+    }
+}
+
+@objc
+public enum DDRUMViewEventContainerSource: Int {
+    internal init(swift: RUMViewEvent.Container.Source) {
+        switch swift {
+        case .android: self = .android
+        case .ios: self = .ios
+        case .browser: self = .browser
+        case .flutter: self = .flutter
+        case .reactNative: self = .reactNative
+        case .roku: self = .roku
+        }
+    }
+
+    internal var toSwift: RUMViewEvent.Container.Source {
+        switch self {
+        case .android: return .android
+        case .ios: return .ios
+        case .browser: return .browser
+        case .flutter: return .flutter
+        case .reactNative: return .reactNative
+        case .roku: return .roku
+        }
+    }
+
+    case android
+    case ios
+    case browser
+    case flutter
+    case reactNative
+    case roku
+}
+
+@objc
+public class DDRUMViewEventContainerView: NSObject {
+    internal let root: DDRUMViewEvent
+
+    internal init(root: DDRUMViewEvent) {
+        self.root = root
+    }
+
+    @objc public var id: String {
+        root.swiftModel.container!.view.id
+    }
+}
+
+@objc
 public class DDRUMViewEventRUMEventAttributes: NSObject {
     internal let root: DDRUMViewEvent
 
@@ -4475,55 +4609,6 @@ public class DDRUMViewEventRUMOperatingSystem: NSObject {
     @objc public var versionMajor: String {
         root.swiftModel.os!.versionMajor
     }
-}
-
-@objc
-public class DDRUMViewEventParentView: NSObject {
-    internal let root: DDRUMViewEvent
-
-    internal init(root: DDRUMViewEvent) {
-        self.root = root
-    }
-
-    @objc public var id: String {
-        root.swiftModel.parentView!.id
-    }
-
-    @objc public var source: DDRUMViewEventParentViewSource {
-        .init(swift: root.swiftModel.parentView!.source)
-    }
-}
-
-@objc
-public enum DDRUMViewEventParentViewSource: Int {
-    internal init(swift: RUMViewEvent.ParentView.Source) {
-        switch swift {
-        case .android: self = .android
-        case .ios: self = .ios
-        case .browser: self = .browser
-        case .flutter: self = .flutter
-        case .reactNative: self = .reactNative
-        case .roku: self = .roku
-        }
-    }
-
-    internal var toSwift: RUMViewEvent.ParentView.Source {
-        switch self {
-        case .android: return .android
-        case .ios: return .ios
-        case .browser: return .browser
-        case .flutter: return .flutter
-        case .reactNative: return .reactNative
-        case .roku: return .roku
-        }
-    }
-
-    case android
-    case ios
-    case browser
-    case flutter
-    case reactNative
-    case roku
 }
 
 @objc
@@ -5995,4 +6080,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/f75c6c9346aea8371e1c26bb5107310ee9f2942b
+// Generated from https://github.com/DataDog/rum-events-format/tree/49a2345f61a948013208d66a0fa9bad15a8c8fab
