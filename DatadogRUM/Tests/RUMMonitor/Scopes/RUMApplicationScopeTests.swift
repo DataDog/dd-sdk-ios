@@ -391,7 +391,7 @@ class RUMApplicationScopeTests: XCTestCase {
 
     // MARK: - Starting Session With Different Preconditions
 
-    func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted_itSetsUserAppLaunchPrecondition() {
+    func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
             launchTime: .mockWith(
@@ -408,10 +408,21 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .userAppLaunch)
+        let session = try XCTUnwrap(scope.activeSession)
+        let view = try XCTUnwrap(session.viewScopes.first)
+        XCTAssertEqual(
+            session.context.sessionPrecondition,
+            .userAppLaunch,
+            "It should set 'user app launch' precondition"
+        )
+        XCTAssertEqual(
+            view.viewName,
+            RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            "It should start 'application launch' view"
+        )
     }
 
-    func testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted_itSetsBackgroundLaunchPrecondition() {
+    func testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
             launchTime: .mockWith(
@@ -428,10 +439,19 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .backgroundLaunch)
+        let session = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(
+            session.context.sessionPrecondition,
+            .backgroundLaunch,
+            "It should set 'background launch' precondition"
+        )
+        XCTAssertTrue(
+            session.viewScopes.isEmpty,
+            "It should not start any view"
+        )
     }
 
-    func testGivenLaunchWithPrewarming_whenInitialSessionIsStarted_itSetsPrewarmPrecondition() {
+    func testGivenLaunchWithPrewarming_whenInitialSessionIsStarted() throws {
         // Given
         let sdkContext: DatadogContext = .mockWith(
             launchTime: .mockWith(
@@ -448,7 +468,16 @@ class RUMApplicationScopeTests: XCTestCase {
         )
 
         // Then
-        XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .prewarm)
+        let session = try XCTUnwrap(scope.activeSession)
+        XCTAssertEqual(
+            session.context.sessionPrecondition,
+            .prewarm,
+            "It should set 'prewarm' precondition"
+        )
+        XCTAssertTrue(
+            session.viewScopes.isEmpty,
+            "It should not start any view"
+        )
     }
 
     func testGivenInactiveSession_whenNewOneIsStarted_itSetsInactivityTimeoutPrecondition() {

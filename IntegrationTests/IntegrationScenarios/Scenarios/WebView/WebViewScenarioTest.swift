@@ -28,15 +28,21 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
 
         // Get single RUM Session with expected number of View visits
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserEvents)?.viewVisits.count == 2
+            try RUMSessionMatcher.singleSession(from: requests, eventsPatch: patchBrowserEvents)?.views.count == 3
         }
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests, eventsPatch: patchBrowserEvents))
-        XCTAssertEqual(session.viewVisits.count, 2, "There should be 2 RUM views - one native and one received from Browser SDK")
+        sendCIAppLog(session)
+
+        XCTAssertEqual(session.views.count, 3, "There should be 3 RUM views - two native and one received from Browser SDK")
 
         // Check iOS SDK events:
-        let nativeView = session.viewVisits[0]
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+
+        let nativeView = session.views[1]
         XCTAssertEqual(nativeView.name, "Runner.WebViewTrackingFixtureViewController")
         XCTAssertEqual(nativeView.path, "Runner.WebViewTrackingFixtureViewController")
 
@@ -50,7 +56,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         let expectedBrowserRUMApplicationID = nativeView.viewEvents[0].application.id
         let expectedBrowserSessionID = nativeView.viewEvents[0].session.id
 
-        let browserView = session.viewVisits[1]
+        let browserView = session.views[2]
         XCTAssertNil(browserView.name, "Browser views should have no `name`")
         XCTAssertEqual(browserView.path, "https://shopist.io/")
 

@@ -384,7 +384,7 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
-        XCTAssertNil(context?.viewID)
+        XCTAssertNotNil(context?.viewID)
         XCTAssertNil(context?.userActionID)
     }
 

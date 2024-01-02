@@ -54,7 +54,8 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let lastViewEvent = try XCTUnwrap(session.viewVisits[0].viewEvents.last)
+        let views = try session.views.dropApplicationLaunchView()
+        let lastViewEvent = try XCTUnwrap(views.first?.viewEvents.last)
 
         let cpuTicksPerSecond = try XCTUnwrap(lastViewEvent.view.cpuTicksPerSecond)
         XCTAssertGreaterThan(cpuTicksPerSecond, 0.0)
@@ -62,7 +63,7 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let refreshRateAverage = try XCTUnwrap(lastViewEvent.view.refreshRateAverage)
         XCTAssertGreaterThan(refreshRateAverage, 0.0)
 
-        let longTaskEvents = session.viewVisits[0].longTaskEvents
+        let longTaskEvents = views[0].longTaskEvents
         XCTAssertEqual(longTaskEvents.count, 2)
 
         let longTask1 = longTaskEvents[0]
@@ -98,7 +99,14 @@ class RUMMobileVitalsScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let lastViewEvent = try XCTUnwrap(session.viewVisits[1].viewEvents.last)
-        XCTAssertNil(lastViewEvent.view.cpuTicksPerSecond)
+        let views = try session.views.dropApplicationLaunchView()
+        let lastViewEvent = try XCTUnwrap(views[1].viewEvents.last)
+        let oneSecond: TimeInterval = 1
+
+        // When
+        XCTAssertLessThan(lastViewEvent.view.timeSpent, oneSecond.toInt64Nanoseconds, "When view lasts less than 1s")
+
+        // Then
+        XCTAssertNil(lastViewEvent.view.cpuTicksPerSecond, "It should have no CPU ticks reported")
     }
 }
