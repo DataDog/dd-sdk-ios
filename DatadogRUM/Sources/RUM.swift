@@ -41,14 +41,7 @@ public enum RUM {
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {
-            let lateConfig = RUM.Configuration.LateURLSessionTracking(
-                from: urlSessionConfig,
-                debugSDK: configuration.debugSDK,
-                dateProvider: configuration.dateProvider,
-                traceIDGenerator: configuration.traceIDGenerator
-            )
-
-            try RUM._internal.enableURLSessionTracking(with: lateConfig, in: core)
+            try RUM._internal.enableURLSessionTracking(with: urlSessionConfig, in: core)
         }
 
         if configuration.debugViews {

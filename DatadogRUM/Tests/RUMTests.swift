@@ -409,37 +409,38 @@ class RUMTests: XCTestCase {
     func testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows() {
         // Given
         let core = NOPDatadogCore()
-        let lateConfig = RUM.Configuration.LateURLSessionTracking()
+        let config = RUM.Configuration.URLSessionTracking()
 
         // When + Then
-        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: lateConfig, in: core))
+        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: config, in: core))
     }
 
     func testWhenRumNotEnabled_lateEnableUrlSessionTrackingThrows() {
         // Given
         let core = PassthroughCoreMock()
-        let lateConfig = RUM.Configuration.LateURLSessionTracking()
+        let config = RUM.Configuration.URLSessionTracking()
 
         // When + Then
-        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: lateConfig, in: core))
+        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: config, in: core))
     }
 
     func testLateEnableUrlSessionTracking() throws {
         // Given
         let core = FeatureRegistrationCoreMock()
-        let rumConfig = RUM.Configuration(applicationID: .mockAny())
+        let debugSDK: Bool = .mockRandom()
+        var rumConfig = RUM.Configuration(applicationID: .mockAny())
+        rumConfig.debugSDK = debugSDK
         RUM.enable(with: rumConfig, in: core)
         let hosts: Set<String> = ["datadoghq.com", "example.com", "localhost"]
         let sampleRate: Float = .mockRandom(min: 0.0, max: 1.0)
         let hostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing = .trace(hosts: hosts, sampleRate: sampleRate)
-        let debugSDK: Bool = .mockRandom()
-        let lateConfig = RUM.Configuration.LateURLSessionTracking(
-            firstPartyHostsTracing: hostsTracing,
-            debugSDK: debugSDK
+
+        let config = RUM.Configuration.URLSessionTracking(
+            firstPartyHostsTracing: hostsTracing
         )
 
         // When
-        try RUM._internal.enableURLSessionTracking(with: lateConfig, in: core)
+        try RUM._internal.enableURLSessionTracking(with: config, in: core)
 
         // Then
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))

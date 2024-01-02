@@ -9,49 +9,6 @@ import DatadogInternal
 
 extension RUM: InternalExtended {}
 
-extension RUM.Configuration {
-    /// Used to perform late initialization of URLSessionTracking. This is needed in order to allow override of
-    /// properties normally provided by the base `RUM.Configuration` object
-    public struct LateURLSessionTracking {
-        /// See RUM.Configuration.URLSessionTracking.firstPartyHostsTracing
-        public var firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing?
-
-        /// See RUM.Configuration.URLSessionTracking.resourceAttributesProvider
-        public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
-
-        // MARK: - Internal
-
-        internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
-        internal var dateProvider: DateProvider = SystemDateProvider()
-        internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
-
-        public init(
-            firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
-            resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-            debugSDK: Bool = false
-        ) {
-            self.firstPartyHostsTracing = firstPartyHostsTracing
-            self.resourceAttributesProvider = resourceAttributesProvider
-            self.debugSDK = debugSDK
-            self.dateProvider = SystemDateProvider()
-            self.traceIDGenerator = DefaultTraceIDGenerator()
-        }
-
-        internal init(
-            from configuration: URLSessionTracking,
-            debugSDK: Bool,
-            dateProvider: DateProvider,
-            traceIDGenerator: TraceIDGenerator
-        ) {
-            self.firstPartyHostsTracing = configuration.firstPartyHostsTracing
-            self.resourceAttributesProvider = configuration.resourceAttributesProvider
-            self.debugSDK = debugSDK
-            self.dateProvider = dateProvider
-            self.traceIDGenerator = traceIDGenerator
-        }
-    }
-}
-
 /// NOTE: Methods in this extension are NOT considered part of the public of the Datadog SDK, and
 /// may change or be removed in minor updates of the Datadog SDK.
 extension InternalExtension where ExtendedType == RUM {
@@ -73,7 +30,7 @@ extension InternalExtension where ExtendedType == RUM {
     ///    - configuration: the configuration for URL session tracking
     ///    - in: the core to enable URL session in
     public static func enableURLSessionTracking(
-        with configuration: RUM.Configuration.LateURLSessionTracking,
+        with configuration: RUM.Configuration.URLSessionTracking,
         in core: DatadogCoreProtocol = CoreRegistry.default) throws {
         guard !(core is NOPDatadogCore) else {
             throw ProgrammerError(
@@ -88,27 +45,28 @@ extension InternalExtension where ExtendedType == RUM {
         }
 
         let distributedTracing: DistributedTracing?
+        let rumConfiguration = rum.configuration
 
         // If first party hosts are configured, enable distributed tracing:
         switch configuration.firstPartyHostsTracing {
         case let .trace(hosts, sampleRate):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
+                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hosts),
-                traceIDGenerator: configuration.traceIDGenerator
+                traceIDGenerator: rumConfiguration.traceIDGenerator
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate):
             distributedTracing = DistributedTracing(
-                sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
+                sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
-                traceIDGenerator: configuration.traceIDGenerator
+                traceIDGenerator: rumConfiguration.traceIDGenerator
             )
         case .none:
             distributedTracing = nil
         }
 
         let urlSessionHandler = URLSessionRUMResourcesHandler(
-            dateProvider: configuration.dateProvider,
+            dateProvider: rumConfiguration.dateProvider,
             rumAttributesProvider: configuration.resourceAttributesProvider,
             distributedTracing: distributedTracing
         )
