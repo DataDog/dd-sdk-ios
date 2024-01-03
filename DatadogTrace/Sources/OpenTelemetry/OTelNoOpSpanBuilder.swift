@@ -7,40 +7,48 @@
 import Foundation
 import OpenTelemetryApi
 
-class NoOpSpanBuilder: SpanBuilder {
-    @discardableResult public func startSpan() -> Span {
+internal class OTelNoOpSpanBuilder: SpanBuilder {
+    @discardableResult
+    func startSpan() -> Span {
         return OTelNoOpSpan()
     }
 
-    @discardableResult public func setParent(_ parent: Span) -> Self {
+    @discardableResult
+    func setParent(_ parent: Span) -> Self {
         return self
     }
 
-    @discardableResult public func setParent(_ parent: SpanContext) -> Self {
+    @discardableResult
+    func setParent(_ parent: SpanContext) -> Self {
         return self
     }
 
-    @discardableResult public func setNoParent() -> Self {
+    @discardableResult
+    func setNoParent() -> Self {
         return self
     }
 
-    @discardableResult public func addLink(spanContext: SpanContext) -> Self {
+    @discardableResult
+    func addLink(spanContext: SpanContext) -> Self {
         return self
     }
 
-    @discardableResult public func addLink(spanContext: SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) -> Self {
+    @discardableResult
+    func addLink(spanContext: SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) -> Self {
         return self
     }
 
-    @discardableResult public func setSpanKind(spanKind: SpanKind) -> Self {
+    @discardableResult
+    func setSpanKind(spanKind: SpanKind) -> Self {
         return self
     }
 
-    @discardableResult public func setStartTime(time: Date) -> Self {
+    @discardableResult
+    func setStartTime(time: Date) -> Self {
         return self
     }
 
-    public func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue) -> Self {
+    func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue) -> Self {
         return self
     }
 

@@ -161,6 +161,14 @@ internal class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     // MARK: - OpenTelemetry
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
-        OTelSpanBuilder()
+        OTelSpanBuilder(
+            active: false,
+            attributes: [:],
+            parent: .currentSpan,
+            spanKind: .client,
+            spanName: spanName,
+            startTime: nil,
+            tracer: self
+        )
     }
 }

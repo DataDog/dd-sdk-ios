@@ -7,33 +7,29 @@
 import Foundation
 import OpenTelemetryApi
 
-class OTelSpan: OpenTelemetryApi.Span {
-    private let tracer: DatadogTracer
-    private let queue: DispatchQueue
+internal enum DatadogTagKeys: String {
+    case spanKind = "span.kind"
+    case errorMessage = "error.Message"
+}
+
+internal class OTelSpan: OpenTelemetryApi.Span {
     private var _status: OpenTelemetryApi.Status
     private var _name: String
 
-    init(
-        context: OpenTelemetryApi.SpanContext,
-        kind: OpenTelemetryApi.SpanKind,
-        name: String,
-        tracer: DatadogTracer
-    ) {
-        self._name = name
-        self._status = .unset
-        self.context = context
-        self.isRecording = true
-        self.kind = kind
-        self.queue = tracer.queue
-        self.tracer = tracer
-    }
-
+    var attributes: [String: OpenTelemetryApi.AttributeValue]
+    let context: OpenTelemetryApi.SpanContext
     var kind: OpenTelemetryApi.SpanKind
+    let nestedSpan: DDSpan
+    let tracer: DatadogTracer
+    let queue: DispatchQueue
 
-    var context: OpenTelemetryApi.SpanContext
-
+    /// `isRecording` indicates whether the span is recording or not
+    /// and events can be added to it.
     var isRecording: Bool
 
+    /// `status` saves state of the code and description indicating
+    /// whether the span has recorded errors. This will be done by setting `error.message`
+    /// tag on the span.
     var status: OpenTelemetryApi.Status {
         get {
             queue.sync {
@@ -42,11 +38,16 @@ class OTelSpan: OpenTelemetryApi.Span {
         }
         set {
             queue.sync {
+                guard isRecording else {
+                    return
+                }
+
                 _status = newValue
             }
         }
     }
 
+    /// `name` of the span is akin to operation name in Datadog
     var name: String {
         get {
             queue.sync {
@@ -55,33 +56,93 @@ class OTelSpan: OpenTelemetryApi.Span {
         }
         set {
             queue.sync {
+                guard isRecording else {
+                    return
+                }
                 _name = newValue
             }
+            nestedSpan.setOperationName(name)
         }
     }
 
+    init(
+        attributes: [String: OpenTelemetryApi.AttributeValue],
+        kind: OpenTelemetryApi.SpanKind,
+        name: String,
+        parentSpanID: OpenTelemetryApi.SpanId?,
+        spanContext: OpenTelemetryApi.SpanContext,
+        spanKind: OpenTelemetryApi.SpanKind,
+        startTime: Date,
+        tracer: DatadogTracer
+    ) {
+        self._name = name
+        self._status = .unset
+        self.attributes = attributes
+        self.context = spanContext
+        self.kind = kind
+        self.isRecording = true
+        self.queue = tracer.queue
+        self.tracer = tracer
+        self.nestedSpan = .init(
+            tracer: tracer,
+            context: .init(
+                traceID: context.traceId.toDatadog(),
+                spanID: context.spanId.toDatadog(),
+                parentSpanID: parentSpanID?.toDatadog(),
+                baggageItems: .init()
+            ),
+            operationName: name,
+            startTime: startTime,
+            tags: [:]
+        )
+    }
+
+    // swiftlint:disable unavailable_function
     func addEvent(name: String) {
-        fatalError("Not implemented")
+        fatalError("Not implemented yet")
     }
 
     func addEvent(name: String, timestamp: Date) {
-        fatalError("Not implemented")
+        fatalError("Not implemented yet")
     }
 
-    func addEvent(name: String, attributes: [String : OpenTelemetryApi.AttributeValue]) {
-        fatalError("Not implemented")
+    func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue]) {
+        fatalError("Not implemented yet")
     }
 
-    func addEvent(name: String, attributes: [String : OpenTelemetryApi.AttributeValue], timestamp: Date) {
-        fatalError("Not implemented")
+    func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
+        fatalError("Not implemented yet")
     }
+    // swiftlint:enable unavailable_function
 
     func end() {
-        fatalError("Not implemented")
+        end(time: Date())
     }
 
     func end(time: Date) {
-        fatalError("Not implemented")
+        queue.sync {
+            guard isRecording else {
+                return
+            }
+            isRecording = false
+
+            // Attributes maps to tags in Datadog
+            for (key, value) in attributes {
+                nestedSpan.setTag(key: key, value: value.description)
+            }
+
+            // If status is error, error.message tag is added
+            switch self._status {
+            case .error(description: let description):
+                nestedSpan.setTag(key: DatadogTagKeys.errorMessage.rawValue, value: description)
+            case .ok, .unset:
+                break
+            }
+
+            // SpanKind maps to the `span.kind` tag in Datadog
+            nestedSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
+        }
+        nestedSpan.finish(at: time)
     }
 
     var description: String {
@@ -89,6 +150,10 @@ class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue?) {
-        fatalError("Not implemented")
+        guard isRecording else {
+            return
+        }
+
+        attributes[key] = value
     }
 }

@@ -1,50 +1,140 @@
 /*
-* Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
-* This product includes software developed at Datadog (https://www.datadoghq.com/).
-* Copyright 2019-Present Datadog, Inc.
-*/
+ * Unless explicitly stated otherwise all files in this repository are licensed under the Apache License Version 2.0.
+ * This product includes software developed at Datadog (https://www.datadoghq.com/).
+ * Copyright 2019-Present Datadog, Inc.
+ */
 
 import Foundation
 import OpenTelemetryApi
 
-class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
+internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
+    var tracer: DatadogTracer
+    var spanName: String
+    var spanKind = SpanKind.client
+    var attributes: [String: OpenTelemetryApi.AttributeValue]
+    var startTime: Date?
+    var active: Bool
+    var parent: Parent
+
+    enum Parent {
+        case currentSpan
+        case span(OpenTelemetryApi.Span)
+        case spanContext(OpenTelemetryApi.SpanContext)
+        case noParent
+
+        func context() -> OpenTelemetryApi.SpanContext? {
+            switch self {
+            case .currentSpan:
+                return OpenTelemetry.instance.contextProvider.activeSpan?.context
+            case .span(let span):
+                return span.context
+            case .spanContext(let context):
+                return context
+            case .noParent:
+                return nil
+            }
+        }
+    }
+
+    init(
+        active: Bool,
+        attributes: [String: OpenTelemetryApi.AttributeValue],
+        parent: Parent,
+        spanKind: SpanKind,
+        spanName: String,
+        startTime: Date?,
+        tracer: DatadogTracer
+    ) {
+        self.tracer = tracer
+        self.spanName = spanName
+        self.spanKind = spanKind
+        self.attributes = attributes
+        self.startTime = startTime
+        self.active = active
+        self.parent = parent
+    }
+
     func setParent(_ parent: OpenTelemetryApi.Span) -> Self {
-        fatalError("Not implemented")
+        self.parent = .span(parent)
+        return self
     }
 
     func setParent(_ parent: OpenTelemetryApi.SpanContext) -> Self {
-        fatalError("Not implemented")
+        self.parent = .spanContext(parent)
+        return self
     }
 
     func setNoParent() -> Self {
-        fatalError("Not implemented")
+        self.parent = .noParent
+        return self
     }
 
+    // swiftlint:disable unavailable_function
     func addLink(spanContext: OpenTelemetryApi.SpanContext) -> Self {
-        fatalError("Not implemented")
+        fatalError("Not implemented yet")
     }
 
-    func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String : OpenTelemetryApi.AttributeValue]) -> Self {
-        fatalError("Not implemented")
+    func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) -> Self {
+        fatalError("Not implemented yet")
     }
+    // swiftlint:enable unavailable_function
 
     func setSpanKind(spanKind: OpenTelemetryApi.SpanKind) -> Self {
-        fatalError("Not implemented")
+        self.spanKind = spanKind
+        return self
     }
 
     func setStartTime(time: Date) -> Self {
-        fatalError("Not implemented")
+        self.startTime = time
+        return self
     }
 
     func setActive(_ active: Bool) -> Self {
-        fatalError("Not implemented")
+        self.active = active
+        return self
     }
 
     func startSpan() -> OpenTelemetryApi.Span {
-        fatalError("Not implemented")
+        let parentContext = parent.context()
+        let traceId: TraceId
+        let spanId = SpanId.random()
+        let traceState: TraceState
+
+        if let parentContext = parentContext, parentContext.isValid {
+            traceId = parentContext.traceId
+            traceState = parentContext.traceState
+        } else {
+            traceId = TraceId.random()
+            traceState = .init()
+        }
+
+        let spanContext = SpanContext.create(
+            traceId: traceId,
+            spanId: spanId,
+            traceFlags: TraceFlags(),
+            traceState: traceState
+        )
+
+        let createdSpan = OTelSpan(
+            attributes: attributes,
+            kind: spanKind,
+            name: spanName,
+            parentSpanID: parentContext?.spanId,
+            spanContext: spanContext,
+            spanKind: spanKind,
+            startTime: startTime ?? Date(),
+            tracer: tracer
+        )
+
+        if active {
+            OpenTelemetry.instance.contextProvider.setActiveSpan(createdSpan)
+        }
+
+        return createdSpan
     }
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue) -> Self {
-        fatalError("Not implemented")
+        attributes[key] = value
+        return self
     }
 }

@@ -7,21 +7,21 @@
 import Foundation
 import OpenTelemetryApi
 
-class OTelNoOpSpan: Span {
+internal class OTelNoOpSpan: Span {
     var kind: OpenTelemetryApi.SpanKind = .internal
 
     var name: String = ""
 
-    var context: SpanContext = SpanContext.create(
+    var context = SpanContext.create(
         traceId: TraceId.invalid,
         spanId: SpanId.invalid,
         traceFlags: TraceFlags(),
         traceState: TraceState()
     )
 
-    var isRecording: Bool = false
+    var isRecording = false
 
-    var status: Status = Status.unset
+    var status = Status.unset
 
     var description: String = "NoOpSpan"
 

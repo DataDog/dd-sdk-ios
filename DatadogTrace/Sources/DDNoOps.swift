@@ -49,7 +49,8 @@ internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
     // MARK: - Open Telemetry
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
-        fatalError("Not implemented")
+        warn()
+        return OTelNoOpSpanBuilder()
     }
 }
 
