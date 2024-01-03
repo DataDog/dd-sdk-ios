@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+import OpenTelemetryApi
 @testable import DatadogInternal
 @testable import DatadogTrace
 
