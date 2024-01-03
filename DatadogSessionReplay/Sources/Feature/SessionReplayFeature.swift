@@ -33,14 +33,13 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
-        // RUM-2154 Disabled until prod backend is ready
-        _ = ResourceProcessor(
+        let resourceProcessor = ResourceProcessor(
             queue: queue,
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: nil,
+            resourceProcessor: resourceProcessor,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )

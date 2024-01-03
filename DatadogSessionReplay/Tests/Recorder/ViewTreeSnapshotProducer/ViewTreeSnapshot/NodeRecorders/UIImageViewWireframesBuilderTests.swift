@@ -7,6 +7,13 @@
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
+import TestUtilities
+
+extension UIImageResource: RandomMockable {
+    public static func mockRandom() -> UIImageResource {
+        return .init(image: .mockRandom(), tintColor: .mockRandom())
+    }
+}
 
 class UIImageViewWireframesBuilderTests: XCTestCase {
     var wireframesBuilder: WireframesBuilder = .init()
@@ -25,9 +32,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: .mockRandom(),
-            imageDataProvider: MockImageDataProvider(),
-            tintColor: UIColor.mockRandom(),
+            imageResource: .mockRandom(),
             shouldRecordImage: true
         )
 
@@ -58,9 +63,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: .mockRandom(),
-            imageDataProvider: mockRandomImageDataProvider(),
-            tintColor: UIColor.mockRandom(),
+            imageResource: .mockRandom(),
             shouldRecordImage: false
         )
 
