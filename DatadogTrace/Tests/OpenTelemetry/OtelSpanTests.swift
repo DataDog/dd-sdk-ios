@@ -95,7 +95,7 @@ final class OtelSpanTests: XCTestCase {
             "key": "value",
             "span.kind": "client",
         ]
-        XCTAssertEqual(recordedSpan.tags, expectedTags)
+        XCTAssertTagsEqual(recordedSpan.tags, expectedTags)
     }
 
     func testSetParentSpan() {
@@ -171,5 +171,63 @@ final class OtelSpanTests: XCTestCase {
         let parent = events.last!.spans.first!
         XCTAssertEqual(parent.parentID, nil)
         XCTAssertEqual(child.parentID, nil)
+    }
+
+    func testSetAttribute() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.setAttribute(key: "key", value: .bool(true))
+        span.setAttribute(key: "key2", value: .string("value2"))
+        span.setAttribute(key: "key3", value: .int(3))
+        span.setAttribute(key: "key4", value: .double(4.0))
+        span.setAttribute(key: "key5", value: .stringArray(["value5", "value6"]))
+        span.setAttribute(key: "key6", value: .intArray([6, 7]))
+        span.setAttribute(key: "key7", value: .doubleArray([7.0, 8.0]))
+        span.setAttribute(key: "key8", value: .boolArray([true, false]))
+
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 1)
+        let recordedSpan = events.first!.spans.first!
+        let expectedTags =
+        [
+            "key": "true",
+            "key2": "value2",
+            "key3": "3",
+            "key4": "4.0",
+            "key5": "[\"value5\", \"value6\"]",
+            "key6": "[6, 7]",
+            "key7": "[7.0, 8.0]",
+            "key8": "[true, false]",
+            "span.kind": "client",
+        ]
+        XCTAssertTagsEqual(recordedSpan.tags, expectedTags)
+    }
+}
+
+func XCTAssertTagsEqual(
+    _ dict1: [String: String],
+    _ dict2: [String: String],
+    file: StaticString = #filePath,
+    line: UInt = #line
+) {
+    XCTAssertEqual(dict1.count, dict2.count, file: file, line: line)
+    for (key, value) in dict1 {
+        XCTAssertEqual(
+            dict2[key],
+            value,
+            "Expected \(key) to be \(value), but was \(String(describing: dict2[key]))",
+            file: file,
+            line: line
+        )
     }
 }
