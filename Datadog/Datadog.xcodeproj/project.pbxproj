@@ -36,6 +36,24 @@
 		3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3C6C7FDB2B45738C006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDA2B45738C006F5CBC /* OpenTelemetryApi */; };
 		3C6C7FDD2B457392006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDC2B457392006F5CBC /* OpenTelemetryApi */; };
+		3C6C7FE52B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */; };
+		3C6C7FE62B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */; };
+		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
+		3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
+		3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
+		3C6C7FEA2B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
+		3C6C7FEB2B459AAA006F5CBC /* OtelTraceId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE22B459AAA006F5CBC /* OtelTraceId+Datadog.swift */; };
+		3C6C7FEC2B459AAA006F5CBC /* OtelTraceId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE22B459AAA006F5CBC /* OtelTraceId+Datadog.swift */; };
+		3C6C7FED2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */; };
+		3C6C7FEE2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */; };
+		3C6C7FEF2B459AAA006F5CBC /* OtelSpanId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE42B459AAA006F5CBC /* OtelSpanId+Datadog.swift */; };
+		3C6C7FF02B459AAA006F5CBC /* OtelSpanId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE42B459AAA006F5CBC /* OtelSpanId+Datadog.swift */; };
+		3C6C7FFB2B459AF6006F5CBC /* OtelSpanId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF22B459AB3006F5CBC /* OtelSpanId+DatadogTests.swift */; };
+		3C6C7FFC2B459AF6006F5CBC /* OtelTraceId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF32B459AB3006F5CBC /* OtelTraceId+DatadogTests.swift */; };
+		3C6C7FFD2B459AF6006F5CBC /* OtelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF42B459AB3006F5CBC /* OtelSpanTests.swift */; };
+		3C6C7FFE2B459AF6006F5CBC /* OtelSpanId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF22B459AB3006F5CBC /* OtelSpanId+DatadogTests.swift */; };
+		3C6C7FFF2B459AF6006F5CBC /* OtelTraceId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF32B459AB3006F5CBC /* OtelTraceId+DatadogTests.swift */; };
+		3C6C80002B459AF6006F5CBC /* OtelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF42B459AB3006F5CBC /* OtelSpanTests.swift */; };
 		3C74305C29FBC0480053B80F /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA2385298D57AA00C6C7E6 /* DatadogInternal.framework */; };
 		3C85D42129F7C5C900AFF894 /* WebViewTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */; };
 		3C85D42A29F7C70300AFF894 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
@@ -1882,6 +1900,15 @@
 		3C2206F22AB9CE9300DE780C /* MetaTypeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypeExtensions.swift; sourceTree = "<group>"; };
 		3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzler.swift; sourceTree = "<group>"; };
 		3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
+		3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelNoOpSpanBuilder.swift; sourceTree = "<group>"; };
+		3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpan.swift; sourceTree = "<group>"; };
+		3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanBuilder.swift; sourceTree = "<group>"; };
+		3C6C7FE22B459AAA006F5CBC /* OtelTraceId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OtelTraceId+Datadog.swift"; sourceTree = "<group>"; };
+		3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelNoOpSpan.swift; sourceTree = "<group>"; };
+		3C6C7FE42B459AAA006F5CBC /* OtelSpanId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OtelSpanId+Datadog.swift"; sourceTree = "<group>"; };
+		3C6C7FF22B459AB3006F5CBC /* OtelSpanId+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OtelSpanId+DatadogTests.swift"; sourceTree = "<group>"; };
+		3C6C7FF32B459AB3006F5CBC /* OtelTraceId+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OtelTraceId+DatadogTests.swift"; sourceTree = "<group>"; };
+		3C6C7FF42B459AB3006F5CBC /* OtelSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OtelSpanTests.swift; sourceTree = "<group>"; };
 		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
 		3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
 		3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
@@ -3084,6 +3111,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */ = {
+			isa = PBXGroup;
+			children = (
+				3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */,
+				3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */,
+				3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */,
+				3C6C7FE22B459AAA006F5CBC /* OtelTraceId+Datadog.swift */,
+				3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */,
+				3C6C7FE42B459AAA006F5CBC /* OtelSpanId+Datadog.swift */,
+			);
+			path = OpenTelemetry;
+			sourceTree = "<group>";
+		};
+		3C6C7FF12B459AB3006F5CBC /* OpenTelemetry */ = {
+			isa = PBXGroup;
+			children = (
+				3C6C7FF22B459AB3006F5CBC /* OtelSpanId+DatadogTests.swift */,
+				3C6C7FF32B459AB3006F5CBC /* OtelTraceId+DatadogTests.swift */,
+				3C6C7FF42B459AB3006F5CBC /* OtelSpanTests.swift */,
+			);
+			path = OpenTelemetry;
+			sourceTree = "<group>";
+		};
 		3CE11A3B29F7BEE700202522 /* DatadogWebViewTracking */ = {
 			isa = PBXGroup;
 			children = (
@@ -5486,6 +5536,7 @@
 		D25EE93529C4C3C300CE3839 /* DatadogTrace */ = {
 			isa = PBXGroup;
 			children = (
+				3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */,
 				61A2CC382A44B0EA0000FF25 /* Trace.swift */,
 				61A2CC352A44B0A20000FF25 /* TraceConfiguration.swift */,
 				61A2CC3B2A44BED30000FF25 /* Tracer.swift */,
@@ -5508,6 +5559,7 @@
 		D25EE93F29C4C3C400CE3839 /* DatadogTraceTests */ = {
 			isa = PBXGroup;
 			children = (
+				3C6C7FF12B459AB3006F5CBC /* OpenTelemetry */,
 				619CE75D2A458CE1005588CB /* TraceConfigurationTests.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
 				61C5A89824509C1100DA608C /* DDSpanTests.swift */,
@@ -8276,14 +8328,20 @@
 				D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */,
 				D2C1A51A29C4C5DD00946C31 /* JSONEncoder.swift in Sources */,
+				3C6C7FED2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */,
+				3C6C7FE52B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */,
 				D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */,
 				D2C1A51429C4C53F00946C31 /* OTSpanContext.swift in Sources */,
+				3C6C7FEB2B459AAA006F5CBC /* OtelTraceId+Datadog.swift in Sources */,
+				3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
 				D2C1A51329C4C53F00946C31 /* OTReference.swift in Sources */,
+				3C6C7FEF2B459AAA006F5CBC /* OtelSpanId+Datadog.swift in Sources */,
 				D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */,
 				61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
 				D2C1A50929C4C4CB00946C31 /* SpanEventEncoder.swift in Sources */,
+				3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A4FE29C4C4CB00946C31 /* SpanEventMapper.swift in Sources */,
 				D2C1A50329C4C4CB00946C31 /* DDFormat.swift in Sources */,
 				D2C1A51629C4C53F00946C31 /* OTConstants.swift in Sources */,
@@ -8314,10 +8372,13 @@
 				D2C1A51D29C4C75700946C31 /* SpanEventBuilderTests.swift in Sources */,
 				D2C1A52229C4C75700946C31 /* DDNoopTracerTests.swift in Sources */,
 				D2C1A51C29C4C75700946C31 /* ContextMessageReceiverTests.swift in Sources */,
+				3C6C7FFD2B459AF6006F5CBC /* OtelSpanTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
+				3C6C7FFC2B459AF6006F5CBC /* OtelTraceId+DatadogTests.swift in Sources */,
 				D2C1A51B29C4C75700946C31 /* DDSpanContextTests.swift in Sources */,
 				D2C1A52729C4C7D000946C31 /* TracingFeatureMocks.swift in Sources */,
+				3C6C7FFB2B459AF6006F5CBC /* OtelSpanId+DatadogTests.swift in Sources */,
 				D2C1A51F29C4C75700946C31 /* ActiveSpansPoolTests.swift in Sources */,
 				D2C1A52529C4C75700946C31 /* SpanSanitizerTests.swift in Sources */,
 			);
@@ -8465,14 +8526,20 @@
 				D2C1A53A29C4F2DF00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A53B29C4F2DF00946C31 /* SpanTagsReducer.swift in Sources */,
 				D2C1A53C29C4F2DF00946C31 /* JSONEncoder.swift in Sources */,
+				3C6C7FEE2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */,
+				3C6C7FE62B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */,
 				D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */,
 				D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */,
+				3C6C7FEC2B459AAA006F5CBC /* OtelTraceId+Datadog.swift in Sources */,
+				3C6C7FEA2B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */,
 				D2C1A53F29C4F2DF00946C31 /* OTReference.swift in Sources */,
+				3C6C7FF02B459AAA006F5CBC /* OtelSpanId+Datadog.swift in Sources */,
 				D2C1A54129C4F2DF00946C31 /* MessageReceivers.swift in Sources */,
 				61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,
 				D2C1A54329C4F2DF00946C31 /* SpanEventEncoder.swift in Sources */,
+				3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A54429C4F2DF00946C31 /* SpanEventMapper.swift in Sources */,
 				D2C1A54529C4F2DF00946C31 /* DDFormat.swift in Sources */,
 				D2C1A54629C4F2DF00946C31 /* OTConstants.swift in Sources */,
@@ -8503,10 +8570,13 @@
 				D2C1A56229C4F2E800946C31 /* SpanEventBuilderTests.swift in Sources */,
 				D2C1A56329C4F2E800946C31 /* DDNoopTracerTests.swift in Sources */,
 				D2C1A56529C4F2E800946C31 /* ContextMessageReceiverTests.swift in Sources */,
+				3C6C80002B459AF6006F5CBC /* OtelSpanTests.swift in Sources */,
 				619CE7622A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A56629C4F2E800946C31 /* DDSpanTests.swift in Sources */,
+				3C6C7FFF2B459AF6006F5CBC /* OtelTraceId+DatadogTests.swift in Sources */,
 				D2C1A56729C4F2E800946C31 /* DDSpanContextTests.swift in Sources */,
 				D2C1A56829C4F2E800946C31 /* TracingFeatureMocks.swift in Sources */,
+				3C6C7FFE2B459AF6006F5CBC /* OtelSpanId+DatadogTests.swift in Sources */,
 				D2C1A56929C4F2E800946C31 /* ActiveSpansPoolTests.swift in Sources */,
 				D2C1A56A29C4F2E800946C31 /* SpanSanitizerTests.swift in Sources */,
 			);
