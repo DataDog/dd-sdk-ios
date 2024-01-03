@@ -11,10 +11,10 @@ import OpenTelemetryApi
 
 @testable import DatadogTrace
 
-class OtelSpanIdDatadogTests: XCTestCase {
-    func testToDatadog() {
-        let otelId = SpanId.random()
+class OTelTraceIdDatadogTests: XCTestCase {
+    func testToDatadog_onlyHigherOrderBitsAreConsidered() {
+        let otelId = TraceId.random()
         let ddId = otelId.toDatadog()
-        XCTAssertEqual(otelId.rawValue, ddId.rawValue)
+        XCTAssertEqual(otelId.rawHigherLong, ddId.rawValue)
     }
 }

@@ -10,7 +10,7 @@ import DatadogInternal
 
 @testable import DatadogTrace
 
-final class OtelSpanTests: XCTestCase {
+final class OTelSpanTests: XCTestCase {
     func testSpanResourceNameDefault() {
         let writeSpanExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock(expectation: writeSpanExpectation)
