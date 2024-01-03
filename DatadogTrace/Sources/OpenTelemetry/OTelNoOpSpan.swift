@@ -23,7 +23,7 @@ internal class OTelNoOpSpan: Span {
 
     var status = Status.unset
 
-    var description: String = "NoOpSpan"
+    var description: String = "OTelNoOpSpan"
 
     func updateName(name: String) {}
 

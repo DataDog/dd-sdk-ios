@@ -74,7 +74,7 @@ final class OtelSpanTests: XCTestCase {
         span.end()
         XCTAssertFalse(span.isRecording)
 
-        // Then ignores 
+        // Then ignores
         span.name = ignoredName
         span.putHttpStatusCode(statusCode: ignoredCode, reasonPhrase: ignoredMessage)
         for (key, value) in ignoredAttributes {
@@ -96,5 +96,80 @@ final class OtelSpanTests: XCTestCase {
             "span.kind": "client",
         ]
         XCTAssertEqual(recordedSpan.tags, expectedTags)
+    }
+
+    func testSetParentSpan() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        writeSpanExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
+        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan).startSpan()
+
+        // When
+        childSpan.end()
+        parentSpan.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 2)
+        let child = events.first!.spans.first!
+        let parent = events.last!.spans.first!
+        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertEqual(child.parentID, parent.spanID)
+    }
+
+    func testSetParentContext() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        writeSpanExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
+        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan.context).startSpan()
+
+        // When
+        childSpan.end()
+        parentSpan.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 2)
+        let child = events.first!.spans.first!
+        let parent = events.last!.spans.first!
+        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertEqual(child.parentID, parent.spanID)
+    }
+
+    func testSetNoParent() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        writeSpanExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
+        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        let childSpan = tracer.spanBuilder(spanName: "Child").setNoParent().startSpan()
+
+        // When
+        childSpan.end()
+        parentSpan.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.count, 2)
+        let child = events.first!.spans.first!
+        let parent = events.last!.spans.first!
+        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertEqual(child.parentID, nil)
     }
 }

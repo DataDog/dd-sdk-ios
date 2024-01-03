@@ -146,7 +146,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     var description: String {
-        return "WrapperSpan"
+        return "OTelSpan"
     }
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue?) {
