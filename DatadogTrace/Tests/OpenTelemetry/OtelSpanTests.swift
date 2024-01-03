@@ -106,7 +106,7 @@ final class OtelSpanTests: XCTestCase {
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
-        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan).startSpan()
 
         // When
@@ -131,7 +131,7 @@ final class OtelSpanTests: XCTestCase {
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
-        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan.context).startSpan()
 
         // When
@@ -156,7 +156,7 @@ final class OtelSpanTests: XCTestCase {
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
-        let _ = tracer.spanBuilder(spanName: "Noise").startSpan()
+        _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setNoParent().startSpan()
 
         // When
