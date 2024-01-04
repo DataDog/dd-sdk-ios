@@ -89,9 +89,6 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 
         try swizzler.swizzle(
             delegateClass: configuration.delegateClass,
-            interceptDidReceive: { [weak self] session, task, data in
-                self?.task(task, didReceive: data)
-            },
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
                 self?.task(task, didFinishCollecting: metrics)
 
@@ -103,6 +100,13 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             },
             interceptDidCompleteWithError: { [weak self] session, task, error in
                 self?.task(task, didCompleteWithError: error)
+            }
+        )
+
+        try swizzler.swizzle(
+            delegateClass: configuration.delegateClass,
+            interceptDidReceive: { [weak self] session, task, data in
+                self?.task(task, didReceive: data)
             }
         )
 

@@ -8,27 +8,25 @@ import XCTest
 
 @testable import DatadogInternal
 
-class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
+class URLSessionDataDelegateSwizzlerTests: XCTestCase {
     func testSwizzling_implementedMethods() throws {
-        class MockDelegate: NSObject, URLSessionTaskDelegate {
+        class MockDelegate: NSObject, URLSessionDataDelegate {
+            func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) { }
             func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) { }
             func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) { }
         }
 
         let delegate = MockDelegate()
-        let didFinishCollecting = expectation(description: "didFinishCollecting")
-        let didCompleteWithError = expectation(description: "didCompleteWithError")
+        let didReceiveData = expectation(description: "didReceiveData")
+        didReceiveData.assertForOverFulfill = false
 
         // Given
-        let swizzler = URLSessionTaskDelegateSwizzler()
+        let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
             delegateClass: MockDelegate.self,
-            interceptDidFinishCollecting: { _, _, _ in
-                didFinishCollecting.fulfill()
-            },
-            interceptDidCompleteWithError: { _, _, _ in
-                didCompleteWithError.fulfill()
+            interceptDidReceive: { _, _, _ in
+                didReceiveData.fulfill()
             }
         )
 
@@ -39,7 +37,7 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
             .dataTask(with: url)
             .resume() // intercepted
 
-        wait(for: [didFinishCollecting, didCompleteWithError], timeout: 5)
+        wait(for: [didReceiveData], timeout: 5)
     }
 
     func testSwizzling_whenMethodsNotImplemented() throws {
@@ -47,19 +45,16 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
         }
 
         let delegate = MockDelegate()
-        let didFinishCollecting = expectation(description: "didFinishCollecting")
-        let didCompleteWithError = expectation(description: "didCompleteWithError")
+        let didReceiveData = expectation(description: "didReceiveData")
+        didReceiveData.assertForOverFulfill = false
 
         // Given
-        let swizzler = URLSessionTaskDelegateSwizzler()
+        let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
             delegateClass: MockDelegate.self,
-            interceptDidFinishCollecting: { _, _, _ in
-                didFinishCollecting.fulfill()
-            },
-            interceptDidCompleteWithError: { _, _, _ in
-                didCompleteWithError.fulfill()
+            interceptDidReceive: { _, _, _ in
+                didReceiveData.fulfill()
             }
         )
 
@@ -70,7 +65,7 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
             .dataTask(with: url)
             .resume() // intercepted
 
-        wait(for: [didFinishCollecting, didCompleteWithError], timeout: 5)
+        wait(for: [didReceiveData], timeout: 5)
     }
 
     func testUnSwizzling() throws {
@@ -82,14 +77,11 @@ class URLSessionTaskDelegateSwizzlerTests: XCTestCase {
         expectation.isInverted = true
 
         // Given
-        let swizzler = URLSessionTaskDelegateSwizzler()
+        let swizzler = URLSessionDataDelegateSwizzler()
 
         try swizzler.swizzle(
             delegateClass: MockDelegate.self,
-            interceptDidFinishCollecting: { _, _, _ in
-                expectation.fulfill()
-            },
-            interceptDidCompleteWithError: { _, _, _ in
+            interceptDidReceive: { _, _, _ in
                 expectation.fulfill()
             }
         )

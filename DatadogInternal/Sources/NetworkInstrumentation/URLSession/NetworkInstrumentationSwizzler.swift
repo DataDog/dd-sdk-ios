@@ -11,12 +11,14 @@ internal final class NetworkInstrumentationSwizzler {
     let urlSessionSwizzler: URLSessionSwizzler
     let urlSessionTaskSwizzler: URLSessionTaskSwizzler
     let urlSessionTaskDelegateSwizzler: URLSessionTaskDelegateSwizzler
+    let urlSessionDataDelegateSwizzler: URLSessionDataDelegateSwizzler
 
     init() {
         let lock = NSRecursiveLock()
         urlSessionSwizzler = URLSessionSwizzler(lock: lock)
         urlSessionTaskSwizzler = URLSessionTaskSwizzler(lock: lock)
         urlSessionTaskDelegateSwizzler = URLSessionTaskDelegateSwizzler(lock: lock)
+        urlSessionDataDelegateSwizzler = URLSessionDataDelegateSwizzler(lock: lock)
     }
 
     /// Swizzles `URLSession.dataTask(with:completionHandler:)` methods (with `URL` and `URLRequest`).
@@ -34,20 +36,29 @@ internal final class NetworkInstrumentationSwizzler {
     }
 
     /// Swizzles  methods:
-    /// - `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)`
     /// - `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)`
     /// - `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`
     func swizzle(
-        delegateClass: AnyClass,
-        interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void,
+        delegateClass: URLSessionTaskDelegate.Type,
         interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
         interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
         try urlSessionTaskDelegateSwizzler.swizzle(
             delegateClass: delegateClass,
-            interceptDidReceive: interceptDidReceive,
             interceptDidFinishCollecting: interceptDidFinishCollecting,
             interceptDidCompleteWithError: interceptDidCompleteWithError
+        )
+    }
+
+    /// Swizzles  methods:
+    /// - `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)`
+    func swizzle(
+        delegateClass: URLSessionDataDelegate.Type,
+        interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void
+    ) throws {
+        try urlSessionDataDelegateSwizzler.swizzle(
+            delegateClass: delegateClass,
+            interceptDidReceive: interceptDidReceive
         )
     }
 
@@ -56,5 +67,6 @@ internal final class NetworkInstrumentationSwizzler {
         urlSessionSwizzler.unswizzle()
         urlSessionTaskSwizzler.unswizzle()
         urlSessionTaskDelegateSwizzler.unswizzle()
+        urlSessionDataDelegateSwizzler.unswizzle()
     }
 }
