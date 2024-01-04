@@ -41,35 +41,7 @@ public enum RUM {
 
         // If resource tracking is configured, register URLSessionHandler to enable network instrumentation:
         if let urlSessionConfig = configuration.urlSessionTracking {
-            let distributedTracing: DistributedTracing?
-
-            // If first party hosts are configured, enable distributed tracing:
-            switch urlSessionConfig.firstPartyHostsTracing {
-            case let .trace(hosts, sampleRate):
-                distributedTracing = DistributedTracing(
-                    sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
-                    firstPartyHosts: FirstPartyHosts(hosts),
-                    traceIDGenerator: configuration.traceIDGenerator
-                )
-            case let .traceWithHeaders(hostsWithHeaders, sampleRate):
-                distributedTracing = DistributedTracing(
-                    sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate),
-                    firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
-                    traceIDGenerator: configuration.traceIDGenerator
-                )
-            case .none:
-                distributedTracing = nil
-            }
-
-            let urlSessionHandler = URLSessionRUMResourcesHandler(
-                dateProvider: configuration.dateProvider,
-                rumAttributesProvider: urlSessionConfig.resourceAttributesProvider,
-                distributedTracing: distributedTracing
-            )
-
-            // Connect URLSession instrumentation to RUM monitor:
-            urlSessionHandler.publish(to: rum.monitor)
-            try core.register(urlSessionHandler: urlSessionHandler)
+            try RUM._internal.enableURLSessionTracking(with: urlSessionConfig, in: core)
         }
 
         if configuration.debugViews {
