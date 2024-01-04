@@ -27,23 +27,12 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     /// and events can be added to it.
     var isRecording: Bool
 
-    /// `status` saves state of the code and description indicating
-    /// whether the span has recorded errors. This will be done by setting `error.message`
-    /// tag on the span.
     var status: OpenTelemetryApi.Status {
         get {
-            queue.sync {
-                _status
-            }
+            fatalError("Not implemented yet")
         }
         set {
-            queue.sync {
-                guard isRecording else {
-                    return
-                }
-
-                _status = newValue
-            }
+            fatalError("Not implemented yet")
         }
     }
 
@@ -129,14 +118,6 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             // Attributes maps to tags in Datadog
             for (key, value) in attributes {
                 nestedSpan.setTag(key: key, value: value.description)
-            }
-
-            // If status is error, error.message tag is added
-            switch self._status {
-            case .error(description: let description):
-                nestedSpan.setTag(key: DatadogTagKeys.errorMessage.rawValue, value: description)
-            case .ok, .unset:
-                break
             }
 
             // SpanKind maps to the `span.kind` tag in Datadog

@@ -55,7 +55,7 @@ final class OTelSpanTests: XCTestCase {
     func testSpanEnd() {
         // Given
         let (name, ignoredName) = ("trueName", "invalidName")
-        let (code, ignoredCode) = (200, 400)
+        
         let (message, ignoredMessage) = ("message", "ignoredMessage")
         let (attributes, ignoredAttributes) = (["key": "value"], ["ignoredKey": "ignoredValue"])
 
@@ -64,7 +64,6 @@ final class OTelSpanTests: XCTestCase {
 
         let tracer: DatadogTracer = .mockWith(core: core)
         let span = tracer.spanBuilder(spanName: name).startSpan()
-        span.putHttpStatusCode(statusCode: code, reasonPhrase: message)
         for (key, value) in attributes {
             span.setAttribute(key: key, value: value)
         }
@@ -76,7 +75,6 @@ final class OTelSpanTests: XCTestCase {
 
         // Then ignores
         span.name = ignoredName
-        span.putHttpStatusCode(statusCode: ignoredCode, reasonPhrase: ignoredMessage)
         for (key, value) in ignoredAttributes {
             span.setAttribute(key: key, value: value)
         }
@@ -91,7 +89,6 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.resource, name)
         XCTAssertEqual(recordedSpan.operationName, name)
         let expectedTags = [
-            "http.status_code": "200",
             "key": "value",
             "span.kind": "client",
         ]
