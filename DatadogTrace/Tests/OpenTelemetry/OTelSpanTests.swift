@@ -55,7 +55,6 @@ final class OTelSpanTests: XCTestCase {
     func testSpanEnd() {
         // Given
         let (name, ignoredName) = ("trueName", "invalidName")
-        let (message, ignoredMessage) = ("message", "ignoredMessage")
         let (attributes, ignoredAttributes) = (["key": "value"], ["ignoredKey": "ignoredValue"])
 
         let writeSpanExpectation = expectation(description: "write span event")
