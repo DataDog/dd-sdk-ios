@@ -592,6 +592,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     @available(*, deprecated)
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -616,14 +618,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .dataTask(with: request)
             .resume()
 
+        session
+            .dataTask(with: request) { _,_,_ in }
+            .resume()
+
         // Then
         waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
+
+        // release the delegate to unswizzle
+        session.finishTasksAndInvalidate()
     }
 
     @available(*, deprecated)
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -656,9 +667,16 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .dataTask(with: request)
             .resume()
 
+        session
+            .dataTask(with: request) { _,_,_ in }
+            .resume()
+
         // Then
         waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
+
+        // release the delegate to unswizzle
+        session.finishTasksAndInvalidate()
     }
 
     // MARK: - Thread Safety

@@ -39,7 +39,7 @@ internal class DatadogTestsObserver: NSObject, XCTestObservation {
             Make sure all applied swizzling are reset by the end of test with `unswizzle()`.
 
             `DatadogTestsObserver` found \(Swizzling.methods.count) leaked swizzlings:
-            \(Swizzling.methods)
+            \(Swizzling.description)
             """
         ),
         .init(

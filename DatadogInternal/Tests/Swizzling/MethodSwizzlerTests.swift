@@ -110,6 +110,46 @@ class MethodSwizzlerTests: XCTestCase {
         XCTAssertEqual(before_imp, after_imp)
     }
 
+    func test_swizzle_count() throws {
+        class Subclass: BaseClass {
+            override func methodToSwizzle() -> String { "subclass" }
+        }
+        class SubSubclass: Subclass {
+            override func methodToSwizzle() -> String { "subsubclass" }
+        }
+
+        // Given
+        let method1 = try dd_class_getInstanceMethod(BaseClass.self, Swizzler.selector)
+        let method2 = try dd_class_getInstanceMethod(Subclass.self, Swizzler.selector)
+        let method3 = try dd_class_getInstanceMethod(SubSubclass.self, Swizzler.selector)
+
+        let swizzler1 = Swizzler(method: method1)
+        let swizzler2 = Swizzler(method: method2)
+        let swizzler3 = Swizzler(method: method3)
+
+        // When
+        swizzler1.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 1)
+        swizzler2.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 2)
+        swizzler3.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 3)
+
+        // Then
+        XCTAssertEqual(Swizzling.description, "[methodToSwizzle, methodToSwizzle, methodToSwizzle]")
+
+        // When
+        swizzler1.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 2)
+        swizzler2.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 1)
+        swizzler3.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 0)
+
+        // Then
+        XCTAssertEqual(Swizzling.description, "[]")
+    }
+
     func test_swizzle_concurrently() throws {
         // swiftlint:disable opening_brace
 
