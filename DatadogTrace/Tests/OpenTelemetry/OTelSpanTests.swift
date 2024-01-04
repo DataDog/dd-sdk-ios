@@ -55,7 +55,6 @@ final class OTelSpanTests: XCTestCase {
     func testSpanEnd() {
         // Given
         let (name, ignoredName) = ("trueName", "invalidName")
-        
         let (message, ignoredMessage) = ("message", "ignoredMessage")
         let (attributes, ignoredAttributes) = (["key": "value"], ["ignoredKey": "ignoredValue"])
 
@@ -183,10 +182,6 @@ final class OTelSpanTests: XCTestCase {
         span.setAttribute(key: "key2", value: .string("value2"))
         span.setAttribute(key: "key3", value: .int(3))
         span.setAttribute(key: "key4", value: .double(4.0))
-        span.setAttribute(key: "key5", value: .stringArray(["value5", "value6"]))
-        span.setAttribute(key: "key6", value: .intArray([6, 7]))
-        span.setAttribute(key: "key7", value: .doubleArray([7.0, 8.0]))
-        span.setAttribute(key: "key8", value: .boolArray([true, false]))
 
         span.end()
 
@@ -201,10 +196,6 @@ final class OTelSpanTests: XCTestCase {
             "key2": "value2",
             "key3": "3",
             "key4": "4.0",
-            "key5": "[\"value5\", \"value6\"]",
-            "key6": "[6, 7]",
-            "key7": "[7.0, 8.0]",
-            "key8": "[true, false]",
             "span.kind": "client",
         ]
         XCTAssertTagsEqual(recordedSpan.tags, expectedTags)

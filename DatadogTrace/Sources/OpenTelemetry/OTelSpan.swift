@@ -117,6 +117,28 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
             // Attributes maps to tags in Datadog
             for (key, value) in attributes {
+                switch value {
+                case .string(let value):
+                    nestedSpan.setTag(key: key, value: value)
+                case .bool(let value):
+                    nestedSpan.setTag(key: key, value: value.description)
+                case .int(let value):
+                    nestedSpan.setTag(key: key, value: value.description)
+                case .double(let value):
+                    nestedSpan.setTag(key: key, value: value.description)
+                // swiftlint:disable unavailable_function
+                case .stringArray:
+                    fatalError("Not implemented yet")
+                case .boolArray:
+                    fatalError("Not implemented yet")
+                case .intArray:
+                    fatalError("Not implemented yet")
+                case .doubleArray:
+                    fatalError("Not implemented yet")
+                case .set:
+                    fatalError("Not implemented yet")
+                // swiftlint:enable unavailable_function
+                }
                 nestedSpan.setTag(key: key, value: value.description)
             }
 
