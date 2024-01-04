@@ -98,6 +98,7 @@ public class SessionReplayWireframesBuilder {
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
+        fontSize: CGFloat? = nil,
         fontScalingEnabled: Bool = false,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -116,7 +117,7 @@ public class SessionReplayWireframesBuilder {
             )
         )
 
-        var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int64(withNoOverflow: fontSize ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
