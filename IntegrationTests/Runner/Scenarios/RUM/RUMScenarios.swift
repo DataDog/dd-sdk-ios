@@ -181,7 +181,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
         config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
 
         switch setup.instrumentationMethod {
-        case .directWithFeatureFirstPartyHosts, .inheritance, .composition, .customWithFeatureFirstPartyHosts:
+        case .legacyWithFeatureFirstPartyHosts, .legacyInheritance, .legacyComposition, .delegateUsingFeatureFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(
                     hosts: [
@@ -193,7 +193,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
                 ),
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
             )
-        case .directWithAdditionalFirstyPartyHosts, .customWithAdditionalFirstyPartyHosts:
+        case .legacyWithAdditionalFirstyPartyHosts, .delegateWithAdditionalFirstyPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)

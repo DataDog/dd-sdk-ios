@@ -149,9 +149,9 @@ class URLSessionBaseScenario: NSObject {
         let delegate: URLSessionDataDelegate
 
         switch setup.instrumentationMethod {
-        case .directWithFeatureFirstPartyHosts:
+        case .legacyWithFeatureFirstPartyHosts:
             delegate = DDURLSessionDelegate()
-        case .directWithAdditionalFirstyPartyHosts:
+        case .legacyWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
                 additionalFirstPartyHosts: [
                     customGETResourceURL.host!,
@@ -159,14 +159,14 @@ class URLSessionBaseScenario: NSObject {
                     badResourceURL.host!
                 ]
             )
-        case .inheritance:
+        case .legacyInheritance:
             delegate = InheritedURLSessionDelegate()
-        case .composition:
+        case .legacyComposition:
             delegate = CompositedURLSessionDelegate()
-        case .customWithFeatureFirstPartyHosts:
+        case .delegateUsingFeatureFirstPartyHosts:
             URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
             delegate = CustomURLSessionDelegate()
-        case .customWithAdditionalFirstyPartyHosts:
+        case .delegateWithAdditionalFirstyPartyHosts:
             URLSessionInstrumentation.enable(
                 with: .init(
                     delegateClass: CustomURLSessionDelegate.self,
