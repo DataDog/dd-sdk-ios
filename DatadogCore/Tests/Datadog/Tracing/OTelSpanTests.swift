@@ -27,7 +27,7 @@ final class OTelSpanTests: XCTestCase {
             .startSpan()
 
         // When
-        let attributes: [String: OpenTelemetryApi.AttributeValue] = .mock()
+        let attributes: [String: OpenTelemetryApi.AttributeValue] = .leafMock()
         span.addEvent(name: "Otel Span Event", attributes: attributes, timestamp: Date())
 
         // Then
