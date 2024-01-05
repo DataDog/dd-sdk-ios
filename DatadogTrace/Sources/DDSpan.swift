@@ -108,13 +108,17 @@ internal final class DDSpan: OTSpan {
     }
 
     func log(fields: [String: Encodable], timestamp: Date) {
+        log(message: nil, fields: fields, timestamp: timestamp)
+    }
+
+    func log(message: String?, fields: [String: Encodable], timestamp: Date) {
         queue.async {
             if self.warnIfFinished("log(fields:timestamp:)") {
                 return
             }
             self.unsafeLogFields.append(fields)
         }
-        sendSpanLogs(fields: fields, date: timestamp)
+        sendSpanLogs(message: message, fields: fields, date: timestamp)
     }
 
     func finish(at time: Date) {
@@ -177,8 +181,8 @@ internal final class DDSpan: OTSpan {
         }
     }
 
-    private func sendSpanLogs(fields: [String: Encodable], date: Date) {
-        loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date, else: {
+    private func sendSpanLogs(message: String?, fields: [String: Encodable], date: Date) {
+        loggingIntegration.writeLog(withSpanContext: ddContext, message: message, fields: fields, date: date, else: {
             self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logs feature is not enabled.") }
         })
     }

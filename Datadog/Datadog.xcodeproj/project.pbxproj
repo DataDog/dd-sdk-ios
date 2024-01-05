@@ -84,6 +84,8 @@
 		3CCCA5C82ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */; };
 		3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3CF673362B4807490016CE17 /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF673352B4807490016CE17 /* OTelSpanTests.swift */; };
+		3CF673372B4807490016CE17 /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF673352B4807490016CE17 /* OTelSpanTests.swift */; };
 		3CFD81952ABBB66400977C22 /* MetaTypeExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD81942ABBB66400977C22 /* MetaTypeExtensionsTests.swift */; };
 		3CFD81962ABBB66400977C22 /* MetaTypeExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD81942ABBB66400977C22 /* MetaTypeExtensionsTests.swift */; };
 		49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
@@ -1924,6 +1926,7 @@
 		3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionInstrumentationConfigurationTests.swift; sourceTree = "<group>"; };
 		3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogWebViewTrackingTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CF673352B4807490016CE17 /* OTelSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanTests.swift; sourceTree = "<group>"; };
 		3CFD81942ABBB66400977C22 /* MetaTypeExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypeExtensionsTests.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
@@ -4813,6 +4816,7 @@
 		61C5A89724509C1100DA608C /* Tracing */ = {
 			isa = PBXGroup;
 			children = (
+				3CF673352B4807490016CE17 /* OTelSpanTests.swift */,
 				61AD4E3924534075006E34EA /* DatadogTraceFeatureTests.swift */,
 				D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */,
 				D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */,
@@ -7631,6 +7635,7 @@
 				D24C9C6429A7CB7B002057CF /* CrashLogReceiverTests.swift in Sources */,
 				61B5E42126DF85C7000B0A5F /* DDRUMMonitor+apiTests.m in Sources */,
 				61133C4E2423990D00786299 /* UIKitMocks.swift in Sources */,
+				3CF673362B4807490016CE17 /* OTelSpanTests.swift in Sources */,
 				D20FD9D32ACC08D1004D3569 /* WebKitMocks.swift in Sources */,
 				618353BC2A69470A0085F84A /* CoreMetricsIntegrationTests.swift in Sources */,
 				61133C4D2423990D00786299 /* CoreTelephonyMocks.swift in Sources */,
@@ -8752,6 +8757,7 @@
 				D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */,
 				D20605BA2875729E0047275C /* ContextValuePublisherMock.swift in Sources */,
 				D22743E729DEB953001A7EF9 /* UIApplicationSwizzlerTests.swift in Sources */,
+				3CF673372B4807490016CE17 /* OTelSpanTests.swift in Sources */,
 				D25CFAA029C860E300E3A43D /* TracingFeatureMocks.swift in Sources */,
 				D2CB6F5F27C520D400A62B57 /* DDNSURLSessionDelegate+apiTests.m in Sources */,
 				D224430E29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */,
