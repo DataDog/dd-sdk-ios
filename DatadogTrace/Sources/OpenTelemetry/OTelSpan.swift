@@ -109,21 +109,17 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func end(time: Date) {
-        let semaphore = DispatchSemaphore(value: 0)
         var ended = false
         var tags: [String: String] = [:]
 
         queue.sync {
             guard isRecording else {
                 ended = true
-                semaphore.signal()
                 return
             }
             isRecording = false
             tags = makeTags()
-            semaphore.signal()
         }
-        semaphore.wait()
 
         // if the span was already ended before, we don't want to end it again
         guard !ended else {
