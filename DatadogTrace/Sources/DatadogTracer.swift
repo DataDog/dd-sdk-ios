@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 import OpenTelemetryApi
 
-internal class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
+internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     internal weak var core: DatadogCoreProtocol?
 
     /// Global tags configured for Trace feature.

@@ -50,7 +50,7 @@ internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
 
     func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
         warn()
-        return OTelNoOpSpanBuilder()
+        return NOPOTelSpanBuilder()
     }
 }
 

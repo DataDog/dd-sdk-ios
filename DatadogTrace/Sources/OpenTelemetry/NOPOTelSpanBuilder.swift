@@ -7,10 +7,10 @@
 import Foundation
 import OpenTelemetryApi
 
-internal class OTelNoOpSpanBuilder: SpanBuilder {
+internal class NOPOTelSpanBuilder: SpanBuilder {
     @discardableResult
     func startSpan() -> Span {
-        return OTelNoOpSpan()
+        return NOPOTelSpan()
     }
 
     @discardableResult

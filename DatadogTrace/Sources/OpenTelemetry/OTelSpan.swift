@@ -19,7 +19,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     var attributes: [String: OpenTelemetryApi.AttributeValue]
     let context: OpenTelemetryApi.SpanContext
     var kind: OpenTelemetryApi.SpanKind
-    let nestedSpan: DDSpan
+    let ddSpan: DDSpan
     let tracer: DatadogTracer
     let queue: DispatchQueue
 
@@ -50,7 +50,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
                 }
                 _name = newValue
             }
-            nestedSpan.setOperationName(name)
+            ddSpan.setOperationName(name)
         }
     }
 
@@ -72,7 +72,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.isRecording = true
         self.queue = tracer.queue
         self.tracer = tracer
-        self.nestedSpan = .init(
+        self.ddSpan = .init(
             tracer: tracer,
             context: .init(
                 traceID: context.traceId.toDatadog(),
@@ -109,43 +109,64 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func end(time: Date) {
+        let semaphore = DispatchSemaphore(value: 0)
+        var ended = false
+        var tags: [String: String] = [:]
+
         queue.sync {
             guard isRecording else {
+                ended = true
+                semaphore.signal()
                 return
             }
             isRecording = false
-
-            // Attributes maps to tags in Datadog
-            for (key, value) in attributes {
-                switch value {
-                case .string(let value):
-                    nestedSpan.setTag(key: key, value: value)
-                case .bool(let value):
-                    nestedSpan.setTag(key: key, value: value.description)
-                case .int(let value):
-                    nestedSpan.setTag(key: key, value: value.description)
-                case .double(let value):
-                    nestedSpan.setTag(key: key, value: value.description)
-                // swiftlint:disable unavailable_function
-                case .stringArray:
-                    fatalError("Not implemented yet")
-                case .boolArray:
-                    fatalError("Not implemented yet")
-                case .intArray:
-                    fatalError("Not implemented yet")
-                case .doubleArray:
-                    fatalError("Not implemented yet")
-                case .set:
-                    fatalError("Not implemented yet")
-                // swiftlint:enable unavailable_function
-                }
-                nestedSpan.setTag(key: key, value: value.description)
-            }
-
-            // SpanKind maps to the `span.kind` tag in Datadog
-            nestedSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
+            tags = makeTags()
+            semaphore.signal()
         }
-        nestedSpan.finish(at: time)
+        semaphore.wait()
+
+        // if the span was already ended before, we don't want to end it again
+        guard !ended else {
+            return
+        }
+
+        // There is no need to lock here, because `DDSpan` is thread-safe
+        for (key, value) in tags {
+            ddSpan.setTag(key: key, value: value)
+        }
+
+        // SpanKind maps to the `span.kind` tag in Datadog
+        ddSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
+        ddSpan.finish(at: time)
+    }
+
+    private func makeTags() -> [String: String] {
+        var tags = [String: String]()
+        for (key, value) in attributes {
+            switch value {
+            case .string(let value):
+                tags[key] = value
+            case .bool(let value):
+                tags[key] = value.description
+            case .int(let value):
+                tags[key] = value.description
+            case .double(let value):
+                tags[key] = value.description
+            // swiftlint:disable unavailable_function
+            case .stringArray:
+                fatalError("Not implemented yet")
+            case .boolArray:
+                fatalError("Not implemented yet")
+            case .intArray:
+                fatalError("Not implemented yet")
+            case .doubleArray:
+                fatalError("Not implemented yet")
+            case .set:
+                fatalError("Not implemented yet")
+            // swiftlint:enable unavailable_function
+            }
+        }
+        return tags
     }
 
     var description: String {
@@ -153,10 +174,12 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue?) {
-        guard isRecording else {
-            return
-        }
+        queue.sync {
+            guard isRecording else {
+                return
+            }
 
-        attributes[key] = value
+            attributes[key] = value
+        }
     }
 }

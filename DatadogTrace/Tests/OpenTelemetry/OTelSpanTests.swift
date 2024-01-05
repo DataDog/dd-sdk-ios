@@ -24,9 +24,9 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 1)
-        let recordedSpan = events.first!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "OperationName")
         XCTAssertEqual(recordedSpan.operationName, "OperationName")
     }
@@ -45,9 +45,9 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 1)
-        let recordedSpan = events.first!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "NewOperationName")
         XCTAssertEqual(recordedSpan.operationName, "NewOperationName")
     }
@@ -80,9 +80,9 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 1)
-        let recordedSpan = events.first!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
 
         XCTAssertEqual(recordedSpan.resource, name)
         XCTAssertEqual(recordedSpan.operationName, name)
@@ -90,7 +90,7 @@ final class OTelSpanTests: XCTestCase {
             "key": "value",
             "span.kind": "client",
         ]
-        XCTAssertTagsEqual(recordedSpan.tags, expectedTags)
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
     func testSetParentSpan() {
@@ -110,10 +110,10 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 2)
-        let child = events.first!.spans.first!
-        let parent = events.last!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
         XCTAssertEqual(parent.parentID, nil)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
@@ -135,10 +135,10 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 2)
-        let child = events.first!.spans.first!
-        let parent = events.last!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
         XCTAssertEqual(parent.parentID, nil)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
@@ -160,10 +160,10 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 2)
-        let child = events.first!.spans.first!
-        let parent = events.last!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
         XCTAssertEqual(parent.parentID, nil)
         XCTAssertEqual(child.parentID, nil)
     }
@@ -186,9 +186,9 @@ final class OTelSpanTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 0.5, handler: nil)
-        let events: [SpanEventsEnvelope] = core.events()
-        XCTAssertEqual(events.count, 1)
-        let recordedSpan = events.first!.spans.first!
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
         let expectedTags =
         [
             "key": "true",
@@ -197,24 +197,13 @@ final class OTelSpanTests: XCTestCase {
             "key4": "4.0",
             "span.kind": "client",
         ]
-        XCTAssertTagsEqual(recordedSpan.tags, expectedTags)
+        DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 }
 
-func XCTAssertTagsEqual(
-    _ dict1: [String: String],
-    _ dict2: [String: String],
-    file: StaticString = #filePath,
-    line: UInt = #line
-) {
-    XCTAssertEqual(dict1.count, dict2.count, file: file, line: line)
-    for (key, value) in dict1 {
-        XCTAssertEqual(
-            dict2[key],
-            value,
-            "Expected \(key) to be \(value), but was \(String(describing: dict2[key]))",
-            file: file,
-            line: line
-        )
+extension PassthroughCoreMock {
+    func spans() -> [SpanEvent] {
+        let events: [SpanEventsEnvelope] = self.events()
+        return events.flatMap { $0.spans }
     }
 }

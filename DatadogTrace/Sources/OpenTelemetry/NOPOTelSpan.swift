@@ -7,7 +7,7 @@
 import Foundation
 import OpenTelemetryApi
 
-internal class OTelNoOpSpan: Span {
+internal class NOPOTelSpan: Span {
     var kind: OpenTelemetryApi.SpanKind = .internal
 
     var name: String = ""
