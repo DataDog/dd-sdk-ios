@@ -36,6 +36,14 @@ public class SessionReplayWireframesBuilder {
         static let fontSize: CGFloat = 10
     }
 
+    public struct FontOverride {
+        let size: CGFloat?
+
+        public init(size: CGFloat?) {
+            self.size = size
+        }
+    }
+
     public func createShapeWireframe(
         id: WireframeID,
         frame: CGRect,
@@ -98,7 +106,7 @@ public class SessionReplayWireframesBuilder {
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
-        fontSize: CGFloat? = nil,
+        fontOverride: FontOverride? = nil,
         fontScalingEnabled: Bool = false,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -117,7 +125,7 @@ public class SessionReplayWireframesBuilder {
             )
         )
 
-        var fontSize = Int64(withNoOverflow: fontSize ?? font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int64(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
