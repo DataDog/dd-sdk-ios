@@ -36,16 +36,12 @@
 		3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3C6C7FDB2B45738C006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDA2B45738C006F5CBC /* OpenTelemetryApi */; };
 		3C6C7FDD2B457392006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDC2B457392006F5CBC /* OpenTelemetryApi */; };
-		3C6C7FE52B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */; };
-		3C6C7FE62B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */; };
 		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
 		3C6C7FE92B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
 		3C6C7FEA2B459AAA006F5CBC /* OTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */; };
 		3C6C7FEB2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */; };
 		3C6C7FEC2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */; };
-		3C6C7FED2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */; };
-		3C6C7FEE2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */; };
 		3C6C7FEF2B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE42B459AAA006F5CBC /* OTelSpanId+Datadog.swift */; };
 		3C6C7FF02B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE42B459AAA006F5CBC /* OTelSpanId+Datadog.swift */; };
 		3C6C7FFB2B459AF6006F5CBC /* OTelSpanId+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FF22B459AB3006F5CBC /* OTelSpanId+DatadogTests.swift */; };
@@ -60,6 +56,10 @@
 		3C85D42C29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C85D42D29F7C87D00AFF894 /* HostsSanitizerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */; };
 		3C9C6BB429F7C0C000581C43 /* DatadogInternal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; };
+		3CB012DD2B482E0400557951 /* NOPOTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */; };
+		3CB012DE2B482E0400557951 /* NOPOTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */; };
+		3CB012DF2B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */; };
+		3CB012E02B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */; };
 		3CB32AD42ACB733000D602ED /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */; };
 		3CB32AD52ACB733000D602ED /* URLSessionSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */; };
 		3CB32AD72ACB735600D602ED /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */; };
@@ -1900,17 +1900,17 @@
 		3C2206F22AB9CE9300DE780C /* MetaTypeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypeExtensions.swift; sourceTree = "<group>"; };
 		3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzler.swift; sourceTree = "<group>"; };
 		3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
-		3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelNoOpSpanBuilder.swift; sourceTree = "<group>"; };
 		3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpan.swift; sourceTree = "<group>"; };
 		3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanBuilder.swift; sourceTree = "<group>"; };
 		3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceId+Datadog.swift"; sourceTree = "<group>"; };
-		3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelNoOpSpan.swift; sourceTree = "<group>"; };
 		3C6C7FE42B459AAA006F5CBC /* OTelSpanId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelSpanId+Datadog.swift"; sourceTree = "<group>"; };
 		3C6C7FF22B459AB3006F5CBC /* OTelSpanId+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelSpanId+DatadogTests.swift"; sourceTree = "<group>"; };
 		3C6C7FF32B459AB3006F5CBC /* OTelTraceId+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceId+DatadogTests.swift"; sourceTree = "<group>"; };
 		3C6C7FF42B459AB3006F5CBC /* OTelSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanTests.swift; sourceTree = "<group>"; };
 		3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewTracking.swift; sourceTree = "<group>"; };
 		3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HostsSanitizerMock.swift; sourceTree = "<group>"; };
+		3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NOPOTelSpan.swift; sourceTree = "<group>"; };
+		3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NOPOTelSpanBuilder.swift; sourceTree = "<group>"; };
 		3CB32AD32ACB733000D602ED /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
 		3CB32AD62ACB735600D602ED /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
 		3CBDE66D2AA08BF600F6A7B6 /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
@@ -3114,11 +3114,11 @@
 		3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
-				3C6C7FDF2B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift */,
+				3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */,
+				3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */,
 				3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */,
 				3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */,
 				3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */,
-				3C6C7FE32B459AAA006F5CBC /* OTelNoOpSpan.swift */,
 				3C6C7FE42B459AAA006F5CBC /* OTelSpanId+Datadog.swift */,
 			);
 			path = OpenTelemetry;
@@ -8327,9 +8327,8 @@
 				D2C1A50C29C4C4CB00946C31 /* DDNoOps.swift in Sources */,
 				D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */,
+				3CB012DD2B482E0400557951 /* NOPOTelSpan.swift in Sources */,
 				D2C1A51A29C4C5DD00946C31 /* JSONEncoder.swift in Sources */,
-				3C6C7FED2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */,
-				3C6C7FE52B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */,
 				D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */,
 				D2C1A51429C4C53F00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEB2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
@@ -8340,6 +8339,7 @@
 				61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
+				3CB012DF2B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
 				D2C1A50929C4C4CB00946C31 /* SpanEventEncoder.swift in Sources */,
 				3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A4FE29C4C4CB00946C31 /* SpanEventMapper.swift in Sources */,
@@ -8525,9 +8525,8 @@
 				D2C1A53929C4F2DF00946C31 /* DDNoOps.swift in Sources */,
 				D2C1A53A29C4F2DF00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A53B29C4F2DF00946C31 /* SpanTagsReducer.swift in Sources */,
+				3CB012DE2B482E0400557951 /* NOPOTelSpan.swift in Sources */,
 				D2C1A53C29C4F2DF00946C31 /* JSONEncoder.swift in Sources */,
-				3C6C7FEE2B459AAA006F5CBC /* OTelNoOpSpan.swift in Sources */,
-				3C6C7FE62B459AAA006F5CBC /* OTelNoOpSpanBuilder.swift in Sources */,
 				D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */,
 				D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */,
 				3C6C7FEC2B459AAA006F5CBC /* OTelTraceId+Datadog.swift in Sources */,
@@ -8538,6 +8537,7 @@
 				61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,
+				3CB012E02B482E0400557951 /* NOPOTelSpanBuilder.swift in Sources */,
 				D2C1A54329C4F2DF00946C31 /* SpanEventEncoder.swift in Sources */,
 				3C6C7FE82B459AAA006F5CBC /* OTelSpan.swift in Sources */,
 				D2C1A54429C4F2DF00946C31 /* SpanEventMapper.swift in Sources */,
