@@ -60,6 +60,42 @@ class MonitorTests: XCTestCase {
         // Then
         XCTAssertNil(core.context.baggages[RUMFeature.name])
     }
+
+    func testStartView_withViewController_itUsesClassNameAsViewName() throws {
+        // Given
+        let vc = createMockView(viewControllerClassName: "SomeViewController")
+
+        // When
+        let monitor = Monitor(
+            core: core,
+            dependencies: .mockWith(core: core, sessionSampler: .mockKeepAll()),
+            dateProvider: DateProviderMock()
+        )
+        monitor.startView(viewController: vc)
+        monitor.flush()
+
+        // Then
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+    }
+
+    func testStartView_withViewController_itUsesClassNameAsViewPath() throws {
+        // Given
+        let vc = createMockView(viewControllerClassName: "SomeViewController")
+
+        // When
+        let monitor = Monitor(
+            core: core,
+            dependencies: .mockWith(core: core, sessionSampler: .mockKeepAll()),
+            dateProvider: DateProviderMock()
+        )
+        monitor.startView(viewController: vc, name: "Some View")
+        monitor.flush()
+
+        // Then
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
+        XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewPath, "SomeViewController")
+    }
 }
 
 // MARK: - Convenience
