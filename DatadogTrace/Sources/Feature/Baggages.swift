@@ -19,7 +19,7 @@ internal struct SpanCoreContext: Encodable {
 }
 
 /// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Decodable {
+internal struct RUMContext: Codable {
     static let key = "rum"
 
     enum CodingKeys: String, CodingKey {

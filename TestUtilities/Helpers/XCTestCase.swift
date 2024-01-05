@@ -63,4 +63,13 @@ extension XCTestCase {
         )
 #endif
     }
+
+    /// Creates and returns an expectation associated with the test case by setting `isInverted` to `true`.
+    /// - Parameter description: This string will be displayed in the test log to help diagnose failures.
+    /// - Returns: Inverted expectation.
+    public func invertedExpectation(description: String) -> XCTestExpectation {
+        let expectation = self.expectation(description: description)
+        expectation.isInverted = true
+        return expectation
+    }
 }

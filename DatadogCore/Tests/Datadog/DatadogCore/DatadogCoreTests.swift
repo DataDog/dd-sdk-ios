@@ -186,6 +186,56 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 3, "It should send 3 requests")
     }
 
+    func testWhenFeatureBaggageIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        let feature = FeatureMock()
+        try core.register(feature: feature)
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+
+        // When
+        let key = "key"
+        let expectation1 = self.expectation(description: "retrieve context")
+        let expectation2 = self.expectation(description: "retrieve context and event writer")
+        expectation1.expectedFulfillmentCount = 2
+        expectation2.expectedFulfillmentCount = 2
+
+        core.set(baggage: "baggage 1", forKey: key)
+        scope.context { context in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            expectation1.fulfill()
+        }
+        scope.eventWriteContext { context, _ in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            expectation2.fulfill()
+        }
+
+        core.set(baggage: "baggage 2", forKey: key)
+        scope.context { context in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            expectation1.fulfill()
+        }
+        scope.eventWriteContext { context, _ in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            expectation2.fulfill()
+        }
+
+        waitForExpectations(timeout: 1)
+    }
+
     func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
         // Given
         let core1 = DatadogCore(

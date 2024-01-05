@@ -5,6 +5,8 @@
 - [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 - [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception
 - [FIX] Remove weak `UIViewController` references. See [#1597][]
+- [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception. See [#1609][]
+- [FIX] RUM session not being linked to spans. See [#1615][]
 
 # 2.5.1 / 20-12-2023
 
@@ -570,6 +572,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1533]: https://github.com/DataDog/dd-sdk-ios/pull/1533
 [#1594]: https://github.com/DataDog/dd-sdk-ios/pull/1594
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
+[#1609]: [https://github.com/DataDog/dd-sdk-ios/pull/1609]
+[#1615]: [https://github.com/DataDog/dd-sdk-ios/pull/1615]
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
