@@ -195,6 +195,17 @@ internal class Monitor: RUMCommandSubscriber {
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
 extension Monitor: RUMMonitorProtocol {
+    // MARK: - properties
+    var currentSessionID: String? {
+        get {
+            guard let activeSession = self.scopes.activeSession else {
+                return nil
+            }
+
+            return activeSession.sessionUUID.rawValue.uuidString
+        }
+    }
+
     // MARK: - attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {

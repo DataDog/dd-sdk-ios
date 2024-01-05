@@ -36,6 +36,12 @@ public enum RUMErrorSource {
 
 /// Public interface of RUM monitor for manual interaction with RUM feature.
 public protocol RUMMonitorProtocol: AnyObject {
+    // MARK: - properties
+
+    /// Get the currently active session ID. Returns `nil` if no sessions are currently active.
+    /// This accessor function will return a "null" session ID (with all zeros) if the current session is sampled out.
+    var currentSessionID: String? { get }
+
     // MARK: - attributes
 
     /// Adds a custom attribute to next RUM events.
@@ -319,6 +325,10 @@ internal class NOPMonitor: RUMMonitorProtocol {
             Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
             """
         )
+    }
+
+    var currentSessionID: String? {
+        get { return nil }
     }
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
