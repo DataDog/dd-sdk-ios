@@ -31,10 +31,10 @@ import OSLog
 public var consolePrint: (String, CoreLoggerLevel) -> Void = { message, level in
     if #available(iOS 14.0, *) {
         switch level {
-        case .debug: Logger.datadog.debug("\(message)")
-        case .warn: Logger.datadog.warning("\(message)")
-        case .error: Logger.datadog.critical("\(message)")
-        case .critical: Logger.datadog.fault("\(message)")
+        case .debug: Logger.datadog.debug("\(message, privacy: .private)")
+        case .warn: Logger.datadog.warning("\(message, privacy: .private)")
+        case .error: Logger.datadog.critical("\(message, privacy: .private)")
+        case .critical: Logger.datadog.fault("\(message, privacy: .private)")
         }
     } else {
         print(message)
