@@ -1138,7 +1138,7 @@ class TracerTests: XCTestCase {
     func testGivenSDKNotInitialized_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // given
         let core = NOPDatadogCore()
@@ -1158,7 +1158,7 @@ class TracerTests: XCTestCase {
     func testGivenTraceNotEnabled_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // given
         let core = FeatureRegistrationCoreMock()

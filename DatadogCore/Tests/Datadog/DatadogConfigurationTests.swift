@@ -23,7 +23,7 @@ class DatadogConfigurationTests: XCTestCase {
     }
 
     override func tearDown() {
-        consolePrint = { print($0) }
+        consolePrint = { message, _ in print(message) }
         printFunction = nil
         XCTAssertFalse(Datadog.isInitialized())
         super.tearDown()

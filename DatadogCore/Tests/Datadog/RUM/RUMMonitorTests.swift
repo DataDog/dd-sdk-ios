@@ -1230,7 +1230,7 @@ class RUMMonitorTests: XCTestCase {
     func testGivenSDKNotInitialized_whenObtainingSharedMonitor_itPrintsError() throws {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // Given
         let core = NOPDatadogCore()
@@ -1249,7 +1249,7 @@ class RUMMonitorTests: XCTestCase {
     func testGivenRUMNotEnabled_whenObtainingSharedMonitor_itPrintsError() throws {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // Given
         let core = FeatureRegistrationCoreMock()

@@ -19,7 +19,7 @@ class InternalLoggerTests: XCTestCase {
                 using: .mockDecember15th2019At10AMUTC(addingTimeInterval: 4.2)
             ),
             timeZone: .UTC,
-            printFunction: mock.print(message:),
+            printFunction: mock.print(message:level:),
             verbosityLevel: { .debug }
         )
 
@@ -44,7 +44,7 @@ class InternalLoggerTests: XCTestCase {
                 using: .mockDecember15th2019At10AMUTC()
             ),
             timeZone: .UTC,
-            printFunction: mock.print(message:),
+            printFunction: mock.print(message:level:),
             verbosityLevel: { .debug }
         )
 
@@ -86,7 +86,7 @@ class InternalLoggerTests: XCTestCase {
                 using: .mockDecember15th2019At10AMUTC()
             ),
             timeZone: .UTC,
-            printFunction: mock.print(message:),
+            printFunction: mock.print(message:level:),
             verbosityLevel: { verbosityLevel }
         )
 
@@ -130,7 +130,7 @@ class InternalLoggerTests: XCTestCase {
         let logger = InternalLogger(
             dateProvider: SystemDateProvider(),
             timeZone: .UTC,
-            printFunction: mock.print(message:),
+            printFunction: mock.print(message:level:),
             verbosityLevel: { verbosityLevel }
         )
 
