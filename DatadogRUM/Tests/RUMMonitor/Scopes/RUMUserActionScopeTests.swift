@@ -56,13 +56,13 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             attributes: [:],
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -77,7 +77,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -102,13 +102,13 @@ class RUMUserActionScopeTests: XCTestCase {
         let scope = RUMViewScope.mockWith(
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             attributes: [:],
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -149,12 +149,12 @@ class RUMUserActionScopeTests: XCTestCase {
 
         let scope = RUMViewScope.mockWith(
             parent: parent,
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             startTime: Date()
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: customContext,
                 writer: writer
             )
@@ -170,7 +170,7 @@ class RUMUserActionScopeTests: XCTestCase {
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: customContext,
                 writer: writer
             )
@@ -762,7 +762,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -796,7 +796,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -827,7 +827,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -858,7 +858,7 @@ class RUMUserActionScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )

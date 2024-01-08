@@ -1,6 +1,7 @@
 # Unreleased
 - [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 - [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception
+- [FIX] Remove weak `UIViewController` references. See [#1597][]
 
 # 2.5.1 / 20-12-2023
 
@@ -568,6 +569,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
+[#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
