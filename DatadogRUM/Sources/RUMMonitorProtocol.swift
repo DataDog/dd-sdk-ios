@@ -36,12 +36,6 @@ public enum RUMErrorSource {
 
 /// Public interface of RUM monitor for manual interaction with RUM feature.
 public protocol RUMMonitorProtocol: AnyObject {
-    // MARK: - properties
-
-    /// Get the currently active session ID. Returns `nil` if no sessions are currently active.
-    /// This accessor function will return a "null" session ID (with all zeros) if the current session is sampled out.
-    var currentSessionID: String? { get }
-
     // MARK: - attributes
 
     /// Adds a custom attribute to next RUM events.
@@ -58,6 +52,14 @@ public protocol RUMMonitorProtocol: AnyObject {
     func removeAttribute(forKey key: AttributeKey)
 
     // MARK: - session
+
+    /// Get the currently active session ID. Returns `nil` if no sessions are currently active or if
+    /// the current session is sampled out.
+    /// This method uses an asynchronous callback to ensure all pending RUM events have been processed
+    /// up to the moment of the call.
+    /// - Parameters:
+    ///   - completion: the callback that will recieve the current session ID.
+    func getCurrentSessionID(completion: @escaping (String?) -> Void)
 
     /// Stops the current RUM session.
     /// A new session will start in response to a call to `startView` or `addAction`.
@@ -327,10 +329,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
         )
     }
 
-    var currentSessionID: String? {
-        get { return nil }
-    }
-
+    func getCurrentSessionID(completion: (String?) -> Void) { completion(nil) }
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
     func removeAttribute(forKey key: AttributeKey) { warn() }
     func stopSession() { warn() }

@@ -44,26 +44,6 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(rumContext.viewID, expectedContext.activeViewID?.toRUMDataFormat)
     }
 
-    func testWhenSessionIsNotSampled_itReturnsCurrentSessionId() throws {
-        // Given
-        let sampler = Sampler(samplingRate: 100)
-
-        // When
-        let monitor = Monitor(
-            core: core,
-            dependencies: .mockWith(core: core, sessionSampler: sampler),
-            dateProvider: DateProviderMock()
-        )
-        monitor.startView(key: "foo")
-        monitor.flush()
-
-        // Then
-        let currentSessionID = monitor.currentSessionID
-        let context = monitor.currentRUMContext
-        XCTAssertNotNil(currentSessionID)
-        XCTAssertEqual(currentSessionID!, context.sessionID.rawValue.uuidString)
-    }
-
     func testWhenSessionIsNotSampled_itSetsNoRUMContextInCore() throws {
         // Given
         let sampler = Sampler(samplingRate: 0)
@@ -79,24 +59,6 @@ class MonitorTests: XCTestCase {
 
         // Then
         XCTAssertNil(core.context.baggages[RUMFeature.name])
-    }
-
-    func testWhenSessionIsSampled_itReturnsEmptySessionId() throws {
-        // Given
-        let sampler = Sampler(samplingRate: 0)
-
-        // When
-        let monitor = Monitor(
-            core: core,
-            dependencies: .mockWith(core: core, sessionSampler: sampler),
-            dateProvider: DateProviderMock()
-        )
-        monitor.startView(key: "foo")
-        monitor.flush()
-
-        // Then
-        let currentSessionID = monitor.currentSessionID
-        XCTAssertEqual(currentSessionID, RUMUUID.nullUUID.rawValue.uuidString)
     }
 }
 

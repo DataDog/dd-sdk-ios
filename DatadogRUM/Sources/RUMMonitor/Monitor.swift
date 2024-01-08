@@ -195,17 +195,6 @@ internal class Monitor: RUMCommandSubscriber {
 
 /// Declares `Monitor` conformance to public `RUMMonitorProtocol`.
 extension Monitor: RUMMonitorProtocol {
-    // MARK: - properties
-    var currentSessionID: String? {
-        get {
-            guard let activeSession = self.scopes.activeSession else {
-                return nil
-            }
-
-            return activeSession.sessionUUID.rawValue.uuidString
-        }
-    }
-
     // MARK: - attributes
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
@@ -221,6 +210,22 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     // MARK: - session
+
+    func getCurrentSessionID(completion: @escaping (String?) -> Void) {
+        queue.async {
+            guard let sessionId = self.scopes.activeSession?.sessionUUID else {
+                completion(nil)
+                return
+            }
+
+            var sessionIdValue: String? = nil
+            if sessionId != RUMUUID.nullUUID {
+                sessionIdValue = sessionId.rawValue.uuidString
+            }
+
+            completion(sessionIdValue)
+        }
+    }
 
     func stopSession() {
         process(command: RUMStopSessionCommand(time: dateProvider.now))

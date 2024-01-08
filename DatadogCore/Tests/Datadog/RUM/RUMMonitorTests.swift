@@ -30,6 +30,53 @@ class RUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Current Session Id
+    func testWhenSessionIsSampledIn_itReturnsCurrentSessionId() throws {
+        // Given
+        var capturedSession: String?
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 100.0
+        config.onSessionStart = { session, sampled in
+            capturedSession = session
+        }
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
+        monitor.startView(viewController: mockView)
+
+        // When
+        let expectation = XCTestExpectation(description: "getCurrentSessionID callback recieved")
+        monitor.getCurrentSessionID { sessionId in
+            // Then
+            XCTAssertNotNil(sessionId)
+            XCTAssertEqual(capturedSession, sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testWhenSessionIsSampled_itReturnsNil() throws {
+        // Given
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 0.0
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
+        monitor.startView(viewController: mockView)
+
+        // When
+        let expectation = XCTestExpectation(description: "getCurrentSessionID callback recieved")
+        monitor.getCurrentSessionID { sessionId in
+            // Then
+            XCTAssertNil(sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
