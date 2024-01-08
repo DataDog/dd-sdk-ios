@@ -27,13 +27,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .composition,
+                instrumentationMethod: .legacyComposition,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMURLSessionResourcesScenario_directWithAdditionalFirstyPartyHosts() throws {
+    func testRUMURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
             expectations: Expectations(
@@ -41,13 +41,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
             expectations: Expectations(
@@ -55,7 +55,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -69,7 +69,35 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .inheritance,
+                instrumentationMethod: .legacyInheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateUsingFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -83,13 +111,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .composition,
+                instrumentationMethod: .legacyComposition,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMNSURLSessionResourcesScenario_directWithAdditionalFirstyPartyHosts() throws {
+    func testRUMNSURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
         try runTest(
             for: "RUMNSURLSessionResourcesScenario",
             expectations: Expectations(
@@ -97,13 +125,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMNSURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMNSURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMNSURLSessionResourcesScenario",
             expectations: Expectations(
@@ -111,7 +139,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -125,7 +153,35 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .inheritance,
+                instrumentationMethod: .legacyInheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateUsingFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -152,7 +208,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Requesting this first party by the app should create the RUM Resource and inject tracing headers into the request.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
         // Requesting this first party by the app should create the RUM Error.
-        let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
+        let firstPartyBadResourceURL = URL(string: "https://foo.bar/")!
 
         // Requesting this third party by the app should create the RUM Resource.
         let thirdPartyGETResourceURL = URL(string: "https://shopist.io/categories.json")!

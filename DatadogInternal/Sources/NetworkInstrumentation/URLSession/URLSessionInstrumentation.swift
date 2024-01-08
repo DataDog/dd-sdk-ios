@@ -26,7 +26,7 @@ public enum URLSessionInstrumentation {
             throw ProgrammerError(description: "URLSession tracking must be enabled before enabling URLSessionInstrumentation using either RUM or Trace feature.")
         }
 
-        try feature.bindIfNeeded(configuration: configuration)
+        try feature.bind(configuration: configuration)
     }
 
     /// Disables URLSession instrumentation.

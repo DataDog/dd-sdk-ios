@@ -181,7 +181,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
         config.uiKitViewsPredicate = DefaultUIKitRUMViewsPredicate()
 
         switch setup.instrumentationMethod {
-        case .directWithGlobalFirstPartyHosts, .inheritance, .composition:
+        case .legacyWithFeatureFirstPartyHosts, .legacyInheritance, .legacyComposition, .delegateUsingFeatureFirstPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(
                     hosts: [
@@ -193,7 +193,7 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
                 ),
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
             )
-        case .directWithAdditionalFirstyPartyHosts:
+        case .legacyWithAdditionalFirstyPartyHosts, .delegateWithAdditionalFirstyPartyHosts:
             config.urlSessionTracking = .init(
                 firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100), // hosts will be set through `DDURLSessionDelegate`
                 resourceAttributesProvider: rumResourceAttributesProvider(request:response:data:error:)
@@ -207,16 +207,12 @@ class RUMResourcesBaseScenario: URLSessionBaseScenario {
 /// sent with Swift `URLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
 final class RUMURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenario {
     static let storyboardName = "URLSessionScenario"
-
-    override func configureFeatures() { super.configureFeatures() }
 }
 
 /// Scenario which uses RUM resources instrumentation to track bunch of network requests
 /// sent with Objective-c `NSURLSession` from two VCs. The first VC calls first party resources, the second one calls third parties.
 final class RUMNSURLSessionResourcesScenario: RUMResourcesBaseScenario, TestScenario {
     static let storyboardName = "NSURLSessionScenario"
-
-    override func configureFeatures() { super.configureFeatures() }
 }
 
 /// Scenario which uses RUM manual instrumentation API to send bunch of RUM events. Each event contains some

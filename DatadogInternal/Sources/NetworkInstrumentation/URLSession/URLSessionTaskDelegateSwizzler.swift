@@ -8,105 +8,42 @@ import Foundation
 
 /// Swizzles `URLSessionTaskDelegate` callbacks.
 internal class URLSessionTaskDelegateSwizzler {
-    private static var _didFinishCollectingMap: [String: DidFinishCollecting?] = [:]
-    static var didFinishCollectingMap: [String: DidFinishCollecting?] {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _didFinishCollectingMap
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            _didFinishCollectingMap = newValue
-        }
-    }
-    private static var lock = NSRecursiveLock()
+    private let lock: NSLocking
+    private var didFinishCollecting: DidFinishCollecting?
+    private var didCompleteWithError: DidCompleteWithError?
 
-    private static var _didCompleteWithErrorMap: [String: DidCompleteWithError?] = [:]
-    static var didCompleteWithErrorMap: [String: DidCompleteWithError?] {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _didCompleteWithErrorMap
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            _didCompleteWithErrorMap = newValue
-        }
+    init(lock: NSLocking = NSLock()) {
+        self.lock = lock
     }
 
-    static var isBinded: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return didFinishCollectingMap.isEmpty == false || didCompleteWithErrorMap.isEmpty == false
-    }
-
-    static func bindIfNeeded(
-        delegateClass: AnyClass,
+    /// Swizzles  methods:
+    /// - `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)`
+    /// - `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`
+    func swizzle(
+        delegateClass: URLSessionTaskDelegate.Type,
         interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
         interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
-
-        let key = MetaTypeExtensions.key(from: delegateClass)
-        guard didFinishCollectingMap[key] == nil || didCompleteWithErrorMap[key] == nil else {
-            return
-        }
-
-        try bind(
-            delegateClass: delegateClass,
-            interceptDidFinishCollecting: interceptDidFinishCollecting,
-            interceptDidCompleteWithError: interceptDidCompleteWithError
-        )
+        didFinishCollecting = try DidFinishCollecting.build(klass: delegateClass)
+        didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
+        didFinishCollecting?.swizzle(intercept: interceptDidFinishCollecting)
+        didCompleteWithError?.swizzle(intercept: interceptDidCompleteWithError)
     }
 
-    static func bind(
-        delegateClass: AnyClass,
-        interceptDidFinishCollecting: @escaping (URLSession, URLSessionTask, URLSessionTaskMetrics) -> Void,
-        interceptDidCompleteWithError: @escaping (URLSession, URLSessionTask, Error?) -> Void
-    ) throws {
+    /// Unswizzles all.
+    ///
+    /// This method is called during deinit.
+    func unswizzle() {
         lock.lock()
-        defer { lock.unlock() }
-
-        let didFinishCollecting = try DidFinishCollecting.build(klass: delegateClass)
-        let key = MetaTypeExtensions.key(from: delegateClass)
-
-        didFinishCollecting.swizzle(intercept: interceptDidFinishCollecting)
-        didFinishCollectingMap[key] = didFinishCollecting
-
-        let didCompleteWithError = try DidCompleteWithError.build(klass: delegateClass)
-        didCompleteWithError.swizzle(intercept: interceptDidCompleteWithError)
-        didCompleteWithErrorMap[key] = didCompleteWithError
+        didFinishCollecting?.unswizzle()
+        didCompleteWithError?.unswizzle()
+        lock.unlock()
     }
 
-    static func unbind(delegateClass: AnyClass) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        let key = MetaTypeExtensions.key(from: delegateClass)
-        didFinishCollectingMap[key]??.unswizzle()
-        didFinishCollectingMap[key] = nil
-
-        didCompleteWithErrorMap[key]??.unswizzle()
-        didCompleteWithErrorMap[key] = nil
-    }
-
-    static func unbindAll() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        didFinishCollectingMap.forEach { _, didFinishCollecting in
-            didFinishCollecting?.unswizzle()
-        }
-        didFinishCollectingMap.removeAll()
-
-        didCompleteWithErrorMap.forEach { _, didCompleteWithError in
-            didCompleteWithError?.unswizzle()
-        }
-        didCompleteWithErrorMap.removeAll()
+    deinit {
+        unswizzle()
     }
 
     /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:)` method.

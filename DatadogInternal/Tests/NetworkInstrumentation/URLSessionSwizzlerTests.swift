@@ -5,103 +5,31 @@
  */
 
 import XCTest
+
 @testable import DatadogInternal
 
-final class URLSessionSwizzlerTests: XCTestCase {
-    override func tearDown() {
-        URLSessionSwizzler.unbind()
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
+class URLSessionSwizzlerTests: XCTestCase {
+    func testSwizzling_dataTaskWithCompletion() throws {
+        let didInterceptCompletion = expectation(description: "interceptCompletion")
+        didInterceptCompletion.expectedFulfillmentCount = 2
 
-        super.tearDown()
-    }
+        let swizzler = URLSessionSwizzler()
 
-    func testSwizzling_dataTaskWithURLRequestAndCompletion() throws {
-        let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
-        let didInterceptTask = XCTestExpectation(description: "interceptTask")
-        try URLSessionSwizzler.bind(interceptURLRequest: { request in
-            didInterceptRequest.fulfill()
-            return self.interceptRequest(request: request)
-        }, interceptTask: { _ in
-            didInterceptTask.fulfill()
-        })
+        try swizzler.swizzle(
+            interceptCompletionHandler: { _, _, _ in
+                didInterceptCompletion.fulfill()
+            }
+        )
 
         let session = URLSession(configuration: .default)
-        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
-        let task = session.dataTask(with: request) { _, _, _ in }
-        task.resume()
+        let url = URL(string: "https://www.datadoghq.com/")!
+        session.dataTask(with: url) { _, _, _ in }.resume() // intercepted
+        session.dataTask(with: URLRequest(url: url)) { _, _, _ in }.resume() // intercepted
 
-        wait(
-            for: [
-                didInterceptRequest,
-                didInterceptTask
-            ],
-            timeout: 5,
-            enforceOrder: true
-        )
-    }
+        swizzler.unswizzle()
+        session.dataTask(with: url) { _, _, _ in }.resume() // not intercepted
+        session.dataTask(with: URLRequest(url: url)) { _, _, _ in }.resume() // not intercepted
 
-    func testSwizzling_testSwizzling_dataTaskWithURLRequest() throws {
-        // runs only on iOS 12 or below
-        // because on iOS 12 and below `URLSession.dataTask(with:)` is implemented using `URLSession.dataTask(with:completionHandler:)`
-        if #available(iOS 13.0, *) {
-            return
-        }
-
-        let didInterceptRequest = XCTestExpectation(description: "interceptURLRequest")
-        let didInterceptTask = XCTestExpectation(description: "interceptTask")
-        try URLSessionSwizzler.bind(interceptURLRequest: { request in
-            didInterceptRequest.fulfill()
-            return self.interceptRequest(request: request)
-        }, interceptTask: { _ in
-            didInterceptTask.fulfill()
-        })
-
-        let session = URLSession(configuration: .default)
-        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
-        let task = session.dataTask(with: request)
-        task.resume()
-
-        wait(
-            for: [
-                didInterceptRequest,
-                didInterceptTask
-            ],
-            timeout: 5,
-            enforceOrder: true
-        )
-    }
-
-    func testBindings() {
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-
-        try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:))
-        XCTAssertNotNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-
-        URLSessionSwizzler.unbind()
-        XCTAssertNil(URLSessionSwizzler.dataTaskWithURLRequestAndCompletion as Any?)
-    }
-
-    func testConcurrentBinding() throws {
-        // swiftlint:disable opening_brace trailing_closure
-         callConcurrently(
-            closures: [
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
-                { URLSessionSwizzler.unbind() },
-                { try? URLSessionSwizzler.bind(interceptURLRequest: self.interceptRequest(request:), interceptTask: self.interceptTask(task:)) },
-                { URLSessionSwizzler.unbind() },
-            ],
-            iterations: 50
-        )
-        // swiftlint:enable opening_brace trailing_closure
-    }
-
-    func interceptRequest(request: URLRequest) -> URLRequest {
-        return request
-    }
-
-    func interceptTask(task: URLSessionTask) {
+        wait(for: [didInterceptCompletion], timeout: 5)
     }
 }
