@@ -7,8 +7,7 @@
 #if os(iOS)
 import UIKit
 
-@_spi(Internal)
-public struct UIImageResource: Resource {
+struct UIImageResource {
     let image: UIImage
     let tintColor: UIColor?
 
@@ -16,8 +15,10 @@ public struct UIImageResource: Resource {
         self.image = image
         self.tintColor = tintColor
     }
+}
 
-    public var identifier: String {
+extension UIImageResource: Resource {
+    func calculateIdentifier() -> String {
         var identifier = image.srIdentifier
         if let tintColorIdentifier = tintColor?.srIdentifier {
             identifier += tintColorIdentifier
@@ -25,12 +26,12 @@ public struct UIImageResource: Resource {
         return identifier
     }
 
-    public var data: Data {
+    func calculateData() -> Data {
         var image = self.image
         if #available(iOS 13.0, *), let tintColor = tintColor {
             image = image.withTintColor(tintColor)
         }
-        return image.scaledDownToApproximateSize(512.KB)
+        return image.scaledDownToApproximateSize(1.MB) // Intake limit is 10MB - to be adjusted in RUM-2153
     }
 }
 

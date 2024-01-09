@@ -21,7 +21,15 @@ internal class ResourceProcessor: ResourceProcessing {
             return
         }
         queue.run { [resourcesWriter] in
-            resourcesWriter.write(resources: resources.map { EnrichedResource(resource: $0, context: context) })
+            resourcesWriter.write(
+                resources: resources.map {
+                    EnrichedResource(
+                        identifier: $0.calculateIdentifier(),
+                        data: $0.calculateData(),
+                        context: context
+                    )
+                }
+            )
         }
     }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 /// Extends the resource information with context.
-internal struct EnrichedResource: Codable, Resource, Equatable {
+internal struct EnrichedResource: Codable, Equatable {
     internal struct Context: Codable, Equatable {
         internal struct Application: Codable, Equatable {
             let id: String
@@ -24,10 +24,6 @@ internal struct EnrichedResource: Codable, Resource, Equatable {
     internal var identifier: String
     internal var data: Data
     internal var context: Context
-
-    internal init(resource: Resource, context: Context) {
-        self.init(identifier: resource.identifier, data: resource.data, context: context)
-    }
 
     internal init(
         identifier: String,
