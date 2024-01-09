@@ -211,6 +211,27 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - session
 
+    func currentSessionID(completion: @escaping (String?) -> Void) {
+        // Even though we're not writing anything, need to get the write context
+        // to make sure we're returning the correct sessionId after all other
+        // events have processed.
+        core?.scope(for: RUMFeature.name)?.eventWriteContext { _, _ in
+            self.queue.sync {
+                guard let sessionId = self.scopes.activeSession?.sessionUUID else {
+                    completion(nil)
+                    return
+                }
+
+                var sessionIdValue: String? = nil
+                if sessionId != RUMUUID.nullUUID {
+                    sessionIdValue = sessionId.rawValue.uuidString
+                }
+
+                completion(sessionIdValue)
+            }
+        }
+    }
+
     func stopSession() {
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
