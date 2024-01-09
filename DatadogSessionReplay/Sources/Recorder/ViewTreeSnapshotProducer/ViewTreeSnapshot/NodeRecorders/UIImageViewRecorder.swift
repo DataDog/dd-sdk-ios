@@ -7,11 +7,11 @@
 #if os(iOS)
 import UIKit
 
-struct UIImageResource {
-    let image: UIImage
-    let tintColor: UIColor?
+internal struct UIImageResource {
+    internal let image: UIImage
+    internal let tintColor: UIColor?
 
-    init(image: UIImage, tintColor: UIColor?) {
+    internal init(image: UIImage, tintColor: UIColor?) {
         self.image = image
         self.tintColor = tintColor
     }
