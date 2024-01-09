@@ -114,6 +114,6 @@ internal class SnapshotTestCase: XCTestCase {
 
 // MARK: - SR Mocks
 
-private struct NoQueue: Queue {
+private class NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
 }
