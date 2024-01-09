@@ -8,7 +8,7 @@ import Foundation
 @testable import DatadogSessionReplay
 
 /// A queue that executes synchronously on the caller thread.
-internal struct NoQueue: Queue {
+internal class NoQueue: Queue {
     func run(_ block: @escaping () -> Void) {
         block()
     }

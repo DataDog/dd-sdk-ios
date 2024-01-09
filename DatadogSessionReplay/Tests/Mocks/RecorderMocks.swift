@@ -267,11 +267,19 @@ extension Node: AnyMockable, RandomMockable {
 
 struct MockResource: Resource, AnyMockable, RandomMockable {
     var identifier: String
-    let data: Data
+    var data: Data
 
     init(identifier: String, data: Data) {
         self.identifier = identifier
         self.data = data
+    }
+
+    func calculateIdentifier() -> String {
+        return identifier
+    }
+
+    func calculateData() -> Data {
+        return data
     }
 
     static func mockAny() -> MockResource {

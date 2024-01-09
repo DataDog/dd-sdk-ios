@@ -144,7 +144,7 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(expectedNodes, actualNodes, "Nodes must be recorded in DFS order")
 
         let expectedResources = ["rootResource", "a", "aa", "aav1", "aav2", "aav3", "ab", "aba", "abb", "b", "c"]
-        let actualResources = resources.map { $0.identifier }
+        let actualResources = resources.map { $0.calculateIdentifier() }
         XCTAssertEqual(expectedResources, actualResources, "Resources must be recorded in DFS order")
 
         let expectedQueriedViews: [UIView] = [rootView, a, b, c, aa, ab, aba, abb]

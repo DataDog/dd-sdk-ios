@@ -37,8 +37,16 @@ class ResourceProcessorTests: XCTestCase {
         XCTAssertEqual(
             writer.resources[0],
             [
-                EnrichedResource(resource: resource1, context: context),
-                EnrichedResource(resource: resource2, context: context)
+                EnrichedResource(
+                    identifier: resource1.calculateIdentifier(),
+                    data: resource1.calculateData(),
+                    context: context
+                ),
+                EnrichedResource(
+                    identifier: resource2.calculateIdentifier(),
+                    data: resource2.calculateData(),
+                    context: context
+                ),
             ]
         )
     }
