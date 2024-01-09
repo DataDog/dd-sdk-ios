@@ -1,4 +1,6 @@
 # Unreleased
+
+# 2.6.0 / 09-01-2024
 - [FEATURE] Add `currentSessionID(completion:)` accessor to access the current session ID.
 - [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
 - [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception
