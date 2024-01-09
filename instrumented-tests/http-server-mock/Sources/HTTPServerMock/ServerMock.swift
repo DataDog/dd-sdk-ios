@@ -64,6 +64,12 @@ public class ServerMock {
         return ServerSession(server: self)
     }
 
+    public func clearAllRequests() {
+        var request = URLRequest(url: baseURL.appendingPathComponent("/requests"))
+        request.httpMethod = "DELETE"
+        URLSession.shared.dataTask(with: request).resume()
+    }
+
     // MARK: - Endpoints
 
     /// Fetches all requests recorded by the server.

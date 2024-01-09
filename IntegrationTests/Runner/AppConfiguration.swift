@@ -6,8 +6,15 @@
 
 import UIKit
 import DatadogCore
+import DatadogLogs
+import DatadogTrace
+import DatadogRUM
 import DatadogCrashReporting
-import enum DatadogInternal.TrackingConsent
+
+@_exported import class DatadogInternal.DDURLSessionDelegate
+
+var logger: LoggerProtocol?
+var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 
 protocol AppConfiguration {
     /// The tracking consent value applied when initializing the SDK.
@@ -65,5 +72,48 @@ struct UITestsAppConfiguration: AppConfiguration {
             return nil
         }
         return UIStoryboard(name: type(of: testScenario).storyboardName, bundle: nil)
+    }
+}
+
+extension AppConfiguration {
+    func initializeSDK() {
+        // Initialize Datadog SDK
+        Datadog.initialize(
+            with: appConfiguration.sdkConfiguration(),
+            trackingConsent: appConfiguration.initialTrackingConsent
+        )
+
+        appConfiguration.testScenario?.configureFeatures()
+
+        // Set user information
+        Datadog.setUserInfo(id: "abcd-1234", name: "foo", email: "foo@example.com", extraInfo: ["key-extraUserInfo": "value-extraUserInfo"])
+
+        // Create Logger
+        logger = Logger.create(
+            with: Logger.Configuration(
+                name: "logger-name",
+                networkInfoEnabled: true,
+                consoleLogFormat: .shortWith(prefix: "[iOS App] ")
+            )
+        )
+
+        logger?.addAttribute(forKey: "device-model", value: UIDevice.current.model)
+
+        #if DEBUG
+        logger?.addTag(withKey: "build_configuration", value: "debug")
+        #else
+        logger?.addTag(withKey: "build_configuration", value: "release")
+        #endif
+
+        // Set highest verbosity level to see debugging logs from the SDK
+        Datadog.verbosityLevel = .debug
+
+        // Enable RUM Views debugging
+        RUMMonitor.shared().debug = true
+    }
+
+    func deinitializeSDK() {
+        Datadog.stopInstance()
+        logger = nil
     }
 }
