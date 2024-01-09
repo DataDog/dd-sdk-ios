@@ -178,7 +178,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
             if let imageResource = imageResource {
                 wireframes.append(
                     builder.createImageWireframe(
-                        resourceId: imageResource.identifier,
+                        resourceId: imageResource.calculateIdentifier(),
                         id: imageWireframeID,
                         frame: contentFrame,
                         clip: clipsToBounds ? clip : nil
