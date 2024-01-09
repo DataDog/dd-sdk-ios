@@ -27,7 +27,6 @@ internal class ResourceProcessor: ResourceProcessing {
                 context: context
             )
         }
-        print("👾", enrichedResources.map { $0.identifier })
         queue.run { [resourcesWriter] in
             resourcesWriter.write(
                 resources: enrichedResources
