@@ -42,11 +42,9 @@ class RUMMonitorTests: XCTestCase {
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
 
-        monitor.startView(viewController: mockView)
-
         // When
-        let expectation = XCTestExpectation(description: "getCurrentSessionID callback recieved")
-        monitor.getCurrentSessionID { sessionId in
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNotNil(sessionId)
             XCTAssertEqual(capturedSession, sessionId)
@@ -63,12 +61,31 @@ class RUMMonitorTests: XCTestCase {
         RUM.enable(with: config, in: core)
         let monitor = RUMMonitor.shared(in: core)
 
+        // When
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
+            // Then
+            XCTAssertNil(sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testWhenSessionIsStopped_itReturnsNil() throws {
+        // Given
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 100.0
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
         setGlobalAttributes(of: monitor)
         monitor.startView(viewController: mockView)
 
         // When
-        let expectation = XCTestExpectation(description: "getCurrentSessionID callback recieved")
-        monitor.getCurrentSessionID { sessionId in
+        monitor.stopSession()
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
             // Then
             XCTAssertNil(sessionId)
             expectation.fulfill()

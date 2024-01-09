@@ -211,7 +211,7 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - session
 
-    func getCurrentSessionID(completion: @escaping (String?) -> Void) {
+    func currentSessionID(completion: @escaping (String?) -> Void) {
         // Even though we're not writing anything, need to get the write context
         // to make sure we're returning the correct sessionId after all other
         // events have processed.

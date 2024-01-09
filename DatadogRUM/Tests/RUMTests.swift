@@ -74,23 +74,6 @@ class RUMTests: XCTestCase {
         XCTAssertTrue(RUM._internal.isEnabled(in: core))
     }
 
-    func testWhenEnabled_currentSessionStartsAsNil() {
-        // Given
-        let expectation = XCTestExpectation(description: "currentSessionID called")
-
-        // When
-        RUM.enable(with: config, in: core)
-        XCTAssertNotNil(core.get(feature: RUMFeature.self))
-
-        // Then
-        RUMMonitor.shared().getCurrentSessionID {
-            XCTAssertNil($0)
-            expectation.fulfill()
-        }
-
-        wait(for: [expectation], timeout: 0.1)
-    }
-
     // MARK: - Configuration Tests
 
     func testWhenEnabledWithDefaultConfiguration() throws {
