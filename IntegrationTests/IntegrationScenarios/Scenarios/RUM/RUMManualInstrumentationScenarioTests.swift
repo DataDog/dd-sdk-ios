@@ -56,10 +56,11 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let launchView = try XCTUnwrap(session.applicationLaunchView)
-        XCTAssertEqual(launchView.actionEvents[0].action.type, .applicationStart)
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
-        let view1 = session.viewVisits[0]
+        let view1 = session.views[1]
         XCTAssertEqual(view1.name, "SendRUMFixture1View")
         XCTAssertEqual(view1.path, "Runner.SendRUMFixture1ViewController")
         XCTAssertNotNil(view1.viewEvents.last?.device)
@@ -104,7 +105,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertGreaterThan(firstInteractionTiming, 0)
         XCTAssertLessThan(firstInteractionTiming, 5_000_000_000)
 
-        let view2 = session.viewVisits[1]
+        let view2 = session.views[2]
         XCTAssertEqual(view2.name, "SendRUMFixture2View")
         XCTAssertEqual(view2.path, "Runner.SendRUMFixture2ViewController")
         XCTAssertNotNil(view2.viewEvents.last?.device)
@@ -121,7 +122,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual((errorFeatureFlags.featureFlagsInfo["mock_flag_b"] as? AnyCodable)?.value as? String, "mock_value")
         RUMSessionMatcher.assertViewWasEventuallyInactive(view2)
 
-        let view3 = session.viewVisits[2]
+        let view3 = session.views[3]
         XCTAssertEqual(view3.name, "SendRUMFixture3View")
         XCTAssertEqual(view3.path, "fixture3-vc")
         XCTAssertNotNil(view3.viewEvents.last?.device)

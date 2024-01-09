@@ -21,6 +21,7 @@ class FeatureContextTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
 

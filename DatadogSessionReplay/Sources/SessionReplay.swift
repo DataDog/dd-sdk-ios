@@ -9,7 +9,7 @@ import Foundation
 import DatadogInternal
 
 /// An entry point to Datadog Session Replay feature.
-public struct SessionReplay {
+public enum SessionReplay {
     /// Enables Datadog Session Replay feature.
     ///
     /// Recording will start automatically after enabling Session Replay.
@@ -41,7 +41,8 @@ public struct SessionReplay {
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
 
-        sessionReplay.writer.startWriting(to: core)
+        let resources = ResourcesFeature(core: core, configuration: configuration)
+        try core.register(feature: resources)
     }
 }
 #endif

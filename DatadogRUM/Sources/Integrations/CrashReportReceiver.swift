@@ -63,6 +63,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let device: DeviceInfo
         /// The version of the application that data is generated from.
         let version: String
+        /// The build Id of the applicaiton that data is generated from
+        let buildId: String?
         /// The build number of the application that data is generated from.
         let buildNumber: String
         /// Denotes the mobile application's platform, such as `"ios"` or `"flutter"` that data is generated from.
@@ -105,6 +107,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let uuidGenerator: RUMUUIDGenerator
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
+    /// Integration with Synthetics tests. It contains the Synthetics test context when active.
+    let syntheticsTest: RUMSyntheticsTest?
     /// Telemetry interface.
     let telemetry: Telemetry
 
@@ -117,6 +121,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?,
+        syntheticsTest: RUMSyntheticsTest?,
         telemetry: Telemetry
     ) {
         self.applicationID = applicationID
@@ -125,6 +130,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.trackBackgroundEvents = trackBackgroundEvents
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
+        self.syntheticsTest = syntheticsTest
         self.telemetry = telemetry
     }
 
@@ -176,7 +182,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return true
     }
 
-    /// If the crash occured in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
+    /// If the crash occurred in an existing RUM session and we know its `lastRUMViewEvent` we send the error using that session UUID and link
     /// the crash to that view. The error event can be preceded with a view update based on `Constants.viewEventAvailabilityThreshold` condition.
     private func sendCrashReportLinkedToLastViewInPreviousSession(
         _ crashReport: CrashReport,
@@ -197,7 +203,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
     }
 
-    /// If the crash occured in an existing RUM session and we know its `lastRUMSessionState` but there was no `lastRUMViewEvent` we can
+    /// If the crash occurred in an existing RUM session and we know its `lastRUMSessionState` but there was no `lastRUMViewEvent` we can
     /// still send the error using that session UUID. Lack of `lastRUMViewEvent` means that there was no **active** view, but the presence of
     /// `lastRUMSessionState` indicates that some views were tracked before.
     private func sendCrashReportToPreviousSession(
@@ -229,7 +235,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 hasReplay: lastRUMSessionState.didStartWithReplay
             )
         case .handleInBackgroundView:
-            // It means that the crash occured as the very first event after sending app to background in previous session.
+            // It means that the crash occurred as the very first event after sending app to background in previous session.
             // This is why we don't have the `lastRUMViewEvent` (no view was active), but we know the `lastRUMSessionState`.
             newRUMView = createNewRUMViewEvent(
                 named: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
@@ -276,7 +282,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 context: crashContext,
-                // As the crash occured after initializing SDK but before starting the first view,
+                // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
                 hasReplay: false
@@ -288,7 +294,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 startDate: crashTimings.realCrashDate,
                 sessionUUID: uuidGenerator.generateUnique(), // create new RUM session
                 context: crashContext,
-                // As the crash occured after initializing SDK but before starting the first view,
+                // As the crash occurred after initializing SDK but before starting the first view,
                 // we can't know if Session Replay was configured. However, lack of view implies
                 // that there must be no replay collected:
                 hasReplay: false
@@ -335,13 +341,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             dd: .init(
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: lastRUMView.dd.session?.sessionPrecondition
+                )
             ),
             action: nil,
             application: .init(id: lastRUMView.application.id),
+            buildId: lastRUMView.buildId,
             buildVersion: lastRUMView.buildVersion,
             ciTest: lastRUMView.ciTest,
             connectivity: lastRUMView.connectivity,
+            container: nil,
             context: lastRUMView.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds,
             device: lastRUMView.device,
@@ -363,10 +374,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             session: .init(
                 hasReplay: lastRUMView.session.hasReplay,
                 id: lastRUMView.session.id,
-                type: lastRUMView.ciTest != nil ? .ciTest : .user
+                type: lastRUMView.session.type
             ),
             source: lastRUMView.source?.toErrorEventSource ?? .ios,
-            synthetics: nil,
+            synthetics: lastRUMView.synthetics,
             usr: lastRUMView.usr,
             version: lastRUMView.version,
             view: .init(
@@ -389,16 +400,25 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: original.dd.documentVersion + 1,
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: original.dd.session?.sessionPrecondition
+                )
             ),
             application: original.application,
+            buildId: original.buildId,
             buildVersion: original.buildVersion,
             ciTest: original.ciTest,
             connectivity: original.connectivity,
+            container: nil,
             context: original.context,
             date: crashDate.timeIntervalSince1970.toInt64Milliseconds - 1, // -1ms to put the crash after view in RUM session
             device: original.device,
@@ -472,21 +492,30 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         return RUMViewEvent(
             dd: .init(
                 browserSdkVersion: nil,
-                configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(self.sessionSampler.samplingRate)),
+                configuration: .init(
+                    sessionReplaySampleRate: nil,
+                    sessionSampleRate: Double(self.sessionSampler.samplingRate),
+                    startSessionReplayRecordingManually: nil
+                ),
                 documentVersion: 1,
                 pageStates: nil,
                 replayStats: nil,
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: nil
+                )
             ),
             application: .init(
                 id: applicationID
             ),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: ciTest,
             connectivity: RUMConnectivity(
                 networkInfo: context.networkConnectionInfo,
                 carrierInfo: context.carrierInfo
             ),
+            container: nil,
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
             device: .init(device: context.device, telemetry: telemetry),
@@ -503,11 +532,10 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 id: sessionUUID.toRUMDataFormat,
                 isActive: true,
                 sampledForReplay: nil,
-                startPrecondition: nil,
-                type: ciTest != nil ? .ciTest : .user
+                type: ciTest != nil ? .ciTest : (syntheticsTest != nil ? .synthetics : .user)
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: syntheticsTest,
             usr: context.userInfo.map { RUMUser(userInfo: $0) },
             version: context.version,
             view: .init(

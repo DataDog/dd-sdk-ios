@@ -15,6 +15,7 @@ class RUMViewScopeTests: XCTestCase {
         service: "test-service",
         version: "test-version",
         buildNumber: "test-build",
+        buildId: .mockRandom(),
         device: .mockWith(
             name: "device-name",
             osName: "device-os",
@@ -40,7 +41,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: sessionScope,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
             attributes: [:],
@@ -67,7 +68,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: sessionScope,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockRandom(),
             name: .mockRandom(),
             attributes: [:],
@@ -100,7 +101,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "com/datadog/application-launch/view",
             name: "ApplicationLaunch",
             attributes: [:],
@@ -135,7 +136,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "com/datadog/application-launch/view",
             name: "ApplicationLaunch",
             startTime: date
@@ -167,7 +168,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "com/datadog/application-launch/view",
             name: "ApplicationLaunch"
         )
@@ -193,7 +194,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -236,6 +237,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -254,7 +256,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -280,7 +282,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: isInitialView,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: ["foo": "bar", "fizz": "buzz"],
@@ -294,7 +296,7 @@ class RUMViewScopeTests: XCTestCase {
                 command: RUMStartViewCommand.mockWith(
                     time: currentTime,
                     attributes: ["foo": "bar 2"],
-                    identity: mockViewIdentity
+                    identity: .mockViewIdentifier()
                 ),
                 context: context,
                 writer: writer
@@ -321,6 +323,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -334,7 +337,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: isInitialView,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: ["foo": "bar"],
@@ -345,7 +348,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -353,7 +356,7 @@ class RUMViewScopeTests: XCTestCase {
         currentTime.addTimeInterval(2)
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             ),
@@ -390,10 +393,157 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
         XCTAssertEqual(event.os?.build, "os-build")
+    }
+
+    func testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let isInitialView: Bool = .mockRandom()
+        let fakeCiTestId: String = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: .mockWith(ciTest: .init(testExecutionId: fakeCiTestId)),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: ["foo": "bar"],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        currentTime.addTimeInterval(2)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            ),
+            "The scope should end."
+        )
+
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        viewEvents.forEach { viewEvent in
+            XCTAssertEqual(
+                viewEvent.date,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
+                "All View events must share the same creation date"
+            )
+        }
+
+        let event = try XCTUnwrap(viewEvents.dropFirst().first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .ciTest)
+        DDTAssertValidRUMUUID(event.view.id)
+        XCTAssertEqual(event.view.url, "UIViewController")
+        XCTAssertEqual(event.view.name, "ViewName")
+        let viewIsActive = try XCTUnwrap(event.view.isActive)
+        XCTAssertFalse(viewIsActive)
+        XCTAssertEqual(event.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
+        XCTAssertEqual(event.view.action.count, 0)
+        XCTAssertEqual(event.view.error.count, 0)
+        XCTAssertEqual(event.view.resource.count, 0)
+        XCTAssertEqual(event.dd.documentVersion, 2)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
+        XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
+    }
+
+    func testWhenViewIsStoppedInSyntheticsTest_itSendsViewUpdateEvent_andEndsTheScope() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let isInitialView: Bool = .mockRandom()
+        let fakeSyntheticsTestId: String = .mockRandom()
+        let fakeSyntheticsResultId: String = .mockRandom()
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: parent,
+            dependencies: .mockWith(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: ["foo": "bar"],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+        currentTime.addTimeInterval(2)
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            ),
+            "The scope should end."
+        )
+
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        viewEvents.forEach { viewEvent in
+            XCTAssertEqual(
+                viewEvent.date,
+                Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds,
+                "All View events must share the same creation date"
+            )
+        }
+
+        let event = try XCTUnwrap(viewEvents.dropFirst().first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .synthetics)
+        DDTAssertValidRUMUUID(event.view.id)
+        XCTAssertEqual(event.view.url, "UIViewController")
+        XCTAssertEqual(event.view.name, "ViewName")
+        let viewIsActive = try XCTUnwrap(event.view.isActive)
+        XCTAssertFalse(viewIsActive)
+        XCTAssertEqual(event.view.timeSpent, TimeInterval(2).toInt64Nanoseconds)
+        XCTAssertEqual(event.view.action.count, 0)
+        XCTAssertEqual(event.view.error.count, 0)
+        XCTAssertEqual(event.view.resource.count, 0)
+        XCTAssertEqual(event.dd.documentVersion, 2)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.os?.version, "os-version")
+        XCTAssertEqual(event.os?.build, "os-build")
+        XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
+        XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
     func testWhenAnotherViewIsStarted_itEndsTheScope() throws {
@@ -404,7 +554,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: view1.asRUMViewIdentity(),
+            identity: ViewIdentifier(view1),
             path: "FirstViewController",
             name: "FirstViewName",
             attributes: [:],
@@ -415,7 +565,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
              scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: view1.asRUMViewIdentity()),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(view1)),
                 context: context,
                 writer: writer
              )
@@ -425,7 +575,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: view2.asRUMViewIdentity()),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(view2)),
                 context: context,
                 writer: writer
             ),
@@ -449,7 +599,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "FirstViewController",
             name: "FirstViewName",
             attributes: [:],
@@ -462,7 +612,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             ),
@@ -470,7 +620,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             ),
@@ -494,7 +644,7 @@ class RUMViewScopeTests: XCTestCase {
                 isInitialView: false,
                 parent: parent,
                 dependencies: .mockAny(),
-                identity: mockViewIdentity,
+                identity: .mockViewIdentifier(),
                 path: uri,
                 name: name,
                 attributes: [:],
@@ -511,12 +661,12 @@ class RUMViewScopeTests: XCTestCase {
         // When
         [scope1, scope2].forEach { scope in
             _ = scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
             _ = scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -533,6 +683,64 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNotEqual(view1Events[0].view.id, view2Events[0].view.id)
     }
 
+    func testWhenEventsAreSent_theyIncludeSessionPrecondition() throws {
+        let randomPrecondition: RUMSessionPrecondition = .mockRandom()
+        parent.context.sessionPrecondition = randomPrecondition
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: .mockAny(),
+            name: .mockAny(),
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        // When
+        _ = scope.process(command: RUMApplicationStartCommand.mockWith(time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddUserActionCommand.mockWith(time: currentTime, actionType: .custom), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime, message: .mockAny()), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMAddLongTaskCommand.mockWith(time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStartResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
+
+        currentTime.addTimeInterval(1)
+        _ = scope.process(command: RUMStopResourceCommand.mockWith(resourceKey: "key", time: currentTime), context: context, writer: writer)
+
+        // Then
+        let viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertGreaterThan(viewEvents.count, 1)
+        viewEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let actionEvents = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertGreaterThan(actionEvents.count, 1)
+        actionEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let errorEvents = writer.events(ofType: RUMErrorEvent.self)
+        XCTAssertGreaterThan(errorEvents.count, 0)
+        errorEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let longTaskEvents = writer.events(ofType: RUMLongTaskEvent.self)
+        XCTAssertGreaterThan(longTaskEvents.count, 0)
+        longTaskEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+
+        let resourceEvents = writer.events(ofType: RUMResourceEvent.self)
+        XCTAssertGreaterThan(resourceEvents.count, 0)
+        resourceEvents.forEach { XCTAssertEqual($0.dd.session?.sessionPrecondition, randomPrecondition) }
+    }
+
     // MARK: - Resources Tracking
 
     func testItManagesResourceScopesLifecycle() throws {
@@ -540,7 +748,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -550,7 +758,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -592,7 +800,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -609,7 +817,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -621,7 +829,7 @@ class RUMViewScopeTests: XCTestCase {
         // given
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -647,7 +855,7 @@ class RUMViewScopeTests: XCTestCase {
         currentTime.addTimeInterval(1)
         XCTAssertTrue(
             scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             ),
@@ -689,7 +897,7 @@ class RUMViewScopeTests: XCTestCase {
     func testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent() throws {
         let view1StartTime = Date()
         var currentTime = view1StartTime
-        let view1 = "view1".asRUMViewIdentity()
+        let view1 = ViewIdentifier("view1")
 
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -724,13 +932,13 @@ class RUMViewScopeTests: XCTestCase {
         // when (start 2 next views)
         currentTime.addTimeInterval(1)
         let nextViewStartTime = currentTime
-        var nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        var nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(String.mockRandom()))
         XCTAssertTrue(
             scope.process(command: nextViewStartCommand, context: context, writer: writer),
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
         )
         currentTime.addTimeInterval(1)
-        nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: String.mockRandom().asRUMViewIdentity())
+        nextViewStartCommand = RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier(String.mockRandom()))
         XCTAssertTrue(
             scope.process(command: nextViewStartCommand, context: context, writer: writer),
             "The View should be kept alive as `/dangling/resource` haven't yet finished loading"
@@ -749,7 +957,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -763,7 +971,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -817,7 +1025,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -832,7 +1040,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -846,7 +1054,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -895,7 +1103,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -910,7 +1118,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -919,7 +1127,7 @@ class RUMViewScopeTests: XCTestCase {
             serverTimeOffset: .zero
         )
         _ = scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -954,6 +1162,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -966,7 +1175,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -975,7 +1184,7 @@ class RUMViewScopeTests: XCTestCase {
             serverTimeOffset: .zero
         )
         _ = scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1004,6 +1213,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(firstActionEvent.service, "test-service")
         XCTAssertEqual(firstActionEvent.version, "test-version")
         XCTAssertEqual(firstActionEvent.buildVersion, "test-build")
+        XCTAssertEqual(firstActionEvent.buildId, context.buildId)
         XCTAssertEqual(firstActionEvent.device?.name, "device-name")
         XCTAssertEqual(firstActionEvent.os?.name, "device-os")
         XCTAssertEqual(firstActionEvent.os?.version, "os-version")
@@ -1017,7 +1227,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1028,7 +1238,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1057,7 +1267,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentTime, identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1080,7 +1290,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -1091,7 +1301,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1132,6 +1342,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.service, "test-service")
         XCTAssertEqual(error.version, "test-version")
         XCTAssertEqual(error.buildVersion, "test-build")
+        XCTAssertEqual(error.buildId, context.buildId)
         XCTAssertEqual(error.device?.name, "device-name")
         XCTAssertEqual(error.os?.name, "device-os")
         XCTAssertEqual(error.os?.version, "os-version")
@@ -1151,7 +1362,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -1162,7 +1373,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
                 context: customContext,
                 writer: writer
             )
@@ -1246,7 +1457,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [
@@ -1260,7 +1471,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1295,7 +1506,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1306,7 +1517,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(attributes: ["foo": "bar"], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1346,7 +1557,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -1357,7 +1568,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1394,6 +1605,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
         XCTAssertEqual(event.os?.version, "os-version")
@@ -1413,7 +1625,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [
@@ -1427,7 +1639,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1463,7 +1675,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewName",
             attributes: [:],
@@ -1474,7 +1686,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: startViewDate, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
                 context: customContext,
                 writer: writer
             )
@@ -1503,7 +1715,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1513,7 +1725,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1565,7 +1777,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1575,14 +1787,14 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
         )
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1611,7 +1823,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1621,7 +1833,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1673,7 +1885,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1683,7 +1895,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1717,7 +1929,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1727,7 +1939,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1772,7 +1984,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1782,7 +1994,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -1828,7 +2040,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1867,7 +2079,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: false,
             parent: parent,
             dependencies: .mockAny(),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: .mockAny(),
             name: .mockAny(),
             attributes: [:],
@@ -1878,7 +2090,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // When
         _ = scope.process(
-                command: RUMStartViewCommand.mockWith(time: currentDeviceTime, identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(time: currentDeviceTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
         )
@@ -1916,7 +2128,7 @@ class RUMViewScopeTests: XCTestCase {
         )
 
         _ = scope.process(
-                command: RUMStopViewCommand.mockWith(time: currentDeviceTime, identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(time: currentDeviceTime, identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
         )
@@ -1983,7 +2195,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: dependencies,
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
             attributes: [:],
@@ -1993,7 +2205,7 @@ class RUMViewScopeTests: XCTestCase {
         )
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -2056,7 +2268,7 @@ class RUMViewScopeTests: XCTestCase {
 
         XCTAssertFalse(
             scope.process(
-                command: RUMStopViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStopViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -2088,7 +2300,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: true,
             parent: parent,
             dependencies: dependencies,
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
             attributes: [:],
@@ -2100,7 +2312,7 @@ class RUMViewScopeTests: XCTestCase {
         // When
         XCTAssertTrue(
             scope.process(
-                command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                 context: context,
                 writer: writer
             )
@@ -2131,7 +2343,7 @@ class RUMViewScopeTests: XCTestCase {
             isInitialView: .mockRandom(),
             parent: parent,
             dependencies: .mockWith(core: core),
-            identity: mockViewIdentity,
+            identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
             attributes: [:],
@@ -2144,7 +2356,7 @@ class RUMViewScopeTests: XCTestCase {
         core.eventWriteContext { context, writer in
             XCTAssertTrue(
                 scope.process(
-                    command: RUMStartViewCommand.mockWith(identity: mockViewIdentity),
+                    command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier()),
                     context: context,
                     writer: writer
                 )

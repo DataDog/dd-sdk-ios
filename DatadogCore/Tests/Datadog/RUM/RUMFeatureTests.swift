@@ -71,6 +71,7 @@ class RUMFeatureTests: XCTestCase {
                 )
             ),
             applicationVersion: randomApplicationVersion,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: randomBackgroundTasksEnabled
         )
         defer { core.flushAndTearDown() }
@@ -124,7 +125,7 @@ class RUMFeatureTests: XCTestCase {
                     maxFileAgeForWrite: .distantFuture, // write all events to single file,
                     minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
                     maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
-                    maxObjectsInFile: 3, // write 3 spans to payload,
+                    maxObjectsInFile: .max,
                     maxObjectSize: .max
                 ),
                 uploadPerformance: UploadPerformanceMock(
@@ -138,6 +139,7 @@ class RUMFeatureTests: XCTestCase {
             encryption: nil,
             contextProvider: .mockAny(),
             applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
         defer { core.flushAndTearDown() }
@@ -145,23 +147,68 @@ class RUMFeatureTests: XCTestCase {
         // Given
         RUM.enable(with: .mockAny(), in: core)
 
-        core.scope(for: RUMFeature.name)?.eventWriteContext { _, writer in
-            writer.write(value: RUMDataModelMock(attribute: "1st event"), metadata: RUMViewEvent.Metadata(id: "1", documentVersion: 1))
-            writer.write(value: RUMDataModelMock(attribute: "2nd event"), metadata: RUMViewEvent.Metadata(id: "2", documentVersion: 1))
-            writer.write(value: RUMDataModelMock(attribute: "3rd event"), metadata: RUMViewEvent.Metadata(id: "1", documentVersion: 2))
-        }
-
         let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
 
         // Expected payload format:
-        // event1JSON is skipped in favor of event3JSON which is same event with higher document revision
         // ```
-        // event2JSON
-        // event3JSON
+        // view event JSON     - "application launch" view
+        // action event JSON   - "application start" action
         // ```
 
         let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
-        XCTAssertEqual((try eventMatchers[0].model() as RUMDataModelMock).attribute, "2nd event")
-        XCTAssertEqual((try eventMatchers[1].model() as RUMDataModelMock).attribute, "3rd event")
+        XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self).isEmpty, "It must include view event")
+        XCTAssertFalse(eventMatchers.filterRUMEvents(ofType: RUMActionEvent.self).isEmpty, "It must include action event")
+    }
+
+    func testItOnlyKeepsOneViewEventPerPayload() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200)))
+        let httpClient = URLSessionClient(session: server.getInterceptedURLSession())
+
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .combining(
+                storagePerformance: StoragePerformanceMock(
+                    maxFileSize: .max,
+                    maxDirectorySize: .max,
+                    maxFileAgeForWrite: .distantFuture, // write all events to single file,
+                    minFileAgeForRead: StoragePerformanceMock.readAllFiles.minFileAgeForRead,
+                    maxFileAgeForRead: StoragePerformanceMock.readAllFiles.maxFileAgeForRead,
+                    maxObjectsInFile: .max,
+                    maxObjectSize: .max
+                ),
+                uploadPerformance: UploadPerformanceMock(
+                    initialUploadDelay: 0.5, // wait enough until events are written,
+                    minUploadDelay: 1,
+                    maxUploadDelay: 1,
+                    uploadDelayChangeRate: 0
+                )
+            ),
+            httpClient: httpClient,
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        // Given
+        RUM.enable(with: .mockAny(), in: core)
+
+        // When
+        RUMMonitor.shared(in: core).addError(message: "1st error")
+        RUMMonitor.shared(in: core).addError(message: "2nd error")
+        RUMMonitor.shared(in: core).addError(message: "3rd error")
+
+        // Then
+        let payload = try XCTUnwrap(server.waitAndReturnRequests(count: 1)[0].httpBody)
+        let eventMatchers = try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(payload)
+        let viewMatchers = eventMatchers.filterRUMEvents(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewMatchers.count, 1, "It should keep only one view event")
+        try viewMatchers[0].model(ofType: RUMViewEvent.self) { event in
+            XCTAssertEqual(event.view.error.count, 3, "It should track 3 errors")
+        }
     }
 }

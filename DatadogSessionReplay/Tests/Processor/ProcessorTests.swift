@@ -8,13 +8,13 @@ import XCTest
 import DatadogInternal
 import TestUtilities
 
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
-private class WriterMock: Writing {
+private class WriterMock: RecordWriting {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
-    func startWriting(to core: DatadogCoreProtocol) {}
 }
 
 class ProcessorTests: XCTestCase {
@@ -130,8 +130,8 @@ class ProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
 
-        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with two 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord && enrichedRecords[1].hasFullSnapshot)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
@@ -279,7 +279,7 @@ class ProcessorTests: XCTestCase {
 
     // MARK: - `ViewTreeSnapshot` generation
 
-    private let snapshotBuilder = ViewTreeSnapshotBuilder()
+    private let snapshotBuilder = ViewTreeSnapshotBuilder(additionalNodeRecorders: [])
 
     private func generateViewTreeSnapshot(for viewTree: UIView, date: Date, rumContext: RUMContext) -> ViewTreeSnapshot {
         snapshotBuilder.createSnapshot(of: viewTree, with: .init(privacy: .allow, rumContext: rumContext, date: date))
@@ -287,7 +287,27 @@ class ProcessorTests: XCTestCase {
 
     private func generateSimpleViewTree() -> UIView {
         let root = UIView.mock(withFixture: .visible(.someAppearance))
+        root.frame = .mockRandom(
+            minX: 0,
+            maxX: 0,
+            minY: 0,
+            maxY: 0,
+            minWidth: 1_000,
+            maxWidth: 2_000,
+            minHeight: 1_000,
+            maxHeight: 2_000
+        )
         let child = UIView.mock(withFixture: .visible(.someAppearance))
+        child.frame = .mockRandom(
+            minX: 0,
+            maxX: 100,
+            minY: 0,
+            maxY: 100,
+            minWidth: 100,
+            maxWidth: 200,
+            minHeight: 100,
+            maxHeight: 200
+        )
         root.addSubview(child)
         return root
     }

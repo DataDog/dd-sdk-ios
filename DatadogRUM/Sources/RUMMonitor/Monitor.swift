@@ -211,6 +211,27 @@ extension Monitor: RUMMonitorProtocol {
 
     // MARK: - session
 
+    func currentSessionID(completion: @escaping (String?) -> Void) {
+        // Even though we're not writing anything, need to get the write context
+        // to make sure we're returning the correct sessionId after all other
+        // events have processed.
+        core?.scope(for: RUMFeature.name)?.eventWriteContext { _, _ in
+            self.queue.sync {
+                guard let sessionId = self.scopes.activeSession?.sessionUUID else {
+                    completion(nil)
+                    return
+                }
+
+                var sessionIdValue: String? = nil
+                if sessionId != RUMUUID.nullUUID {
+                    sessionIdValue = sessionId.rawValue.uuidString
+                }
+
+                completion(sessionIdValue)
+            }
+        }
+    }
+
     func stopSession() {
         process(command: RUMStopSessionCommand(time: dateProvider.now))
     }
@@ -221,9 +242,9 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: viewController.asRUMViewIdentity(),
-                name: name,
-                path: nil,
+                identity: ViewIdentifier(viewController),
+                name: name ?? viewController.canonicalClassName,
+                path: viewController.canonicalClassName,
                 attributes: attributes
             )
         )
@@ -234,7 +255,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: attributes,
-                identity: viewController.asRUMViewIdentity()
+                identity: ViewIdentifier(viewController)
             )
         )
     }
@@ -243,7 +264,7 @@ extension Monitor: RUMMonitorProtocol {
         process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
-                identity: key.asRUMViewIdentity(),
+                identity: ViewIdentifier(key),
                 name: name ?? key,
                 path: key,
                 attributes: attributes
@@ -256,7 +277,7 @@ extension Monitor: RUMMonitorProtocol {
             command: RUMStopViewCommand(
                 time: dateProvider.now,
                 attributes: attributes,
-                identity: key.asRUMViewIdentity()
+                identity: ViewIdentifier(key)
             )
         )
     }

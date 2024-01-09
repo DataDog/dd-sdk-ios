@@ -8,74 +8,36 @@ import Foundation
 
 /// Swizzles `URLSessionDataDelegate` callbacks.
 internal class URLSessionDataDelegateSwizzler {
-    private static var _didReceiveMap: [String: DidReceive?] = [:]
-    static var didReceiveMap: [String: DidReceive?] {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _didReceiveMap
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            _didReceiveMap = newValue
-        }
+    private let lock: NSLocking
+    private var didReceive: DidReceive?
+
+    init(lock: NSLocking = NSLock()) {
+        self.lock = lock
     }
 
-    private static var lock = NSRecursiveLock()
-
-    static var isBinded: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return didReceiveMap.isEmpty == false
-    }
-
-    static func bindIfNeeded(
+    /// Swizzles  methods:
+    /// - `URLSessionDataDelegate.urlSession(_:dataTask:didReceive:)`
+    func swizzle(
         delegateClass: URLSessionDataDelegate.Type,
         interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
-
-        let key = MetaTypeExtensions.key(from: delegateClass)
-        guard didReceiveMap[key] == nil else {
-            return
-        }
-
-        try bind(delegateClass: delegateClass, interceptDidReceive: interceptDidReceive)
+        didReceive = try DidReceive.build(klass: delegateClass)
+        didReceive?.swizzle(intercept: interceptDidReceive)
     }
 
-    static func bind(
-        delegateClass: URLSessionDataDelegate.Type,
-        interceptDidReceive: @escaping (URLSession, URLSessionDataTask, Data
-    ) -> Void) throws {
+    /// Unswizzles all.
+    ///
+    /// This method is called during deinit.
+    func unswizzle() {
         lock.lock()
-        defer { lock.unlock() }
-
-        let didReceive = try DidReceive.build(klass: delegateClass)
-        let key = MetaTypeExtensions.key(from: delegateClass)
-
-        didReceive.swizzle(intercept: interceptDidReceive)
-        didReceiveMap[key] = didReceive
+        didReceive?.unswizzle()
+        lock.unlock()
     }
 
-    static func unbind(delegateClass: URLSessionDataDelegate.Type) {
-        lock.lock()
-        defer { lock.unlock() }
-
-        let key = MetaTypeExtensions.key(from: delegateClass)
-        didReceiveMap[key]??.unswizzle()
-        didReceiveMap.removeValue(forKey: key)
-    }
-
-    static func unbindAll() {
-        lock.lock()
-        defer { lock.unlock() }
-
-        didReceiveMap.forEach { _, didReceive in
-            didReceive?.unswizzle()
-        }
-        didReceiveMap.removeAll()
+    deinit {
+        unswizzle()
     }
 
     /// Swizzles `urlSession(_:dataTask:didReceive:)` callback.
@@ -84,15 +46,15 @@ internal class URLSessionDataDelegateSwizzler {
     class DidReceive: MethodSwizzler<@convention(c) (URLSessionDataDelegate, Selector, URLSession, URLSessionDataTask, Data) -> Void, @convention(block) (URLSessionDataDelegate, URLSession, URLSessionDataTask, Data) -> Void> {
         private static let selector = #selector(URLSessionDataDelegate.urlSession(_:dataTask:didReceive:))
 
-        private let method: FoundMethod
+        private let method: Method
 
-        static func build(klass: URLSessionDataDelegate.Type) throws -> DidReceive {
+        static func build(klass: AnyClass) throws -> DidReceive {
             return try DidReceive(selector: self.selector, klass: klass)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
             do {
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             } catch {
                 // URLSessionDataDelegate doesn't implement the selector, so we inject it and swizzle it
                 let block: @convention(block) (URLSessionDataDelegate, URLSession, URLSessionDataTask, Data) -> Void = { delegate, session, task, data in
@@ -108,7 +70,7 @@ internal class URLSessionDataDelegateSwizzler {
                 @ - third argument is an object
                 */
                 class_addMethod(klass, selector, imp, "v@:@@@")
-                method = try Self.findMethod(with: selector, in: klass)
+                method = try dd_class_getInstanceMethod(klass, selector)
             }
 
             super.init()

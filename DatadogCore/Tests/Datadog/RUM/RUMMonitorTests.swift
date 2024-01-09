@@ -30,6 +30,70 @@ class RUMMonitorTests: XCTestCase {
         super.tearDown()
     }
 
+    // MARK: - Current Session Id
+    func testWhenSessionIsSampledIn_itReturnsCurrentSessionId() throws {
+        // Given
+        var capturedSession: String?
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 100.0
+        config.onSessionStart = { session, sampled in
+            capturedSession = session
+        }
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
+            // Then
+            XCTAssertNotNil(sessionId)
+            XCTAssertEqual(capturedSession, sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testWhenSessionIsSampled_itReturnsNil() throws {
+        // Given
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 0.0
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
+        // When
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
+            // Then
+            XCTAssertNil(sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
+    func testWhenSessionIsStopped_itReturnsNil() throws {
+        // Given
+        config.dateProvider = RelativeDateProvider(startingFrom: Date(), advancingBySeconds: 1)
+        config.sessionSampleRate = 100.0
+        RUM.enable(with: config, in: core)
+        let monitor = RUMMonitor.shared(in: core)
+
+        setGlobalAttributes(of: monitor)
+        monitor.startView(viewController: mockView)
+
+        // When
+        monitor.stopSession()
+        let expectation = XCTestExpectation(description: "currentSessionID callback recieved")
+        monitor.currentSessionID { sessionId in
+            // Then
+            XCTAssertNil(sessionId)
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 0.1)
+    }
+
     // MARK: - Sending RUM events
 
     func testStartingViewIdentifiedByViewController() throws {
@@ -46,12 +110,12 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
 
-        let firstVisit = session.viewVisits[0]
+        let firstVisit = try session.views.dropApplicationLaunchView()[0]
         XCTAssertEqual(firstVisit.viewEvents.last?.view.timeSpent, 1_000_000_000)
 
-        let secondVisit = session.viewVisits[1]
+        let secondVisit = try session.views.dropApplicationLaunchView()[1]
         XCTAssertEqual(secondVisit.viewEvents.last?.view.action.count, 0)
     }
 
@@ -69,12 +133,13 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        XCTAssertEqual(session.viewVisits.count, 2)
-        XCTAssertEqual(session.viewVisits[0].name, "View1")
-        XCTAssertEqual(session.viewVisits[0].path, "view1-key")
-        XCTAssertEqual(session.viewVisits[1].name, "View2")
-        XCTAssertEqual(session.viewVisits[1].path, "view2-key")
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        XCTAssertEqual(views.count, 2)
+        XCTAssertEqual(views[0].name, "View1")
+        XCTAssertEqual(views[0].path, "view1-key")
+        XCTAssertEqual(views[1].name, "View2")
+        XCTAssertEqual(views[1].path, "view2-key")
     }
 
     func testStartingView_thenLoadingImageResourceWithRequest() throws {
@@ -88,22 +153,16 @@ class RUMMonitorTests: XCTestCase {
         monitor.stopResource(resourceKey: "/resource/1", response: .mockWith(statusCode: 200, mimeType: "image/png"))
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-            .filterApplicationLaunchView()
-            .filterTelemetry()
-
         verifyGlobalAttributes(in: rumEventMatchers)
-        try rumEventMatchers[0].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 0)
-            XCTAssertEqual(rumModel.view.resource.count, 0)
-        }
-        try rumEventMatchers[1].model(ofType: RUMResourceEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.resource.type, .image)
-            XCTAssertEqual(rumModel.resource.statusCode, 200)
-        }
-        try rumEventMatchers[2].model(ofType: RUMViewEvent.self) { rumModel in
-            XCTAssertEqual(rumModel.view.action.count, 0)
-            XCTAssertEqual(rumModel.view.resource.count, 1)
-        }
+
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let viewEvent = try XCTUnwrap(views[0].viewEvents.last)
+        let resourceEvent = try XCTUnwrap(views[0].resourceEvents.last)
+        XCTAssertEqual(viewEvent.view.resource.count, 1)
+        XCTAssertEqual(resourceEvent.resource.type, .image)
+        XCTAssertEqual(resourceEvent.resource.statusCode, 200)
+        XCTAssertEqual(resourceEvent.view.id, viewEvent.view.id)
     }
 
     func testStartingView_thenLoadingNativeResourceWithRequestWithMetrics() throws {
@@ -135,8 +194,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.type, .native, "POST Resources should always have the `.native` kind")
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
         XCTAssertEqual(resourceEvent.resource.duration, 4_000_000_000)
@@ -158,8 +218,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.url, url.absoluteString)
         XCTAssertEqual(resourceEvent.resource.statusCode, 200)
         XCTAssertNil(resourceEvent.resource.provider?.type)
@@ -178,8 +239,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.url, "/some/url/string")
         XCTAssertEqual(resourceEvent.resource.statusCode, 333)
         XCTAssertEqual(resourceEvent.resource.type, .beacon)
@@ -204,9 +266,10 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.provider?.type, .firstParty)
     }
 
     func testLoadingResourceWithURLString_thenMarksFirstPartyURLs() throws {
@@ -225,9 +288,10 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
-        XCTAssertEqual(resourceEvent.resource.provider?.type, RUMResourceEvent.Resource.Provider.ProviderType.firstParty)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
+        XCTAssertEqual(resourceEvent.resource.provider?.type, .firstParty)
     }
 
     func testLoadingResourceWithURLString_thenLoadingResourceWithGraphQLAttributes() throws {
@@ -248,8 +312,9 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let session = try XCTUnwrap(try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first)
-        let resourceEvent = session.viewVisits[0].resourceEvents[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        let resourceEvent = views[0].resourceEvents[0]
         XCTAssertEqual(resourceEvent.resource.graphql?.operationName, "GetCountry")
         XCTAssertEqual(resourceEvent.resource.graphql?.operationType.rawValue, "query")
         XCTAssertEqual(resourceEvent.resource.graphql?.payload, "{country(code:$code){name}}")
@@ -372,10 +437,12 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let rumSession = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first.unwrapOrThrow()
-        XCTAssertEqual(rumSession.viewVisits.count, 1, "Session should track one view")
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
 
-        let firstView = rumSession.viewVisits[0]
+        XCTAssertEqual(views.count, 1, "Session should track one view")
+
+        let firstView = views[0]
         XCTAssertEqual(firstView.viewEvents.last?.view.action.count, 1, "View must track 1 action")
         XCTAssertEqual(firstView.viewEvents.last?.view.resource.count, 0, "View must track no resources")
         XCTAssertEqual(firstView.viewEvents.last?.view.error.count, 3, "View must track 3 errors")
@@ -484,11 +551,12 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         verifyGlobalAttributes(in: rumEventMatchers)
 
-        let rumSession = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).first.unwrapOrThrow()
-        XCTAssertEqual(rumSession.viewVisits.count, 2, "Session should track two views")
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
+        XCTAssertEqual(views.count, 2, "Session should track two views")
 
-        let firstView = rumSession.viewVisits[0]
-        let secondView = rumSession.viewVisits[1]
+        let firstView = views[0]
+        let secondView = views[1]
         XCTAssertEqual(firstView.viewEvents.last?.view.url, "FirstViewController")
         XCTAssertEqual(firstView.viewEvents.last?.view.name, "FirstViewController")
         XCTAssertEqual(firstView.viewEvents.last?.view.resource.count, 1, "First view must track 1 resource")
@@ -846,10 +914,11 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
 
-        let viewEvents = session.viewVisits[0].viewEvents
-        let actionEvents = session.viewVisits[0].actionEvents
-        let resourceEvents = session.viewVisits[0].resourceEvents
-        let errorEvents = session.viewVisits[0].errorEvents
+        let views = try session.views.dropApplicationLaunchView()
+        let viewEvents = views[0].viewEvents
+        let actionEvents = views[0].actionEvents
+        let resourceEvents = views[0].resourceEvents
+        let errorEvents = views[0].errorEvents
 
         XCTAssertGreaterThan(viewEvents.count, 0)
         XCTAssertGreaterThan(actionEvents.count, 0)
@@ -966,12 +1035,11 @@ class RUMMonitorTests: XCTestCase {
 
         // Then
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)[0]
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
 
-        XCTAssertNotNil(session.applicationLaunchView)
-        XCTAssertEqual(session.viewVisits.count, 1, "It should track 1 views")
+        XCTAssertEqual(session.views.count, 2, "It should track 2 views")
 
-        let appLaunchView = try XCTUnwrap(session.applicationLaunchView)
+        let appLaunchView = session.views[0]
         let launchDateInMilliseconds = launchDate.timeIntervalSince1970.toInt64Milliseconds
         let sdkInitDateInMilliseconds = sdkInitDate.timeIntervalSince1970.toInt64Milliseconds
 
@@ -987,7 +1055,7 @@ class RUMMonitorTests: XCTestCase {
         XCTAssertEqual(appLaunchView.resourceEvents.count, 1, "'ApplicationLaunch' should track 1 resource")
         XCTAssertEqual(appLaunchView.resourceEvents[0].resource.url, "https://foo.com/R1", "'ApplicationLaunch' should track 'R1' resource")
 
-        let userView = session.viewVisits[0]
+        let userView = session.views[1]
         XCTAssertEqual(userView.name, "FirstView", "It should track user view")
         XCTAssertEqual(userView.actionEvents.count, 1, "User view should track 1 action")
         XCTAssertEqual(userView.actionEvents[0].action.target?.name, "A2", "User view should track 'A2' action")
@@ -1043,22 +1111,20 @@ class RUMMonitorTests: XCTestCase {
         monitor._internal?.addLongTask(at: Date(), duration: 1.0)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
 
-        XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
-        let session = sessions[0]
-
-        session.viewVisits[0].viewEvents.forEach { viewEvent in
+        views[0].viewEvents.forEach { viewEvent in
             XCTAssertEqual(viewEvent.view.url, "ModifiedViewURL")
             XCTAssertEqual(viewEvent.view.name, "ModifiedViewName")
         }
-        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 1)
-        XCTAssertEqual(session.viewVisits[0].resourceEvents[0].resource.url, "https://foo.com?q=modified-resource-url")
-        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 1)
-        XCTAssertEqual(session.viewVisits[0].actionEvents[0].action.target?.name, "Modified tap action name")
-        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1)
-        XCTAssertEqual(session.viewVisits[0].errorEvents[0].error.message, "Modified error message")
-        XCTAssertEqual(session.viewVisits[0].longTaskEvents[0].view.name, "ModifiedLongTaskViewName")
+        XCTAssertEqual(views[0].resourceEvents.count, 1)
+        XCTAssertEqual(views[0].resourceEvents[0].resource.url, "https://foo.com?q=modified-resource-url")
+        XCTAssertEqual(views[0].actionEvents.count, 1)
+        XCTAssertEqual(views[0].actionEvents[0].action.target?.name, "Modified tap action name")
+        XCTAssertEqual(views[0].errorEvents.count, 1)
+        XCTAssertEqual(views[0].errorEvents[0].error.message, "Modified error message")
+        XCTAssertEqual(views[0].longTaskEvents[0].view.name, "ModifiedLongTaskViewName")
     }
 
     func testDroppingEventsBeforeTheyGetSent() throws {
@@ -1078,20 +1144,18 @@ class RUMMonitorTests: XCTestCase {
         monitor._internal?.addLongTask(at: Date(), duration: 1.0)
 
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
-        let sessions = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers)
+        let session = try RUMSessionMatcher.groupMatchersBySessions(rumEventMatchers).takeSingle()
+        let views = try session.views.dropApplicationLaunchView()
 
-        XCTAssertEqual(sessions.count, 1, "All events should belong to a single RUM Session")
-        let session = sessions[0]
-
-        XCTAssertNotEqual(session.viewVisits[0].viewEvents.count, 0)
-        let lastEvent = session.viewVisits[0].viewEvents.last!
+        XCTAssertNotEqual(views[0].viewEvents.count, 0)
+        let lastEvent = views[0].viewEvents.last!
         XCTAssertEqual(lastEvent.view.resource.count, 0, "resource.count should reflect all resource events being dropped.")
         XCTAssertEqual(lastEvent.view.action.count, 0, "action.count should reflect all action events being dropped.")
         XCTAssertEqual(lastEvent.view.error.count, 0, "error.count should reflect all error events being dropped.")
-        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 0)
-        XCTAssertEqual(session.viewVisits[0].actionEvents.count, 0)
-        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 0)
-        XCTAssertEqual(session.viewVisits[0].longTaskEvents.count, 0)
+        XCTAssertEqual(views[0].resourceEvents.count, 0)
+        XCTAssertEqual(views[0].actionEvents.count, 0)
+        XCTAssertEqual(views[0].errorEvents.count, 0)
+        XCTAssertEqual(views[0].longTaskEvents.count, 0)
     }
 
     // MARK: - Integration with Crash Reporting

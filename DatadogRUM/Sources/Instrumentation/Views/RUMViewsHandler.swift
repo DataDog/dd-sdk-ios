@@ -12,13 +12,13 @@ internal final class RUMViewsHandler {
     /// RUM representation of a View.
     private struct View {
         /// The RUM View identity.
-        let identity: RUMViewIdentity
+        let identity: ViewIdentifier
 
         /// View name used for RUM Explorer.
         let name: String
 
         /// View path used for RUM Explorer.
-        let path: String?
+        let path: String
 
         /// Whether the view is modal, but untracked (should not send start / stop commands)
         let isUntrackedModal: Bool
@@ -101,7 +101,7 @@ internal final class RUMViewsHandler {
 
     private func add(view: View) {
         // Ignore the view if it's already visible
-        if view.identity.equals(stack.last?.identity) {
+        if view.identity == stack.last?.identity {
             return
         }
 
@@ -116,15 +116,15 @@ internal final class RUMViewsHandler {
         }
 
         // Add/Move the appearing view to the top
-        stack.removeAll(where: { $0.identity.equals(view.identity) })
+        stack.removeAll(where: { $0.identity == view.identity })
         stack.append(view)
     }
 
-    private func remove(identity: RUMViewIdentity) {
-        guard identity.equals(stack.last?.identity) else {
+    private func remove(identity: ViewIdentifier) {
+        guard identity == stack.last?.identity else {
             // Remove any disappearing view from the stack if
             // it's not visible.
-            return stack.removeAll(where: { $0.identity.equals(identity) })
+            return stack.removeAll(where: { $0.identity == identity })
         }
 
         // Stop and remove the visible view from the stack
@@ -151,10 +151,6 @@ internal final class RUMViewsHandler {
             return
         }
 
-        guard view.identity.exists else {
-            return
-        }
-
         subscriber.process(
             command: RUMStartViewCommand(
                 time: dateProvider.now,
@@ -167,10 +163,6 @@ internal final class RUMViewsHandler {
     }
 
     private func stop(view: View) {
-        guard view.identity.exists else {
-            return
-        }
-
         guard !view.isUntrackedModal else {
             return
         }
@@ -201,8 +193,8 @@ internal final class RUMViewsHandler {
 
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
-        let identity = viewController.asRUMViewIdentity()
-        if let view = stack.first(where: { $0.identity.equals(identity) }) {
+        let identity = ViewIdentifier(viewController)
+        if let view = stack.first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
@@ -211,7 +203,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 view: .init(
                     identity: identity,
                     name: rumView.name,
-                    path: rumView.path,
+                    path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes
                 )
@@ -221,7 +213,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 view: .init(
                     identity: identity,
                     name: "RUMUntrackedModal",
-                    path: nil,
+                    path: viewController.canonicalClassName,
                     isUntrackedModal: true,
                     attributes: [:]
                 )
@@ -230,7 +222,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
     }
 
     func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
-        remove(identity: viewController.asRUMViewIdentity())
+        remove(identity: ViewIdentifier(viewController))
     }
 }
 
@@ -244,7 +236,7 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     func notify_onAppear(identity: String, name: String, path: String, attributes: [AttributeKey: AttributeValue]) {
         add(
             view: .init(
-                identity: identity.asRUMViewIdentity(),
+                identity: ViewIdentifier(identity),
                 name: name,
                 path: path,
                 isUntrackedModal: false,
@@ -257,6 +249,6 @@ extension RUMViewsHandler: SwiftUIViewHandler {
     ///
     /// - Parameter key: The disappearing `SwiftUI.View` key.
     func notify_onDisappear(identity: String) {
-        remove(identity: identity.asRUMViewIdentity())
+        remove(identity: ViewIdentifier(identity))
     }
 }

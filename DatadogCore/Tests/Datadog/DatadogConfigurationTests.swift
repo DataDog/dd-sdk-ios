@@ -79,6 +79,7 @@ class DatadogConfigurationTests: XCTestCase {
         configuration.site = .eu1
         configuration.batchSize = .small
         configuration.uploadFrequency = .frequent
+        configuration.batchProcessingLevel = .high
         configuration.proxyConfiguration = [
             kCFNetworkProxiesHTTPEnable: true,
             kCFNetworkProxiesHTTPPort: 123,
@@ -103,6 +104,7 @@ class DatadogConfigurationTests: XCTestCase {
 
         XCTAssertEqual(configuration.batchSize, .small)
         XCTAssertEqual(configuration.uploadFrequency, .frequent)
+        XCTAssertEqual(configuration.batchProcessingLevel, .high)
         XCTAssertTrue(configuration.encryption is DataEncryptionMock)
         XCTAssertTrue(configuration.serverDateProvider is ServerDateProviderMock)
 
@@ -359,5 +361,20 @@ class DatadogConfigurationTests: XCTestCase {
         let context = core.contextProvider.read()
 
         XCTAssertEqual(context.version, "5.23.2")
+    }
+
+    func testGivenBuildId_itSetsContext() throws {
+        // Given
+        let buildId: String = .mockRandom(length: 32)
+        var configuration = defaultConfig
+        configuration.additionalConfiguration[CrossPlatformAttributes.buildId] = buildId
+
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        XCTAssertEqual(context.buildId, buildId)
     }
 }

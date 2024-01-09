@@ -7,12 +7,15 @@
 #if os(iOS)
 import Foundation
 
-internal protocol TextObfuscating {
+@_spi(Internal)
+public protocol SessionReplayTextObfuscating {
     /// Obfuscates given `text`.
     /// - Parameter text: the text to be obfuscated
     /// - Returns: obfuscated text
     func mask(text: String) -> String
 }
+
+internal typealias TextObfuscating = SessionReplayTextObfuscating
 
 /// Text obfuscator which replaces all readable characters with space-preserving `"x"` characters.
 internal struct SpacePreservingMaskObfuscator: TextObfuscating {

@@ -8,119 +8,187 @@ import XCTest
 @testable import DatadogInternal
 
 @objc
-private class EmptySubclass: BaseClass { }
-
-@objc
 private class BaseClass: NSObject {
-    @objc static let returnValue = "this is base class"
-
     @objc
     func methodToSwizzle() -> String {
-        return Self.returnValue
+        "original"
+    }
+}
+
+private class Swizzler: MethodSwizzler<@convention(c) (AnyObject, Selector) -> String, @convention(block) (AnyObject) -> String> {
+    static let selector = #selector(BaseClass.methodToSwizzle)
+
+    let method: Method
+
+    init(method: Method) {
+        self.method = method
+    }
+
+    init(_ cls: BaseClass.Type = BaseClass.self, _ name: Selector = Swizzler.selector) throws {
+        method = try dd_class_getInstanceMethod(cls, name)
+    }
+
+    func swizzle(callback: @escaping () -> Void) {
+        self.swizzle(method) { currentImp in
+            return { impSelf in
+                callback()
+                return currentImp(impSelf, Swizzler.selector)
+            }
+        }
+    }
+
+    func swizzle(override: @escaping (String) -> String) {
+        self.swizzle(method) { currentImp in
+            return { impSelf in
+                return override(currentImp(impSelf, Swizzler.selector))
+            }
+        }
     }
 }
 
 class MethodSwizzlerTests: XCTestCase {
-    private typealias TypedIMPReturnString = @convention(c) (AnyObject, Selector) -> String
-    private typealias TypedBlockIMPReturnString = @convention(block) (AnyObject) -> String
-
-    private let selToSwizzle = #selector(BaseClass.methodToSwizzle)
-    private let newIMPReturnString: TypedBlockIMPReturnString = { _ in String.mockAny() }
-
-    private typealias Swizzler = MethodSwizzler<TypedIMPReturnString, TypedBlockIMPReturnString>
-    private let swizzler = Swizzler()
-
-    override func tearDown() {
-        super.tearDown()
-        swizzler.unswizzle()
-    }
-
     func test_simpleSwizzle() throws {
+        let swizzler = try Swizzler()
         let obj = BaseClass()
 
         // before
-        XCTAssertNotEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, String.mockAny())
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original")
+
         // swizzle
-        let foundMethod = try Swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
-        swizzler.swizzle(foundMethod) { currentImp -> TypedBlockIMPReturnString in
-            return { impSelf in
-                return currentImp(impSelf, self.selToSwizzle).appending(String.mockAny())
-            }
-        }
+        swizzler.swizzle { $0 + .mockAny() }
+
         // after
-        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, BaseClass.returnValue + String.mockAny())
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original" + .mockAny())
+        swizzler.unswizzle()
     }
 
     func test_searchWrongSelector() {
         let wrongSelToSwizzle = Selector(("selector_who_never_existed"))
 
         let expectedErrorDescription = "\(NSStringFromSelector(wrongSelToSwizzle)) is not found in \(NSStringFromClass(BaseClass.self))"
-        XCTAssertThrowsError(try Swizzler.findMethod(with: wrongSelToSwizzle, in: BaseClass.self), "Wrong selector should throw") { error in
+        XCTAssertThrowsError(try dd_class_getInstanceMethod(BaseClass.self, wrongSelToSwizzle), "Wrong selector should throw") { error in
             let internalError = error as? InternalError
             XCTAssertEqual(internalError?.description, expectedErrorDescription)
         }
     }
 
-    func test_swizzle_alreadySwizzledSelector() throws {
-        let foundMethod = try Swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
+    func test_findSubclassMethod() throws {
+        class EmptySubclass: BaseClass { }
+        class EmptySubSubclass: EmptySubclass { }
+        XCTAssertNotNil(try dd_class_getInstanceMethod(EmptySubclass.self, Swizzler.selector))
+        XCTAssertNotNil(try dd_class_getInstanceMethod(EmptySubSubclass.self, Swizzler.selector))
+    }
 
-        let beforeOrigTypedIMP = swizzler.originalImplementation(of: foundMethod)
-        // first swizzling
-        let firstAppendedReturnValue = "first"
-        swizzler.swizzle(foundMethod) { currentImp -> TypedBlockIMPReturnString in
-            return { impSelf in
-                return currentImp(impSelf, self.selToSwizzle).appending(firstAppendedReturnValue)
-            }
-        }
-
-        let secondAppendedReturnValue = "second"
-        swizzler.swizzle(foundMethod) { currentImp -> TypedBlockIMPReturnString in
-            return { impSelf in
-                return currentImp(impSelf, self.selToSwizzle).appending(secondAppendedReturnValue)
-            }
-        }
-
-        let afterOrigTypedIMP = swizzler.originalImplementation(of: foundMethod)
+    func test_multiple_swizzle() throws {
+        let method = try dd_class_getInstanceMethod(BaseClass.self, Swizzler.selector)
+        let swizzler1 = Swizzler(method: method)
+        let swizzler2 = Swizzler(method: method)
 
         let obj = BaseClass()
-        let expectedReturnValue = BaseClass.returnValue + firstAppendedReturnValue + secondAppendedReturnValue
-        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, expectedReturnValue)
-        XCTAssertEqual(
-            unsafeBitCast(beforeOrigTypedIMP, to: IMP.self),
-            unsafeBitCast(afterOrigTypedIMP, to: IMP.self)
-        )
-    }
-
-    func test_findSubclassMethod() throws {
-        let subclassMethod = try Swizzler.findMethod(with: selToSwizzle, in: EmptySubclass.self)
-
-        XCTAssertNotNil(subclassMethod)
-        XCTAssertEqual(NSStringFromClass(subclassMethod.klass), NSStringFromClass(BaseClass.self))
-    }
-
-    func test_originalIMP_immutability() throws {
-        let foundMethod = try Swizzler.findMethod(with: selToSwizzle, in: BaseClass.self)
+        let before_imp = method_getImplementation(method)
 
         // first swizzling
-        swizzler.swizzle(foundMethod) { _ -> TypedBlockIMPReturnString in
-            return { _ in
-                "first"
-            }
-        }
+        swizzler1.swizzle { $0 + ", first" }
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original, first")
+
         // second swizzling
-        swizzler.swizzle(foundMethod) { _ -> TypedBlockIMPReturnString in
-            return { _ in
-                "second"
-            }
-        }
+        swizzler2.swizzle { $0 + ", second" }
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original, first, second")
+
+        // third swizzling
+        swizzler1.swizzle { $0 + ", third" }
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original, first, second, third")
+
+        // remove second swizzling
+        swizzler2.unswizzle()
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original, first, third")
 
         // revert to original imp
-        let originalTypedImp = swizzler.originalImplementation(of: foundMethod)
-        let originalImp = unsafeBitCast(originalTypedImp, to: IMP.self)
-        method_setImplementation(foundMethod.method, originalImp)
+        swizzler1.unswizzle()
+        let after_imp = method_getImplementation(method)
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original")
+        XCTAssertEqual(before_imp, after_imp)
+    }
 
+    func test_swizzle_count() throws {
+        class Subclass: BaseClass {
+            override func methodToSwizzle() -> String { "subclass" }
+        }
+        class SubSubclass: Subclass {
+            override func methodToSwizzle() -> String { "subsubclass" }
+        }
+
+        // Given
+        let method1 = try dd_class_getInstanceMethod(BaseClass.self, Swizzler.selector)
+        let method2 = try dd_class_getInstanceMethod(Subclass.self, Swizzler.selector)
+        let method3 = try dd_class_getInstanceMethod(SubSubclass.self, Swizzler.selector)
+
+        let swizzler1 = Swizzler(method: method1)
+        let swizzler2 = Swizzler(method: method2)
+        let swizzler3 = Swizzler(method: method3)
+
+        // When
+        swizzler1.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 1)
+        swizzler2.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 2)
+        swizzler3.swizzle { }
+        XCTAssertEqual(Swizzling.methods.count, 3)
+
+        // Then
+        XCTAssertEqual(Swizzling.description, "[methodToSwizzle, methodToSwizzle, methodToSwizzle]")
+
+        // When
+        swizzler1.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 2)
+        swizzler2.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 1)
+        swizzler3.unswizzle()
+        XCTAssertEqual(Swizzling.methods.count, 0)
+
+        // Then
+        XCTAssertEqual(Swizzling.description, "[]")
+    }
+
+    func test_swizzle_concurrently() throws {
+        // swiftlint:disable opening_brace
+
+        // Given
+        let method = try dd_class_getInstanceMethod(BaseClass.self, Swizzler.selector)
+        let swizzler1 = Swizzler(method: method)
+        let swizzler2 = Swizzler(method: method)
+        let swizzler3 = Swizzler(method: method)
+
+        let before_imp = method_getImplementation(method)
+        var callstack: [String] = []
+
+        // When
+        callConcurrently(
+            { swizzler1.swizzle { callstack.append("1.1") } },
+            { swizzler1.swizzle { callstack.append("1.2") } },
+            { swizzler2.swizzle { callstack.append("2") } },
+            { swizzler3.swizzle { callstack.append("3") } }
+        )
+
+        // Then
         let obj = BaseClass()
-        let expectedReturnValue = BaseClass.returnValue
-        XCTAssertEqual(obj.perform(selToSwizzle)?.takeUnretainedValue() as? String, expectedReturnValue)
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original")
+
+        callstack.sort()
+        XCTAssertEqual(callstack, ["1.1", "1.2", "2", "3"])
+
+        // When
+        callstack = []
+        callConcurrently(
+            { swizzler1.unswizzle() },
+            { swizzler2.unswizzle() },
+            { swizzler3.unswizzle() }
+        )
+        XCTAssertEqual(obj.perform(Swizzler.selector)?.takeUnretainedValue() as? String, "original")
+        XCTAssertEqual(callstack, [])
+
+        let after_imp = method_getImplementation(method)
+        XCTAssertEqual(before_imp, after_imp)
+        // swiftlint:enable opening_brace
     }
 }

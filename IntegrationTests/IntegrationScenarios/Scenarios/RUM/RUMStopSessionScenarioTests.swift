@@ -68,7 +68,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             let sessions = try RUMSessionMatcher.sessions(maxCount: 4, from: requests)
             // No active views in any session
             return sessions.count == 4 && sessions.allSatisfy { session in
-                !session.viewVisits.contains(where: { $0.viewEvents.last?.view.isActive == true })
+                !session.views.contains(where: { $0.viewEvents.last?.view.isActive == true })
             }
         }
 
@@ -78,10 +78,12 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
         do {
             let appStartSession = sessions[0]
 
-            let launchView = try XCTUnwrap(appStartSession.applicationLaunchView)
-            XCTAssertEqual(launchView.actionEvents[0].action.type, .applicationStart)
+            let initialView = appStartSession.views[0]
+            XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+            XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+            XCTAssertTrue(initialView.viewEvents.allSatisfy { $0.dd.session?.sessionPrecondition == .userAppLaunch })
 
-            let view1 = appStartSession.viewVisits[0]
+            let view1 = appStartSession.views[1]
             XCTAssertEqual(view1.name, "KioskViewController")
             XCTAssertEqual(view1.path, "Runner.KioskViewController")
             XCTAssertEqual(view1.viewEvents.last?.session.isActive, false)
@@ -91,9 +93,8 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Second session sends a resource and ends returning to the KioskViewController
         do {
             let normalSession = sessions[1]
-            XCTAssertNil(normalSession.applicationLaunchView)
-
-            let view1 = normalSession.viewVisits[0]
+            let view1 = normalSession.views[0]
+            XCTAssertTrue(view1.viewEvents.allSatisfy { $0.dd.session?.sessionPrecondition == .explicitStop })
             XCTAssertTrue(try XCTUnwrap(view1.viewEvents.first?.session.isActive))
             XCTAssertEqual(view1.name, "KioskSendEvents")
             XCTAssertEqual(view1.path, "Runner.KioskSendEventsViewController")
@@ -105,7 +106,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertLessThan(view1.resourceEvents[0].resource.duration!, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
-            let view2 = normalSession.viewVisits[1]
+            let view2 = normalSession.views[1]
             XCTAssertEqual(view2.name, "KioskViewController")
             XCTAssertEqual(view2.path, "Runner.KioskViewController")
             XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)
@@ -115,9 +116,8 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Third session, same as the first but longer before completing resources
         do {
             let interruptedSession = sessions[2]
-            XCTAssertNil(interruptedSession.applicationLaunchView)
-
-            let view1 = interruptedSession.viewVisits[0]
+            let view1 = interruptedSession.views[0]
+            XCTAssertTrue(view1.viewEvents.allSatisfy { $0.dd.session?.sessionPrecondition == .explicitStop })
             XCTAssertEqual(view1.name, "KioskSendInterruptedEvents")
             XCTAssertEqual(view1.path, "Runner.KioskSendInterruptedEventsViewController")
             XCTAssertEqual(view1.resourceEvents[0].resource.url, "https://foo.com/resource/1")
@@ -128,7 +128,7 @@ class RUMStopSessionScenarioTests: IntegrationTests, RUMCommonAsserts {
             XCTAssertLessThan(view1.resourceEvents[0].resource.duration!, 1_000_000_000 * 30) // less than 30s (big enough to balance NTP sync)
             RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
 
-            let view2 = interruptedSession.viewVisits[1]
+            let view2 = interruptedSession.views[1]
             XCTAssertEqual(view2.name, "KioskViewController")
             XCTAssertEqual(view2.path, "Runner.KioskViewController")
             XCTAssertEqual(view2.viewEvents.last?.session.isActive, false)

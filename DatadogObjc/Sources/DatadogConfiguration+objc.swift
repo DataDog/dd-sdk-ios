@@ -84,6 +84,29 @@ public enum DDUploadFrequency: Int {
 }
 
 @objc
+public enum DDBatchProcessingLevel: Int {
+    case low
+    case medium
+    case high
+
+    internal var swiftType: Datadog.Configuration.BatchProcessingLevel {
+        switch self {
+        case .low: return .low
+        case .medium: return .medium
+        case .high: return .high
+        }
+    }
+
+    internal init(swiftType: Datadog.Configuration.BatchProcessingLevel) {
+        switch swiftType {
+        case .low: self = .low
+        case .medium: self = .medium
+        case .high: self = .high
+        }
+    }
+}
+
+@objc
 public class DDTracingHeaderType: NSObject {
     internal let swiftType: TracingHeaderType
 
@@ -194,6 +217,12 @@ public class DDConfiguration: NSObject {
     @objc public var uploadFrequency: DDUploadFrequency {
         get { DDUploadFrequency(swiftType: sdkConfiguration.uploadFrequency) }
         set { sdkConfiguration.uploadFrequency = newValue.swiftType }
+    }
+
+    /// 
+    @objc public var batchProcessingLevel: DDBatchProcessingLevel {
+        get { DDBatchProcessingLevel(swiftType: sdkConfiguration.batchProcessingLevel) }
+        set { sdkConfiguration.batchProcessingLevel = newValue.swiftType }
     }
 
     /// Proxy configuration attributes.

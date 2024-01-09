@@ -18,10 +18,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let instrumentation: RUMInstrumentation
 
+    let configuration: RUM.Configuration
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
     ) throws {
+        self.configuration = configuration
+
         let dependencies = RUMScopeDependencies(
             core: core,
             rumApplicationID: configuration.applicationID,
@@ -50,6 +54,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+            syntheticsTest: {
+                if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                    return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                } else {
+                    return nil
+                }
+            }(),
             vitalsReaders: configuration.vitalsUpdateFrequency.map {
                 VitalsReaders(
                     frequency: $0.timeInterval,
@@ -95,6 +106,13 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 trackBackgroundEvents: configuration.trackBackgroundEvents,
                 uuidGenerator: configuration.uuidGenerator,
                 ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
+                syntheticsTest: {
+                    if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
+                        return RUMSyntheticsTest(injected: nil, resultId: resultId, testId: testId)
+                    } else {
+                        return nil
+                    }
+                }(),
                 telemetry: core.telemetry
             )
         )

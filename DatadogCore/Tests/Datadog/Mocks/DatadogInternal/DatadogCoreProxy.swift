@@ -46,6 +46,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
             encryption: nil,
             contextProvider: DatadogContextProvider(context: context),
             applicationVersion: context.version,
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
 
@@ -148,8 +149,8 @@ private class FeatureScopeInterceptor {
     func enter() { group.enter() }
     func leave() { group.leave() }
 
-    func waitAndReturnEvents() -> [(event: Any, data: Data)] {
-        _ = group.wait(timeout: .distantFuture)
+    func waitAndReturnEvents(timeout: DispatchTime) -> [(event: Any, data: Data)] {
+        _ = group.wait(timeout: timeout)
         return events
     }
 }
@@ -160,19 +161,19 @@ extension DatadogCoreProxy {
     ///   - name: The Feature to retrieve events from
     ///   - type: The type of events to filter out
     /// - Returns: A list of events.
-    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type) -> [T] where T: Encodable {
+    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
         flush()
         let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
+        return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.event as? T }
     }
 
     /// Returns serialized events of given Feature.
     ///
     /// - Parameter feature: The Feature to retrieve events from
     /// - Returns: A list of serialized events.
-    func waitAndReturnEventsData(ofFeature name: String) -> [Data] {
+    func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
         flush()
         let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().map { $0.data }
+        return interceptor.waitAndReturnEvents(timeout: timeout).map { $0.data }
     }
 }

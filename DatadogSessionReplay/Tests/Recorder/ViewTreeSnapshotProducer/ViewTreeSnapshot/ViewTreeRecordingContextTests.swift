@@ -6,6 +6,7 @@
 
 import XCTest
 import SafariServices
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class ViewTreeRecordingContextTests: XCTestCase {

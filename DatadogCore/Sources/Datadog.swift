@@ -31,7 +31,7 @@ import DatadogInternal
 /// )
 /// ```
 ///     
-public struct Datadog {
+public enum Datadog {
     /// Configuration of Datadog SDK.
     public struct Configuration {
         /// Defines the Datadog SDK policy when batching data together before uploading it to Datadog servers.
@@ -53,6 +53,24 @@ public struct Datadog {
             case average
             /// Try to upload batched data rarely.
             case rare
+        }
+
+        /// Defines the maximum amount of batches processed sequentially without a delay within one reading/uploading cycle.
+        public enum BatchProcessingLevel {
+            case low
+            case medium
+            case high
+
+            var maxBatchesPerUpload: Int {
+                switch self {
+                case .low:
+                    return 1
+                case .medium:
+                    return 10
+                case .high:
+                    return 100
+                }
+            }
         }
 
         /// Either the RUM client token (which supports RUM, Logging and APM) or regular client token, only for Logging and APM.
@@ -105,12 +123,17 @@ public struct Datadog {
         /// The bundle object that contains the current executable.
         public var bundle: Bundle
 
+        /// Batch provessing level, defining the maximum number of batches processed sequencially without a delay within one reading/uploading cycle.
+        ///
+        /// `.medium` by default.
+        public var batchProcessingLevel: BatchProcessingLevel
+
         /// Flag that determines if UIApplication methods [`beginBackgroundTask(expirationHandler:)`](https://developer.apple.com/documentation/uikit/uiapplication/1623031-beginbackgroundtaskwithexpiratio) and [`endBackgroundTask:`](https://developer.apple.com/documentation/uikit/uiapplication/1622970-endbackgroundtask)
         /// are utilized to perform background uploads. It may extend the amount of time the app is operating in background by 30 seconds.
         ///
         /// Tasks are normally stopped when there's nothing to upload or when encountering any upload blocker such us no internet connection or low battery.
         ///
-        /// By default it's set to `false`.
+        /// `false` by default.
         public var backgroundTasksEnabled: Bool
 
         /// Creates a Datadog SDK Configuration object.
@@ -166,6 +189,7 @@ public struct Datadog {
             proxyConfiguration: [AnyHashable: Any]? = nil,
             encryption: DataEncryption? = nil,
             serverDateProvider: ServerDateProvider? = nil,
+            batchProcessingLevel: BatchProcessingLevel = .medium,
             backgroundTasksEnabled: Bool = false
         ) {
             self.clientToken = clientToken
@@ -178,6 +202,7 @@ public struct Datadog {
             self.proxyConfiguration = proxyConfiguration
             self.encryption = encryption
             self.serverDateProvider = serverDateProvider ?? DatadogNTPDateProvider()
+            self.batchProcessingLevel = batchProcessingLevel
             self.backgroundTasksEnabled = backgroundTasksEnabled
         }
 
@@ -372,6 +397,7 @@ public struct Datadog {
         let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
         let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
+        let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
 
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
@@ -398,6 +424,7 @@ public struct Datadog {
                 env: try ifValid(env: configuration.env),
                 version: applicationVersion,
                 buildNumber: applicationBuildNumber,
+                buildId: buildId,
                 variant: variant,
                 source: source,
                 sdkVersion: sdkVersion,
@@ -411,10 +438,13 @@ public struct Datadog {
                 serverDateProvider: configuration.serverDateProvider
             ),
             applicationVersion: applicationVersion,
+            maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled
         )
 
         core.telemetry.configuration(
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
             batchSize: Int64(exactly: performance.maxFileSize),
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,

@@ -20,6 +20,7 @@ internal enum BatchMetric {
         case "logging":         return "logs"
         case "tracing":         return "trace"
         case "session-replay":  return "sr"
+        case "session-replay-resources":  return "sr-resources"
         default:                return nil
         }
     }
@@ -62,7 +63,7 @@ internal enum BatchDeletedMetric {
         /// The intake-code-202 represents a successful delivery. While some status codes, such as 401, indicate unrecoverable
         /// user errors, others, like 400, will indicate faults within the SDK. It is important to note that not all status codes will appear
         /// in this field, as the SDKs implement retry mechanisms for certain codes, e.g. 503 (see: ``DataUploadStatus``).
-        case intakeCode(responseCode: Int)
+        case intakeCode(responseCode: Int?)
         /// The batch become obsolete (older than allowed limit for this track's intake).
         case obsolete
         /// The batch was deleted due to exceeding allowed max size for batches directory.
@@ -77,7 +78,7 @@ internal enum BatchDeletedMetric {
         func toString() -> String {
             switch self {
             case .intakeCode(let responseCode):
-                return "intake-code-\(responseCode)"
+                return "intake-code-\(responseCode.map { String($0) } ?? "unknown")"
             case .obsolete:
                 return "obsolete"
             case .purged:

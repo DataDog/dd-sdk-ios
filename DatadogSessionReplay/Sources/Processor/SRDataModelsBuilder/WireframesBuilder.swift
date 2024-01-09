@@ -9,7 +9,8 @@ import Foundation
 import CoreGraphics
 import UIKit
 
-internal typealias WireframeID = NodeID
+@_spi(Internal)
+public typealias WireframeID = NodeID
 
 /// Builds the actual wireframes from VTS snapshots (produced by `Recorder`) to be later transported in SR
 /// records (see `RecordsBuilder`) within SR segments (see `SegmentBuilder`).
@@ -17,7 +18,8 @@ internal typealias WireframeID = NodeID
 /// It is used by the player to reconstruct individual elements of the recorded app UI.
 ///
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
-internal class WireframesBuilder {
+@_spi(Internal)
+public class SessionReplayWireframesBuilder {
     /// A set of fallback values to use if the actual value cannot be read or converted.
     ///
     /// The idea is to always provide value, which would make certain element visible in the player.
@@ -34,7 +36,15 @@ internal class WireframesBuilder {
         static let fontSize: CGFloat = 10
     }
 
-    func createShapeWireframe(
+    public struct FontOverride {
+        let size: CGFloat?
+
+        public init(size: CGFloat?) {
+            self.size = size
+        }
+    }
+
+    public func createShapeWireframe(
         id: WireframeID,
         frame: CGRect,
         clip: SRContentClip? = nil,
@@ -58,7 +68,7 @@ internal class WireframesBuilder {
         return .shapeWireframe(value: wireframe)
     }
 
-    func createImageWireframe(
+    public func createImageWireframe(
         imageResource: ImageResource,
         id: WireframeID,
         frame: CGRect,
@@ -87,7 +97,7 @@ internal class WireframesBuilder {
         return .imageWireframe(value: wireframe)
     }
 
-    func createTextWireframe(
+    public func createTextWireframe(
         id: WireframeID,
         frame: CGRect,
         text: String,
@@ -96,6 +106,7 @@ internal class WireframesBuilder {
         clip: SRContentClip? = nil,
         textColor: CGColor? = nil,
         font: UIFont? = nil,
+        fontOverride: FontOverride? = nil,
         fontScalingEnabled: Bool = false,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -114,7 +125,7 @@ internal class WireframesBuilder {
             )
         )
 
-        var fontSize = Int64(withNoOverflow: font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int64(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
@@ -148,7 +159,7 @@ internal class WireframesBuilder {
         return .textWireframe(value: wireframe)
     }
 
-    func createPlaceholderWireframe(
+    public func createPlaceholderWireframe(
         id: Int64,
         frame: CGRect,
         label: String,
@@ -192,6 +203,9 @@ internal class WireframesBuilder {
     }
 }
 
+// This alias enables us to have a more unique name exposed through public-internal access level
+internal typealias WireframesBuilder = SessionReplayWireframesBuilder
+
 // MARK: - Convenience
 
 internal extension WireframesBuilder {
@@ -205,6 +219,24 @@ internal extension WireframesBuilder {
             backgroundColor: attributes.backgroundColor,
             cornerRadius: attributes.layerCornerRadius,
             opacity: attributes.alpha
+        )
+    }
+}
+
+extension SRContentClip {
+    /// This method is a convenience for exposing the internal default init.
+    @_spi(Internal)
+    public static func create(
+        bottom: Int64?,
+        left: Int64?,
+        right: Int64?,
+        top: Int64?
+    ) -> SRContentClip {
+        return SRContentClip(
+            bottom: bottom,
+            left: left,
+            right: right,
+            top: top
         )
     }
 }

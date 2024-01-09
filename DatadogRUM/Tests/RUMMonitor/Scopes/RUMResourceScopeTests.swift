@@ -14,6 +14,7 @@ class RUMResourceScopeTests: XCTestCase {
         service: "test-service",
         version: "test-version",
         buildNumber: "test-build",
+        buildId: .mockRandom(),
         device: .mockWith(
             name: "device-name",
             osName: "device-os"
@@ -122,8 +123,167 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+    }
+
+    func testGivenStartedResourceInCITest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        let fakeCiTestId: String = .mockRandom()
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies.replacing(ciTest: .init(testExecutionId: fakeCiTestId)),
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    kind: .image,
+                    httpStatusCode: 200,
+                    size: 1_024
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .ciTest)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        DDTAssertValidRUMUUID(event.resource.id)
+        XCTAssertEqual(event.resource.type, .image)
+        XCTAssertEqual(event.resource.method, .post)
+        XCTAssertNil(event.resource.provider)
+        XCTAssertEqual(event.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.resource.statusCode, 200)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
+        XCTAssertEqual(event.resource.size, 1_024)
+        XCTAssertNil(event.resource.redirect)
+        XCTAssertNil(event.resource.dns)
+        XCTAssertNil(event.resource.connect)
+        XCTAssertNil(event.resource.ssl)
+        XCTAssertNil(event.resource.firstByte)
+        XCTAssertNil(event.resource.download)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.ciTest?.testExecutionId, fakeCiTestId)
+    }
+
+    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEnds_itSendsResourceEvent() throws {
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        let fakeSyntheticsTestId: String = .mockRandom()
+        let fakeSyntheticsResultId: String = .mockRandom()
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post,
+            resourceKindBasedOnRequest: nil,
+            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    attributes: ["foo": "bar"],
+                    kind: .image,
+                    httpStatusCode: 200,
+                    size: 1_024
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
+        XCTAssertEqual(event.date, Date.mockDecember15th2019At10AMUTC().timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .synthetics)
+        XCTAssertEqual(event.session.hasReplay, hasReplay)
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        DDTAssertValidRUMUUID(event.resource.id)
+        XCTAssertEqual(event.resource.type, .image)
+        XCTAssertEqual(event.resource.method, .post)
+        XCTAssertNil(event.resource.provider)
+        XCTAssertEqual(event.resource.url, "https://foo.com/resource/1")
+        XCTAssertEqual(event.resource.statusCode, 200)
+        XCTAssertEqual(event.resource.duration, 2_000_000_000)
+        XCTAssertEqual(event.resource.size, 1_024)
+        XCTAssertNil(event.resource.redirect)
+        XCTAssertNil(event.resource.dns)
+        XCTAssertNil(event.resource.connect)
+        XCTAssertNil(event.resource.ssl)
+        XCTAssertNil(event.resource.firstByte)
+        XCTAssertNil(event.resource.download)
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.spanId, "200")
+        XCTAssertEqual(event.dd.rulePsr, 0.42)
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
+        XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
     func testGivenStartedResourceWithSpanContext_whenResourceLoadingEnds_itSendsResourceEvent() throws {
@@ -277,6 +437,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
     }
@@ -349,6 +510,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
     }
@@ -409,8 +571,137 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
+    }
+
+    func testGivenStartedResourceInCITest_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let fakeCITestId: String = .mockRandom()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies.replacing(ciTest: .init(testExecutionId: fakeCITestId)),
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    error: ErrorMock("network issue explanation"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    attributes: ["foo": "bar"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .ciTest)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertEqual(event.error.message, "network issue explanation")
+        XCTAssertEqual(event.error.source, .network)
+        XCTAssertEqual(event.error.stack, "network issue explanation")
+        XCTAssertEqual(event.error.resource?.method, .post)
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertNil(event.error.resource?.provider)
+        XCTAssertEqual(event.error.resource?.statusCode, 500)
+        XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.ciTest?.testExecutionId, fakeCITestId)
+    }
+
+    func testGivenStartedResourceInSyntheticsTest_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let fakeSyntheticsTestId: String = .mockRandom()
+        let fakeSyntheticsResultId: String = .mockRandom()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies.replacing(syntheticsTest: .init(injected: nil, resultId: fakeSyntheticsResultId, testId: fakeSyntheticsTestId)),
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    error: ErrorMock("network issue explanation"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    attributes: ["foo": "bar"]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .synthetics)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertEqual(event.error.message, "network issue explanation")
+        XCTAssertEqual(event.error.source, .network)
+        XCTAssertEqual(event.error.stack, "network issue explanation")
+        XCTAssertEqual(event.error.resource?.method, .post)
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertNil(event.error.resource?.provider)
+        XCTAssertEqual(event.error.resource?.statusCode, 500)
+        XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+        XCTAssertEqual(event.synthetics?.testId, fakeSyntheticsTestId)
+        XCTAssertEqual(event.synthetics?.resultId, fakeSyntheticsResultId)
     }
 
     func testGivenConfiguredSource_whenResourceLoadingEndsWithError_itSendsErrorEventWithConfiguredSource() throws {
@@ -564,6 +855,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.service, "test-service")
         XCTAssertEqual(event.version, "test-version")
         XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
         XCTAssertEqual(event.device?.name, "device-name")
         XCTAssertEqual(event.os?.name, "device-os")
     }

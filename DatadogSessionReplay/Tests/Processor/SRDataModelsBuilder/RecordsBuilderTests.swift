@@ -6,6 +6,7 @@
 
 import XCTest
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class RecordsBuilderTests: XCTestCase {
@@ -43,6 +44,38 @@ class RecordsBuilderTests: XCTestCase {
         XCTAssertEqual(mutations.adds.count, 1)
         XCTAssertEqual(mutations.adds[0].previousId, 1)
         DDAssertReflectionEqual(mutations.adds[0].wireframe, next[2])
+    }
+
+    func testWhenNextWireframesAddsNewRoot_itCreatesFullSnapshotRecord() throws {
+        let builder = RecordsBuilder(telemetry: TelemetryMock())
+
+        // Given
+        let previous: [SRWireframe] = [.mockRandomWith(id: 0), .mockRandomWith(id: 1)]
+        let next: [SRWireframe] = [.mockRandomWith(id: 2)] + previous
+
+        // When
+        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+
+        // Then
+        let fullRecord = try XCTUnwrap(record?.fullSnapshot)
+        DDAssertReflectionEqual(fullRecord.data.wireframes, next)
+    }
+
+    // This case does not need a full snapshot for the player to work, but adding a
+    // test documents the behavior if we want to change it.
+    func testWhenNextWireframesDeletesRoot_itCreatesFullSnapshotRecord() throws {
+        let builder = RecordsBuilder(telemetry: TelemetryMock())
+
+        // Given
+        let previous: [SRWireframe] = [.mockRandomWith(id: 0), .mockRandomWith(id: 1)]
+        let next: [SRWireframe] = [.mockRandomWith(id: 1)]
+
+        // When
+        let record = builder.createIncrementalSnapshotRecord(from: .mockAny(), with: next, lastWireframes: previous)
+
+        // Then
+        let fullRecord = try XCTUnwrap(record?.fullSnapshot)
+        DDAssertReflectionEqual(fullRecord.data.wireframes, next)
     }
 
     func testWhenWireframesAreNotConsistent_itFallbacksToFullSnapshotRecordAndSendsErrorTelemetry() throws {

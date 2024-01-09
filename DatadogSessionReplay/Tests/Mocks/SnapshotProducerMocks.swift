@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 // MARK: - `ViewTreeSnapshotProducer` Mocks

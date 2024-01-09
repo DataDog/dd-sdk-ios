@@ -49,9 +49,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
 
     /// Number of Resources started during this User Action's lifespan.
     private var resourcesCount: UInt = 0
-    /// Number of Errors occured during this User Action's lifespan.
+    /// Number of Errors occurred during this User Action's lifespan.
     private var errorsCount: UInt = 0
-    /// Number of Long Tasks occured during this User Action's lifespan.
+    /// Number of Long Tasks occurred during this User Action's lifespan.
     private var longTasksCount: Int64 = 0
     /// Number of Resources that started but not yet ended during this User Action's lifespan.
     private var activeResourcesCount: Int = 0
@@ -142,7 +142,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 action: nil,
                 browserSdkVersion: nil,
                 configuration: .init(sessionReplaySampleRate: nil, sessionSampleRate: Double(dependencies.sessionSampler.samplingRate)),
-                session: .init(plan: .plan1)
+                session: .init(
+                    plan: .plan1,
+                    sessionPrecondition: self.context.sessionPrecondition
+                )
             ),
             action: .init(
                 crash: .init(count: 0),
@@ -156,9 +159,11 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
                 type: actionType.toRUMDataFormat
             ),
             application: .init(id: self.context.rumApplicationID),
+            buildId: context.buildId,
             buildVersion: context.buildNumber,
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
+            container: nil,
             context: .init(contextInfo: attributes),
             date: actionStartTime.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
@@ -168,10 +173,10 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             session: .init(
                 hasReplay: context.hasReplay,
                 id: self.context.sessionID.toRUMDataFormat,
-                type: dependencies.ciTest != nil ? .ciTest : .user
+                type: dependencies.sessionType
             ),
             source: .init(rawValue: context.source) ?? .ios,
-            synthetics: nil,
+            synthetics: dependencies.syntheticsTest,
             usr: .init(context: context),
             version: context.version,
             view: .init(

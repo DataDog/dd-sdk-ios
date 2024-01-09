@@ -7,6 +7,7 @@
 import XCTest
 import SafariServices
 
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 

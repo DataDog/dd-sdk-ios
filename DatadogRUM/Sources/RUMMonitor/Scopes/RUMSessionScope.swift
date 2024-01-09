@@ -15,6 +15,18 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         static let sessionMaxDuration: TimeInterval = 4 * 60 * 60 // 4 hours
     }
 
+    /// The reason of ending a session.
+    enum EndReason: String {
+        /// The session timed out because it received no interaction for x minutes.
+        /// See: ``Constants.sessionTimeoutDuration``.
+        case timeOut
+        /// The session expired because it exceeded max duration.
+        /// See: ``Constants.sessionMaxDuration``.
+        case maxDuration
+        /// The session was ended manually with ``RUMMonitorProtocol.stopSession()`` API.
+        case stopAPI
+    }
+
     // MARK: - Child Scopes
 
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
@@ -48,21 +60,27 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
+    /// The precondition that led to the creation of this session.
+    /// TODO: RUM-1650 This should become non-optional after all preconditions are implemented.
+    let startPrecondition: RUMSessionPrecondition?
     /// If events from this session should be sampled (send to Datadog).
     let isSampled: Bool
-    /// If the session is currently active. Set to false on a StopSession command
-    var isActive: Bool
+    /// If the session is currently active. Set to `false` upon reaching the `EndReason`.
+    var isActive: Bool { endReason == nil }
     /// If this is the very first session created in the current app process (`false` for session created upon expiration of a previous one).
     let isInitialSession: Bool
     /// The start time of this Session, measured in device date. In initial session this is the time of SDK init.
     private let sessionStartTime: Date
     /// Time of the last RUM interaction noticed by this Session.
     private var lastInteractionTime: Date
+    /// The reason why this session has ended or `nil` if it is still active.
+    private(set) var endReason: EndReason?
 
     init(
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
+        startPrecondition: RUMSessionPrecondition?,
         dependencies: RUMScopeDependencies,
         hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
@@ -70,12 +88,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         self.parent = parent
         self.dependencies = dependencies
         self.isSampled = dependencies.sessionSampler.sample()
+        self.startPrecondition = startPrecondition
         self.sessionUUID = isSampled ? dependencies.rumUUIDGenerator.generateUnique() : .nullUUID
         self.isInitialSession = isInitialSession
         self.sessionStartTime = startTime
         self.lastInteractionTime = startTime
         self.trackBackgroundEvents = dependencies.trackBackgroundEvents
-        self.isActive = true
+        self.endReason = nil
         self.state = RUMSessionState(
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
@@ -83,7 +102,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             didStartWithReplay: hasReplay
         )
 
-        if let viewScope = resumingViewScope, viewScope.identity.exists {
+        if let viewScope = resumingViewScope {
             viewScopes.append(
                 RUMViewScope(
                     isInitialView: false,
@@ -108,21 +127,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     convenience init(
         from expiredSession: RUMSessionScope,
         startTime: Date,
+        startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext
     ) {
         self.init(
             isInitialSession: false,
             parent: expiredSession.parent,
             startTime: startTime,
+            startPrecondition: startPrecondition,
             dependencies: expiredSession.dependencies,
             hasReplay: context.hasReplay
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
-            guard expiredView.identity.exists else {
-                return nil // if the underlying identifiable (`UIVIewController`) no longer exists, skip transferring its scope
-            }
             return RUMViewScope(
                 isInitialView: false,
                 parent: self,
@@ -144,15 +162,22 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var context = parent.context
         context.sessionID = sessionUUID
         context.isSessionActive = isActive
+        context.sessionPrecondition = startPrecondition
         return context
     }
 
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
-        if timedOutOrExpired(currentTime: command.time) {
-            return false // no longer keep this session
+        if hasTimedOut(currentTime: command.time) {
+            endReason = .timeOut
+            return false // end this session (no longer keep the session scope)
         }
+        if hasExpired(currentTime: command.time) {
+            endReason = .maxDuration
+            return false // end this session (no longer keep the session scope)
+        }
+
         if command.isUserInteraction {
             lastInteractionTime = command.time
         }
@@ -160,16 +185,17 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         if !isSampled {
             // Make sure sessions end even if they are sampled
             if command is RUMStopSessionCommand {
-                isActive = false
+                endReason = .stopAPI
+                return false // end this session (no longer keep the session scope)
             }
 
-            return isActive // discard all events in this session
+            return true // keep this session until it gets ended by any `endReason`
         }
 
         var deactivating = false
         if isActive {
             if command is RUMStopSessionCommand {
-                isActive = false
+                endReason = .stopAPI
                 deactivating = true
             } else if let startApplicationCommand = command as? RUMApplicationStartCommand {
                 startApplicationLaunchView(on: startApplicationCommand, context: context, writer: writer)
@@ -223,8 +249,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
         var startTime = sessionStartTime
-        if context.launchTime?.isActivePrewarm == false,
-           let processStartTime = context.launchTime?.launchDate {
+        if context.launchTime?.isActivePrewarm == false, let processStartTime = context.launchTime?.launchDate {
             startTime = processStartTime
         }
 
@@ -232,7 +257,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             isInitialView: true,
             parent: self,
             dependencies: dependencies,
-            identity: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL.asRUMViewIdentity(),
+            identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL),
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
             name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
             attributes: command.attributes,
@@ -277,7 +302,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 isInitialView: isStartingInitialView,
                 parent: self,
                 dependencies: dependencies,
-                identity: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL.asRUMViewIdentity(),
+                identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
                 path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
                 name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
                 attributes: command.attributes,
@@ -288,13 +313,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
     }
 
-    private func timedOutOrExpired(currentTime: Date) -> Bool {
+    private func hasTimedOut(currentTime: Date) -> Bool {
         let timeElapsedSinceLastInteraction = currentTime.timeIntervalSince(lastInteractionTime)
-        let timedOut = timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
+        return timeElapsedSinceLastInteraction >= Constants.sessionTimeoutDuration
+    }
 
+    private func hasExpired(currentTime: Date) -> Bool {
         let sessionDuration = currentTime.timeIntervalSince(sessionStartTime)
-        let expired = sessionDuration >= Constants.sessionMaxDuration
-
-        return timedOut || expired
+        return sessionDuration >= Constants.sessionMaxDuration
     }
 }

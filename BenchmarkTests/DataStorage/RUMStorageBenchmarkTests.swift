@@ -71,7 +71,7 @@ class RUMStorageBenchmarkTests: XCTestCase {
 
         measureMetrics([.wallClockTime], automaticallyStartMeasuring: false) {
             self.startMeasuring()
-            let batch = reader.readNextBatch()
+            let batch = reader.readNextBatches(1).first
             self.stopMeasuring()
 
             XCTAssertNotNil(batch, "Not enough batch files were created for this benchmark.")
@@ -80,5 +80,11 @@ class RUMStorageBenchmarkTests: XCTestCase {
                 reader.markBatchAsRead(batch, reason: .flushed)
             }
         }
+    }
+}
+
+extension Reader {
+    func readNextBatches(_ limit: Int = .max) -> [Batch] {
+        return readFiles(limit: limit).compactMap { readBatch(from: $0) }
     }
 }

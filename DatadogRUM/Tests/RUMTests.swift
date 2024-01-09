@@ -384,7 +384,7 @@ class RUMTests: XCTestCase {
         XCTAssertNotNil(context)
         XCTAssertEqual(context?.applicationID, applicationID)
         XCTAssertEqual(context?.sessionID, sessionID.toRUMDataFormat)
-        XCTAssertNil(context?.viewID)
+        XCTAssertNotNil(context?.viewID)
         XCTAssertNil(context?.userActionID)
     }
 
@@ -403,5 +403,49 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         waitForExpectations(timeout: 2.5)
+    }
+
+    // MARK: RUM+Internal tests
+    func testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows() {
+        // Given
+        let core = NOPDatadogCore()
+        let config = RUM.Configuration.URLSessionTracking()
+
+        // When + Then
+        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: config, in: core))
+    }
+
+    func testWhenRumNotEnabled_lateEnableUrlSessionTrackingThrows() {
+        // Given
+        let core = PassthroughCoreMock()
+        let config = RUM.Configuration.URLSessionTracking()
+
+        // When + Then
+        XCTAssertThrowsError(try RUM._internal.enableURLSessionTracking(with: config, in: core))
+    }
+
+    func testLateEnableUrlSessionTracking() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let debugSDK: Bool = .mockRandom()
+        var rumConfig = RUM.Configuration(applicationID: .mockAny())
+        rumConfig.debugSDK = debugSDK
+        RUM.enable(with: rumConfig, in: core)
+        let hosts: Set<String> = ["datadoghq.com", "example.com", "localhost"]
+        let sampleRate: Float = .mockRandom(min: 0.0, max: 1.0)
+        let hostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing = .trace(hosts: hosts, sampleRate: sampleRate)
+
+        let config = RUM.Configuration.URLSessionTracking(
+            firstPartyHostsTracing: hostsTracing
+        )
+
+        // When
+        try RUM._internal.enableURLSessionTracking(with: config, in: core)
+
+        // Then
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let urlSessionHandler = try XCTUnwrap(feature.handlers.first as? URLSessionRUMResourcesHandler)
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.firstPartyHosts.hosts, hosts)
+        XCTAssertEqual(urlSessionHandler.distributedTracing?.sampler.samplingRate, debugSDK ? 100.0 : sampleRate)
     }
 }

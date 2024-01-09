@@ -5,13 +5,14 @@
  */
 
 import XCTest
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
 class RecorderTests: XCTestCase {
     func testAfterCapturingSnapshot_itIsPassesToProcessor() {
-        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom()
-        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom()
+        let mockViewTreeSnapshots: [ViewTreeSnapshot] = .mockRandom(count: 1)
+        let mockTouchSnapshots: [TouchSnapshot] = .mockRandom(count: 1)
         let processor = ProcessorSpy()
 
         // Given
@@ -77,5 +78,31 @@ class RecorderTests: XCTestCase {
              - [error] [SR] Failed to take snapshot - snapshot creation error, kind: ErrorMock, stack: snapshot creation error
             """
         )
+    }
+
+    func testWhenCapturingSnapshots_itUsesAdditionalNodeRecorders() throws {
+        let recorderContext: Recorder.Context = .mockRandom()
+        let additionalNodeRecorder = SessionReplayNodeRecorderMock()
+        let windowObserver = AppWindowObserverMock()
+        let viewTreeSnapshotProducer = WindowViewTreeSnapshotProducer(
+            windowObserver: windowObserver,
+            snapshotBuilder: ViewTreeSnapshotBuilder(additionalNodeRecorders: [additionalNodeRecorder])
+        )
+        let touchSnapshotProducer = TouchSnapshotProducerMock()
+
+        // Given
+        let recorder = Recorder(
+            uiApplicationSwizzler: .mockAny(),
+            viewTreeSnapshotProducer: viewTreeSnapshotProducer,
+            touchSnapshotProducer: touchSnapshotProducer,
+            snapshotProcessor: ProcessorSpy(),
+            telemetry: TelemetryMock()
+        )
+        // When
+        recorder.captureNextRecord(recorderContext)
+
+        // Then
+        let queryContext = try XCTUnwrap(additionalNodeRecorder.queryContexts.first)
+        XCTAssertEqual(queryContext.recorder, recorderContext)
     }
 }

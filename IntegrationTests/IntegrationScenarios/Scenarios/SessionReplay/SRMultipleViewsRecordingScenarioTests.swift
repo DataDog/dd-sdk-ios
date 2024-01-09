@@ -85,7 +85,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         // Read SR segments from SR requests (one request = one segment):
         let segments = try srRequests.map { try SRSegmentMatcher.fromJSONData($0.segmentJSONData()) }
         
-        XCTAssertFalse(rumSession.viewVisits.isEmpty, "There should be some RUM session")
+        XCTAssertFalse(rumSession.views.isEmpty, "There should be some RUM session")
         XCTAssertFalse(srRequests.isEmpty, "There should be some SR requests")
         XCTAssertFalse(segments.isEmpty, "There should be some SR segments")
         sendCIAppLog(rumSession)

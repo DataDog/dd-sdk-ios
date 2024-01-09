@@ -5,6 +5,7 @@
  */
 
 import XCTest
+@_spi(Internal)
 @testable import DatadogSessionReplay
 
 class PrivacyLevelTests: XCTestCase {

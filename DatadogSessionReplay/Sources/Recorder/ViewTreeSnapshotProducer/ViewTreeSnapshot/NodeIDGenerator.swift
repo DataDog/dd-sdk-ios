@@ -10,7 +10,8 @@ import UIKit
 
 /// Single unique ID of a view in view-tree hierarchy.
 /// It is used to mark `UIViews` which correspond to single wireframe in the replay.
-internal typealias NodeID = Int64
+@_spi(Internal)
+public typealias NodeID = Int64
 
 /// Manages `NodeIDs` for `UIView` instances.
 ///
@@ -18,14 +19,15 @@ internal typealias NodeID = Int64
 /// IDs for the same instance of `UIView` will always give the same values.
 ///
 /// **Note**: All `NodeIDGenerator` APIs must be called on the main thread.
-internal final class NodeIDGenerator {
+@_spi(Internal)
+public final class NodeIDGenerator {
     /// Upper limit for generated IDs.
     /// After `currentID` reaches this limit, it will start from `0`.
     private let maxID: NodeID
     /// Tracks next `NodeID` to assign.
     private var currentID: NodeID
 
-    init(currentID: NodeID = 0, maxID: NodeID = .max) {
+    init(currentID: NodeID = 0, maxID: NodeID = Int64(Int32.max)) {
         self.currentID = currentID
         self.maxID = maxID
     }
@@ -34,7 +36,7 @@ internal final class NodeIDGenerator {
     /// - Parameter view: the `UIView` object
     /// - Parameter nodeRecorder: the `NodeRecorder` responsible for recording `UIView`
     /// - Returns: the `NodeID` of queried instance
-    func nodeID(view: UIView, nodeRecorder: NodeRecorder) -> NodeID {
+    public func nodeID(view: UIView, nodeRecorder: SessionReplayNodeRecorder) -> NodeID {
         if let currentID = view.nodeID?[nodeRecorder.identifier] {
             return currentID
         } else {

@@ -20,8 +20,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
     let recordingCoordinator: RecordingCoordinator
     /// Processes each new snapshot on a background thread and transforms it into records.
     let processor: Processing
-    /// Writes records to sdk core.
-    let writer: Writing
 
     // MARK: - Initialization
 
@@ -29,11 +27,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let writer = Writer()
-
         let processor = Processor(
             queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
-            writer: writer,
+            writer: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
@@ -43,7 +39,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         let recorder = try Recorder(
             processor: processor,
-            telemetry: core.telemetry
+            telemetry: core.telemetry,
+            additionalNodeRecorders: configuration._additionalNodeRecorders
         )
         let recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
@@ -57,8 +54,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         self.messageReceiver = messageReceiver
         self.recordingCoordinator = recordingCoordinator
         self.processor = processor
-        self.writer = writer
-        self.requestBuilder = RequestBuilder(
+        self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )
