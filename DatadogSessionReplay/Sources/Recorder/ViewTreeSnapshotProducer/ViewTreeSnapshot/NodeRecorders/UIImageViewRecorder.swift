@@ -31,7 +31,7 @@ extension UIImageResource: Resource {
         if #available(iOS 13.0, *), let tintColor = tintColor {
             image = image.withTintColor(tintColor)
         }
-        return image.scaledDownToApproximateSize(1.MB) // Intake limit is 10MB - to be adjusted in RUM-2153
+        return image.scaledDownToApproximateSize(256.KB)
     }
 }
 
@@ -92,15 +92,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
         let tintColor = tintColorProvider(imageView)
-        let imageResources = [imageView.image]
-            .filter { image in
-               defer {
-                   image?.recorded = shouldRecordImage
-               }
-               return image?.recorded == false && shouldRecordImage
-            }
-            .compactMap { image in
-                image.map { UIImageResource(image: $0, tintColor: tintColor) }
+        let imageResource = imageView.image
+            .map { image in
+                UIImageResource(image: image, tintColor: tintColor)
             }
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
@@ -108,14 +102,21 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            imageResource: imageResources.first,
+            imageResource: imageResource,
             shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
            subtreeStrategy: .record,
            nodes: [node],
-           resources: imageResources
+           resources: [imageResource]
+            .compactMap { $0 }
+            .filter { imageResource in
+                defer {
+                    imageResource.image.recorded = shouldRecordImage
+                }
+                return imageResource.image.recorded == false && shouldRecordImage
+            }
        )
     }
 }
