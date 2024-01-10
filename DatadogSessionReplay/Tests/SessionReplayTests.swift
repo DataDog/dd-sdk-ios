@@ -128,4 +128,16 @@ class SessionReplayTests: XCTestCase {
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
     }
+
+    func testItDoesntStartFeatureWhenSamplingRateIsZero() throws {
+        // Given
+        config.replaySampleRate = 0
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNil(core.get(feature: SessionReplayFeature.self))
+        XCTAssertNil(core.get(feature: ResourcesFeature.self))
+    }
 }

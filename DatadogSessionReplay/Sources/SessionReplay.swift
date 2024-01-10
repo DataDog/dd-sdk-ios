@@ -37,6 +37,9 @@ public enum SessionReplay {
                 description: "Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
             )
         }
+        guard configuration.replaySampleRate > 0 else {
+            return
+        }
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
