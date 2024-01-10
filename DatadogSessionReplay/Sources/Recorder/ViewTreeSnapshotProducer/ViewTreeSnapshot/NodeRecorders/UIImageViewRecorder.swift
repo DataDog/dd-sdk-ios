@@ -7,6 +7,34 @@
 #if os(iOS)
 import UIKit
 
+internal struct UIImageResource {
+    internal let image: UIImage
+    internal let tintColor: UIColor?
+
+    internal init(image: UIImage, tintColor: UIColor?) {
+        self.image = image
+        self.tintColor = tintColor
+    }
+}
+
+extension UIImageResource: Resource {
+    func calculateIdentifier() -> String {
+        var identifier = image.srIdentifier
+        if let tintColorIdentifier = tintColor?.srIdentifier {
+            identifier += tintColorIdentifier
+        }
+        return identifier
+    }
+
+    func calculateData() -> Data {
+        var image = self.image
+        if #available(iOS 13.0, *), let tintColor = tintColor {
+            image = image.withTintColor(tintColor)
+        }
+        return image.scaledDownToApproximateSize(1.MB) // Intake limit is 10MB - to be adjusted in RUM-2153
+    }
+}
+
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier = UUID()
 
@@ -62,6 +90,8 @@ internal struct UIImageViewRecorder: NodeRecorder {
         } else {
             contentFrame = nil
         }
+        let shouldRecordImage = shouldRecordImagePredicate(imageView)
+        let tintColor = tintColorProvider(imageView)
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
@@ -70,11 +100,24 @@ internal struct UIImageViewRecorder: NodeRecorder {
             clipsToBounds: imageView.clipsToBounds,
             image: imageView.image,
             imageDataProvider: context.imageDataProvider,
-            tintColor: tintColorProvider(imageView),
-            shouldRecordImage: shouldRecordImagePredicate(imageView)
+            tintColor: tintColor,
+            shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .record, nodes: [node])
+        return SpecificElement(
+           subtreeStrategy: .record,
+           nodes: [node],
+           resources: [imageView.image]
+            .filter { image in
+               defer {
+                   image?.recorded = shouldRecordImage
+               }
+               return image?.recorded == false && shouldRecordImage
+            }
+            .compactMap { image in
+                image.map { UIImageResource(image: $0, tintColor: tintColor) }
+            }
+       )
     }
 }
 

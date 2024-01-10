@@ -8,7 +8,7 @@ import Foundation
 @testable import DatadogSessionReplay
 
 /// Spies the interaction with `Processing`.
-internal class ProcessorSpy: Processing {
+internal class SnapshotProcessorSpy: SnapshotProcessing {
     /// An array of snapshots recorded in `process(viewTreeSnapshot:touchSnapshot:)`
     private(set) var processedSnapshots: [(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?)] = []
 

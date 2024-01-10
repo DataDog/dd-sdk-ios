@@ -13,7 +13,7 @@ import DatadogInternal
 /// This is the actual brain of Session Replay. Based on the sequence of snapshots it receives, it computes the sequence
 /// of records that will to be send to SR BE. It implements the logic of reducing snapshots into Full or Incremental
 /// mutation records.
-internal protocol Processing {
+internal protocol SnapshotProcessing {
     /// Accepts next view-tree and touch snapshots.
     /// - Parameter viewTreeSnapshot: the snapshot of a next view tree
     /// - Parameter touchSnapshot: the snapshot of next touch interactions (or `nil` if no interactions happened)
@@ -30,7 +30,7 @@ internal protocol Processing {
 /// - the array of wireframes is attached to SR record (see `RecordsBuidler`);
 /// - succeeding records are enriched with their RUM context and written to `DatadogCore`;
 /// - when `DatadogCore` triggers an upload, batched records are deserialized, grouped into SR segments and then uploaded.
-internal class Processor: Processing {
+internal class SnapshotProcessor: SnapshotProcessing {
     /// Flattens VTS received from `Recorder` by removing invisible nodes.
     private let nodesFlattener = NodesFlattener()
     /// Builds SR wireframes to describe UI elements.
@@ -41,7 +41,7 @@ internal class Processor: Processing {
     /// The background queue for executing all logic.
     private let queue: Queue
     /// Writes records to `DatadogCore`.
-    private let writer: RecordWriting
+    private let recordWriter: RecordWriting
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
@@ -62,12 +62,12 @@ internal class Processor: Processing {
 
     init(
         queue: Queue,
-        writer: RecordWriting,
+        recordWriter: RecordWriting,
         srContextPublisher: SRContextPublisher,
         telemetry: Telemetry
     ) {
         self.queue = queue
-        self.writer = writer
+        self.recordWriter = recordWriter
         self.srContextPublisher = srContextPublisher
         self.telemetry = telemetry
         self.recordsBuilder = RecordsBuilder(telemetry: telemetry)
@@ -132,7 +132,7 @@ internal class Processor: Processing {
             let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
             trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
 
-            writer.write(nextRecord: enrichedRecord)
+            recordWriter.write(nextRecord: enrichedRecord)
         }
 
         // Track state:

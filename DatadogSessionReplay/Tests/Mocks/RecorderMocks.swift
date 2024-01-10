@@ -33,7 +33,8 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             date: .mockRandom(),
             context: .mockRandom(),
             viewportSize: .mockRandom(),
-            nodes: .mockRandom(count: .random(in: (5..<50)))
+            nodes: .mockRandom(count: .random(in: (5..<50))),
+            resources: .mockRandom(count: .random(in: (5..<50)))
         )
     }
 
@@ -41,13 +42,15 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         date: Date = .mockAny(),
         context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
-        nodes: [Node] = .mockAny()
+        nodes: [Node] = .mockAny(),
+        resources: [Resource] = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
             context: context,
             viewportSize: viewportSize,
-            nodes: nodes
+            nodes: nodes,
+            resources: resources
         )
     }
 }
@@ -221,7 +224,10 @@ func mockRandomNodeSemantics() -> NodeSemantics {
     let all: [NodeSemantics] = [
         UnknownElement.constant,
         InvisibleElement.constant,
-        AmbiguousElement(nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
+        AmbiguousElement(
+            nodes: .mockRandom(count: .mockRandom(min: 1, max: 5)),
+            resources: .mockRandom(count: .mockRandom(min: 1, max: 5))
+        ),
         SpecificElement(subtreeStrategy: .mockRandom(), nodes: .mockRandom(count: .mockRandom(min: 1, max: 5))),
     ]
     return all.randomElement()!
@@ -256,6 +262,42 @@ extension Node: AnyMockable, RandomMockable {
             viewAttributes: .mockRandom(),
             wireframesBuilder: NOPWireframesBuilderMock()
         )
+    }
+}
+
+struct MockResource: Resource, AnyMockable, RandomMockable {
+    var identifier: String
+    var data: Data
+
+    init(identifier: String, data: Data) {
+        self.identifier = identifier
+        self.data = data
+    }
+
+    func calculateIdentifier() -> String {
+        return identifier
+    }
+
+    func calculateData() -> Data {
+        return data
+    }
+
+    static func mockAny() -> MockResource {
+        return MockResource(identifier: .mockAny(), data: .mockAny())
+    }
+
+    static func mockRandom() -> MockResource {
+        return MockResource(identifier: . mockRandom(), data: .mockRandom())
+    }
+}
+
+extension Collection where Element == Resource {
+    static func mockAny() -> [Resource] {
+        return [MockResource].mockAny()
+    }
+
+    static func mockRandom(count: Int = 10) -> [Resource] {
+        return [MockResource].mockRandom(count: count)
     }
 }
 
