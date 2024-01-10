@@ -66,6 +66,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
         distributedTracing?.modify(request: request, headerTypes: headerTypes) ?? request
     }
 
+    func traceContext() -> DatadogInternal.TraceContext? {
+        nil // no-op
+    }
+
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
         let url = interception.request.url?.absoluteString ?? "unknown_url"
         interception.register(origin: "rum")
@@ -179,7 +183,10 @@ extension DistributedTracing {
             )
 
             writer.traceHeaderFields.forEach { field, value in
-                request.setValue(value, forHTTPHeaderField: field)
+                // do not overwrite existing header
+                if request.value(forHTTPHeaderField: field) == nil {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
             }
         }
 
