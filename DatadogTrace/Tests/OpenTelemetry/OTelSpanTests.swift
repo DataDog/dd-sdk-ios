@@ -199,6 +199,127 @@ final class OTelSpanTests: XCTestCase {
         ]
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
+
+    func testStatus_whenStatusIsNotSet() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+
+        let recordedSpan = recordedSpans.first!
+        XCTAssertFalse(recordedSpan.isError)
+        XCTAssertEqual(recordedSpan.tags["error.type"], nil)
+        XCTAssertEqual(recordedSpan.tags["error.message"], nil)
+        XCTAssertEqual(recordedSpan.tags["error.stack"], nil)
+    }
+
+    func testStatus_whenStatusIsOk() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.status = .ok
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+
+        let recordedSpan = recordedSpans.first!
+        XCTAssertFalse(recordedSpan.isError)
+        XCTAssertEqual(recordedSpan.tags["error.type"], nil)
+        XCTAssertEqual(recordedSpan.tags["error.message"], nil)
+    }
+
+    func testStatus_whenStatusIsErrorWithMessage() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+
+        // When
+        span.status = .error(description: "error description")
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+
+        let recordedSpan = recordedSpans.first!
+        XCTAssertTrue(recordedSpan.isError)
+        XCTAssertEqual(recordedSpan.tags["error.type"], "")
+        // In OLTP world, error message is set as `error.message`
+        // but during the migration we want to keep it as `error.msg`.
+        // https://github.com/open-telemetry/opentelemetry-proto/blob/724e427879e3d2bae2edc0218fff06e37b9eb46e/opentelemetry/proto/trace/v1/trace.proto#L264
+        XCTAssertEqual(recordedSpan.tags["error.msg"], "error description")
+    }
+
+    func testStatus_givenStatusOk_whenSetStatusCalledWithErrorAndUnset() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+        span.status = .ok
+
+        // When
+        span.status = .error(description: "error description")
+        span.status = .unset
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+
+        let recordedSpan = recordedSpans.first!
+        XCTAssertFalse(recordedSpan.isError)
+        XCTAssertEqual(recordedSpan.tags["error.type"], nil)
+        XCTAssertEqual(recordedSpan.tags["error.msg"], nil)
+    }
+
+    func testStatus_givenStatusError_whenSetStatusCalledWithOkAndUnset() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "Span").startSpan()
+        span.status = .error(description: "error description")
+
+        // When
+        span.status = .unset
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+
+        let recordedSpan = recordedSpans.first!
+        XCTAssertTrue(recordedSpan.isError)
+        XCTAssertEqual(recordedSpan.tags["error.type"], "")
+        XCTAssertEqual(recordedSpan.tags["error.msg"], "error description")
+    }
 }
 
 extension PassthroughCoreMock {

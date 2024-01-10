@@ -9,7 +9,23 @@ import OpenTelemetryApi
 
 internal enum DatadogTagKeys: String {
     case spanKind = "span.kind"
-    case errorMessage = "error.Message"
+    case errorType = "error.type"
+    case errorMessage = "error.message"
+}
+
+internal extension OpenTelemetryApi.Status {
+    /// Ok > Error > Unset
+    /// https://opentelemetry.io/docs/specs/otel/trace/api/#set-status
+    var priority: UInt {
+        switch self {
+        case .ok:
+            return 3
+        case .error:
+            return 2
+        case .unset:
+            return 1
+        }
+    }
 }
 
 internal class OTelSpan: OpenTelemetryApi.Span {
@@ -27,12 +43,28 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     /// and events can be added to it.
     var isRecording: Bool
 
+    /// Saves status of the span indicating whether the span has recorded errors.
+    /// This will be done by setting `error.message` tag on the span.
     var status: OpenTelemetryApi.Status {
         get {
-            fatalError("Not implemented yet")
+            queue.sync {
+                _status
+            }
         }
         set {
-            fatalError("Not implemented yet")
+            queue.sync {
+                guard isRecording else {
+                    return
+                }
+
+                // If the code has been set to a higher value before (Ok > Error > Unset),
+                // the code will not be changed.
+                guard newValue.priority >= _status.priority else {
+                    return
+                }
+
+                _status = newValue
+            }
         }
     }
 
@@ -160,6 +192,18 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         // There is no need to lock here, because `DDSpan` is thread-safe
         for (key, value) in tags {
             ddSpan.setTag(key: key, value: value)
+        }
+
+        switch status {
+        case .ok, .unset:
+            break
+        case .error(description: let description):
+            // set error tags on the span
+            tags[DatadogTagKeys.errorMessage.rawValue] = description
+
+            // send error log to Datadog
+            // Empty kind or description is equivalent to not present
+            ddSpan.setError(kind: "" , message: description)
         }
 
         // SpanKind maps to the `span.kind` tag in Datadog
