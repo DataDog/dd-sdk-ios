@@ -24,7 +24,6 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     override func tearDown() {
-        core?.get(feature: NetworkInstrumentationFeature.self)?.unbindAll()
         core = nil
         super.tearDown()
     }
@@ -212,13 +211,13 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         let url2: URL = .mockRandom()
         session
-            .dataTask(with: URLRequest(url: url2))
+            .dataTask(with: URLRequest(url: url2)) { _,_,_ in }
             .resume()
 
         // Then
-        waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
+        _ = server.waitAndReturnRequests(count: 2)
 
+        waitForExpectations(timeout: 5, handler: nil)
         let dateAfterAllRequests = Date()
 
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
@@ -231,6 +230,29 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             XCTAssertNil(interception.data, "Data should not be recorded for \(url)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
+    }
+
+    func testGivenURLSessionWithCustomDelegate_whenNotInstrumented_itDoesNotInterceptTasks() throws {
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: Data()))
+
+        // Given
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+        let session = server.getInterceptedURLSession() // no custom delegate
+
+        // When
+        let url1: URL = .mockRandom()
+        session
+            .dataTask(with: url1)
+            .resume()
+
+        let url2: URL = .mockRandom()
+        session
+            .dataTask(with: URLRequest(url: url2))
+            .resume()
+
+        // Then
+        _ = server.waitAndReturnRequests(count: 2)
+        XCTAssertEqual(handler.interceptions.count, 0, "Interceptor should not record tasks")
     }
 
     func testGivenURLSessionWithDatadogDelegate_whenTaskCompletesWithSuccess_itPassesAllValuesToTheInterceptor() throws {
@@ -264,11 +286,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .resume()
 
         // Then
+        _ = server.waitAndReturnRequests(count: 2)
+
         waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
-
         let dateAfterAllRequests = Date()
-
         XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should record metrics for 2 tasks")
 
         try [url1, url2].forEach { url in
@@ -307,14 +328,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Given
         let delegate = MockDelegate()
         try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
-        let session = server.getInterceptedURLSession(delegate: delegate)
+        let session = server.getInterceptedURLSession()
 
         // When
-        let url1: URL = .mockRandom()
-        _ = try? await session.data(from: url1, delegate: delegate)
-
-        let url2: URL = .mockRandom()
-        _ = try? await session.data(for: URLRequest(url: url2), delegate: delegate)
+        _ = try? await session.data(from: .mockRandom(), delegate: delegate) // intercepted
+        _ = try? await session.data(for: URLRequest(url: .mockRandom()), delegate: delegate) // intercepted
+        _ = try? await session.data(for: URLRequest(url: .mockRandom())) // not intercepted
 
         // Then
         await dd_fulfillment(
@@ -326,7 +345,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             enforceOrder: true
         )
 
-        _ = server.waitAndReturnRequests(count: 2)
+        _ = server.waitAndReturnRequests(count: 3)
 
         let dateAfterAllRequests = Date()
 
@@ -338,6 +357,47 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             XCTAssertNil(interception.data, "Data should not be recorded for \(id)")
             XCTAssertEqual((interception.completion?.error as? NSError)?.localizedDescription, "some error")
         }
+    }
+
+    func testGivenURLSessionTask_withCustomDelegate_itInterceptsRequests() throws {
+        // pre iOS 15 cannot set delegate per task
+        guard #available(iOS 15, tvOS 15, *) else {
+            return
+        }
+
+        let notifyInterceptionDidComplete = expectation(description: "Notify intercepion did complete")
+        notifyInterceptionDidComplete.expectedFulfillmentCount = 2
+        handler.onInterceptionDidComplete = { _ in notifyInterceptionDidComplete.fulfill() }
+
+        let server = ServerMock(
+            delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)),
+            skipIsMainThreadCheck: true
+        )
+
+        // Given
+        let delegate1 = MockDelegate()
+        let delegate2 = MockDelegate2()
+        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: MockDelegate.self), in: core)
+
+        let session = server.getInterceptedURLSession()
+
+        // When
+        let task1 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/1")) // intercepted
+        task1.delegate = delegate1
+        task1.resume()
+
+        let task2 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/2")) // intercepted
+        task2.delegate = delegate1
+        task2.resume()
+
+        let task3 = session.dataTask(with: URL.mockWith(url: "https://www.foo.com/3")) // not intercepted
+        task3.delegate = delegate2
+        task3.resume()
+
+        // Then
+        _ = server.waitAndReturnRequests(count: 3)
+        waitForExpectations(timeout: 5, handler: nil)
+        XCTAssertEqual(handler.interceptions.count, 2, "Interceptor should intercept 2 tasks")
     }
 
     // MARK: - Usage
@@ -387,6 +447,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         core = nil
         // Then
         XCTAssertNil(delegate.interceptor)
+    }
+
+    func testWhenEnableInstrumentationOnTheSameDelegate_thenItPrintsAWarning() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
+        URLSessionInstrumentation.enable(with: .init(delegateClass: MockDelegate.self), in: core)
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.warnLog?.message,
+            """
+            The delegate class MockDelegate is already instrumented.
+            The previous instrumentation will be disabled in favor of the new one.
+            """
+        )
     }
 
     // MARK: - URLRequest Interception
@@ -515,6 +592,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     @available(*, deprecated)
     func testGivenDelegateSubclass_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -539,14 +618,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .dataTask(with: request)
             .resume()
 
+        session
+            .dataTask(with: request) { _,_,_ in }
+            .resume()
+
         // Then
         waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
+
+        // release the delegate to unswizzle
+        session.finishTasksAndInvalidate()
     }
 
     @available(*, deprecated)
     func testGivenCompositeDelegate_whenInterceptingRequests_itDetectFirstPartyHost() throws {
         let notifyInterceptionDidStart = expectation(description: "Notify interception did start")
+        notifyInterceptionDidStart.expectedFulfillmentCount = 2
+
         handler.onInterceptionDidStart = { _ in notifyInterceptionDidStart.fulfill() }
         let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
 
@@ -579,9 +667,16 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             .dataTask(with: request)
             .resume()
 
+        session
+            .dataTask(with: request) { _,_,_ in }
+            .resume()
+
         // Then
         waitForExpectations(timeout: 5, handler: nil)
         _ = server.waitAndReturnRequests(count: 1)
+
+        // release the delegate to unswizzle
+        session.finishTasksAndInvalidate()
     }
 
     // MARK: - Thread Safety
@@ -604,7 +699,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 { feature.intercept(task: tasks.randomElement()!, additionalFirstPartyHosts: nil) },
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
-                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) }
+                { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
+                { try? feature.bind(configuration: .init(delegateClass: MockDelegate.self)) },
+                { feature.unbind(delegateClass: MockDelegate.self) }
             ],
             iterations: 50
         )
@@ -612,5 +709,8 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     }
 
     class MockDelegate: NSObject, URLSessionDataDelegate {
+    }
+
+    class MockDelegate2: NSObject, URLSessionDataDelegate {
     }
 }

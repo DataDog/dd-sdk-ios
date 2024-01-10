@@ -11,11 +11,21 @@ assignees: ''
 
 📝 Give us the error message you receive, describe the problem and answer the questions.
 
+### Reproduction
+
+Provide a self-contained, concise snippet of code that can be used to reproduce the issue.
+For more complex issues provide a repo with the smallest sample that reproduces the bug.
+
+Avoid including business logic or unrelated code, it makes diagnosis more difficult.
+The code sample should be an SSCCE. See http://sscce.org/ for details. In short, please provide a code sample that we can copy/paste, run and reproduce.
+
+Do not share secrets or sensitive information in the code sample.
+
 ---
 
 #### Datadog SDK version:
 
-_Which version of the Datadog SDK causes this problem? e.g. `1.2.0`_
+_Which version of the Datadog SDK causes this problem? e.g. `2.5.0`_
 
 #### Last working Datadog SDK version:
 

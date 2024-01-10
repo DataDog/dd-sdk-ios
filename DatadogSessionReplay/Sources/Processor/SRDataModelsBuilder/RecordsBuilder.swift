@@ -62,7 +62,11 @@ internal class RecordsBuilder {
     ///
     /// It may return `nil` if there is no diff between `wireframes` and `lastWireframes`.
     /// In case of unexpected failure, it will fallback to creating FSR instead.
+    /// If the root wireframe has changed, we trigger a full snapshot so it is added first in the replay.
     func createIncrementalSnapshotRecord(from snapshot: ViewTreeSnapshot, with wireframes: [SRWireframe], lastWireframes: [SRWireframe]) -> SRRecord? {
+        if wireframes.first?.id != lastWireframes.first?.id {
+            return createFullSnapshotRecord(from: snapshot, wireframes: wireframes)
+        }
         do {
             return try createIncrementalSnapshotRecord(from: snapshot, newWireframes: wireframes, lastWireframes: lastWireframes)
         } catch {

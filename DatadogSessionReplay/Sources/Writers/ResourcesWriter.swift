@@ -9,12 +9,12 @@ import Foundation
 import DatadogInternal
 
 /// A type writing Session Replay records to `DatadogCore`.
-internal protocol ResourceWriting {
+internal protocol ResourcesWriting {
     /// Writes next records to SDK core.
     func write(resources: [EnrichedResource])
 }
 
-internal class ResourcesWriter: ResourceWriting {
+internal class ResourcesWriter: ResourcesWriting {
     /// An instance of SDK core the SR feature is registered to.
     private weak var core: DatadogCoreProtocol?
 
@@ -30,8 +30,10 @@ internal class ResourcesWriter: ResourceWriting {
         guard let scope = core?.scope(for: ResourcesFeature.name) else {
             return
         }
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, writer in
-            writer.write(value: resources)
+        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, recordWriter in
+            resources.forEach {
+                recordWriter.write(value: $0)
+            }
         }
     }
 }

@@ -14,6 +14,13 @@ public typealias DDURLSessionDelegate = DatadogURLSessionDelegate
 @objc
 @available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 public protocol __URLSessionDelegateProviding: URLSessionDelegate {
+    /// Datadog delegate object.
+    /// 
+    /// The class implementing `DDURLSessionDelegateProviding` must ensure that following method calls are forwarded to `ddURLSessionDelegate`:
+    /// - `func urlSession(_:task:didFinishCollecting:)`
+    /// - `func urlSession(_:task:didCompleteWithError:)`
+    /// - `func urlSession(_:dataTask:didReceive:)`
+    var ddURLSessionDelegate: DatadogURLSessionDelegate { get }
 }
 
 /// The `URLSession` delegate object which enables network requests instrumentation. **It must be
@@ -28,7 +35,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         return URLSessionInterceptor.shared(in: core)
     }
 
-    /* private */ public let firstPartyHosts: FirstPartyHosts
+    let swizzler = NetworkInstrumentationSwizzler()
 
     /// The instance of the SDK core notified by this delegate.
     ///
@@ -39,17 +46,8 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     @objc
     override public init() {
         core = nil
-        firstPartyHosts = .init()
-
-        URLSessionInstrumentation.enable(
-            with: .init(
-                delegateClass: Self.self,
-                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
-            ),
-            in: core ?? CoreRegistry.default
-        )
-
         super.init()
+        swizzle(firstPartyHosts: .init())
     }
 
     /// Automatically tracked hosts can be customized per instance with this initializer.
@@ -94,20 +92,17 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:]
     ) {
         self.core = core
-        self.firstPartyHosts = FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes)
-
-        URLSessionInstrumentation.enable(
-            with: .init(
-                delegateClass: Self.self,
-                firstPartyHostsTracing: .traceWithHeaders(hostsWithHeaders: firstPartyHosts.hostsWithTracingHeaderTypes)
-            ),
-            in: core ?? CoreRegistry.default
-        )
         super.init()
+        swizzle(firstPartyHosts: FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes))
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         interceptor?.task(task, didFinishCollecting: metrics)
+        if #available(iOS 15, tvOS 15, *) {
+            // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
+            // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
+            interceptor?.task(task, didCompleteWithError: task.error)
+        }
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
@@ -118,6 +113,41 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
         interceptor?.task(task, didCompleteWithError: error)
+    }
+
+    private func swizzle(firstPartyHosts: FirstPartyHosts) {
+        do {
+            try swizzler.swizzle(
+                interceptResume: { [weak self] task in
+                    guard
+                        let interceptor = self?.interceptor,
+                        let provider = task.dd.delegate as? __URLSessionDelegateProviding,
+                        provider.ddURLSessionDelegate === self // intercept task with self as delegate
+                    else {
+                        return
+                    }
+
+                    if let currentRequest = task.currentRequest {
+                        let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                        task.dd.override(currentRequest: request)
+                    }
+
+                    interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                }
+            )
+
+            try swizzler.swizzle(
+                interceptCompletionHandler: { [weak self] task, _, error in
+                    self?.interceptor?.task(task, didCompleteWithError: error)
+                }
+            )
+        } catch {
+            DD.logger.error("Fails to apply swizzling for instrumenting \(Self.self)", error: error)
+        }
+    }
+
+    deinit {
+        swizzler.unswizzle()
     }
 }
 

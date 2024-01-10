@@ -45,16 +45,22 @@ internal struct URLSessionSetup: Codable {
     enum InstrumentationMethod: CaseIterable, Codable {
         /// Use `DDURLSessionDelegate` class directly.
         /// and define `firstPartyHosts` in feature configuration.
-        case directWithGlobalFirstPartyHosts
+        case legacyWithFeatureFirstPartyHosts
         /// Use `DDURLSessionDelegate` class directly
-        /// and define `firstPartyHosts` in `URLSession` delegate's configuration.
-        case directWithAdditionalFirstyPartyHosts
+        /// and define `firstPartyHosts` with delegate's configuration.
+        case legacyWithAdditionalFirstyPartyHosts
         /// Use `DDURLSessionDelegate` by inheriting it in a subclass (see: `InheritedURLSessionDelegate`).
         /// and define `firstPartyHosts` in feature configuration.
-        case inheritance
+        case legacyInheritance
         /// Use `DDURLSessionDelegate` by compositing it custom delegate class (see: `CompositedURLSessionDelegate`).
         /// and define `firstPartyHosts` in feature configuration.
-        case composition
+        case legacyComposition
+        /// Use a custom delegate.
+        /// and define `firstPartyHosts` in feature configuration.
+        case delegateUsingFeatureFirstPartyHosts
+        /// Use a custom delegate.
+        /// and define `firstPartyHosts` with delegate's configuration.
+        case delegateWithAdditionalFirstyPartyHosts
     }
 
     /// A method of instrumenting `URLSession` with `DDURLSessionDelegate`.

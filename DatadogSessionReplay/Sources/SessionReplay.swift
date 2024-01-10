@@ -9,7 +9,7 @@ import Foundation
 import DatadogInternal
 
 /// An entry point to Datadog Session Replay feature.
-public struct SessionReplay {
+public enum SessionReplay {
     /// Enables Datadog Session Replay feature.
     ///
     /// Recording will start automatically after enabling Session Replay.
@@ -36,6 +36,9 @@ public struct SessionReplay {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
             )
+        }
+        guard configuration.replaySampleRate > 0 else {
+            return
         }
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)

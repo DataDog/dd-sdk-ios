@@ -27,13 +27,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .composition,
+                instrumentationMethod: .legacyComposition,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMURLSessionResourcesScenario_directWithAdditionalFirstyPartyHosts() throws {
+    func testRUMURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
             expectations: Expectations(
@@ -41,13 +41,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMURLSessionResourcesScenario",
             expectations: Expectations(
@@ -55,7 +55,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -69,7 +69,35 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .inheritance,
+                instrumentationMethod: .legacyInheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateUsingFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "Runner.SendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "Runner.SendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -83,13 +111,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .composition,
+                instrumentationMethod: .legacyComposition,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMNSURLSessionResourcesScenario_directWithAdditionalFirstyPartyHosts() throws {
+    func testRUMNSURLSessionResourcesScenario_legacyWithAdditionalFirstyPartyHosts() throws {
         try runTest(
             for: "RUMNSURLSessionResourcesScenario",
             expectations: Expectations(
@@ -97,13 +125,13 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithAdditionalFirstyPartyHosts,
+                instrumentationMethod: .legacyWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
     }
     
-    func testRUMNSURLSessionResourcesScenario_directWithGlobalFirstPartyHosts() throws {
+    func testRUMNSURLSessionResourcesScenario_legacyWithFeatureFirstPartyHosts() throws {
         try runTest(
             for: "RUMNSURLSessionResourcesScenario",
             expectations: Expectations(
@@ -111,7 +139,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .directWithGlobalFirstPartyHosts,
+                instrumentationMethod: .legacyWithFeatureFirstPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -125,7 +153,35 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
                 expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
             ),
             urlSessionSetup: .init(
-                instrumentationMethod: .inheritance,
+                instrumentationMethod: .legacyInheritance,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_delegateUsingFeatureFirstPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateUsingFeatureFirstPartyHosts,
+                initializationMethod: .afterSDK
+            )
+        )
+    }
+
+    func testRUMNSURLSessionResourcesScenario_delegateWithAdditionalFirstyPartyHosts() throws {
+        try runTest(
+            for: "RUMNSURLSessionResourcesScenario",
+            expectations: Expectations(
+                expectedFirstPartyRequestsViewControllerName: "ObjcSendFirstPartyRequestsViewController",
+                expectedThirdPartyRequestsViewControllerName: "ObjcSendThirdPartyRequestsViewController"
+            ),
+            urlSessionSetup: .init(
+                instrumentationMethod: .delegateWithAdditionalFirstyPartyHosts,
                 initializationMethod: .afterSDK
             )
         )
@@ -152,7 +208,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         // Requesting this first party by the app should create the RUM Resource and inject tracing headers into the request.
         let firstPartyPOSTResourceURL = customFirstPartyServerSession.recordingURL
         // Requesting this first party by the app should create the RUM Error.
-        let firstPartyBadResourceURL = URL(string: "https://foo.bar")!
+        let firstPartyBadResourceURL = URL(string: "https://foo.bar/")!
 
         // Requesting this third party by the app should create the RUM Resource.
         let thirdPartyGETResourceURL = URL(string: "https://shopist.io/categories.json")!
@@ -216,14 +272,18 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(try RUMSessionMatcher.singleSession(from: rumRequests))
         sendCIAppLog(session)
 
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+
         // Asserts in `SendFirstPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[0].name, expectations.expectedFirstPartyRequestsViewControllerName)
-        XCTAssertEqual(session.viewVisits[0].path, expectations.expectedFirstPartyRequestsViewControllerName)
-        XCTAssertEqual(session.viewVisits[0].resourceEvents.count, 2, "1st screen should track 2 RUM Resources")
-        XCTAssertEqual(session.viewVisits[0].errorEvents.count, 1, "1st screen should track 1 RUM Errors")
+        XCTAssertEqual(session.views[1].name, expectations.expectedFirstPartyRequestsViewControllerName)
+        XCTAssertEqual(session.views[1].path, expectations.expectedFirstPartyRequestsViewControllerName)
+        XCTAssertEqual(session.views[1].resourceEvents.count, 2, "1st screen should track 2 RUM Resources")
+        XCTAssertEqual(session.views[1].errorEvents.count, 1, "1st screen should track 1 RUM Errors")
 
         let firstPartyResource1 = try XCTUnwrap(
-            session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyGETResourceURL.absoluteString },
+            session.views[1].resourceEvents.first { $0.resource.url == firstPartyGETResourceURL.absoluteString },
             "RUM Resource should be send for `firstPartyGETResourceURL`"
         )
         XCTAssertEqual(firstPartyResource1.resource.method, .get)
@@ -235,7 +295,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertNotNil(firstPartyResource1.dd.rulePsr)
 
         let firstPartyResource2 = try XCTUnwrap(
-            session.viewVisits[0].resourceEvents.first { $0.resource.url == firstPartyPOSTResourceURL.absoluteString },
+            session.views[1].resourceEvents.first { $0.resource.url == firstPartyPOSTResourceURL.absoluteString },
             "RUM Resource should be send for `firstPartyPOSTResourceURL`"
         )
         XCTAssertEqual(firstPartyResource2.resource.method, .post)
@@ -255,19 +315,19 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertTrue(isValid(sampleRate: firstPartyResource2SampleRate), "\(firstPartyResource2SampleRate) is not valid sample rate")
 
         let firstPartyResourceError1 = try XCTUnwrap(
-            session.viewVisits[0].errorEvents.first { $0.error.resource?.url == firstPartyBadResourceURL.absoluteString },
+            session.views[1].errorEvents.first { $0.error.resource?.url == firstPartyBadResourceURL.absoluteString },
             "RUM Error should be send for `firstPartyBadResourceURL`"
         )
         XCTAssertEqual(firstPartyResourceError1.error.resource?.method, .get)
 
         // Asserts in `SendThirdPartyRequestsVC` RUM View
-        XCTAssertEqual(session.viewVisits[1].name, expectations.expectedThirdPartyRequestsViewControllerName)
-        XCTAssertEqual(session.viewVisits[1].path, expectations.expectedThirdPartyRequestsViewControllerName)
-        XCTAssertEqual(session.viewVisits[1].resourceEvents.count, 2, "2nd screen should track 2 RUM Resources")
-        XCTAssertEqual(session.viewVisits[1].errorEvents.count, 0, "2nd screen should track no RUM Errors")
+        XCTAssertEqual(session.views[2].name, expectations.expectedThirdPartyRequestsViewControllerName)
+        XCTAssertEqual(session.views[2].path, expectations.expectedThirdPartyRequestsViewControllerName)
+        XCTAssertEqual(session.views[2].resourceEvents.count, 2, "2nd screen should track 2 RUM Resources")
+        XCTAssertEqual(session.views[2].errorEvents.count, 0, "2nd screen should track no RUM Errors")
 
         let thirdPartyResource1 = try XCTUnwrap(
-            session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyGETResourceURL.absoluteString },
+            session.views[2].resourceEvents.first { $0.resource.url == thirdPartyGETResourceURL.absoluteString },
             "RUM Resource should be send for `thirdPartyGETResourceURL`"
         )
         XCTAssertEqual(thirdPartyResource1.resource.method, .get)
@@ -278,7 +338,7 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertNil(thirdPartyResource1.dd.rulePsr, "Not traced resource should not send sample rate")
 
         let thirdPartyResource2 = try XCTUnwrap(
-            session.viewVisits[1].resourceEvents.first { $0.resource.url == thirdPartyPOSTResourceURL.absoluteString },
+            session.views[2].resourceEvents.first { $0.resource.url == thirdPartyPOSTResourceURL.absoluteString },
             "RUM Resource should be send for `thirdPartyPOSTResourceURL`"
         )
         XCTAssertEqual(thirdPartyResource2.resource.method, .post)
