@@ -71,11 +71,15 @@ final class OTelAttributeValueDatadogTests: XCTestCase {
             "key2": .string("value1"),
             "key3": .int(2),
             "key4": .double(3.0),
-            "key5": .stringArray([]),
-            "key6": .boolArray([]),
-            "key7": .intArray([]),
-            "key8": .doubleArray([]),
+            "key5": .stringArray(["value5", "value6"]),
+            "key6": .boolArray([true, false]),
+            "key7": .intArray([7, 8]),
+            "key8": .doubleArray([8.0, 9.0]),
             "key9": .set(.init(labels: [:])),
+            "key10": .stringArray([]),
+            "key11": .boolArray([]),
+            "key12": .intArray([]),
+            "key13": .doubleArray([]),
         ]
 
         // When
@@ -88,11 +92,19 @@ final class OTelAttributeValueDatadogTests: XCTestCase {
             "key2": "value1",
             "key3": "2",
             "key4": "3.0",
-            "key5": "",
-            "key6": "",
-            "key7": "",
-            "key8": "",
+            "key5.0": "value5",
+            "key5.1": "value6",
+            "key6.0": "true",
+            "key6.1": "false",
+            "key7.0": "7",
+            "key7.1": "8",
+            "key8.0": "8.0",
+            "key8.1": "9.0",
             "key9": "",
+            "key10": "",
+            "key11": "",
+            "key12": "",
+            "key13": "",
         ]
         DDAssertDictionariesEqual(expectedTags, tags)
     }
