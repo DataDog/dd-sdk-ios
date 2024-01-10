@@ -52,8 +52,8 @@ public struct PerformancePresetOverride {
     public init(
         maxFileSize: UInt64?,
         maxObjectSize: UInt64?,
-        meanFileAge: TimeInterval?,
-        uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)?
+        meanFileAge: TimeInterval? = nil,
+        uploadDelay: (initial: TimeInterval, range: Range<TimeInterval>, changeRate: Double)? = nil
     ) {
         self.maxFileSize = maxFileSize
         self.maxObjectSize = maxObjectSize

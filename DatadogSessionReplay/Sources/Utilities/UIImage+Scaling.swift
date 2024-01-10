@@ -26,7 +26,7 @@ extension UIImage {
     ///     if let imageData = originalImage?.scaledDownToApproximateSize(desiredSizeInBytes) {
     ///         // Use the scaled down image data.
     ///     }
-    func scaledDownToApproximateSize(_ desiredSizeInBytes: Int) -> Data {
+    func scaledDownToApproximateSize(_ desiredSizeInBytes: UInt64) -> Data {
         guard let imageData = pngData() else {
             return Data()
         }
