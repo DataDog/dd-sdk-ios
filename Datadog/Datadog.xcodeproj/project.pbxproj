@@ -78,6 +78,10 @@
 		3CBDE6882AA0B7F000F6A7B6 /* URLSessionTaskDelegate+Tracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE6862AA0B7F000F6A7B6 /* URLSessionTaskDelegate+Tracking.swift */; };
 		3CBDE68A2AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE6892AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift */; };
 		3CBDE68B2AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CBDE6892AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift */; };
+		3CC6AD182B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */; };
+		3CC6AD192B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */; };
+		3CC6AD1D2B4F07FA00015B18 /* OTelAttributeValue+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6AD1A2B4F07E700015B18 /* OTelAttributeValue+DatadogTests.swift */; };
+		3CC6AD1E2B4F07FB00015B18 /* OTelAttributeValue+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC6AD1A2B4F07E700015B18 /* OTelAttributeValue+DatadogTests.swift */; };
 		3CCCA5C42ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C32ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift */; };
 		3CCCA5C52ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C32ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift */; };
 		3CCCA5C72ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */; };
@@ -1920,6 +1924,8 @@
 		3CBDE6832AA092BC00F6A7B6 /* URLSessionTaskSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzlerTests.swift; sourceTree = "<group>"; };
 		3CBDE6862AA0B7F000F6A7B6 /* URLSessionTaskDelegate+Tracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSessionTaskDelegate+Tracking.swift"; sourceTree = "<group>"; };
 		3CBDE6892AA0C47300F6A7B6 /* URLSessionTask+Tracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLSessionTask+Tracking.swift"; sourceTree = "<group>"; };
+		3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelAttributeValue+Datadog.swift"; sourceTree = "<group>"; };
+		3CC6AD1A2B4F07E700015B18 /* OTelAttributeValue+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelAttributeValue+DatadogTests.swift"; sourceTree = "<group>"; };
 		3CCCA5C32ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DDURLSessionInstrumentation+objc.swift"; sourceTree = "<group>"; };
 		3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDURLSessionInstrumentationConfigurationTests.swift; sourceTree = "<group>"; };
 		3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3114,6 +3120,7 @@
 		3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
+				3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */,
 				3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */,
 				3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */,
 				3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */,
@@ -3127,6 +3134,7 @@
 		3C6C7FF12B459AB3006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
+				3CC6AD1A2B4F07E700015B18 /* OTelAttributeValue+DatadogTests.swift */,
 				3C6C7FF22B459AB3006F5CBC /* OTelSpanId+DatadogTests.swift */,
 				3C6C7FF32B459AB3006F5CBC /* OTelTraceId+DatadogTests.swift */,
 				3C6C7FF42B459AB3006F5CBC /* OTelSpanTests.swift */,
@@ -8324,6 +8332,7 @@
 			files = (
 				61A2CC3C2A44BED30000FF25 /* Tracer.swift in Sources */,
 				D2C1A50229C4C4CB00946C31 /* Casting.swift in Sources */,
+				3CC6AD182B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */,
 				D2C1A50C29C4C4CB00946C31 /* DDNoOps.swift in Sources */,
 				D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */,
@@ -8366,6 +8375,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2C1A51E29C4C75700946C31 /* Casting+Tracing.swift in Sources */,
+				3CC6AD1D2B4F07FA00015B18 /* OTelAttributeValue+DatadogTests.swift in Sources */,
 				D2C1A52429C4C75700946C31 /* TracingURLSessionHandlerTests.swift in Sources */,
 				619CE75E2A458CE1005588CB /* TraceConfigurationTests.swift in Sources */,
 				D2C1A52329C4C75700946C31 /* WarningsTests.swift in Sources */,
@@ -8522,6 +8532,7 @@
 			files = (
 				61A2CC3D2A44BED30000FF25 /* Tracer.swift in Sources */,
 				D2C1A53829C4F2DF00946C31 /* Casting.swift in Sources */,
+				3CC6AD192B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */,
 				D2C1A53929C4F2DF00946C31 /* DDNoOps.swift in Sources */,
 				D2C1A53A29C4F2DF00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A53B29C4F2DF00946C31 /* SpanTagsReducer.swift in Sources */,
@@ -8564,6 +8575,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2C1A55F29C4F2E800946C31 /* Casting+Tracing.swift in Sources */,
+				3CC6AD1E2B4F07FB00015B18 /* OTelAttributeValue+DatadogTests.swift in Sources */,
 				D2C1A56029C4F2E800946C31 /* TracingURLSessionHandlerTests.swift in Sources */,
 				619CE75F2A458CE1005588CB /* TraceConfigurationTests.swift in Sources */,
 				D2C1A56129C4F2E800946C31 /* WarningsTests.swift in Sources */,

@@ -118,7 +118,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
                 return
             }
             isRecording = false
-            tags = makeTags()
+            tags = attributes.tags
         }
 
         // if the span was already ended before, we don't want to end it again
@@ -134,35 +134,6 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         // SpanKind maps to the `span.kind` tag in Datadog
         ddSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
         ddSpan.finish(at: time)
-    }
-
-    private func makeTags() -> [String: String] {
-        var tags = [String: String]()
-        for (key, value) in attributes {
-            switch value {
-            case .string(let value):
-                tags[key] = value
-            case .bool(let value):
-                tags[key] = value.description
-            case .int(let value):
-                tags[key] = value.description
-            case .double(let value):
-                tags[key] = value.description
-            // swiftlint:disable unavailable_function
-            case .stringArray:
-                fatalError("Not implemented yet")
-            case .boolArray:
-                fatalError("Not implemented yet")
-            case .intArray:
-                fatalError("Not implemented yet")
-            case .doubleArray:
-                fatalError("Not implemented yet")
-            case .set:
-                fatalError("Not implemented yet")
-            // swiftlint:enable unavailable_function
-            }
-        }
-        return tags
     }
 
     var description: String {
