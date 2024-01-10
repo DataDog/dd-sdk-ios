@@ -302,8 +302,11 @@ public enum Datadog {
     }
 
     /// Stops the initialized SDK instance attached to the given name.
+    ///
+    /// Stopping a core instance will stop all current processes by deallocating all Features registered
+    /// in the core as well as their storage & upload units.
     /// 
-    /// - Parameter instanceName: The core instance name
+    /// - Parameter instanceName: the name of the instance to stop.
     public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName) {
         let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
         core?.stop()
