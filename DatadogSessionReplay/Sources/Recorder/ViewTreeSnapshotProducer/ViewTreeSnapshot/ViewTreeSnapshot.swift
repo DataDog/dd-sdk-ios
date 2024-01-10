@@ -57,8 +57,10 @@ internal typealias Node = SessionReplayNode
 @_spi(Internal)
 public protocol SessionReplayResource {
     /// Calculates the unique identifier of the resource.
+    /// This function is not thread safe and needs to be synchronized by the caller.
     func calculateIdentifier() -> String
     /// Calculates the data of the resource.
+    /// This function is not thread safe and needs to be synchronized by the caller.
     func calculateData() -> Data
 }
 
