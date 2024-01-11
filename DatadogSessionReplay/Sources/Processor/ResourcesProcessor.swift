@@ -20,16 +20,15 @@ internal class ResourceProcessor: ResourceProcessing {
         guard !resources.isEmpty else {
             return
         }
-        let enrichedResources = resources.map {
-            EnrichedResource(
-                identifier: $0.calculateIdentifier(),
-                data: $0.calculateData(),
-                context: context
-            )
-        }
         queue.run { [resourcesWriter] in
             resourcesWriter.write(
-                resources: enrichedResources
+                resources: resources.map {
+                    EnrichedResource(
+                        identifier: $0.calculateIdentifier(),
+                        data: $0.calculateData(),
+                        context: context
+                    )
+                }
             )
         }
     }

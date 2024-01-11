@@ -291,6 +291,12 @@ struct MockResource: Resource, AnyMockable, RandomMockable {
     }
 }
 
+extension UIImageResource: RandomMockable {
+    public static func mockRandom() -> UIImageResource {
+        return .init(image: .mockRandom(), tintColor: .mockRandom())
+    }
+}
+
 extension Collection where Element == Resource {
     static func mockAny() -> [Resource] {
         return [MockResource].mockAny()

@@ -9,10 +9,17 @@ import Foundation
 import UIKit
 import CryptoKit
 
+private var srIdentifierKey: UInt8 = 11
 private var recordedKey: UInt8 = 22
 extension UIImage {
     var srIdentifier: String {
-        return customHash
+        if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
+            return hash
+        }
+
+        let hash = computeHash()
+        objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+        return hash
     }
 
     var recorded: Bool {
@@ -21,29 +28,6 @@ extension UIImage {
         }
         set {
             objc_setAssociatedObject(self, &recordedKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
-    }
-}
-
-extension UIColor {
-    var srIdentifier: String {
-        return "\(hash)"
-    }
-}
-
-private var customHashKey: UInt8 = 11
-fileprivate extension UIImage {
-    private static var associatedObjectQueue = DispatchQueue(label: "com.datadoghq.customHashQueue")
-
-    var customHash: String {
-        return UIImage.associatedObjectQueue.sync {
-            if let hash = objc_getAssociatedObject(self, &customHashKey) as? String {
-                return hash
-            }
-
-            let hash = computeHash()
-            objc_setAssociatedObject(self, &customHashKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-            return hash
         }
     }
 
@@ -56,6 +40,12 @@ fileprivate extension UIImage {
         } else {
             return "\(hash)"
         }
+    }
+}
+
+extension UIColor {
+    var srIdentifier: String {
+        return "\(hash)"
     }
 }
 #endif
