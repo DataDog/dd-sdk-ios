@@ -31,7 +31,7 @@ extension UIImageResource: Resource {
         if #available(iOS 13.0, *), let tintColor = tintColor {
             image = image.withTintColor(tintColor)
         }
-        return image.scaledDownToApproximateSize(ResourcesFeature.maxObjectSize)
+        return image.scaledDownToApproximateSize(SessionReplay.maxObjectSize)
     }
 }
 

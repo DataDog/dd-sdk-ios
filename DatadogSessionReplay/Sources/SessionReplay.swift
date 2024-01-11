@@ -29,6 +29,8 @@ public enum SessionReplay {
        }
     }
 
+    static internal var maxObjectSize = 10.MB.asUInt64()
+
     internal static func enableOrThrow(
         with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol
     ) throws {
