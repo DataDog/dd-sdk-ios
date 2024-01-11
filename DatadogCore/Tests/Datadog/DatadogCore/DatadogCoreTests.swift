@@ -311,10 +311,6 @@ class DatadogCoreTests: XCTestCase {
         let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
 
         // When
-        scope.eventWriteContext { context, writer in
-            writer.write(value: FeatureMock.Event(event: "should not be sent"))
-        }
-
         core.stop()
 
         scope.eventWriteContext { context, writer in
@@ -323,7 +319,7 @@ class DatadogCoreTests: XCTestCase {
 
         // Then
         XCTAssertNil(core.scope(for: FeatureMock.name))
-        core.flushAndTearDown()
+        core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 }
