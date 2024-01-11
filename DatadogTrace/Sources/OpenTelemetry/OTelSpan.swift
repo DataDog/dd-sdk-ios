@@ -94,26 +94,26 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
     /// Sends a span event which is akin to a log in Datadog
     /// - Parameters:
-    ///  - name: name of the event
-    /// - timestamp: timestamp of the event
+    ///   - name: name of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, timestamp: Date) {
         addEvent(name: name, attributes: .init(), timestamp: timestamp)
     }
 
     /// Sends a span event which is akin to a log in Datadog
     /// - Parameters:
-    /// - name: name of the event
-    /// - attributes: attributes of the event
-    /// - timestamp: timestamp of the event
+    ///   - name: name of the event
+    ///   - attributes: attributes of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue]) {
         addEvent(name: name, attributes: attributes, timestamp: .init())
     }
 
     /// Sends a span event which is akin to a log in Datadog
     /// - Parameters:
-    /// - name: name of the event
-    /// - attributes: attributes of the event
-    /// - timestamp: timestamp of the event
+    ///   - name: name of the event
+    ///   - attributes: attributes of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
         var ended = false
         queue.sync {
