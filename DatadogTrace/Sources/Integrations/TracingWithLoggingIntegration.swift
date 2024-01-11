@@ -60,7 +60,14 @@ internal struct TracingWithLoggingIntegration {
         self.networkInfoEnabled = networkInfoEnabled
     }
 
-    func writeLog(withSpanContext spanContext: DDSpanContext, fields: [String: Encodable], date: Date, else fallback: @escaping () -> Void) {
+    // swiftlint:disable function_default_parameter_at_end
+    func writeLog(
+        withSpanContext spanContext: DDSpanContext,
+        message: String? = nil,
+        fields: [String: Encodable],
+        date: Date,
+        else fallback: @escaping () -> Void
+    ) {
         guard let core = core else {
             return
         }
@@ -69,7 +76,7 @@ internal struct TracingWithLoggingIntegration {
 
         // get the log message and optional error kind
         let errorKind = userAttributes.removeValue(forKey: OTLogFields.errorKind) as? String
-        let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? Constants.defaultLogMessage
+        let message = (userAttributes.removeValue(forKey: OTLogFields.message) as? String) ?? message ?? Constants.defaultLogMessage
         let errorStack = userAttributes.removeValue(forKey: OTLogFields.stack) as? String
 
         // infer the log level
@@ -107,4 +114,5 @@ internal struct TracingWithLoggingIntegration {
             else: fallback
         )
     }
+    // swiftlint:enable function_default_parameter_at_end
 }

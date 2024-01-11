@@ -86,23 +86,54 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         )
     }
 
-    // swiftlint:disable unavailable_function
+    /// Sends a span event which is akin to a log in Datadog
+    /// - Parameter name: name of the event
     func addEvent(name: String) {
-        fatalError("Not implemented yet")
+        addEvent(name: name, timestamp: .init())
     }
 
+    /// Sends a span event which is akin to a log in Datadog
+    /// - Parameters:
+    ///   - name: name of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, timestamp: Date) {
-        fatalError("Not implemented yet")
+        addEvent(name: name, attributes: .init(), timestamp: timestamp)
     }
 
+    /// Sends a span event which is akin to a log in Datadog
+    /// - Parameters:
+    ///   - name: name of the event
+    ///   - attributes: attributes of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue]) {
-        fatalError("Not implemented yet")
+        addEvent(name: name, attributes: attributes, timestamp: .init())
     }
 
+    /// Sends a span event which is akin to a log in Datadog
+    /// - Parameters:
+    ///   - name: name of the event
+    ///   - attributes: attributes of the event
+    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
-        fatalError("Not implemented yet")
+        var ended = false
+        queue.sync {
+            guard isRecording else {
+                ended = true
+                return
+            }
+        }
+
+        // if the span was already ended before, we don't want to end it again
+        guard !ended else {
+            return
+        }
+
+        // There is no need to lock here, because `DDSpan` is thread-safe
+
+        // fields needs to be a dictionary of [String: Encodable] which is satisfied by opentelemetry-swift
+        // and Datadog SDK doesn't care about the representation
+        ddSpan.log(message: name, fields: attributes, timestamp: timestamp)
     }
-    // swiftlint:enable unavailable_function
 
     func end() {
         end(time: Date())
