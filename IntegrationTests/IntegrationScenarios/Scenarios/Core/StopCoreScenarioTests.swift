@@ -73,15 +73,15 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
             )
         )
 
-        // Play scenarios
-
+        // Play scenarios after first init
         var root = playScenario()
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertRUMDataWasCollected(by: rumServerSession)
+        try assertFirstRUMSessionWasCollected(by: rumServerSession)
         server.clearAllRequests()
 
+        // Stop the core and replay the scenario
         root.stopCore()
         root = playScenario(from: root)
 
@@ -94,12 +94,13 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         let recordedRUMRequests = try rumServerSession.getRecordedRequests()
         XCTAssertEqual(recordedRUMRequests.count, 0, "No RUM data should be send.")
 
+        // Restart the core and replay the scenario
         root.startCore()
         root = playScenario(from: root)
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertRUMDataWasCollected(by: rumServerSession)
+        try assertFirstRUMSessionWasCollected(by: rumServerSession)
     }
 
     /// Plays following scenario for started application:
@@ -147,39 +148,27 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         XCTAssertEqual(try spanMatcher.operationName(), "test span")
     }
 
-    private func assertRUMDataWasCollected(by serverSession: ServerSession) throws {
+    private func assertFirstRUMSessionWasCollected(by serverSession: ServerSession) throws {
+        // Get RUM Sessions with expected number of View visits
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            // ignore telemetry and application start view events
-            let eventMatchers = try requests
-                .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-                .filterTelemetry()
-                .filterApplicationLaunchView()
-
-            guard let session = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers).first else {
-                return false
-            }
-
-            return session.views.count >= 3
+            try RUMSessionMatcher.singleSession(from: requests)?.views.count == 4
         }
 
         assertRUM(requests: recordedRequests)
 
-        // ignore telemetry and application start view events
-        let eventMatchers = try recordedRequests
-            .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-            .filterTelemetry()
-            .filterApplicationLaunchView()
-
-        let session = try XCTUnwrap(RUMSessionMatcher.groupMatchersBySessions(eventMatchers).first)
+        let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRequests))
         sendCIAppLog(session)
 
-        XCTAssertEqual(session.views[0].name, "Home")
-        XCTAssertGreaterThan(session.views[0].actionEvents.count, 0)
+        XCTAssertTrue(session.views[0].isApplicationLaunchView())
+        XCTAssertEqual(session.views[0].actionEvents[0].action.type, .applicationStart)
 
-        XCTAssertEqual(session.views[1].name, "Picture")
-        XCTAssertEqual(session.views[1].resourceEvents.count, 1)
+        XCTAssertEqual(session.views[1].name, "Home")
         XCTAssertGreaterThan(session.views[1].actionEvents.count, 0)
 
-        XCTAssertEqual(session.views[2].name, "Home")
+        XCTAssertEqual(session.views[2].name, "Picture")
+        XCTAssertEqual(session.views[2].resourceEvents.count, 1)
+        XCTAssertGreaterThan(session.views[2].actionEvents.count, 0)
+
+        XCTAssertEqual(session.views[3].name, "Home")
     }
 }
