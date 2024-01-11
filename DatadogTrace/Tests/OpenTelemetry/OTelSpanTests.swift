@@ -297,7 +297,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.tags["error.msg"], nil)
     }
 
-    func testStatus_givenStatusError_whenSetStatusCalledWithOkAndUnset() {
+    func testStatus_givenStatusError_whenSetStatusCalledWithUnset() {
         let writeSpanExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock(expectation: writeSpanExpectation)
 
