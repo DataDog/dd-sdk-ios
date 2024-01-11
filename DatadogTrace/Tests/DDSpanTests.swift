@@ -19,7 +19,7 @@ class DDSpanTests: XCTestCase {
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
-        let span: DDSpan = .mockWith(tracer: tracer)
+        let span = tracer.startSpan(operationName: .mockAny())
 
         // When
         span.finish()
@@ -38,8 +38,8 @@ class DDSpanTests: XCTestCase {
         // Given
         let defaultOperationName: String = .mockRandom()
         let tracer: DatadogTracer = .mockWith(core: core)
-        let defaultSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
-        let customizedSpan: DDSpan = .mockWith(tracer: tracer, operationName: defaultOperationName)
+        let defaultSpan = tracer.startSpan(operationName: defaultOperationName)
+        let customizedSpan = tracer.startSpan(operationName: defaultOperationName)
 
         // When
         let customizedOperationName: String = .mockRandom()
@@ -64,8 +64,8 @@ class DDSpanTests: XCTestCase {
         // Given
         let defaultTags: [String: String] = .mockRandom()
         let tracer: DatadogTracer = .mockWith(core: core)
-        let defaultSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
-        let customizedSpan: DDSpan = .mockWith(tracer: tracer, tags: defaultTags)
+        let defaultSpan = tracer.startSpan(operationName: .mockAny(), tags: defaultTags)
+        let customizedSpan = tracer.startSpan(operationName: .mockAny(), tags: defaultTags)
 
         // When
         let customTags: [String: String] = .mockRandom()
@@ -110,7 +110,7 @@ class DDSpanTests: XCTestCase {
 
         // Given
         let tracer: DatadogTracer = .mockWith(core: core)
-        let span: DDSpan = .mockWith(tracer: tracer)
+        let span = tracer.startSpan(operationName: .mockAny())
 
         // When
         callConcurrently(
@@ -141,10 +141,8 @@ class DDSpanTests: XCTestCase {
         defer { dd.reset() }
 
         let core = PassthroughCoreMock(messageReceiver: FeatureMessageReceiverMock())
-        let span: DDSpan = .mockWith(
-            tracer: .mockWith(core: core),
-            operationName: "the span"
-        )
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.startSpan(operationName: "the span")
         span.finish()
 
         let fixtures: [(() -> Void, String)] = [
@@ -164,7 +162,6 @@ class DDSpanTests: XCTestCase {
 
         fixtures.forEach { tracerMethod, expectedConsoleWarning in
             tracerMethod()
-            span.tracer().dd.queue.sync {} // wait synchronizing span's internal state
             XCTAssertEqual(dd.logger.warnLog?.message, expectedConsoleWarning)
         }
     }

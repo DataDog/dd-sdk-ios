@@ -320,24 +320,3 @@ extension LogEvent.Attributes: Equatable {
             && String(describing: lhsInternalAttributesSorted) == String(describing: rhsInternalAttributesSorted)
     }
 }
-
-/// `LogOutput` recording received logs.
-class LogOutputMock: LogOutput {
-    var onLogRecorded: ((LogEvent) -> Void)?
-
-    var recordedLog: LogEvent?
-    var allRecordedLogs: [LogEvent] = []
-
-    func write(log: LogEvent) {
-        recordedLog = log
-        allRecordedLogs.append(log)
-        onLogRecorded?(log)
-    }
-
-    /// Returns newline-separated `String` description of all recorded logs.
-    func dumpAllRecordedLogs() -> String {
-        return allRecordedLogs
-            .map { "- \($0)" }
-            .joined(separator: "\n")
-    }
-}

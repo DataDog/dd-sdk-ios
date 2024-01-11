@@ -20,7 +20,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver(bundleWithRumEnabled: true)
+        let receiver = ContextMessageReceiver()
         core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
             LogMessageReceiver.mockAny(),
             receiver
