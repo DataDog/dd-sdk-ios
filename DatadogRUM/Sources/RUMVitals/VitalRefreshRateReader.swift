@@ -9,14 +9,17 @@ import UIKit
 
 /// A class reading the refresh rate (frames per second) of the main screen
 internal class VitalRefreshRateReader: ContinuousVitalReader {
-    private var valuePublishers = [VitalPublisher]()
+    private static var backendSupportedFrameRate = 60.0
 
+    private var valuePublishers: [VitalPublisher] = []
     private var displayLink: CADisplayLink?
     private var lastFrameTimestamp: CFTimeInterval?
     private var nextFrameDuration: CFTimeInterval?
-    private static var backendSupportedFrameRate = 60.0
+    private let notificationCenter: NotificationCenter
 
     init(notificationCenter: NotificationCenter = .default) {
+        self.notificationCenter = notificationCenter
+
         notificationCenter.addObserver(
             self,
             selector: #selector(appWillResignActive),
@@ -35,6 +38,7 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
 
     deinit {
         stop()
+        notificationCenter.removeObserver(self)
     }
 
     /// `VitalRefreshRateReader` keeps pushing data to its `observers` at every new frame.
@@ -87,15 +91,28 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
 
     // MARK: - Private
 
-    @objc
-    private func displayTick(link: CADisplayLink) {
-        guard let fps = framesPerSecond(provider: link) else {
-            return
+    // Holds a weak ref to the read and prevent retain cycle:
+    // reader -> displayLink -> reader
+    private class CADisplayLinker {
+        weak var reader: VitalRefreshRateReader?
+
+        init(reader: VitalRefreshRateReader) {
+            self.reader = reader
         }
 
-        for publisher in valuePublishers {
-            publisher.mutateAsync { currentInfo in
-                currentInfo.addSample(fps)
+        @objc
+        func displayTick(link: CADisplayLink) {
+            guard
+                let reader = reader,
+                let fps = reader.framesPerSecond(provider: link)
+            else {
+                return
+            }
+
+            for publisher in reader.valuePublishers {
+                publisher.mutateAsync { currentInfo in
+                    currentInfo.addSample(fps)
+                }
             }
         }
     }
@@ -105,7 +122,10 @@ internal class VitalRefreshRateReader: ContinuousVitalReader {
             return
         }
 
-        displayLink = CADisplayLink(target: self, selector: #selector(displayTick(link:)))
+        displayLink = CADisplayLink(
+            target: CADisplayLinker(reader: self),
+            selector: #selector(CADisplayLinker.displayTick(link:))
+        )
         // NOTE: RUMM-1544 `.default` mode doesn't get fired while scrolling the UI, `.common` does.
         displayLink?.add(to: .main, forMode: .common)
     }
