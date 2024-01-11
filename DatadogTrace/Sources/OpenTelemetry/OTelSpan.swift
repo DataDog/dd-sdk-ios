@@ -97,7 +97,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     ///  - name: name of the event
     /// - timestamp: timestamp of the event
     func addEvent(name: String, timestamp: Date) {
-        addEvent(name: name, attributes: .init(), timestamp: .init())
+        addEvent(name: name, attributes: .init(), timestamp: timestamp)
     }
 
     /// Sends a span event which is akin to a log in Datadog
