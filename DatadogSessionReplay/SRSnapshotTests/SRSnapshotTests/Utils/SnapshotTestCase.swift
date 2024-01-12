@@ -57,11 +57,17 @@ internal class SnapshotTestCase: XCTestCase {
             additionalNodeRecorders: []
         )
 
-        // Set up wireframes interception :
+        // Set up wireframes interception:
         var wireframes: [SRWireframe]?
         snapshotProcessor.interceptWireframes = {
             wireframes = $0
             expectation.fulfill()
+        }
+
+        // Set up resource interception:
+        var resources: [Resource]?
+        resourceProcessor.interceptResources = {
+            resources = $0
         }
 
         // Capture next record with mock RUM Context
@@ -76,7 +82,7 @@ internal class SnapshotTestCase: XCTestCase {
             XCTFail("Recorded no wireframes.")
             return UIImage()
         }
-        let renderedWireframes = renderImage(for: wireframes)
+        let renderedWireframes = renderImage(for: wireframes, resources: resources ?? [])
         let appImage = app.keyWindow.map { renderImage(for: $0) } ?? UIImage()
 
         // Add XCTest attachements for debugging and troubleshooting:

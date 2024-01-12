@@ -16,7 +16,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     /// Current recording mode:
     /// - `true` - overwrite PNGs with new versions if the difference is higher than the threshold;
     /// - `false` - do not overwrite PNGs, no matter the difference.
-    private var recordingMode = false
+    private var recordingMode = true
 
     func testBasicShapes() throws {
         show(fixture: .basicShapes)

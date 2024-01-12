@@ -13,6 +13,12 @@ internal protocol ResourceProcessing {
 }
 
 internal class ResourceProcessor: ResourceProcessing {
+    #if DEBUG
+    /// Interception callback for snapshot tests.
+    /// Only available in Debug configuration, solely made for testing purpose.
+    var interceptResources: (([Resource]) -> Void)? = nil
+    #endif
+
     private let queue: Queue
     private let resourcesWriter: ResourcesWriting
 
@@ -20,8 +26,11 @@ internal class ResourceProcessor: ResourceProcessing {
         guard !resources.isEmpty else {
             return
         }
-        queue.run { [resourcesWriter] in
-            resourcesWriter.write(
+        queue.run { [weak self] in
+            #if DEBUG
+            self?.interceptResources?(resources)
+            #endif
+            self?.resourcesWriter.write(
                 resources: resources.map {
                     EnrichedResource(
                         identifier: $0.calculateIdentifier(),
