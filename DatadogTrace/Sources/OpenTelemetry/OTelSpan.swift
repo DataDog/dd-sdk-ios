@@ -221,7 +221,9 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         ddSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
 
         // Datadog uses `_dd.span_links` tag to send span links
-        ddSpan.setTag(key: DatadogTagKeys.spanLinks.rawValue, value: spanLinks)
+        if !spanLinks.isEmpty {
+            ddSpan.setTag(key: DatadogTagKeys.spanLinks.rawValue, value: spanLinks)
+        }
 
         ddSpan.finish(at: time)
     }
