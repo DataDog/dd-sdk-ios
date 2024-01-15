@@ -14,8 +14,6 @@ import OpenTelemetryApi
 final class OTelSpanLinkTests: XCTestCase {
     func testEncoder_givenAllPropertiesArePresent() throws {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-
         let traceId = TraceId(idHi: 101, idLo: 102)
         let spanId = SpanId(id: 103)
         var traceFlags = TraceFlags()
@@ -54,8 +52,6 @@ final class OTelSpanLinkTests: XCTestCase {
 
     func testEncoder_givenOnlyRequiredPropertiesArePresent() throws {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-
         let traceId = TraceId(idHi: 101, idLo: 102)
         let spanId = SpanId(id: 103)
         let traceFlags = TraceFlags()
