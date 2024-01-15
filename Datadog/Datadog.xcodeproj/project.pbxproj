@@ -78,6 +78,8 @@
 		3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CF673362B4807490016CE17 /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF673352B4807490016CE17 /* OTelSpanTests.swift */; };
 		3CF673372B4807490016CE17 /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF673352B4807490016CE17 /* OTelSpanTests.swift */; };
+		3CFF5D492B555F4F00FC483A /* OTelTracerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */; };
+		3CFF5D4A2B555F4F00FC483A /* OTelTracerProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */; };
 		49274906288048B500ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
 		49274907288048B800ECD49B /* InternalProxyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49274903288048AA00ECD49B /* InternalProxyTests.swift */; };
 		49D8C0B72AC5D2160075E427 /* RUM+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */; };
@@ -1917,6 +1919,7 @@
 		3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogWebViewTracking.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CE11A0529F7BE0300202522 /* DatadogWebViewTrackingTests iOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogWebViewTrackingTests iOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3CF673352B4807490016CE17 /* OTelSpanTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanTests.swift; sourceTree = "<group>"; };
+		3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelTracerProvider.swift; sourceTree = "<group>"; };
 		49274903288048AA00ECD49B /* InternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InternalProxyTests.swift; sourceTree = "<group>"; };
 		49274908288048F400ECD49B /* RUMInternalProxyTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMInternalProxyTests.swift; sourceTree = "<group>"; };
 		49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUM+Internal.swift"; sourceTree = "<group>"; };
@@ -3096,6 +3099,7 @@
 		3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
+				3CFF5D482B555F4F00FC483A /* OTelTracerProvider.swift */,
 				3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */,
 				3C32359C2B55386C000B4258 /* OTelSpanLink.swift */,
 				3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */,
@@ -8246,6 +8250,7 @@
 				D2C1A4FF29C4C4CB00946C31 /* Warnings.swift in Sources */,
 				D2C1A51729C4C53F00946C31 /* OTFormat.swift in Sources */,
 				D22C5BCB2A98A5400024CC1F /* Baggages.swift in Sources */,
+				3CFF5D492B555F4F00FC483A /* OTelTracerProvider.swift in Sources */,
 				D2C1A4FA29C4C4CB00946C31 /* SpanSanitizer.swift in Sources */,
 				D2C1A50A29C4C4CB00946C31 /* TraceFeature.swift in Sources */,
 				D2C1A50829C4C4CB00946C31 /* TracingURLSessionHandler.swift in Sources */,
@@ -8450,6 +8455,7 @@
 				D2C1A54D29C4F2DF00946C31 /* Warnings.swift in Sources */,
 				D2C1A54E29C4F2DF00946C31 /* OTFormat.swift in Sources */,
 				D22C5BCC2A98A5400024CC1F /* Baggages.swift in Sources */,
+				3CFF5D4A2B555F4F00FC483A /* OTelTracerProvider.swift in Sources */,
 				D2C1A54F29C4F2DF00946C31 /* SpanSanitizer.swift in Sources */,
 				D2C1A55029C4F2DF00946C31 /* TraceFeature.swift in Sources */,
 				D2C1A55129C4F2DF00946C31 /* TracingURLSessionHandler.swift in Sources */,
