@@ -21,7 +21,15 @@ final class OTelSpanTests: XCTestCase {
         Trace.enable(in: core)
 
         // Given
-        let tracer = Tracer.shared(in: core)
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider(in: core)
+        )
+
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+
         let span = tracer
             .spanBuilder(spanName: "OperationName")
             .startSpan()
