@@ -418,6 +418,24 @@ class DatadogTests: XCTestCase {
         XCTAssertTrue(CoreRegistry.instance(named: "test") is DatadogCore)
     }
 
+    func testStopSDKInstance() throws {
+        // Given
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom(),
+            instanceName: "test"
+        )
+
+        // Then
+        XCTAssertTrue(CoreRegistry.instance(named: "test") is DatadogCore)
+
+        // When
+        Datadog.stopInstance(named: "test")
+
+        // Then
+        XCTAssertTrue(CoreRegistry.instance(named: "test") is NOPDatadogCore)
+    }
+
     func testGivenDefaultSDKInstanceInitialized_customOneCanBeInitializedAfterIt() throws {
         let defaultConfig = Datadog.Configuration(clientToken: "abc-123", env: "default")
         let customConfig = Datadog.Configuration(clientToken: "def-456", env: "custom")

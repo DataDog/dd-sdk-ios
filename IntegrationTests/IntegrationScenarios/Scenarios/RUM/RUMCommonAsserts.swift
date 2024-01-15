@@ -56,7 +56,7 @@ extension RUMSessionMatcher {
     class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request], eventsPatch: ((Data) throws -> Data)? = nil) throws -> [RUMSessionMatcher] {
         let eventMatchers = try requests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody, eventsPatch: eventsPatch) }
-            .filter { event in try event.eventType() != "telemetry" }
+            .filterTelemetry()
         let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers).sorted(by: {
             return $0.views.first?.viewEvents.first?.date ?? 0 < $1.views.first?.viewEvents.first?.date ?? 0
         })

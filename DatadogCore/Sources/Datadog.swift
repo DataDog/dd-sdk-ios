@@ -301,6 +301,17 @@ public enum Datadog {
         core?.clearAllData()
     }
 
+    /// Stops the initialized SDK instance attached to the given name.
+    ///
+    /// Stopping a core instance will stop all current processes by deallocating all Features registered
+    /// in the core as well as their storage & upload units.
+    /// 
+    /// - Parameter instanceName: the name of the instance to stop.
+    public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName) {
+        let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
+        core?.stop()
+    }
+
     /// Initializes the Datadog SDK.
     ///
     /// You **must** initialize the core instance of the Datadog SDK prior to enabling any Product.
@@ -489,13 +500,10 @@ public enum Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
-        assert(CoreRegistry.instance(named: instanceName) is DatadogCore, "SDK must be first initialized.")
-
+        // Unregister core instance:
+        let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
         // Flush and tear down SDK core:
-        (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
-
-        // Deinitialize `Datadog`:
-        CoreRegistry.unregisterInstance(named: instanceName)
+        core?.flushAndTearDown()
     }
 }
 

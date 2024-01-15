@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -41,7 +41,7 @@
 		6137E649252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 6137E648252DD88D00720485 /* RUMModalViewsAutoInstrumentationScenario.storyboard */; };
 		613B77382521E80800155458 /* RUMTabBarControllerScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */; };
 		61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */; };
-		61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */; };
+		61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C0424616DE9003D8BB8 /* AppDelegate.swift */; };
 		61441C0E24616DEC003D8BB8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 61441C0D24616DEC003D8BB8 /* Assets.xcassets */; };
 		61441C4024617013003D8BB8 /* IntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3B24617013003D8BB8 /* IntegrationTests.swift */; };
 		61441C4124617013003D8BB8 /* LoggingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61441C3C24617013003D8BB8 /* LoggingScenarioTests.swift */; };
@@ -110,6 +110,13 @@
 		D2791EF927170A760046E07A /* RUMSwiftUIScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2791EF827170A760046E07A /* RUMSwiftUIScenarioTests.swift */; };
 		D2F5BB36271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */; };
 		D2F5BB382718331800BDE2A4 /* SwiftUIRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */; };
+		D2FCA74D2B4D829F0014DC87 /* CSPictureViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */; };
+		D2FCA74E2B4D829F0014DC87 /* StopCoreScenario.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2FCA7492B4D829F0014DC87 /* StopCoreScenario.storyboard */; };
+		D2FCA74F2B4D829F0014DC87 /* CSHomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA74A2B4D829F0014DC87 /* CSHomeViewController.swift */; };
+		D2FCA7512B4D829F0014DC87 /* CoreScenarios.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA74C2B4D829F0014DC87 /* CoreScenarios.swift */; };
+		D2FCA7532B4D84EE0014DC87 /* CustomURLSessionDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */; };
+		D2FCA7552B4D87110014DC87 /* StopCoreScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */; };
+		D2FCA7582B4DA8720014DC87 /* CSRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -172,7 +179,7 @@
 		613B77372521E80800155458 /* RUMTabBarControllerScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTabBarControllerScenarioTests.swift; sourceTree = "<group>"; };
 		61410140251A454500E3C2D9 /* TracingCommonAsserts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingCommonAsserts.swift; sourceTree = "<group>"; };
 		61441C0224616DE9003D8BB8 /* Integration Tests Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Integration Tests Runner.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleAppDelegate.swift; sourceTree = "<group>"; };
+		61441C0424616DE9003D8BB8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		61441C0D24616DEC003D8BB8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		61441C2A24616F1D003D8BB8 /* IntegrationScenarios.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = IntegrationScenarios.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61441C3B24617013003D8BB8 /* IntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IntegrationTests.swift; sourceTree = "<group>"; };
@@ -256,6 +263,13 @@
 		D2AEFF1B29925BEC00A28997 /* DatadogIntegrationTests.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = DatadogIntegrationTests.xctestplan; sourceTree = "<group>"; };
 		D2F5BB35271831C200BDE2A4 /* RUMSwiftUIInstrumentationScenario.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = RUMSwiftUIInstrumentationScenario.storyboard; sourceTree = "<group>"; };
 		D2F5BB372718331800BDE2A4 /* SwiftUIRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIRootViewController.swift; sourceTree = "<group>"; };
+		D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSPictureViewController.swift; sourceTree = "<group>"; };
+		D2FCA7492B4D829F0014DC87 /* StopCoreScenario.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = StopCoreScenario.storyboard; sourceTree = "<group>"; };
+		D2FCA74A2B4D829F0014DC87 /* CSHomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CSHomeViewController.swift; sourceTree = "<group>"; };
+		D2FCA74C2B4D829F0014DC87 /* CoreScenarios.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreScenarios.swift; sourceTree = "<group>"; };
+		D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomURLSessionDelegate.swift; sourceTree = "<group>"; };
+		D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopCoreScenarioTests.swift; sourceTree = "<group>"; };
+		D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSRootViewController.swift; sourceTree = "<group>"; };
 		E0F3607A83689002423C29E4 /* libPods-Runner iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E6057106F868E6C529F89BE9 /* Pods-Runner iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner iOS.release.xcconfig"; path = "Target Support Files/Pods-Runner iOS/Pods-Runner iOS.release.xcconfig"; sourceTree = "<group>"; };
 		E93021D28790F380B3C63C4B /* libPods-Runner iOS-IntegrationScenarios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Runner iOS-IntegrationScenarios.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -417,6 +431,7 @@
 			isa = PBXGroup;
 			children = (
 				614CADCD250FCA0200B93D2D /* TestScenarios.swift */,
+				D2FCA7462B4D829F0014DC87 /* Core */,
 				61337030250F829E00236D58 /* Logging */,
 				61337033250F847500236D58 /* Tracing */,
 				61337036250F84F100236D58 /* RUM */,
@@ -488,7 +503,7 @@
 		61441C0324616DE9003D8BB8 /* Runner */ = {
 			isa = PBXGroup;
 			children = (
-				61441C0424616DE9003D8BB8 /* ExampleAppDelegate.swift */,
+				61441C0424616DE9003D8BB8 /* AppDelegate.swift */,
 				61441C9C2461A796003D8BB8 /* AppConfiguration.swift */,
 				614CADD62510BAC000B93D2D /* Environment.swift */,
 				6133702F250F829000236D58 /* Scenarios */,
@@ -521,6 +536,7 @@
 				6111544725C9A88B007C84C9 /* PersistenceHelper.swift */,
 				61098D2A27FEE3F00021237A /* MessagePortChannel.swift */,
 				61098D2E27FF16A20021237A /* RUMSessionEndView.swift */,
+				D2FCA7522B4D84EE0014DC87 /* CustomURLSessionDelegate.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -607,6 +623,7 @@
 		61F3CD9C251106EB00C816E5 /* Scenarios */ = {
 			isa = PBXGroup;
 			children = (
+				D2FCA7562B4D87180014DC87 /* Core */,
 				61F3CD9D251106FA00C816E5 /* Logging */,
 				61F3CD9E251106FF00C816E5 /* Tracing */,
 				61F3CD9F2511070300C816E5 /* RUM */,
@@ -768,6 +785,34 @@
 			path = xctestplans;
 			sourceTree = "<group>";
 		};
+		D2FCA7462B4D829F0014DC87 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D2FCA74C2B4D829F0014DC87 /* CoreScenarios.swift */,
+				D2FCA7472B4D829F0014DC87 /* StopCoreInstance */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		D2FCA7472B4D829F0014DC87 /* StopCoreInstance */ = {
+			isa = PBXGroup;
+			children = (
+				D2FCA7492B4D829F0014DC87 /* StopCoreScenario.storyboard */,
+				D2FCA7572B4DA8720014DC87 /* CSRootViewController.swift */,
+				D2FCA74A2B4D829F0014DC87 /* CSHomeViewController.swift */,
+				D2FCA7482B4D829F0014DC87 /* CSPictureViewController.swift */,
+			);
+			path = StopCoreInstance;
+			sourceTree = "<group>";
+		};
+		D2FCA7562B4D87180014DC87 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				D2FCA7542B4D87110014DC87 /* StopCoreScenarioTests.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -877,6 +922,7 @@
 				9EC2835E26CFF57A00FACF1C /* RUMMobileVitalsScenario.storyboard in Resources */,
 				6167AD19251A27B80012B4D0 /* URLSessionScenario.storyboard in Resources */,
 				61F9CA792512593A000A5E61 /* RUMNavigationControllerScenario.storyboard in Resources */,
+				D2FCA74E2B4D829F0014DC87 /* StopCoreScenario.storyboard in Resources */,
 				61337035250F84BF00236D58 /* TracingManualInstrumentationScenario.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -942,6 +988,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2FCA7532B4D84EE0014DC87 /* CustomURLSessionDelegate.swift in Sources */,
 				D2F5BB382718331800BDE2A4 /* SwiftUIRootViewController.swift in Sources */,
 				618DCFE124C766F500589570 /* SendRUMFixture2ViewController.swift in Sources */,
 				D22F06CF29DAE5360026CC3C /* KioskSendInterruptedEventsViewController.swift in Sources */,
@@ -950,6 +997,7 @@
 				6164AE89252B4ECA000D78C4 /* SendThirdPartyRequestsViewController.swift in Sources */,
 				612C13732A9DFE1C0086B5D1 /* SRMultipleViewsRecordingViewController.swift in Sources */,
 				611EA14225810E1900BC0E56 /* TSHomeViewController.swift in Sources */,
+				D2FCA7582B4DA8720014DC87 /* CSRootViewController.swift in Sources */,
 				612D8F6F25AEE6A7000E2E09 /* RUMScrubbingViewController.swift in Sources */,
 				61163C37252DDD60007DD5BF /* RUMMVSViewController.swift in Sources */,
 				61D50C5A2580EFF3006038A3 /* URLSessionScenarios.swift in Sources */,
@@ -973,10 +1021,13 @@
 				61D50C3C2580EEF8006038A3 /* LoggingScenarios.swift in Sources */,
 				611EA14E25810E3700BC0E56 /* TSConsentSettingViewController.swift in Sources */,
 				6164AF0E252C9016000D78C4 /* ObjcSendThirdPartyRequestsViewController.m in Sources */,
-				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
+				D2FCA74D2B4D829F0014DC87 /* CSPictureViewController.swift in Sources */,
+				61441C0524616DE9003D8BB8 /* AppDelegate.swift in Sources */,
 				6193DCCE251B6201009B8011 /* RUMTASScreen1ViewController.swift in Sources */,
+				D2FCA7512B4D829F0014DC87 /* CoreScenarios.swift in Sources */,
 				612C13702A9CF9140086B5D1 /* SRScenarios.swift in Sources */,
 				61098D2F27FF16A20021237A /* RUMSessionEndView.swift in Sources */,
+				D2FCA74F2B4D829F0014DC87 /* CSHomeViewController.swift in Sources */,
 				61163C3E252E0015007DD5BF /* RUMMVSModalViewController.swift in Sources */,
 				617247AF25DA9BEA007085B3 /* CrashReportingObjcHelpers.m in Sources */,
 				6193DCE1251B692C009B8011 /* RUMTASTableViewController.swift in Sources */,
@@ -1024,6 +1075,7 @@
 				612C13CC2A9F94AF0086B5D1 /* SRMultipleViewsRecordingScenarioTests.swift in Sources */,
 				61410141251A454500E3C2D9 /* TracingCommonAsserts.swift in Sources */,
 				615AAC29251E322D00C89EE9 /* RUMCommonAsserts.swift in Sources */,
+				D2FCA7552B4D87110014DC87 /* StopCoreScenarioTests.swift in Sources */,
 				D2774EE7299E2E90004EC36A /* LogMatcher.swift in Sources */,
 				6164AF2E252C9C51000D78C4 /* RUMResourcesScenarioTests.swift in Sources */,
 				D2774EE8299E2E90004EC36A /* JSONDataMatcher.swift in Sources */,

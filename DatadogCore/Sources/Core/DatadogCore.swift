@@ -207,7 +207,12 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
-        // Deallocate all Features and their storage & upload units:
+        stop()
+    }
+
+    /// Stops all processes for this instance of the Datadog core by
+    /// deallocating all Features and their storage & upload units.
+    func stop() {
         stores = [:]
         features = [:]
     }
