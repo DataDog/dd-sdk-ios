@@ -29,11 +29,19 @@
 		3C2206F62AB9DBA700DE780C /* DatadogRUM.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D29A9F3429DD84AA005C54A4 /* DatadogRUM.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C2206F72AB9DBB600DE780C /* DatadogTrace.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3C2206F82AB9DBC600DE780C /* DatadogInternal.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D23039A5298D513C001A1FA3 /* DatadogInternal.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3C32359D2B55386C000B4258 /* OTelSpanLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C32359C2B55386C000B4258 /* OTelSpanLink.swift */; };
+		3C32359E2B55386C000B4258 /* OTelSpanLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C32359C2B55386C000B4258 /* OTelSpanLink.swift */; };
+		3C3235A02B55387A000B4258 /* OTelSpanLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */; };
+		3C3235A12B55387A000B4258 /* OTelSpanLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */; };
 		3C394EF72AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */; };
 		3C394EF82AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */; };
 		3C394EFA2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */; };
 		3C394EFB2AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */; };
 		3C41693C29FBF4D50042B9D2 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
+		3C5D63692B55512B00FEB4BA /* OTelTraceState+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */; };
+		3C5D636A2B55512B00FEB4BA /* OTelTraceState+Datadog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */; };
+		3C5D636C2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */; };
+		3C5D636D2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */; };
 		3C6C7FDB2B45738C006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDA2B45738C006F5CBC /* OpenTelemetryApi */; };
 		3C6C7FDD2B457392006F5CBC /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 3C6C7FDC2B457392006F5CBC /* OpenTelemetryApi */; };
 		3C6C7FE72B459AAA006F5CBC /* OTelSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */; };
@@ -1904,8 +1912,12 @@
 		3C0D5DF42A5443B100446CF9 /* DataFormatTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataFormatTests.swift; sourceTree = "<group>"; };
 		3C1890132ABDE99200CE9E73 /* DDURLSessionInstrumentationTests+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDURLSessionInstrumentationTests+apiTests.m"; sourceTree = "<group>"; };
 		3C2206F22AB9CE9300DE780C /* MetaTypeExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetaTypeExtensions.swift; sourceTree = "<group>"; };
+		3C32359C2B55386C000B4258 /* OTelSpanLink.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLink.swift; sourceTree = "<group>"; };
+		3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanLinkTests.swift; sourceTree = "<group>"; };
 		3C394EF62AA5F49F008F48BA /* URLSessionDataDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzler.swift; sourceTree = "<group>"; };
 		3C394EF92AA5F4C8008F48BA /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
+		3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceState+Datadog.swift"; sourceTree = "<group>"; };
+		3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceState+DatadogTests.swift"; sourceTree = "<group>"; };
 		3C6C7FE02B459AAA006F5CBC /* OTelSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpan.swift; sourceTree = "<group>"; };
 		3C6C7FE12B459AAA006F5CBC /* OTelSpanBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OTelSpanBuilder.swift; sourceTree = "<group>"; };
 		3C6C7FE22B459AAA006F5CBC /* OTelTraceId+Datadog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "OTelTraceId+Datadog.swift"; sourceTree = "<group>"; };
@@ -3123,6 +3135,8 @@
 		3C6C7FDE2B459AAA006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
+				3C5D63682B55512B00FEB4BA /* OTelTraceState+Datadog.swift */,
+				3C32359C2B55386C000B4258 /* OTelSpanLink.swift */,
 				3CC6AD172B4F07DC00015B18 /* OTelAttributeValue+Datadog.swift */,
 				3CB012DB2B482E0400557951 /* NOPOTelSpan.swift */,
 				3CB012DC2B482E0400557951 /* NOPOTelSpanBuilder.swift */,
@@ -3137,6 +3151,8 @@
 		3C6C7FF12B459AB3006F5CBC /* OpenTelemetry */ = {
 			isa = PBXGroup;
 			children = (
+				3C5D636B2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift */,
+				3C32359F2B55387A000B4258 /* OTelSpanLinkTests.swift */,
 				3CC6AD1A2B4F07E700015B18 /* OTelAttributeValue+DatadogTests.swift */,
 				3C6C7FF22B459AB3006F5CBC /* OTelSpanId+DatadogTests.swift */,
 				3C6C7FF32B459AB3006F5CBC /* OTelTraceId+DatadogTests.swift */,
@@ -8335,6 +8351,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C5D63692B55512B00FEB4BA /* OTelTraceState+Datadog.swift in Sources */,
 				61A2CC3C2A44BED30000FF25 /* Tracer.swift in Sources */,
 				D2C1A50229C4C4CB00946C31 /* Casting.swift in Sources */,
 				3CC6AD182B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */,
@@ -8350,6 +8367,7 @@
 				D2C1A51329C4C53F00946C31 /* OTReference.swift in Sources */,
 				3C6C7FEF2B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */,
 				D2C1A4FB29C4C4CB00946C31 /* MessageReceivers.swift in Sources */,
+				3C32359D2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
 				61A2CC362A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC392A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A50029C4C4CB00946C31 /* ActiveSpansPool.swift in Sources */,
@@ -8390,6 +8408,8 @@
 				3C6C7FFD2B459AF6006F5CBC /* OTelSpanTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
+				3C5D636C2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */,
+				3C3235A02B55387A000B4258 /* OTelSpanLinkTests.swift in Sources */,
 				3C6C7FFC2B459AF6006F5CBC /* OTelTraceId+DatadogTests.swift in Sources */,
 				D2C1A51B29C4C75700946C31 /* DDSpanContextTests.swift in Sources */,
 				D2C1A52729C4C7D000946C31 /* TracingFeatureMocks.swift in Sources */,
@@ -8535,6 +8555,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3C5D636A2B55512B00FEB4BA /* OTelTraceState+Datadog.swift in Sources */,
 				61A2CC3D2A44BED30000FF25 /* Tracer.swift in Sources */,
 				D2C1A53829C4F2DF00946C31 /* Casting.swift in Sources */,
 				3CC6AD192B4F07DD00015B18 /* OTelAttributeValue+Datadog.swift in Sources */,
@@ -8550,6 +8571,7 @@
 				D2C1A53F29C4F2DF00946C31 /* OTReference.swift in Sources */,
 				3C6C7FF02B459AAA006F5CBC /* OTelSpanId+Datadog.swift in Sources */,
 				D2C1A54129C4F2DF00946C31 /* MessageReceivers.swift in Sources */,
+				3C32359E2B55386C000B4258 /* OTelSpanLink.swift in Sources */,
 				61A2CC372A44B0A20000FF25 /* TraceConfiguration.swift in Sources */,
 				61A2CC3A2A44B0EA0000FF25 /* Trace.swift in Sources */,
 				D2C1A54229C4F2DF00946C31 /* ActiveSpansPool.swift in Sources */,
@@ -8590,6 +8612,8 @@
 				3C6C80002B459AF6006F5CBC /* OTelSpanTests.swift in Sources */,
 				619CE7622A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A56629C4F2E800946C31 /* DDSpanTests.swift in Sources */,
+				3C5D636D2B55513500FEB4BA /* OTelTraceState+DatadogTests.swift in Sources */,
+				3C3235A12B55387A000B4258 /* OTelSpanLinkTests.swift in Sources */,
 				3C6C7FFF2B459AF6006F5CBC /* OTelTraceId+DatadogTests.swift in Sources */,
 				D2C1A56729C4F2E800946C31 /* DDSpanContextTests.swift in Sources */,
 				D2C1A56829C4F2E800946C31 /* TracingFeatureMocks.swift in Sources */,

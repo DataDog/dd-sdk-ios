@@ -11,6 +11,14 @@ internal enum DatadogTagKeys: String {
     case spanKind = "span.kind"
     case errorType = "error.type"
     case errorMessage = "error.message"
+    case spanLinks = "_dd.span_links"
+}
+
+extension OpenTelemetryApi.TraceId {
+    /// Returns 32 character hexadecimal string representation of lower 64 bits of the trace ID.
+    var lowerLongHexString: String {
+        return String(format: "%016llx", rawLowerLong)
+    }
 }
 
 internal extension OpenTelemetryApi.Status {
@@ -38,6 +46,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     let ddSpan: DDSpan
     let tracer: DatadogTracer
     let queue: DispatchQueue
+    let spanLinks: [OTelSpanLink]
 
     /// `isRecording` indicates whether the span is recording or not
     /// and events can be added to it.
@@ -93,6 +102,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         parentSpanID: OpenTelemetryApi.SpanId?,
         spanContext: OpenTelemetryApi.SpanContext,
         spanKind: OpenTelemetryApi.SpanKind,
+        spanLinks: [OTelSpanLink],
         startTime: Date,
         tracer: DatadogTracer
     ) {
@@ -104,6 +114,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.isRecording = true
         self.queue = tracer.queue
         self.tracer = tracer
+        self.spanLinks = spanLinks
         self.ddSpan = .init(
             tracer: tracer,
             context: .init(
@@ -208,6 +219,10 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
         // SpanKind maps to the `span.kind` tag in Datadog
         ddSpan.setTag(key: DatadogTagKeys.spanKind.rawValue, value: kind.rawValue)
+
+        // Datadog uses `_dd.span_links` tag to send span links
+        ddSpan.setTag(key: DatadogTagKeys.spanLinks.rawValue, value: spanLinks)
+
         ddSpan.finish(at: time)
     }
 

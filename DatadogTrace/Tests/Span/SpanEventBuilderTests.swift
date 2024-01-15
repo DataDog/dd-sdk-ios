@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+import OpenTelemetryApi
 
 @testable import DatadogTrace
 
@@ -498,5 +499,63 @@ class SpanEventBuilderTests: XCTestCase {
             """
         )
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "Value cannot be encoded.")
+    }
+
+    func testBuildingSpanWhenSpanLinkIsPresentInTags() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        let builder: SpanEventBuilder = .mockAny()
+
+        let traceId = TraceId(idHi: 101, idLo: 102)
+        let spanId = SpanId(id: 103)
+        var traceFlags = TraceFlags()
+        traceFlags.setIsSampled(true)
+        let traceState = TraceState(
+            entries: [
+                .init(key: "foo", value: "bar")!,
+                .init(key: "bar", value: "baz")!
+            ]
+        )!
+
+        let spanContext = OpenTelemetryApi.SpanContext.create(
+            traceId: traceId,
+            spanId: spanId,
+            traceFlags: traceFlags,
+            traceState: traceState
+        )
+        let attributes: [String: OpenTelemetryApi.AttributeValue] = [
+            "foo": .string("bar")
+        ]
+
+        let spanLink = OTelSpanLink(
+            context: spanContext,
+            attributes: attributes
+        )
+
+        // When
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [
+                DatadogTagKeys.spanLinks.rawValue: [spanLink]
+            ],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.tags.count, 1)
+        let expectedTags = "[{\"trace_id\":\"00000000000000000000000000000065\",\"span_id\":\"0000000000000067\",\"tracestate\":\"foo=bar,bar=baz\",\"flags\":1,\"attributes\":{\"foo\":\"bar\"}}]"
+        let actualTags = span.tags["_dd.span_links"]
+
+        DDAssertJSONEqual(expectedTags, actualTags)
     }
 }
