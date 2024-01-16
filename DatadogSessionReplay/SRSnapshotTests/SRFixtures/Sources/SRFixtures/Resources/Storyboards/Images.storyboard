@@ -27,30 +27,30 @@
                                     <constraint firstAttribute="width" constant="32" id="KCk-0l-g6b"/>
                                 </constraints>
                             </imageView>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="zQI-BZ-L2g">
-                                <rect key="frame" x="0.0" y="195" width="393" height="288"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="32" translatesAutoresizingMaskIntoConstraints="NO" id="zQI-BZ-L2g">
+                                <rect key="frame" x="0.0" y="131" width="393" height="428"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" alignment="center" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="n6y-pj-DAN">
                                         <rect key="frame" x="90.666666666666686" y="0.0" width="212" height="60"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="jcb-O5-2mM">
-                                                <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="jcb-O5-2mM">
+                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemRedColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="60" id="HJk-5C-6yC"/>
                                                     <constraint firstAttribute="height" constant="60" id="WsJ-yB-EEv"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="top" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="Fgp-KK-Ke7">
-                                                <rect key="frame" x="75.999999999999986" y="0.0" width="60.000000000000014" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="top" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Fgp-KK-Ke7">
+                                                <rect key="frame" x="75.999999999999986" y="0.33333333333333215" width="60.000000000000014" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemOrangeColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="5Mm-VS-B0n"/>
                                                     <constraint firstAttribute="width" constant="60" id="d5l-gr-b9s"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="topRight" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="Rik-nq-iMy">
-                                                <rect key="frame" x="152" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="topRight" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Rik-nq-iMy">
+                                                <rect key="frame" x="152" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemYellowColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="RTB-lF-xFo"/>
@@ -60,26 +60,26 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="wRN-n5-SFz">
-                                        <rect key="frame" x="90.666666666666686" y="76" width="212" height="60"/>
+                                        <rect key="frame" x="90.666666666666686" y="92" width="212" height="60"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="9qF-XG-XC7">
-                                                <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="9qF-XG-XC7">
+                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemOrangeColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="60" id="D4p-wX-cAR"/>
                                                     <constraint firstAttribute="height" constant="60" id="OR5-VA-iKs"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="wWC-qT-tCu">
-                                                <rect key="frame" x="75.999999999999986" y="0.0" width="60.000000000000014" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="wWC-qT-tCu">
+                                                <rect key="frame" x="75.999999999999986" y="0.33333333333333215" width="60.000000000000014" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemYellowColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="60" id="KVO-nL-h1p"/>
                                                     <constraint firstAttribute="height" constant="60" id="LEa-60-E9c"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="Iso-5C-C33">
-                                                <rect key="frame" x="152" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="right" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="Iso-5C-C33">
+                                                <rect key="frame" x="152" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemGreenColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="7BE-o3-YdX"/>
@@ -89,26 +89,26 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="qpo-uE-LXg">
-                                        <rect key="frame" x="90.666666666666686" y="152" width="212" height="60"/>
+                                        <rect key="frame" x="90.666666666666686" y="184" width="212" height="60"/>
                                         <subviews>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottomLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="lYB-g3-TyJ">
-                                                <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottomLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="lYB-g3-TyJ">
+                                                <rect key="frame" x="0.0" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemYellowColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="60" id="MbE-d9-apI"/>
                                                     <constraint firstAttribute="height" constant="60" id="wch-Ab-vni"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottom" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="7U1-O7-lco">
-                                                <rect key="frame" x="75.999999999999986" y="0.0" width="60.000000000000014" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottom" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="7U1-O7-lco">
+                                                <rect key="frame" x="75.999999999999986" y="0.33333333333333215" width="60.000000000000014" height="58.333333333333343"/>
                                                 <color key="tintColor" systemColor="systemGreenColor"/>
                                                 <constraints>
                                                     <constraint firstAttribute="height" constant="60" id="52P-KT-QxO"/>
                                                     <constraint firstAttribute="width" constant="60" id="hwX-kQ-z79"/>
                                                 </constraints>
                                             </imageView>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottomRight" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="cEK-CH-9GB">
-                                                <rect key="frame" x="152" y="0.0" width="60" height="60"/>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="bottomRight" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="applelogo" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="cEK-CH-9GB">
+                                                <rect key="frame" x="152" y="0.33333333333333215" width="60" height="58.333333333333343"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="60" id="7ZE-pY-DhO"/>
                                                     <constraint firstAttribute="height" constant="60" id="I1U-uF-b2q"/>
@@ -117,7 +117,7 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="sNB-oY-maF">
-                                        <rect key="frame" x="30.666666666666657" y="228" width="332" height="60"/>
+                                        <rect key="frame" x="30.666666666666657" y="276" width="332" height="60"/>
                                         <subviews>
                                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="Fqh-W8-08U">
                                                 <rect key="frame" x="0.0" y="0.0" width="100" height="60"/>
@@ -132,10 +132,30 @@
                                             </imageView>
                                         </subviews>
                                     </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="16" translatesAutoresizingMaskIntoConstraints="NO" id="MAt-Kt-8CE">
+                                        <rect key="frame" x="50.666666666666657" y="368" width="292" height="60"/>
+                                        <subviews>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vKz-Ut-7bS">
+                                                <rect key="frame" x="0.0" y="0.0" width="80" height="60"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="80" id="PD8-Q7-Hmr"/>
+                                                </constraints>
+                                            </imageView>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="Tt3-bk-vHT">
+                                                <rect key="frame" x="96" y="0.0" width="100" height="60"/>
+                                            </imageView>
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lus-kO-cFd">
+                                                <rect key="frame" x="212.00000000000003" y="0.0" width="79.999999999999972" height="60"/>
+                                                <constraints>
+                                                    <constraint firstAttribute="width" constant="79.999999999999972" id="97u-JO-CUS"/>
+                                                </constraints>
+                                            </imageView>
+                                        </subviews>
+                                    </stackView>
                                 </subviews>
                             </stackView>
                             <tabBar contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="raw-wh-zEy">
-                                <rect key="frame" x="0.0" y="499" width="393" height="49"/>
+                                <rect key="frame" x="0.0" y="591" width="393" height="49"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="49" id="t9n-YU-wtJ"/>
                                 </constraints>
@@ -150,7 +170,7 @@
                                 </items>
                             </tabBar>
                             <navigationBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ftc-4B-7Pp">
-                                <rect key="frame" x="0.0" y="556" width="393" height="44"/>
+                                <rect key="frame" x="0.0" y="648" width="393" height="44"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="4hr-VJ-mh1"/>
                                 </constraints>
@@ -161,13 +181,6 @@
                                     </navigationItem>
                                 </items>
                             </navigationBar>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="vKz-Ut-7bS">
-                                <rect key="frame" x="156.66666666666666" y="612" width="80" height="80"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="80" id="YUK-jg-T8h"/>
-                                    <constraint firstAttribute="height" constant="80" id="zPr-qF-VOv"/>
-                                </constraints>
-                            </imageView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KxN-zV-mGU">
                                 <rect key="frame" x="260.66666666666669" y="53" width="116.33333333333331" height="60"/>
                                 <constraints>
@@ -184,44 +197,23 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </button>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="lus-kO-cFd">
-                                <rect key="frame" x="156.66666666666666" y="700" width="80" height="80"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="80" id="mpr-R0-LJ9"/>
-                                    <constraint firstAttribute="height" constant="80" id="t1B-fG-Ugy"/>
-                                </constraints>
-                            </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="dd_logo" translatesAutoresizingMaskIntoConstraints="NO" id="WOH-s0-NoR">
-                                <rect key="frame" x="188.66666666666666" y="147" width="16" height="16"/>
-                                <color key="tintColor" systemColor="systemYellowColor"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="16" id="3LO-Rl-qOk"/>
-                                    <constraint firstAttribute="height" constant="16" id="8WP-Wy-qPz"/>
-                                </constraints>
-                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="lus-kO-cFd" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="0ds-6f-Hj1"/>
-                            <constraint firstItem="vKz-Ut-7bS" firstAttribute="top" secondItem="ftc-4B-7Pp" secondAttribute="bottom" constant="12" id="2KW-Vg-MSH"/>
-                            <constraint firstItem="lus-kO-cFd" firstAttribute="top" secondItem="vKz-Ut-7bS" secondAttribute="bottom" constant="8" id="2Wb-dZ-WYE"/>
-                            <constraint firstItem="zQI-BZ-L2g" firstAttribute="top" secondItem="WOH-s0-NoR" secondAttribute="bottom" constant="32" id="3Nc-nC-MjS"/>
-                            <constraint firstItem="raw-wh-zEy" firstAttribute="top" secondItem="zQI-BZ-L2g" secondAttribute="bottom" constant="16" id="3Tf-N7-p6F"/>
+                            <constraint firstItem="raw-wh-zEy" firstAttribute="top" secondItem="zQI-BZ-L2g" secondAttribute="bottom" constant="32" id="3Tf-N7-p6F"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="KxN-zV-mGU" secondAttribute="trailing" constant="16" id="Cj8-dU-3FG"/>
                             <constraint firstItem="raw-wh-zEy" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="ET0-BN-qth"/>
                             <constraint firstItem="zQI-BZ-L2g" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OAe-l4-L39"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="OTN-dD-tUV"/>
                             <constraint firstItem="ftc-4B-7Pp" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="OuL-9P-SDJ"/>
                             <constraint firstItem="ftc-4B-7Pp" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="P5h-A7-U1M"/>
+                            <constraint firstItem="zQI-BZ-L2g" firstAttribute="top" secondItem="xxq-Cw-MRl" secondAttribute="bottom" constant="32" id="SQh-2j-ine"/>
                             <constraint firstItem="ftc-4B-7Pp" firstAttribute="top" secondItem="raw-wh-zEy" secondAttribute="bottom" constant="8" id="TIg-KH-e5o"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="leading" secondItem="xxq-Cw-MRl" secondAttribute="trailing" constant="48" id="VVE-7k-3Tk"/>
                             <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="zQI-BZ-L2g" secondAttribute="trailing" id="Wjg-fd-LWW"/>
-                            <constraint firstItem="WOH-s0-NoR" firstAttribute="top" secondItem="xxq-Cw-MRl" secondAttribute="bottom" constant="48" id="X5n-Ye-Jou"/>
                             <constraint firstItem="raw-wh-zEy" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="iAJ-aX-zcr"/>
-                            <constraint firstItem="vKz-Ut-7bS" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="iGo-IL-Tk7"/>
                             <constraint firstItem="xxq-Cw-MRl" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="8" id="jIN-YZ-8QX"/>
-                            <constraint firstItem="WOH-s0-NoR" firstAttribute="centerX" secondItem="vDu-zF-Fre" secondAttribute="centerX" id="r6q-UC-XQz"/>
                             <constraint firstItem="KxN-zV-mGU" firstAttribute="centerY" secondItem="xxq-Cw-MRl" secondAttribute="centerY" id="wlR-Fb-T22"/>
                         </constraints>
                     </view>
