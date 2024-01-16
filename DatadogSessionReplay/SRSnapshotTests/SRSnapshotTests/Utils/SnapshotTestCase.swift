@@ -37,7 +37,8 @@ internal class SnapshotTestCase: XCTestCase {
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(with privacyLevel: SessionReplay.Configuration.PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
-        let expectation = self.expectation(description: "Wait for wireframes")
+        let expectWireframes = self.expectation(description: "Wait for wireframes")
+        let expectResources = self.expectation(description: "Wait for resources")
 
         // Set up SR recorder:
         let snapshotProcessor = SnapshotProcessor(
@@ -61,13 +62,14 @@ internal class SnapshotTestCase: XCTestCase {
         var wireframes: [SRWireframe]?
         snapshotProcessor.interceptWireframes = {
             wireframes = $0
-            expectation.fulfill()
+            expectWireframes.fulfill()
         }
 
         // Set up resource interception:
         var resources: [Resource]?
         resourceProcessor.interceptResources = {
             resources = $0
+            expectResources.fulfill()
         }
 
         // Capture next record with mock RUM Context

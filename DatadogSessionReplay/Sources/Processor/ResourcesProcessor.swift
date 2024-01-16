@@ -23,13 +23,13 @@ internal class ResourceProcessor: ResourceProcessing {
     private let resourcesWriter: ResourcesWriting
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
+        #if DEBUG
+        interceptResources?(resources)
+        #endif
         guard !resources.isEmpty else {
             return
         }
         queue.run { [weak self] in
-            #if DEBUG
-            self?.interceptResources?(resources)
-            #endif
             self?.resourcesWriter.write(
                 resources: resources.map {
                     EnrichedResource(
