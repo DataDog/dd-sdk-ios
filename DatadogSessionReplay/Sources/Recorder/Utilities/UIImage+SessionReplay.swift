@@ -22,15 +22,6 @@ extension UIImage {
         return hash
     }
 
-    var recorded: Bool {
-        get {
-            return objc_getAssociatedObject(self, &recordedKey) as? Bool ?? false
-        }
-        set {
-            objc_setAssociatedObject(self, &recordedKey, newValue, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        }
-    }
-
     private func computeHash() -> String {
         guard let imageData = self.pngData() else {
             return ""

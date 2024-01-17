@@ -22,22 +22,31 @@ internal class ResourceProcessor: ResourceProcessing {
     private let queue: Queue
     private let resourcesWriter: ResourcesWriting
 
+    private var processedIdentifiers = Set<String>()
+
     func process(resources: [Resource], context: EnrichedResource.Context) {
         #if DEBUG
         interceptResources?(resources)
         #endif
-        guard !resources.isEmpty else {
-            return
-        }
         queue.run { [weak self] in
-            self?.resourcesWriter.write(
-                resources: resources.map {
+            let resources = resources
+                .map {
                     EnrichedResource(
                         identifier: $0.calculateIdentifier(),
                         data: $0.calculateData(),
                         context: context
                     )
                 }
+                .filter {
+                    let isIncluded = self?.processedIdentifiers.contains($0.identifier) == false
+                    self?.processedIdentifiers.insert($0.identifier)
+                    return isIncluded
+                }
+            guard !resources.isEmpty else {
+                return
+            }
+            self?.resourcesWriter.write(
+                resources: resources
             )
         }
     }

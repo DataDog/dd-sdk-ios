@@ -65,7 +65,6 @@ class UIImageViewRecorderTests: XCTestCase {
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertFalse(builder.shouldRecordImage)
         XCTAssertNil(semantics.resources.first as? UIImage)
-        XCTAssertEqual(imageView.image?.recorded, false)
     }
 
     func testWhenShouldRecordImagePredicateReturnsTrue() throws {
@@ -81,7 +80,6 @@ class UIImageViewRecorderTests: XCTestCase {
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertTrue(builder.shouldRecordImage)
         XCTAssertNotNil(semantics.resources.first)
-        XCTAssertEqual(imageView.image?.recorded, true)
     }
 
     func testWhenViewIsNotOfExpectedType() {

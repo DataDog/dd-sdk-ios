@@ -102,21 +102,14 @@ internal struct UIImageViewRecorder: NodeRecorder {
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            imageResource: imageResource,
+            imageResource: shouldRecordImage ? imageResource : nil,
             shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
            subtreeStrategy: .record,
            nodes: [node],
-           resources: [imageResource]
-            .compactMap { $0 }
-            .filter { imageResource in
-                defer {
-                    imageResource.image.recorded = shouldRecordImage
-                }
-                return imageResource.image.recorded == false && shouldRecordImage
-            }
+           resources: [imageResource].compactMap { $0 }
        )
     }
 }
