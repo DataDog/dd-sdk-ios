@@ -37,7 +37,7 @@ class SessionReplayTests: XCTestCase {
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         SessionReplay.enable(with: config, in: NOPDatadogCore())

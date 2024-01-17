@@ -23,12 +23,12 @@ internal final class ConsoleLogger: LoggerProtocol {
     /// The prefix to use when rendering log.
     private let prefix: String
     /// The function used to render log.
-    private let printFunction: (String) -> Void
+    private let printFunction: (String, CoreLoggerLevel) -> Void
 
     init(
         configuration: Configuration,
         dateProvider: DateProvider,
-        printFunction: @escaping (String) -> Void
+        printFunction: @escaping (String, CoreLoggerLevel) -> Void
     ) {
         self.dateProvider = dateProvider
         self.timeFormatter = presentationDateFormatter(withTimeZone: configuration.timeZone)
@@ -64,8 +64,7 @@ internal final class ConsoleLogger: LoggerProtocol {
         if let errorString = errorString {
             log += "\n\nError details:\n\(errorString)"
         }
-
-        printFunction(log)
+        printFunction(log, CoreLoggerLevel(logLevel: level))
     }
 
     private func buildErrorString(error: DDError) -> String {

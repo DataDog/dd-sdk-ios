@@ -25,5 +25,31 @@ public struct DD {
     )
 }
 
+#if canImport(OSLog)
+import OSLog
+#endif
+
 /// Function printing `String` content to console.
-public var consolePrint: (String) -> Void = { print($0) }
+public var consolePrint: (String, CoreLoggerLevel) -> Void = { message, level in
+    #if canImport(OSLog)
+    if #available(iOS 14.0, tvOS 14.0, *) {
+        switch level {
+        case .debug: Logger.datadog.debug("\(message, privacy: .private)")
+        case .warn: Logger.datadog.warning("\(message, privacy: .private)")
+        case .error: Logger.datadog.critical("\(message, privacy: .private)")
+        case .critical: Logger.datadog.fault("\(message, privacy: .private)")
+        }
+    } else {
+        print(message)
+    }
+    #else
+    print(message)
+    #endif
+}
+
+#if canImport(OSLog)
+@available(iOS 14.0, tvOS 14.0, *)
+extension Logger {
+    static let datadog = Logger(subsystem: "dd-sdk-ios", category: "DatadogInternal")
+}
+#endif

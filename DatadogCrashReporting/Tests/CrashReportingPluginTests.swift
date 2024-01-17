@@ -104,8 +104,8 @@ class CrashReportingPluginTests: XCTestCase {
         let expectation = self.expectation(description: "No Crash Report was delivered to the caller.")
         var errorPrinted: String?
 
-        consolePrint = { errorPrinted = $0 }
-        defer { consolePrint = { print($0) } }
+        consolePrint = { message, _ in errorPrinted = message }
+        defer { consolePrint = { message, _ in print(message) } }
 
         let crashReporter = try ThirdPartyCrashReporterMock()
         let plugin = PLCrashReporterPlugin { crashReporter }
@@ -134,8 +134,8 @@ class CrashReportingPluginTests: XCTestCase {
     func testWhenCrashReporterCannotBeEnabled_itPrintsError() {
         var errorPrinted: String?
 
-        consolePrint = { errorPrinted = $0 }
-        defer { consolePrint = { print($0) } }
+        consolePrint = { message, _ in errorPrinted = message }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         ThirdPartyCrashReporterMock.initializationError = ErrorMock("Initialization error")

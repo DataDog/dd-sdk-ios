@@ -35,7 +35,7 @@ class TraceTests: XCTestCase {
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         Trace.enable(with: config, in: NOPDatadogCore())
