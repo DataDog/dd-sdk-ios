@@ -7,34 +7,6 @@
 #if os(iOS)
 import UIKit
 
-internal struct UIImageResource {
-    internal let image: UIImage
-    internal let tintColor: UIColor?
-
-    internal init(image: UIImage, tintColor: UIColor?) {
-        self.image = image
-        self.tintColor = tintColor
-    }
-}
-
-extension UIImageResource: Resource {
-    func calculateIdentifier() -> String {
-        var identifier = image.srIdentifier
-        if let tintColorIdentifier = tintColor?.srIdentifier {
-            identifier += tintColorIdentifier
-        }
-        return identifier
-    }
-
-    func calculateData() -> Data {
-        var image = self.image
-        if #available(iOS 13.0, *), let tintColor = tintColor {
-            image = image.withTintColor(tintColor)
-        }
-        return image.scaledDownToApproximateSize(SessionReplay.maxObjectSize)
-    }
-}
-
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier = UUID()
 

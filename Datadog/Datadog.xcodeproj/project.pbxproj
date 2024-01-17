@@ -468,6 +468,7 @@
 		9EE5AD8226205B82001E699E /* DDNSURLSessionDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */; };
 		A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
+		A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70ADCD12B583B1300321BC9 /* UIImageResource.swift */; };
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
 		A71265862B17980C007D63CE /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
 		A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
@@ -2370,6 +2371,7 @@
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
+		A70ADCD12B583B1300321BC9 /* UIImageResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResource.swift; sourceTree = "<group>"; };
 		A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriterTests.swift; sourceTree = "<group>"; };
 		A71265852B17980C007D63CE /* MockFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockFeature.swift; sourceTree = "<group>"; };
 		A728AD9C2934CE4400397996 /* W3CHTTPHeaders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3CHTTPHeaders.swift; sourceTree = "<group>"; };
@@ -3189,6 +3191,7 @@
 				61054E282A6EE10A00AAA894 /* UIDatePickerRecorder.swift */,
 				61054E292A6EE10A00AAA894 /* UITextViewRecorder.swift */,
 				61054E2A2A6EE10A00AAA894 /* UIImageViewRecorder.swift */,
+				A70ADCD12B583B1300321BC9 /* UIImageResource.swift */,
 				61054E2B2A6EE10A00AAA894 /* UIViewRecorder.swift */,
 				61054E2C2A6EE10A00AAA894 /* UINavigationBarRecorder.swift */,
 				61054E2D2A6EE10A00AAA894 /* UITextFieldRecorder.swift */,
@@ -7564,6 +7567,7 @@
 				61054E682A6EE10A00AAA894 /* PrivacyLevel.swift in Sources */,
 				61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */,
 				61054E732A6EE10A00AAA894 /* WindowTouchSnapshotProducer.swift in Sources */,
+				A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */,
 				61054E792A6EE10A00AAA894 /* UITextViewRecorder.swift in Sources */,
 				61054E9B2A6EE10B00AAA894 /* CGRectExtensions.swift in Sources */,
 			);
