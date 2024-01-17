@@ -64,7 +64,7 @@ internal final class ConsoleLogger: LoggerProtocol {
         if let errorString = errorString {
             log += "\n\nError details:\n\(errorString)"
         }
-        printFunction(log, level.asCoreLoggerLevel())
+        printFunction(log, CoreLoggerLevel(logLevel: level))
     }
 
     private func buildErrorString(error: DDError) -> String {

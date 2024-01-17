@@ -16,13 +16,15 @@ public enum LogLevel: Int, Codable {
     case warn
     case error
     case critical
+}
 
-    func asCoreLoggerLevel() -> CoreLoggerLevel {
-        switch self {
-        case .debug, .info, .notice: return .debug
-        case .warn: return .warn
-        case .error: return .error
-        case .critical: return .critical
+extension CoreLoggerLevel {
+    public init(logLevel: LogLevel) {
+        switch logLevel {
+        case .debug, .info, .notice: self = .debug
+        case .warn: self = .warn
+        case .error: self = .error
+        case .critical: self = .critical
         }
     }
 }
