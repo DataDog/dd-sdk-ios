@@ -15,6 +15,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
     var startTime: Date?
     var active: Bool
     var parent: Parent
+    var spanLinks: [OTelSpanLink] = []
 
     enum Parent {
         case currentSpan
@@ -69,15 +70,15 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
         return self
     }
 
-    // swiftlint:disable unavailable_function
     func addLink(spanContext: OpenTelemetryApi.SpanContext) -> Self {
-        fatalError("Not implemented yet")
+        self.spanLinks.append(OTelSpanLink(context: spanContext, attributes: [:]))
+        return self
     }
 
     func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [String: OpenTelemetryApi.AttributeValue]) -> Self {
-        fatalError("Not implemented yet")
+        self.spanLinks.append(OTelSpanLink(context: spanContext, attributes: attributes))
+        return self
     }
-    // swiftlint:enable unavailable_function
 
     func setSpanKind(spanKind: OpenTelemetryApi.SpanKind) -> Self {
         self.spanKind = spanKind
@@ -122,6 +123,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             parentSpanID: parentContext?.spanId,
             spanContext: spanContext,
             spanKind: spanKind,
+            spanLinks: spanLinks,
             startTime: startTime ?? Date(),
             tracer: tracer
         )
