@@ -34,7 +34,7 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             telemetry: core.telemetry
         )
         let resourceProcessor = ResourceProcessor(
-            queue: queue,
+            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
