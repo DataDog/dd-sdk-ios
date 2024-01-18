@@ -1,2 +1,2 @@
 github "microsoft/plcrashreporter" ~> 1.11.1
-binary "Frameworks/OpenTelemetryApi.xcframework"
+binary "OpenTelemetry.json"
