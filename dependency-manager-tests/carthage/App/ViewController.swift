@@ -14,6 +14,7 @@ import DatadogCrashReporting
 #if os(iOS)
 import DatadogSessionReplay
 #endif
+import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -58,6 +59,9 @@ internal class ViewController: UIViewController {
         // Session Replay API must be visible:
         SessionReplay.enable(with: .init(replaySampleRate: 0))
         #endif
+
+        // Otel APIs must be visible
+        logger.info("Otel API works \(OpenTelemetry.instance)")
 
         addLabel()
     }

@@ -17,7 +17,7 @@ test:
 		@sed "s|GIT_REFERENCE|${GIT_REFERENCE}|g" Cartfile.src | \
 		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
-		@echo "🧪 Run 'carthage update'"
+		@echo "🧪 Run 'carthage updaopente'"
 		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }

@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		3CB135E729F6B90F0000234F /* DatadogWebViewTracking.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */; };
 		3CB135E829F6B90F0000234F /* DatadogWebViewTracking.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3CD4127A2B595DC6003C7D1C /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */; };
+		3CD4127B2B595DC6003C7D1C /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3CD4127C2B595F3E003C7D1C /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */; };
+		3CD4127D2B595F3E003C7D1C /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		617803D22A6FF2EA005FE258 /* DatadogSessionReplay.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D12A6FF2EA005FE258 /* DatadogSessionReplay.xcframework */; };
 		617803D32A6FF2EA005FE258 /* DatadogSessionReplay.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D12A6FF2EA005FE258 /* DatadogSessionReplay.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
@@ -101,6 +105,7 @@
 				9E9D5E8D25F90FC6002F12A0 /* DatadogCore.xcframework in Embed Frameworks */,
 				D20D6FEB29F6C2F200D2886E /* DatadogRUM.xcframework in Embed Frameworks */,
 				D2675BF42A019CF500190669 /* DatadogCrashReporting.xcframework in Embed Frameworks */,
+				3CD4127B2B595DC6003C7D1C /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				9E9D5E8B25F90FC6002F12A0 /* DatadogObjc.xcframework in Embed Frameworks */,
 				D26F741929ACC61E00D25622 /* DatadogLogs.xcframework in Embed Frameworks */,
 			);
@@ -114,6 +119,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				D290BA2627CD09740019936D /* CrashReporter.xcframework in Embed Frameworks */,
+				3CD4127D2B595F3E003C7D1C /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				D20D6FE729F6C2EB00D2886E /* DatadogRUM.xcframework in Embed Frameworks */,
 				D20D6FE929F6C2ED00D2886E /* DatadogTrace.xcframework in Embed Frameworks */,
 				D2675BFA2A019D0100190669 /* DatadogInternal.xcframework in Embed Frameworks */,
@@ -129,6 +135,7 @@
 
 /* Begin PBXFileReference section */
 		3CB135E429F6B8F90000234F /* DatadogWebViewTracking.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogWebViewTracking.xcframework; path = Carthage/Build/DatadogWebViewTracking.xcframework; sourceTree = "<group>"; };
+		3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenTelemetryApi.xcframework; path = Carthage/Build/OpenTelemetryApi.xcframework; sourceTree = "<group>"; };
 		615519322461CDB4002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519332461CDB4002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 		615D9E652604B5AB006DC6D1 /* CrashReporter.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CrashReporter.xcframework; path = Carthage/Build/CrashReporter.xcframework; sourceTree = "<group>"; };
@@ -169,6 +176,7 @@
 				D20D6FEA29F6C2F200D2886E /* DatadogRUM.xcframework in Frameworks */,
 				3CB135E729F6B90F0000234F /* DatadogWebViewTracking.xcframework in Frameworks */,
 				9E9D5E8C25F90FC6002F12A0 /* DatadogCore.xcframework in Frameworks */,
+				3CD4127A2B595DC6003C7D1C /* OpenTelemetryApi.xcframework in Frameworks */,
 				D2675BF32A019CF500190669 /* DatadogCrashReporting.xcframework in Frameworks */,
 				9E9D5E8A25F90FC6002F12A0 /* DatadogObjc.xcframework in Frameworks */,
 			);
@@ -193,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2B946AE29ACF6C20080CB40 /* DatadogLogs.xcframework in Frameworks */,
+				3CD4127C2B595F3E003C7D1C /* OpenTelemetryApi.xcframework in Frameworks */,
 				D20D6FE829F6C2ED00D2886E /* DatadogTrace.xcframework in Frameworks */,
 				D2675BF92A019D0100190669 /* DatadogInternal.xcframework in Frameworks */,
 				D290BA1F27CD09740019936D /* CrashReporter.xcframework in Frameworks */,
@@ -287,6 +296,7 @@
 		61C364492437547A00C4D4E6 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3CD412792B595DC6003C7D1C /* OpenTelemetryApi.xcframework */,
 				617803D12A6FF2EA005FE258 /* DatadogSessionReplay.xcframework */,
 				D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */,
 				D2966C2329CA1C5300FC6B3C /* DatadogTrace.xcframework */,
@@ -758,6 +768,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -776,6 +787,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
 				INFOPLIST_FILE = App/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
