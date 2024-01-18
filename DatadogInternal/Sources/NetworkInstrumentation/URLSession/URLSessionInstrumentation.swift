@@ -17,7 +17,8 @@ public enum URLSessionInstrumentation {
         do {
             try enableOrThrow(with: configuration, in: core)
         } catch let error {
-           consolePrint("\(error)")
+            core.telemetry.error(error)
+            consolePrint("\(error)")
         }
     }
 
@@ -26,7 +27,7 @@ public enum URLSessionInstrumentation {
             throw ProgrammerError(description: "URLSession tracking must be enabled before enabling URLSessionInstrumentation using either RUM or Trace feature.")
         }
 
-        try feature.bind(configuration: configuration)
+        try feature.bind(configuration: configuration, telemetry: core.telemetry)
     }
 
     /// Disables URLSession instrumentation.
@@ -37,6 +38,7 @@ public enum URLSessionInstrumentation {
         do {
             try disableOrThrow(delegateClass: delegateClass, in: core)
         } catch let error {
+            core.telemetry.error(error)
             consolePrint("\(error)")
         }
     }

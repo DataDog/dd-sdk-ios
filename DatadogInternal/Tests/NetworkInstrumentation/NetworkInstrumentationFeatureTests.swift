@@ -700,7 +700,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
                 { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },
-                { try? feature.bind(configuration: .init(delegateClass: MockDelegate.self)) },
+                { try? feature.bind(configuration: .init(delegateClass: MockDelegate.self), telemetry: NOPTelemetry()) },
                 { feature.unbind(delegateClass: MockDelegate.self) }
             ],
             iterations: 50

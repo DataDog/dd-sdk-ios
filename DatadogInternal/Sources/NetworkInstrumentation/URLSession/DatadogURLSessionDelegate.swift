@@ -35,7 +35,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         return URLSessionInterceptor.shared(in: core)
     }
 
-    let swizzler = NetworkInstrumentationSwizzler()
+    let swizzler: NetworkInstrumentationSwizzler
 
     /// The instance of the SDK core notified by this delegate.
     ///
@@ -46,6 +46,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     @objc
     override public init() {
         core = nil
+        swizzler = NetworkInstrumentationSwizzler(telemetry: CoreRegistry.default.telemetry)
         super.init()
         swizzle(firstPartyHosts: .init())
     }
@@ -92,11 +93,16 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         additionalFirstPartyHostsWithHeaderTypes: [String: Set<TracingHeaderType>] = [:]
     ) {
         self.core = core
+        self.swizzler = NetworkInstrumentationSwizzler(telemetry: core?.telemetry ?? CoreRegistry.default.telemetry)
         super.init()
         swizzle(firstPartyHosts: FirstPartyHosts(additionalFirstPartyHostsWithHeaderTypes))
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        guard shouldIntercept(task: task) else {
+            return
+        }
+
         interceptor?.task(task, didFinishCollecting: metrics)
         if #available(iOS 15, tvOS 15, *) {
             // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
@@ -106,11 +112,19 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        guard shouldIntercept(task: dataTask) else {
+            return
+        }
+
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
         interceptor?.task(dataTask, didReceive: data)
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard shouldIntercept(task: task) else {
+            return
+        }
+
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
         interceptor?.task(task, didCompleteWithError: error)
     }
@@ -119,11 +133,15 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
         do {
             try swizzler.swizzle(
                 interceptResume: { [weak self] task in
-                    guard
-                        let interceptor = self?.interceptor,
-                        let provider = task.dd.delegate as? __URLSessionDelegateProviding,
-                        provider.ddURLSessionDelegate === self // intercept task with self as delegate
-                    else {
+                    guard let self = self, self.shouldIntercept(task: task) else {
+                        return
+                    }
+
+                    guard let interceptor = self.interceptor else {
+                        DD.logger.warn("""
+                        `URLSessionTask` was started in session instrumented with `DatadogURLSessionDelegate` but the `URLSessionInstrumentation` is likely not enabled.
+                        Task will not be tracked. Make sure the `URLSessionInstrumentation.enable(with:)` is called.
+                        """)
                         return
                     }
 
@@ -138,12 +156,33 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
             try swizzler.swizzle(
                 interceptCompletionHandler: { [weak self] task, _, error in
-                    self?.interceptor?.task(task, didCompleteWithError: error)
+                    guard let self = self, self.shouldIntercept(task: task) else {
+                        return
+                    }
+
+                    guard let interceptor = self.interceptor else {
+                        DD.logger.warn("""
+                        `URLSessionTask` completed in session instrumented with `DatadogURLSessionDelegate` but the `URLSessionInstrumentation` is likely not enabled.
+                        Task will not be tracked. Make sure the `URLSessionInstrumentation.enable(with:)` is called.
+                        """)
+                        return
+                    }
+
+                    interceptor.task(task, didCompleteWithError: error)
                 }
             )
         } catch {
             DD.logger.error("Fails to apply swizzling for instrumenting \(Self.self)", error: error)
         }
+    }
+
+    /// Determines if given `task` should be intercepted or not.
+    /// We skip any processing of tasks that come from sessions not instrumented with Datadog.
+    private func shouldIntercept(task: URLSessionTask) -> Bool {
+        guard let provider = task.dd.delegate as? __URLSessionDelegateProviding else {
+            return false
+        }
+        return provider.ddURLSessionDelegate === self // intercept task with self as delegate
     }
 
     deinit {

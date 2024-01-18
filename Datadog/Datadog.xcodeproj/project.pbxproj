@@ -4913,6 +4913,19 @@
 			path = DD;
 			sourceTree = "<group>";
 		};
+		61EE14DE2B554FBC004E500B /* URLSession */ = {
+			isa = PBXGroup;
+			children = (
+				D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */,
+				D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */,
+				D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */,
+				D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */,
+				D2160CD329C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift */,
+				D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */,
+			);
+			path = URLSession;
+			sourceTree = "<group>";
+		};
 		61F1A61B2498AD2C00075390 /* SystemFrameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -5792,18 +5805,13 @@
 				D2160CCD29C0DF6700FAA9A5 /* NetworkInstrumentationFeatureTests.swift */,
 				D2160CCF29C0DF6700FAA9A5 /* FirstPartyHostsTests.swift */,
 				D2160CD129C0DF6700FAA9A5 /* HostsSanitizerTests.swift */,
-				D2160CD329C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift */,
-				D2160CD229C0DF6700FAA9A5 /* URLSessionTaskInterceptionTests.swift */,
 				61E45BCE2450A6EC00F2C652 /* TraceIDTests.swift */,
 				61B558D32469CDD8001460D3 /* TraceIDGeneratorTests.swift */,
 				A79B0F5A292B7C06008742B3 /* B3HTTPHeadersWriterTests.swift */,
 				A79B0F60292BB071008742B3 /* B3HTTPHeadersReaderTests.swift */,
 				A728ADA22934DB5000397996 /* W3CHTTPHeadersWriterTests.swift */,
 				A728ADA52934DF2400397996 /* W3CHTTPHeadersReaderTests.swift */,
-				D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */,
-				D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */,
-				D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */,
-				D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */,
+				61EE14DE2B554FBC004E500B /* URLSession */,
 			);
 			path = NetworkInstrumentation;
 			sourceTree = "<group>";

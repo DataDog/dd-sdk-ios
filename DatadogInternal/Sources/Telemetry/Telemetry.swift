@@ -74,6 +74,9 @@ public protocol Telemetry {
     func send(telemetry: TelemetryMessage)
 }
 
+/// List of error IDs sent in this process with `Telemetry.errorOnce()` API.
+internal var onceErrorIDs: Set<String> = []
+
 extension Telemetry {
     /// Collects debug information.
     ///
@@ -113,7 +116,7 @@ extension Telemetry {
     ///   - attributes: Custom attributes attached to the log (optional).
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #file, line: Int = #line) {
+    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: StaticString = #fileID, line: UInt = #line) {
         debug(id: "\(file):\(line):\(message)", message: message, attributes: attributes)
     }
 
@@ -126,7 +129,7 @@ extension Telemetry {
     ///   - line: The line number in file.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: StaticString = #fileID, line: UInt = #line) {
         error(id: "\(file):\(line):\(message)", message: message, kind: kind, stack: stack)
     }
 
@@ -136,7 +139,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ error: DDError, file: StaticString = #fileID, line: UInt = #line) {
         self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -147,7 +150,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: DDError, file: StaticString = #fileID, line: UInt = #line) {
         self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -157,7 +160,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ error: Error, file: StaticString = #fileID, line: UInt = #line) {
         self.error(DDError(error: error), file: file, line: line)
     }
 
@@ -168,8 +171,26 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: Error, file: StaticString = #fileID, line: UInt = #line) {
         self.error(message, error: DDError(error: error), file: file, line: line)
+    }
+
+    /// Collects execution errors only once per process.
+    ///
+    /// In certain cases, errors are expected to be consistently sent for every occurrence of a specific issue. While telemetry
+    /// is sampled on write, its processing can still overwhelm the SDK core with unnecessary overhead. Therefore,
+    /// this API facilitates receiving only one error occurrence per process (further sampled with telemetry sample rate).
+    ///
+    /// - Parameters:
+    ///   - id: The ID of the error - used to determine if it was already reported in this process.
+    ///   - error: Closure to lazily evaluate error information (only when it will be sent).
+    public func errorOnce(id: String, error: () -> (message: String, kind: String?, stack: String?)) {
+        guard onceErrorIDs.contains(id) else {
+            return
+        }
+        onceErrorIDs.insert(id)
+        let errorInfo = error()
+        self.error(id: id, message: errorInfo.message, kind: errorInfo.kind, stack: errorInfo.stack)
     }
 
     /// Report a Configuration Telemetry.

@@ -91,6 +91,7 @@ internal class URLSessionTaskDelegateSwizzler {
         }
     }
 
+    /// Swizzles `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)` method.
     class DidCompleteWithError: MethodSwizzler<@convention(c) (URLSessionTaskDelegate, Selector, URLSession, URLSessionTask, Error?) -> Void, @convention(block) (URLSessionTaskDelegate, URLSession, URLSessionTask, Error?) -> Void> {
         private static let selector = #selector(URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:))
 

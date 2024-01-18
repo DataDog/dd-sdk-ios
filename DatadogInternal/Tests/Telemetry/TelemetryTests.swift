@@ -36,7 +36,11 @@ class TelemetryTests: XCTestCase {
         #sourceLocation()
 
         // Then
-        XCTAssertEqual(telemetry.debug?.id, "File.swift:1:debug message")
+        #if os(iOS)
+        XCTAssertEqual(telemetry.debug?.id, "DatadogInternalTests_iOS/File.swift:1:debug message")
+        #else
+        XCTAssertEqual(telemetry.debug?.id, "DatadogInternalTests_tvOS/File.swift:1:debug message")
+        #endif
         XCTAssertEqual(telemetry.debug?.message, "debug message")
         XCTAssertEqual(telemetry.debug?.attributes as? [String: String], ["foo": "bar"])
     }
@@ -77,7 +81,11 @@ class TelemetryTests: XCTestCase {
         #sourceLocation()
 
         // Then
-        XCTAssertEqual(telemetry.error?.id, #"File.swift:1:SwiftError(description: "error description")"#)
+        #if os(iOS)
+        XCTAssertEqual(telemetry.error?.id, #"DatadogInternalTests_iOS/File.swift:1:SwiftError(description: "error description")"#)
+        #else
+        XCTAssertEqual(telemetry.error?.id, #"DatadogInternalTests_tvOS/File.swift:1:SwiftError(description: "error description")"#)
+        #endif
         XCTAssertEqual(telemetry.error?.message, #"SwiftError(description: "error description")"#)
         XCTAssertEqual(telemetry.error?.kind, "SwiftError")
         XCTAssertEqual(telemetry.error?.stack, #"SwiftError(description: "error description")"#)
@@ -88,7 +96,11 @@ class TelemetryTests: XCTestCase {
         #sourceLocation()
 
         // Then
-        XCTAssertEqual(telemetry.error?.id, "File.swift:2:error description")
+        #if os(iOS)
+        XCTAssertEqual(telemetry.error?.id, "DatadogInternalTests_iOS/File.swift:2:error description")
+        #else
+        XCTAssertEqual(telemetry.error?.id, "DatadogInternalTests_tvOS/File.swift:2:error description")
+        #endif
         XCTAssertEqual(telemetry.error?.message, "error description")
         XCTAssertEqual(telemetry.error?.kind, "custom-domain - 10")
         XCTAssertEqual(

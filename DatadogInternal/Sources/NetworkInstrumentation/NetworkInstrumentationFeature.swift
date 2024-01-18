@@ -6,17 +6,18 @@
 
 import Foundation
 
-/// The Network Instrumentation Feature that can be registered into a core if
-/// any hander is provided.
+/// The Network Instrumentation Feature that can be registered into a core.
+/// Interceptions are forwarded to registered `handlers` (`DatadogURLSessionHandler`).
 ///
 /// Usage:
 ///
 ///     let core: DatadogCoreProtocol
 ///
-///     let handler: DatadogURLSessionHandler = CustomURLSessionHandler()
-///     core.register(urlSessionInterceptor: handler)
+///     let feature = NetworkInstrumentationFeature()
+///     core.register(feature: feature)
 ///
-/// Registering multiple interceptor will aggregate instrumentation.
+///     feature.handlers.append(urlSessionHandler)
+///
 internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The Feature name: "trace-propagation".
     static let name = "network-instrumentation"
@@ -46,13 +47,22 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
+    /// Telemetry interface for sending instrumentation errors.
+    private let telemetry: Telemetry
+
+    init(telemetry: Telemetry) {
+        self.telemetry = telemetry
+    }
+
     /// Swizzles `URLSessionTaskDelegate`, `URLSessionDataDelegate`, and `URLSessionTask` methods
     /// to intercept `URLSessionTask` lifecycles.
     ///
-    /// - Parameter configuration: The configuration to use for swizzling.
+    /// - Parameters:
+    ///   - configuration: The configuration to use for swizzling.
+    ///   - telemetry: Telemetry instance to notify with any errors in swizzlings.
     /// Note: We are only concerned with type of the delegate here but to provide compile time safety, we
     ///      use the instance of the delegate to get the type.
-    internal func bind(configuration: URLSessionInstrumentation.Configuration) throws {
+    internal func bind(configuration: URLSessionInstrumentation.Configuration, telemetry: Telemetry) throws {
         let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration.firstPartyHostsTracing) ?? .init()
 
         let identifier = ObjectIdentifier(configuration.delegateClass)
@@ -68,14 +78,19 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             swizzler.unswizzle()
         }
 
-        let swizzler = NetworkInstrumentationSwizzler()
+        let swizzler = NetworkInstrumentationSwizzler(telemetry: telemetry)
         swizzlers[identifier] = swizzler
+
+        /// Determines if given `task` should be intercepted or not.
+        /// We skip any processing of tasks that come from sessions not instrumented with Datadog.
+        func shouldIntercept(task: URLSessionTask) -> Bool {
+            return task.dd.delegate?.isKind(of: configuration.delegateClass) == true // intercept task if delegate match
+        }
 
         try swizzler.swizzle(
             interceptResume: { [weak self] task in
-                // intercept task if delegate match
-                guard let self = self, task.dd.delegate?.isKind(of: configuration.delegateClass) == true else {
-                    return
+                guard let self = self, shouldIntercept(task: task) else {
+                    return // skip, intercepting task from not instrumented session
                 }
 
                 if let currentRequest = task.currentRequest {
@@ -90,6 +105,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         try swizzler.swizzle(
             delegateClass: configuration.delegateClass,
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
+                guard shouldIntercept(task: task) else {
+                    return // skip, intercepting task from not instrumented session
+                }
+
                 self?.task(task, didFinishCollecting: metrics)
 
                 if #available(iOS 15, tvOS 15, *) {
@@ -99,6 +118,10 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                 }
             },
             interceptDidCompleteWithError: { [weak self] session, task, error in
+                guard shouldIntercept(task: task) else {
+                    return // skip, intercepting task from not instrumented session
+                }
+
                 self?.task(task, didCompleteWithError: error)
             }
         )
@@ -106,12 +129,20 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         try swizzler.swizzle(
             delegateClass: configuration.delegateClass,
             interceptDidReceive: { [weak self] session, task, data in
+                guard shouldIntercept(task: task) else {
+                    return // skip, intercepting task from not instrumented session
+                }
+
                 self?.task(task, didReceive: data)
             }
         )
 
         try swizzler.swizzle(
             interceptCompletionHandler: { [weak self] task, _, error in
+                guard shouldIntercept(task: task) else {
+                    return // skip, intercepting task from not instrumented session
+                }
+
                 self?.task(task, didCompleteWithError: error)
             }
         )
@@ -150,19 +181,28 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
-    func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
+    ///
+    /// **Note:** This method must be only called for tasks instrumented with Datadog.
+    func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?, file: StaticString = #fileID, line: UInt = #line) {
         queue.async { [weak self] in
             guard let self = self, let request = task.currentRequest else {
                 return
             }
 
+            if self.interceptions[task] != nil { // sanity check, we don't expect an existing interception for task that was just created
+                telemetry.error(
+                    "Creating interception for task which is already being intercepted",
+                    kind: "NetworkInstrumentationError",
+                    stack: "Called from \(file):\(line)"
+                )
+            }
+
             let firstPartyHosts = self.firstPartyHosts(with: additionalFirstPartyHosts)
 
-            let interception = self.interceptions[task] ??
-                URLSessionTaskInterception(
-                    request: request,
-                    isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
-                )
+            let interception = URLSessionTaskInterception(
+                request: request,
+                isFirstParty: firstPartyHosts.isFirstParty(url: request.url)
+            )
 
             interception.register(request: request)
 
@@ -184,10 +224,12 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task whose metrics have been collected.
     ///   - metrics: The collected metrics.
+    ///
+    /// **Note:** This method must be only called for tasks instrumented with Datadog.
     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         queue.async { [weak self] in
-            guard let self = self, let interception = self.interceptions[task] else {
-                return
+            guard let self = self, let interception = interceptions[task] else {
+                return // we may end up with no `interception` if instrumentation was enabled after the task was resumed
             }
 
             interception.register(
@@ -205,9 +247,15 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task that provided data.
     ///   - data: A data object containing the transferred data.
+    ///
+    /// **Note:** This method must be only called for tasks instrumented with Datadog.
     func task(_ task: URLSessionTask, didReceive data: Data) {
         queue.async { [weak self] in
-            self?.interceptions[task]?.register(nextData: data)
+            guard let self = self, let interception = self.interceptions[task] else {
+                return // we may end up with no `interception` if instrumentation was enabled after the task was resumed
+            }
+
+            interception.register(nextData: data)
         }
     }
 
@@ -216,10 +264,12 @@ extension NetworkInstrumentationFeature {
     /// - Parameters:
     ///   - task: The task that has finished transferring data.
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
+    ///
+    /// **Note:** This method must be only called for tasks instrumented with Datadog.
     func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         queue.async { [weak self] in
             guard let self = self, let interception = self.interceptions[task] else {
-                return
+                return // we may end up with no `interception` if instrumentation was enabled after the task was resumed
             }
 
             interception.register(
