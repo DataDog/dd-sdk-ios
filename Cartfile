@@ -1,2 +1,2 @@
 github "microsoft/plcrashreporter" ~> 1.11.1
-github "open-telemetry/opentelemetry-swift" ~> 1.9.1
+binary "Frameworks/OpenTelemetryApi.xcframework"
