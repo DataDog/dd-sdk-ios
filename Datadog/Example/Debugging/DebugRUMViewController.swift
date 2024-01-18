@@ -84,6 +84,7 @@ class DebugRUMViewController: UIViewController {
 
     // MARK: - Resource Event
 
+    @IBOutlet weak var resourceTypeSegment: UISegmentedControl!
     @IBOutlet weak var resourceViewURLTextField: UITextField!
     @IBOutlet weak var resourceURLTextField: UITextField!
     @IBOutlet weak var sendResourceEventButton: UIButton!
@@ -93,28 +94,20 @@ class DebugRUMViewController: UIViewController {
     }
 
     private var resourceURL: String {
-        resourceURLTextField.text!.isEmpty ? "/resource/1" : resourceURLTextField.text!
+        resourceURLTextField.text!.isEmpty ? "https://api.shopist.io/checkout.json" : resourceURLTextField.text!
     }
 
     @IBAction func didTapSendResourceEvent(_ sender: Any) {
         let viewController = createUIViewControllerSubclassInstance(named: resourceViewURL)
         rumMonitor.startView(viewController: viewController)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            let request = URLRequest(url: URL(string: "https://foo.com" + self.resourceURL)!)
-            rumMonitor.startResource(
-                resourceKey: "/resource/1",
-                request: request
-            )
+
+        if resourceTypeSegment.selectedSegmentIndex == 0 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                rumMonitor.stopResource(
-                    resourceKey: "/resource/1",
-                    response: HTTPURLResponse(
-                        url: request.url!,
-                        statusCode: 200,
-                        httpVersion: nil,
-                        headerFields: ["Content-Type": "image/png"]
-                    )!
-                )
+                self.sendManualResource(completeAfter: 0.2)
+            }
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.sendInstrumentedResource()
             }
         }
 
@@ -123,6 +116,43 @@ class DebugRUMViewController: UIViewController {
         }
         simulatedViewControllers.append(viewController)
         sendResourceEventButton.disableFor(seconds: 0.5)
+    }
+
+    private func sendManualResource(completeAfter time: TimeInterval) {
+        let request = URLRequest(url: URL(string: self.resourceURL)!)
+        rumMonitor.startResource(
+            resourceKey: "/resource/1",
+            request: request
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + time) {
+            rumMonitor.stopResource(
+                resourceKey: "/resource/1",
+                response: HTTPURLResponse(
+                    url: request.url!,
+                    statusCode: 200,
+                    httpVersion: nil,
+                    headerFields: ["Content-Type": "image/png"]
+                )!
+            )
+        }
+    }
+
+    private lazy var instrumentedSession: URLSession = {
+        class InstrumentedDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {}
+        URLSessionInstrumentation.enable(with: .init(delegateClass: InstrumentedDelegate.self))
+        return URLSession(configuration: .ephemeral, delegate: InstrumentedDelegate(), delegateQueue: .main)
+    }()
+
+    private func sendInstrumentedResource() {
+        var request = URLRequest(url: URL(string: self.resourceURL)!)
+        request.httpMethod = "POST"
+        instrumentedSession.dataTask(with: request) { _, _, error in
+            if let error = error {
+                print("🌍🔥 POST \(request.url!.absoluteString) completed with network error: \(error)")
+            } else {
+                print("🌍 POST \(request.url!.absoluteString) sent successfully")
+            }
+        }.resume()
     }
 
     // MARK: - Error Event
