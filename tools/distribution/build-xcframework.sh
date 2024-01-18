@@ -98,6 +98,7 @@ bundle DatadogTrace
 bundle DatadogRUM
 bundle DatadogObjc
 bundle DatadogCrashReporting
+cp -r /Users/ganesh.jangir/Developer/opentelemetry-swift/OpenTelemetryApi.xcframework "$XCFRAMEWORK_OUTPUT/OpenTelemetryApi.xcframework"
 
 # Build iOS-only XCFrameworks
 if [[ $PLATFORM == *"iOS"* ]]; then

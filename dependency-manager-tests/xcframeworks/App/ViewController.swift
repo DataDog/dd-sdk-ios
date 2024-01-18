@@ -11,6 +11,7 @@ import DatadogTrace
 import DatadogRUM
 import DatadogObjc
 import DatadogCrashReporting
+import OpenTelemetryApi
 #if os(iOS)
 import DatadogSessionReplay
 #endif
@@ -57,6 +58,9 @@ internal class ViewController: UIViewController {
         #if os(iOS)
         SessionReplay.enable(with: .init(replaySampleRate: 0))
         #endif
+
+        // Otel APIs must be visible
+        logger.info("Otel API works \(OpenTelemetry.instance)")
 
         addLabel()
     }

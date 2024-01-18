@@ -12,9 +12,12 @@ ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
 endif
 
 test:
+		@pwd
 		@echo "⚙️  Configuring XCProject with remote branch: '${GIT_REFERENCE}'..."
-		@rm -rf dd-sdk-ios/
-		@git clone --depth 1 --branch ${GIT_REFERENCE} ${GIT_REMOTE}
+		@echo "Creating symbolic link to dd-sdk-ios"
+		@rm -rf dd-sdk-ios
+		@ln -s ../../../dd-sdk-ios dd-sdk-ios
+		# @git clone --depth 1 --branch ${GIT_REFERENCE} ${GIT_REMOTE}
 		@echo "🧪 Build xcframeworks"
 		@cd dd-sdk-ios && tools/distribution/build-xcframework.sh
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/dd-sdk-ios/build/xcframeworks"
@@ -26,4 +29,5 @@ test:
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
+		@[ -e "dd-sdk-ios/build/xcframeworks/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
 		@echo "🧪 SUCCEEDED"

@@ -36,7 +36,7 @@ define DD_SDK_BASE_XCCONFIG_CI
 SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
 \n
 // If running on CI. This value is injected to some targets through their `Info.plist`:\n
-IS_CI = true\n 
+IS_CI = true\n
 endef
 export DD_SDK_BASE_XCCONFIG_CI
 
@@ -57,19 +57,17 @@ dependencies:
 		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
 		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
 		@brew list gh &>/dev/null || brew install gh
+		@./tools/distribution/build-otel-xcframework.sh --debug --version "1.9.1" --output "./Frameworks"
 ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
-ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;	
+		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
 		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
 		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
-endif
-		
 endif
 
 xcodeproj-session-replay:
@@ -188,3 +186,19 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
+
+xcframeworks:
+	@pwd
+	@echo "🧪 Build xcframeworks"
+	@./tools/distribution/build-xcframework.sh
+	@echo "🧪 Check if expected frameworks exist in $(PWD)/build/xcframeworks"
+	@[ -e "build/xcframeworks/DatadogCore.xcframework" ] && echo "DatadogCore.xcframework - OK" || { echo "DatadogCore.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogLogs.xcframework" ] && echo "DatadogLogs.xcframework - OK" || { echo "DatadogLogs.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogTrace.xcframework" ] && echo "DatadogTrace.xcframework - OK" || { echo "DatadogTrace.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogRUM.xcframework" ] && echo "DatadogRUM.xcframework - OK" || { echo "DatadogRUM.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogSessionReplay.xcframework" ] && echo "DatadogSessionReplay.xcframework - OK" || { echo "DatadogSessionReplay.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
+	@[ -e "build/xcframeworks/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
+	@echo "🧪 SUCCEEDED"
