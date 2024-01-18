@@ -5,7 +5,7 @@ DD_SWIFT_SDK_PRODUCT_NAME=DatadogCore
 DD_OBJC_SDK_PRODUCT_NAME=DatadogObjc
 DD_CR_SDK_PRODUCT_NAME=DatadogCrashReporting
 
-ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD) arm64e
+ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD)
 
 // Include internal base config (git-ignored, so excluded from Carthage build)
 #include? "Base.local.xcconfig"
