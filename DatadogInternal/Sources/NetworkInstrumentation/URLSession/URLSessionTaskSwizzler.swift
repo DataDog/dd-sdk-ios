@@ -44,7 +44,13 @@ internal final class URLSessionTaskSwizzler {
         private let method: Method
 
         static func build() throws -> TaskResume {
-            return try TaskResume(selector: self.selector, klass: URLSessionTask.self)
+            // RUM-2690: We swizzle private `__NSCFLocalSessionTask` class as it appears to be uniformly used
+            // in iOS versions 12.x - 17.x. Swizzling the public `URLSessionTask.resume()` doesn't work in 12.x and 13.x.
+            let className = "__NSCFLocalSessionTask"
+            guard let klass = NSClassFromString(className) else {
+                throw InternalError(description: "Failed to swizzle `URLSessionTask`: `\(className)` class not found.")
+            }
+            return try TaskResume(selector: self.selector, klass: klass)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {
