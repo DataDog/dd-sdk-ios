@@ -1,0 +1,1612 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.9 (swiftlang-5.9.0.128.108 clang-1500.0.40.1)
+// swift-module-flags: -target arm64-apple-ios13.0-simulator -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name OpenTelemetryApi
+// swift-module-flags-ignorable-private: -package-name opentelemetry_swift
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+import os.activity
+import os
+public protocol Baggage : AnyObject {
+  static func baggageBuilder() -> any OpenTelemetryApi.BaggageBuilder
+  func getEntries() -> [OpenTelemetryApi.Entry]
+  func getEntryValue(key: OpenTelemetryApi.EntryKey) -> OpenTelemetryApi.EntryValue?
+}
+public func == (lhs: any OpenTelemetryApi.Baggage, rhs: any OpenTelemetryApi.Baggage) -> Swift.Bool
+public protocol BaggageBuilder : AnyObject {
+  @discardableResult
+  func setParent(_ parent: (any OpenTelemetryApi.Baggage)?) -> Self
+  @discardableResult
+  func setNoParent() -> Self
+  @discardableResult
+  func put(key: OpenTelemetryApi.EntryKey, value: OpenTelemetryApi.EntryValue, metadata: OpenTelemetryApi.EntryMetadata?) -> Self
+  @discardableResult
+  func remove(key: OpenTelemetryApi.EntryKey) -> Self
+  func build() -> any OpenTelemetryApi.Baggage
+}
+public protocol BaggageManager : AnyObject {
+  func baggageBuilder() -> any OpenTelemetryApi.BaggageBuilder
+}
+public protocol BaggageManagerProvider {
+  func create() -> any OpenTelemetryApi.BaggageManager
+}
+final public class DefaultBaggage : OpenTelemetryApi.Baggage, Swift.Equatable {
+  public init(entries: [OpenTelemetryApi.EntryKey : OpenTelemetryApi.Entry?])
+  public static func baggageBuilder() -> any OpenTelemetryApi.BaggageBuilder
+  final public func getEntries() -> [OpenTelemetryApi.Entry]
+  final public func getEntryValue(key: OpenTelemetryApi.EntryKey) -> OpenTelemetryApi.EntryValue?
+  public static func == (lhs: OpenTelemetryApi.DefaultBaggage, rhs: OpenTelemetryApi.DefaultBaggage) -> Swift.Bool
+  @objc deinit
+}
+public class DefaultBaggageBuilder : OpenTelemetryApi.BaggageBuilder {
+  public init()
+  @discardableResult
+  public func setParent(_ parent: (any OpenTelemetryApi.Baggage)?) -> Self
+  @discardableResult
+  public func setNoParent() -> Self
+  @discardableResult
+  public func put(key: OpenTelemetryApi.EntryKey, value: OpenTelemetryApi.EntryValue, metadata: OpenTelemetryApi.EntryMetadata?) -> Self
+  @discardableResult
+  public func put(key: Swift.String, value: Swift.String, metadata: Swift.String? = nil) -> Self
+  @discardableResult
+  public func remove(key: OpenTelemetryApi.EntryKey) -> Self
+  public func build() -> any OpenTelemetryApi.Baggage
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DefaultBaggageManager : OpenTelemetryApi.BaggageManager {
+  public static var instance: OpenTelemetryApi.DefaultBaggageManager
+  public func baggageBuilder() -> any OpenTelemetryApi.BaggageBuilder
+  public func getCurrentBaggage() -> (any OpenTelemetryApi.Baggage)?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DefaultBaggageManagerProvider : OpenTelemetryApi.BaggageManagerProvider {
+  public static var instance: OpenTelemetryApi.DefaultBaggageManagerProvider
+  public func create() -> any OpenTelemetryApi.BaggageManager
+  @objc deinit
+}
+public struct Entry : Swift.Equatable, Swift.Comparable {
+  public var key: OpenTelemetryApi.EntryKey {
+    get
+  }
+  public var value: OpenTelemetryApi.EntryValue {
+    get
+  }
+  public var metadata: OpenTelemetryApi.EntryMetadata? {
+    get
+  }
+  public init(key: OpenTelemetryApi.EntryKey, value: OpenTelemetryApi.EntryValue, metadata: OpenTelemetryApi.EntryMetadata?)
+  public static func < (lhs: OpenTelemetryApi.Entry, rhs: OpenTelemetryApi.Entry) -> Swift.Bool
+  public static func == (a: OpenTelemetryApi.Entry, b: OpenTelemetryApi.Entry) -> Swift.Bool
+}
+public struct EntryKey : Swift.Equatable, Swift.Comparable, Swift.Hashable {
+  public var name: Swift.String {
+    get
+  }
+  public init?(name: Swift.String)
+  public static func < (lhs: OpenTelemetryApi.EntryKey, rhs: OpenTelemetryApi.EntryKey) -> Swift.Bool
+  public static func == (a: OpenTelemetryApi.EntryKey, b: OpenTelemetryApi.EntryKey) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+public struct EntryMetadata : Swift.Equatable {
+  public var metadata: Swift.String
+  public init?(metadata: Swift.String?)
+  public static func == (a: OpenTelemetryApi.EntryMetadata, b: OpenTelemetryApi.EntryMetadata) -> Swift.Bool
+}
+public struct EntryValue : Swift.Equatable {
+  public var string: Swift.String {
+    get
+  }
+  public init?(string: Swift.String)
+  public static func == (a: OpenTelemetryApi.EntryValue, b: OpenTelemetryApi.EntryValue) -> Swift.Bool
+}
+public class JaegerBaggagePropagator : OpenTelemetryApi.TextMapBaggagePropagator {
+  public static let baggageHeader: Swift.String
+  public static let baggagePrefix: Swift.String
+  public var fields: Swift.Set<Swift.String>
+  public init()
+  public func inject<S>(baggage: any OpenTelemetryApi.Baggage, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> (any OpenTelemetryApi.Baggage)? where G : OpenTelemetryApi.Getter
+  @objc deinit
+}
+public protocol TextMapBaggagePropagator {
+  var fields: Swift.Set<Swift.String> { get }
+  func inject<S>(baggage: any OpenTelemetryApi.Baggage, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  @discardableResult
+  func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> (any OpenTelemetryApi.Baggage)? where G : OpenTelemetryApi.Getter
+}
+public struct W3CBaggagePropagator : OpenTelemetryApi.TextMapBaggagePropagator {
+  public init()
+  public let fields: Swift.Set<Swift.String>
+  public func inject<S>(baggage: any OpenTelemetryApi.Baggage, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> (any OpenTelemetryApi.Baggage)? where G : OpenTelemetryApi.Getter
+}
+public class ZipkinBaggagePropagator : OpenTelemetryApi.TextMapBaggagePropagator {
+  public static let baggagePrefix: Swift.String
+  final public let fields: Swift.Set<Swift.String>
+  public init()
+  public func inject<S>(baggage: any OpenTelemetryApi.Baggage, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> (any OpenTelemetryApi.Baggage)? where G : OpenTelemetryApi.Getter
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers open class AttributeSet : Swift.Hashable, Swift.Codable {
+  public var labels: [Swift.String : OpenTelemetryApi.AttributeValue] {
+    get
+  }
+  public static var empty: OpenTelemetryApi.AttributeSet
+  required public init(labels: [Swift.String : OpenTelemetryApi.AttributeValue])
+  public static func == (lhs: OpenTelemetryApi.AttributeSet, rhs: OpenTelemetryApi.AttributeSet) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  @objc deinit
+  open func encode(to encoder: any Swift.Encoder) throws
+  open var hashValue: Swift.Int {
+    get
+  }
+  required public init(from decoder: any Swift.Decoder) throws
+}
+public enum AttributeValue : Swift.Equatable, Swift.CustomStringConvertible, Swift.Hashable {
+  case string(Swift.String)
+  case bool(Swift.Bool)
+  case int(Swift.Int)
+  case double(Swift.Double)
+  case stringArray([Swift.String])
+  case boolArray([Swift.Bool])
+  case intArray([Swift.Int])
+  case doubleArray([Swift.Double])
+  case set(OpenTelemetryApi.AttributeSet)
+  public var description: Swift.String {
+    get
+  }
+  public init?(_ value: Any)
+  public static func == (a: OpenTelemetryApi.AttributeValue, b: OpenTelemetryApi.AttributeValue) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}
+extension OpenTelemetryApi.AttributeValue {
+  public init(_ value: Swift.String)
+  public init(_ value: Swift.Bool)
+  public init(_ value: Swift.Int)
+  public init(_ value: Swift.Double)
+  public init(_ value: [Swift.String])
+  public init(_ value: [Swift.Int])
+  public init(_ value: [Swift.Double])
+  public init(_ value: OpenTelemetryApi.AttributeSet)
+}
+extension OpenTelemetryApi.AttributeValue : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol ContextManager : AnyObject {
+  func getCurrentContextValue(forKey: OpenTelemetryApi.OpenTelemetryContextKeys) -> Swift.AnyObject?
+  func setCurrentContextValue(forKey: OpenTelemetryApi.OpenTelemetryContextKeys, value: Swift.AnyObject)
+  func removeContextValue(forKey: OpenTelemetryApi.OpenTelemetryContextKeys, value: Swift.AnyObject)
+}
+public enum OpenTelemetryContextKeys : Swift.String {
+  case span
+  case baggage
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public struct OpenTelemetryContextProvider {
+  public var activeSpan: (any OpenTelemetryApi.Span)? {
+    get
+  }
+  public var activeBaggage: (any OpenTelemetryApi.Baggage)? {
+    get
+  }
+  public func setActiveSpan(_ span: any OpenTelemetryApi.Span)
+  public func setActiveBaggage(_ baggage: any OpenTelemetryApi.Baggage)
+  public func removeContextForSpan(_ span: any OpenTelemetryApi.Span)
+  public func removeContextForBaggage(_ baggage: any OpenTelemetryApi.Baggage)
+}
+public struct StringUtils {
+  public static func isPrintableString(_ string: Swift.String) -> Swift.Bool
+  public static func isValidMetricName(_ metricName: Swift.String) -> Swift.Bool
+}
+extension Swift.Double {
+  public var toMilliseconds: Swift.UInt64 {
+    get
+  }
+  public var toMicroseconds: Swift.UInt64 {
+    get
+  }
+  public var toNanoseconds: Swift.UInt64 {
+    get
+  }
+  public static func fromMilliseconds(_ millis: Swift.Int64) -> Foundation.TimeInterval
+  public static func fromMicroseconds(_ micros: Swift.Int64) -> Foundation.TimeInterval
+  public static func fromNanoseconds(_ nanos: Swift.Int64) -> Foundation.TimeInterval
+}
+@_hasMissingDesignatedInitializers public class DefaultLogger : OpenTelemetryApi.Logger {
+  public func eventBuilder(name: Swift.String) -> any OpenTelemetryApi.EventBuilder
+  public func logRecordBuilder() -> any OpenTelemetryApi.LogRecordBuilder
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DefaultLoggerProvider : OpenTelemetryApi.LoggerProvider {
+  public static let instance: any OpenTelemetryApi.LoggerProvider
+  public func get(instrumentationScopeName: Swift.String) -> any OpenTelemetryApi.Logger
+  public func loggerBuilder(instrumentationScopeName: Swift.String) -> any OpenTelemetryApi.LoggerBuilder
+  @objc deinit
+}
+public protocol EventBuilder : OpenTelemetryApi.LogRecordBuilder {
+  func setData(_ attributes: [Swift.String : OpenTelemetryApi.AttributeValue]) -> Self
+}
+public protocol LogRecordBuilder {
+  func setTimestamp(_ timestamp: Foundation.Date) -> Self
+  func setObservedTimestamp(_ observed: Foundation.Date) -> Self
+  func setSpanContext(_ context: OpenTelemetryApi.SpanContext) -> Self
+  func setSeverity(_ severity: OpenTelemetryApi.Severity) -> Self
+  func setBody(_ body: OpenTelemetryApi.AttributeValue) -> Self
+  func setAttributes(_ attributes: [Swift.String : OpenTelemetryApi.AttributeValue]) -> Self
+  func emit()
+}
+public protocol Logger {
+  func eventBuilder(name: Swift.String) -> any OpenTelemetryApi.EventBuilder
+  func logRecordBuilder() -> any OpenTelemetryApi.LogRecordBuilder
+}
+public protocol LoggerBuilder {
+  func setEventDomain(_ eventDomain: Swift.String) -> Self
+  func setSchemaUrl(_ schemaUrl: Swift.String) -> Self
+  func setInstrumentationVersion(_ instrumentationVersion: Swift.String) -> Self
+  func setIncludeTraceContext(_ includeTraceContext: Swift.Bool) -> Self
+  func setAttributes(_ attributes: [Swift.String : OpenTelemetryApi.AttributeValue]) -> Self
+  func build() -> any OpenTelemetryApi.Logger
+}
+public protocol LoggerProvider : AnyObject {
+  func get(instrumentationScopeName: Swift.String) -> any OpenTelemetryApi.Logger
+  func loggerBuilder(instrumentationScopeName: Swift.String) -> any OpenTelemetryApi.LoggerBuilder
+}
+public enum Severity : Swift.Int, Swift.Comparable, Swift.CustomStringConvertible, Swift.Codable {
+  case trace, trace2, trace3, trace4, debug, debug2, debug3, debug4, info, info2, info3, info4, warn, warn2, warn3, warn4, error, error2, error3, error4, fatal, fatal2, fatal3, fatal4
+  public var description: Swift.String {
+    get
+  }
+  public static func < (lhs: OpenTelemetryApi.Severity, rhs: OpenTelemetryApi.Severity) -> Swift.Bool
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers public class DefaultMeterProvider : OpenTelemetryApi.MeterProvider {
+  public static var instance: any OpenTelemetryApi.MeterProvider
+  public static func setDefault(meterFactory: any OpenTelemetryApi.MeterProvider)
+  public func get(instrumentationName: Swift.String, instrumentationVersion: Swift.String? = nil) -> any OpenTelemetryApi.Meter
+  @objc deinit
+}
+open class BoundMeasureMetric<T> {
+  public init()
+  open func record(value: T)
+  @objc deinit
+}
+public protocol DoubleObserverMetric {
+  func observe(value: Swift.Double, labelset: OpenTelemetryApi.LabelSet)
+  func observe(value: Swift.Double, labels: [Swift.String : Swift.String])
+}
+public struct NoopDoubleObserverMetric : OpenTelemetryApi.DoubleObserverMetric {
+  public init()
+  public func observe(value: Swift.Double, labelset: OpenTelemetryApi.LabelSet)
+  public func observe(value: Swift.Double, labels: [Swift.String : Swift.String])
+}
+public protocol DoubleObserverMetricHandle {
+  func observe(value: Swift.Double)
+}
+public protocol IntObserverMetric {
+  func observe(value: Swift.Int, labelset: OpenTelemetryApi.LabelSet)
+  func observe(value: Swift.Int, labels: [Swift.String : Swift.String])
+}
+public struct NoopIntObserverMetric : OpenTelemetryApi.IntObserverMetric {
+  public init()
+  public func observe(value: Swift.Int, labelset: OpenTelemetryApi.LabelSet)
+  public func observe(value: Swift.Int, labels: [Swift.String : Swift.String])
+}
+public protocol IntObserverMetricHandle {
+  func observe(value: Swift.Int)
+}
+public protocol MeasureMetric {
+  associatedtype T
+  func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundMeasureMetric<Self.T>
+  func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundMeasureMetric<Self.T>
+}
+extension OpenTelemetryApi.MeasureMetric {
+  public func record(value: Self.T, labelset: OpenTelemetryApi.LabelSet)
+  public func record(value: Self.T, labels: [Swift.String : Swift.String])
+}
+public struct AnyMeasureMetric<T> : OpenTelemetryApi.MeasureMetric {
+  public init<U>(_ measurable: U) where T == U.T, U : OpenTelemetryApi.MeasureMetric
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundMeasureMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundMeasureMetric<T>
+}
+public struct NoopMeasureMetric<T> : OpenTelemetryApi.MeasureMetric {
+  public init()
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundMeasureMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundMeasureMetric<T>
+}
+open class BoundHistogramMetric<T> {
+  public init(explicitBoundaries: Swift.Array<T>? = nil)
+  open func record(value: T)
+  @objc deinit
+}
+public protocol HistogramMetric {
+  associatedtype T
+  func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundHistogramMetric<Self.T>
+  func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundHistogramMetric<Self.T>
+}
+extension OpenTelemetryApi.HistogramMetric {
+  public func record(value: Self.T, labelset: OpenTelemetryApi.LabelSet)
+  public func record(value: Self.T, labels: [Swift.String : Swift.String])
+}
+public struct AnyHistogramMetric<T> : OpenTelemetryApi.HistogramMetric {
+  public init<U>(_ histogram: U) where T == U.T, U : OpenTelemetryApi.HistogramMetric
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundHistogramMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundHistogramMetric<T>
+}
+public struct NoopHistogramMetric<T> : OpenTelemetryApi.HistogramMetric {
+  public init()
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundHistogramMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundHistogramMetric<T>
+}
+open class BoundCounterMetric<T> {
+  public init()
+  open func add(value: T)
+  @objc deinit
+}
+public protocol CounterMetric {
+  associatedtype T
+  func add(value: Self.T, labelset: OpenTelemetryApi.LabelSet)
+  func add(value: Self.T, labels: [Swift.String : Swift.String])
+  func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundCounterMetric<Self.T>
+  func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundCounterMetric<Self.T>
+}
+public struct AnyCounterMetric<T> : OpenTelemetryApi.CounterMetric {
+  public init<U>(_ countable: U) where T == U.T, U : OpenTelemetryApi.CounterMetric
+  public func add(value: T, labelset: OpenTelemetryApi.LabelSet)
+  public func add(value: T, labels: [Swift.String : Swift.String])
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundCounterMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundCounterMetric<T>
+}
+public struct NoopCounterMetric<T> : OpenTelemetryApi.CounterMetric {
+  public init()
+  public func add(value: T, labelset: OpenTelemetryApi.LabelSet)
+  public func add(value: T, labels: [Swift.String : Swift.String])
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundCounterMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundCounterMetric<T>
+}
+@_hasMissingDesignatedInitializers open class LabelSet : Swift.Hashable {
+  public var labels: [Swift.String : Swift.String] {
+    get
+  }
+  public static var empty: OpenTelemetryApi.LabelSet
+  required public init(labels: [Swift.String : Swift.String])
+  public static func == (lhs: OpenTelemetryApi.LabelSet, rhs: OpenTelemetryApi.LabelSet) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  @objc deinit
+  open var hashValue: Swift.Int {
+    get
+  }
+}
+public protocol Meter {
+  func createIntCounter(name: Swift.String, monotonic: Swift.Bool) -> OpenTelemetryApi.AnyCounterMetric<Swift.Int>
+  func createDoubleCounter(name: Swift.String, monotonic: Swift.Bool) -> OpenTelemetryApi.AnyCounterMetric<Swift.Double>
+  func createIntMeasure(name: Swift.String, absolute: Swift.Bool) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Int>
+  func createDoubleMeasure(name: Swift.String, absolute: Swift.Bool) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Double>
+  func createIntHistogram(name: Swift.String, explicitBoundaries: Swift.Array<Swift.Int>?, absolute: Swift.Bool) -> OpenTelemetryApi.AnyHistogramMetric<Swift.Int>
+  func createDoubleHistogram(name: Swift.String, explicitBoundaries: Swift.Array<Swift.Double>?, absolute: Swift.Bool) -> OpenTelemetryApi.AnyHistogramMetric<Swift.Double>
+  func createRawDoubleHistogram(name: Swift.String) -> OpenTelemetryApi.AnyRawHistogramMetric<Swift.Double>
+  func createRawIntHistogram(name: Swift.String) -> OpenTelemetryApi.AnyRawHistogramMetric<Swift.Int>
+  func createRawDoubleCounter(name: Swift.String) -> OpenTelemetryApi.AnyRawCounterMetric<Swift.Double>
+  func createRawIntCounter(name: Swift.String) -> OpenTelemetryApi.AnyRawCounterMetric<Swift.Int>
+  func createIntObserver(name: Swift.String, absolute: Swift.Bool, callback: @escaping (any OpenTelemetryApi.IntObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.IntObserverMetric
+  func createDoubleObserver(name: Swift.String, absolute: Swift.Bool, callback: @escaping (any OpenTelemetryApi.DoubleObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.DoubleObserverMetric
+  func createIntObservableGauge(name: Swift.String, callback: @escaping (any OpenTelemetryApi.IntObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.IntObserverMetric
+  func createDoubleObservableGauge(name: Swift.String, callback: @escaping (any OpenTelemetryApi.DoubleObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.DoubleObserverMetric
+  func getLabelSet(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.LabelSet
+}
+extension OpenTelemetryApi.Meter {
+  public func createIntCounter(name: Swift.String) -> OpenTelemetryApi.AnyCounterMetric<Swift.Int>
+  public func createDoubleCounter(name: Swift.String) -> OpenTelemetryApi.AnyCounterMetric<Swift.Double>
+  public func createIntMeasure(name: Swift.String) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Int>
+  public func createDoubleMeasure(name: Swift.String) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Double>
+  public func createIntObserver(name: Swift.String, callback: @escaping (any OpenTelemetryApi.IntObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.IntObserverMetric
+  public func createDoubleObserver(name: Swift.String, callback: @escaping (any OpenTelemetryApi.DoubleObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.DoubleObserverMetric
+}
+public protocol MeterProvider : AnyObject {
+  func get(instrumentationName: Swift.String, instrumentationVersion: Swift.String?) -> any OpenTelemetryApi.Meter
+}
+public struct ProxyMeter : OpenTelemetryApi.Meter {
+  public func createRawDoubleCounter(name: Swift.String) -> OpenTelemetryApi.AnyRawCounterMetric<Swift.Double>
+  public func createRawIntCounter(name: Swift.String) -> OpenTelemetryApi.AnyRawCounterMetric<Swift.Int>
+  public func createRawDoubleHistogram(name: Swift.String) -> OpenTelemetryApi.AnyRawHistogramMetric<Swift.Double>
+  public func createRawIntHistogram(name: Swift.String) -> OpenTelemetryApi.AnyRawHistogramMetric<Swift.Int>
+  public func getLabelSet(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.LabelSet
+  public func createIntCounter(name: Swift.String, monotonic: Swift.Bool) -> OpenTelemetryApi.AnyCounterMetric<Swift.Int>
+  public func createDoubleCounter(name: Swift.String, monotonic: Swift.Bool) -> OpenTelemetryApi.AnyCounterMetric<Swift.Double>
+  public func createIntMeasure(name: Swift.String, absolute: Swift.Bool) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Int>
+  public func createDoubleMeasure(name: Swift.String, absolute: Swift.Bool) -> OpenTelemetryApi.AnyMeasureMetric<Swift.Double>
+  public func createIntHistogram(name: Swift.String, explicitBoundaries: Swift.Array<Swift.Int>? = nil, absolute: Swift.Bool) -> OpenTelemetryApi.AnyHistogramMetric<Swift.Int>
+  public func createDoubleHistogram(name: Swift.String, explicitBoundaries: Swift.Array<Swift.Double>?, absolute: Swift.Bool) -> OpenTelemetryApi.AnyHistogramMetric<Swift.Double>
+  public func createIntObservableGauge(name: Swift.String, callback: @escaping (any OpenTelemetryApi.IntObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.IntObserverMetric
+  public func createDoubleObservableGauge(name: Swift.String, callback: @escaping (any OpenTelemetryApi.DoubleObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.DoubleObserverMetric
+  public func createIntObserver(name: Swift.String, absolute: Swift.Bool, callback: @escaping (any OpenTelemetryApi.IntObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.IntObserverMetric
+  public func createDoubleObserver(name: Swift.String, absolute: Swift.Bool, callback: @escaping (any OpenTelemetryApi.DoubleObserverMetric) -> Swift.Void) -> any OpenTelemetryApi.DoubleObserverMetric
+}
+open class BoundRawCounterMetric<T> {
+  public init()
+  open func record(sum: T, startDate: Foundation.Date, endDate: Foundation.Date)
+  @objc deinit
+}
+open class BoundRawHistogramMetric<T> {
+  public init()
+  open func record(explicitBoundaries: Swift.Array<T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: T)
+  @objc deinit
+}
+public protocol RawCounterMetric {
+  associatedtype T
+  func record(sum: Self.T, startDate: Foundation.Date, endDate: Foundation.Date, labels: [Swift.String : Swift.String])
+  func record(sum: Self.T, startDate: Foundation.Date, endDate: Foundation.Date, labelset: OpenTelemetryApi.LabelSet)
+  func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawCounterMetric<Self.T>
+  func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawCounterMetric<Self.T>
+}
+public struct AnyRawCounterMetric<T> : OpenTelemetryApi.RawCounterMetric {
+  public init<U>(_ countable: U) where T == U.T, U : OpenTelemetryApi.RawCounterMetric
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawCounterMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawCounterMetric<T>
+  public func record(sum: T, startDate: Foundation.Date, endDate: Foundation.Date, labelset: OpenTelemetryApi.LabelSet)
+  public func record(sum: T, startDate: Foundation.Date, endDate: Foundation.Date, labels: [Swift.String : Swift.String])
+}
+public struct NoopRawCounterMetric<T> : OpenTelemetryApi.RawCounterMetric {
+  public func record(sum: T, startDate: Foundation.Date, endDate: Foundation.Date, labels: [Swift.String : Swift.String])
+  public func record(sum: T, startDate: Foundation.Date, endDate: Foundation.Date, labelset: OpenTelemetryApi.LabelSet)
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawCounterMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawCounterMetric<T>
+}
+public protocol RawHistogramMetric {
+  associatedtype T
+  func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawHistogramMetric<Self.T>
+  func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawHistogramMetric<Self.T>
+  func record(explicitBoundaries: Swift.Array<Self.T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: Self.T, labelset: OpenTelemetryApi.LabelSet)
+  func record(explicitBoundaries: Swift.Array<Self.T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: Self.T, labels: [Swift.String : Swift.String])
+}
+public struct AnyRawHistogramMetric<T> : OpenTelemetryApi.RawHistogramMetric {
+  public init<U>(_ histogram: U) where T == U.T, U : OpenTelemetryApi.RawHistogramMetric
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawHistogramMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawHistogramMetric<T>
+  public func record(explicitBoundaries: Swift.Array<T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: T, labels: [Swift.String : Swift.String])
+  public func record(explicitBoundaries: Swift.Array<T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: T, labelset: OpenTelemetryApi.LabelSet)
+}
+public struct NoopRawHistogramMetric<T> : OpenTelemetryApi.RawHistogramMetric {
+  public func record(explicitBoundaries: Swift.Array<T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: T, labelset: OpenTelemetryApi.LabelSet)
+  public func record(explicitBoundaries: Swift.Array<T>, counts: Swift.Array<Swift.Int>, startDate: Foundation.Date, endDate: Foundation.Date, count: Swift.Int, sum: T, labels: [Swift.String : Swift.String])
+  public init()
+  public func bind(labelset: OpenTelemetryApi.LabelSet) -> OpenTelemetryApi.BoundRawHistogramMetric<T>
+  public func bind(labels: [Swift.String : Swift.String]) -> OpenTelemetryApi.BoundRawHistogramMetric<T>
+}
+@_hasMissingDesignatedInitializers public class DefaultStableMeter : OpenTelemetryApi.StableMeter {
+  public func counterBuilder(name: Swift.String) -> any OpenTelemetryApi.LongCounterBuilder
+  public func upDownCounterBuilder(name: Swift.String) -> any OpenTelemetryApi.LongUpDownCounterBuilder
+  public func histogramBuilder(name: Swift.String) -> any OpenTelemetryApi.DoubleHistogramBuilder
+  public func gaugeBuilder(name: Swift.String) -> any OpenTelemetryApi.DoubleGaugeBuilder
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DefaultStableMeterProvider : OpenTelemetryApi.StableMeterProvider {
+  public static func noop() -> any OpenTelemetryApi.MeterBuilder
+  public func get(name: Swift.String) -> any OpenTelemetryApi.StableMeter
+  public func meterBuilder(name: Swift.String) -> any OpenTelemetryApi.MeterBuilder
+  public static var instance: any OpenTelemetryApi.StableMeterProvider
+  @objc deinit
+}
+public protocol DoubleCounter {
+  mutating func add(value: Swift.Double)
+  mutating func add(value: Swift.Double, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol DoubleCounterBuilder : AnyObject {
+  func build() -> any OpenTelemetryApi.DoubleCounter
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableDoubleMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableDoubleCounter
+}
+public protocol DoubleGaugeBuilder : AnyObject {
+  func ofLongs() -> any OpenTelemetryApi.LongGaugeBuilder
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableDoubleMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableDoubleGauge
+}
+public protocol DoubleHistogram {
+  mutating func record(value: Swift.Double)
+  mutating func record(value: Swift.Double, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol DoubleHistogramBuilder : AnyObject {
+  func ofLongs() -> any OpenTelemetryApi.LongHistogramBuilder
+  func build() -> any OpenTelemetryApi.DoubleHistogram
+}
+public protocol DoubleUpDownCounter {
+  mutating func add(value: Swift.Double)
+  mutating func add(value: Swift.Double, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol DoubleUpDownCounterBuilder : AnyObject {
+  func build() -> any OpenTelemetryApi.DoubleUpDownCounter
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableDoubleMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableDoubleUpDownCounter
+}
+public protocol LongCounter {
+  mutating func add(value: Swift.Int)
+  mutating func add(value: Swift.Int, attribute: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol LongCounterBuilder : AnyObject {
+  func ofDoubles() -> any OpenTelemetryApi.DoubleCounterBuilder
+  func build() -> any OpenTelemetryApi.LongCounter
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableLongMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableLongCounter
+}
+public protocol LongGaugeBuilder : AnyObject {
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableLongMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableLongGauge
+}
+public protocol LongHistogram {
+  mutating func record(value: Swift.Int)
+  mutating func record(value: Swift.Int, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol LongHistogramBuilder : AnyObject {
+  func build() -> any OpenTelemetryApi.LongHistogram
+}
+public protocol LongUpDownCounter {
+  mutating func add(value: Swift.Int)
+  mutating func add(value: Swift.Int, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol LongUpDownCounterBuilder : AnyObject {
+  func ofDoubles() -> any OpenTelemetryApi.DoubleUpDownCounterBuilder
+  func build() -> any OpenTelemetryApi.LongUpDownCounter
+  func buildWithCallback(_ callback: @escaping (any OpenTelemetryApi.ObservableLongMeasurement) -> Swift.Void) -> any OpenTelemetryApi.ObservableLongUpDownCounter
+}
+public protocol MeterBuilder : AnyObject {
+  func setSchemaUrl(schemaUrl: Swift.String) -> Self
+  func setInstrumentationVersion(instrumentationVersion: Swift.String) -> Self
+  func build() -> any OpenTelemetryApi.StableMeter
+}
+public protocol ObservableDoubleCounter {
+  func close()
+}
+public protocol ObservableDoubleGauge {
+  func close()
+}
+public protocol ObservableDoubleMeasurement {
+  func record(value: Swift.Double)
+  func record(value: Swift.Double, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol ObservableDoubleUpDownCounter {
+  func close()
+}
+public protocol ObservableLongCounter {
+  func close()
+}
+public protocol ObservableLongGauge {
+  func close()
+}
+public protocol ObservableLongMeasurement {
+  func record(value: Swift.Int)
+  func record(value: Swift.Int, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+}
+public protocol ObservableLongUpDownCounter {
+  func close()
+}
+public protocol StableMeter {
+  func counterBuilder(name: Swift.String) -> any OpenTelemetryApi.LongCounterBuilder
+  func upDownCounterBuilder(name: Swift.String) -> any OpenTelemetryApi.LongUpDownCounterBuilder
+  func histogramBuilder(name: Swift.String) -> any OpenTelemetryApi.DoubleHistogramBuilder
+  func gaugeBuilder(name: Swift.String) -> any OpenTelemetryApi.DoubleGaugeBuilder
+}
+public protocol StableMeterProvider : AnyObject {
+  func get(name: Swift.String) -> any OpenTelemetryApi.StableMeter
+  func meterBuilder(name: Swift.String) -> any OpenTelemetryApi.MeterBuilder
+}
+public struct OpenTelemetry {
+  public static var version: Swift.String
+  public static var instance: OpenTelemetryApi.OpenTelemetry
+  public var tracerProvider: any OpenTelemetryApi.TracerProvider {
+    get
+  }
+  public var meterProvider: any OpenTelemetryApi.MeterProvider {
+    get
+  }
+  public var stableMeterProvider: (any OpenTelemetryApi.StableMeterProvider)? {
+    get
+  }
+  public var loggerProvider: any OpenTelemetryApi.LoggerProvider {
+    get
+  }
+  public var baggageManager: any OpenTelemetryApi.BaggageManager {
+    get
+  }
+  public var propagators: any OpenTelemetryApi.ContextPropagators {
+    get
+  }
+  public var contextProvider: OpenTelemetryApi.OpenTelemetryContextProvider {
+    get
+  }
+  public static func registerStableMeterProvider(meterProvider: any OpenTelemetryApi.StableMeterProvider)
+  public static func registerTracerProvider(tracerProvider: any OpenTelemetryApi.TracerProvider)
+  public static func registerMeterProvider(meterProvider: any OpenTelemetryApi.MeterProvider)
+  public static func registerLoggerProvider(loggerProvider: any OpenTelemetryApi.LoggerProvider)
+  public static func registerBaggageManager(baggageManager: any OpenTelemetryApi.BaggageManager)
+  public static func registerPropagators(textPropagators: [any OpenTelemetryApi.TextMapPropagator], baggagePropagator: any OpenTelemetryApi.TextMapBaggagePropagator)
+  public static func registerContextManager(contextManager: any OpenTelemetryApi.ContextManager)
+}
+public protocol ContextPropagators {
+  var textMapPropagator: any OpenTelemetryApi.TextMapPropagator { get }
+  var textMapBaggagePropagator: any OpenTelemetryApi.TextMapBaggagePropagator { get }
+}
+public struct DefaultContextPropagators : OpenTelemetryApi.ContextPropagators {
+  public var textMapPropagator: any OpenTelemetryApi.TextMapPropagator
+  public var textMapBaggagePropagator: any OpenTelemetryApi.TextMapBaggagePropagator
+  public init()
+  public init(textPropagators: [any OpenTelemetryApi.TextMapPropagator], baggagePropagator: any OpenTelemetryApi.TextMapBaggagePropagator)
+  public mutating func addTextMapPropagator(textFormat: any OpenTelemetryApi.TextMapPropagator)
+}
+@_hasMissingDesignatedInitializers public class DefaultTracer : OpenTelemetryApi.Tracer {
+  public static var instance: OpenTelemetryApi.DefaultTracer
+  public func spanBuilder(spanName: Swift.String) -> any OpenTelemetryApi.SpanBuilder
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers public class DefaultTracerProvider : OpenTelemetryApi.TracerProvider {
+  public static let instance: OpenTelemetryApi.DefaultTracerProvider
+  public func get(instrumentationName: Swift.String, instrumentationVersion: Swift.String? = nil) -> any OpenTelemetryApi.Tracer
+  @objc deinit
+}
+public class B3Propagator : OpenTelemetryApi.TextMapPropagator {
+  final public let fields: Swift.Set<Swift.String>
+  public init()
+  public init(_ singleHeaderInjection: Swift.Bool)
+  public func inject<S>(spanContext: OpenTelemetryApi.SpanContext, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> OpenTelemetryApi.SpanContext? where G : OpenTelemetryApi.Getter
+  @objc deinit
+}
+public protocol BinaryFormattable {
+  func fromByteArray(bytes: [Swift.UInt8]) -> OpenTelemetryApi.SpanContext?
+  func toByteArray(spanContext: OpenTelemetryApi.SpanContext) -> [Swift.UInt8]
+}
+public class JaegerPropagator : OpenTelemetryApi.TextMapPropagator {
+  public var fields: Swift.Set<Swift.String>
+  public init()
+  public func inject<S>(spanContext: OpenTelemetryApi.SpanContext, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> OpenTelemetryApi.SpanContext? where G : OpenTelemetryApi.Getter
+  @objc deinit
+}
+public protocol TextMapPropagator {
+  var fields: Swift.Set<Swift.String> { get }
+  func inject<S>(spanContext: OpenTelemetryApi.SpanContext, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  @discardableResult
+  func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> OpenTelemetryApi.SpanContext? where G : OpenTelemetryApi.Getter
+}
+public protocol Setter {
+  func set(carrier: inout [Swift.String : Swift.String], key: Swift.String, value: Swift.String)
+}
+public protocol Getter {
+  func get(carrier: [Swift.String : Swift.String], key: Swift.String) -> [Swift.String]?
+}
+public struct W3CTraceContextPropagator : OpenTelemetryApi.TextMapPropagator {
+  public init()
+  public let fields: Swift.Set<Swift.String>
+  public func inject<S>(spanContext: OpenTelemetryApi.SpanContext, carrier: inout [Swift.String : Swift.String], setter: S) where S : OpenTelemetryApi.Setter
+  public func extract<G>(carrier: [Swift.String : Swift.String], getter: G) -> OpenTelemetryApi.SpanContext? where G : OpenTelemetryApi.Getter
+}
+public enum SemanticAttributes : Swift.String {
+  case clientAddress
+  case clientPort
+  case clientSocketAddress
+  case clientSocketPort
+  case httpMethod
+  case httpStatusCode
+  case httpScheme
+  case httpUrl
+  case httpTarget
+  case httpRequestContentLength
+  case httpResponseContentLength
+  case netSockPeerName
+  case netSockPeerAddr
+  case netSockPeerPort
+  case netPeerName
+  case netPeerPort
+  case netHostName
+  case netHostPort
+  case netSockHostAddr
+  case netSockHostPort
+  case netTransport
+  case netProtocolName
+  case netProtocolVersion
+  case netSockFamily
+  case destinationDomain
+  case destinationAddress
+  case destinationPort
+  case exceptionType
+  case exceptionMessage
+  case exceptionStacktrace
+  case httpRequestMethod
+  case httpResponseStatusCode
+  case networkProtocolName
+  case networkProtocolVersion
+  case serverAddress
+  case serverPort
+  case httpRoute
+  case urlScheme
+  case eventName
+  case eventDomain
+  case logRecordUid
+  case featureFlagKey
+  case featureFlagProviderName
+  case featureFlagVariant
+  case logIostream
+  case logFileName
+  case logFilePath
+  case logFileNameResolved
+  case logFilePathResolved
+  case serverSocketAddress
+  case pool
+  case type
+  case serverSocketDomain
+  case serverSocketPort
+  case sourceDomain
+  case sourceAddress
+  case sourcePort
+  case awsLambdaInvokedArn
+  case cloudeventsEventId
+  case cloudeventsEventSource
+  case cloudeventsEventSpecVersion
+  case cloudeventsEventType
+  case cloudeventsEventSubject
+  case opentracingRefType
+  case dbSystem
+  case dbConnectionString
+  case dbUser
+  case dbJdbcDriverClassname
+  case dbName
+  case dbStatement
+  case dbOperation
+  case networkTransport
+  case networkType
+  case dbMssqlInstanceName
+  case dbCassandraPageSize
+  case dbCassandraConsistencyLevel
+  case dbCassandraTable
+  case dbCassandraIdempotence
+  case dbCassandraSpeculativeExecutionCount
+  case dbCassandraCoordinatorId
+  case dbCassandraCoordinatorDc
+  case dbRedisDatabaseIndex
+  case dbMongodbCollection
+  case urlFull
+  case dbSqlTable
+  case dbCosmosdbClientId
+  case dbCosmosdbOperationType
+  case userAgentOriginal
+  case dbCosmosdbConnectionMode
+  case dbCosmosdbContainer
+  case dbCosmosdbRequestContentLength
+  case dbCosmosdbStatusCode
+  case dbCosmosdbSubStatusCode
+  case dbCosmosdbRequestCharge
+  case otelStatusCode
+  case otelStatusDescription
+  case faasTrigger
+  case faasInvocationId
+  case cloudResourceId
+  case faasDocumentCollection
+  case faasDocumentOperation
+  case faasDocumentTime
+  case faasDocumentName
+  case urlPath
+  case urlQuery
+  case messagingSystem
+  case messagingOperation
+  case messagingBatchMessageCount
+  case messagingClientId
+  case messagingDestinationName
+  case messagingDestinationTemplate
+  case messagingDestinationTemporary
+  case messagingDestinationAnonymous
+  case messagingMessageId
+  case messagingMessageConversationId
+  case messagingMessagePayloadSizeBytes
+  case messagingMessagePayloadCompressedSizeBytes
+  case faasTime
+  case faasCron
+  case faasColdstart
+  case faasInvokedName
+  case faasInvokedProvider
+  case faasInvokedRegion
+  case networkConnectionType
+  case networkConnectionSubtype
+  case networkCarrierName
+  case networkCarrierMcc
+  case networkCarrierMnc
+  case networkCarrierIcc
+  case peerService
+  case enduserId
+  case enduserRole
+  case enduserScope
+  case threadId
+  case threadName
+  case codeFunction
+  case codeNamespace
+  case codeFilepath
+  case codeLineno
+  case codeColumn
+  case httpRequestMethodOriginal
+  case httpRequestBodySize
+  case httpResponseBodySize
+  case httpResendCount
+  case rpcSystem
+  case rpcService
+  case rpcMethod
+  case awsRequestId
+  case awsDynamodbTableNames
+  case awsDynamodbConsumedCapacity
+  case awsDynamodbItemCollectionMetrics
+  case awsDynamodbProvisionedReadCapacity
+  case awsDynamodbProvisionedWriteCapacity
+  case awsDynamodbConsistentRead
+  case awsDynamodbProjection
+  case awsDynamodbLimit
+  case awsDynamodbAttributesToGet
+  case awsDynamodbIndexName
+  case awsDynamodbSelect
+  case awsDynamodbGlobalSecondaryIndexes
+  case awsDynamodbLocalSecondaryIndexes
+  case awsDynamodbExclusiveStartTable
+  case awsDynamodbTableCount
+  case awsDynamodbScanForward
+  case awsDynamodbSegment
+  case awsDynamodbTotalSegments
+  case awsDynamodbCount
+  case awsDynamodbScannedCount
+  case awsDynamodbAttributeDefinitions
+  case awsDynamodbGlobalSecondaryIndexUpdates
+  case awsS3Bucket
+  case awsS3Key
+  case awsS3CopySource
+  case awsS3UploadId
+  case awsS3Delete
+  case awsS3PartNumber
+  case graphqlOperationName
+  case graphqlOperationType
+  case graphqlDocument
+  case messagingRabbitmqDestinationRoutingKey
+  case messagingKafkaMessageKey
+  case messagingKafkaConsumerGroup
+  case messagingKafkaDestinationPartition
+  case messagingKafkaMessageOffset
+  case messagingKafkaMessageTombstone
+  case messagingRocketmqNamespace
+  case messagingRocketmqClientGroup
+  case messagingRocketmqMessageDeliveryTimestamp
+  case messagingRocketmqMessageDelayTimeLevel
+  case messagingRocketmqMessageGroup
+  case messagingRocketmqMessageType
+  case messagingRocketmqMessageTag
+  case messagingRocketmqMessageKeys
+  case messagingRocketmqConsumptionModel
+  case rpcGrpcStatusCode
+  case rpcJsonrpcVersion
+  case rpcJsonrpcRequestId
+  case rpcJsonrpcErrorCode
+  case rpcJsonrpcErrorMessage
+  case messageType
+  case messageId
+  case messageCompressedSize
+  case messageUncompressedSize
+  case rpcConnectRpcErrorCode
+  case exceptionEscaped
+  case urlFragment
+  case exception
+  public struct NetTransportValues : Swift.CustomStringConvertible {
+    public static let ipTcp: OpenTelemetryApi.SemanticAttributes.NetTransportValues
+    public static let ipUdp: OpenTelemetryApi.SemanticAttributes.NetTransportValues
+    public static let pipe: OpenTelemetryApi.SemanticAttributes.NetTransportValues
+    public static let inproc: OpenTelemetryApi.SemanticAttributes.NetTransportValues
+    public static let other: OpenTelemetryApi.SemanticAttributes.NetTransportValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct NetSockFamilyValues : Swift.CustomStringConvertible {
+    public static let inet: OpenTelemetryApi.SemanticAttributes.NetSockFamilyValues
+    public static let inet6: OpenTelemetryApi.SemanticAttributes.NetSockFamilyValues
+    public static let unix: OpenTelemetryApi.SemanticAttributes.NetSockFamilyValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct HttpRequestMethodValues : Swift.CustomStringConvertible {
+    public static let connect: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let delete: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let get: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let head: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let options: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let patch: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let post: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let put: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let trace: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public static let other: OpenTelemetryApi.SemanticAttributes.HttpRequestMethodValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct EventDomainValues : Swift.CustomStringConvertible {
+    public static let browser: OpenTelemetryApi.SemanticAttributes.EventDomainValues
+    public static let device: OpenTelemetryApi.SemanticAttributes.EventDomainValues
+    public static let k8s: OpenTelemetryApi.SemanticAttributes.EventDomainValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public enum LogIostreamValues : Swift.String {
+    case stdout
+    case stderr
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum TypeValues : Swift.String {
+    case heap
+    case non_heap
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum OpentracingRefTypeValues : Swift.String {
+    case child_of
+    case follows_from
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public struct DbSystemValues : Swift.CustomStringConvertible {
+    public static let otherSql: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let mssql: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let mssqlcompact: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let mysql: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let oracle: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let db2: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let postgresql: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let redshift: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let hive: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let cloudscape: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let hsqldb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let progress: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let maxdb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let hanadb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let ingres: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let firstsql: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let edb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let cache: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let adabas: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let firebird: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let derby: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let filemaker: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let informix: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let instantdb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let interbase: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let mariadb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let netezza: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let pervasive: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let pointbase: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let sqlite: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let sybase: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let teradata: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let vertica: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let h2: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let coldfusion: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let cassandra: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let hbase: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let mongodb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let redis: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let couchbase: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let couchdb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let cosmosdb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let dynamodb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let neo4j: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let geode: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let elasticsearch: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let memcached: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let cockroachdb: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let opensearch: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let clickhouse: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let spanner: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public static let trino: OpenTelemetryApi.SemanticAttributes.DbSystemValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct NetworkTransportValues : Swift.CustomStringConvertible {
+    public static let tcp: OpenTelemetryApi.SemanticAttributes.NetworkTransportValues
+    public static let udp: OpenTelemetryApi.SemanticAttributes.NetworkTransportValues
+    public static let pipe: OpenTelemetryApi.SemanticAttributes.NetworkTransportValues
+    public static let unix: OpenTelemetryApi.SemanticAttributes.NetworkTransportValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct NetworkTypeValues : Swift.CustomStringConvertible {
+    public static let ipv4: OpenTelemetryApi.SemanticAttributes.NetworkTypeValues
+    public static let ipv6: OpenTelemetryApi.SemanticAttributes.NetworkTypeValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public enum DbCassandraConsistencyLevelValues : Swift.String {
+    case all
+    case each_quorum
+    case quorum
+    case local_quorum
+    case one
+    case two
+    case three
+    case local_one
+    case any
+    case serial
+    case local_serial
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public struct DbCosmosdbOperationTypeValues : Swift.CustomStringConvertible {
+    public static let invalid: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let create: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let patch: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let read: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let readFeed: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let delete: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let replace: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let execute: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let query: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let head: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let headFeed: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let upsert: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let batch: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let queryPlan: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public static let executeJavascript: OpenTelemetryApi.SemanticAttributes.DbCosmosdbOperationTypeValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public enum DbCosmosdbConnectionModeValues : Swift.String {
+    case gateway
+    case direct
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum OtelStatusCodeValues : Swift.String {
+    case ok
+    case error
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum FaasTriggerValues : Swift.String {
+    case datasource
+    case http
+    case pubsub
+    case timer
+    case other
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public struct FaasDocumentOperationValues : Swift.CustomStringConvertible {
+    public static let insert: OpenTelemetryApi.SemanticAttributes.FaasDocumentOperationValues
+    public static let edit: OpenTelemetryApi.SemanticAttributes.FaasDocumentOperationValues
+    public static let delete: OpenTelemetryApi.SemanticAttributes.FaasDocumentOperationValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct MessagingOperationValues : Swift.CustomStringConvertible {
+    public static let publish: OpenTelemetryApi.SemanticAttributes.MessagingOperationValues
+    public static let receive: OpenTelemetryApi.SemanticAttributes.MessagingOperationValues
+    public static let process: OpenTelemetryApi.SemanticAttributes.MessagingOperationValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct FaasInvokedProviderValues : Swift.CustomStringConvertible {
+    public static let alibabaCloud: OpenTelemetryApi.SemanticAttributes.FaasInvokedProviderValues
+    public static let aws: OpenTelemetryApi.SemanticAttributes.FaasInvokedProviderValues
+    public static let azure: OpenTelemetryApi.SemanticAttributes.FaasInvokedProviderValues
+    public static let gcp: OpenTelemetryApi.SemanticAttributes.FaasInvokedProviderValues
+    public static let tencentCloud: OpenTelemetryApi.SemanticAttributes.FaasInvokedProviderValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct NetworkConnectionTypeValues : Swift.CustomStringConvertible {
+    public static let wifi: OpenTelemetryApi.SemanticAttributes.NetworkConnectionTypeValues
+    public static let wired: OpenTelemetryApi.SemanticAttributes.NetworkConnectionTypeValues
+    public static let cell: OpenTelemetryApi.SemanticAttributes.NetworkConnectionTypeValues
+    public static let unavailable: OpenTelemetryApi.SemanticAttributes.NetworkConnectionTypeValues
+    public static let unknown: OpenTelemetryApi.SemanticAttributes.NetworkConnectionTypeValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct NetworkConnectionSubtypeValues : Swift.CustomStringConvertible {
+    public static let gprs: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let edge: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let umts: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let cdma: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let evdo0: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let evdoA: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let cdma20001xrtt: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let hsdpa: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let hsupa: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let hspa: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let iden: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let evdoB: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let lte: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let ehrpd: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let hspap: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let gsm: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let tdScdma: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let iwlan: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let nr: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let nrnsa: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public static let lteCa: OpenTelemetryApi.SemanticAttributes.NetworkConnectionSubtypeValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public struct RpcSystemValues : Swift.CustomStringConvertible {
+    public static let grpc: OpenTelemetryApi.SemanticAttributes.RpcSystemValues
+    public static let javaRmi: OpenTelemetryApi.SemanticAttributes.RpcSystemValues
+    public static let dotnetWcf: OpenTelemetryApi.SemanticAttributes.RpcSystemValues
+    public static let apacheDubbo: OpenTelemetryApi.SemanticAttributes.RpcSystemValues
+    public static let connectRpc: OpenTelemetryApi.SemanticAttributes.RpcSystemValues
+    public init(_ customValue: Swift.String)
+    public var description: Swift.String {
+      get
+    }
+  }
+  public enum GraphqlOperationTypeValues : Swift.String {
+    case query
+    case mutation
+    case subscription
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum MessagingRocketmqMessageTypeValues : Swift.String {
+    case normal
+    case fifo
+    case delay
+    case transaction
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum MessagingRocketmqConsumptionModelValues : Swift.String {
+    case clustering
+    case broadcasting
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum RpcGrpcStatusCodeValues : Swift.Int {
+    case ok
+    case cancelled
+    case unknown
+    case invalid_argument
+    case deadline_exceeded
+    case not_found
+    case already_exists
+    case permission_denied
+    case resource_exhausted
+    case failed_precondition
+    case aborted
+    case out_of_range
+    case unimplemented
+    case `internal`
+    case unavailable
+    case data_loss
+    case unauthenticated
+    public init?(rawValue: Swift.Int)
+    public typealias RawValue = Swift.Int
+    public var rawValue: Swift.Int {
+      get
+    }
+  }
+  public enum MessageTypeValues : Swift.String {
+    case sent
+    case received
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public enum RpcConnectRpcErrorCodeValues : Swift.String {
+    case cancelled
+    case unknown
+    case invalid_argument
+    case deadline_exceeded
+    case not_found
+    case already_exists
+    case permission_denied
+    case resource_exhausted
+    case failed_precondition
+    case aborted
+    case out_of_range
+    case unimplemented
+    case `internal`
+    case unavailable
+    case data_loss
+    case unauthenticated
+    public init?(rawValue: Swift.String)
+    public typealias RawValue = Swift.String
+    public var rawValue: Swift.String {
+      get
+    }
+  }
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public protocol Span : AnyObject, Swift.CustomStringConvertible {
+  var kind: OpenTelemetryApi.SpanKind { get }
+  var context: OpenTelemetryApi.SpanContext { get }
+  var isRecording: Swift.Bool { get }
+  var status: OpenTelemetryApi.Status { get set }
+  var name: Swift.String { get set }
+  func setAttribute(key: Swift.String, value: OpenTelemetryApi.AttributeValue?)
+  func addEvent(name: Swift.String)
+  func addEvent(name: Swift.String, timestamp: Foundation.Date)
+  func addEvent(name: Swift.String, attributes: [Swift.String : OpenTelemetryApi.AttributeValue])
+  func addEvent(name: Swift.String, attributes: [Swift.String : OpenTelemetryApi.AttributeValue], timestamp: Foundation.Date)
+  func end()
+  func end(time: Foundation.Date)
+}
+extension OpenTelemetryApi.Span {
+  public func hash(into hasher: inout Swift.Hasher)
+  public static func == (lhs: any OpenTelemetryApi.Span, rhs: any OpenTelemetryApi.Span) -> Swift.Bool
+}
+extension OpenTelemetryApi.Span {
+  public func setAttribute(key: Swift.String, value: Swift.String)
+  public func setAttribute(key: Swift.String, value: Swift.Int)
+  public func setAttribute(key: Swift.String, value: Swift.Double)
+  public func setAttribute(key: Swift.String, value: Swift.Bool)
+  public func setAttribute(key: OpenTelemetryApi.SemanticAttributes, value: Swift.String)
+  public func setAttribute(key: OpenTelemetryApi.SemanticAttributes, value: Swift.Int)
+  public func setAttribute(key: OpenTelemetryApi.SemanticAttributes, value: Swift.Double)
+  public func setAttribute(key: OpenTelemetryApi.SemanticAttributes, value: Swift.Bool)
+}
+extension OpenTelemetryApi.Span {
+  public func putHttpHostAttribute(string hostName: Swift.String, int port: Swift.Int)
+  public func putHttpStatusCode(statusCode: Swift.Int, reasonPhrase: Swift.String)
+}
+public protocol SpanBuilder : AnyObject {
+  @discardableResult
+  func setParent(_ parent: any OpenTelemetryApi.Span) -> Self
+  @discardableResult
+  func setParent(_ parent: OpenTelemetryApi.SpanContext) -> Self
+  @discardableResult
+  func setNoParent() -> Self
+  @discardableResult
+  func addLink(spanContext: OpenTelemetryApi.SpanContext) -> Self
+  @discardableResult
+  func addLink(spanContext: OpenTelemetryApi.SpanContext, attributes: [Swift.String : OpenTelemetryApi.AttributeValue]) -> Self
+  @discardableResult
+  func setAttribute(key: Swift.String, value: Swift.String) -> Self
+  @discardableResult
+  func setAttribute(key: Swift.String, value: Swift.Int) -> Self
+  @discardableResult
+  func setAttribute(key: Swift.String, value: Swift.Double) -> Self
+  @discardableResult
+  func setAttribute(key: Swift.String, value: Swift.Bool) -> Self
+  @discardableResult
+  func setAttribute(key: Swift.String, value: OpenTelemetryApi.AttributeValue) -> Self
+  @discardableResult
+  func setSpanKind(spanKind: OpenTelemetryApi.SpanKind) -> Self
+  @discardableResult
+  func setStartTime(time: Foundation.Date) -> Self
+  @discardableResult
+  func setActive(_ active: Swift.Bool) -> Self
+  func startSpan() -> any OpenTelemetryApi.Span
+}
+extension OpenTelemetryApi.SpanBuilder {
+  @discardableResult
+  public func setAttribute(key: Swift.String, value: Swift.String) -> Self
+  @discardableResult
+  public func setAttribute(key: Swift.String, value: Swift.Int) -> Self
+  @discardableResult
+  public func setAttribute(key: Swift.String, value: Swift.Double) -> Self
+  @discardableResult
+  public func setAttribute(key: Swift.String, value: Swift.Bool) -> Self
+}
+public struct SpanContext : Swift.Equatable, Swift.CustomStringConvertible, Swift.Hashable, Swift.Codable {
+  public var traceId: OpenTelemetryApi.TraceId {
+    get
+  }
+  public var spanId: OpenTelemetryApi.SpanId {
+    get
+  }
+  public var traceFlags: OpenTelemetryApi.TraceFlags {
+    get
+  }
+  public var traceState: OpenTelemetryApi.TraceState
+  public let isRemote: Swift.Bool
+  public static func create(traceId: OpenTelemetryApi.TraceId, spanId: OpenTelemetryApi.SpanId, traceFlags: OpenTelemetryApi.TraceFlags, traceState: OpenTelemetryApi.TraceState) -> OpenTelemetryApi.SpanContext
+  public static func createFromRemoteParent(traceId: OpenTelemetryApi.TraceId, spanId: OpenTelemetryApi.SpanId, traceFlags: OpenTelemetryApi.TraceFlags, traceState: OpenTelemetryApi.TraceState) -> OpenTelemetryApi.SpanContext
+  public var isValid: Swift.Bool {
+    get
+  }
+  public var isSampled: Swift.Bool {
+    get
+  }
+  public static func == (lhs: OpenTelemetryApi.SpanContext, rhs: OpenTelemetryApi.SpanContext) -> Swift.Bool
+  public var description: Swift.String {
+    get
+  }
+  public func hash(into hasher: inout Swift.Hasher)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct SpanId : Swift.Equatable, Swift.Comparable, Swift.Hashable, Swift.CustomStringConvertible, Swift.Codable {
+  public static let size: Swift.Int
+  public static let invalidId: Swift.UInt64
+  public static let invalid: OpenTelemetryApi.SpanId
+  public static func getSize() -> Swift.Int
+  public init(id: Swift.UInt64)
+  public init()
+  public static func random() -> OpenTelemetryApi.SpanId
+  public init(fromBytes bytes: Swift.Array<Swift.UInt8>, withOffset offset: Swift.Int = 0)
+  public init(fromBytes bytes: Swift.ArraySlice<Swift.UInt8>, withOffset offset: Swift.Int = 0)
+  public init(fromBytes bytes: Swift.ArraySlice<Swift.Character>, withOffset offset: Swift.Int = 0)
+  public func copyBytesTo(dest: inout Foundation.Data, destOffset: Swift.Int)
+  public func copyBytesTo(dest: inout Swift.Array<Swift.UInt8>, destOffset: Swift.Int)
+  public func copyBytesTo(dest: inout Swift.ArraySlice<Swift.UInt8>, destOffset: Swift.Int)
+  public init(fromHexString hex: Swift.String, withOffset offset: Swift.Int = 0)
+  public var hexString: Swift.String {
+    get
+  }
+  public var rawValue: Swift.UInt64 {
+    get
+  }
+  public var isValid: Swift.Bool {
+    get
+  }
+  public var description: Swift.String {
+    get
+  }
+  public static func < (lhs: OpenTelemetryApi.SpanId, rhs: OpenTelemetryApi.SpanId) -> Swift.Bool
+  public static func == (lhs: OpenTelemetryApi.SpanId, rhs: OpenTelemetryApi.SpanId) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public enum SpanKind : Swift.String, Swift.Equatable, Swift.Codable {
+  case `internal`
+  case server
+  case client
+  case producer
+  case consumer
+  public init?(rawValue: Swift.String)
+  public typealias RawValue = Swift.String
+  public var rawValue: Swift.String {
+    get
+  }
+}
+public enum Status : Swift.Equatable {
+  case ok
+  case unset
+  case error(description: Swift.String)
+  public var isOk: Swift.Bool {
+    get
+  }
+  public var isError: Swift.Bool {
+    get
+  }
+  public var name: Swift.String {
+    get
+  }
+  public var code: Swift.Int {
+    get
+  }
+  public static func == (a: OpenTelemetryApi.Status, b: OpenTelemetryApi.Status) -> Swift.Bool
+}
+extension OpenTelemetryApi.Status : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension OpenTelemetryApi.Status : Swift.Codable {
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TraceFlags : Swift.Equatable, Swift.CustomStringConvertible, Swift.Codable {
+  public var byte: Swift.UInt8 {
+    get
+  }
+  public var hexString: Swift.String {
+    get
+  }
+  public init()
+  public init(fromByte src: Swift.UInt8)
+  public init(fromHexString hex: Swift.String, withOffset offset: Swift.Int = 0)
+  public var sampled: Swift.Bool {
+    get
+  }
+  public mutating func setIsSampled(_ isSampled: Swift.Bool)
+  public func settingIsSampled(_ isSampled: Swift.Bool) -> OpenTelemetryApi.TraceFlags
+  public var description: Swift.String {
+    get
+  }
+  public static func == (a: OpenTelemetryApi.TraceFlags, b: OpenTelemetryApi.TraceFlags) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TraceId : Swift.Comparable, Swift.Hashable, Swift.CustomStringConvertible, Swift.Equatable, Swift.Codable {
+  public static let size: Swift.Int
+  public static let invalidId: Swift.UInt64
+  public static let invalid: OpenTelemetryApi.TraceId
+  public var idHi: Swift.UInt64 {
+    get
+  }
+  public var idLo: Swift.UInt64 {
+    get
+  }
+  public init(idHi: Swift.UInt64, idLo: Swift.UInt64)
+  public init()
+  public static func random() -> OpenTelemetryApi.TraceId
+  public init(fromData data: Foundation.Data)
+  public init(fromBytes bytes: [Swift.UInt8])
+  public init(fromBytes bytes: Swift.ArraySlice<Swift.UInt8>)
+  public init(fromBytes bytes: Swift.ArraySlice<Swift.Character>)
+  public func copyBytesTo(dest: inout Foundation.Data, destOffset: Swift.Int)
+  public func copyBytesTo(dest: inout [Swift.UInt8], destOffset: Swift.Int)
+  public func copyBytesTo(dest: inout Swift.ArraySlice<Swift.UInt8>, destOffset: Swift.Int)
+  public init(fromHexString hex: Swift.String, withOffset offset: Swift.Int = 0)
+  public var isValid: Swift.Bool {
+    get
+  }
+  public var hexString: Swift.String {
+    get
+  }
+  public var rawHigherLong: Swift.UInt64 {
+    get
+  }
+  public var rawLowerLong: Swift.UInt64 {
+    get
+  }
+  public var description: Swift.String {
+    get
+  }
+  public static func < (lhs: OpenTelemetryApi.TraceId, rhs: OpenTelemetryApi.TraceId) -> Swift.Bool
+  public static func == (lhs: OpenTelemetryApi.TraceId, rhs: OpenTelemetryApi.TraceId) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public func encode(to encoder: any Swift.Encoder) throws
+  public var hashValue: Swift.Int {
+    get
+  }
+  public init(from decoder: any Swift.Decoder) throws
+}
+public struct TraceState : Swift.Equatable, Swift.Codable {
+  public var entries: [OpenTelemetryApi.TraceState.Entry] {
+    get
+  }
+  public init()
+  public init?(entries: [OpenTelemetryApi.TraceState.Entry])
+  public func get(key: Swift.String) -> Swift.String?
+  public func setting(key: Swift.String, value: Swift.String) -> OpenTelemetryApi.TraceState
+  public func removing(key: Swift.String) -> OpenTelemetryApi.TraceState
+  public struct Entry : Swift.Equatable, Swift.Codable {
+    public var key: Swift.String {
+      get
+    }
+    public var value: Swift.String {
+      get
+    }
+    public init?(key: Swift.String, value: Swift.String)
+    public static func == (a: OpenTelemetryApi.TraceState.Entry, b: OpenTelemetryApi.TraceState.Entry) -> Swift.Bool
+    public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
+  public static func == (a: OpenTelemetryApi.TraceState, b: OpenTelemetryApi.TraceState) -> Swift.Bool
+  public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+public protocol Tracer : AnyObject {
+  func spanBuilder(spanName: Swift.String) -> any OpenTelemetryApi.SpanBuilder
+}
+public protocol TracerProvider {
+  func get(instrumentationName: Swift.String, instrumentationVersion: Swift.String?) -> any OpenTelemetryApi.Tracer
+}
+extension OpenTelemetryApi.OpenTelemetryContextKeys : Swift.Equatable {}
+extension OpenTelemetryApi.OpenTelemetryContextKeys : Swift.Hashable {}
+extension OpenTelemetryApi.OpenTelemetryContextKeys : Swift.RawRepresentable {}
+extension OpenTelemetryApi.Severity : Swift.Hashable {}
+extension OpenTelemetryApi.Severity : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.LogIostreamValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.LogIostreamValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.LogIostreamValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.TypeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.TypeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.TypeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.OpentracingRefTypeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.OpentracingRefTypeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.OpentracingRefTypeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCassandraConsistencyLevelValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCassandraConsistencyLevelValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCassandraConsistencyLevelValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCosmosdbConnectionModeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCosmosdbConnectionModeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.DbCosmosdbConnectionModeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.OtelStatusCodeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.OtelStatusCodeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.OtelStatusCodeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.FaasTriggerValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.FaasTriggerValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.FaasTriggerValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.GraphqlOperationTypeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.GraphqlOperationTypeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.GraphqlOperationTypeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqMessageTypeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqMessageTypeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqMessageTypeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqConsumptionModelValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqConsumptionModelValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.MessagingRocketmqConsumptionModelValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcGrpcStatusCodeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcGrpcStatusCodeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcGrpcStatusCodeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.MessageTypeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.MessageTypeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.MessageTypeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcConnectRpcErrorCodeValues : Swift.Equatable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcConnectRpcErrorCodeValues : Swift.Hashable {}
+extension OpenTelemetryApi.SemanticAttributes.RpcConnectRpcErrorCodeValues : Swift.RawRepresentable {}
+extension OpenTelemetryApi.SpanKind : Swift.Hashable {}
+extension OpenTelemetryApi.SpanKind : Swift.RawRepresentable {}
