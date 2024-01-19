@@ -43,6 +43,9 @@ SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
 \n
 // If running on CI. This value is injected to some targets through their `Info.plist`:\n
 IS_CI = true\n 
+\n
+// Use iOS 11 deployment target on CI as long as we use Xcode 14.x for integration\n
+IPHONEOS_DEPLOYMENT_TARGET=11.0\n
 endef
 export DD_SDK_BASE_XCCONFIG_CI
 
