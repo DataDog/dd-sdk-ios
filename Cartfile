@@ -1,2 +1,2 @@
 github "microsoft/plcrashreporter" ~> 1.11.1
-binary "/Users/ganesh.jangir/Developer/dd-sdk-ios/OpenTelemetry.json"
+binary "OpenTelemetry.json"

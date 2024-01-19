@@ -1,2 +1,2 @@
-binary "/Users/ganesh.jangir/Developer/dd-sdk-ios/OpenTelemetry.json" "1.9.1"
+binary "OpenTelemetry.json" "1.9.1"
 github "microsoft/plcrashreporter" "1.11.1"
