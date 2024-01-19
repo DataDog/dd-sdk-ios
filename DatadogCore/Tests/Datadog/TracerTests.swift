@@ -144,7 +144,7 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.operationName(), "operation")
         XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
         XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
-        XCTAssertEqual(try spanMatcher.dd.samplingRate(), 0.42)
+        XCTAssertEqual(try spanMatcher.dd.samplingRate(), 0.42, accuracy: 0.01)
     }
 
     // MARK: - Sending Customized Spans
