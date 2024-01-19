@@ -627,6 +627,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .roku: self = .roku
+        case .unity: self = .unity
         }
     }
 
@@ -638,6 +639,7 @@ public enum DDRUMActionEventContainerSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -647,6 +649,7 @@ public enum DDRUMActionEventContainerSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -849,6 +852,7 @@ public enum DDRUMActionEventSource: Int {
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
+        case .unity?: self = .unity
         }
     }
 
@@ -861,6 +865,7 @@ public enum DDRUMActionEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -871,6 +876,7 @@ public enum DDRUMActionEventSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -1364,6 +1370,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .roku: self = .roku
+        case .unity: self = .unity
         }
     }
 
@@ -1375,6 +1382,7 @@ public enum DDRUMErrorEventContainerSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -1384,6 +1392,7 @@ public enum DDRUMErrorEventContainerSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -1960,6 +1969,7 @@ public enum DDRUMErrorEventSource: Int {
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
+        case .unity?: self = .unity
         }
     }
 
@@ -1972,6 +1982,7 @@ public enum DDRUMErrorEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -1982,6 +1993,7 @@ public enum DDRUMErrorEventSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -2475,6 +2487,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .roku: self = .roku
+        case .unity: self = .unity
         }
     }
 
@@ -2486,6 +2499,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -2495,6 +2509,7 @@ public enum DDRUMLongTaskEventContainerSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -2718,6 +2733,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
+        case .unity?: self = .unity
         }
     }
 
@@ -2730,6 +2746,7 @@ public enum DDRUMLongTaskEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -2740,6 +2757,7 @@ public enum DDRUMLongTaskEventSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -3241,6 +3259,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .roku: self = .roku
+        case .unity: self = .unity
         }
     }
 
@@ -3252,6 +3271,7 @@ public enum DDRUMResourceEventContainerSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -3261,6 +3281,7 @@ public enum DDRUMResourceEventContainerSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -3847,6 +3868,7 @@ public enum DDRUMResourceEventSource: Int {
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
+        case .unity?: self = .unity
         }
     }
 
@@ -3859,6 +3881,7 @@ public enum DDRUMResourceEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -3869,6 +3892,7 @@ public enum DDRUMResourceEventSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -4402,6 +4426,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
         case .roku: self = .roku
+        case .unity: self = .unity
         }
     }
 
@@ -4413,6 +4438,7 @@ public enum DDRUMViewEventContainerSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -4422,6 +4448,7 @@ public enum DDRUMViewEventContainerSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -4710,6 +4737,7 @@ public enum DDRUMViewEventSource: Int {
         case .flutter?: self = .flutter
         case .reactNative?: self = .reactNative
         case .roku?: self = .roku
+        case .unity?: self = .unity
         }
     }
 
@@ -4722,6 +4750,7 @@ public enum DDRUMViewEventSource: Int {
         case .flutter: return .flutter
         case .reactNative: return .reactNative
         case .roku: return .roku
+        case .unity: return .unity
         }
     }
 
@@ -4732,6 +4761,7 @@ public enum DDRUMViewEventSource: Int {
     case flutter
     case reactNative
     case roku
+    case unity
 }
 
 @objc
@@ -5304,6 +5334,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .browser: self = .browser
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
+        case .unity: self = .unity
         }
     }
 
@@ -5314,6 +5345,7 @@ public enum DDTelemetryErrorEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .unity: return .unity
         }
     }
 
@@ -5322,6 +5354,7 @@ public enum DDTelemetryErrorEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case unity
 }
 
 @objc
@@ -5498,6 +5531,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .browser: self = .browser
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
+        case .unity: self = .unity
         }
     }
 
@@ -5508,6 +5542,7 @@ public enum DDTelemetryDebugEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .unity: return .unity
         }
     }
 
@@ -5516,6 +5551,7 @@ public enum DDTelemetryDebugEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case unity
 }
 
 @objc
@@ -5675,6 +5711,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .browser: self = .browser
         case .flutter: self = .flutter
         case .reactNative: self = .reactNative
+        case .unity: self = .unity
         }
     }
 
@@ -5685,6 +5722,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
         case .browser: return .browser
         case .flutter: return .flutter
         case .reactNative: return .reactNative
+        case .unity: return .unity
         }
     }
 
@@ -5693,6 +5731,7 @@ public enum DDTelemetryConfigurationEventSource: Int {
     case browser
     case flutter
     case reactNative
+    case unity
 }
 
 @objc
@@ -5939,6 +5978,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.useLocalEncryption as NSNumber?
     }
 
+    @objc public var usePartitionedCrossSiteSessionCookie: NSNumber? {
+        root.swiftModel.telemetry.configuration.usePartitionedCrossSiteSessionCookie as NSNumber?
+    }
+
     @objc public var useProxy: NSNumber? {
         set { root.swiftModel.telemetry.configuration.useProxy = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.useProxy as NSNumber? }
@@ -6080,4 +6123,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/49a2345f61a948013208d66a0fa9bad15a8c8fab
+// Generated from https://github.com/DataDog/rum-events-format/tree/83f8760b46e9a117b5975cfb592b1803d643ee3e

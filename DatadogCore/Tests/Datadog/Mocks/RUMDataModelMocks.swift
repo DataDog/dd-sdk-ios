@@ -543,6 +543,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     useExcludedActivityUrls: nil,
                     useFirstPartyHosts: .mockRandom(),
                     useLocalEncryption: .mockRandom(),
+                    usePartitionedCrossSiteSessionCookie: .mockRandom(),
                     useProxy: .mockRandom(),
                     useSecureSessionCookie: nil,
                     useTracing: .mockRandom(),
