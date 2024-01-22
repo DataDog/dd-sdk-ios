@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] RUM session not being linked to spans. See [#1615][]
+- [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
 - [FEATURE] Allow stopping a core instance. See [#1541][]
 
 # 2.6.0 / 09-01-2024
@@ -576,6 +577,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1609]: https://github.com/DataDog/dd-sdk-ios/pull/1609
 [#1615]: https://github.com/DataDog/dd-sdk-ios/pull/1615
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
+[#1637]: https://github.com/DataDog/dd-sdk-ios/pull/1637
 [#1541]: https://github.com/DataDog/dd-sdk-ios/pull/1541
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597

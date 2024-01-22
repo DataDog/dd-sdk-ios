@@ -24,8 +24,14 @@ internal final class URLSessionSwizzler {
         defer { lock.unlock() }
         dataTaskURLRequestCompletionHandler = try DataTaskURLRequestCompletionHandler.build()
         dataTaskURLRequestCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
-        dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
-        dataTaskURLCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
+
+        if #available(iOS 13.0, *) {
+            // Prior to iOS 13.0 the `URLSession.dataTask(with:url, completionHandler:handler)` makes an internal
+            // call to `URLSession.dataTask(with:request, completionHandler:handler)`. To avoid duplicated call
+            // to the callback, we don't apply below swizzling prior to iOS 13.
+            dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
+            dataTaskURLCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
+        }
     }
 
     /// Unswizzles all.
