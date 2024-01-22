@@ -110,9 +110,10 @@ test-xcframeworks:
 		@cd dependency-manager-tests/xcframeworks && $(MAKE)
 
 # Generate RUM data models from rum-events-format JSON Schemas
+#  - run with `git_ref=<commit hash>` argument to generate models for given schema commit or branch name (default is 'master').
 rum-models-generate:
 		@echo "⚙️  Generating RUM models..."
-		./tools/rum-models-generator/run.py generate rum
+		./tools/rum-models-generator/run.py generate rum --git_ref=$(if $(git_ref),$(git_ref),master)
 		@echo "OK 👌"
 
 # Verify if RUM data models follow rum-events-format JSON Schemas
@@ -122,9 +123,10 @@ rum-models-verify:
 		@echo "OK 👌"
 
 # Generate Session Replay data models from rum-events-format JSON Schemas
+#  - run with `git_ref=<commit hash>` argument to generate models for given schema commit or branch name (default is 'master').
 sr-models-generate:
 		@echo "⚙️  Generating Session Replay models..."
-		./tools/rum-models-generator/run.py generate sr
+		./tools/rum-models-generator/run.py generate sr --git_ref=$(if $(git_ref),$(git_ref),master)
 		@echo "OK 👌"
 
 # Verify if Session Replay data models follow rum-events-format JSON Schemas
