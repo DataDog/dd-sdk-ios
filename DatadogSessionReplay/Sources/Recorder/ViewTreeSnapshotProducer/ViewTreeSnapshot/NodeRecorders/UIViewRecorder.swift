@@ -35,6 +35,7 @@ internal class UIViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement.constant
         }
+
         if let semantics = semanticsOverride(view, attributes) {
             return semantics
         }
@@ -49,6 +50,7 @@ internal class UIViewRecorder: NodeRecorder {
             wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
             attributes: attributes
         )
+
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return AmbiguousElement(nodes: [node], resources: [])
     }

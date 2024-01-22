@@ -46,7 +46,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.2"),
-        .package(url: "https://github.com/open-telemetry/opentelemetry-swift.git", exact: "1.6.0")
+        .package(url: "https://github.com/open-telemetry/opentelemetry-swift.git", exact: "1.6.0"),
+        .package(name: "swift-custom-dump", url: "https://github.com/pointfreeco/swift-custom-dump", from: "1.0.0"),
     ],
     targets: [
         .target(
@@ -183,7 +184,10 @@ let package = Package(
 
         .target(
             name: "DatadogSessionReplay",
-            dependencies: ["DatadogInternal"],
+            dependencies: [
+                "DatadogInternal",
+                .product(name: "CustomDump", package: "swift-custom-dump")
+            ],
             path: "DatadogSessionReplay/Sources"
         ),
         .testTarget(

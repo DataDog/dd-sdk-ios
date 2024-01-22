@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import UIKit
+import SwiftUI
 
 internal struct RecordingResult {
     let nodes: [Node]
@@ -88,4 +89,5 @@ internal struct ViewTreeRecorder {
         return semantics
     }
 }
+
 #endif

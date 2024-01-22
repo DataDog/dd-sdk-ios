@@ -98,7 +98,7 @@ internal extension ViewTreeRecordingContext {
     }
 }
 
-private protocol AnyUIHostingViewController: AnyObject {}
+internal protocol AnyUIHostingViewController: AnyObject {}
 @available(iOS 13.0, *)
 extension UIHostingController: AnyUIHostingViewController {}
 #endif
