@@ -22,6 +22,7 @@ extension RUMConnectivity {
 
         self.init(
             cellular: carrierInfo.flatMap { RUMConnectivity.connectivityCellularInfo(for: $0) },
+            effectiveType: nil,
             interfaces: RUMConnectivity.connectivityInterfaces(for: networkInfo),
             status: RUMConnectivity.connectivityStatus(for: networkInfo)
         )
@@ -39,7 +40,7 @@ extension RUMConnectivity {
 
     private static func connectivityInterfaces(for networkInfo: NetworkConnectionInfo) -> [RUMConnectivity.Interfaces] {
         guard let availableInterfaces = networkInfo.availableInterfaces, !availableInterfaces.isEmpty else {
-            return [.none]
+            return [.interfacesNone]
         }
 
         return availableInterfaces.map { interface in

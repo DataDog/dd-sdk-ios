@@ -690,6 +690,7 @@ class RUMMonitorTests: XCTestCase {
         let rumEventMatchers = try core.waitAndReturnRUMEventMatchers()
         let expectedConnectivityInfo = RUMConnectivity(
             cellular: RUMConnectivity.Cellular(carrierName: "Carrier Name", technology: "GPRS"),
+            effectiveType: nil,
             interfaces: [.cellular],
             status: .connected
         )
