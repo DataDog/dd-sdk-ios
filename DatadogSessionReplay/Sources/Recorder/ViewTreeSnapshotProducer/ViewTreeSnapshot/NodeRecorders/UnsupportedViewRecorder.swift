@@ -31,6 +31,7 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement(subtreeStrategy: .ignore)
         }
+
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
