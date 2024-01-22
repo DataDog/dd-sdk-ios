@@ -96,7 +96,13 @@ internal class JSONToSwiftTypeTransformer {
                     // case with the name of enumeration so it is transformed into valid `SwiftEnum.Case`.
                     var labelValue = value
                     if let first = value.first?.unicodeScalars.first, CharacterSet.decimalDigits.contains(first) {
-                        labelValue = "\(jsonEnumeration.name)\(value)"
+                        labelValue = "\(jsonEnumeration.name.lowercasingFirst)\(value)"
+                    }
+                    // In Swift, naming case a "none" might clash with `Optional<E>.none` type if the property of
+                    // this enum value is declared as optional. For that reason, prefix "none" case with the
+                    // name of enumeration to avoid compiler ambiguity.
+                    if labelValue == "none" {
+                        labelValue = "\(jsonEnumeration.name.lowercasingFirst)\(labelValue.uppercasingFirst)"
                     }
 
                     return SwiftEnum.Case(label: labelValue, rawValue: .string(value: value))

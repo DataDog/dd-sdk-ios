@@ -173,7 +173,7 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                             .string(value: "case1"),
                             .string(value: "case2"),
                             .string(value: "3case"), // case name starting with number
-                            .string(value: "4case"),
+                            .string(value: "none"), // explicit case named as "none"
                         ]
                     ),
                     defaultValue: nil,
@@ -194,8 +194,8 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
                         cases: [
                             SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
                             SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
-                            SwiftEnum.Case(label: "Foo3case", rawValue: .string(value: "3case")),
-                            SwiftEnum.Case(label: "Foo4case", rawValue: .string(value: "4case")),
+                            SwiftEnum.Case(label: "foo3case", rawValue: .string(value: "3case")),
+                            SwiftEnum.Case(label: "fooNone", rawValue: .string(value: "none")),
                         ],
                         conformance: []
                     ),
