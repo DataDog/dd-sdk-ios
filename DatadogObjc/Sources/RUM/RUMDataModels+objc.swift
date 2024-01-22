@@ -510,8 +510,12 @@ public class DDRUMActionEventRUMConnectivity: NSObject {
         root.swiftModel.connectivity!.cellular != nil ? DDRUMActionEventRUMConnectivityCellular(root: root) : nil
     }
 
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMActionEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    @objc public var effectiveType: DDRUMActionEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    @objc public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { DDRUMActionEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
     @objc public var status: DDRUMActionEventRUMConnectivityStatus {
@@ -537,23 +541,54 @@ public class DDRUMActionEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
+public enum DDRUMActionEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
         switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
         }
     }
 
-    internal var toSwift: RUMConnectivity.Interfaces {
+    internal var toSwift: RUMConnectivity.EffectiveType? {
         switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc
+public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
         case .bluetooth: return .bluetooth
         case .cellular: return .cellular
         case .ethernet: return .ethernet
@@ -562,10 +597,11 @@ public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
         case .mixed: return .mixed
         case .other: return .other
         case .unknown: return .unknown
-        case .none: return .none
+        case .interfacesNone: return .interfacesNone
         }
     }
 
+    case none
     case bluetooth
     case cellular
     case ethernet
@@ -574,7 +610,7 @@ public enum DDRUMActionEventRUMConnectivityInterfaces: Int {
     case mixed
     case other
     case unknown
-    case none
+    case interfacesNone
 }
 
 @objc
@@ -1253,8 +1289,12 @@ public class DDRUMErrorEventRUMConnectivity: NSObject {
         root.swiftModel.connectivity!.cellular != nil ? DDRUMErrorEventRUMConnectivityCellular(root: root) : nil
     }
 
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMErrorEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    @objc public var effectiveType: DDRUMErrorEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    @objc public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { DDRUMErrorEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
     @objc public var status: DDRUMErrorEventRUMConnectivityStatus {
@@ -1280,23 +1320,54 @@ public class DDRUMErrorEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
+public enum DDRUMErrorEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
         switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
         }
     }
 
-    internal var toSwift: RUMConnectivity.Interfaces {
+    internal var toSwift: RUMConnectivity.EffectiveType? {
         switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc
+public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
         case .bluetooth: return .bluetooth
         case .cellular: return .cellular
         case .ethernet: return .ethernet
@@ -1305,10 +1376,11 @@ public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
         case .mixed: return .mixed
         case .other: return .other
         case .unknown: return .unknown
-        case .none: return .none
+        case .interfacesNone: return .interfacesNone
         }
     }
 
+    case none
     case bluetooth
     case cellular
     case ethernet
@@ -1317,7 +1389,7 @@ public enum DDRUMErrorEventRUMConnectivityInterfaces: Int {
     case mixed
     case other
     case unknown
-    case none
+    case interfacesNone
 }
 
 @objc
@@ -2370,8 +2442,12 @@ public class DDRUMLongTaskEventRUMConnectivity: NSObject {
         root.swiftModel.connectivity!.cellular != nil ? DDRUMLongTaskEventRUMConnectivityCellular(root: root) : nil
     }
 
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMLongTaskEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    @objc public var effectiveType: DDRUMLongTaskEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    @objc public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { DDRUMLongTaskEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
     @objc public var status: DDRUMLongTaskEventRUMConnectivityStatus {
@@ -2397,23 +2473,54 @@ public class DDRUMLongTaskEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
+public enum DDRUMLongTaskEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
         switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
         }
     }
 
-    internal var toSwift: RUMConnectivity.Interfaces {
+    internal var toSwift: RUMConnectivity.EffectiveType? {
         switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc
+public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
         case .bluetooth: return .bluetooth
         case .cellular: return .cellular
         case .ethernet: return .ethernet
@@ -2422,10 +2529,11 @@ public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
         case .mixed: return .mixed
         case .other: return .other
         case .unknown: return .unknown
-        case .none: return .none
+        case .interfacesNone: return .interfacesNone
         }
     }
 
+    case none
     case bluetooth
     case cellular
     case ethernet
@@ -2434,7 +2542,7 @@ public enum DDRUMLongTaskEventRUMConnectivityInterfaces: Int {
     case mixed
     case other
     case unknown
-    case none
+    case interfacesNone
 }
 
 @objc
@@ -3142,8 +3250,12 @@ public class DDRUMResourceEventRUMConnectivity: NSObject {
         root.swiftModel.connectivity!.cellular != nil ? DDRUMResourceEventRUMConnectivityCellular(root: root) : nil
     }
 
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMResourceEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    @objc public var effectiveType: DDRUMResourceEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    @objc public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { DDRUMResourceEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
     @objc public var status: DDRUMResourceEventRUMConnectivityStatus {
@@ -3169,23 +3281,54 @@ public class DDRUMResourceEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMResourceEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
+public enum DDRUMResourceEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
         switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
         }
     }
 
-    internal var toSwift: RUMConnectivity.Interfaces {
+    internal var toSwift: RUMConnectivity.EffectiveType? {
         switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc
+public enum DDRUMResourceEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
         case .bluetooth: return .bluetooth
         case .cellular: return .cellular
         case .ethernet: return .ethernet
@@ -3194,10 +3337,11 @@ public enum DDRUMResourceEventRUMConnectivityInterfaces: Int {
         case .mixed: return .mixed
         case .other: return .other
         case .unknown: return .unknown
-        case .none: return .none
+        case .interfacesNone: return .interfacesNone
         }
     }
 
+    case none
     case bluetooth
     case cellular
     case ethernet
@@ -3206,7 +3350,7 @@ public enum DDRUMResourceEventRUMConnectivityInterfaces: Int {
     case mixed
     case other
     case unknown
-    case none
+    case interfacesNone
 }
 
 @objc
@@ -4309,8 +4453,12 @@ public class DDRUMViewEventRUMConnectivity: NSObject {
         root.swiftModel.connectivity!.cellular != nil ? DDRUMViewEventRUMConnectivityCellular(root: root) : nil
     }
 
-    @objc public var interfaces: [Int] {
-        root.swiftModel.connectivity!.interfaces.map { DDRUMViewEventRUMConnectivityInterfaces(swift: $0).rawValue }
+    @objc public var effectiveType: DDRUMViewEventRUMConnectivityEffectiveType {
+        .init(swift: root.swiftModel.connectivity!.effectiveType)
+    }
+
+    @objc public var interfaces: [Int]? {
+        root.swiftModel.connectivity!.interfaces?.map { DDRUMViewEventRUMConnectivityInterfaces(swift: $0).rawValue }
     }
 
     @objc public var status: DDRUMViewEventRUMConnectivityStatus {
@@ -4336,23 +4484,54 @@ public class DDRUMViewEventRUMConnectivityCellular: NSObject {
 }
 
 @objc
-public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
-    internal init(swift: RUMConnectivity.Interfaces) {
+public enum DDRUMViewEventRUMConnectivityEffectiveType: Int {
+    internal init(swift: RUMConnectivity.EffectiveType?) {
         switch swift {
-        case .bluetooth: self = .bluetooth
-        case .cellular: self = .cellular
-        case .ethernet: self = .ethernet
-        case .wifi: self = .wifi
-        case .wimax: self = .wimax
-        case .mixed: self = .mixed
-        case .other: self = .other
-        case .unknown: self = .unknown
-        case .none: self = .none
+        case nil: self = .none
+        case .slow2g?: self = .slow2g
+        case .effectiveType2g?: self = .effectiveType2g
+        case .effectiveType3g?: self = .effectiveType3g
+        case .effectiveType4g?: self = .effectiveType4g
         }
     }
 
-    internal var toSwift: RUMConnectivity.Interfaces {
+    internal var toSwift: RUMConnectivity.EffectiveType? {
         switch self {
+        case .none: return nil
+        case .slow2g: return .slow2g
+        case .effectiveType2g: return .effectiveType2g
+        case .effectiveType3g: return .effectiveType3g
+        case .effectiveType4g: return .effectiveType4g
+        }
+    }
+
+    case none
+    case slow2g
+    case effectiveType2g
+    case effectiveType3g
+    case effectiveType4g
+}
+
+@objc
+public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
+    internal init(swift: RUMConnectivity.Interfaces?) {
+        switch swift {
+        case nil: self = .none
+        case .bluetooth?: self = .bluetooth
+        case .cellular?: self = .cellular
+        case .ethernet?: self = .ethernet
+        case .wifi?: self = .wifi
+        case .wimax?: self = .wimax
+        case .mixed?: self = .mixed
+        case .other?: self = .other
+        case .unknown?: self = .unknown
+        case .interfacesNone?: self = .interfacesNone
+        }
+    }
+
+    internal var toSwift: RUMConnectivity.Interfaces? {
+        switch self {
+        case .none: return nil
         case .bluetooth: return .bluetooth
         case .cellular: return .cellular
         case .ethernet: return .ethernet
@@ -4361,10 +4540,11 @@ public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
         case .mixed: return .mixed
         case .other: return .other
         case .unknown: return .unknown
-        case .none: return .none
+        case .interfacesNone: return .interfacesNone
         }
     }
 
+    case none
     case bluetooth
     case cellular
     case ethernet
@@ -4373,7 +4553,7 @@ public enum DDRUMViewEventRUMConnectivityInterfaces: Int {
     case mixed
     case other
     case unknown
-    case none
+    case interfacesNone
 }
 
 @objc
@@ -6123,4 +6303,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/83f8760b46e9a117b5975cfb592b1803d643ee3e
+// Generated from https://github.com/DataDog/rum-events-format/tree/389581be98dcf8efbfcfe7bffaa32d53f960fb6f

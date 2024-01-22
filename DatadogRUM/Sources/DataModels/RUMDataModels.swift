@@ -3287,14 +3287,18 @@ public struct RUMConnectivity: Codable {
     /// Cellular connectivity properties
     public let cellular: Cellular?
 
+    /// Cellular connection type reflecting the measured network performance
+    public let effectiveType: EffectiveType?
+
     /// The list of available network interfaces
-    public let interfaces: [Interfaces]
+    public let interfaces: [Interfaces]?
 
     /// Status of the device connectivity
     public let status: Status
 
     enum CodingKeys: String, CodingKey {
         case cellular = "cellular"
+        case effectiveType = "effective_type"
         case interfaces = "interfaces"
         case status = "status"
     }
@@ -3313,6 +3317,14 @@ public struct RUMConnectivity: Codable {
         }
     }
 
+    /// Cellular connection type reflecting the measured network performance
+    public enum EffectiveType: String, Codable {
+        case slow2g = "slow_2g"
+        case effectiveType2g = "2g"
+        case effectiveType3g = "3g"
+        case effectiveType4g = "4g"
+    }
+
     public enum Interfaces: String, Codable {
         case bluetooth = "bluetooth"
         case cellular = "cellular"
@@ -3322,7 +3334,7 @@ public struct RUMConnectivity: Codable {
         case mixed = "mixed"
         case other = "other"
         case unknown = "unknown"
-        case none = "none"
+        case interfacesNone = "none"
     }
 
     /// Status of the device connectivity
@@ -3555,4 +3567,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/83f8760b46e9a117b5975cfb592b1803d643ee3e
+// Generated from https://github.com/DataDog/rum-events-format/tree/389581be98dcf8efbfcfe7bffaa32d53f960fb6f
