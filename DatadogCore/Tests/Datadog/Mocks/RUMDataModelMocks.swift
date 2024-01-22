@@ -26,6 +26,7 @@ extension RUMConnectivity {
                 carrierName: .mockRandom(),
                 technology: .mockRandom()
             ),
+            effectiveType: nil,
             interfaces: [.bluetooth, .cellular].randomElements(),
             status: [.connected, .maybe, .notConnected].randomElement()!
         )
