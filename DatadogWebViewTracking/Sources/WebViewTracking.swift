@@ -41,7 +41,7 @@ public enum WebViewTracking {
         hosts: Set<String> = [],
         logsSampleRate: Float = 100,
         in core: DatadogCoreProtocol = CoreRegistry.default
-    ) {
+    ) -> WKScriptMessageHandler? {
         enable(
             tracking: webView.configuration.userContentController,
             hosts: hosts,
@@ -75,11 +75,11 @@ public enum WebViewTracking {
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
         in core: DatadogCoreProtocol
-    ) {
+    ) -> WKScriptMessageHandler? {
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
-            return
+            return nil
        }
 
         let bridgeName = DDScriptMessageHandler.name
@@ -125,6 +125,8 @@ public enum WebViewTracking {
                 forMainFrameOnly: false
             )
         )
+
+        return messageHandler
     }
 #endif
 }
