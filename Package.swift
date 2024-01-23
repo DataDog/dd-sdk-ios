@@ -44,7 +44,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(name: "PLCrashReporter", url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.1"),
+        .package(url: "https://github.com/microsoft/plcrashreporter.git", from: "1.11.1"),
     ],
     targets: [
         .target(
@@ -54,6 +54,9 @@ let package = Package(
                 .target(name: "DatadogPrivate"),
             ],
             path: "DatadogCore/Sources",
+            resources: [
+                .copy("DatadogCore/Resources/PrivacyInfo.xcprivacy")
+            ],
             swiftSettings: [.define("SPM_BUILD")]
         ),
         .target(
