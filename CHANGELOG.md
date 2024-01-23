@@ -3,6 +3,7 @@
 - [FIX] RUM session not being linked to spans. See [#1615][]
 - [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
 - [FEATURE] Allow stopping a core instance. See [#1541][]
+- [IMPROVEMENT] Add extra HTTP codes to the list of retryable status codes. See [#1639][]
 
 # 2.6.0 / 09-01-2024
 - [FEATURE] Add `currentSessionID(completion:)` accessor to access the current session ID.
@@ -575,6 +576,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1594]: https://github.com/DataDog/dd-sdk-ios/pull/1594
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
 [#1609]: https://github.com/DataDog/dd-sdk-ios/pull/1609
+[#1639]: https://github.com/DataDog/dd-sdk-ios/pull/1639
 [#1615]: https://github.com/DataDog/dd-sdk-ios/pull/1615
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
 [#1637]: https://github.com/DataDog/dd-sdk-ios/pull/1637
