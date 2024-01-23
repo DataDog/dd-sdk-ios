@@ -36,6 +36,7 @@ public enum WebViewTracking {
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
     ///   - core: Datadog SDK core to use for tracking.
+    @discardableResult
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
@@ -69,6 +70,7 @@ public enum WebViewTracking {
 
     static let jsCodePrefix = "/* DatadogEventBridge */"
 
+    @discardableResult
     static func enable(
         tracking controller: WKUserContentController,
         hosts: Set<String>,
