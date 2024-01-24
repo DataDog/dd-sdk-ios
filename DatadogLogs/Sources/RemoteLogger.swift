@@ -116,20 +116,26 @@ internal final class RemoteLogger: LoggerProtocol {
         self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
 
+            // When bundle with RUM is enabled, link RUM context (if available):
             if self.rumContextIntegration, let rum = context.baggages[RUMContext.key] {
                 do {
-                    let attributes = try rum.decode(type: RUMContext.self).internalAttributes
-                    internalAttributes.merge(attributes) { $1 }
+                    let rum = try rum.decode(type: RUMContext.self)
+                    internalAttributes[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                    internalAttributes[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                    internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                    internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
                 } catch {
                     self.core.telemetry
                         .error("Fails to decode RUM context from Logs", error: error)
                 }
             }
 
+            // When bundle with Trace is enabled, link RUM context (if available):
             if self.activeSpanIntegration, let span = context.baggages[SpanContext.key] {
                 do {
-                    let attributes = try span.decode(type: SpanContext.self).internalAttributes
-                    internalAttributes.merge(attributes) { $1 }
+                    let trace = try span.decode(type: SpanContext.self)
+                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID
+                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID
                 } catch {
                     self.core.telemetry
                         .error("Fails to decode Span context from Logs", error: error)

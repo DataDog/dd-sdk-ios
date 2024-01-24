@@ -23,6 +23,28 @@ public struct LogEvent: Encodable {
 
     /// Custom attributes associated with a the log event.
     public struct Attributes {
+        /// List of log attribute keys used to establish the link between the Log event and the RUM session that it was collected within.
+        /// Those keys are recognised by Datadog app and used to render the link in web UI.
+        internal enum RUM {
+            /// Key referencing the RUM applicaiton ID.
+            static let applicationID = "application_id"
+            /// Key referencing the RUM session ID.
+            static let sessionID = "session_id"
+            /// Key referencing the RUM view ID.
+            static let viewID = "view.id"
+            /// Key referencing the RUM action ID.
+            static let actionID = "user_action.id"
+        }
+
+        /// List of log attribute keys used to establish the link between the Log event and the Tracing span that it was collected within.
+        /// Those keys are recognised by Datadog app and used to render the link in web UI.
+        internal enum Trace {
+            /// Key referencing the trace ID.
+            static let traceID = "dd.trace_id"
+            /// Key referencing the span ID.
+            static let spanID = "dd.span_id"
+        }
+
         /// Log custom attributes, They are subject for sanitization.
         public var userAttributes: [String: Encodable]
         /// Log attributes added internally by the SDK. They are not a subject for sanitization.
