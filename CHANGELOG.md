@@ -4,6 +4,7 @@
 - [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
 - [FEATURE] Allow stopping a core instance. See [#1541][]
 - [IMPROVEMENT] Add extra HTTP codes to the list of retryable status codes. See [#1639][]
+- [FEATURE] Add privacy manifest to `DatadogCore`. See [#1644][]
 
 # 2.6.0 / 09-01-2024
 - [FEATURE] Add `currentSessionID(completion:)` accessor to access the current session ID.
@@ -583,6 +584,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1541]: https://github.com/DataDog/dd-sdk-ios/pull/1541
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
+[#1644]: https://github.com/DataDog/dd-sdk-ios/pull/1644
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

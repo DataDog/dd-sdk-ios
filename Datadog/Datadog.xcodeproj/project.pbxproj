@@ -912,6 +912,8 @@
 		D28F836929C9E71D00EF8EA2 /* DDSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */; };
 		D28F836B29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */; };
 		D28F836C29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */; };
+		D28FCC352B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */; };
+		D28FCC362B5FCBD100CCC077 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */; };
 		D29294E0291D5ED100F8EFF9 /* ApplicationVersionPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */; };
 		D29294E1291D5ED500F8EFF9 /* ApplicationVersionPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */; };
 		D29294E3291D652C00F8EFF9 /* ApplicationVersionPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */; };
@@ -2569,6 +2571,7 @@
 		D286626D2A43487500852CE3 /* Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
 		D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
 		D28F836A29C9E7A300EF8EA2 /* TracingURLSessionHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandlerTests.swift; sourceTree = "<group>"; };
+		D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D29294DF291D5ECD00F8EFF9 /* ApplicationVersionPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisher.swift; sourceTree = "<group>"; };
 		D29294E2291D652900F8EFF9 /* ApplicationVersionPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationVersionPublisherTests.swift; sourceTree = "<group>"; };
 		D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportingFeature.swift; sourceTree = "<group>"; };
@@ -3698,6 +3701,7 @@
 			isa = PBXGroup;
 			children = (
 				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
+				D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */,
 				D286626D2A43487500852CE3 /* Datadog.swift */,
 				D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */,
 				E1D5AEA624B4D45A007F194B /* Versioning.swift */,
@@ -6772,6 +6776,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D28FCC352B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6967,6 +6972,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D28FCC362B5FCBD100CCC077 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
