@@ -21,11 +21,15 @@ import DatadogInternal
 public final class CrashReporting {
     /// Initializes the Datadog Crash Reporter.
     public static func enable(in core: DatadogCoreProtocol = CoreRegistry.default) {
+        enable(with: PLCrashReporterPlugin(), in: core)
+    }
+
+    internal static func enable(with plugin: CrashReportingPlugin, in core: DatadogCoreProtocol) {
         do {
             let contextProvider = CrashContextCoreProvider()
 
             let reporter = CrashReportingFeature(
-                crashReportingPlugin: PLCrashReporterPlugin(),
+                crashReportingPlugin: plugin,
                 crashContextProvider: contextProvider,
                 sender: MessageBusSender(core: core),
                 messageReceiver: contextProvider,

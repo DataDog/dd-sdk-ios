@@ -309,6 +309,8 @@
 		6176C1732ABDBA2E00131A70 /* MonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6176C1712ABDBA2E00131A70 /* MonitorTests.swift */; };
 		61776CED273BEA5500F93802 /* DebugRUMSessionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */; };
 		61776D4E273E6D9F00F93802 /* SwiftUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776D4D273E6D9F00F93802 /* SwiftUI.swift */; };
+		6179DB562B6022EA00E9E04E /* SendingCrashReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6179DB552B6022EA00E9E04E /* SendingCrashReportTests.swift */; };
+		6179DB572B6022EA00E9E04E /* SendingCrashReportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6179DB552B6022EA00E9E04E /* SendingCrashReportTests.swift */; };
 		6179FFD3254ADB1700556A0B /* ObjcAppLaunchHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */; };
 		6179FFDE254ADBEF00556A0B /* ObjcAppLaunchHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		617B953D24BF4D8F00E6F443 /* RUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */; };
@@ -2166,6 +2168,7 @@
 		61776CEC273BEA5500F93802 /* DebugRUMSessionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugRUMSessionViewController.swift; sourceTree = "<group>"; };
 		61776D4D273E6D9F00F93802 /* SwiftUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUI.swift; sourceTree = "<group>"; };
 		61786F7624FCDE04009E6BAB /* RUMDebuggingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMDebuggingTests.swift; sourceTree = "<group>"; };
+		6179DB552B6022EA00E9E04E /* SendingCrashReportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendingCrashReportTests.swift; sourceTree = "<group>"; };
 		6179FFD1254ADB1100556A0B /* ObjcAppLaunchHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ObjcAppLaunchHandler.h; sourceTree = "<group>"; };
 		6179FFD2254ADB1100556A0B /* ObjcAppLaunchHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ObjcAppLaunchHandler.m; sourceTree = "<group>"; };
 		617B953C24BF4D8F00E6F443 /* RUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMMonitorTests.swift; sourceTree = "<group>"; };
@@ -3563,6 +3566,7 @@
 		610ABD492A69309900AFEA34 /* IntegrationUnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				6179DB542B60229D00E9E04E /* CrashReporting */,
 				61E8C5062B28896100E709B4 /* RUM */,
 				610ABD4A2A6930AB00AFEA34 /* Public */,
 				618353BA2A6946F40085F84A /* Internal */,
@@ -4360,6 +4364,14 @@
 				61776D4D273E6D9F00F93802 /* SwiftUI.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		6179DB542B60229D00E9E04E /* CrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				6179DB552B6022EA00E9E04E /* SendingCrashReportTests.swift */,
+			);
+			path = CrashReporting;
 			sourceTree = "<group>";
 		};
 		617B953B24BF4D7300E6F443 /* RUMMonitor */ = {
@@ -7345,6 +7357,7 @@
 				6176991E2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift in Sources */,
 				617B954224BF4E7600E6F443 /* RUMMonitorConfigurationTests.swift in Sources */,
 				61F9CABA2513A7F5000A5E61 /* RUMSessionMatcher.swift in Sources */,
+				6179DB562B6022EA00E9E04E /* SendingCrashReportTests.swift in Sources */,
 				3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */,
 				6136CB4A2A69C29C00AC265D /* FilesOrchestrator+MetricsTests.swift in Sources */,
 				61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */,
@@ -8422,6 +8435,7 @@
 				D24C9C4E29A7BA41002057CF /* LogsMocks.swift in Sources */,
 				D2CB6EDE27C520D400A62B57 /* RUMEventMatcher.swift in Sources */,
 				D2CB6EE027C520D400A62B57 /* SpanMatcher.swift in Sources */,
+				6179DB572B6022EA00E9E04E /* SendingCrashReportTests.swift in Sources */,
 				61112F8F2A4417D6006FFCA6 /* DDRUM+apiTests.m in Sources */,
 				D2DC4BBD27F234E000E4FB96 /* CITestIntegrationTests.swift in Sources */,
 				D2CB6EE427C520D400A62B57 /* FeatureTests.swift in Sources */,
