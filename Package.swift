@@ -53,9 +53,10 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .target(name: "DatadogPrivate"),
             ],
-            path: "DatadogCore/Sources",
+            path: "DatadogCore",
+            sources: ["Sources"],
             resources: [
-                .copy("DatadogCore/Resources/PrivacyInfo.xcprivacy")
+                .copy("Resources/PrivacyInfo.xcprivacy")
             ],
             swiftSettings: [.define("SPM_BUILD")]
         ),
