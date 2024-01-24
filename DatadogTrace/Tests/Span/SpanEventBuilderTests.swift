@@ -410,7 +410,6 @@ class SpanEventBuilderTests: XCTestCase {
 
     func testWhenBuildingSpan_itConvertsTagValuesToString() {
         let builder: SpanEventBuilder = .mockAny()
-        builder.attributesEncoder.outputFormatting = [.sortedKeys]
 
         // When
         let span = builder.createSpanEvent(
@@ -436,7 +435,6 @@ class SpanEventBuilderTests: XCTestCase {
 
     func testWhenBuildingSpan_itConvertsUserExtraInfoValuesToString() {
         let builder: SpanEventBuilder = .mockAny()
-        builder.attributesEncoder.outputFormatting = [.sortedKeys]
 
         // When
         let span = builder.createSpanEvent(
