@@ -158,6 +158,114 @@ final class JSONToSwiftTypeTransformerTests: XCTestCase {
         XCTAssertEqual(expected, actual[0])
     }
 
+    func testTransformingJSONObjectWithStringEnumerationIntoSwiftStruct() throws {
+        let object = JSONObject(
+            name: "Container",
+            comment: nil,
+            properties: [
+                JSONObject.Property(
+                    name: "enumeration",
+                    comment: nil,
+                    type: JSONEnumeration(
+                        name: "Foo",
+                        comment: "Description of Foo",
+                        values: [
+                            .string(value: "case1"),
+                            .string(value: "case2"),
+                            .string(value: "3case"), // case name starting with number
+                            .string(value: "none"), // explicit case named as "none"
+                        ]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: false
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "Container",
+            properties: [
+                SwiftStruct.Property(
+                    name: "enumeration",
+                    type: SwiftEnum(
+                        name: "Foo",
+                        comment: "Description of Foo",
+                        cases: [
+                            SwiftEnum.Case(label: "case1", rawValue: .string(value: "case1")),
+                            SwiftEnum.Case(label: "case2", rawValue: .string(value: "case2")),
+                            SwiftEnum.Case(label: "foo3case", rawValue: .string(value: "3case")),
+                            SwiftEnum.Case(label: "fooNone", rawValue: .string(value: "none")),
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    mutability: .mutable,
+                    codingKey: .static(value: "enumeration")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
+    func testTransformingJSONObjectWithIntegerEnumerationIntoSwiftStruct() throws {
+        let object = JSONObject(
+            name: "Container",
+            comment: nil,
+            properties: [
+                JSONObject.Property(
+                    name: "enumeration",
+                    comment: nil,
+                    type: JSONEnumeration(
+                        name: "Foo",
+                        comment: "Description of Foo",
+                        values: [
+                            .integer(value: 1),
+                            .integer(value: 2),
+                            .integer(value: 3),
+                        ]
+                    ),
+                    defaultValue: nil,
+                    isRequired: false,
+                    isReadOnly: false
+                )
+            ]
+        )
+
+        let expected = SwiftStruct(
+            name: "Container",
+            properties: [
+                SwiftStruct.Property(
+                    name: "enumeration",
+                    type: SwiftEnum(
+                        name: "Foo",
+                        comment: "Description of Foo",
+                        cases: [
+                            SwiftEnum.Case(label: "Foo1", rawValue: .integer(value: 1)),
+                            SwiftEnum.Case(label: "Foo2", rawValue: .integer(value: 2)),
+                            SwiftEnum.Case(label: "Foo3", rawValue: .integer(value: 3)),
+                        ],
+                        conformance: []
+                    ),
+                    isOptional: true,
+                    mutability: .mutable,
+                    codingKey: .static(value: "enumeration")
+                )
+            ],
+            conformance: []
+        )
+
+        let actual = try JSONToSwiftTypeTransformer().transform(jsonType: object)
+
+        XCTAssertEqual(actual.count, 1)
+        XCTAssertEqual(expected, actual[0])
+    }
+
     // MARK: - Transforming `additionalProperties`
 
     func testTransformingNestedJSONObjectWithIntAdditionalPropertiesIntoSwiftDictionaryInsideRootStruct() throws {

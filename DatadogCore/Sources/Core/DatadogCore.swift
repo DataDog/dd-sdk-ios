@@ -207,7 +207,12 @@ internal final class DatadogCore {
         allUploads.forEach { $0.flushAndTearDown() }
         allStorages.forEach { $0.setIgnoreFilesAgeWhenReading(to: false) }
 
-        // Deallocate all Features and their storage & upload units:
+        stop()
+    }
+
+    /// Stops all processes for this instance of the Datadog core by
+    /// deallocating all Features and their storage & upload units.
+    func stop() {
         stores = [:]
         features = [:]
     }
@@ -292,8 +297,7 @@ extension DatadogCore: DatadogCoreProtocol {
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
-            storage: storage,
-            telemetry: telemetry
+            storage: storage
         )
     }
 
@@ -309,24 +313,21 @@ extension DatadogCore: DatadogCoreProtocol {
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
-    let telemetry: Telemetry
 
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
-        // On user thread: request SDK context.
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        // (on user thread) request SDK context
+        context { context in
+            // (on context thread) call the block
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent, forceNewBatch: forceNewBatch)
+            block(context, writer)
+        }
+    }
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        // (on user thread) request SDK context
         contextProvider.read { context in
-            // On context thread: request writer for current tracking consent.
-            let writer = storage.writer(
-                for: bypassConsent ? .granted : context.trackingConsent,
-                forceNewBatch: forceNewBatch
-            )
-
-            // Still on context thread: send `Writer` to EWC caller. The writer implements `AsyncWriter`, so
-            // the implementation of `writer.write(value:)` will run asynchronously without blocking the context thread.
-            do {
-                try block(context, writer)
-            } catch {
-                telemetry.error("Failed to execute feature scope", error: error)
-            }
+            // (on context thread) call the block
+            block(context)
         }
     }
 }

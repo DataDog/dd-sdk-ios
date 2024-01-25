@@ -24,8 +24,14 @@ private enum HTTPResponseStatusCode: Int {
     case tooManyRequests = 429
     /// The server encountered an unexpected condition.
     case internalServerError = 500
+    /// The server received an invalid response from another server.
+    case badGateway = 502
     /// The server is not ready to handle the request probably because it is overloaded.
     case serviceUnavailable = 503
+    /// The server (a gateway or proxy) did not receive a timely response from an upstream server.
+    case gatewayTimeout = 504
+    /// The server is unable to complete a request due to a lack of available storage space.
+    case insufficientStorage = 507
     /// An unexpected status code.
     case unexpected = -999
 
@@ -37,6 +43,9 @@ private enum HTTPResponseStatusCode: Int {
             return false
         case .requestTimeout, .tooManyRequests, .internalServerError, .serviceUnavailable:
             // Retry - it's a temporary server or connection issue that might disappear on next attempt.
+            return true
+        case .badGateway, .gatewayTimeout, .insufficientStorage:
+            // RUM-2745: SDK is expected to not lose data upon receiving these status codes
             return true
         case .unexpected:
             // This shouldn't happen, but if receiving an unexpected status code we do not retry.
@@ -126,11 +135,11 @@ extension DataUploadError {
             return nil
         case .unauthorized, .forbidden:
             self = .unauthorized
-        case .internalServerError, .serviceUnavailable:
-            // These codes mean Datadog service issue - do not produce SDK error as this is already monitored by other means.
+        case .internalServerError, .serviceUnavailable, .badGateway, .gatewayTimeout, .insufficientStorage:
+            // These codes indicate Datadog service issue - so do not produce error as there is no fix reqiured for SDK
             return nil
         case .badRequest, .payloadTooLarge, .tooManyRequests, .requestTimeout:
-            // These codes mean that something wrong is happening either in the SDK or on the server - produce an error.
+            // These codes might indicate SDK issue - so produce an error so we send it through telemetry.
             self = .httpError(statusCode: code)
         case .unexpected:
             return nil

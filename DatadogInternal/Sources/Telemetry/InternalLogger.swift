@@ -16,14 +16,14 @@ public struct InternalLogger: CoreLogger {
     /// Formatter used to format the time accordingly for local device.
     private let dateFormatter: DateFormatterType
     /// The print function.
-    private let printFunction: (String) -> Void
+    private let printFunction: (String, CoreLoggerLevel) -> Void
     /// V1's verbosity level. Only logs above or equal to this level wil be printed.
     private let currentVerbosityLevel: () -> CoreLoggerLevel?
 
     public init(
         dateProvider: DateProvider,
         timeZone: TimeZone,
-        printFunction: @escaping (String) -> Void,
+        printFunction: @escaping (String, CoreLoggerLevel) -> Void,
         verbosityLevel: @escaping () -> CoreLoggerLevel?
     ) {
         self.dateProvider = dateProvider
@@ -39,19 +39,18 @@ public struct InternalLogger: CoreLogger {
             return // if no `Datadog.verbosityLevel` is set or it is set above this level
         }
 
-        print(message: message(), error: error, emoji: level.emojiPrefix)
+        print(message: message(), error: error, level: level)
     }
 
     // MARK: - Private
 
-    private func print(message: @autoclosure () -> String, error: Error?, emoji: String) {
-        var log = buildMessageString(message: message(), emoji: emoji)
+    private func print(message: @autoclosure () -> String, error: Error?, level: CoreLoggerLevel) {
+        var log = buildMessageString(message: message(), emoji: level.emojiPrefix)
 
         if let error = error {
             log += "\n\nError details:\n\(buildErrorString(error: error))"
         }
-
-        printFunction(log)
+        printFunction(log, level)
     }
 
     private func buildMessageString(message: @autoclosure () -> String, emoji: String) -> String {

@@ -304,6 +304,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useExcludedActivityUrls: nil,
             useFirstPartyHosts: configuration.useFirstPartyHosts,
             useLocalEncryption: configuration.useLocalEncryption,
+            usePartitionedCrossSiteSessionCookie: nil,
             useProxy: configuration.useProxy,
             useSecureSessionCookie: nil,
             useTracing: configuration.useTracing,

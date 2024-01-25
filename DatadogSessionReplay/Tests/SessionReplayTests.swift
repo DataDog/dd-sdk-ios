@@ -37,7 +37,7 @@ class SessionReplayTests: XCTestCase {
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         SessionReplay.enable(with: config, in: NOPDatadogCore())
@@ -127,5 +127,17 @@ class SessionReplayTests: XCTestCase {
         // Then
         let sr = try XCTUnwrap(core.get(feature: SessionReplayFeature.self))
         XCTAssertEqual(sr.recordingCoordinator.sampler.samplingRate, random)
+    }
+
+    func testItDoesntStartFeatureWhenSamplingRateIsZero() throws {
+        // Given
+        config.replaySampleRate = 0
+
+        // When
+        SessionReplay.enable(with: config, in: core)
+
+        // Then
+        XCTAssertNil(core.get(feature: SessionReplayFeature.self))
+        XCTAssertNil(core.get(feature: ResourcesFeature.self))
     }
 }

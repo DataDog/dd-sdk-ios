@@ -110,10 +110,18 @@ private struct FeatureScopeProxy: FeatureScope {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
 
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         interceptor.enter()
         proxy.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch) { context, writer in
-            try block(context, interceptor.intercept(writer: writer))
+            block(context, interceptor.intercept(writer: writer))
+            interceptor.leave()
+        }
+    }
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        interceptor.enter()
+        proxy.context { context in
+            block(context)
             interceptor.leave()
         }
     }
@@ -123,10 +131,14 @@ private class FeatureScopeInterceptor {
     struct InterceptingWriter: Writer {
         static let jsonEncoder = JSONEncoder.dd.default()
 
+        let group: DispatchGroup
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
 
         func write<T: Encodable, M: Encodable>(value: T, metadata: M) {
+            group.enter()
+            defer { group.leave() }
+
             actualWriter.write(value: value, metadata: metadata)
 
             let event = value
@@ -136,7 +148,7 @@ private class FeatureScopeInterceptor {
     }
 
     func intercept(writer: Writer) -> Writer {
-        return InterceptingWriter(actualWriter: writer, interception: self)
+        return InterceptingWriter(group: group, actualWriter: writer, interception: self)
     }
 
     // MARK: - Synchronizing and awaiting events:

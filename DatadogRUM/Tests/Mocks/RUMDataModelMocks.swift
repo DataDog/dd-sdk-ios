@@ -39,6 +39,7 @@ extension RUMConnectivity: RandomMockable {
                 carrierName: .mockRandom(),
                 technology: .mockRandom()
             ),
+            effectiveType: nil,
             interfaces: [.bluetooth, .cellular].randomElements(),
             status: [.connected, .maybe, .notConnected].randomElement()!
         )
@@ -556,6 +557,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     useExcludedActivityUrls: nil,
                     useFirstPartyHosts: .mockRandom(),
                     useLocalEncryption: .mockRandom(),
+                    usePartitionedCrossSiteSessionCookie: nil,
                     useProxy: .mockRandom(),
                     useSecureSessionCookie: nil,
                     useTracing: .mockRandom(),

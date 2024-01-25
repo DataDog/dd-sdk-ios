@@ -85,7 +85,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
             return true
         } catch {
             core.telemetry
-                .error("Fails to decode crash from Logs", error: error)
+                .error("Failed to decode log message in `LogMessageReceiver`", error: error)
         }
 
         return false
@@ -152,6 +152,27 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         let carrierInfo: CarrierInfo?
         /// Current user information.
         let userInfo: UserInfo?
+
+        /// A type representing part of last RUM view information required to link crash log with previous RUM session.
+        /// It mirrors the schema of `RUMViewEvent`, so we can decode it from the last `RUMViewEvent` coded in crash context.
+        struct PartialRUMViewEvent: Decodable {
+            struct Application: Decodable {
+                let id: String
+            }
+            struct Session: Decodable {
+                let id: String
+            }
+            struct View: Decodable {
+                let id: String
+            }
+
+            let application: Application
+            let session: Session
+            let view: View
+        }
+
+        /// The last RUM view in crashed app process.
+        let lastRUMViewEvent: PartialRUMViewEvent?
     }
 
     /// Time provider.
@@ -171,7 +192,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             return send(report: crash.report, with: crash.context, to: core)
         } catch {
             core.telemetry
-                .error("Fails to decode crash from RUM", error: error)
+                .error("Failed to decode crash message in `LogMessageReceiver`", error: error)
         }
         return false
     }
@@ -184,10 +205,16 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             .addingTimeInterval(context.serverTimeOffset)
 
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
+        // Set crash attributes for the error
         errorAttributes[DDError.threads] = report.threads
         errorAttributes[DDError.binaryImages] = report.binaryImages
         errorAttributes[DDError.meta] = report.meta
         errorAttributes[DDError.wasTruncated] = report.wasTruncated
+
+        // Set RUM context if available (so emergency error is linked to the RUM session in Datadog app)
+        errorAttributes[LogEvent.Attributes.RUM.applicationID] = context.lastRUMViewEvent?.application.id
+        errorAttributes[LogEvent.Attributes.RUM.sessionID] = context.lastRUMViewEvent?.session.id
+        errorAttributes[LogEvent.Attributes.RUM.viewID] = context.lastRUMViewEvent?.view.id
 
         let user = context.userInfo
         let deviceInfo = context.device
@@ -225,7 +252,10 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             ),
             networkConnectionInfo: context.networkConnectionInfo,
             mobileCarrierInfo: context.carrierInfo,
-            attributes: .init(userAttributes: [:], internalAttributes: errorAttributes),
+            attributes: .init(
+                userAttributes: [:],
+                internalAttributes: errorAttributes
+            ),
             tags: nil
         )
 
@@ -278,10 +308,13 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
 
                 if let rum = context.baggages[RUMContext.key] {
                     do {
-                        let context = try rum.decode(type: RUMContext.self)
-                        event.merge(context.internalAttributes) { $1 }
+                        let rum = try rum.decode(type: RUMContext.self)
+                        event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                        event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                        event[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                        event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
                     } catch {
-                        core.telemetry.error("Fails to decode RUM context from Logs", error: error)
+                        core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
                     }
                 }
 
@@ -291,7 +324,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
             return true
         } catch {
             core.telemetry
-                .error("Fails to decode browser log", error: error)
+                .error("Failed to decode browser log in `LogMessageReceiver`", error: error)
         }
 
         return false

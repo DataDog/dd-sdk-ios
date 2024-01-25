@@ -53,7 +53,8 @@ public struct HostsSanitizer: HostsSanitizing {
             consolePrint(
                     """
                     ⚠️ \(warningMessage): \(warning)
-                    """
+                    """,
+                    .warn
             )
         }
     }

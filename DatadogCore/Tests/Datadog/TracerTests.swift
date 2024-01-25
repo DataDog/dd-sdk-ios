@@ -11,6 +11,7 @@ import DatadogInternal
 @testable import DatadogTrace
 @testable import DatadogLogs
 @testable import DatadogCore
+@testable import DatadogRUM
 
 // swiftlint:disable multiline_arguments_brackets
 class TracerTests: XCTestCase {
@@ -340,11 +341,9 @@ class TracerTests: XCTestCase {
         let tracer = Tracer.shared(in: core).dd
 
         tracer.startSpan(operationName: "span with no user info").finish()
-        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         core.context.userInfo = UserInfo(id: "abc-123", name: "Foo", email: nil, extraInfo: [:])
         tracer.startSpan(operationName: "span with user `id` and `name`").finish()
-        tracer.queue.sync {}
 
         core.context.userInfo = UserInfo(
             id: "abc-123",
@@ -357,7 +356,6 @@ class TracerTests: XCTestCase {
             ]
         )
         tracer.startSpan(operationName: "span with user `id`, `name`, `email` and `extraInfo`").finish()
-        tracer.queue.sync {}
 
         core.context.userInfo = .empty
         tracer.startSpan(operationName: "span with no user info").finish()
@@ -403,7 +401,6 @@ class TracerTests: XCTestCase {
         )
 
         tracer.startSpan(operationName: "span with carrier info").finish()
-        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate leaving cellular service range
         core.context.carrierInfo = nil
@@ -442,7 +439,6 @@ class TracerTests: XCTestCase {
         )
 
         tracer.startSpan(operationName: "online span").finish()
-        tracer.queue.sync {} // wait for processing the span event in `DDSpan`
 
         // simulate unreachable network
         core.context.networkConnectionInfo = .mockWith(
@@ -658,57 +654,92 @@ class TracerTests: XCTestCase {
     }
 
     // MARK: - Integration With RUM Feature
-//    // TODO: RUMM-2843 [V2 regression] RUM context is not associated with span started on caller thread
-//    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpanBeforeAnyUserActivity_itContainsSessionId() throws {
-//        let tracing: TracingFeature = .mockAny()
-//        core.register(feature: tracing)
-//
-//        let rum: RUMFeature = .mockAny()
-//        core.register(feature: rum)
-//
-//        // given
-//        Global.sharedTracer = Tracer.initialize(configuration: .init(), in: core).dd
-//        defer { Global.sharedTracer = DDNoopTracer() }
-//        Global.rum = RUMMonitor.initialize(in: core)
-//        defer { Global.rum = DDNoopRUMMonitor() }
-//
-//        // when
-//        let span = Global.sharedTracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
-//        span.finish()
-//
-//        // then
-//        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta.\(RUMContextAttributes.IDs.sessionID)"))
-//    }
 
-    // TODO: RUMM-2843 [V2 regression] RUM context is not associated with span started on caller thread
-//    func testGivenBundlingWithRUMEnabledAndRUMMonitorRegistered_whenSendingSpan_itContainsCurrentRUMContext() throws {
-//        let tracing: TracingFeature = .mockAny()
-//        core.register(feature: tracing)
-//
-//        let rum: RUMFeature = .mockAny()
-//        core.register(feature: rum)
-//
-//        // given
-//        Global.sharedTracer = DatadogTracer.initialize(in: core).dd
-//        defer { Global.sharedTracer = DDNoopTracer() }
-//        Global.rum = RUMMonitor.initialize(in: core)
-//        Global.rum.startView(viewController: mockView)
-//        defer { Global.rum = DDNoopRUMMonitor() }
-//
-//        // when
-//        let span = Global.sharedTracer.startSpan(operationName: "operation", tags: [:], startTime: Date())
-//        span.finish()
-//
-//        // then
-//        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
-//        XCTAssertEqual(
-//            try spanMatcher.meta.custom(keyPath: "meta._dd.application.id"),
-//            rum.configuration.applicationID
-//        )
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.session.id"))
-//        XCTAssertValidRumUUID(try spanMatcher.meta.custom(keyPath: "meta._dd.view.id"))
-//    }
+    func testGivenBundleWithRumEnabled_whenSendingSpanBeforeAnyInteraction_itContainsViewId() throws {
+        config.bundleWithRumEnabled = true
+        Trace.enable(with: config, in: core)
+
+        // Given
+        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
+
+        // When
+        let span = Tracer.shared(in: core).startSpan(operationName: "operation")
+        span.finish()
+
+        // Then
+        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
+        let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], "rum-app-id")
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumViewID], rumEvent.view.id)
+        XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])
+    }
+
+    func testGivenBundleWithRumEnabled_whenStartingSpanWhileUserInteractionIsPending_itContainsActionId() throws {
+        config.bundleWithRumEnabled = true
+        Trace.enable(with: config, in: core)
+
+        // Given
+        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
+
+        // When
+        RUMMonitor.shared(in: core).startAction(type: .swipe, name: "swipe")
+        let span = Tracer.shared(in: core).startSpan(operationName: "operation")
+        RUMMonitor.shared(in: core).stopAction(type: .swipe, name: "swipe")
+        span.finish()
+
+        // Then
+        let rumEvent = try XCTUnwrap(
+            core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMActionEvent.self).first(where: { $0.action.type == .swipe })
+        )
+        let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], rumEvent.application.id)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumViewID], rumEvent.view.id)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumActionID], rumEvent.action.id)
+    }
+
+    func testGivenBundleWithRumEnabled_whenSendingSpanAfterViewIsStopped_itContainsSessionId() throws {
+        config.bundleWithRumEnabled = true
+        Trace.enable(with: config, in: core)
+
+        // Given
+        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
+        RUMMonitor.shared(in: core).startView(key: "view", name: "view")
+
+        // When
+        RUMMonitor.shared(in: core).stopView(key: "view")
+        let span = Tracer.shared(in: core).startSpan(operationName: "operation")
+        span.finish()
+
+        // Then
+        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMViewEvent.self).last)
+        let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumApplicationID], rumEvent.application.id)
+        XCTAssertEqual(spanEvent.tags[SpanTags.rumSessionID], rumEvent.session.id)
+        XCTAssertNil(spanEvent.tags[SpanTags.rumViewID])
+        XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])
+    }
+
+    func testGivenBundleWithRumDisabled_whenSendingSpan_itDoesNotContainRUMContext() throws {
+        config.bundleWithRumEnabled = false
+        Trace.enable(with: config, in: core)
+
+        // Given
+        RUM.enable(with: .init(applicationID: "rum-app-id"), in: core)
+        RUMMonitor.shared(in: core).startView(key: "view", name: "view")
+
+        // When
+        let span = Tracer.shared(in: core).startSpan(operationName: "operation")
+        span.finish()
+
+        // Then
+        let spanEvent = try XCTUnwrap(core.waitAndReturnSpanEvents().first)
+        XCTAssertNil(spanEvent.tags[SpanTags.rumApplicationID])
+        XCTAssertNil(spanEvent.tags[SpanTags.rumSessionID])
+        XCTAssertNil(spanEvent.tags[SpanTags.rumViewID])
+        XCTAssertNil(spanEvent.tags[SpanTags.rumActionID])
+    }
 
     // MARK: - Injecting span context into carrier
 
@@ -1107,7 +1138,7 @@ class TracerTests: XCTestCase {
     func testGivenSDKNotInitialized_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // given
         let core = NOPDatadogCore()
@@ -1127,7 +1158,7 @@ class TracerTests: XCTestCase {
     func testGivenTraceNotEnabled_whenObtainingSharedTracer_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // given
         let core = FeatureRegistrationCoreMock()

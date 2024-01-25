@@ -11,18 +11,18 @@ internal class SendLogsFixtureViewController: UIViewController {
         super.viewDidLoad()
 
         // Send logs
-        logger.addTag(withKey: "tag1", value: "tag-value")
-        logger.add(tag: "tag2")
+        logger?.addTag(withKey: "tag1", value: "tag-value")
+        logger?.add(tag: "tag2")
 
-        logger.addAttribute(forKey: "logger-attribute1", value: "string value")
-        logger.addAttribute(forKey: "logger-attribute2", value: 1_000)
-        logger.addAttribute(forKey: "some-url", value: URL(string: "https://example.com/image.png")!)
+        logger?.addAttribute(forKey: "logger-attribute1", value: "string value")
+        logger?.addAttribute(forKey: "logger-attribute2", value: 1_000)
+        logger?.addAttribute(forKey: "some-url", value: URL(string: "https://example.com/image.png")!)
 
-        logger.debug("debug message", attributes: ["attribute": "value"])
-        logger.info("info message", attributes: ["attribute": "value"])
-        logger.notice("notice message", attributes: ["attribute": "value"])
-        logger.warn("warn message", attributes: ["attribute": "value"])
-        logger.error("error message", attributes: ["attribute": "value"])
-        logger.critical("critical message", attributes: ["attribute": "value"])
+        logger?.debug("debug message", attributes: ["attribute": "value"])
+        logger?.info("info message", attributes: ["attribute": "value"])
+        logger?.notice("notice message", attributes: ["attribute": "value"])
+        logger?.warn("warn message", attributes: ["attribute": "value"])
+        logger?.error("error message", attributes: ["attribute": "value"])
+        logger?.critical("critical message", attributes: ["attribute": "value"])
     }
 }

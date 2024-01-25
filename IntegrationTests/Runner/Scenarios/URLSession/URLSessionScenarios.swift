@@ -39,11 +39,6 @@ private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, UR
     }
 }
 
-/// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through inheritance.
-private class CustomURLSessionDelegate: NSObject, URLSessionDataDelegate {
-
-}
-
 /// Base scenario for `URLSession` and `NSURLSession` instrumentation.  It makes
 /// both Swift and Objective-C tests share the same endpoints and SDK configuration.
 ///

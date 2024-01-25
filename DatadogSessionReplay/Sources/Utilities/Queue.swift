@@ -7,11 +7,11 @@
 #if os(iOS)
 import Foundation
 
-internal protocol Queue {
+internal protocol Queue: AnyObject {
     func run(_ block: @escaping () -> Void)
 }
 
-internal struct MainAsyncQueue: Queue {
+internal class MainAsyncQueue: Queue {
     private let queue: DispatchQueue = .main
 
     func run(_ block: @escaping () -> Void) {
@@ -19,7 +19,7 @@ internal struct MainAsyncQueue: Queue {
     }
 }
 
-internal struct BackgroundAsyncQueue: Queue {
+internal class BackgroundAsyncQueue: Queue {
     private let queue: DispatchQueue
 
     init(named queueName: String) {

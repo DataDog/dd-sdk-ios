@@ -13,7 +13,7 @@ import DatadogInternal
 class SpanEventBuilderTests: XCTestCase {
     func testBuildingBasicSpan() {
         let context: DatadogContext = .mockWith(sdkVersion: "1.2.3")
-        let builder: SpanEventBuilder = .mockWith(serviceName: "test-service-name")
+        let builder: SpanEventBuilder = .mockWith(service: "test-service-name")
 
         let span = builder.createSpanEvent(
             context: context,
@@ -498,5 +498,104 @@ class SpanEventBuilderTests: XCTestCase {
             """
         )
         XCTAssertEqual(dd.logger.errorLog?.error?.message, "Value cannot be encoded.")
+    }
+
+    // MARK: - RUM context enrichment
+
+    // swiftlint:disable opening_brace
+    func testWhenBundleWithRUMisEnabled_itCreatesSpanWithRUMContext() {
+        // Given
+        let rum = oneOf([
+            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: .mockRandom()) },
+            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: .mockRandom(), userActionID: nil) },
+            { RUMContext(applicationID: .mockRandom(), sessionID: .mockRandom(), viewID: nil, userActionID: nil) }
+        ])
+        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init(rum)])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
+        let span = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertEqual(span.tags[SpanTags.rumApplicationID], rum.applicationID)
+        XCTAssertEqual(span.tags[SpanTags.rumSessionID], rum.sessionID)
+        XCTAssertEqual(span.tags[SpanTags.rumViewID], rum.viewID)
+        XCTAssertEqual(span.tags[SpanTags.rumActionID], rum.userActionID)
+    }
+    // swiftlint:enable opening_brace
+
+    func testWhenBundleWithRUMisDisabled_itCreatesSpanWithNoRUMContext() {
+        // Given
+        let rum = RUMContext(
+            applicationID: .mockRandom(),
+            sessionID: .mockRandom(),
+            viewID: .mockRandom(),
+            userActionID: .mockRandom()
+        )
+        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init(rum)])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: false)
+        let span = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        XCTAssertNil(span.tags[SpanTags.rumApplicationID])
+        XCTAssertNil(span.tags[SpanTags.rumSessionID])
+        XCTAssertNil(span.tags[SpanTags.rumViewID])
+        XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
+    func testWhenBundleWithRUMisEnabledAndRUMBaggageIsMalformed_itSendsTelemetryError() throws {
+        let telemetry = TelemetryMock()
+
+        // Given
+        let context: DatadogContext = .mockWith(baggages: [RUMContext.key: .init("malformed RUM context")])
+
+        // When
+        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true, telemetry: telemetry)
+        _ = builder.createSpanEvent(
+            context: context,
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [:],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // Then
+        let error = try XCTUnwrap(telemetry.messages.firstError())
+        XCTAssertTrue(error.message.hasPrefix("Failed to decode RUM context for enriching span"))
     }
 }

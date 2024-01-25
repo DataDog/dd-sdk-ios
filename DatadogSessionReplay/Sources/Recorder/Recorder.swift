@@ -59,12 +59,15 @@ public class Recorder: Recording {
     /// Captures touch snapshot.
     private let touchSnapshotProducer: TouchSnapshotProducer
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
-    private let snapshotProcessor: Processing
+    private let snapshotProcessor: SnapshotProcessing
+    /// Processes resources on a background thread.
+    private let resourceProcessor: ResourceProcessing? // RUM-2154 Optional until prod backend is ready
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
     convenience init(
-        processor: Processing,
+        snapshotProcessor: SnapshotProcessing,
+        resourceProcessor: ResourceProcessing?,
         telemetry: Telemetry,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
@@ -81,7 +84,8 @@ public class Recorder: Recording {
             uiApplicationSwizzler: try UIApplicationSwizzler(handler: touchSnapshotProducer),
             viewTreeSnapshotProducer: viewTreeSnapshotProducer,
             touchSnapshotProducer: touchSnapshotProducer,
-            snapshotProcessor: processor,
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: resourceProcessor,
             telemetry: telemetry
         )
     }
@@ -90,13 +94,15 @@ public class Recorder: Recording {
         uiApplicationSwizzler: UIApplicationSwizzler,
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
-        snapshotProcessor: Processing,
+        snapshotProcessor: SnapshotProcessing,
+        resourceProcessor: ResourceProcessing?,
         telemetry: Telemetry
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
         self.touchSnapshotProducer = touchSnapshotProducer
         self.snapshotProcessor = snapshotProcessor
+        self.resourceProcessor = resourceProcessor
         self.telemetry = telemetry
         uiApplicationSwizzler.swizzle()
     }
@@ -117,6 +123,11 @@ public class Recorder: Recording {
             }
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
+
+            resourceProcessor?.process(
+                resources: viewTreeSnapshot.resources,
+                context: .init(recorderContext.applicationID)
+            )
         } catch let error {
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }

@@ -1,9 +1,19 @@
 # Unreleased
 
+
+# 2.7.0 / 25-01-2024
+
+- [FIX] RUM session not being linked to spans. See [#1615][]
+- [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
+- [FEATURE] Allow stopping a core instance. See [#1541][]
+- [FEATURE] Link crashes sent as Log events to RUM session. See [#1645][]
+- [IMPROVEMENT] Add extra HTTP codes to the list of retryable status codes. See [#1639][]
+- [FEATURE] Add privacy manifest to `DatadogCore`. See [#1644][]
+
 # 2.6.0 / 09-01-2024
 - [FEATURE] Add `currentSessionID(completion:)` accessor to access the current session ID.
 - [FEATURE] Add `BatchProcessingLevel` configuration allowing to process more batches within single read/upload cycle. See [#1531][]
-- [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception
+- [FIX] Use `currentRequest` instead `originalRequest` for URLSession request interception. See [#1609][]
 - [FIX] Remove weak `UIViewController` references. See [#1597][]
 
 # 2.5.1 / 20-12-2023
@@ -568,11 +578,18 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1524]: https://github.com/DataDog/dd-sdk-ios/pull/1524
 [#1529]: https://github.com/DataDog/dd-sdk-ios/pull/1529
 [#1533]: https://github.com/DataDog/dd-sdk-ios/pull/1533
+[#1645]: https://github.com/DataDog/dd-sdk-ios/pull/1645
 [#1594]: https://github.com/DataDog/dd-sdk-ios/pull/1594
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
+[#1609]: https://github.com/DataDog/dd-sdk-ios/pull/1609
+[#1639]: https://github.com/DataDog/dd-sdk-ios/pull/1639
+[#1615]: https://github.com/DataDog/dd-sdk-ios/pull/1615
 [#1531]: https://github.com/DataDog/dd-sdk-ios/pull/1531
+[#1637]: https://github.com/DataDog/dd-sdk-ios/pull/1637
+[#1541]: https://github.com/DataDog/dd-sdk-ios/pull/1541
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
+[#1644]: https://github.com/DataDog/dd-sdk-ios/pull/1644
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

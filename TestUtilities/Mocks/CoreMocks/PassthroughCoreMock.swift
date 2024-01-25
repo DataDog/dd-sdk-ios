@@ -112,10 +112,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     /// Execute `block` with the current context and a `writer` to record events.
     ///
     /// - Parameter block: The block to execute.
-    public func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: (DatadogContext, Writer) throws -> Void) {
-        XCTAssertNoThrow(try block(context, writer), "Encountered an error when executing `eventWriteContext`")
-        expectation?.fulfill()
-
+    public func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         if bypassConsent {
             bypassConsentExpectation?.fulfill()
         }
@@ -123,6 +120,13 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         if forceNewBatch {
             forceNewBatchExpectation?.fulfill()
         }
+
+        block(context, writer)
+        expectation?.fulfill()
+    }
+
+    public func context(_ block: @escaping (DatadogContext) -> Void) {
+        block(context)
     }
 
     /// Recorded events from feature scopes.

@@ -12,13 +12,6 @@ internal class DatadogTracer: OTTracer {
 
     /// Global tags configured for Trace feature.
     let tags: [String: Encodable]
-    let service: String?
-    let networkInfoEnabled: Bool
-    let spanEventMapper: ((SpanEvent) -> SpanEvent)?
-    /// Queue ensuring thread-safety of the `Tracer` and `DDSpan` operations.
-    let queue: DispatchQueue
-    /// Integration with Core Context.
-    let contextReceiver: ContextMessageReceiver
     /// Integration with Logging.
     let loggingIntegration: TracingWithLoggingIntegration
 
@@ -30,9 +23,8 @@ internal class DatadogTracer: OTTracer {
     let activeSpansPool = ActiveSpansPool()
 
     let sampler: Sampler
-
-    /// Telemetry interface.
-    let telemetry: Telemetry
+    /// Creates span events.
+    let spanEventBuilder: SpanEventBuilder
 
     // MARK: - Initialization
 
@@ -40,31 +32,18 @@ internal class DatadogTracer: OTTracer {
         core: DatadogCoreProtocol,
         sampler: Sampler,
         tags: [String: Encodable],
-        service: String?,
-        networkInfoEnabled: Bool,
-        spanEventMapper: ((SpanEvent) -> SpanEvent)?,
         tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
-        contextReceiver: ContextMessageReceiver,
         loggingIntegration: TracingWithLoggingIntegration,
-        telemetry: Telemetry = NOPTelemetry()
+        spanEventBuilder: SpanEventBuilder
     ) {
         self.core = core
         self.tags = tags
-        self.service = service
-        self.networkInfoEnabled = networkInfoEnabled
-        self.spanEventMapper = spanEventMapper
-        self.queue = DispatchQueue(
-            label: "com.datadoghq.tracer",
-            target: .global(qos: .userInteractive)
-        )
-
         self.tracingUUIDGenerator = tracingUUIDGenerator
         self.dateProvider = dateProvider
-        self.contextReceiver = contextReceiver
         self.loggingIntegration = loggingIntegration
         self.sampler = sampler
-        self.telemetry = telemetry
+        self.spanEventBuilder = spanEventBuilder
     }
 
     // MARK: - Open Tracing interface
@@ -113,22 +92,27 @@ internal class DatadogTracer: OTTracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
+        guard let core = core else {
+            return DDNoopGlobals.span
+        }
+
         var combinedTags = self.tags
         if let userTags = tags {
             combinedTags.merge(userTags) { $1 }
         }
 
-        if let rumTags = contextReceiver.context.rum {
-            combinedTags.merge(rumTags) { $1 }
-        }
-
+        // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
+        // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
+        // available on the caller thread.
+        let writer = LazySpanWriteContext(core: core)
         let span = DDSpan(
             tracer: self,
             context: spanContext,
             operationName: operationName,
             startTime: startTime ?? dateProvider.now,
             tags: combinedTags,
-            telemetry: telemetry
+            eventBuilder: spanEventBuilder,
+            eventWriter: writer
         )
         return span
     }
