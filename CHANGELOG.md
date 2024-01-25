@@ -3,6 +3,7 @@
 - [FIX] RUM session not being linked to spans. See [#1615][]
 - [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
 - [FEATURE] Allow stopping a core instance. See [#1541][]
+- [FEATURE] Link crashes sent as Log events to RUM session. See [#1645][]
 - [IMPROVEMENT] Add extra HTTP codes to the list of retryable status codes. See [#1639][]
 - [FEATURE] Add privacy manifest to `DatadogCore`. See [#1644][]
 
@@ -574,6 +575,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1524]: https://github.com/DataDog/dd-sdk-ios/pull/1524
 [#1529]: https://github.com/DataDog/dd-sdk-ios/pull/1529
 [#1533]: https://github.com/DataDog/dd-sdk-ios/pull/1533
+[#1645]: https://github.com/DataDog/dd-sdk-ios/pull/1645
 [#1594]: https://github.com/DataDog/dd-sdk-ios/pull/1594
 [#1536]: https://github.com/DataDog/dd-sdk-ios/pull/1536
 [#1609]: https://github.com/DataDog/dd-sdk-ios/pull/1609

@@ -217,12 +217,16 @@ internal extension DDCrashReport {
     }
 
     static func mockRandomWith(context: CrashContext) -> DDCrashReport {
+        return mockRandomWith(contextData: context.data)
+    }
+
+    static func mockRandomWith(contextData: Data) -> DDCrashReport {
         return mockWith(
             date: .mockRandomInThePast(),
             type: .mockRandom(),
             message: .mockRandom(),
             stack: .mockRandom(),
-            context: context.data
+            context: contextData
         )
     }
 }
