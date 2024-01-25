@@ -1,5 +1,8 @@
 # Unreleased
 
+
+# 2.7.0 / 25-01-2024
+
 - [FIX] RUM session not being linked to spans. See [#1615][]
 - [FIX] `URLSessionTask.resume()` swizzling in iOS 13 and 12. See [#1637][]
 - [FEATURE] Allow stopping a core instance. See [#1541][]
