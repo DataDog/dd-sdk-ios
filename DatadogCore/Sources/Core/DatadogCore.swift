@@ -391,14 +391,7 @@ extension DatadogContextProvider {
         if #available(iOS 12, *) {
             subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
         } else {
-            // Xcode 15 ships with Swift 5.9 and drops support for iOS 11 deployment target.
-            // The conditional check ensures that iOS 11 components are only compiled with Xcode 14, where iOS 11
-            // remains a valid deployment target. Since this deployment target is no longer available in Xcode 15,
-            // compiling the following code in Xcode 15 would result in compiler warnings (due to deprecation in some used APIs),
-            // violating our 0 warnings policy. It can be entirely removed when Xcode 14 is dropped.
-            #if swift(<5.9)
             assign(reader: iOS11CarrierInfoReader(), to: \.carrierInfo)
-            #endif
         }
         #endif
 
