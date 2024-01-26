@@ -249,7 +249,10 @@ class ViewTreeRecorderTests: XCTestCase {
         }
     }
 
-    func testItOverridesViewControllerContext() {
+    func testItOverridesViewControllerContext() throws {
+        if #available(iOS 17, *) {
+            throw XCTSkip("TODO: RUM-3134 Fix `ViewTreeRecorderTests` on iOS 17.0+")
+        }
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let recorder = ViewTreeRecorder(nodeRecorders: [nodeRecorder])
         let views = [

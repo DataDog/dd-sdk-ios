@@ -81,6 +81,16 @@ endif
 		
 endif
 
+# Prepare project on GitLab CI (this will replace `make dependencies` once we're fully on GitLab).
+dependencies-gitlab:
+		@echo "📝  Source xcconfigs..."
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
+		# We use Xcode 15 on GitLab, so overwrite deployment target in all projects to avoid build errors:
+		@echo "IPHONEOS_DEPLOYMENT_TARGET=12.0\n" >> xcconfigs/Base.local.xcconfig;
+		@echo "⚙️  Carthage bootstrap..."
+		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
+
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."
 		@cd DatadogSessionReplay/ && swift package generate-xcodeproj

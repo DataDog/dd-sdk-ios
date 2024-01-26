@@ -1,0 +1,81 @@
+stages:
+  - info
+  - lint
+  - test
+
+ENV info:
+  stage: info
+  tags:
+    - mac-ventura-preview
+  script:
+    - system_profiler SPSoftwareDataType # system info
+    - xcodebuild -version
+    - xcode-select -p # default Xcode
+    - ls /Applications/ | grep Xcode # other Xcodes
+    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore iOS" -showdestinations -quiet # installed iOS destinations
+    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore tvOS" -showdestinations -quiet # installed tvOS destinations
+    - xcbeautify --version
+    - swiftlint --version
+    - carthage version
+    - gh --version
+    - brew -v
+    - bundler --version
+    - python3 -V
+
+Lint:
+  stage: lint
+  tags:
+    - mac-ventura-preview
+  script:
+    - ./tools/lint/run-linter.sh
+    - ./tools/license/check-license.sh
+
+SDK unit tests (iOS):
+  stage: test
+  tags:
+    - mac-ventura-preview
+  variables:
+    TEST_WORKSPACE: "Datadog.xcworkspace"
+    TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
+  script:
+    - make dependencies-gitlab
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogCoreTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogInternalTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogLogsTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogTraceTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogRUMTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore iOS" -only-testing:"DatadogWebViewTrackingTests iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogSessionReplay iOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCrashReporting iOS" test | xcbeautify
+
+SDK unit tests (tvOS):
+  stage: test
+  tags:
+    - mac-ventura-preview
+  variables:
+    TEST_WORKSPACE: "Datadog.xcworkspace"
+    TEST_DESTINATION: "platform=tvOS Simulator,name=Apple TV,OS=17.0"
+  script:
+    - make dependencies-gitlab
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogCoreTests tvOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogInternalTests tvOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogLogsTests tvOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogTraceTests tvOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCore tvOS" -only-testing:"DatadogRUMTests tvOS" test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "DatadogCrashReporting tvOS" test | xcbeautify
+
+SDK integration tests (iOS):
+  stage: test
+  tags:
+    - mac-ventura-preview
+  variables:
+    TEST_WORKSPACE: "IntegrationTests/IntegrationTests.xcworkspace"
+    TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
+  script:
+    - make dependencies-gitlab
+    - make prepare-integration-tests
+    # Before running crash reporting tests, disable Apple Crash Reporter so it doesn't capture the crash causing tests hang on "<app> quit unexpectedly" prompt:
+    - launchctl unload -w /System/Library/LaunchAgents/com.apple.ReportCrash.plist
+    - ./tools/config/generate-http-server-mock-config.sh
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogIntegrationTests test | xcbeautify
+    - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify

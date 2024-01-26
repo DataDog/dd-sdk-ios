@@ -473,6 +473,7 @@ class TracerTests: XCTestCase {
     func testSendingSpanTagsOfDifferentEncodableValues() throws {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
+        tracer.dd.spanEventBuilder.attributesEncoder.outputFormatting = [.sortedKeys]
 
         let span = tracer.startSpan(operationName: "operation", tags: [:], startTime: .mockDecember15th2019At10AMUTC())
 
@@ -530,7 +531,7 @@ class TracerTests: XCTestCase {
         )
         XCTAssertEqual(
             try spanMatcher.meta.custom(keyPath: "meta.person"),
-            #"{"name":"Adam","age":30,"nationality":"Polish"}"#
+            #"{"age":30,"name":"Adam","nationality":"Polish"}"#
         )
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.nested.string"), "hello")
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.url"), "https://example.com/image.png")
