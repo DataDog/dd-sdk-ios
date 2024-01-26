@@ -11,22 +11,26 @@ import TestUtilities
 
 class UIKitExtensionsTests: XCTestCase {
     func testUsesDarkMode() {
-        // Given
-        let lightView = UIView.mock(withFixture: .visible(.someAppearance))
-        let darkView = UIView.mock(withFixture: .visible(.someAppearance))
-
-        if #available(iOS 13.0, *) {
-            // When
-            lightView.overrideUserInterfaceStyle = [.light, .unspecified].randomElement()!
-            darkView.overrideUserInterfaceStyle = .dark
-
-            // Then
-            XCTAssertFalse(lightView.usesDarkMode)
-            XCTAssertTrue(darkView.usesDarkMode)
-        } else {
-            XCTAssertFalse(lightView.usesDarkMode)
-            XCTAssertFalse(darkView.usesDarkMode)
+        guard #available(iOS 13.0, *) else {
+            XCTAssertFalse(UIView().usesDarkMode) // always false prior to iOS 13.x
+            return
         }
+        class MockView: NSObject, UITraitEnvironment {
+            var traitCollection: UITraitCollection = .init(userInterfaceStyle: .unspecified)
+            func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {}
+        }
+
+        // Given
+        let lightView = MockView()
+        let darkView = MockView()
+
+        // When
+        lightView.traitCollection = .init(userInterfaceStyle: [.light, .unspecified].randomElement()!)
+        darkView.traitCollection = .init(userInterfaceStyle: .dark)
+
+        // Then
+        XCTAssertFalse(lightView.usesDarkMode)
+        XCTAssertTrue(darkView.usesDarkMode)
     }
 
     // swiftlint:disable opening_brace

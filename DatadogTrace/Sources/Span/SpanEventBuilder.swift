@@ -21,6 +21,8 @@ internal struct SpanEventBuilder {
     let bundleWithRUM: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
+    /// Span attributes encoder
+    let attributesEncoder: JSONEncoder = .dd.default()
 
     func createSpanEvent(
         context: DatadogContext,
@@ -100,9 +102,6 @@ internal struct SpanEventBuilder {
 
     // MARK: - Attributes Conversion
 
-    /// Encodes `Span` attributes to JSON strings
-    private let attributesJSONEncoder: JSONEncoder = .default()
-
     /// Converts `Encodable` attributes to its lossless JSON string representation, e.g.:
     /// * it will convert `"abc"` string value to `"abc"` JSON string value
     /// * it will convert `1` integer value to `"1"` JSON string value
@@ -122,13 +121,13 @@ internal struct SpanEventBuilder {
                     let jsonData: Data
 
                     if #available(iOS 13.0, *) {
-                        jsonData = try attributesJSONEncoder.encode(encodable)
+                        jsonData = try attributesEncoder.encode(encodable)
                     } else {
                         // Prior to `iOS13.0` the `JSONEncoder` is unable to encode primitive values - it expects them to be
                         // wrapped inside top-level JSON object (array or dictionary). Reference: https://bugs.swift.org/browse/SR-6163
                         //
                         // As a workaround, we serialize the `encodable` as a JSON array and then remove `[` and `]` bytes from serialized data.
-                        let temporaryJsonArrayData = try attributesJSONEncoder.encode([encodable])
+                        let temporaryJsonArrayData = try attributesEncoder.encode([encodable])
 
                         let subdataStartIndex = temporaryJsonArrayData.startIndex.advanced(by: 1)
                         let subdataEndIndex = temporaryJsonArrayData.endIndex.advanced(by: -1)
