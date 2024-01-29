@@ -56,7 +56,7 @@ fileprivate extension UIImage {
         guard let color = color else {
             return self
         }
-        let drawRect = CGRect(x: 0,y: 0,width: size.width,height: size.height)
+        let drawRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
         UIGraphicsBeginImageContextWithOptions(size, false, scale)
         color.setFill()
         UIRectFill(drawRect)
