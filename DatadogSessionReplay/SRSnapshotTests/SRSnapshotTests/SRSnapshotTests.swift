@@ -209,7 +209,7 @@ final class SRSnapshotTests: SnapshotTestCase {
             DDAssertSnapshotTest(
                 newImage: image,
                 snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
-                record: true
+                record: recordingMode
             )
         }
     }
