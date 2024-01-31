@@ -10,16 +10,20 @@ import UIKit
 import CryptoKit
 
 private var srIdentifierKey: UInt8 = 11
-private var recordedKey: UInt8 = 22
+
 extension UIImage {
+    private static let lock = NSLock()
+
     var srIdentifier: String {
+        UIImage.lock.lock()
+        defer { UIImage.lock.unlock() }
         if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
             return hash
+        } else {
+            let hash = computeHash()
+            objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            return hash
         }
-
-        let hash = computeHash()
-        objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
-        return hash
     }
 
     private func computeHash() -> String {

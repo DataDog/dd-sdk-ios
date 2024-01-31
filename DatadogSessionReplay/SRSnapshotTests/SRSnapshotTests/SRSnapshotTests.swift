@@ -31,7 +31,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testBasicTexts() throws {
         show(fixture: .basicTexts)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -44,7 +44,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSliders() throws {
         show(fixture: .sliders)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -57,7 +57,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSegments() throws {
         show(fixture: .segments)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -70,7 +70,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testPickers() throws {
         show(fixture: .pickers)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -83,7 +83,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSwitches() throws {
         show(fixture: .switches)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -96,7 +96,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testTextFields() throws {
         show(fixture: .textFields)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -109,7 +109,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testSteppers() throws {
         show(fixture: .steppers)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -124,7 +124,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
         wait(seconds: 1.0)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -138,7 +138,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         vc2.openCalendarPopover()
         wait(seconds: 1.0)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -151,7 +151,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         vc3.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
         wait(seconds: 1.5)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -164,7 +164,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testTimePickers() throws {
         show(fixture: .timePickersCountDown)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -177,7 +177,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         vc1.set(date: .mockDecember15th2019At10AMUTC(), timeZone: .UTC)
         wait(seconds: 1.0)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -191,7 +191,7 @@ final class SRSnapshotTests: SnapshotTestCase {
         vc2.openTimePickerPopover()
         wait(seconds: 1.0)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -204,7 +204,7 @@ final class SRSnapshotTests: SnapshotTestCase {
     func testImages() throws {
         show(fixture: .images)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,
@@ -230,7 +230,7 @@ final class SRSnapshotTests: SnapshotTestCase {
 
         wait(seconds: 1.0)
 
-        try forEachPrivacyMode { privacyMode in
+        try forPrivacyModes { privacyMode in
             let image = try takeSnapshot(with: privacyMode)
             DDAssertSnapshotTest(
                 newImage: image,

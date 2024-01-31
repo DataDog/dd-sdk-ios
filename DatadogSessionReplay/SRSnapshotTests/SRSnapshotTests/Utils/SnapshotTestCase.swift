@@ -114,8 +114,9 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: seconds * 2)
     }
 
-    func forEachPrivacyMode(do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
-        let modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput]
+    func forPrivacyModes(
+        _ modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput],
+        do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
         try modes.forEach { try work($0) }
     }
 }

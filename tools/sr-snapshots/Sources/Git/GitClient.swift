@@ -112,7 +112,7 @@ public class GitHubGitClient: GitClient {
         }
         print("ℹ️   Adding a commit:")
         try cli.shell("cd \(repoDirectory.path()) && git add -A")
-        try cli.shell("cd \(repoDirectory.path()) && git commit -m '\(message)'")
+        try cli.shell("cd \(repoDirectory.path()) && git commit -m -S '\(message)'")
     }
 
     public func push() throws {

@@ -38,8 +38,11 @@ internal class ResourceProcessor: ResourceProcessing {
                     )
                 }
                 .filter {
-                    let isIncluded = self?.processedIdentifiers.contains($0.identifier) == false
-                    self?.processedIdentifiers.insert($0.identifier)
+                    let identifier = $0.identifier
+                    let isIncluded = self?.processedIdentifiers.contains(identifier) == false
+                    if !isIncluded {
+                        self?.processedIdentifiers.insert(identifier)
+                    }
                     return isIncluded
                 }
             guard !resources.isEmpty else {
