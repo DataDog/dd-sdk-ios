@@ -34,7 +34,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             return request
         }
 
-        let spanContext = tracer.createSpanContext()
+        // Use the current active span as parent if the propagation
+        // headers support it.
+        let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
+        let spanContext = tracer.createSpanContext(parentSpanContext: parentSpanContext)
 
         var request = request
         headerTypes.forEach {
@@ -63,11 +66,26 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             )
 
             writer.traceHeaderFields.forEach { field, value in
-                request.setValue(value, forHTTPHeaderField: field)
+                // do not overwrite existing header
+                if request.value(forHTTPHeaderField: field) == nil {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
             }
         }
 
         return request
+    }
+
+    func traceContext() -> DatadogInternal.TraceContext? {
+        guard let context = tracer?.activeSpan?.context as? DDSpanContext else {
+            return nil
+        }
+
+        return TraceContext(
+            traceID: context.traceID,
+            spanID: context.spanID,
+            parentSpanID: context.parentSpanID
+        )
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -76,7 +94,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
         guard
-            interception.isFirstPartyRequest,  // `Span` should be only send for 1st party requests
+            interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
             let tracer = tracer,
             let resourceMetrics = interception.metrics,
