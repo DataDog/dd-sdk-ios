@@ -10,13 +10,12 @@ import UIKit
 import CryptoKit
 
 private var srIdentifierKey: UInt8 = 11
+private let srIdentifierLock = NSLock()
 
 extension UIImage {
-    private static let lock = NSLock()
-
     var srIdentifier: String {
-        UIImage.lock.lock()
-        defer { UIImage.lock.unlock() }
+        srIdentifierLock.lock()
+        defer { srIdentifierLock.unlock() }
         if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
             return hash
         } else {

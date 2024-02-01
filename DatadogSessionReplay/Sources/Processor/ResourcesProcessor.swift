@@ -29,28 +29,27 @@ internal class ResourceProcessor: ResourceProcessing {
         interceptResources?(resources)
         #endif
         queue.run { [weak self] in
-            let resources = resources
-                .map {
-                    EnrichedResource(
-                        identifier: $0.calculateIdentifier(),
-                        data: $0.calculateData(),
-                        context: context
-                    )
-                }
-                .filter {
-                    let identifier = $0.identifier
-                    let isIncluded = self?.processedIdentifiers.contains(identifier) == false
-                    if !isIncluded {
-                        self?.processedIdentifiers.insert(identifier)
+            autoreleasepool {
+                let resources = resources
+                    .compactMap {
+                        let identifier = $0.calculateIdentifier()
+                        let isProcessed = self?.processedIdentifiers.contains(identifier) == true
+                        if !isProcessed {
+                            self?.processedIdentifiers.insert(identifier)
+                        }
+                        return !isProcessed ? EnrichedResource(
+                            identifier: identifier,
+                            data: $0.calculateData(),
+                            context: context
+                        ) : nil
                     }
-                    return isIncluded
+                guard !resources.isEmpty else {
+                    return
                 }
-            guard !resources.isEmpty else {
-                return
+                self?.resourcesWriter.write(
+                    resources: resources
+                )
             }
-            self?.resourcesWriter.write(
-                resources: resources
-            )
         }
     }
 
