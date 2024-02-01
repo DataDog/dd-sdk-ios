@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FIX] Propagate parent span in distributing tracing. See [#1627][]
 
 # 2.7.0 / 25-01-2024
 
@@ -589,6 +590,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1541]: https://github.com/DataDog/dd-sdk-ios/pull/1541
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
+[#1627]: https://github.com/DataDog/dd-sdk-ios/pull/1627
 [#1644]: https://github.com/DataDog/dd-sdk-ios/pull/1644
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
