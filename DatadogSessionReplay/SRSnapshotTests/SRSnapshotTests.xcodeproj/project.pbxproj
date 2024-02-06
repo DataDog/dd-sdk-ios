@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 56;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,6 +13,7 @@
 		619C49B72995512A006B66A6 /* ImageComparison.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49B62995512A006B66A6 /* ImageComparison.swift */; };
 		619C49B9299551F5006B66A6 /* _snapshots_ in Resources */ = {isa = PBXBuildFile; fileRef = 619C49B8299551F5006B66A6 /* _snapshots_ */; };
 		619C49BB299639BC006B66A6 /* ImageRendering.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619C49BA299639BC006B66A6 /* ImageRendering.swift */; };
+		619CFC482A8F7AA5004CF2DF /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = 619CFC472A8F7AA5004CF2DF /* SRFixtures */; };
 		61B3BC4B2993BE2E0032C78A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3BC4A2993BE2E0032C78A /* AppDelegate.swift */; };
 		61B3BC4D2993BE2E0032C78A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3BC4C2993BE2E0032C78A /* SceneDelegate.swift */; };
 		61B3BC522993BE2E0032C78A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 61B3BC502993BE2E0032C78A /* Main.storyboard */; };
@@ -20,9 +21,8 @@
 		61B3BC652993BEAF0032C78A /* SRSnapshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B3BC642993BEAF0032C78A /* SRSnapshotTests.swift */; };
 		61BB975F2A5D675400AFFF86 /* ImageComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61BB975E2A5D675400AFFF86 /* ImageComposition.swift */; };
 		61C06D6029D487E7007521D8 /* Framer in Frameworks */ = {isa = PBXBuildFile; productRef = 61C06D5F29D487E7007521D8 /* Framer */; };
+		61E4305A2A6FE3B000B71899 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 61E430592A6FE3B000B71899 /* DatadogSessionReplay */; };
 		61E7DFB7299A57A9001D7A3A /* MenuViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E7DFB6299A57A9001D7A3A /* MenuViewController.swift */; };
-		A75F54D42B56D0A300A20460 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = A75F54D32B56D0A300A20460 /* DatadogSessionReplay */; };
-		A7F21D492B56CF3000796064 /* SRFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = A7F21D482B56CF3000796064 /* SRFixtures */; };
 		D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */ = {isa = PBXBuildFile; productRef = D2F37BFA2A40A2CF004A28A4 /* TestUtilities */; };
 /* End PBXBuildFile section */
 
@@ -68,7 +68,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C06D6029D487E7007521D8 /* Framer in Frameworks */,
-				A7F21D492B56CF3000796064 /* SRFixtures in Frameworks */,
+				61E4305A2A6FE3B000B71899 /* DatadogSessionReplay in Frameworks */,
+				619CFC482A8F7AA5004CF2DF /* SRFixtures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,7 +78,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2F37BFB2A40A2CF004A28A4 /* TestUtilities in Frameworks */,
-				A75F54D42B56D0A300A20460 /* DatadogSessionReplay in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,7 +180,8 @@
 			name = SRHost;
 			packageProductDependencies = (
 				61C06D5F29D487E7007521D8 /* Framer */,
-				A7F21D482B56CF3000796064 /* SRFixtures */,
+				61E430592A6FE3B000B71899 /* DatadogSessionReplay */,
+				619CFC472A8F7AA5004CF2DF /* SRFixtures */,
 			);
 			productName = SRHost;
 			productReference = 61B3BC472993BE2E0032C78A /* SRHost.app */;
@@ -202,7 +203,6 @@
 			name = SRSnapshotTests;
 			packageProductDependencies = (
 				D2F37BFA2A40A2CF004A28A4 /* TestUtilities */,
-				A75F54D32B56D0A300A20460 /* DatadogSessionReplay */,
 			);
 			productName = SRSnapshotTests;
 			productReference = 61B3BC622993BEAF0032C78A /* SRSnapshotTests.xctest */;
@@ -238,8 +238,6 @@
 			mainGroup = 61B3BC3E2993BE2E0032C78A;
 			packageReferences = (
 				61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */,
-				A7F21D472B56CF0200796064 /* XCLocalSwiftPackageReference "SRFixtures" */,
-				A75F54D22B56D0A300A20460 /* XCLocalSwiftPackageReference "../.." */,
 			);
 			productRefGroup = 61B3BC482993BE2E0032C78A /* Products */;
 			projectDirPath = "";
@@ -566,17 +564,6 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		A75F54D22B56D0A300A20460 /* XCLocalSwiftPackageReference "../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../..;
-		};
-		A7F21D472B56CF0200796064 /* XCLocalSwiftPackageReference "SRFixtures" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = SRFixtures;
-		};
-/* End XCLocalSwiftPackageReference section */
-
 /* Begin XCRemoteSwiftPackageReference section */
 		61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -589,19 +576,18 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		619CFC472A8F7AA5004CF2DF /* SRFixtures */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SRFixtures;
+		};
 		61C06D5F29D487E7007521D8 /* Framer */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 61C06D5E29D487E7007521D8 /* XCRemoteSwiftPackageReference "Framer" */;
 			productName = Framer;
 		};
-		A75F54D32B56D0A300A20460 /* DatadogSessionReplay */ = {
+		61E430592A6FE3B000B71899 /* DatadogSessionReplay */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DatadogSessionReplay;
-		};
-		A7F21D482B56CF3000796064 /* SRFixtures */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = A7F21D472B56CF0200796064 /* XCLocalSwiftPackageReference "SRFixtures" */;
-			productName = SRFixtures;
 		};
 		D2F37BFA2A40A2CF004A28A4 /* TestUtilities */ = {
 			isa = XCSwiftPackageProductDependency;
