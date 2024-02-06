@@ -1,14 +1,14 @@
 GIT_REFERENCE := $(shell git rev-parse --abbrev-ref HEAD)
-ifneq (${BITRISE_GIT_BRANCH},)
-	GIT_REFERENCE := ${BITRISE_GIT_BRANCH}
+ifneq (${CI_COMMIT_REF_NAME},)
+	GIT_REFERENCE := ${CI_COMMIT_REF_NAME}
 endif
-ifneq (${BITRISE_GIT_TAG},)
-	GIT_REFERENCE := ${BITRISE_GIT_TAG}
+ifneq (${CI_COMMIT_BRANCH},)
+	GIT_REFERENCE := ${CI_COMMIT_BRANCH}
 endif
 
 GIT_REMOTE := "https://github.com/DataDog/dd-sdk-ios"
-ifneq (${BITRISEIO_PULL_REQUEST_REPOSITORY_URL},)
-	GIT_REMOTE := ${BITRISEIO_PULL_REQUEST_REPOSITORY_URL}
+ifneq (${CI_REPOSITORY_URL},)
+	GIT_REMOTE := ${CI_REPOSITORY_URL}
 endif
 
 test:
