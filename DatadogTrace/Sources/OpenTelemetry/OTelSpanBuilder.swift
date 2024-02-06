@@ -116,6 +116,12 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             traceState: traceState
         )
 
+        guard let core = tracer.core else {
+            return NOPOTelSpan()
+        }
+
+        let writer = LazySpanWriteContext(core: core)
+
         let createdSpan = OTelSpan(
             attributes: attributes,
             kind: spanKind,
@@ -125,7 +131,9 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             spanKind: spanKind,
             spanLinks: spanLinks,
             startTime: startTime ?? Date(),
-            tracer: tracer
+            tracer: tracer,
+            eventBuilder: tracer.spanEventBuilder,
+            eventWriter: writer
         )
 
         if active {

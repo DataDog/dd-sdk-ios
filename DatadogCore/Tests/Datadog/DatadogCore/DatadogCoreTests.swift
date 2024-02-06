@@ -46,7 +46,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
@@ -93,7 +92,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
@@ -148,7 +146,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
@@ -184,6 +181,56 @@ class DatadogCoreTests: XCTestCase {
             "It should upload all events"
         )
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 3, "It should send 3 requests")
+    }
+
+    func testWhenFeatureBaggageIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .mockRandom(),
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
+            backgroundTasksEnabled: .mockAny()
+        )
+        defer { core.flushAndTearDown() }
+
+        let feature = FeatureMock()
+        try core.register(feature: feature)
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+
+        // When
+        let key = "key"
+        let expectation1 = self.expectation(description: "retrieve context")
+        let expectation2 = self.expectation(description: "retrieve context and event writer")
+        expectation1.expectedFulfillmentCount = 2
+        expectation2.expectedFulfillmentCount = 2
+
+        core.set(baggage: "baggage 1", forKey: key)
+        scope.context { context in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            expectation1.fulfill()
+        }
+        scope.eventWriteContext { context, _ in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 1")
+            expectation2.fulfill()
+        }
+
+        core.set(baggage: "baggage 2", forKey: key)
+        scope.context { context in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            expectation1.fulfill()
+        }
+        scope.eventWriteContext { context, _ in
+            XCTAssertEqual(try! context.baggages[key]!.decode(type: String.self), "baggage 2")
+            expectation2.fulfill()
+        }
+
+        waitForExpectations(timeout: 1)
     }
 
     func testWhenPerformancePresetOverrideIsProvided_itOverridesPresets() throws {
@@ -242,5 +289,37 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileSize, 123)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.maxFileAgeForWrite, 95)
         XCTAssertEqual(storage2?.authorizedFilesOrchestrator.performance.minFileAgeForRead, 105)
+    }
+
+    func testWhenStoppingInstance_itDoesNotUploadEvents() throws {
+        // Given
+        let core = DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .granted,
+            performance: .mockRandom(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: .mockAny(),
+            backgroundTasksEnabled: .mockAny()
+        )
+
+        let requestBuilderSpy = FeatureRequestBuilderSpy()
+        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
+        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+
+        // When
+        core.stop()
+
+        scope.eventWriteContext { context, writer in
+            writer.write(value: FeatureMock.Event(event: "should not be sent"))
+        }
+
+        // Then
+        XCTAssertNil(core.scope(for: FeatureMock.name))
+        core.flush()
+        XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }
 }

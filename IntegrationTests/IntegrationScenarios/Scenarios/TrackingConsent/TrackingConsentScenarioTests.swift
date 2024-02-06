@@ -192,18 +192,24 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         // from this session to be send, but no RUM, Logging nor Tracing events from the first
         // session should be recorded.
         let recordedRUMRequests = try rumServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 1
+            try RUMSessionMatcher.singleSession(from: requests)?.views.count == 2
         }
 
         assertRUM(requests: recordedRUMRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
-        XCTAssertEqual(session.viewVisits.count, 1)
-        XCTAssertEqual(session.viewVisits[0].path, "Runner.TSHomeViewController")
+        sendCIAppLog(session)
+
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
+
+        XCTAssertEqual(session.views[1].path, "Runner.TSHomeViewController")
 
         try recordedRUMRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-            .filter { event in try event.eventType() != "telemetry" }
+            .filterTelemetry()
+            .filterApplicationLaunchView()
             .forEach { event in
                 XCTAssertEqual(
                     try event.attribute(forKeyPath: "usr.current-consent-value"),
@@ -285,28 +291,34 @@ class TrackingConsentScenarioTests: IntegrationTests, LoggingCommonAsserts, Trac
         andSentTo serverSession: ServerSession
     ) throws {
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.viewVisits.count == 4
+            try RUMSessionMatcher.singleSession(from: requests)?.views.count == 5
         }
 
         assertRUM(requests: recordedRequests)
 
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRequests))
-        XCTAssertEqual(session.viewVisits[0].path, "Runner.TSHomeViewController")
-        XCTAssertGreaterThan(session.viewVisits[0].actionEvents.count, 0)
+        sendCIAppLog(session)
 
-        XCTAssertEqual(session.viewVisits[1].path, "Runner.TSPictureViewController")
-        XCTAssertEqual(session.viewVisits[1].resourceEvents.count, 1)
-        XCTAssertGreaterThan(session.viewVisits[1].actionEvents.count, 0)
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
-        XCTAssertEqual(session.viewVisits[2].path, "Runner.TSHomeViewController")
-        XCTAssertGreaterThan(session.viewVisits[0].actionEvents.count, 0)
+        XCTAssertEqual(session.views[1].path, "Runner.TSHomeViewController")
+        XCTAssertGreaterThan(session.views[1].actionEvents.count, 0)
 
-        XCTAssertEqual(session.viewVisits[3].path, "Runner.TSConsentSettingViewController")
-        XCTAssertGreaterThan(session.viewVisits[0].actionEvents.count, 0)
+        XCTAssertEqual(session.views[2].path, "Runner.TSPictureViewController")
+        XCTAssertEqual(session.views[2].resourceEvents.count, 1)
+        XCTAssertGreaterThan(session.views[2].actionEvents.count, 0)
+
+        XCTAssertEqual(session.views[3].path, "Runner.TSHomeViewController")
+        XCTAssertGreaterThan(session.views[3].actionEvents.count, 0)
+
+        XCTAssertEqual(session.views[4].path, "Runner.TSConsentSettingViewController")
 
         let eventMatchers = try recordedRequests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody) }
-            .filter { event in try event.eventType() != "telemetry" }
+            .filterTelemetry()
+            .filterApplicationLaunchView()
 
         try eventMatchers.forEach { event in
             XCTAssertEqual(

@@ -12,7 +12,7 @@ class HostsSanitizerTests: XCTestCase {
     func testSanitizationAndWarningMessages() throws {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         let hosts: Set<String> = [

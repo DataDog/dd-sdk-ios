@@ -36,7 +36,7 @@ class TraceTests: XCTestCase {
     func testWhenEnabledInNOPCore_itPrintsError() {
         let printFunction = PrintFunctionMock()
         consolePrint = printFunction.print
-        defer { consolePrint = { print($0) } }
+        defer { consolePrint = { message, _ in print(message) } }
 
         // When
         Trace.enable(with: config, in: NOPDatadogCore())
@@ -67,12 +67,12 @@ class TraceTests: XCTestCase {
         let tracer = Tracer.shared(in: core).dd
         let trace = try XCTUnwrap(core.get(feature: TraceFeature.self))
         XCTAssertEqual(tracer.sampler.samplingRate, 100)
-        XCTAssertNil(tracer.service)
+        XCTAssertNil(tracer.spanEventBuilder.service)
         XCTAssertNil(tracer.loggingIntegration.service)
         XCTAssertTrue(tracer.tags.isEmpty)
         XCTAssertNil(core.get(feature: NetworkInstrumentationFeature.self))
-        XCTAssertEqual(tracer.networkInfoEnabled, false)
-        XCTAssertNil(tracer.spanEventMapper)
+        XCTAssertEqual(tracer.spanEventBuilder.networkInfoEnabled, false)
+        XCTAssertNil(tracer.spanEventBuilder.eventsMapper)
         XCTAssertNil((trace.requestBuilder as? TracingRequestBuilder)?.customIntakeURL)
     }
 
@@ -99,7 +99,7 @@ class TraceTests: XCTestCase {
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.service, random)
+        XCTAssertEqual(tracer.spanEventBuilder.service, random)
         XCTAssertEqual(tracer.loggingIntegration.service, random)
     }
 
@@ -182,8 +182,8 @@ class TraceTests: XCTestCase {
         Trace.enable(with: config, in: core)
 
         // Then
-        let trace = try XCTUnwrap(core.get(feature: TraceFeature.self))
-        XCTAssertEqual((trace.messageReceiver as? ContextMessageReceiver)?.bundleWithRumEnabled, random)
+        let tracer = Tracer.shared(in: core).dd
+        XCTAssertEqual(tracer.spanEventBuilder.bundleWithRUM, random)
     }
 
     func testWhenEnabledWithSendNetworkInfo() {
@@ -196,7 +196,7 @@ class TraceTests: XCTestCase {
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.networkInfoEnabled, random)
+        XCTAssertEqual(tracer.spanEventBuilder.networkInfoEnabled, random)
         XCTAssertEqual(tracer.loggingIntegration.networkInfoEnabled, random)
     }
 
@@ -210,7 +210,7 @@ class TraceTests: XCTestCase {
 
         // Then
         let tracer = Tracer.shared(in: core).dd
-        XCTAssertEqual(tracer.networkInfoEnabled, random)
+        XCTAssertEqual(tracer.spanEventBuilder.networkInfoEnabled, random)
         XCTAssertEqual(tracer.loggingIntegration.networkInfoEnabled, random)
     }
 

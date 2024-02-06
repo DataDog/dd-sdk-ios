@@ -56,9 +56,9 @@ extension RUMSessionMatcher {
     class func sessions(maxCount: Int, from requests: [HTTPServerMock.Request], eventsPatch: ((Data) throws -> Data)? = nil) throws -> [RUMSessionMatcher] {
         let eventMatchers = try requests
             .flatMap { request in try RUMEventMatcher.fromNewlineSeparatedJSONObjectsData(request.httpBody, eventsPatch: eventsPatch) }
-            .filter { event in try event.eventType() != "telemetry" }
+            .filterTelemetry()
         let sessionMatchers = try RUMSessionMatcher.groupMatchersBySessions(eventMatchers).sorted(by: {
-            return $0.viewVisits.first?.viewEvents.first?.date ?? 0 < $1.viewVisits.first?.viewEvents.first?.date ?? 0
+            return $0.views.first?.viewEvents.first?.date ?? 0 < $1.views.first?.viewEvents.first?.date ?? 0
         })
 
         if sessionMatchers.count > maxCount {
@@ -73,16 +73,16 @@ extension RUMSessionMatcher {
         return sessionMatchers
     }
 
-    class func assertViewWasEventuallyInactive(_ viewVisit: ViewVisit) {
-        XCTAssertFalse(try XCTUnwrap(viewVisit.viewEvents.last?.view.isActive))
+    class func assertViewWasEventuallyInactive(_ view: View) {
+        XCTAssertFalse(try XCTUnwrap(view.viewEvents.last?.view.isActive))
     }
 
     /// Checks if RUM session has ended by:
     /// - checking if it contains "end view" added in response to `ExampleApplication.endRUMSession()`;
     /// - checking if all other views are marked as "inactive" (meaning they ended up processing their resources).
     func hasEnded() -> Bool {
-        let hasEndView = viewVisits.last?.name == Environment.Constants.rumSessionEndViewName
-        let hasSomeActiveView = viewVisits.contains(where: { $0.viewEvents.last?.view.isActive == true })
+        let hasEndView = views.last?.name == Environment.Constants.rumSessionEndViewName
+        let hasSomeActiveView = views.contains(where: { $0.viewEvents.last?.view.isActive == true })
         return hasEndView && !hasSomeActiveView
     }
 }

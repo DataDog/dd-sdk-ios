@@ -71,7 +71,6 @@ public struct OTTags {
 /// Use them as the `key` for `fields` dictionary in `span.log(fields:)`. Use the expected type for the value.
 ///
 /// See more: [Log fields table](https://github.com/opentracing/specification/blob/master/semantic_conventions.md#log-fields-table)
-///
 public struct OTLogFields {
     /// Expected value: `String`
     public static let errorKind = "error.kind"

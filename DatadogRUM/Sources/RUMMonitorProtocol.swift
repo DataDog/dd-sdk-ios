@@ -53,6 +53,15 @@ public protocol RUMMonitorProtocol: AnyObject {
 
     // MARK: - session
 
+    /// Get the currently active session ID. Returns `nil` if no sessions are currently active or if
+    /// the current session is sampled out.
+    /// This method uses an asynchronous callback to ensure all pending RUM events have been processed
+    /// up to the moment of the call.
+    /// - Parameters:
+    ///   - completion: the callback that will recieve the current session ID. This will be called from a
+    ///   background thread
+    func currentSessionID(completion: @escaping (String?) -> Void)
+
     /// Stops the current RUM session.
     /// A new session will start in response to a call to `startView` or `addAction`.
     /// If the session is started because of a call to `addAction`, the last known view is restarted in the new session.
@@ -321,6 +330,7 @@ internal class NOPMonitor: RUMMonitorProtocol {
         )
     }
 
+    func currentSessionID(completion: (String?) -> Void) { completion(nil) }
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) { warn() }
     func removeAttribute(forKey key: AttributeKey) { warn() }
     func stopSession() { warn() }

@@ -53,7 +53,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             }
         } catch {
             consolePrint(
-                "🔥 Datadog SDK error: UIKit RUM Views tracking can't be enabled due to error: \(error)"
+                "🔥 Datadog SDK error: UIKit RUM Views tracking can't be enabled due to error: \(error)",
+                .error
             )
         }
 
@@ -65,7 +66,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             }
         } catch {
             consolePrint(
-                "🔥 Datadog SDK error: RUM Actions tracking can't be enabled due to error: \(error)"
+                "🔥 Datadog SDK error: RUM Actions tracking can't be enabled due to error: \(error)",
+                .error
             )
         }
 

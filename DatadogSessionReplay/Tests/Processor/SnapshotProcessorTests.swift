@@ -11,14 +11,14 @@ import TestUtilities
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
-private class WriterMock: RecordWriting {
+private class RecordWriterMock: RecordWriting {
     var records: [EnrichedRecord] = []
 
     func write(nextRecord: EnrichedRecord) { records.append(nextRecord) }
 }
 
-class ProcessorTests: XCTestCase {
-    private let writer = WriterMock()
+class SnapshotProcessorTests: XCTestCase {
+    private let recordWriter = RecordWriterMock()
 
     // MARK: - Processing `ViewTreeSnapshots`
 
@@ -29,7 +29,12 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -37,9 +42,9 @@ class ProcessorTests: XCTestCase {
         processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
 
         // Then
-        XCTAssertEqual(writer.records.count, 1)
+        XCTAssertEqual(recordWriter.records.count, 1)
 
-        let enrichedRecord = try XCTUnwrap(writer.records.first)
+        let enrichedRecord = try XCTUnwrap(recordWriter.records.first)
         XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
         XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
         XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
@@ -61,7 +66,12 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(
+            queue: NoQueue(),
+            recordWriter: recordWriter,
+            srContextPublisher: srContextPublisher,
+            telemetry: TelemetryMock()
+        )
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -74,8 +84,8 @@ class ProcessorTests: XCTestCase {
         processor.process(viewTreeSnapshot: snapshot3, touchSnapshot: nil)
 
         // Then
-        let enrichedRecords = writer.records
-        XCTAssertEqual(writer.records.count, 3)
+        let enrichedRecords = recordWriter.records
+        XCTAssertEqual(recordWriter.records.count, 3)
 
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
@@ -108,7 +118,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         view.frame = CGRect(x: 0, y: 0, width: 100, height: 200)
         let rotatedView = UIView.mock(withFixture: .visible(.someAppearance))
@@ -122,16 +132,16 @@ class ProcessorTests: XCTestCase {
         processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
 
         // Then
-        let enrichedRecords = writer.records
-        XCTAssertEqual(writer.records.count, 2)
+        let enrichedRecords = recordWriter.records
+        XCTAssertEqual(recordWriter.records.count, 2)
 
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
         XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
 
-        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with two 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
+        XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
+        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord && enrichedRecords[1].hasFullSnapshot)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
@@ -147,7 +157,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -162,8 +172,8 @@ class ProcessorTests: XCTestCase {
         processor.process(viewTreeSnapshot: snapshot4, touchSnapshot: nil)
 
         // Then
-        let enrichedRecords = writer.records
-        XCTAssertEqual(writer.records.count, 4)
+        let enrichedRecords = recordWriter.records
+        XCTAssertEqual(recordWriter.records.count, 4)
 
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
@@ -201,16 +211,16 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
 
         // When
         let touchSnapshot = generateTouchSnapshot(startAt: earliestTouchTime, endAt: snapshotTime, numberOfTouches: numberOfTouches)
         processor.process(viewTreeSnapshot: .mockWith(date: snapshotTime, context: .mockWith(rumContext: rum)), touchSnapshot: touchSnapshot)
 
         // Then
-        XCTAssertEqual(writer.records.count, 1)
+        XCTAssertEqual(recordWriter.records.count, 1)
 
-        let enrichedRecord = try XCTUnwrap(writer.records.first)
+        let enrichedRecord = try XCTUnwrap(recordWriter.records.first)
         XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
         XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
         XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
@@ -246,7 +256,7 @@ class ProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let processor = Processor(queue: NoQueue(), writer: writer, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
+        let processor = SnapshotProcessor(queue: NoQueue(), recordWriter: recordWriter, srContextPublisher: srContextPublisher, telemetry: TelemetryMock())
         let viewTree = generateSimpleViewTree()
 
         // When
@@ -257,8 +267,8 @@ class ProcessorTests: XCTestCase {
         processor.process(viewTreeSnapshot: snapshot2, touchSnapshot: nil)
 
         // Then
-        let enrichedRecords = writer.records
-        XCTAssertEqual(writer.records.count, 2)
+        let enrichedRecords = recordWriter.records
+        XCTAssertEqual(recordWriter.records.count, 2)
 
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)

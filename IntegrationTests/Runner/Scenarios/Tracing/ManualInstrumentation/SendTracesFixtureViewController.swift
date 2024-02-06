@@ -14,6 +14,8 @@ internal class SendTracesFixtureViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        let tracer = Tracer.shared()
+
         let viewLoadingSpan = tracer
             .startRootSpan(operationName: "view loading")
             .setActive()

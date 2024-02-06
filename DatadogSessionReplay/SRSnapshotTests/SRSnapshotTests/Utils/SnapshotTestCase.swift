@@ -40,17 +40,26 @@ internal class SnapshotTestCase: XCTestCase {
         let expectation = self.expectation(description: "Wait for wireframes")
 
         // Set up SR recorder:
-        let processor = Processor(
+        let snapshotProcessor = SnapshotProcessor(
             queue: NoQueue(),
-            writer: RecordWriter(core: PassthroughCoreMock()),
+            recordWriter: RecordWriter(core: PassthroughCoreMock()),
             srContextPublisher: SRContextPublisher(core: PassthroughCoreMock()),
             telemetry: TelemetryMock()
         )
-        let recorder = try Recorder(processor: processor, telemetry: TelemetryMock(), additionalNodeRecorders: [])
+        let resourceProcessor = ResourceProcessor(
+            queue: NoQueue(),
+            resourcesWriter: ResourcesWriter(core: PassthroughCoreMock())
+        )
+        let recorder = try Recorder(
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: resourceProcessor,
+            telemetry: TelemetryMock(),
+            additionalNodeRecorders: []
+        )
 
         // Set up wireframes interception :
         var wireframes: [SRWireframe]?
-        processor.interceptWireframes = {
+        snapshotProcessor.interceptWireframes = {
             wireframes = $0
             expectation.fulfill()
         }
@@ -105,6 +114,6 @@ internal class SnapshotTestCase: XCTestCase {
 
 // MARK: - SR Mocks
 
-private struct NoQueue: Queue {
+private class NoQueue: Queue {
     func run(_ block: @escaping () -> Void) { block() }
 }

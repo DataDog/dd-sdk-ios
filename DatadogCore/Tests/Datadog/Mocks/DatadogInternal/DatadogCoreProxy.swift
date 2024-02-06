@@ -110,10 +110,18 @@ private struct FeatureScopeProxy: FeatureScope {
     let proxy: FeatureScope
     let interceptor: FeatureScopeInterceptor
 
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) throws -> Void) {
+    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         interceptor.enter()
         proxy.eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch) { context, writer in
-            try block(context, interceptor.intercept(writer: writer))
+            block(context, interceptor.intercept(writer: writer))
+            interceptor.leave()
+        }
+    }
+
+    func context(_ block: @escaping (DatadogContext) -> Void) {
+        interceptor.enter()
+        proxy.context { context in
+            block(context)
             interceptor.leave()
         }
     }
@@ -123,10 +131,14 @@ private class FeatureScopeInterceptor {
     struct InterceptingWriter: Writer {
         static let jsonEncoder = JSONEncoder.dd.default()
 
+        let group: DispatchGroup
         let actualWriter: Writer
         unowned var interception: FeatureScopeInterceptor?
 
         func write<T: Encodable, M: Encodable>(value: T, metadata: M) {
+            group.enter()
+            defer { group.leave() }
+
             actualWriter.write(value: value, metadata: metadata)
 
             let event = value
@@ -136,7 +148,7 @@ private class FeatureScopeInterceptor {
     }
 
     func intercept(writer: Writer) -> Writer {
-        return InterceptingWriter(actualWriter: writer, interception: self)
+        return InterceptingWriter(group: group, actualWriter: writer, interception: self)
     }
 
     // MARK: - Synchronizing and awaiting events:
@@ -149,8 +161,8 @@ private class FeatureScopeInterceptor {
     func enter() { group.enter() }
     func leave() { group.leave() }
 
-    func waitAndReturnEvents() -> [(event: Any, data: Data)] {
-        _ = group.wait(timeout: .distantFuture)
+    func waitAndReturnEvents(timeout: DispatchTime) -> [(event: Any, data: Data)] {
+        _ = group.wait(timeout: timeout)
         return events
     }
 }
@@ -161,19 +173,19 @@ extension DatadogCoreProxy {
     ///   - name: The Feature to retrieve events from
     ///   - type: The type of events to filter out
     /// - Returns: A list of events.
-    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type) -> [T] where T: Encodable {
+    func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
         flush()
         let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().compactMap { $0.event as? T }
+        return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.event as? T }
     }
 
     /// Returns serialized events of given Feature.
     ///
     /// - Parameter feature: The Feature to retrieve events from
     /// - Returns: A list of serialized events.
-    func waitAndReturnEventsData(ofFeature name: String) -> [Data] {
+    func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
         flush()
         let interceptor = self.featureScopeInterceptors[name]!
-        return interceptor.waitAndReturnEvents().map { $0.data }
+        return interceptor.waitAndReturnEvents(timeout: timeout).map { $0.data }
     }
 }

@@ -45,7 +45,7 @@ public struct AppStateHistory: Codable, Equatable, PassthroughAnyCodable {
     public private(set) var initialSnapshot: Snapshot
     public private(set) var snapshots: [Snapshot]
 
-    /// Date of last the update to `AppStateHistory`.
+    /// Date of the last update to `AppStateHistory`.
     public private(set) var recentDate: Date
 
     /// The most recent app state `Snapshot`.

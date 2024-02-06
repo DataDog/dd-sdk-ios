@@ -5,6 +5,7 @@
 */
 
 import Foundation
+import DatadogInternal
 import OpenTelemetryApi
 
 internal enum DatadogTagKeys: String {
@@ -37,7 +38,10 @@ internal extension OpenTelemetryApi.Status {
 }
 
 internal class OTelSpan: OpenTelemetryApi.Span {
+    @ReadWriteLock
     private var _status: OpenTelemetryApi.Status
+
+    @ReadWriteLock
     private var _name: String
 
     var attributes: [String: OpenTelemetryApi.AttributeValue]
@@ -45,7 +49,6 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     var kind: OpenTelemetryApi.SpanKind
     let ddSpan: DDSpan
     let tracer: DatadogTracer
-    let queue: DispatchQueue
     let spanLinks: [OTelSpanLink]
 
     /// `isRecording` indicates whether the span is recording or not
@@ -56,41 +59,33 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     /// This will be done by setting `error.message` tag on the span.
     var status: OpenTelemetryApi.Status {
         get {
-            queue.sync {
-                _status
-            }
+            _status
         }
         set {
-            queue.sync {
-                guard isRecording else {
-                    return
-                }
-
-                // If the code has been set to a higher value before (Ok > Error > Unset),
-                // the code will not be changed.
-                guard newValue.priority >= _status.priority else {
-                    return
-                }
-
-                _status = newValue
+            guard isRecording else {
+                return
             }
+
+            // If the code has been set to a higher value before (Ok > Error > Unset),
+            // the code will not be changed.
+            guard newValue.priority >= _status.priority else {
+                return
+            }
+
+            _status = newValue
         }
     }
 
     /// `name` of the span is akin to operation name in Datadog
     var name: String {
         get {
-            queue.sync {
-                _name
-            }
+            _name
         }
         set {
-            queue.sync {
-                guard isRecording else {
-                    return
-                }
-                _name = newValue
+            guard isRecording else {
+                return
             }
+            _name = newValue
             ddSpan.setOperationName(name)
         }
     }
@@ -104,7 +99,9 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         spanKind: OpenTelemetryApi.SpanKind,
         spanLinks: [OTelSpanLink],
         startTime: Date,
-        tracer: DatadogTracer
+        tracer: DatadogTracer,
+        eventBuilder: SpanEventBuilder,
+        eventWriter: SpanWriteContext
     ) {
         self._name = name
         self._status = .unset
@@ -112,7 +109,6 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         self.context = spanContext
         self.kind = kind
         self.isRecording = true
-        self.queue = tracer.queue
         self.tracer = tracer
         self.spanLinks = spanLinks
         self.ddSpan = .init(
@@ -125,7 +121,9 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             ),
             operationName: name,
             startTime: startTime,
-            tags: [:]
+            tags: [:],
+            eventBuilder: eventBuilder,
+            eventWriter: eventWriter
         )
     }
 
@@ -158,16 +156,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     ///   - attributes: attributes of the event
     ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
-        var ended = false
-        queue.sync {
-            guard isRecording else {
-                ended = true
-                return
-            }
-        }
-
-        // if the span was already ended before, we don't want to end it again
-        guard !ended else {
+        guard isRecording else {
             return
         }
 
@@ -183,22 +172,13 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func end(time: Date) {
-        var ended = false
         var tags: [String: String] = [:]
 
-        queue.sync {
-            guard isRecording else {
-                ended = true
-                return
-            }
-            isRecording = false
-            tags = attributes.tags
-        }
-
-        // if the span was already ended before, we don't want to end it again
-        guard !ended else {
+        guard isRecording else {
             return
         }
+        isRecording = false
+        tags = attributes.tags
 
         // There is no need to lock here, because `DDSpan` is thread-safe
         for (key, value) in tags {
@@ -233,12 +213,10 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func setAttribute(key: String, value: OpenTelemetryApi.AttributeValue?) {
-        queue.sync {
-            guard isRecording else {
-                return
-            }
-
-            attributes[key] = value
+        guard isRecording else {
+            return
         }
+
+        attributes[key] = value
     }
 }

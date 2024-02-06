@@ -5,13 +5,8 @@
  */
 
 import Foundation
-import DatadogInternal
 
-/// `LogOutput` writing logs to file.
-internal struct LogFileOutput: LogOutput {
-    let fileWriter: Writer
+/// A custion ``URLSessionDataDelegate`` for instrumenting ``URLSession``.
+internal class CustomURLSessionDelegate: NSObject, URLSessionDataDelegate {
 
-    func write(log: LogEvent) {
-        fileWriter.write(value: log)
-    }
 }

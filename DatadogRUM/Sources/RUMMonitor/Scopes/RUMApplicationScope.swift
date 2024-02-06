@@ -43,6 +43,11 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             activeViewName: nil,
             activeUserActionID: nil
         )
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil {
+            print("_dd.application.id=" + dependencies.rumApplicationID)
+        }
     }
 
     // MARK: - RUMContextProvider
@@ -57,6 +62,12 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
         if command is RUMSDKInitCommand {
             createInitialSession(with: context, on: command)
+
+            // If the app was started by a user (foreground & not prewarmed):
+            if context.applicationStateHistory.currentSnapshot.state == .active && context.launchTime?.isActivePrewarm == false {
+                // Start "ApplicationLaunch" view immediatelly:
+                startApplicationLaunchView(on: command, context: context, writer: writer)
+            }
             return true // always keep application scope
         }
 
@@ -71,7 +82,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         // Create the application launch view on any command
         if !applicationActive {
-            applicationStart(on: command, context: context, writer: writer)
+            startApplicationLaunchView(on: command, context: context, writer: writer)
         }
 
         if activeSession == nil && command.isUserInteraction {
@@ -223,8 +234,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     /// Forces the `ApplicationLaunchView` to be started.
     /// Added as part of https://github.com/DataDog/dd-sdk-ios/pull/1290 to separate creation of first view
-    /// from creation of initial session due to receiving `RUMSDKInitCommand`.
-    private func applicationStart(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    /// from creation of initial session due to receiving `RUMSDKInitCommand`. Starting from RUM-1649 the "application launch" view
+    /// is started on SDK init only when the app is launched by user with no prewarming.
+    private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
         applicationActive = true
 
         guard context.applicationStateHistory.currentSnapshot.state != .background else {

@@ -22,11 +22,7 @@ public class URLSessionTaskInterception {
     public private(set) var completion: ResourceCompletion?
     /// Trace information propagated with the task. Not available when Tracing is disabled
     /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
-    public private(set) var trace: (
-        traceID: TraceID,
-        spanID: SpanID,
-        parentSpanID: SpanID?
-    )?
+    public private(set) var trace: TraceContext?
     /// The Datadog origin of the Trace.
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
@@ -61,16 +57,8 @@ public class URLSessionTaskInterception {
         )
     }
 
-    public func register(
-        traceID: TraceID,
-        spanID: SpanID,
-        parentSpanID: SpanID?
-    ) {
-        self.trace = (
-            traceID: traceID,
-            spanID: spanID,
-            parentSpanID: parentSpanID
-        )
+    public func register(trace: TraceContext) {
+        self.trace = trace
     }
 
     public func register(origin: String) {
@@ -80,6 +68,22 @@ public class URLSessionTaskInterception {
     /// Tells if the interception is done (mean: both metrics and completion were collected).
     public var isDone: Bool {
         metrics != nil && completion != nil
+    }
+}
+
+public struct TraceContext {
+    public let traceID: TraceID
+    public let spanID: SpanID
+    public let parentSpanID: SpanID?
+
+    public init(
+        traceID: TraceID,
+        spanID: SpanID,
+        parentSpanID: SpanID? = nil
+    ) {
+        self.traceID = traceID
+        self.spanID = spanID
+        self.parentSpanID = parentSpanID
     }
 }
 

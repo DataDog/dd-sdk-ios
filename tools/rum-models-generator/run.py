@@ -37,6 +37,9 @@ class Context:
     # Resolved path to JSON schema describing Session Replay events
     sr_schema_path: str
 
+    # Git reference to clone schemas repo at.
+    git_ref: str
+
     # Resolved path to source code file with RUM model definitions (Swift)
     rum_swift_generated_file_path: str
 
@@ -50,6 +53,7 @@ class Context:
         return f"""
         - cli_executable_path = {self.cli_executable_path},
         - rum_schema_path = {self.rum_schema_path}
+        - git_ref = {self.git_ref}
         - sr_schema_path = {self.sr_schema_path}
         - rum_swift_generated_file_path = {self.rum_swift_generated_file_path}
         - rum_objc_generated_file_path = {self.rum_objc_generated_file_path}
@@ -159,7 +163,7 @@ def validate_code(ctx: Context, language: str, convention: str, json_schema: str
 
 
 def generate_rum_models(ctx: Context):
-    sha = clone_schemas_repo(git_ref='master')
+    sha = clone_schemas_repo(git_ref=ctx.git_ref)
 
     with open(ctx.rum_swift_generated_file_path, 'w') as file:
         code = generate_code(ctx, language='swift', convention='rum', json_schema=ctx.rum_schema_path, git_sha=sha)
@@ -171,7 +175,7 @@ def generate_rum_models(ctx: Context):
 
 
 def generate_sr_models(ctx: Context):
-    sha = clone_schemas_repo(git_ref='master')
+    sha = clone_schemas_repo(git_ref=ctx.git_ref)
 
     with open(ctx.sr_swift_generated_file_path, 'w') as file:
         code = generate_code(ctx, language='swift', convention='sr', json_schema=ctx.sr_schema_path, git_sha=sha)
@@ -213,6 +217,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("command", choices=['generate', 'verify'], help="Run mode")
     parser.add_argument("product", choices=['rum', 'sr'], help="Either 'rum' (RUM) or 'sr' (Session Replay)")
+    parser.add_argument("--git_ref", help="The git reference to clone `rum-events-format` repo at (only effective for `generate` command).")
     args = parser.parse_args()
 
     try:
@@ -220,6 +225,7 @@ if __name__ == "__main__":
             cli_executable_path=build_swift_cli(),
             rum_schema_path=os.path.abspath(f'{script_dir}/{RUM_SCHEMA_PATH}'),
             sr_schema_path=os.path.abspath(f'{script_dir}/{SR_SCHEMA_PATH}'),
+            git_ref=args.git_ref if args.command else None,
             rum_swift_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_SWIFT_GENERATED_FILE_PATH}'),
             rum_objc_generated_file_path=os.path.abspath(f'{repository_root}/{RUM_OBJC_GENERATED_FILE_PATH}'),
             sr_swift_generated_file_path=os.path.abspath(f'{repository_root}/{SR_SWIFT_GENERATED_FILE_PATH}'),

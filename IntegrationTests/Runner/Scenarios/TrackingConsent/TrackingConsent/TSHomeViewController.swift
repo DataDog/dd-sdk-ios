@@ -6,6 +6,7 @@
 
 import UIKit
 import DatadogCore
+import DatadogTrace
 
 internal class TSHomeViewController: UIViewController {
     override func viewDidLoad() {
@@ -39,13 +40,12 @@ internal class TSHomeViewController: UIViewController {
     @IBAction func didTapTestLogging(_ sender: UIButton) {
         sender.disableFor(seconds: 0.5)
 
-        logger.info("test message")
+        logger?.info("test message")
     }
 
     @IBAction func didTapTestTracing(_ sender: UIButton) {
         sender.disableFor(seconds: 0.5)
-
-        let span = tracer.startSpan(operationName: "test span")
+        let span = Tracer.shared().startSpan(operationName: "test span")
         span.finish(at: Date(timeIntervalSinceNow: 1))
     }
 }
