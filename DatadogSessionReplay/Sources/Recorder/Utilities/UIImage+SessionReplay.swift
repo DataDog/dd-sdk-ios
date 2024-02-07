@@ -7,15 +7,15 @@
 #if os(iOS)
 import Foundation
 import UIKit
+import DatadogInternal
 import CryptoKit
 
 private var srIdentifierKey: UInt8 = 11
-private let srIdentifierLock = NSLock()
-
-extension UIImage {
+extension UIImage: DatadogExtended {}
+extension DatadogExtension where ExtendedType: UIImage {
     var srIdentifier: String {
-        srIdentifierLock.lock()
-        defer { srIdentifierLock.unlock() }
+        objc_sync_enter(self)
+        defer { objc_sync_exit(self) }
         if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
             return hash
         } else {
@@ -26,13 +26,13 @@ extension UIImage {
     }
 
     private func computeHash() -> String {
-        guard let imageData = self.pngData() else {
+        guard let imageData = type.pngData() else {
             return ""
         }
         if #available(iOS 13.0, *) {
             return Insecure.MD5.hash(data: imageData).map { String(format: "%02hhx", $0) }.joined()
         } else {
-            return "\(hash)"
+            return "\(type.hash)"
         }
     }
 }

@@ -13,11 +13,9 @@ internal protocol ResourceProcessing {
 }
 
 internal class ResourceProcessor: ResourceProcessing {
-    #if DEBUG
     /// Interception callback for snapshot tests.
     /// Only available in Debug configuration, solely made for testing purpose.
     var interceptResources: (([Resource]) -> Void)? = nil
-    #endif
 
     private let queue: Queue
     private let resourcesWriter: ResourcesWriting
@@ -25,31 +23,27 @@ internal class ResourceProcessor: ResourceProcessing {
     private var processedIdentifiers = Set<String>()
 
     func process(resources: [Resource], context: EnrichedResource.Context) {
-        #if DEBUG
         interceptResources?(resources)
-        #endif
         queue.run { [weak self] in
-            autoreleasepool {
-                let resources = resources
-                    .compactMap {
-                        let identifier = $0.calculateIdentifier()
-                        let isProcessed = self?.processedIdentifiers.contains(identifier) == true
-                        if !isProcessed {
-                            self?.processedIdentifiers.insert(identifier)
-                        }
-                        return !isProcessed ? EnrichedResource(
-                            identifier: identifier,
-                            data: $0.calculateData(),
-                            context: context
-                        ) : nil
+            let resources = resources
+                .compactMap {
+                    let identifier = $0.calculateIdentifier()
+                    let isProcessed = self?.processedIdentifiers.contains(identifier) == true
+                    if !isProcessed {
+                        self?.processedIdentifiers.insert(identifier)
                     }
-                guard !resources.isEmpty else {
-                    return
+                    return !isProcessed ? EnrichedResource(
+                        identifier: identifier,
+                        data: $0.calculateData(),
+                        context: context
+                    ) : nil
                 }
-                self?.resourcesWriter.write(
-                    resources: resources
-                )
+            guard !resources.isEmpty else {
+                return
             }
+            self?.resourcesWriter.write(
+                resources: resources
+            )
         }
     }
 

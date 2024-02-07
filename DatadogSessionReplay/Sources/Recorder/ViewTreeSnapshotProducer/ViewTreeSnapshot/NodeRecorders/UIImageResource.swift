@@ -19,7 +19,7 @@ internal struct UIImageResource {
 
 extension UIImageResource: Resource {
     func calculateIdentifier() -> String {
-        var identifier = image.srIdentifier
+        var identifier = image.dd.srIdentifier
         if let tintColorIdentifier = tintColor?.srIdentifier {
             identifier += tintColorIdentifier
         }
@@ -27,43 +27,21 @@ extension UIImageResource: Resource {
     }
 
     func calculateData() -> Data {
-        if let tintColor = tintColor {
-            if #available(iOS 13.0, *) {
-                if image.isSymbolImage {
-                    return image.withTintColor(tintColor)
-                        .scaledDownToApproximateSize(SessionReplay.maxObjectSize)
-                } else {
-                    return manuallyTintedImageData()
-                }
-            } else {
-                return manuallyTintedImageData()
-            }
-        } else {
+        guard let tintColor = tintColor else {
             return image.scaledDownToApproximateSize(SessionReplay.maxObjectSize)
+        }
+        if #available(iOS 13.0, *), image.isSymbolImage {
+            return image.withTintColor(tintColor)
+                .scaledDownToApproximateSize(SessionReplay.maxObjectSize)
+        } else {
+            return manuallyTintedImageData()
         }
     }
 
     /// Provides mitigation for template images that fail to tint programatically outside of `UIImageView` or other system container.
     private func manuallyTintedImageData() -> Data {
         return image
-            .tint(color: tintColor)
-            .scaledDownToApproximateSize(SessionReplay.maxObjectSize)
-    }
-}
-
-fileprivate extension UIImage {
-    func tint(color: UIColor?, blendMode: CGBlendMode = .destinationIn) -> UIImage {
-        guard let color = color else {
-            return self
-        }
-        let drawRect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
-        UIGraphicsBeginImageContextWithOptions(size, false, scale)
-        color.setFill()
-        UIRectFill(drawRect)
-        draw(in: drawRect, blendMode: blendMode, alpha: 1.0)
-        let tintedImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        return tintedImage ?? self
+            .scaledDownToApproximateSize(SessionReplay.maxObjectSize, tint: tintColor)
     }
 }
 #endif

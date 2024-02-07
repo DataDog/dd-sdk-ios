@@ -50,11 +50,9 @@ internal class SnapshotProcessor: SnapshotProcessing {
     /// Wireframes from last "full snapshot" or "incremental snapshot" record.
     private var lastWireframes: [SRWireframe]? = nil
 
-    #if DEBUG
     /// Interception callback for snapshot tests.
     /// Only available in Debug configuration, solely made for testing purpose.
     var interceptWireframes: (([SRWireframe]) -> Void)? = nil
-    #endif
 
     private var srContextPublisher: SRContextPublisher
 
@@ -85,9 +83,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
             .map { node in node.wireframesBuilder }
             .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
 
-        #if DEBUG
         interceptWireframes?(wireframes)
-        #endif
 
         var records: [SRRecord] = []
         // Create records for describing UI:
