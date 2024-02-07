@@ -63,7 +63,7 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
 
             return feature.tracer
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
             return DDNoopTracer()
         }
     }
