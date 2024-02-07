@@ -44,8 +44,10 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     @ReadWriteLock
     private var _name: String
 
+    @ReadWriteLock
     var attributes: [String: OpenTelemetryApi.AttributeValue]
     let context: OpenTelemetryApi.SpanContext
+    @ReadWriteLock
     var kind: OpenTelemetryApi.SpanKind
     let ddSpan: DDSpan
     let tracer: DatadogTracer
@@ -53,6 +55,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
     /// `isRecording` indicates whether the span is recording or not
     /// and events can be added to it.
+    @ReadWriteLock
     var isRecording: Bool
 
     /// Saves status of the span indicating whether the span has recorded errors.
@@ -62,17 +65,19 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             _status
         }
         set {
-            guard isRecording else {
-                return
-            }
+            __status.mutate {
+                guard isRecording else {
+                    return
+                }
 
-            // If the code has been set to a higher value before (Ok > Error > Unset),
-            // the code will not be changed.
-            guard newValue.priority >= _status.priority else {
-                return
-            }
+                // If the code has been set to a higher value before (Ok > Error > Unset),
+                // the code will not be changed.
+                guard newValue.priority >= $0.priority else {
+                    return
+                }
 
-            _status = newValue
+                $0 = newValue
+            }
         }
     }
 
@@ -82,11 +87,13 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             _name
         }
         set {
-            guard isRecording else {
-                return
+            __name.mutate {
+                guard isRecording else {
+                    return
+                }
+                $0 = newValue
+                ddSpan.setOperationName($0)
             }
-            _name = newValue
-            ddSpan.setOperationName(name)
         }
     }
 
