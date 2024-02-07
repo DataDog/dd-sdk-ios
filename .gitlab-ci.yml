@@ -7,6 +7,7 @@ ENV info:
   stage: info
   tags:
     - mac-ventura-preview
+  allow_failure: true # do not block GH PRs
   script:
     - system_profiler SPSoftwareDataType # system info
     - xcodebuild -version
@@ -26,6 +27,7 @@ Lint:
   stage: lint
   tags:
     - mac-ventura-preview
+  allow_failure: true # do not block GH PRs
   script:
     - ./tools/lint/run-linter.sh
     - ./tools/license/check-license.sh
@@ -34,6 +36,7 @@ SDK unit tests (iOS):
   stage: test
   tags:
     - mac-ventura-preview
+  allow_failure: true # do not block GH PRs
   variables:
     TEST_WORKSPACE: "Datadog.xcworkspace"
     TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
@@ -52,6 +55,7 @@ SDK unit tests (tvOS):
   stage: test
   tags:
     - mac-ventura-preview
+  allow_failure: true # do not block GH PRs
   variables:
     TEST_WORKSPACE: "Datadog.xcworkspace"
     TEST_DESTINATION: "platform=tvOS Simulator,name=Apple TV,OS=17.0"
@@ -68,6 +72,7 @@ SDK integration tests (iOS):
   stage: test
   tags:
     - mac-ventura-preview
+  allow_failure: true # do not block GH PRs
   variables:
     TEST_WORKSPACE: "IntegrationTests/IntegrationTests.xcworkspace"
     TEST_DESTINATION: "platform=iOS Simulator,name=iPhone 15 Pro Max,OS=17.0.1"
