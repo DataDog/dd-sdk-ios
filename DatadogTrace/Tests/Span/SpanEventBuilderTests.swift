@@ -556,7 +556,7 @@ class SpanEventBuilderTests: XCTestCase {
         let expectedTags = "[{\"trace_id\":\"00000000000000000000000000000065\",\"span_id\":\"0000000000000067\",\"tracestate\":\"foo=bar,bar=baz\",\"flags\":1,\"attributes\":{\"foo\":\"bar\"}}]"
         let actualTags = span.tags["_dd.span_links"]
 
-        DDAssertJSONEqual(expectedTags, actualTags)
+        DDAssertJSONStringEqual(expectedTags, actualTags!)
     }
 
     // MARK: - RUM context enrichment
