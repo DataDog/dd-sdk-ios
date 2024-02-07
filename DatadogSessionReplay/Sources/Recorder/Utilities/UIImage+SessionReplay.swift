@@ -14,13 +14,11 @@ private var srIdentifierKey: UInt8 = 11
 extension UIImage: DatadogExtended {}
 extension DatadogExtension where ExtendedType: UIImage {
     var srIdentifier: String {
-        objc_sync_enter(self)
-        defer { objc_sync_exit(self) }
         if let hash = objc_getAssociatedObject(self, &srIdentifierKey) as? String {
             return hash
         } else {
             let hash = computeHash()
-            objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            objc_setAssociatedObject(self, &srIdentifierKey, hash, .OBJC_ASSOCIATION_RETAIN)
             return hash
         }
     }
