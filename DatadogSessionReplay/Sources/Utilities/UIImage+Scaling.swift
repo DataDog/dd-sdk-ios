@@ -30,12 +30,12 @@ extension UIImage {
         guard let imageData = pngData() else {
             return Data()
         }
-        guard imageData.count > desiredSizeInBytes else {
+        guard tint != nil || imageData.count > desiredSizeInBytes else {
             return imageData
         }
         // Initial scale is approximatation based on the average side of square for given size ratio.
         // When running experiments it appeared to be closer to desired scale than using just a size ratio.
-        let initialScale = sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count))
+        let initialScale = min(1, sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count)))
         var scaledImage = scaledImage(by: initialScale, tint: tint)
 
         var scale: Double = 1
@@ -74,7 +74,7 @@ extension UIImage {
             tint.setFill()
             UIRectFill(drawRect)
         }
-        draw(in: drawRect)
+        draw(in: drawRect, blendMode: .destinationIn, alpha: 1.0)
         let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
 
