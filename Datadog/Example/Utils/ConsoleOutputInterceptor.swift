@@ -6,6 +6,7 @@
 
 #if DEBUG
 
+import DatadogInternal
 import UIKit
 
 class ConsoleOutputInterceptor {
@@ -21,7 +22,7 @@ class ConsoleOutputInterceptor {
         consolePrint = self.process
     }
 
-    private func process(newLog: String) {
+    private func process(newLog: String, level: CoreLoggerLevel) {
         // send to debugger console:
         print(newLog)
 

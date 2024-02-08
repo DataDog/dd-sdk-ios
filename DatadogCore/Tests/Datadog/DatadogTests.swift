@@ -25,7 +25,7 @@ class DatadogTests: XCTestCase {
     }
 
     override func tearDown() {
-        consolePrint = { print($0) }
+        consolePrint = { message, _ in print(message) }
         printFunction = nil
         XCTAssertFalse(Datadog.isInitialized())
         super.tearDown()
@@ -416,6 +416,24 @@ class DatadogTests: XCTestCase {
         // Then
         XCTAssertTrue(CoreRegistry.default is NOPDatadogCore)
         XCTAssertTrue(CoreRegistry.instance(named: "test") is DatadogCore)
+    }
+
+    func testStopSDKInstance() throws {
+        // Given
+        Datadog.initialize(
+            with: defaultConfig,
+            trackingConsent: .mockRandom(),
+            instanceName: "test"
+        )
+
+        // Then
+        XCTAssertTrue(CoreRegistry.instance(named: "test") is DatadogCore)
+
+        // When
+        Datadog.stopInstance(named: "test")
+
+        // Then
+        XCTAssertTrue(CoreRegistry.instance(named: "test") is NOPDatadogCore)
     }
 
     func testGivenDefaultSDKInstanceInitialized_customOneCanBeInitializedAfterIt() throws {

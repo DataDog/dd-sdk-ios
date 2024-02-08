@@ -47,6 +47,14 @@ class HTTPMockServer(BaseHTTPRequestHandler):
             (r"/inspect$", self.__GET_inspect),
         ])
 
+    def do_DELETE(self):
+        """
+        Routes all incoming DELETE requests
+        """
+        self.__route([
+            (r"/requests$", self.__DELETE_requests),
+        ])
+
     def __POST_any(self, parameters):
         """
         POST /*
@@ -83,6 +91,16 @@ class HTTPMockServer(BaseHTTPRequestHandler):
             })
 
         return json.dumps(inspection_info).encode("utf-8")
+
+    def __DELETE_requests(self, parameters):
+        """
+        DELETE /requests
+
+        Remove all.
+        """
+        global history
+        history.clear()
+        return bytes()
 
     def __route(self, routes):
         try:
@@ -131,6 +149,9 @@ class GenericRequestsHistory:
 
     def request(self, request_id):
         return self.__requests[int(request_id)]
+
+    def clear(self):
+        self.__requests.clear()
 
 # If any previous instance of this server is running - kill it
 os.system('pkill -f start_mock_server.py')

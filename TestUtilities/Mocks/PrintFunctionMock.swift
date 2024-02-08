@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 // MARK: - Global Dependencies Mocks
 
@@ -21,7 +22,7 @@ public class PrintFunctionMock {
 
     public init() { }
 
-    public func print(message: String) {
+    public func print(message: String, level: CoreLoggerLevel) {
         printedMessages.append(message)
     }
 

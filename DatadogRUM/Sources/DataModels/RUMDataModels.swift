@@ -357,6 +357,7 @@ public struct RUMActionEvent: RUMDataModel {
             case flutter = "flutter"
             case reactNative = "react-native"
             case roku = "roku"
+            case unity = "unity"
         }
 
         /// Attributes of the view's container
@@ -420,6 +421,7 @@ public struct RUMActionEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
+        case unity = "unity"
     }
 
     /// View properties
@@ -643,6 +645,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case flutter = "flutter"
             case reactNative = "react-native"
             case roku = "roku"
+            case unity = "unity"
         }
 
         /// Attributes of the view's container
@@ -885,6 +888,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
+        case unity = "unity"
     }
 
     /// View properties
@@ -1132,6 +1136,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
             case flutter = "flutter"
             case reactNative = "react-native"
             case roku = "roku"
+            case unity = "unity"
         }
 
         /// Attributes of the view's container
@@ -1213,6 +1218,7 @@ public struct RUMLongTaskEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
+        case unity = "unity"
     }
 
     /// View properties
@@ -1444,6 +1450,7 @@ public struct RUMResourceEvent: RUMDataModel {
             case flutter = "flutter"
             case reactNative = "react-native"
             case roku = "roku"
+            case unity = "unity"
         }
 
         /// Attributes of the view's container
@@ -1737,6 +1744,7 @@ public struct RUMResourceEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
+        case unity = "unity"
     }
 
     /// View properties
@@ -1999,6 +2007,7 @@ public struct RUMViewEvent: RUMDataModel {
             case flutter = "flutter"
             case reactNative = "react-native"
             case roku = "roku"
+            case unity = "unity"
         }
 
         /// Attributes of the view's container
@@ -2118,6 +2127,7 @@ public struct RUMViewEvent: RUMDataModel {
         case flutter = "flutter"
         case reactNative = "react-native"
         case roku = "roku"
+        case unity = "unity"
     }
 
     /// View properties
@@ -2581,6 +2591,7 @@ public struct TelemetryErrorEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case unity = "unity"
     }
 
     /// The telemetry log information
@@ -2730,6 +2741,7 @@ public struct TelemetryDebugEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case unity = "unity"
     }
 
     /// The telemetry log information
@@ -2896,6 +2908,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
         case browser = "browser"
         case flutter = "flutter"
         case reactNative = "react-native"
+        case unity = "unity"
     }
 
     /// The telemetry configuration information
@@ -3048,7 +3061,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether beforeSend callback function is used
             public let useBeforeSend: Bool?
 
-            /// Whether a secure cross-site session cookie is used
+            /// Whether a secure cross-site session cookie is used (deprecated)
             public let useCrossSiteSessionCookie: Bool?
 
             /// Whether the request origins list to ignore when computing the page activity is used
@@ -3059,6 +3072,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether local encryption is used
             public let useLocalEncryption: Bool?
+
+            /// Whether a partitioned secure cross-site session cookie is used
+            public let usePartitionedCrossSiteSessionCookie: Bool?
 
             /// Whether a proxy is used
             public var useProxy: Bool?
@@ -3125,6 +3141,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useExcludedActivityUrls = "use_excluded_activity_urls"
                 case useFirstPartyHosts = "use_first_party_hosts"
                 case useLocalEncryption = "use_local_encryption"
+                case usePartitionedCrossSiteSessionCookie = "use_partitioned_cross_site_session_cookie"
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
@@ -3270,14 +3287,18 @@ public struct RUMConnectivity: Codable {
     /// Cellular connectivity properties
     public let cellular: Cellular?
 
+    /// Cellular connection type reflecting the measured network performance
+    public let effectiveType: EffectiveType?
+
     /// The list of available network interfaces
-    public let interfaces: [Interfaces]
+    public let interfaces: [Interfaces]?
 
     /// Status of the device connectivity
     public let status: Status
 
     enum CodingKeys: String, CodingKey {
         case cellular = "cellular"
+        case effectiveType = "effective_type"
         case interfaces = "interfaces"
         case status = "status"
     }
@@ -3296,6 +3317,14 @@ public struct RUMConnectivity: Codable {
         }
     }
 
+    /// Cellular connection type reflecting the measured network performance
+    public enum EffectiveType: String, Codable {
+        case slow2g = "slow_2g"
+        case effectiveType2g = "2g"
+        case effectiveType3g = "3g"
+        case effectiveType4g = "4g"
+    }
+
     public enum Interfaces: String, Codable {
         case bluetooth = "bluetooth"
         case cellular = "cellular"
@@ -3305,7 +3334,7 @@ public struct RUMConnectivity: Codable {
         case mixed = "mixed"
         case other = "other"
         case unknown = "unknown"
-        case none = "none"
+        case interfacesNone = "none"
     }
 
     /// Status of the device connectivity
@@ -3538,4 +3567,4 @@ public enum RUMMethod: String, Codable {
     case patch = "PATCH"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/49a2345f61a948013208d66a0fa9bad15a8c8fab
+// Generated from https://github.com/DataDog/rum-events-format/tree/389581be98dcf8efbfcfe7bffaa32d53f960fb6f

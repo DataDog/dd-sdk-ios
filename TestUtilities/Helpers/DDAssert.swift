@@ -208,3 +208,34 @@ public func DDAssertDictionariesNotEqual(_ expression1: @autoclosure () throws -
         throw DDAssertError.expectedFailure("Dictionaries are equal")
     }
 }
+
+public func DDAssertJSONStringEqual(_ jsonString1: String, _ jsonString2: String, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+    _DDEvaluateAssertion(message: message(), file: file, line: line) {
+        try _DDAssertJSONStringEqual(jsonString1, jsonString2)
+    }
+}
+
+private func _DDAssertJSONStringEqual(_ jsonString1: String, _ jsonString2: String) throws {
+    guard let data1 = jsonString1.data(using: .utf8),
+          let data2 = jsonString2.data(using: .utf8) else {
+        throw DDAssertError.expectedFailure("Failed to convert JSON strings to data")
+    }
+
+    do {
+        if let json1 = try JSONSerialization.jsonObject(with: data1, options: []) as? [String: Any],
+           let json2 = try JSONSerialization.jsonObject(with: data2, options: []) as? [String: Any] {
+            guard NSDictionary(dictionary: json1).isEqual(to: json2) else {
+                throw DDAssertError.expectedFailure("JSONs are not equal")
+            }
+        } else if let json1 = try JSONSerialization.jsonObject(with: data1, options: []) as? [Any],
+                  let json2 = try JSONSerialization.jsonObject(with: data2, options: []) as? [Any] {
+            guard NSArray(array: json1).isEqual(to: json2) else {
+                throw DDAssertError.expectedFailure("JSONs are not equal")
+            }
+        } else {
+            throw DDAssertError.expectedFailure("JSONs are not equal")
+        }
+    } catch {
+        throw DDAssertError.expectedFailure("Failed to parse JSON strings")
+    }
+}

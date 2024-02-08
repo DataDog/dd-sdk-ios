@@ -6,23 +6,31 @@
 
 import Foundation
 
-private var sessionFirstPartyHostsKey: UInt8 = 31
-internal extension URLSessionTask {
-    /// Returns the first party hosts for this task.
-    var firstPartyHosts: FirstPartyHosts {
-        get {
-            return sessionFirstPartyHosts ?? .init()
-        }
+extension URLSessionTask: DatadogExtended {}
+extension DatadogExtension where ExtendedType: URLSessionTask {
+    /// Overrides the current request of the ``URLSessionTask``.
+    ///
+    /// The current request must be overriden before the task resumes.
+    ///
+    /// - Parameter request: The new request.
+    func override(currentRequest request: URLRequest) {
+        // The `URLSessionTask` is Key-Value Coding compliant and we can
+        // set the `currentRequest` property
+        type.setValue(request, forKey: "currentRequest")
     }
 
-    /// Extension property for storing first party hosts passed from `URLSession` to `URLSessionTask`.
-    /// This is used for `URLSessionTask` based APIs.
-    var sessionFirstPartyHosts: FirstPartyHosts? {
-        set {
-            objc_setAssociatedObject(self, &sessionFirstPartyHostsKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_RETAIN)
+    /// Returns the delegate instance the task is reporting to.
+    var delegate: URLSessionDelegate? {
+        if #available(iOS 15.0, tvOS 15.0, *), let delegate = type.delegate {
+            return delegate
         }
-        get {
-            return objc_getAssociatedObject(self, &sessionFirstPartyHostsKey) as? FirstPartyHosts
+
+        // The `URLSessionTask` is Key-Value Coding compliant and retains a
+        // `session` property
+        guard let session = type.value(forKey: "session") as? URLSession else {
+            return nil
         }
+
+        return session.delegate
     }
 }

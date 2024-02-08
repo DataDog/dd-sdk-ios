@@ -22,7 +22,7 @@ class RUMDebuggingTests: XCTestCase {
             dependencies: .mockWith(rumApplicationID: "rum-123")
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "FirstView"),
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier(), name: "FirstView"),
             context: .mockAny(),
             writer: FileWriterMock()
         )
@@ -56,7 +56,7 @@ class RUMDebuggingTests: XCTestCase {
             dependencies: .mockWith(rumApplicationID: "rum-123")
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "FirstView"),
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier(), name: "FirstView"),
             context: context,
             writer: writer
         )
@@ -66,7 +66,7 @@ class RUMDebuggingTests: XCTestCase {
             writer: writer
         )
         _ = applicationScope.process(
-            command: RUMStartViewCommand.mockWith(identity: mockViewIdentity, name: "SecondView"),
+            command: RUMStartViewCommand.mockWith(identity: .mockViewIdentifier(), name: "SecondView"),
             context: context,
             writer: writer
         )

@@ -11,38 +11,39 @@ internal final class TraceFeature: DatadogRemoteFeature {
     static let name = "tracing"
 
     let requestBuilder: FeatureRequestBuilder
-    let messageReceiver: FeatureMessageReceiver
+    var messageReceiver: FeatureMessageReceiver { contextReceiver }
+
     let tracer: DatadogTracer
+    let contextReceiver: ContextMessageReceiver
 
     init(
         in core: DatadogCoreProtocol,
         configuration: Trace.Configuration
     ) {
-        let contextReceiver = ContextMessageReceiver(
-            bundleWithRumEnabled: configuration.bundleWithRumEnabled
-        )
         self.requestBuilder = TracingRequestBuilder(
             customIntakeURL: configuration.customEndpoint,
             telemetry: core.telemetry
         )
 
-        self.messageReceiver = contextReceiver
+        self.contextReceiver = ContextMessageReceiver()
         self.tracer = DatadogTracer(
             core: core,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sampleRate),
             tags: configuration.tags ?? [:],
-            service: configuration.service,
-            networkInfoEnabled: configuration.networkInfoEnabled,
-            spanEventMapper: configuration.eventMapper,
             tracingUUIDGenerator: configuration.traceIDGenerator,
             dateProvider: configuration.dateProvider,
-            contextReceiver: contextReceiver,
             loggingIntegration: TracingWithLoggingIntegration(
                 core: core,
                 service: configuration.service,
                 networkInfoEnabled: configuration.networkInfoEnabled
             ),
-            telemetry: core.telemetry
+            spanEventBuilder: SpanEventBuilder(
+                service: configuration.service,
+                networkInfoEnabled: configuration.networkInfoEnabled,
+                eventsMapper: configuration.eventMapper,
+                bundleWithRUM: configuration.bundleWithRumEnabled,
+                telemetry: core.telemetry
+            )
         )
 
         // Send configuration telemetry:

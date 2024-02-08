@@ -5,56 +5,36 @@
  */
 
 import XCTest
+
 @testable import DatadogInternal
 
-final class URLSessionTaskSwizzlerTests: XCTestCase {
-    override func tearDown() {
-        URLSessionTaskSwizzler.unbind()
-        XCTAssertNil(URLSessionTaskSwizzler.resume as Any?)
+class URLSessionTaskSwizzlerTests: XCTestCase {
+    func testSwizzling_taskResume() throws {
+        let expectation = self.expectation(description: "resume")
 
-        super.tearDown()
-    }
+        // Given
+        let swizzler = URLSessionTaskSwizzler()
 
-    func testSwizzling() throws {
-        let expectation = XCTestExpectation(description: "resume")
-        try URLSessionTaskSwizzler.bind { _ in
-            expectation.fulfill()
-        }
-
-        let session = URLSession(configuration: .default)
-        let task = session.dataTask(with: URL(string: "https://www.datadoghq.com/")!)
-        task.resume()
-
-        wait(for: [expectation], timeout: 5)
-    }
-
-    func testBindings() {
-        XCTAssertNil(URLSessionTaskSwizzler.resume as Any?)
-
-        try? URLSessionTaskSwizzler.bind(interceptResume: { _ in })
-        XCTAssertNotNil(URLSessionTaskSwizzler.resume as Any?)
-
-        try? URLSessionTaskSwizzler.bind(interceptResume: { _ in })
-        XCTAssertNotNil(URLSessionTaskSwizzler.resume as Any?)
-
-        URLSessionTaskSwizzler.unbind()
-        XCTAssertNil(URLSessionTaskSwizzler.resume as Any?)
-    }
-
-    func testConcurrentBinding() throws {
-        // swiftlint:disable opening_brace trailing_closure
-         callConcurrently(
-            closures: [
-                { try? URLSessionTaskSwizzler.bind(interceptResume: self.intercept(task:)) },
-                { URLSessionTaskSwizzler.unbind() },
-                { try? URLSessionTaskSwizzler.bind(interceptResume: self.intercept(task:)) },
-                { URLSessionTaskSwizzler.unbind() },
-            ],
-            iterations: 50
+        try swizzler.swizzle(
+            interceptResume: { _ in
+                expectation.fulfill()
+            }
         )
-        // swiftlint:enable opening_brace trailing_closure
-    }
 
-    func intercept(task: URLSessionTask) {
+        // When
+        let session = URLSession(configuration: .ephemeral)
+        let url = URL(string: "https://www.datadoghq.com/")!
+        session
+            .dataTask(with: url)
+            .resume() // intercepted
+
+        swizzler.unswizzle()
+
+        session
+            .dataTask(with: url)
+            .resume() // not intercepted
+
+        // Then
+        wait(for: [expectation], timeout: 5)
     }
 }

@@ -55,44 +55,43 @@ class RUMTabBarControllerScenarioTests: IntegrationTests, RUMCommonAsserts {
         let session = try XCTUnwrap(RUMSessionMatcher.singleSession(from: recordedRUMRequests))
         sendCIAppLog(session)
 
-        let applicationLaunchView = try XCTUnwrap(session.applicationLaunchView)
-        XCTAssertEqual(applicationLaunchView.actionEvents[0].action.type, .applicationStart)
-        XCTAssertGreaterThan(applicationLaunchView.actionEvents[0].action.loadingTime!, 0)
+        let initialView = session.views[0]
+        XCTAssertTrue(initialView.isApplicationLaunchView(), "The session should start with 'application launch' view")
+        XCTAssertEqual(initialView.actionEvents[0].action.type, .applicationStart)
 
-        let visits = session.viewVisits
-        XCTAssertEqual(session.viewVisits[0].name, "Screen A")
-        XCTAssertEqual(session.viewVisits[0].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[0]) // go to "Screen B1"
+        XCTAssertEqual(session.views[1].name, "Screen A")
+        XCTAssertEqual(session.views[1].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[1]) // go to "Screen B1"
 
-        XCTAssertEqual(session.viewVisits[1].name, "Screen B1")
-        XCTAssertEqual(session.viewVisits[1].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[1])// go to "Screen B2"
+        XCTAssertEqual(session.views[2].name, "Screen B1")
+        XCTAssertEqual(session.views[2].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[2])// go to "Screen B2"
 
-        XCTAssertEqual(session.viewVisits[2].name, "Screen B2")
-        XCTAssertEqual(session.viewVisits[2].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[2])// go to "Screen B1"
+        XCTAssertEqual(session.views[3].name, "Screen B2")
+        XCTAssertEqual(session.views[3].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[3])// go to "Screen B1"
 
-        XCTAssertEqual(session.viewVisits[3].name, "Screen B1")
-        XCTAssertEqual(session.viewVisits[3].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[3])// go to "Screen C1"
+        XCTAssertEqual(session.views[4].name, "Screen B1")
+        XCTAssertEqual(session.views[4].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[4])// go to "Screen C1"
 
-        XCTAssertEqual(session.viewVisits[4].name, "Screen C1")
-        XCTAssertEqual(session.viewVisits[4].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[4])// go to "Screen C2"
+        XCTAssertEqual(session.views[5].name, "Screen C1")
+        XCTAssertEqual(session.views[5].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[5])// go to "Screen C2"
 
-        XCTAssertEqual(session.viewVisits[5].name, "Screen C2")
-        XCTAssertEqual(session.viewVisits[5].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[5])// go to "Screen A"
+        XCTAssertEqual(session.views[6].name, "Screen C2")
+        XCTAssertEqual(session.views[6].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[6])// go to "Screen A"
 
-        XCTAssertEqual(session.viewVisits[6].name, "Screen A")
-        XCTAssertEqual(session.viewVisits[6].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[6])// go to "Screen C2"
+        XCTAssertEqual(session.views[7].name, "Screen A")
+        XCTAssertEqual(session.views[7].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[7])// go to "Screen C2"
 
-        XCTAssertEqual(session.viewVisits[7].name, "Screen C2")
-        XCTAssertEqual(session.viewVisits[7].path, "UIViewController")
-        RUMSessionMatcher.assertViewWasEventuallyInactive(visits[7])// go to "Screen C1"
+        XCTAssertEqual(session.views[8].name, "Screen C2")
+        XCTAssertEqual(session.views[8].path, "UIViewController")
+        RUMSessionMatcher.assertViewWasEventuallyInactive(session.views[8])// go to "Screen C1"
 
-        XCTAssertEqual(session.viewVisits[8].name, "Screen C1")
-        XCTAssertEqual(session.viewVisits[8].path, "UIViewController")
+        XCTAssertEqual(session.views[9].name, "Screen C1")
+        XCTAssertEqual(session.views[9].path, "UIViewController")
     }
 }

@@ -6,65 +6,52 @@
 
 import Foundation
 
-/// Swizzles `URLSessionTask` methods.
-internal class URLSessionTaskSwizzler {
-    private static var _resume: Resume?
-    static var resume: Resume? {
-        get {
-            lock.lock()
-            defer { lock.unlock() }
-            return _resume
-        }
-        set {
-            lock.lock()
-            defer { lock.unlock() }
-            _resume = newValue
-        }
-    }
+internal final class URLSessionTaskSwizzler {
+    private let lock: NSLocking
+    private var taskResume: TaskResume?
 
-    private static var lock = NSRecursiveLock()
-
-    static var isBinded: Bool {
-        lock.lock()
-        defer { lock.unlock() }
-        return resume != nil
-    }
-
-    static func bindIfNeeded(interceptResume: @escaping (URLSessionTask) -> Void) throws {
-        lock.lock()
-        defer { lock.unlock() }
-
-        guard resume == nil else {
-            return
-        }
-
-        try bind(interceptResume: interceptResume)
-    }
-
-    static func bind(interceptResume: @escaping (URLSessionTask) -> Void) throws {
-        lock.lock()
-        defer { lock.unlock() }
-
-        self.resume = try Resume.build()
-
-        resume?.swizzle(intercept: interceptResume)
-    }
-
-    static func unbind() {
-        lock.lock()
-        defer { lock.unlock() }
-        resume?.unswizzle()
-        resume = nil
+    init(lock: NSLocking = NSLock()) {
+        self.lock = lock
     }
 
     /// Swizzles `URLSessionTask.resume()` method.
-    class Resume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
+    func swizzle(
+        interceptResume: @escaping (URLSessionTask) -> Void
+    ) throws {
+        lock.lock()
+        defer { lock.unlock() }
+        taskResume = try TaskResume.build()
+        taskResume?.swizzle(intercept: interceptResume)
+    }
+
+    /// Unswizzles all.
+    ///
+    /// This method is called during deinit.
+    func unswizzle() {
+        lock.lock()
+        taskResume?.unswizzle()
+        lock.unlock()
+    }
+
+    deinit {
+        unswizzle()
+    }
+
+    /// Swizzles `URLSessionTask.resume()` method.
+    class TaskResume: MethodSwizzler<@convention(c) (URLSessionTask, Selector) -> Void, @convention(block) (URLSessionTask) -> Void> {
         private static let selector = #selector(URLSessionTask.resume)
 
         private let method: Method
 
-        static func build() throws -> Resume {
-            return try Resume(selector: self.selector, klass: URLSessionTask.self)
+        static func build() throws -> TaskResume {
+            // RUM-2690: We swizzle private `__NSCFLocalSessionTask` class as it appears to be uniformly used
+            // in iOS versions 12.x - 17.x. Swizzling the public `URLSessionTask.resume()` doesn't work in 12.x and 13.x.
+            // See https://github.com/DataDog/dd-sdk-ios/pull/1637 for full `URLSessionTask` class dumps in major iOS versions.
+            let className = "__NSCFLocalSessionTask"
+            guard let klass = NSClassFromString(className) else {
+                throw InternalError(description: "Failed to swizzle `URLSessionTask`: `\(className)` class not found.")
+            }
+            return try TaskResume(selector: self.selector, klass: klass)
         }
 
         private init(selector: Selector, klass: AnyClass) throws {

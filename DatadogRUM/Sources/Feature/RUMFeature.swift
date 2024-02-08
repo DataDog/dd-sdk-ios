@@ -18,10 +18,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
     let instrumentation: RUMInstrumentation
 
+    let configuration: RUM.Configuration
+
     init(
         in core: DatadogCoreProtocol,
         configuration: RUM.Configuration
     ) throws {
+        self.configuration = configuration
+
         let dependencies = RUMScopeDependencies(
             core: core,
             rumApplicationID: configuration.applicationID,

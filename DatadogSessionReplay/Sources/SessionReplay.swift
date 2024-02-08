@@ -25,7 +25,7 @@ public enum SessionReplay {
         do {
             try enableOrThrow(with: configuration, in: core)
         } catch let error {
-           consolePrint("\(error)")
+            consolePrint("\(error)", .error)
        }
     }
 
@@ -36,6 +36,9 @@ public enum SessionReplay {
             throw ProgrammerError(
                 description: "Datadog SDK must be initialized before calling `SessionReplay.enable(with:)`."
             )
+        }
+        guard configuration.replaySampleRate > 0 else {
+            return
         }
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)

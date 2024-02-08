@@ -44,7 +44,7 @@ internal class BaggageItems {
     }
 
     func set(key: String, value: String) {
-        items[key] = value
+        _items.mutate { $0[key] = value }
     }
 
     func get(key: String) -> String? {

@@ -20,18 +20,21 @@ private class InheritedURLSessionDelegate: DDURLSessionDelegate {
 /// An example of instrumenting existing `URLSessionDelegate` with `DDURLSessionDelegate` through composition.
 private class CompositedURLSessionDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate, __URLSessionDelegateProviding {
     // MARK: - __URLSessionDelegateProviding conformance
+    let ddURLSessionDelegate = DatadogURLSessionDelegate()
 
     // MARK: - __URLSessionDelegateProviding handling
-
     func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        ddURLSessionDelegate.urlSession(session, task: task, didFinishCollecting: metrics) // forward to DD
         /* run custom logic */
     }
 
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        ddURLSessionDelegate.urlSession(session, task: task, didCompleteWithError: error) // forward to DD
         /* run custom logic */
     }
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        ddURLSessionDelegate.urlSession(session, dataTask: dataTask, didReceive: data) // forward to DD
         /* run custom logic */
     }
 }
@@ -141,9 +144,9 @@ class URLSessionBaseScenario: NSObject {
         let delegate: URLSessionDataDelegate
 
         switch setup.instrumentationMethod {
-        case .directWithGlobalFirstPartyHosts:
+        case .legacyWithFeatureFirstPartyHosts:
             delegate = DDURLSessionDelegate()
-        case .directWithAdditionalFirstyPartyHosts:
+        case .legacyWithAdditionalFirstyPartyHosts:
             delegate = DDURLSessionDelegate(
                 additionalFirstPartyHosts: [
                     customGETResourceURL.host!,
@@ -151,11 +154,25 @@ class URLSessionBaseScenario: NSObject {
                     badResourceURL.host!
                 ]
             )
-        case .inheritance:
+        case .legacyInheritance:
             delegate = InheritedURLSessionDelegate()
-        case .composition:
+        case .legacyComposition:
             delegate = CompositedURLSessionDelegate()
-            URLSessionInstrumentation.enable(with: .init(delegateClass: CompositedURLSessionDelegate.self))
+        case .delegateUsingFeatureFirstPartyHosts:
+            URLSessionInstrumentation.enable(with: .init(delegateClass: CustomURLSessionDelegate.self))
+            delegate = CustomURLSessionDelegate()
+        case .delegateWithAdditionalFirstyPartyHosts:
+            URLSessionInstrumentation.enable(
+                with: .init(
+                    delegateClass: CustomURLSessionDelegate.self,
+                    firstPartyHostsTracing: .trace(hosts: [
+                        customGETResourceURL.host!,
+                        customPOSTRequest.url!.host!,
+                        badResourceURL.host!
+                    ])
+                )
+            )
+            delegate = CustomURLSessionDelegate()
         }
 
         return URLSession(

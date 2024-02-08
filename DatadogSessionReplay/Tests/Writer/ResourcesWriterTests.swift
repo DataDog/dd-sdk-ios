@@ -22,7 +22,7 @@ class ResourcesWriterTests: XCTestCase {
         writer.write(resources: [.mockRandom()])
         writer.write(resources: [.mockRandom()])
 
-        XCTAssertEqual(core.events(ofType: [EnrichedResource].self).count, 3)
+        XCTAssertEqual(core.events(ofType: EnrichedResource.self).count, 3)
     }
 
     func testWhenFeatureScopeIsNotConnected_itDoesNotWriteRecordsToCore() throws {

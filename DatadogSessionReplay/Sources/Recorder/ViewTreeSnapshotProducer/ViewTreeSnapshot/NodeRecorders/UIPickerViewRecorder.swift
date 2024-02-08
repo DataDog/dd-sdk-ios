@@ -71,13 +71,17 @@ internal struct UIPickerViewRecorder: NodeRecorder {
         // in the actual `UIPickerView's` tree their order is opposite (blending is used to make the label
         // pass through the shape). For that reason, we record both kinds of nodes separately and then reorder
         // them in returned semantics:
-        let backgroundNodes = selectionRecorder.recordNodes(for: picker, in: context)
-        let titleNodes = labelsRecorder.recordNodes(for: picker, in: context)
+        let backgroundRecordingResult = selectionRecorder.record(picker, in: context)
+        let titleRecordingResult = labelsRecorder.record(picker, in: context)
 
         guard attributes.hasAnyAppearance else {
             // If the root view of `UIPickerView` defines no other appearance (e.g. no custom `.background`), we can
             // safely ignore it, with only forwarding child nodes to final recording.
-            return SpecificElement(subtreeStrategy: .ignore, nodes: backgroundNodes + titleNodes)
+            return SpecificElement(
+                subtreeStrategy: .ignore,
+                nodes: backgroundRecordingResult.nodes + titleRecordingResult.nodes,
+                resources: backgroundRecordingResult.resources + titleRecordingResult.resources
+            )
         }
 
         // Otherwise, we build dedicated wireframes to describe extra appearance coming from picker's root `UIView`:
@@ -87,7 +91,11 @@ internal struct UIPickerViewRecorder: NodeRecorder {
             backgroundWireframeID: context.ids.nodeID(view: picker, nodeRecorder: self)
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-        return SpecificElement(subtreeStrategy: .ignore, nodes: [node] + backgroundNodes + titleNodes)
+        return SpecificElement(
+            subtreeStrategy: .ignore,
+            nodes: [node] + backgroundRecordingResult.nodes + titleRecordingResult.nodes,
+            resources: backgroundRecordingResult.resources + titleRecordingResult.resources
+        )
     }
 }
 

@@ -19,6 +19,9 @@ public protocol DatadogURLSessionHandler {
     /// - Returns: The modified request.
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest
 
+    /// Returns the trace of the current execution context.
+    func traceContext() -> TraceContext?
+
     /// Tells the interceptor that the session did start.
     ///
     /// - Parameter interception: The URLSession interception.
@@ -35,6 +38,8 @@ internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionHandler {
     var firstPartyHosts: FirstPartyHosts { .init() }
     /// no-op
     func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest { request }
+    /// no-op
+    func traceContext() -> TraceContext? { nil }
     /// no-op
     func interceptionDidStart(interception: URLSessionTaskInterception) { }
     /// no-op

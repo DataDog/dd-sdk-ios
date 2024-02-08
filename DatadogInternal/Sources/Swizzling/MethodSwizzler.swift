@@ -171,6 +171,15 @@ open class MethodSwizzler<Signature, Override> {
     }
 }
 
+extension MethodSwizzler: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        """
+        The MethodSwizzler holds swizzling for:
+        \(overrides.map { method_getName($0.method) }.description)
+        """
+    }
+}
+
 // MARK: - Find Method
 
 public func dd_class_getInstanceMethod(_ cls: AnyClass, _ name: Selector) throws -> Method {

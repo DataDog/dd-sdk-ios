@@ -10,6 +10,7 @@ import DatadogInternal
 
 internal class SessionReplayFeature: DatadogRemoteFeature {
     static let name: String = "session-replay"
+
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?
@@ -18,8 +19,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
     /// Orchestrates the process of capturing next snapshots on the main thread.
     let recordingCoordinator: RecordingCoordinator
-    /// Processes each new snapshot on a background thread and transforms it into records.
-    let processor: Processing
 
     // MARK: - Initialization
 
@@ -27,22 +26,29 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let processor = Processor(
-            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor"),
-            writer: RecordWriter(core: core),
+        let queue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor")
+        let snapshotProcessor = SnapshotProcessor(
+            queue: queue,
+            recordWriter: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
-
-        let scheduler = MainThreadScheduler(interval: 0.1)
-        let messageReceiver = RUMContextReceiver()
-
+        // RUM-2154 Disabled until prod backend is ready
+        _ = ResourceProcessor(
+            queue: queue,
+            resourcesWriter: ResourcesWriter(core: core)
+        )
         let recorder = try Recorder(
-            processor: processor,
+            snapshotProcessor: snapshotProcessor,
+            resourceProcessor: nil,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
-        let recordingCoordinator = RecordingCoordinator(
+        let scheduler = MainThreadScheduler(interval: 0.1)
+        let messageReceiver = RUMContextReceiver()
+
+        self.messageReceiver = messageReceiver
+        self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: configuration.defaultPrivacyLevel,
             rumContextObserver: messageReceiver,
@@ -50,10 +56,6 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)
         )
-
-        self.messageReceiver = messageReceiver
-        self.recordingCoordinator = recordingCoordinator
-        self.processor = processor
         self.requestBuilder = SegmentRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
