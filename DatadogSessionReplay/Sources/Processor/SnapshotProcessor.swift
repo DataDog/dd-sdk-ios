@@ -74,7 +74,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
     // MARK: - Processing
 
     func process(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
-        queue.run { self.processSync(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot) }
+        queue.run { [weak self] in self?.processSync(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot) }
     }
 
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {

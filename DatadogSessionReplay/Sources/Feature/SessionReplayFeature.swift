@@ -26,14 +26,15 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
+        let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
         let snapshotProcessor = SnapshotProcessor(
-            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.snapshot-processor"),
+            queue: processorsQueue,
             recordWriter: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
         let resourceProcessor = ResourceProcessor(
-            queue: BackgroundAsyncQueue(named: "com.datadoghq.session-replay.resource-processor"),
+            queue: processorsQueue,
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
