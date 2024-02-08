@@ -16,7 +16,17 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
     /// Sends telemetry through sdk core.
     let telemetry: Telemetry
     /// Builds multipart form for request's body.
-    var multipartBuilder: MultipartFormDataBuilder = MultipartFormData(boundary: UUID())
+    let multipartBuilder: MultipartFormDataBuilder
+
+    init(
+        customUploadURL: URL?,
+        telemetry: Telemetry,
+        multipartBuilder: MultipartFormDataBuilder = MultipartFormData()
+    ) {
+        self.customUploadURL = customUploadURL
+        self.telemetry = telemetry
+        self.multipartBuilder = multipartBuilder
+    }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
         let fallbackSource: () -> SRSegment.Source = {
@@ -42,7 +52,7 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
             url: url(with: context),
             queryItems: [],
             headers: [
-                .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary.uuidString)),
+                .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.source),
@@ -82,7 +92,7 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         )
 
         // Data is already compressed, so request building request w/o compression:
-        return builder.uploadRequest(with: multipart.data, compress: false)
+        return builder.uploadRequest(with: multipart.build(), compress: false)
     }
 
     private func url(with context: DatadogContext) -> URL {

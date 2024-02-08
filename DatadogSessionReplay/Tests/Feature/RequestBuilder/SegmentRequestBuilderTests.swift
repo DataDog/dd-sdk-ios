@@ -155,7 +155,7 @@ class SegmentRequestBuilderTests: XCTestCase {
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
-        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary.uuidString)"))
+        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary)"))
         XCTAssertEqual(multipartSpy.formFiles.count, 3)
 
         let file0 = multipartSpy.formFiles[0]
