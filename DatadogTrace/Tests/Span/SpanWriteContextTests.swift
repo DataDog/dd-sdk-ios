@@ -34,8 +34,7 @@ class SpanWriteContextTests: XCTestCase {
     func testWhenWritingEvent_itRespectsCoreConsentAndBatching() {
         let core = PassthroughCoreMock(
             expectation: expectation(description: "write event to core"),
-            bypassConsentExpectation: invertedExpectation(description: "do not bypass consent"),
-            forceNewBatchExpectation: invertedExpectation(description: "do not force new batch")
+            bypassConsentExpectation: invertedExpectation(description: "do not bypass consent")
         )
 
         // Given

@@ -166,19 +166,6 @@ class FilesOrchestratorTests: XCTestCase {
         XCTAssertNil(try? orchestrator.directory.file(named: file2.name))
     }
 
-    func testWhenNewWritableFileIsObtained_itAlwaysCreatesNewFile() throws {
-        let orchestrator = configureOrchestrator(using: RelativeDateProvider(advancingBySeconds: 0.001))
-
-        let file1 = try orchestrator.getNewWritableFile(writeSize: 1)
-        let file2 = try orchestrator.getNewWritableFile(writeSize: 1)
-        let file3 = try orchestrator.getNewWritableFile(writeSize: 1)
-
-        XCTAssertEqual(try orchestrator.directory.files().count, 3)
-        XCTAssertNotEqual(file1.name, file2.name)
-        XCTAssertNotEqual(file2.name, file3.name)
-        XCTAssertNotEqual(file3.name, file1.name)
-    }
-
     // MARK: - Readable file tests
 
     func testGivenNoReadableFiles_whenObtainingFiles_itReturnsEmpty() {

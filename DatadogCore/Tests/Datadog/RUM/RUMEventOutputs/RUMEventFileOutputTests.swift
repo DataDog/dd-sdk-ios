@@ -37,7 +37,6 @@ class RUMEventFileOutputTests: XCTestCase {
                 dateProvider: fileCreationDateProvider,
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )

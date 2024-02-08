@@ -41,7 +41,7 @@ internal final class LazySpanWriteContext: SpanWriteContext {
         }
 
         // Ignore the current context and use the one captured at initialization:
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: false) { _, writer in
+        scope.eventWriteContext { _, writer in
             guard let context = self.context else {
                 return // unexpected
             }
