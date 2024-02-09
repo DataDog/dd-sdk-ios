@@ -76,7 +76,7 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
                 data: compressedData,
                 mimeType: "application/octet-stream"
             )
-
+            // Remove the 'records' for the metadata
             json["records"] = nil
             json["raw_segment_size"] = data.count
             json["compressed_segment_size"] = compressedData.count
