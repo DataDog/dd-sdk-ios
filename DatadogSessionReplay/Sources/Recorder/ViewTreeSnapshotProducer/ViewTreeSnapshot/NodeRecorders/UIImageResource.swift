@@ -8,8 +8,8 @@
 import UIKit
 
 internal struct UIImageResource {
-    internal let image: UIImage
-    internal let tintColor: UIColor?
+    private let image: UIImage
+    private let tintColor: UIColor?
 
     internal init(image: UIImage, tintColor: UIColor?) {
         self.image = image
