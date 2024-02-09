@@ -628,7 +628,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         waitForExpectations(timeout: 5, handler: nil)
-        _ = server.waitAndReturnRequests(count: 1)
+        _ = server.waitAndReturnRequests(count: 2)
 
         // release the delegate to unswizzle
         session.finishTasksAndInvalidate()
