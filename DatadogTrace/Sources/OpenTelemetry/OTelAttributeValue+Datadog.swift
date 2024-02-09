@@ -64,6 +64,8 @@ extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeVal
                         tags["\(key).\(nestedKey)"] = nestedValue
                     }
                 }
+            @unknown default:
+                break
             }
         }
         return tags
