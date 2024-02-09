@@ -41,13 +41,6 @@ internal class ViewController: UIViewController {
         RUM.enable(with: .init(applicationID: "app-id"))
         RUMMonitor.shared().startView(viewController: self)
 
-        // DDURLSessionDelegate APIs must be visible:
-        _ = DDURLSessionDelegate()
-        _ = DatadogURLSessionDelegate()
-        class CustomDelegate: NSObject, __URLSessionDelegateProviding {
-            var ddURLSessionDelegate: DatadogURLSessionDelegate { DatadogURLSessionDelegate() }
-        }
-
         // Trace APIs must be visible:
         Trace.enable()
 
