@@ -243,12 +243,14 @@ extension SpanEventBuilder {
         bundleWithRUM: Bool = false,
         telemetry: Telemetry = NOPTelemetry()
     ) -> SpanEventBuilder {
-        return SpanEventBuilder(
+        let builder = SpanEventBuilder(
             service: service,
             networkInfoEnabled: networkInfoEnabled,
             eventsMapper: eventsMapper,
             bundleWithRUM: bundleWithRUM,
             telemetry: telemetry
         )
+        builder.attributesEncoder.outputFormatting = [.sortedKeys] // to ensure stable order of JSON keys among OS versions
+        return builder
     }
 }

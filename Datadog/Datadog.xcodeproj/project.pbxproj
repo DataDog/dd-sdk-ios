@@ -592,6 +592,8 @@
 		D2160CF829C0EE2B00FAA9A5 /* UploadMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2160CF629C0EE2B00FAA9A5 /* UploadMocks.swift */; };
 		D2181A8E2B051B7900A518C0 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */; };
 		D2181A8F2B051B7900A518C0 /* URLSessionSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */; };
+		D21831552B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */; };
+		D21831562B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */; };
 		D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */; };
 		D21AE6BD29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */; };
 		D21C26C528A3B49C005DD405 /* FeatureStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21C26C428A3B49C005DD405 /* FeatureStorage.swift */; };
@@ -1124,7 +1126,6 @@
 		D2C1A51629C4C53F00946C31 /* OTConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EB24A24DD3005EA2DE /* OTConstants.swift */; };
 		D2C1A51729C4C53F00946C31 /* OTFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E724A24DD3005EA2DE /* OTFormat.swift */; };
 		D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
-		D2C1A51A29C4C5DD00946C31 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1A51929C4C5DD00946C31 /* JSONEncoder.swift */; };
 		D2C1A51B29C4C75700946C31 /* DDSpanContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F1A620249A45E400075390 /* DDSpanContextTests.swift */; };
 		D2C1A51C29C4C75700946C31 /* ContextMessageReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2E8D59728C7AB90007E5DE1 /* ContextMessageReceiverTests.swift */; };
 		D2C1A51D29C4C75700946C31 /* SpanEventBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E45BD12450F65B00F2C652 /* SpanEventBuilderTests.swift */; };
@@ -1141,7 +1142,6 @@
 		D2C1A53929C4F2DF00946C31 /* DDNoOps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A87924509A0C00DA608C /* DDNoOps.swift */; };
 		D2C1A53A29C4F2DF00946C31 /* RequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2546C0729AF55E90054E00B /* RequestBuilder.swift */; };
 		D2C1A53B29C4F2DF00946C31 /* SpanTagsReducer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614872762485067300E3EBDB /* SpanTagsReducer.swift */; };
-		D2C1A53C29C4F2DF00946C31 /* JSONEncoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C1A51929C4C5DD00946C31 /* JSONEncoder.swift */; };
 		D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909E624A24DD3005EA2DE /* OTSpan.swift */; };
 		D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EC24A24DD3005EA2DE /* OTSpanContext.swift */; };
 		D2C1A53F29C4F2DF00946C31 /* OTReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61E909EA24A24DD3005EA2DE /* OTReference.swift */; };
@@ -2452,6 +2452,7 @@
 		D2160CF629C0EE2B00FAA9A5 /* UploadMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UploadMocks.swift; sourceTree = "<group>"; };
 		D2181A8A2B0500BB00A518C0 /* NetworkInstrumentationSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationSwizzler.swift; sourceTree = "<group>"; };
 		D2181A8D2B051B7900A518C0 /* URLSessionSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzlerTests.swift; sourceTree = "<group>"; };
+		D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkInstrumentationIntegrationTests.swift; sourceTree = "<group>"; };
 		D21AE6BB29E5EDAF0064BF29 /* TelemetryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryTests.swift; sourceTree = "<group>"; };
 		D21C26C428A3B49C005DD405 /* FeatureStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureStorage.swift; sourceTree = "<group>"; };
 		D21C26D028A64599005DD405 /* MessageBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageBusTests.swift; sourceTree = "<group>"; };
@@ -2619,7 +2620,6 @@
 		D2BEEDB12B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDB42B33607D0065F3AC /* URLSessionSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
-		D2C1A51929C4C5DD00946C31 /* JSONEncoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONEncoder.swift; sourceTree = "<group>"; };
 		D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2C1A57329C4F2E800946C31 /* DatadogTraceTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogTraceTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2C7E3AA28F97DCF0023B2CC /* BatteryStatusPublisherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryStatusPublisherTests.swift; sourceTree = "<group>"; };
@@ -3583,6 +3583,7 @@
 				6176991D2A8791880030022B /* Datadog+MultipleInstancesIntegrationTests.swift */,
 				610ABD4B2A6930CA00AFEA34 /* TelemetryCoreIntegrationTests.swift */,
 				D20FD9D52ACC0934004D3569 /* WebLogIntegrationTests.swift */,
+				D21831542B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift */,
 			);
 			path = Public;
 			sourceTree = "<group>";
@@ -4643,7 +4644,6 @@
 				61C5A87C24509A0C00DA608C /* Casting.swift */,
 				E1D202E924C065CF00D1AF3A /* ActiveSpansPool.swift */,
 				61C5A87D24509A0C00DA608C /* Warnings.swift */,
-				D2C1A51929C4C5DD00946C31 /* JSONEncoder.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -7378,6 +7378,7 @@
 				E143CCAF27D236F600F4018A /* CITestIntegrationTests.swift in Sources */,
 				D224430D29E95D6700274EC7 /* CrashReportReceiverTests.swift in Sources */,
 				D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */,
+				D21831552B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */,
 				61D3E0E4277B3D92008BE766 /* KronosNTPPacketTests.swift in Sources */,
 				61E8C5082B28898800E709B4 /* StartingRUMSessionTests.swift in Sources */,
 				616B668E259CC28E00968EE8 /* DDRUMMonitorTests.swift in Sources */,
@@ -8123,7 +8124,6 @@
 				D2C1A4FC29C4C4CB00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A50D29C4C4CB00946C31 /* SpanTagsReducer.swift in Sources */,
 				61CE585A2B48174D00479510 /* SpanWriteContext.swift in Sources */,
-				D2C1A51A29C4C5DD00946C31 /* JSONEncoder.swift in Sources */,
 				D2C1A51829C4C53F00946C31 /* OTSpan.swift in Sources */,
 				D2C1A51429C4C53F00946C31 /* OTSpanContext.swift in Sources */,
 				D2C1A51329C4C53F00946C31 /* OTReference.swift in Sources */,
@@ -8313,7 +8313,6 @@
 				D2C1A53A29C4F2DF00946C31 /* RequestBuilder.swift in Sources */,
 				D2C1A53B29C4F2DF00946C31 /* SpanTagsReducer.swift in Sources */,
 				61CE585B2B48174D00479510 /* SpanWriteContext.swift in Sources */,
-				D2C1A53C29C4F2DF00946C31 /* JSONEncoder.swift in Sources */,
 				D2C1A53D29C4F2DF00946C31 /* OTSpan.swift in Sources */,
 				D2C1A53E29C4F2DF00946C31 /* OTSpanContext.swift in Sources */,
 				D2C1A53F29C4F2DF00946C31 /* OTReference.swift in Sources */,
@@ -8551,6 +8550,7 @@
 				D2CB6F7327C520D400A62B57 /* CoreTelephonyMocks.swift in Sources */,
 				D20605B7287572640047275C /* DatadogContextProviderMock.swift in Sources */,
 				D2CB6F7527C520D400A62B57 /* UIKitExtensionsTests.swift in Sources */,
+				D21831562B6A57530012B3A0 /* NetworkInstrumentationIntegrationTests.swift in Sources */,
 				61DA8CB928647A500074A606 /* InternalLoggerTests.swift in Sources */,
 				D2CB6F7C27C520D400A62B57 /* CrashReporterTests.swift in Sources */,
 				D2CB6F7D27C520D400A62B57 /* CrashContextTests.swift in Sources */,
@@ -9106,7 +9106,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9141,7 +9140,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9176,7 +9174,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9584,7 +9581,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9620,7 +9616,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9655,7 +9650,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10653,7 +10647,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10689,7 +10682,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10724,7 +10716,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10758,7 +10749,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10793,7 +10783,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10828,7 +10817,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -10995,7 +10983,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
@@ -11035,7 +11022,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
@@ -11075,7 +11061,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
@@ -11228,7 +11213,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11263,7 +11247,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11298,7 +11281,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11400,7 +11382,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11435,7 +11416,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11470,7 +11450,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11636,7 +11615,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11671,7 +11649,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -11706,7 +11683,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12208,7 +12184,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12245,7 +12220,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -12281,7 +12255,6 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2023 Datadog. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

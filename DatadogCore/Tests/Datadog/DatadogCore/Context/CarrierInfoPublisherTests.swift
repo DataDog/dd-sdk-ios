@@ -45,6 +45,7 @@ class CarrierInfoPublisherTests: XCTestCase {
         }
     }
 
+    @available(iOS, deprecated: 12)
     func testGivenCellularServiceUnavailableOnIOS11_whenReadingCurrentCarrierInfo_itReturnsNoValue() {
         // Given
         let reader = iOS11CarrierInfoReader(networkInfo: unavailableCTTelephonyNetworkInfo)
@@ -57,6 +58,7 @@ class CarrierInfoPublisherTests: XCTestCase {
         XCTAssertNil(info)
     }
 
+    @available(iOS, deprecated: 12)
     func testGivenSubscribediOS11CarrierInfoProvider_whenCarrierInfoChanges_itReadsNewValue() throws {
         // Given
         let reader = iOS11CarrierInfoReader(networkInfo: availableCTTelephonyNetworkInfo)

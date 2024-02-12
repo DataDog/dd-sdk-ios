@@ -7,7 +7,7 @@
 #if os(iOS)
 import UIKit
 
-internal extension UIView {
+internal extension UITraitEnvironment {
     var usesDarkMode: Bool {
         if #available(iOS 12.0, *) {
             return traitCollection.userInterfaceStyle == .dark
