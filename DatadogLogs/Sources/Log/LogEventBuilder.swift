@@ -73,7 +73,12 @@ internal struct LogEventBuilder {
             applicationBuildNumber: context.buildNumber,
             buildId: context.buildId,
             dd: LogEvent.Dd(
-                device: LogEvent.DeviceInfo(architecture: context.device.architecture)
+                device: LogEvent.DeviceInfo(
+                    brand: context.device.brand,
+                    name: context.device.name,
+                    model: context.device.model,
+                    architecture: context.device.architecture
+                )
             ),
             os: .init(
                 name: context.device.osName,

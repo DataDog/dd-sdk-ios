@@ -143,7 +143,12 @@ class CrashLogReceiverTests: XCTestCase {
             applicationVersion: crashContext.version,
             applicationBuildNumber: crashContext.buildNumber,
             buildId: nil,
-            dd: .init(device: .init(architecture: crashContext.device.architecture)),
+            dd: .init(device: .init(
+                brand: crashContext.device.brand,
+                name: crashContext.device.name,
+                model: crashContext.device.model,
+                architecture: crashContext.device.architecture)
+            ),
             os: .init(
                 name: crashContext.device.osName,
                 version: crashContext.device.osVersion,

@@ -75,6 +75,15 @@ public struct LogEvent: Encodable {
 
     /// Device information.
     public struct DeviceInfo: Codable {
+        /// Device manufacturer name. Always'Apple'
+        public let brand: String
+
+        /// Device marketing name, e.g. "iPhone", "iPad", "iPod touch".
+        public let name: String
+
+        /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
+        public let model: String
+        
         /// The architecture of the device
         public let architecture: String
     }

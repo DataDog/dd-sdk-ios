@@ -225,12 +225,18 @@ extension LogEvent.Dd: AnyMockable, RandomMockable {
 extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
+            brand: .mockAny(),
+            name: .mockAny(),
+            model: .mockAny(),
             architecture: .mockAny()
         )
     }
 
     public static func mockRandom() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
+            brand: .mockRandom(),
+            name: .mockRandom(),
+            model: .mockRandom(),
             architecture: .mockRandom()
         )
     }

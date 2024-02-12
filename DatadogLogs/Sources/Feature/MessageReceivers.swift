@@ -237,7 +237,11 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             applicationBuildNumber: context.buildNumber,
             buildId: nil,
             dd: .init(
-                device: .init(architecture: deviceInfo.architecture)
+                device: .init(
+                    brand: deviceInfo.brand,
+                    name: deviceInfo.name,
+                    model: deviceInfo.model,
+                    architecture: deviceInfo.architecture)
             ),
             os: .init(
                 name: context.device.osName,
