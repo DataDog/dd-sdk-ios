@@ -1,11 +1,11 @@
 # Unreleased
 
+- [FIX] Propagate parent span in distributing tracing. See [#1627][]
+
 # 2.7.1 / 12-02-2024
 
-- [FIX] Privacy Report missing properties. See #1656
-- [FIX] Privacy manifest collision in static framework. See #1666
-- [FIX] Propagate parent span in distributing tracing. See [#1627][]
 - [FIX] Privacy Report missing properties. See [#1656][]
+- [FIX] Privacy manifest collision in static framework. See [#1666][]
 
 # 2.7.0 / 25-01-2024
 
