@@ -36,7 +36,8 @@ class MessageEmitterTests: XCTestCase {
         // Then
         let messageKey = MessageEmitter.MessageKeys.browserLog
         let message = try XCTUnwrap(receiverMock.messages.firstBaggage(withKey: messageKey))
-        let json = JSONObjectMatcher(object: try message.encode() as! JSON)
+        let object = try XCTUnwrap(message.encode() as? [String: Any])
+        let json = JSONObjectMatcher(object: object)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
@@ -69,7 +70,14 @@ class MessageEmitterTests: XCTestCase {
     }
 
     func testWhenReceivingEventOtherThanLog_itForwardsToRUM() throws {
-        let eventType: String = .mockRandom(otherThan: ["log"])
+        let eventType = [
+            "rum",
+            "view",
+            "action",
+            "resource",
+            "error",
+            "long_task"
+        ].randomElement()! // swiftlint:disable:this implicitly_unwrapped_optional
 
         // Given
         let receiverMock = FeatureMessageReceiverMock()
@@ -91,7 +99,8 @@ class MessageEmitterTests: XCTestCase {
         // Then
         let messageKey = MessageEmitter.MessageKeys.browserRUMEvent
         let message = try XCTUnwrap(receiverMock.messages.firstBaggage(withKey: messageKey))
-        let json = JSONObjectMatcher(object: try message.encode() as! JSON)
+        let object = try XCTUnwrap(message.encode() as? [String: Any])
+        let json = JSONObjectMatcher(object: object)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
@@ -100,7 +109,8 @@ class MessageEmitterTests: XCTestCase {
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itThrows() {
-        let bridge = MessageEmitter(logsSampler: .mockAny(), core: PassthroughCoreMock())
+        let core = PassthroughCoreMock()
+        let bridge = MessageEmitter(logsSampler: .mockAny(), core: core)
 
         let messageInvalidJSON = """
         { 123: foobar }

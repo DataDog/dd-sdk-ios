@@ -5,69 +5,44 @@
  */
 
 import Foundation
-
-internal typealias JSON = [String: Any]
+import DatadogInternal
 
 /// Intermediate type to parse WebView messages and send them to the message bus
-internal enum WebViewMessage {
-    /// A log message with a JSON payload
-    case log(JSON)
+internal struct WebViewMessage: Decodable {
+    enum EventType: String, Decodable {
+        case log
+        case rum
+        case view
+        case action
+        case resource
+        case error
+        case longTask = "long_task"
+    }
 
-    /// A RUM event with a JSON payload
-    case rum(JSON)
+    let eventType: EventType
+    let event: AnyCodable
 }
 
 /// Errors that can be thrown when parsing a WebView message
 internal enum WebViewMessageError: Error, Equatable {
     case dataSerialization(message: String)
-    case JSONDeserialization(rawJSONDescription: String)
     case invalidMessage(description: String)
-    case missingKey(key: String)
 }
 
 extension WebViewMessage {
-    internal enum Keys {
-        static let eventType = "eventType"
-        static let event = "event"
-    }
-
-    private enum EventTypes {
-        static let log = "log"
-    }
-
-    /// Parses a bag of data to a `WebViewTrackingMessage`
+    /// Parses a bag of data to a `WebViewMessage`
+    /// 
     /// - Parameter body: Unstructured bag of data
     internal init(body: Any) throws {
         guard let message = body as? String else {
             throw WebViewMessageError.invalidMessage(description: String(describing: body))
         }
 
-        let eventJSON = try WebViewMessage.parse(message)
-
-        guard let type = eventJSON[Keys.eventType] as? String else {
-            throw WebViewMessageError.missingKey(key: Keys.eventType)
-        }
-
-        guard let event = eventJSON[Keys.event] as? JSON else {
-            throw WebViewMessageError.missingKey(key: Keys.event)
-        }
-
-        switch type {
-        case EventTypes.log:
-            self = .log(event)
-        default:
-            self = .rum(event)
-        }
-    }
-
-    private static func parse(_ message: String) throws -> JSON {
         guard let data = message.data(using: .utf8) else {
             throw WebViewMessageError.dataSerialization(message: message)
         }
-        let rawJSON = try JSONSerialization.jsonObject(with: data, options: [])
-        guard let json = rawJSON as? JSON else {
-            throw WebViewMessageError.JSONDeserialization(rawJSONDescription: String(describing: rawJSON))
-        }
-        return json
+
+        let decoder = JSONDecoder()
+        self = try decoder.decode(WebViewMessage.self, from: data)
     }
 }

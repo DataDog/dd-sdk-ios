@@ -138,13 +138,14 @@ class WebViewTrackingTests: XCTestCase {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
 
+        let core = PassthroughCoreMock()
         let controller = DDUserContentController()
         WebViewTracking.enable(
             tracking: controller,
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
-            in: PassthroughCoreMock()
+            in: core
         )
 
         let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
@@ -163,7 +164,7 @@ class WebViewTrackingTests: XCTestCase {
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserLog:
-                    let event = try? baggage.encode() as? JSON
+                    let event = try? baggage.encode() as? [String: Any]
                     XCTAssertEqual(event?["date"] as? Int64, 1_635_932_927_012)
                     XCTAssertEqual(event?["message"] as? String, "console error: error")
                     XCTAssertEqual(event?["status"] as? String, "error")
@@ -172,8 +173,8 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(event?["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                     logMessageExpectation.fulfill()
                 case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
-                    let event = try? baggage.encode() as? JSON
-                    XCTAssertEqual((event?["view"] as? JSON)?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                    let event = try? baggage.encode() as? [String: Any]
+                    XCTAssertEqual((event?["view"] as? [String: Any])?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                     rumMessageExpectation.fulfill()
                 case .baggage(let label, let baggage):
                     XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")

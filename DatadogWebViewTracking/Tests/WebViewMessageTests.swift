@@ -37,8 +37,9 @@ class WebViewMessageTests: XCTestCase {
         let message = try WebViewMessage(body: eventString)
 
         // Then
-        XCTAssertTrue(message.isLogEvent)
-        let event = JSONObjectMatcher(object: message.json)
+        XCTAssertEqual(message.eventType, .log)
+        let json = try XCTUnwrap(message.event.value as? [String: Any])
+        let event = JSONObjectMatcher(object: json)
         XCTAssertEqual(try event.value("date"), 1_635_932_927_012)
         XCTAssertEqual(try event.value("error.origin"), "console")
         XCTAssertEqual(try event.value("message"), "console error: error")
@@ -48,7 +49,7 @@ class WebViewMessageTests: XCTestCase {
         XCTAssertEqual(try event.value("view.url"), "https://datadoghq.dev/browser-sdk-test-playground")
     }
 
-    func testParsingRUMEvent() throws {
+    func testParsingViewEvent() throws {
         // Given
         let eventString = """
         {
@@ -112,8 +113,9 @@ class WebViewMessageTests: XCTestCase {
         let message = try WebViewMessage(body: eventString)
 
         // Then
-        XCTAssertTrue(message.isRUMEvent)
-        let event = JSONObjectMatcher(object: message.json) // only partial matching
+        XCTAssertEqual(message.eventType, .view)
+        let json = try XCTUnwrap(message.event.value as? [String: Any])
+        let event = JSONObjectMatcher(object: json) // only partial matching
         XCTAssertEqual(try event.value("application.id"), "xxx")
         XCTAssertEqual(try event.value("date"), 1_635_933_113_708)
         XCTAssertEqual(try event.value("service"), "super")
@@ -145,62 +147,27 @@ class WebViewMessageTests: XCTestCase {
         XCTAssertEqual(try event.value("_dd.session.plan"), 2)
     }
 
+    func testParsinValidEventType() {
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "log", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "rum", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "view", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "action", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "resource", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "error", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "long_task", "event": { } }"#))
+    }
+
     func testParsingCorruptedEvent() {
-        let invalidJSON = "(^#$@#)"
-
-        XCTAssertThrowsError(try WebViewMessage(body: invalidJSON)) { error in
-            XCTAssertEqual((error as NSError).domain, NSCocoaErrorDomain)
-            XCTAssertEqual((error as NSError).code, NSPropertyListReadCorruptError)
+        XCTAssertThrowsError(try WebViewMessage(body: "(^#$@#)")) { error in
+            XCTAssertTrue(error is DecodingError)
         }
-    }
 
-    func testParsingInvalidEvent() {
-        let messageWithNoEventType = """
-        {
-          "event": {
-            "date": 1635932927012,
-            "error": {
-              "origin": "console"
-            }
-          }
+        XCTAssertThrowsError(try WebViewMessage(body: #"{ "event": { } }"#)) { error in
+            XCTAssertTrue(error is DecodingError)
         }
-        """
-        let messageWithNoEvent = """
-        {
-            "eventType": "log"
-        }
-        """
 
-        XCTAssertThrowsError(try WebViewMessage(body: messageWithNoEventType)) { error in
-            XCTAssertEqual(error as? WebViewMessageError, .missingKey(key: "eventType"))
-        }
-        XCTAssertThrowsError(try WebViewMessage(body: messageWithNoEvent)) { error in
-            XCTAssertEqual(error as? WebViewMessageError, .missingKey(key: "event"))
-        }
-    }
-}
-
-// MARK: - Convenience
-
-internal extension WebViewMessage {
-    var isLogEvent: Bool {
-        switch self {
-        case .log: return true
-        default: return false
-        }
-    }
-
-    var isRUMEvent: Bool {
-        switch self {
-        case .rum: return true
-        default: return false
-        }
-    }
-
-    var json: JSON {
-        switch self {
-        case let .log(json): return json
-        case let .rum(json): return json
+        XCTAssertThrowsError(try WebViewMessage(body: #"{ "eventType": "log" }"#)) { error in
+            XCTAssertTrue(error is DecodingError)
         }
     }
 }
