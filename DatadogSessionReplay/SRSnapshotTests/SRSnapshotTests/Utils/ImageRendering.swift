@@ -66,6 +66,8 @@ private extension SRWireframe {
             )
         case .placeholderWireframe(value: let placeholder):
             return placeholder.toFrame()
+        case .webviewWireframe(value: let webview):
+            return webview.toFrame()
         }
     }
 }
@@ -105,6 +107,26 @@ private extension SRImageWireframe {
             height: CGFloat(height),
             style: frameStyle(border: border, style: shapeStyle),
             content: frameContent(imageData: imageData)
+        )
+    }
+}
+
+private extension SRWebviewWireframe {
+    func toFrame() -> BlueprintFrame {
+        BlueprintFrame(
+            x: CGFloat(x),
+            y: CGFloat(y),
+            width: CGFloat(width),
+            height: CGFloat(height),
+            style: frameStyle(border: border, style: shapeStyle),
+            content: frameContent(
+                text: "WKWebView",
+                textStyle: nil,
+                textPosition: SRTextPosition(
+                    alignment: SRTextPosition.Alignment(horizontal: .center, vertical: .center),
+                    padding: nil
+                )
+            )
         )
     }
 }
