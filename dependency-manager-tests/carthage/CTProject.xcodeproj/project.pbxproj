@@ -28,6 +28,8 @@
 		D20D6FE929F6C2ED00D2886E /* DatadogTrace.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D2966C2329CA1C5300FC6B3C /* DatadogTrace.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D20D6FEA29F6C2F200D2886E /* DatadogRUM.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */; };
 		D20D6FEB29F6C2F200D2886E /* DatadogRUM.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D22919292B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192A2B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */; };
 		D2675BF32A019CF500190669 /* DatadogCrashReporting.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; };
 		D2675BF42A019CF500190669 /* DatadogCrashReporting.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 615D9E6A2604B5B1006DC6D1 /* DatadogCrashReporting.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D2675BF52A019CF600190669 /* DatadogInternal.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */; };
@@ -148,6 +150,7 @@
 		9E9D5E8625F90FC6002F12A0 /* DatadogObjc.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogObjc.xcframework; path = Carthage/Build/DatadogObjc.xcframework; sourceTree = "<group>"; };
 		9E9D5E8725F90FC6002F12A0 /* DatadogCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogCore.xcframework; path = Carthage/Build/DatadogCore.xcframework; sourceTree = "<group>"; };
 		D20D6FE329F6C2D600D2886E /* DatadogRUM.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogRUM.xcframework; path = Carthage/Build/DatadogRUM.xcframework; sourceTree = "<group>"; };
+		D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D240FC8B2995183D00D9F099 /* DatadogInternal.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogInternal.xcframework; path = Carthage/Build/DatadogInternal.xcframework; sourceTree = "<group>"; };
 		D26F741729ACC61E00D25622 /* DatadogLogs.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = DatadogLogs.xcframework; path = Carthage/Build/DatadogLogs.xcframework; sourceTree = "<group>"; };
 		D290BA2D27CD09740019936D /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -262,6 +265,7 @@
 				61C3641A243752A500C4D4E6 /* SceneDelegate.swift */,
 				61C3641C243752A500C4D4E6 /* ViewController.swift */,
 				61C36426243752A600C4D4E6 /* Info.plist */,
+				D22919282B76525C00C38A18 /* PrivacyInfo.xcprivacy */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -471,6 +475,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D22919292B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,6 +497,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192A2B76525C00C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
