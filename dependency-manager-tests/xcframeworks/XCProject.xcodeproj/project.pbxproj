@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		3C14BEF42B76815800D8F265 /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C14BEF32B76815800D8F265 /* OpenTelemetryApi.xcframework */; };
 		3C14BEF52B76815800D8F265 /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C14BEF32B76815800D8F265 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3CAD15512B7BCAE4006480B5 /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C14BEF32B76815800D8F265 /* OpenTelemetryApi.xcframework */; };
+		3CAD15522B7BCAE4006480B5 /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C14BEF32B76815800D8F265 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		617803D52A701052005FE258 /* DatadogSessionReplay.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */; };
 		617803D62A701052005FE258 /* DatadogSessionReplay.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 617803D42A701051005FE258 /* DatadogSessionReplay.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		61C36419243752A500C4D4E6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C36418243752A500C4D4E6 /* AppDelegate.swift */; };
@@ -117,6 +119,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				D2F9245A29A4B9D8006733B2 /* DatadogObjc.xcframework in Embed Frameworks */,
+				3CAD15522B7BCAE4006480B5 /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				D2EBEDAC29B7863B00B15732 /* DatadogLogs.xcframework in Embed Frameworks */,
 				D2F9245629A4B9D8006733B2 /* DatadogCore.xcframework in Embed Frameworks */,
 				D2966C2C29CA1E1C00FC6B3C /* DatadogTrace.xcframework in Embed Frameworks */,
@@ -198,6 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2F9245929A4B9D8006733B2 /* DatadogObjc.xcframework in Frameworks */,
+				3CAD15512B7BCAE4006480B5 /* OpenTelemetryApi.xcframework in Frameworks */,
 				D2EBEDAB29B7863B00B15732 /* DatadogLogs.xcframework in Frameworks */,
 				D2F9245529A4B9D8006733B2 /* DatadogCore.xcframework in Frameworks */,
 				D2966C2B29CA1E1C00FC6B3C /* DatadogTrace.xcframework in Frameworks */,
