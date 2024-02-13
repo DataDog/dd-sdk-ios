@@ -276,11 +276,13 @@ internal class RUMResourceScope: RUMScope {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
+                binaryImages: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
                 isCrash: false,
                 message: command.errorMessage,
+                meta: nil,
                 resource: .init(
                     method: resourceHTTPMethod,
                     provider: errorEventProvider,
@@ -290,7 +292,9 @@ internal class RUMResourceScope: RUMScope {
                 source: command.errorSource.toRUMDataFormat,
                 sourceType: command.errorSourceType,
                 stack: command.stack,
-                type: command.errorType
+                threads: nil,
+                type: command.errorType,
+                wasTruncated: nil
             ),
             os: .init(context: context),
             service: context.service,

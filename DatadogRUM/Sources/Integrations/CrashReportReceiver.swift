@@ -358,16 +358,20 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             device: lastRUMView.device,
             display: nil,
             error: .init(
+                binaryImages: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
                 isCrash: true,
                 message: errorMessage,
+                meta: nil,
                 resource: nil,
                 source: .source,
                 sourceType: .ios,
                 stack: errorStackTrace,
-                type: errorType
+                threads: nil,
+                type: errorType,
+                wasTruncated: nil
             ),
             os: lastRUMView.os,
             service: lastRUMView.service,
