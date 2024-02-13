@@ -184,6 +184,7 @@ class AnyCodableTests: XCTestCase {
 
     func testGivenEncodableValueWrappedIntoCodableValue_whenEncoding_itProducesExpectedJSONRepresentation() throws {
         let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
 
         func json<T: Encodable>(for value: T) throws -> String {
             // Given

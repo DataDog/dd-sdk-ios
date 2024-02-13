@@ -15,9 +15,21 @@ extension DatadogCoreProxy {
         return try waitAndReturnEventsData(ofFeature: TraceFeature.name)
             .map { eventData in try SpanMatcher.fromJSONObjectData(eventData) }
     }
+
+    func waitAndReturnSpanEvents(file: StaticString = #file, line: UInt = #line) -> [SpanEvent] {
+        return waitAndReturnEvents(ofFeature: TraceFeature.name, ofType: SpanEventsEnvelope.self)
+            .map { envelope in
+                precondition(envelope.spans.count == 1, "Only expect one `SpanEvent` per envelope")
+                return envelope.spans[0]
+            }
+    }
 }
 
 // MARK: - Span Mocks
+
+internal struct NOPSpanWriteContext: SpanWriteContext {
+    func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {}
+}
 
 extension DDSpan {
     static func mockAny(in core: DatadogCoreProtocol) -> DDSpan {
@@ -29,14 +41,18 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:]
+        tags: [String: Encodable] = [:],
+        eventBuilder: SpanEventBuilder = .mockAny(),
+        eventWriter: SpanWriteContext = NOPSpanWriteContext()
     ) -> DDSpan {
         return DDSpan(
             tracer: tracer,
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags
+            tags: tags,
+            eventBuilder: eventBuilder,
+            eventWriter: eventWriter
         )
     }
 
@@ -45,14 +61,18 @@ extension DDSpan {
         context: DDSpanContext = .mockAny(),
         operationName: String = .mockAny(),
         startTime: Date = .mockAny(),
-        tags: [String: Encodable] = [:]
+        tags: [String: Encodable] = [:],
+        eventBuilder: SpanEventBuilder = .mockAny(),
+        eventWriter: SpanWriteContext = NOPSpanWriteContext()
     ) -> DDSpan {
         return DDSpan(
             tracer: .mockAny(in: core),
             context: context,
             operationName: operationName,
             startTime: startTime,
-            tags: tags
+            tags: tags,
+            eventBuilder: eventBuilder,
+            eventWriter: eventWriter
         )
     }
 }
@@ -94,25 +114,19 @@ extension DatadogTracer {
         core: DatadogCoreProtocol,
         sampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
-        service: String? = nil,
-        networkInfoEnabled: Bool = true,
-        spanEventMapper: ((SpanEvent) -> SpanEvent)? = nil,
         tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
-        contextReceiver: ContextMessageReceiver = .mockAny(),
+        spanEventBuilder: SpanEventBuilder = .mockAny(),
         loggingIntegration: TracingWithLoggingIntegration = .mockAny()
     ) -> DatadogTracer {
         return DatadogTracer(
             core: core,
             sampler: sampler,
             tags: tags,
-            service: service,
-            networkInfoEnabled: networkInfoEnabled,
-            spanEventMapper: spanEventMapper,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
-            contextReceiver: contextReceiver,
-            loggingIntegration: loggingIntegration
+            loggingIntegration: loggingIntegration,
+            spanEventBuilder: spanEventBuilder
         )
     }
 }
@@ -129,6 +143,28 @@ extension TracingWithLoggingIntegration {
 
 extension ContextMessageReceiver {
     static func mockAny() -> ContextMessageReceiver {
-        return ContextMessageReceiver(bundleWithRumEnabled: true)
+        return ContextMessageReceiver()
+    }
+}
+
+extension SpanEventBuilder {
+    static func mockAny() -> SpanEventBuilder {
+        return mockWith()
+    }
+
+    static func mockWith(
+        service: String = .mockAny(),
+        networkInfoEnabled: Bool = false,
+        eventsMapper: SpanEventMapper? = nil,
+        bundleWithRUM: Bool = false,
+        telemetry: Telemetry = NOPTelemetry()
+    ) -> SpanEventBuilder {
+        return SpanEventBuilder(
+            service: service,
+            networkInfoEnabled: networkInfoEnabled,
+            eventsMapper: eventsMapper,
+            bundleWithRUM: bundleWithRUM,
+            telemetry: telemetry
+        )
     }
 }

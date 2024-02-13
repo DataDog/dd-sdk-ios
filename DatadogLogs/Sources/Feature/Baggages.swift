@@ -33,13 +33,6 @@ internal struct SpanContext: Decodable {
 
     let traceID: String?
     let spanID: String?
-
-    var internalAttributes: [String: String?] {
-        [
-            CodingKeys.traceID.rawValue: traceID,
-            CodingKeys.spanID.rawValue: spanID
-        ]
-    }
 }
 
 /// The RUM context received from `DatadogCore`.
@@ -61,15 +54,4 @@ internal struct RUMContext: Decodable {
     let viewID: String?
     /// The ID of current RUM action (standard UUID `String`, lowercased).
     let userActionID: String?
-
-    var internalAttributes: [String: String] {
-        var context: [String: String] = [
-            "application_id": applicationID,
-            "session_id": sessionID
-        ]
-
-        context["view.id"] = viewID
-        context["user_action.id"] = userActionID
-        return context
-    }
 }

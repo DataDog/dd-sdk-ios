@@ -18,6 +18,17 @@ public enum LogLevel: Int, Codable {
     case critical
 }
 
+extension CoreLoggerLevel {
+    public init(logLevel: LogLevel) {
+        switch logLevel {
+        case .debug, .info, .notice: self = .debug
+        case .warn: self = .warn
+        case .error: self = .error
+        case .critical: self = .critical
+        }
+    }
+}
+
 /// Datadog Logger.
 ///
 /// Usage:

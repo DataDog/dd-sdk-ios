@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,6 +19,10 @@
 		A0DBB7E71DD4888837ED81B5 /* Pods_Common_App_Dynamic_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8CCD75AF46655F78F7A3D7A /* Pods_Common_App_Dynamic_iOS.framework */; };
 		B162FE141838120027D821F9 /* libPods-Common-App Static iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C285D46A1E0E371443F0F77 /* libPods-Common-App Static iOS.a */; };
 		CCA17085193225EE98A8B997 /* Pods_Common_App_Dynamic_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F08D599966036C2B51829AB /* Pods_Common_App_Dynamic_tvOS.framework */; };
+		D229192C2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192D2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192E2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192F2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
 		D235937A27C8EB0500BF32D7 /* CPProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C31D26E0E27A006EDF53 /* CPProjectTests.swift */; };
 		D235938927C8ECD800BF32D7 /* CPProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C32826E0E27A006EDF53 /* CPProjectUITests.swift */; };
 		D245424627C8D3200039E0A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C30626E0E278006EDF53 /* AppDelegate.swift */; };
@@ -144,6 +148,7 @@
 		BC677EB73CB7FE4A474BB0D5 /* Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig"; path = "Target Support Files/Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests/Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig"; sourceTree = "<group>"; };
 		BFCEA18578B6134001291BD5 /* Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Common-CPProjectNoUseFrameworks tvOS/Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		CA325D6A1605874914378E3E /* libPods-App Static tvOS Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-App Static tvOS Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D235938127C8EB0500BF32D7 /* App Static tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App Static tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D235938F27C8ECD800BF32D7 /* App Static tvOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App Static tvOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D245425127C8D3200039E0A6 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -293,6 +298,7 @@
 				61B8C30826E0E278006EDF53 /* SceneDelegate.swift */,
 				D245425627C8DE3D0039E0A6 /* ViewController.swift */,
 				61B8C31426E0E27A006EDF53 /* Info.plist */,
+				D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -384,6 +390,7 @@
 				61373B2526E0E78300E0F46E /* Sources */,
 				61373B2626E0E78300E0F46E /* Frameworks */,
 				61373B2726E0E78300E0F46E /* Resources */,
+				CC86EE069424642723D0C2E2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -586,6 +593,7 @@
 				D245427827C8E93D0039E0A6 /* Sources */,
 				D245427C27C8E93D0039E0A6 /* Frameworks */,
 				D245427E27C8E93D0039E0A6 /* Resources */,
+				5B109A73B29580A024EBCD59 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -675,6 +683,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192D2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -696,6 +705,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192C2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -731,6 +741,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192E2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -752,6 +763,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192F2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -797,6 +809,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		5B109A73B29580A024EBCD59 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		8D0504D0CD7CAFBBB5B63F13 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -817,6 +846,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CC86EE069424642723D0C2E2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D235937827C8EB0500BF32D7 /* [CP] Check Pods Manifest.lock */ = {

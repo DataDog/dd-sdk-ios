@@ -17,7 +17,11 @@ public enum URLSessionInstrumentation {
         do {
             try enableOrThrow(with: configuration, in: core)
         } catch let error {
-           consolePrint("\(error)")
+            consolePrint("\(error)", .error)
+
+            if error is InternalError { // SDK error, send to telemetry
+                core.telemetry.error(error)
+            }
         }
     }
 
@@ -37,7 +41,11 @@ public enum URLSessionInstrumentation {
         do {
             try disableOrThrow(delegateClass: delegateClass, in: core)
         } catch let error {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
+
+            if error is InternalError { // SDK error, send to telemetry
+                core.telemetry.error(error)
+            }
         }
     }
 

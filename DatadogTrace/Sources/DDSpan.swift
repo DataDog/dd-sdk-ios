@@ -17,20 +17,24 @@ internal final class DDSpan: OTSpan {
     /// Writes span logs to Logging Feature. `nil` if Logging feature is disabled.
     private let loggingIntegration: TracingWithLoggingIntegration
 
-    /// Queue used for synchronizing mutable properties access.
-    private let queue: DispatchQueue
-    /// Unsynchronized span operation name. Must be accessed on `queue`.
-    private var unsafeOperationName: String
-    /// Unsynchronized span tags.  Must be accessed on `queue`.
-    private var unsafeTags: [String: Encodable]
-    /// Unsychronized span log fields.  Must be accessed on `queue`.
-    private var unsafeLogFields: [[String: Encodable]]
-    /// Unsychronized span completion.  Must be accessed on `queue`.
-    private var unsafeIsFinished: Bool
-
+    /// Span operation name.
+    @ReadWriteLock
+    private var operationName: String
+    /// Span tags.
+    @ReadWriteLock
+    private var tags: [String: Encodable]
+    /// Span log fields.
+    @ReadWriteLock
+    private var logFields: [[String: Encodable]]
+    /// If this span has completed.
+    @ReadWriteLock
+    private var isFinished: Bool
+    @ReadWriteLock
     private var activityReference: ActivityReference?
-    /// Telemetry interface.
-    private let telemetry: Telemetry
+    /// Builds span events.
+    private let eventBuilder: SpanEventBuilder
+    /// Writes span events to core.
+    private let eventWriter: SpanWriteContext
 
     init(
         tracer: DatadogTracer,
@@ -38,18 +42,19 @@ internal final class DDSpan: OTSpan {
         operationName: String,
         startTime: Date,
         tags: [String: Encodable],
-        telemetry: Telemetry = NOPTelemetry()
+        eventBuilder: SpanEventBuilder,
+        eventWriter: SpanWriteContext
     ) {
         self.ddTracer = tracer
         self.ddContext = context
         self.startTime = startTime
         self.loggingIntegration = tracer.loggingIntegration
-        self.queue = ddTracer.queue // share the queue among all spans
-        self.unsafeOperationName = operationName
-        self.unsafeTags = tags
-        self.unsafeLogFields = []
-        self.unsafeIsFinished = false
-        self.telemetry = telemetry
+        self.operationName = operationName
+        self.tags = tags
+        self.logFields = []
+        self.isFinished = false
+        self.eventBuilder = eventBuilder
+        self.eventWriter = eventWriter
     }
 
     // MARK: - Open Tracing interface
@@ -63,39 +68,31 @@ internal final class DDSpan: OTSpan {
     }
 
     func setOperationName(_ operationName: String) {
-        queue.async {
-            if self.warnIfFinished("setOperationName(_:)") {
-                return
-            }
-            self.unsafeOperationName = operationName
+        if warnIfFinished("setOperationName(_:)") {
+            return
         }
+        self.operationName = operationName
     }
 
     func setTag(key: String, value: Encodable) {
-        queue.async {
-            if self.warnIfFinished("setTag(key:value:)") {
-                return
-            }
-            self.unsafeTags[key] = value
+        if warnIfFinished("setTag(key:value:)") {
+            return
         }
+        _tags.mutate { $0[key] = value }
     }
 
     func setBaggageItem(key: String, value: String) {
-        queue.sync {
-            if self.warnIfFinished("setBaggageItem(key:value:)") {
-                return
-            }
-            ddContext.baggageItems.set(key: key, value: value)
+        if warnIfFinished("setBaggageItem(key:value:)") {
+            return
         }
+        ddContext.baggageItems.set(key: key, value: value)
     }
 
     func baggageItem(withKey key: String) -> String? {
-        queue.sync {
-            if self.warnIfFinished("baggageItem(withKey:)") {
-                return nil
-            }
-            return ddContext.baggageItems.get(key: key)
+        if warnIfFinished("baggageItem(withKey:)") {
+            return nil
         }
+        return ddContext.baggageItems.get(key: key)
     }
 
     @discardableResult
@@ -108,69 +105,44 @@ internal final class DDSpan: OTSpan {
     }
 
     func log(fields: [String: Encodable], timestamp: Date) {
-        queue.async {
-            if self.warnIfFinished("log(fields:timestamp:)") {
-                return
-            }
-            self.unsafeLogFields.append(fields)
+        if warnIfFinished("log(fields:timestamp:)") {
+            return
         }
+        logFields.append(fields)
         sendSpanLogs(fields: fields, date: timestamp)
     }
 
     func finish(at time: Date) {
-        let isFinished: Bool = queue.sync {
-            let wasFinished = self.warnIfFinished("finish(at:)")
-            self.unsafeIsFinished = true
-            return wasFinished
+        if warnIfFinished("finish(at:)") {
+            return
         }
+        isFinished = true
 
-        if !isFinished {
-            if let activity = activityReference {
-                ddTracer.removeSpan(activityReference: activity)
-            }
-            sendSpan(finishTime: time, sampler: ddTracer.sampler)
+        if let activity = activityReference {
+            ddTracer.removeSpan(activityReference: activity)
         }
+        sendSpan(finishTime: time, sampler: ddTracer.sampler)
     }
 
     // MARK: - Writing SpanEvent
 
     /// Sends span event for given `DDSpan`.
     private func sendSpan(finishTime: Date, sampler: Sampler) {
-        guard let scope = ddTracer.core?.scope(for: TraceFeature.name) else {
-            return
-        }
-
-        // Baggage items must be accessed outside the `tracer.queue` as it uses that queue for internal sync.
-        let baggageItems = ddContext.baggageItems.all
-
-        scope.eventWriteContext { context, writer in
-            // This queue adds performance optimisation by reading all `unsafe*` values in one block and performing
-            // the `builder.createSpan()` off the main thread. This is important as the span creation includes
-            // attributes encoding to JSON string values (for tags and extra user info). It captures `self` strongly
-            // as it is very likely to be deallocated after return.
-            let event: SpanEvent = self.queue.sync {
-                let builder = SpanEventBuilder(
-                    serviceName: self.ddTracer.service,
-                    networkInfoEnabled: self.ddTracer.networkInfoEnabled,
-                    eventsMapper: self.ddTracer.spanEventMapper,
-                    telemetry: self.telemetry
-                )
-
-                return builder.createSpanEvent(
-                    context: context,
-                    traceID: self.ddContext.traceID,
-                    spanID: self.ddContext.spanID,
-                    parentSpanID: self.ddContext.parentSpanID,
-                    operationName: self.unsafeOperationName,
-                    startTime: self.startTime,
-                    finishTime: finishTime,
-                    samplingRate: sampler.samplingRate / 100.0,
-                    isKept: sampler.sample(),
-                    tags: self.unsafeTags,
-                    baggageItems: baggageItems,
-                    logFields: self.unsafeLogFields
-                )
-            }
+        eventWriter.spanWriteContext { context, writer in
+            let event = self.eventBuilder.createSpanEvent(
+                context: context,
+                traceID: self.ddContext.traceID,
+                spanID: self.ddContext.spanID,
+                parentSpanID: self.ddContext.parentSpanID,
+                operationName: self.operationName,
+                startTime: self.startTime,
+                finishTime: finishTime,
+                samplingRate: sampler.samplingRate / 100.0,
+                isKept: sampler.sample(),
+                tags: self.tags,
+                baggageItems: self.ddContext.baggageItems.all,
+                logFields: self.logFields
+            )
 
             let envelope = SpanEventsEnvelope(span: event, environment: context.env)
             writer.write(value: envelope)
@@ -179,7 +151,7 @@ internal final class DDSpan: OTSpan {
 
     private func sendSpanLogs(fields: [String: Encodable], date: Date) {
         loggingIntegration.writeLog(withSpanContext: ddContext, fields: fields, date: date, else: {
-            self.queue.async { DD.logger.warn("The log for span \"\(self.unsafeOperationName)\" will not be send, because the Logs feature is not enabled.") }
+            DD.logger.warn("The log for span \"\(self.operationName)\" will not be send, because the Logs feature is not enabled.")
         })
     }
 
@@ -187,8 +159,8 @@ internal final class DDSpan: OTSpan {
 
     private func warnIfFinished(_ methodName: String) -> Bool {
         return warn(
-            if: unsafeIsFinished,
-            message: "🔥 Calling `\(methodName)` on a finished span (\"\(unsafeOperationName)\") is not allowed."
+            if: isFinished,
+            message: "🔥 Calling `\(methodName)` on a finished span (\"\(operationName)\") is not allowed."
         )
     }
 }

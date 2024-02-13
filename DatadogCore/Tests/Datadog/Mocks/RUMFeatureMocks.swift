@@ -799,7 +799,8 @@ func createMockView(viewControllerClassName: String) -> UIViewController {
         theClass = newClass
     }
 
-    let viewController = theClass.alloc() as! UIViewController
+    let viewController = UIViewController()
+    object_setClass(viewController, theClass)
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()
     return viewController

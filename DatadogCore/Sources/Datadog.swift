@@ -301,6 +301,17 @@ public enum Datadog {
         core?.clearAllData()
     }
 
+    /// Stops the initialized SDK instance attached to the given name.
+    ///
+    /// Stopping a core instance will stop all current processes by deallocating all Features registered
+    /// in the core as well as their storage & upload units.
+    /// 
+    /// - Parameter instanceName: the name of the instance to stop.
+    public static func stopInstance(named instanceName: String = CoreRegistry.defaultInstanceName) {
+        let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
+        core?.stop()
+    }
+
     /// Initializes the Datadog SDK.
     ///
     /// You **must** initialize the core instance of the Datadog SDK prior to enabling any Product.
@@ -352,7 +363,7 @@ public enum Datadog {
     ) -> DatadogCoreProtocol {
         // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
-        consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!")
+        consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
         do {
@@ -362,7 +373,7 @@ public enum Datadog {
                 instanceName: instanceName
             )
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
             return NOPDatadogCore()
         }
     }
@@ -378,7 +389,7 @@ public enum Datadog {
 
         let debug = configuration.processInfo.arguments.contains(LaunchArguments.Debug)
         if debug {
-            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument")
+            consolePrint("⚠️ Overriding verbosity, and upload frequency due to \(LaunchArguments.Debug) launch argument", .warn)
             Datadog.verbosityLevel = .debug
         }
 
@@ -489,13 +500,10 @@ public enum Datadog {
 #endif
 
     internal static func internalFlushAndDeinitialize(instanceName: String = CoreRegistry.defaultInstanceName) {
-        assert(CoreRegistry.instance(named: instanceName) is DatadogCore, "SDK must be first initialized.")
-
+        // Unregister core instance:
+        let core = CoreRegistry.unregisterInstance(named: instanceName) as? DatadogCore
         // Flush and tear down SDK core:
-        (CoreRegistry.instance(named: instanceName) as? DatadogCore)?.flushAndTearDown()
-
-        // Deinitialize `Datadog`:
-        CoreRegistry.unregisterInstance(named: instanceName)
+        core?.flushAndTearDown()
     }
 }
 

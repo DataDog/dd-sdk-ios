@@ -10,15 +10,19 @@ import DatadogInternal
 /// Builds `SpanEvent` representation (for later serialization) from span information recorded in `DDSpan` and values received from global configuration.
 internal struct SpanEventBuilder {
     /// Service name to encode in span.
-    let serviceName: String?
+    let service: String?
     /// Enriches traces with network connection info.
     /// This means: reachability status, connection type, mobile carrier name and many more will be added to every span and span logs.
     /// For full list of network info attributes see `NetworkConnectionInfo` and `CarrierInfo`.
     let networkInfoEnabled: Bool
     /// Span events mapper configured by the user, `nil` if not set.
     let eventsMapper: SpanEventMapper?
+    /// If spans should be enriched with the current RUM context.
+    let bundleWithRUM: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
+    /// Span attributes encoder
+    let attributesEncoder: JSONEncoder = .dd.default()
 
     func createSpanEvent(
         context: DatadogContext,
@@ -45,6 +49,20 @@ internal struct SpanEventBuilder {
         let regularTags = castValuesToString(tagsReducer.reducedSpanTags)
         tags.merge(regularTags) { _, regularTag in regularTag }
 
+        if bundleWithRUM {
+            // Enrich with RUM context
+            do {
+                if let rum: RUMContext = try context.baggages[RUMContext.key]?.decode() {
+                    tags[SpanTags.rumApplicationID] = rum.applicationID
+                    tags[SpanTags.rumSessionID] = rum.sessionID
+                    tags[SpanTags.rumViewID] = rum.viewID
+                    tags[SpanTags.rumActionID] = rum.userActionID
+                }
+            } catch let error {
+                telemetry.error("Failed to decode RUM context for enriching span", error: error)
+            }
+        }
+
         // Transform user info to `SpanEvent.UserInfo` representation
         let spanUserInfo = SpanEvent.UserInfo(
             id: context.userInfo?.id,
@@ -58,7 +76,7 @@ internal struct SpanEventBuilder {
             spanID: spanID,
             parentID: parentSpanID,
             operationName: operationName,
-            serviceName: serviceName ?? context.service,
+            serviceName: service ?? context.service,
             resource: tagsReducer.extractedResourceName ?? operationName,
             startTime: startTime.addingTimeInterval(context.serverTimeOffset),
             duration: finishTime.timeIntervalSince(startTime),
@@ -84,9 +102,6 @@ internal struct SpanEventBuilder {
 
     // MARK: - Attributes Conversion
 
-    /// Encodes `Span` attributes to JSON strings
-    private let attributesJSONEncoder: JSONEncoder = .default()
-
     /// Converts `Encodable` attributes to its lossless JSON string representation, e.g.:
     /// * it will convert `"abc"` string value to `"abc"` JSON string value
     /// * it will convert `1` integer value to `"1"` JSON string value
@@ -106,13 +121,13 @@ internal struct SpanEventBuilder {
                     let jsonData: Data
 
                     if #available(iOS 13.0, *) {
-                        jsonData = try attributesJSONEncoder.encode(encodable)
+                        jsonData = try attributesEncoder.encode(encodable)
                     } else {
                         // Prior to `iOS13.0` the `JSONEncoder` is unable to encode primitive values - it expects them to be
                         // wrapped inside top-level JSON object (array or dictionary). Reference: https://bugs.swift.org/browse/SR-6163
                         //
                         // As a workaround, we serialize the `encodable` as a JSON array and then remove `[` and `]` bytes from serialized data.
-                        let temporaryJsonArrayData = try attributesJSONEncoder.encode([encodable])
+                        let temporaryJsonArrayData = try attributesEncoder.encode([encodable])
 
                         let subdataStartIndex = temporaryJsonArrayData.startIndex.advanced(by: 1)
                         let subdataEndIndex = temporaryJsonArrayData.endIndex.advanced(by: -1)

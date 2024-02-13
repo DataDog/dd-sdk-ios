@@ -28,7 +28,7 @@ internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
             do {
                 thirdPartyCrashReporter = try thirdPartyCrashReporterFactory()
             } catch {
-                consolePrint("🔥 DatadogCrashReporting error: failed to enable crash reporter: \(error)")
+                consolePrint("🔥 DatadogCrashReporting error: failed to enable crash reporter: \(error)", .error)
             }
         }
     }
@@ -51,7 +51,7 @@ internal class PLCrashReporterPlugin: NSObject, CrashReportingPlugin {
             }
         } catch {
             _ = completion(nil)
-            consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)")
+            consolePrint("🔥 DatadogCrashReporting error: failed to load crash report: \(error)", .error)
         }
     }
 

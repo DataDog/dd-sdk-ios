@@ -222,6 +222,6 @@ class WebViewLogReceiverTests: XCTestCase {
         XCTAssertNil(log["user_action.id"])
 
         let error = try XCTUnwrap(telemetryReceiver.messages.first?.asError)
-        XCTAssert(error.message.contains("Fails to decode RUM context from Logs - typeMismatch"))
+        XCTAssert(error.message.contains("Fails to decode RUM context from Logs in `WebViewLogReceiver` - typeMismatch"))
     }
 }

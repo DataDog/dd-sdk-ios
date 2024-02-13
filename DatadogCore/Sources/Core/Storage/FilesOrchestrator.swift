@@ -157,13 +157,11 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
                 .sorted(by: { $0.creationDate < $1.creationDate })
 
-            #if DD_SDK_COMPILED_FOR_TESTING
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
                     .prefix(limit)
                     .map { $0.file }
             }
-            #endif
 
             let filtered = filesFromOldest
                 .filter {

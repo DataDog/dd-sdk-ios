@@ -21,7 +21,7 @@ extension UInt64: AllowedSpanAttributeValue {}
 extension Int: AllowedSpanAttributeValue {}
 
 // Only numeric values are allowed for `span._dd.*`.
-extension Float: AllowedSpanDdValue {}
+extension Double: AllowedSpanDdValue {}
 
 // Only numeric values are allowed for `span.metrics.*`.
 extension Int: AllowedSpanMetricValue {}
@@ -100,7 +100,7 @@ internal class SpanMatcher {
     struct Dd {
         fileprivate let matcher: SpanMatcher
 
-        func samplingRate() throws -> Float { try matcher.dd(forKeyPath: "_dd.agent_psr") }
+        func samplingRate() throws -> Double { try matcher.dd(forKeyPath: "_dd.agent_psr") }
     }
 
     // MARK: - Metrics matching

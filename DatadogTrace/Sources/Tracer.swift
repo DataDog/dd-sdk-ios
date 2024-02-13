@@ -22,12 +22,21 @@ public enum SpanTags {
     /// Internal tag. `Bool` value.
     /// `true` if span was started or ended while the app was not active, `false` otherwise.
     internal static let isBackground = "is_background"
-
-    /// Those keys used to encode information received from the user through `OpenTracingLogFields`, `OpenTracingTagKeys` or custom fields.
-    /// Supported by Datadog platform.
-    internal static let errorType    = "error.type"
+    /// Internal tag used to encode error type received from the user through `OTLogFields`.
+    internal static let errorType = "error.type"
+    /// Internal tag used to encode error message received from the user through `OTLogFields`.
     internal static let errorMessage = "error.msg"
-    internal static let errorStack   = "error.stack"
+    /// Internal tag used to encode error stack received from the user through `OTLogFields`.
+    internal static let errorStack = "error.stack"
+
+    /// Internal tag used to encode the RUM application ID, linking the span to the current RUM session.
+    internal static let rumApplicationID = "_dd.application.id"
+    /// Internal tag used to encode the RUM session ID, linking the span to the current RUM session.
+    internal static let rumSessionID = "_dd.session.id"
+    /// Internal tag used to encode the RUM view ID, linking the span to the current RUM session.
+    internal static let rumViewID = "_dd.view.id"
+    /// Internal tag used to encode the RUM action ID, linking the span to the current RUM session.
+    internal static let rumActionID = "_dd.action.id"
 }
 
 /// A class for manual interaction with the Trace feature. It records spans that are sent to Datadog APM.
@@ -64,7 +73,7 @@ public class Tracer {
 
             return feature.tracer
         } catch {
-            consolePrint("\(error)")
+            consolePrint("\(error)", .error)
             return DDNoopTracer()
         }
     }

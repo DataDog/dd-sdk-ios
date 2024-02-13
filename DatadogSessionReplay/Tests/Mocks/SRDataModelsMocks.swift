@@ -240,8 +240,8 @@ extension SRShapeStyle: AnyMockable, RandomMockable {
     public static func mockRandom() -> SRShapeStyle {
         return SRShapeStyle(
             backgroundColor: .mockRandom(),
-            cornerRadius: .mockRandom(),
-            opacity: .mockRandom()
+            cornerRadius: .randomInteger(),
+            opacity: .randomInteger()
         )
     }
 
@@ -507,13 +507,13 @@ extension SRVisualViewportRecord.Data: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> SRVisualViewportRecord.Data {
         return SRVisualViewportRecord.Data(
-            height: .mockRandom(),
-            offsetLeft: .mockRandom(),
-            offsetTop: .mockRandom(),
-            pageLeft: .mockRandom(),
-            pageTop: .mockRandom(),
-            scale: .mockRandom(),
-            width: .mockRandom()
+            height: .randomInteger(),
+            offsetLeft: .randomInteger(),
+            offsetTop: .randomInteger(),
+            pageLeft: .randomInteger(),
+            pageTop: .randomInteger(),
+            scale: .randomInteger(),
+            width: .randomInteger()
         )
     }
 
@@ -698,8 +698,8 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, 
             pointerEventType: .mockRandom(),
             pointerId: .mockRandom(),
             pointerType: .mockRandom(),
-            x: .mockRandom(),
-            y: .mockRandom()
+            x: .randomInteger(),
+            y: .randomInteger()
         )
     }
 
@@ -1244,5 +1244,13 @@ extension SRIncrementalSnapshotRecord {
         case .viewportResizeData(let value): return value
         default: return nil
         }
+    }
+}
+
+private extension Double {
+    /// Returns random integer from given range represented as `Double`.
+    static func randomInteger(min: Int = -10_000, max: Int = 10_000) -> Double {
+        let integer = Int.mockRandom(min: min, max: max)
+        return Double(integer)
     }
 }

@@ -23,7 +23,10 @@ class DataUploadStatusTests: XCTestCase {
         408, // REQUEST TIMEOUT
         429, // TOO MANY REQUESTS
         500, // INTERNAL SERVER ERROR
+        502, // BAD GATEWAY
         503, // SERVICE UNAVAILABLE
+        504, // GATEWAY TIMEOUT
+        507, // INSUFFICIENT STORAGE
     ]
 
     private lazy var expectedStatusCodes = statusCodesExpectingNoRetry + statusCodesExpectingRetry
