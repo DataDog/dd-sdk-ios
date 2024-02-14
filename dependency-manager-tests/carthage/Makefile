@@ -19,7 +19,7 @@ test:
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
 		@carthage update --platform iOS,tvOS --use-xcframeworks --no-build
-		@cd Carthage/Checkouts/opentelemetry-swift && swift package generate-xcodeproj && cd ../-
+		@cd Carthage/Checkouts/opentelemetry-swift && swift package generate-xcodeproj && cd ../../..
 		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }
