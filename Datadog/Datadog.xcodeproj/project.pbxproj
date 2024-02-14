@@ -24,6 +24,7 @@
 		146DAA252B7CFAFE005D2AE4 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 146DAA242B7CFAFE005D2AE4 /* DatadogSDKTesting */; };
 		146DAA272B7CFB04005D2AE4 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 146DAA262B7CFB04005D2AE4 /* DatadogSDKTesting */; };
 		146DAA292B7CFB09005D2AE4 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 146DAA282B7CFB09005D2AE4 /* DatadogSDKTesting */; };
+		146DAA2B2B7D106F005D2AE4 /* OpenTelemetryApi in Frameworks */ = {isa = PBXBuildFile; productRef = 146DAA2A2B7D106F005D2AE4 /* OpenTelemetryApi */; };
 		3C0D5DD72A543B3B00446CF9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DD62A543B3B00446CF9 /* Event.swift */; };
 		3C0D5DD82A543B3B00446CF9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DD62A543B3B00446CF9 /* Event.swift */; };
 		3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DDF2A543DAE00446CF9 /* EventGeneratorTests.swift */; };
@@ -3028,6 +3029,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2C1A57429C4F30000946C31 /* DatadogInternal.framework in Frameworks */,
+				146DAA2B2B7D106F005D2AE4 /* OpenTelemetryApi in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6603,6 +6605,7 @@
 			);
 			name = "DatadogTrace tvOS";
 			packageProductDependencies = (
+				146DAA2A2B7D106F005D2AE4 /* OpenTelemetryApi */,
 			);
 			productName = DatadogTrace;
 			productReference = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */;
@@ -13140,6 +13143,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 146DAA062B7CFA68005D2AE4 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
 			productName = DatadogSDKTesting;
+		};
+		146DAA2A2B7D106F005D2AE4 /* OpenTelemetryApi */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 146DAA072B7CFA71005D2AE4 /* XCRemoteSwiftPackageReference "opentelemetry-swift" */;
+			productName = OpenTelemetryApi;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
