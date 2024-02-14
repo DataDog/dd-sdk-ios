@@ -26,5 +26,4 @@ test:
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogObjc.xcframework" ] && echo "DatadogObjc.xcframework - OK" || { echo "DatadogObjc.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "dd-sdk-ios/build/xcframeworks/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
-		@[ -e "dd-sdk-ios/build/xcframeworks/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
 		@echo "🧪 SUCCEEDED"

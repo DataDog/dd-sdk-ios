@@ -30,5 +30,4 @@ test:
 		@[ -e "Carthage/Build/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogWebViewTracking.xcframework" ] && echo "DatadogWebViewTracking.xcframework - OK" || { echo "DatadogWebViewTracking.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
 		@echo "🧪 SUCCEEDED"
