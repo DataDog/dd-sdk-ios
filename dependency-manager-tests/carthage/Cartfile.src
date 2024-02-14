@@ -1,1 +1,2 @@
 github "GIT_REMOTE" "GIT_REFERENCE"
+github "open-telemetry/opentelemetry-swift" "1.9.1"

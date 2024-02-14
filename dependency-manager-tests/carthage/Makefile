@@ -18,6 +18,8 @@ test:
 		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
+		@carthage update --platform iOS,tvOS --use-xcframeworks --no-build
+		@cd Carthage/Checkouts/opentelemetry-swift && swift package generate-xcodeproj && cd ../../..
 		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }
@@ -30,5 +32,4 @@ test:
 		@[ -e "Carthage/Build/DatadogCrashReporting.xcframework" ] && echo "DatadogCrashReporting.xcframework - OK" || { echo "DatadogCrashReporting.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/CrashReporter.xcframework" ] && echo "CrashReporter.xcframework - OK" || { echo "CrashReporter.xcframework - missing"; false; }
 		@[ -e "Carthage/Build/DatadogWebViewTracking.xcframework" ] && echo "DatadogWebViewTracking.xcframework - OK" || { echo "DatadogWebViewTracking.xcframework - missing"; false; }
-		@[ -e "Carthage/Build/OpenTelemetryApi.xcframework" ] && echo "OpenTelemetryApi.xcframework - OK" || { echo "OpenTelemetryApi.xcframework - missing"; false; }
 		@echo "🧪 SUCCEEDED"

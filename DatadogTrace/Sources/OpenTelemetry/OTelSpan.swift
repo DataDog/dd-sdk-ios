@@ -33,8 +33,8 @@ internal extension OpenTelemetryApi.Status {
             return 2
         case .unset:
             return 1
-        @unknown default:
-            return 1
+//        @unknown default:
+//            return 1
         }
     }
 }
@@ -204,8 +204,8 @@ internal class OTelSpan: OpenTelemetryApi.Span {
             // send error log to Datadog
             // Empty kind or description is equivalent to not present
             ddSpan.setError(kind: "", message: description)
-        @unknown default:
-            break
+//        @unknown default:
+//            break
         }
 
         // SpanKind maps to the `span.kind` tag in Datadog
