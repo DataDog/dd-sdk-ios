@@ -28,11 +28,14 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
+        // Use the controller hash as slot ID to match the container
+        // in session replay.
+        let slotID = userContentController.hash
         // message.body must be called within UI thread
-        let messageBody = message.body
+        let body = message.body
         queue.async {
             do {
-                try self.emitter.send(body: messageBody)
+                try self.emitter.send(body: body, slotId: String(slotID))
             } catch {
                 DD.logger.error("Encountered an error when receiving web view event", error: error)
             }

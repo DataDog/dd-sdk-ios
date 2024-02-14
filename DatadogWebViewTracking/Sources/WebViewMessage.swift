@@ -7,8 +7,14 @@
 import Foundation
 import DatadogInternal
 
+/// Errors that can be thrown when parsing a WebView message
+internal enum WebViewMessageError: Error, Equatable {
+    case dataSerialization(message: String)
+    case invalidMessage(description: String)
+}
+
 /// Intermediate type to parse WebView messages and send them to the message bus
-internal struct WebViewMessage: Decodable {
+internal enum WebViewMessage {
     enum EventType: String, Decodable {
         case log
         case rum
@@ -17,16 +23,22 @@ internal struct WebViewMessage: Decodable {
         case resource
         case error
         case longTask = "long_task"
+        case record
     }
 
-    let eventType: EventType
-    let event: AnyCodable
-}
+    enum CodingKeys: CodingKey {
+        case eventType
+        case event
+        case view
+    }
 
-/// Errors that can be thrown when parsing a WebView message
-internal enum WebViewMessageError: Error, Equatable {
-    case dataSerialization(message: String)
-    case invalidMessage(description: String)
+    struct View: Decodable {
+        let id: String
+    }
+
+    case log(AnyCodable)
+    case rum(AnyCodable)
+    case record(AnyCodable, View)
 }
 
 extension WebViewMessage {
@@ -44,5 +56,23 @@ extension WebViewMessage {
 
         let decoder = JSONDecoder()
         self = try decoder.decode(WebViewMessage.self, from: data)
+    }
+}
+
+extension WebViewMessage: Decodable {
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let eventType = try container.decode(EventType.self, forKey: .eventType)
+        let event = try container.decode(AnyCodable.self, forKey: .event)
+
+        switch eventType {
+        case .log:
+            self = .log(event)
+        case .rum, .view, .action, .resource, .error, .longTask:
+            self = .rum(event)
+        case .record:
+            let view = try container.decode(View.self, forKey: .view)
+            self = .record(event, view)
+        }
     }
 }

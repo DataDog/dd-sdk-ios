@@ -86,8 +86,8 @@ public enum WebViewTracking {
 
         let messageHandler = DDScriptMessageHandler(
             emitter: MessageEmitter(
-                logsSampler: Sampler(samplingRate: logsSampleRate),
-                core: core
+                core: core,
+                logsSampler: Sampler(samplingRate: logsSampleRate)
             )
         )
 
@@ -134,18 +134,20 @@ extension InternalExtension where ExtendedType == WebViewTracking {
     /// Abstract Message Emitter definition.
     public class AbstractMessageEmitter {
         /// Sends a web-view message.
-        ///
-        /// - Parameter message: The message to send
-        public func send(body: Any) throws {}
+        /// 
+        /// - Parameters:
+        ///   - body: The message body to send.
+        ///   - slotId: The slot identifier used to match a web replay record container.
+        public func send(body: Any, slotId: String? = nil) throws {}
     }
 
     /// Creates a web-view message emitter for cross-platform.
-    ///
+    ///  
     /// Cross platform SDKs should instantiate a `MessageEmitter` implementation from
     /// this method and pass WebView related messages using the message bus of the core.
-    ///
+    ///  
     /// - Parameters:
-    ///   - core: The Datadog SDK core instance
+    ///   - core: The Datadog SDK core instance.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`. Default: `100`.
     /// - Returns: A `MessageEmitter` instance
     public static func messageEmitter(
@@ -153,8 +155,8 @@ extension InternalExtension where ExtendedType == WebViewTracking {
         logsSampleRate: Float = 100
     ) -> AbstractMessageEmitter {
         return MessageEmitter(
-            logsSampler: Sampler(samplingRate: logsSampleRate),
-            core: core
+            core: core,
+            logsSampler: Sampler(samplingRate: logsSampleRate)
         )
     }
 }

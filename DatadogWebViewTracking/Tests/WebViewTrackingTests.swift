@@ -157,9 +157,8 @@ class WebViewTrackingTests: XCTestCase {
         XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
     }
 
-    func testSendingWebEvents() throws {
+    func testSendingWebLogEvent() throws {
         let logMessageExpectation = expectation(description: "Log message received")
-        let rumMessageExpectation = expectation(description: "RUM message received")
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
@@ -172,10 +171,6 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(event?["error"] as? [String: String], ["origin": "console"])
                     XCTAssertEqual(event?["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
                     logMessageExpectation.fulfill()
-                case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
-                    let event = try? baggage.encode() as? [String: Any]
-                    XCTAssertEqual((event?["view"] as? [String: Any])?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    rumMessageExpectation.fulfill()
                 case .baggage(let label, let baggage):
                     XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")
                 case .context:
@@ -217,9 +212,40 @@ class WebViewTrackingTests: XCTestCase {
           ]
         }
         """)
-        messageHandler?.userContentController(controller, didReceive: webLogMessage)
 
-        messageHandler?.queue.sync {}
+        messageHandler?.userContentController(controller, didReceive: webLogMessage)
+        waitForExpectations(timeout: 1)
+    }
+
+    func testSendingWebRUMEvent() throws {
+        let rumMessageExpectation = expectation(description: "RUM message received")
+        let core = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                switch message {
+                case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserRUMEvent:
+                    let event = try? baggage.encode() as? [String: Any]
+                    XCTAssertEqual((event?["view"] as? [String: Any])?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                    rumMessageExpectation.fulfill()
+                case .baggage(let label, let baggage):
+                    XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")
+                case .context:
+                    break
+                default:
+                    XCTFail("Unexpected message received: \(message)")
+                }
+            }
+        )
+
+        let controller = DDUserContentController()
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: ["datadoghq.com"],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
         let webRUMMessage = MockScriptMessage(body: """
         {
           "eventType": "view",
@@ -278,6 +304,53 @@ class WebViewTrackingTests: XCTestCase {
         }
         """)
         messageHandler?.userContentController(controller, didReceive: webRUMMessage)
+        waitForExpectations(timeout: 1)
+    }
+
+    func testSendingWebRecordEvent() throws {
+        let recordMessageExpectation = expectation(description: "Record message received")
+        let controller = DDUserContentController()
+
+        let core = PassthroughCoreMock(
+            messageReceiver: FeatureMessageReceiverMock { message in
+                switch message {
+                case .baggage(let label, let baggage) where label == MessageEmitter.MessageKeys.browserReplayRecord:
+                    let baggage = try? baggage.encode() as? [String: Any]
+                    let matcher = JSONObjectMatcher(object: baggage ?? [:])
+                    XCTAssertEqual(try? matcher.value("viewId"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                    XCTAssertEqual(try? matcher.value("slotId"), "\(controller.hash)")
+                    XCTAssertEqual(try? matcher.value("event.date"), 1_635_932_927_012)
+                    recordMessageExpectation.fulfill()
+                case .baggage(let label, let baggage):
+                    XCTFail("Unexpected custom message received: label: \(label), baggage: \(baggage)")
+                case .context:
+                    break
+                default:
+                    XCTFail("Unexpected message received: \(message)")
+                }
+            }
+        )
+
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: ["datadoghq.com"],
+            hostsSanitizer: HostsSanitizerMock(),
+            logsSampleRate: 100,
+            in: core
+        )
+
+        let messageHandler = try XCTUnwrap(controller.messageHandlers.first?.handler) as? DDScriptMessageHandler
+        let webLogMessage = MockScriptMessage(body: """
+        {
+          "eventType": "record",
+          "event": {
+            "date": 1635932927012
+          },
+          "view": { "id": "64308fd4-83f9-48cb-b3e1-1e91f6721230" }
+        }
+        """)
+
+        messageHandler?.userContentController(controller, didReceive: webLogMessage)
         waitForExpectations(timeout: 1)
     }
 }

@@ -268,6 +268,18 @@ extension UUID: AnyMockable, RandomMockable {
     }
 }
 
+extension ObjectIdentifier: AnyMockable, RandomMockable {
+    private static let object = NSObject()
+
+    public static func mockAny() -> ObjectIdentifier {
+        ObjectIdentifier(object)
+    }
+
+    public static func mockRandom() -> ObjectIdentifier {
+        ObjectIdentifier(NSObject())
+    }
+}
+
 extension String: AnyMockable, RandomMockable {
     public static func mockAny() -> String {
         return "abc"

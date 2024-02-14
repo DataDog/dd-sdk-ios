@@ -6,6 +6,8 @@
 
 import XCTest
 import TestUtilities
+import DatadogInternal
+
 @testable import DatadogWebViewTracking
 
 class WebViewMessageTests: XCTestCase {
@@ -37,8 +39,7 @@ class WebViewMessageTests: XCTestCase {
         let message = try WebViewMessage(body: eventString)
 
         // Then
-        XCTAssertEqual(message.eventType, .log)
-        let json = try XCTUnwrap(message.event.value as? [String: Any])
+        let json = try XCTUnwrap(message.logEvent?.value as? [String: Any])
         let event = JSONObjectMatcher(object: json)
         XCTAssertEqual(try event.value("date"), 1_635_932_927_012)
         XCTAssertEqual(try event.value("error.origin"), "console")
@@ -113,8 +114,7 @@ class WebViewMessageTests: XCTestCase {
         let message = try WebViewMessage(body: eventString)
 
         // Then
-        XCTAssertEqual(message.eventType, .view)
-        let json = try XCTUnwrap(message.event.value as? [String: Any])
+        let json = try XCTUnwrap(message.rumEvent?.value as? [String: Any])
         let event = JSONObjectMatcher(object: json) // only partial matching
         XCTAssertEqual(try event.value("application.id"), "xxx")
         XCTAssertEqual(try event.value("date"), 1_635_933_113_708)
@@ -155,6 +155,7 @@ class WebViewMessageTests: XCTestCase {
         XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "resource", "event": { } }"#))
         XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "error", "event": { } }"#))
         XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "long_task", "event": { } }"#))
+        XCTAssertNoThrow(try WebViewMessage(body: #"{ "eventType": "record", "event": { }, "view": { "id": "" } }"#))
     }
 
     func testParsingCorruptedEvent() {
@@ -168,6 +169,31 @@ class WebViewMessageTests: XCTestCase {
 
         XCTAssertThrowsError(try WebViewMessage(body: #"{ "eventType": "log" }"#)) { error in
             XCTAssertTrue(error is DecodingError)
+        }
+    }
+}
+
+// MARK: - Convenience
+
+internal extension WebViewMessage {
+    var logEvent: AnyCodable? {
+        switch self {
+        case let .log(event): return event
+        default: return nil
+        }
+    }
+
+    var rumEvent: AnyCodable? {
+        switch self {
+        case let .rum(event): return event
+        default: return nil
+        }
+    }
+
+    var recordEvent: (AnyCodable, String)? {
+        switch self {
+        case let .record(event, view): return (event, view.id)
+        default: return nil
         }
     }
 }

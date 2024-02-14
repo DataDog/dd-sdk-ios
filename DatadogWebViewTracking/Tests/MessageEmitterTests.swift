@@ -19,7 +19,10 @@ class MessageEmitterTests: XCTestCase {
         // Given
         let receiverMock = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiverMock)
-        let emitter = MessageEmitter(logsSampler: sampler, core: core)
+        let emitter = MessageEmitter(
+            core: core,
+            logsSampler: sampler
+        )
 
         // When
         try emitter.send(body: """
@@ -50,7 +53,10 @@ class MessageEmitterTests: XCTestCase {
         // Given
         let receiverMock = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiverMock)
-        let emitter = MessageEmitter(logsSampler: sampler, core: core)
+        let emitter = MessageEmitter(
+            core: core,
+            logsSampler: sampler
+        )
 
         // When
         try emitter.send(body: """
@@ -69,7 +75,7 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertNil(receiverMock.messages.firstBaggage(withKey: messageKey))
     }
 
-    func testWhenReceivingEventOtherThanLog_itForwardsToRUM() throws {
+    func testWhenReceivingRUMEvent_itForwardsToRUM() throws {
         let eventType = [
             "rum",
             "view",
@@ -82,7 +88,10 @@ class MessageEmitterTests: XCTestCase {
         // Given
         let receiverMock = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiverMock)
-        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+        let emitter = MessageEmitter(
+            core: core,
+            logsSampler: .mockRandom()
+        )
 
         // When
         try emitter.send(body: """
@@ -106,11 +115,52 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
     }
 
+    func testWhenReceivingReplayRecord_itForwardsToSessionReplay() throws {
+        let eventType = "record"
+
+        // Given
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let emitter = MessageEmitter(
+            core: core,
+            logsSampler: .mockRandom()
+        )
+
+        let body = """
+        {
+          "eventType": "\(eventType)",
+          "event": {
+            "attribute1": 123,
+            "attribute2": "foo",
+            "attribute3": ["foo", "bar", "bizz"]
+          },
+          "view": { "id": "123" }
+        }
+        """
+
+        // When
+        try emitter.send(body: body, slotId: "abc")
+
+        // Then
+        let messageKey = MessageEmitter.MessageKeys.browserReplayRecord
+        let message = try XCTUnwrap(receiverMock.messages.firstBaggage(withKey: messageKey))
+        let object = try XCTUnwrap(message.encode() as? [String: Any])
+        let json = JSONObjectMatcher(object: object)
+        XCTAssertEqual(try json.value("viewId"), "123")
+        XCTAssertEqual(try json.value("slotId"), "abc")
+        XCTAssertEqual(try json.value("event.attribute1"), 123)
+        XCTAssertEqual(try json.value("event.attribute2"), "foo")
+        XCTAssertEqual(try json.array("event.attribute3").values(), ["foo", "bar", "bizz"])
+    }
+
     // MARK: - Parsing
 
     func testWhenMessageIsInvalid_itThrows() {
         let core = PassthroughCoreMock()
-        let bridge = MessageEmitter(logsSampler: .mockAny(), core: core)
+        let bridge = MessageEmitter(
+            core: core,
+            logsSampler: .mockAny()
+        )
 
         let messageInvalidJSON = """
         { 123: foobar }
