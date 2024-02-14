@@ -15,7 +15,7 @@ class UIImageScalingTests: XCTestCase {
         let dataSize = pngData.count
 
         let maxSize = dataSize + 100
-        let scaledData = image.scaledDownToApproximateSize(maxSize)
+        let scaledData = image.scaledDownToApproximateSize(UInt64(maxSize))
         XCTAssertEqual(scaledData, pngData)
     }
 
@@ -25,7 +25,7 @@ class UIImageScalingTests: XCTestCase {
         let dataSize = pngData.count
 
         let maxSize = dataSize - 100
-        let scaledData = image.scaledDownToApproximateSize(maxSize)
+        let scaledData = image.scaledDownToApproximateSize(UInt64(maxSize))
         XCTAssertTrue(scaledData.count < dataSize)
     }
 }
