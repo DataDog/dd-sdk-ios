@@ -18,6 +18,7 @@ test:
 		sed "s|GIT_REMOTE|${GIT_REMOTE}|g" > Cartfile
 		@rm -rf Carthage/
 		@echo "🧪 Run 'carthage update'"
+		@cd Carthage/Checkouts/opentelemetry-swift && swift package generate-xcodeproj
 		@carthage update --platform iOS,tvOS --use-xcframeworks
 		@echo "🧪 Check if expected frameworks exist in $(PWD)/Carthage/Build/"
 		@[ -e "Carthage/Build/DatadogInternal.xcframework" ] && echo "DatadogInternal.xcframework - OK" || { echo "DatadogInternal.xcframework - missing"; false; }
