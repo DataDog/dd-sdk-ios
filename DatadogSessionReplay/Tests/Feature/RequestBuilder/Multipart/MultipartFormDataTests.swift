@@ -32,7 +32,7 @@ class MultipartFormDataTests: XCTestCase {
         )
 
         // Then
-        let actualDataString = try XCTUnwrap(String(data: multipart.data, encoding: .utf8))
+        let actualDataString = try XCTUnwrap(String(data: multipart.build(), encoding: .utf8))
         let expectedDataString = """
         --12345678-0000-0000-0000-000000000000
         Content-Disposition: form-data; name="field1"

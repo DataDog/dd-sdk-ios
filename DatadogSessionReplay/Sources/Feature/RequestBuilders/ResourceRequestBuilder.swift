@@ -19,7 +19,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
     init(
         customUploadURL: URL?,
         telemetry: Telemetry,
-        multipartBuilder: MultipartFormDataBuilder = MultipartFormData(boundary: UUID())
+        multipartBuilder: MultipartFormDataBuilder = MultipartFormData()
     ) {
         self.customUploadURL = customUploadURL
         self.telemetry = telemetry
@@ -41,7 +41,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             url: url(with: context),
             queryItems: [],
             headers: [
-                .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary.uuidString)),
+                .contentTypeHeader(contentType: .multipartFormData(boundary: multipart.boundary)),
                 .userAgentHeader(appName: context.applicationName, appVersion: context.version, device: context.device),
                 .ddAPIKeyHeader(clientToken: context.clientToken),
                 .ddEVPOriginHeader(source: context.source),
@@ -69,7 +69,7 @@ internal struct ResourceRequestBuilder: FeatureRequestBuilder {
             )
         }
 
-        return builder.uploadRequest(with: multipart.data, compress: true)
+        return builder.uploadRequest(with: multipart.build(), compress: true)
     }
 
     private func url(with context: DatadogContext) -> URL {

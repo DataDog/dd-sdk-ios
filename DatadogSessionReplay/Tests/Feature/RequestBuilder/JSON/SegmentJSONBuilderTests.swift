@@ -5,47 +5,35 @@
  */
 
 import XCTest
+import TestUtilities
+import DatadogInternal
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
-@testable import TestUtilities
 
 class SegmentJSONBuilderTests: XCTestCase {
     private let builder = SegmentJSONBuilder(source: .mockRandom())
 
     func testGivenSRSegmentWithRecords_whenCreatingSegmentJSON_itEcodesToTheSameJSON() throws {
         // Given
-        let expectedSegment = generateSegment(maxRecordsCount: 50)
-        let records = try generateEnrichedRecordJSONs(for: expectedSegment)
+        let segment1 = generateSegment(maxRecordsCount: 50)
+        let segment2 = generateSegment(maxRecordsCount: 50)
+        let records1 = try generateEnrichedRecordJSONs(for: segment1)
+        let records2 = try generateEnrichedRecordJSONs(for: segment2)
 
         // When
-        let actualSegment = try builder.createSegmentJSON(from: records)
+        let segments = try builder.segments(from: records1 + records2).map { $0.toJSONObject() }
 
         // Then
-        XCTAssertEqual(
-            try prettyJSONString(for: expectedSegment),
-            try prettyJSONString(for: actualSegment),
-            "`SegmentJSON` must encode the same JSON string as `SRSegment: Codable`"
-        )
+        DDAssertJSONEqual(AnyEncodable(segments.first), segment1)
+        DDAssertJSONEqual(AnyEncodable(segments.last), segment2)
     }
 
     func testWhenBuildingSegmentWithNoRecords_itThrows() {
         // When
-        XCTAssertThrowsError(try builder.createSegmentJSON(from: [])) { error in
+        XCTAssertThrowsError(try builder.segments(from: [])) { error in
             // Then
             XCTAssertEqual((error as? SegmentJSONBuilderError)?.description, "Records array must not be empty.")
-        }
-    }
-
-    func testWhenBuildingSegmentWithInvalidRecords_itThrows() throws {
-        // Given
-        let segment1 = generateSegment(maxRecordsCount: 25)
-        let segment2 = generateSegment(maxRecordsCount: 25)
-        let records = try generateEnrichedRecordJSONs(for: segment1) + generateEnrichedRecordJSONs(for: segment2)
-
-        // When
-        XCTAssertThrowsError(try builder.createSegmentJSON(from: records)) { error in
-            // Then
-            XCTAssertEqual((error as? SegmentJSONBuilderError)?.description, "All records must reference the same RUM context.")
         }
     }
 
@@ -80,6 +68,8 @@ class SegmentJSONBuilderTests: XCTestCase {
                 viewServerTimeOffset: 0
             )
         )
+
+        let encoder = JSONEncoder()
         return try segment.records
             // To make it more challenging for tested `SegmentJSONBuilder`, we chunk records in
             // expected `segment`, so they are spread among many enriched records:
@@ -87,30 +77,9 @@ class SegmentJSONBuilderTests: XCTestCase {
             .map { EnrichedRecord(context: context, records: $0) }
             // Encode `EnrichedRecords` into `Data`, just like it happens in `DatadogCore` when
             // writting them into batches:
-            .map { try encode($0) }
+            .map { try encoder.encode($0) }
             // Decode it back to `EnrichedRecordJSON` just like it happens when preparing
             // upload requests for SR:
             .map { try EnrichedRecordJSON(jsonObjectData: $0) }
-    }
-
-    private func encode<T: Encodable>(_ value: T) throws -> Data {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = [.sortedKeys, .prettyPrinted]
-        return try encoder.encode(value)
-    }
-
-    private func encode(_ segment: SegmentJSON) throws -> Data {
-        return try JSONSerialization.data(
-            withJSONObject: segment.toJSONObject(),
-            options: [.sortedKeys, .prettyPrinted]
-        )
-    }
-
-    private func prettyJSONString<T: Encodable>(for value: T) throws -> String {
-        return String(data: try encode(value), encoding: .utf8) ?? ""
-    }
-
-    private func prettyJSONString(for segment: SegmentJSON) throws -> String {
-        return String(data: try encode(segment), encoding: .utf8) ?? ""
     }
 }

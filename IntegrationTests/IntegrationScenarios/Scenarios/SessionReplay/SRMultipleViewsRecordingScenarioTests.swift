@@ -81,13 +81,9 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         // Map raw requests into RUM Session and SR request matchers:
         let rumSession = try XCTUnwrap(RUMSessionMatcher.singleSession(from: rawRUMRequests))
         let srRequests = try SRRequestMatcher.from(requests: rawSRRequests)
-        
-        // Read SR segments from SR requests (one request = one segment):
-        let segments = try srRequests.map { try SRSegmentMatcher.fromJSONData($0.segmentJSONData()) }
-        
+
         XCTAssertFalse(rumSession.views.isEmpty, "There should be some RUM session")
         XCTAssertFalse(srRequests.isEmpty, "There should be some SR requests")
-        XCTAssertFalse(segments.isEmpty, "There should be some SR segments")
         sendCIAppLog(rumSession)
         
         // Validate if RUM session links to SR replay through `has_replay` flag in RUM events.
@@ -95,30 +91,37 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         // RUM events will not have `has_replay: true`. For that reason, we only do broad assertion on "most" events.
         let rumEventsWithReplay = try rumSession.allEvents.filter { try $0.sessionHasReplay() == true }
         XCTAssertGreaterThan(Double(rumEventsWithReplay.count) / Double(rumSession.allEvents.count), 0.5, "Most RUM events must have `has_replay` flag set to `true`")
-        
-        // Validate SR (multipart) requests.
-        for request in srRequests {
-            // - Each request must reference RUM session:
-            XCTAssertEqual(try request.applicationID(), rumSession.applicationID, "SR request must reference RUM application")
-            XCTAssertEqual(try request.sessionID(), rumSession.sessionID, "SR request must reference RUM session")
-            XCTAssertTrue(rumSession.containsView(with: try request.viewID()), "SR request must reference a known view ID from RUM session")
-            
-            // - Other, broad checks:
-            XCTAssertGreaterThan(Int(try request.recordsCount()) ?? 0, 0, "SR request must include some records")
-            XCTAssertGreaterThan(Int(try request.rawSegmentSize()) ?? 0, 0, "SR request must include non-empty segment information")
-            XCTAssertEqual(try request.source(), "ios")
-        }
-        
-        // Validate SR segments.
-        for segment in segments {
-            // - Each segment must reference RUM session:
-            XCTAssertEqual(try segment.value("application.id"), rumSession.applicationID, "Segment must be linked to RUM application")
-            XCTAssertEqual(try segment.value("session.id"), rumSession.sessionID, "Segment must be linked to RUM session")
-            XCTAssertTrue(rumSession.containsView(with: try segment.value("view.id")), "Segment must be linked to RUM view")
-            
-            // - Other, broad checks:
-            XCTAssertGreaterThan(try segment.value("records_count") as Int, 0, "Segment must include some records")
-            XCTAssertEqual(try segment.value("records_count") as Int, try segment.array("records").count, "Records count must be consistent")
+
+        // Read and validate SR segments from SR requests.
+        let segments: [SRSegmentMatcher] = try srRequests.reduce([]) { segments, request in
+            let blob = try request.blob()
+            XCTAssertFalse(blob.isEmpty, "There should be some SR segments")
+            return try segments + blob.enumerated().map { index, metadata in
+                // - Each request must reference RUM session:
+                XCTAssertEqual(try metadata.applicationID(), rumSession.applicationID, "SR request must reference RUM application")
+                XCTAssertEqual(try metadata.sessionID(), rumSession.sessionID, "SR request must reference RUM session")
+                XCTAssertTrue(rumSession.containsView(with: try metadata.viewID()), "SR request must reference a known view ID from RUM session")
+
+                let segment = try request.segment(at: index)
+
+                // - Each segment must reference RUM session:
+                try XCTAssertTrue(rumSession.containsView(with: segment.viewID()), "Segment must be linked to RUM view")
+                try XCTAssertEqual(segment.applicationID(), metadata.applicationID(), "Segment must be linked to RUM application")
+                try XCTAssertEqual(segment.sessionID(), metadata.sessionID(), "Segment must be linked to RUM session")
+                try XCTAssertEqual(segment.viewID(), metadata.viewID(), "Segment must be linked to RUM view")
+                try XCTAssertEqual(segment.hasFullSnapshot(), metadata.hasFullSnapshot())
+                try XCTAssertEqual(segment.recordsCount(), metadata.recordsCount())
+                try XCTAssertEqual(segment.start(), metadata.start())
+                try XCTAssertEqual(segment.end(), metadata.end())
+                try XCTAssertEqual(segment.source(), metadata.source())
+
+                // - Other, broad checks:
+                XCTAssertThrowsError(try metadata.records())
+                try XCTAssertGreaterThan(metadata.rawSegmentSize(), metadata.compressedSegmentSize())
+                try XCTAssertGreaterThan(segment.recordsCount(), 0, "Segment must include some records")
+                try XCTAssertEqual(segment.recordsCount(), segment.records().count, "Records count must be consistent")
+                return segment
+            }
         }
         
         // Validate SR records.
