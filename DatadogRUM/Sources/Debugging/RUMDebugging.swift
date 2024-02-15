@@ -36,7 +36,7 @@ internal class RUMDebugging {
 
     // MARK: - Initialization
 
-    #if !os(tvOS) && !os(visionOS)
+    #if !os(tvOS) && !(swift(>=5.9) && os(visionOS))
     init() {
         DispatchQueue.main.async {
             UIDevice.current.beginGeneratingDeviceOrientationNotifications()
