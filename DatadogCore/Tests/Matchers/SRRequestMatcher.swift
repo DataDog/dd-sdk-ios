@@ -61,12 +61,10 @@ internal struct SRRequestMatcher {
         self.multipartForm = try MultipartFormDataParser(data: multipartBody, boundary: multipartBoundary)
     }
 
-    /// Returns an array of JSON object matchers for all records in this segment.
-    func blob() throws -> [SRSegmentMatcher] {
+    /// Returns the blob file.
+    func blob<T>(_ transform: (Data) throws -> T) throws -> T {
         let data = try dataOfFile(named: "blob", fieldName: "event", mimeType: "application/json")
-        let array = try data.toArrayOfJSONObjects()
-        let matcher = JSONArrrayMatcher(array: array)
-        return try matcher.values().map(SRSegmentMatcher.init(object:))
+        return try transform(data)
     }
 
     /// Data of "segment" file in underlying multipart form.
