@@ -59,7 +59,7 @@ public class Tracer {
     /// It requires `Trace.enable(with:in:)` to be called first - otherwise it will return no-op implementation.
     /// - Parameter core: the instance of Datadog SDK the Trace feature was enabled in (global instance by default)
     /// - Returns: the Tracer that conforms to Open Tracing API (`OTTracer`)
-    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer & OpenTelemetryApi.Tracer {
+    public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer {
         do {
             guard !(core is NOPDatadogCore) else {
                 throw ProgrammerError(
