@@ -94,8 +94,15 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
 
         // Read and validate SR segments from SR requests.
         let segments: [SRSegmentMatcher] = try srRequests.reduce([]) { segments, request in
-            let blob = try request.blob()
-            XCTAssertFalse(blob.isEmpty, "There should be some SR segments")
+
+            // Read the metadata from request blob file
+            let blob = try request.blob { data in
+                // Resource request will have non-array blob file
+                let array = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
+                let matcher = JSONArrrayMatcher(array: array ?? [])
+                return try matcher.values().map(SRSegmentMatcher.init(object:))
+            }
+
             return try segments + blob.enumerated().map { index, metadata in
                 // - Each request must reference RUM session:
                 XCTAssertEqual(try metadata.applicationID(), rumSession.applicationID, "SR request must reference RUM application")
