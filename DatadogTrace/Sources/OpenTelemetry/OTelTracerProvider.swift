@@ -52,7 +52,7 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
         do {
             guard !(core is NOPDatadogCore) else {
                 throw ProgrammerError(
-                    description: "Datadog SDK must be initialized and RUM feature must be enabled before calling `OTelTracerProvider.get(instrumentationName:instrumentationVersion:)`."
+                    description: "Datadog SDK must be initialized and Trace feature must be enabled before calling `OTelTracerProvider.get(instrumentationName:instrumentationVersion:)`."
                 )
             }
             guard let feature = core?.get(feature: TraceFeature.self) else {
