@@ -52,3 +52,12 @@ extension SRRequestMatcher {
         try SRRequestMatcher(body: request.httpBody, headers: request.httpHeaders)
     }
 }
+
+extension SRSegmentMatcher {
+    static func segmentsCount(from requests: [Request]) throws -> Int {
+        try SRRequestMatcher.from(requests: requests).reduce(0) { total, request in
+            let count = try request.blob { try JSONSerialization.jsonObject(with: $0, options: []) as? [Any] }?.count ?? 0
+            return total + count
+        }
+    }
+}
