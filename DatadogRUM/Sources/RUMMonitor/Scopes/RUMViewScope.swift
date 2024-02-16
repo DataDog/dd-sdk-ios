@@ -584,17 +584,21 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
+                binaryImages: nil,
                 causes: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
                 isCrash: command.isCrash ?? false,
                 message: command.message,
+                meta: nil,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
                 sourceType: command.errorSourceType,
                 stack: command.stack,
-                type: command.type
+                threads: nil,
+                type: command.type,
+                wasTruncated: nil
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
