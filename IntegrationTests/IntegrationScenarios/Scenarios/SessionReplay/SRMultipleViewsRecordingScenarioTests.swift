@@ -24,6 +24,8 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
     /// These are **"minimum"** values, computed from a baseline run. Exact values may cause flakiness as number of SR records
     /// will highly depend on the performance of app, Simulator and CI.
     private struct Baseline {
+        /// Number of all SR segments to pass the test.
+        static let totalSegmentsCount = 15
         /// Number of all SR records to pass the test.
         static let totalRecordsCount = 35
         /// Number of all "full snapshot" records to pass the test.
@@ -70,11 +72,15 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         
         // Get RUM and SR raw requests from mock server:
         // - pull RUM data until the "end view" event is fetched
-        // - pull SR dat aright after - we know it is delivered faster than RUM so we don't need to await any longer
-        let rumSessionHasEndedCondition: ([Request]) throws -> Bool = { try RUMSessionMatcher.singleSession(from: $0)?.hasEnded() ?? false }
-        let rawRUMRequests = try rumEndpoint.pullRecordedRequests(timeout: dataDeliveryTimeout, until: rumSessionHasEndedCondition)
-        let rawSRRequests = try srEndpoint.getRecordedRequests()
-        
+        // - pull SR data until receiving expected count of segments
+        let rawRUMRequests = try rumEndpoint.pullRecordedRequests(timeout: dataDeliveryTimeout, until: {
+            try RUMSessionMatcher.singleSession(from: $0)?.hasEnded() ?? false
+        })
+
+        let rawSRRequests = try srEndpoint.pullRecordedRequests(timeout: dataDeliveryTimeout, until: {
+            try SRSegmentMatcher.segmentsCount(from: $0) == Baseline.totalSegmentsCount
+        })
+
         assertRUM(requests: rawRUMRequests)
         assertSR(requests: rawSRRequests)
         
