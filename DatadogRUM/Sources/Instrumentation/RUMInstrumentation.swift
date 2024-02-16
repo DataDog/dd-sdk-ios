@@ -26,13 +26,19 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
 
+    /// Instruments App Hangs.
+    let appHangs: AppHangsObserver?
+
     // MARK: - Initialization
 
     init(
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         longTaskThreshold: TimeInterval?,
-        dateProvider: DateProvider
+        appHangThreshold: TimeInterval,
+        mainQueue: DispatchQueue,
+        dateProvider: DateProvider,
+        telemetry: Telemetry
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
@@ -80,11 +86,18 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.actionsHandler = actionsHandler
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.longTasks = longTasks
+        self.appHangs = AppHangsObserver(
+            appHangThreshold: appHangThreshold,
+            observedQueue: mainQueue,
+            dateProvider: dateProvider,
+            telemetry: telemetry
+        )
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
         self.uiApplicationSwizzler?.swizzle()
         self.longTasks?.start()
+        self.appHangs?.start()
     }
 
     deinit {
@@ -92,11 +105,13 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         viewControllerSwizzler?.unswizzle()
         uiApplicationSwizzler?.unswizzle()
         longTasks?.stop()
+        appHangs?.stop()
     }
 
     func publish(to subscriber: RUMCommandSubscriber) {
         viewsHandler.publish(to: subscriber)
         actionsHandler?.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
+        appHangs?.publish(to: subscriber)
     }
 }

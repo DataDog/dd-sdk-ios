@@ -18,7 +18,10 @@ class RUMInstrumentationTests: XCTestCase {
             uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: nil,
-            dateProvider: SystemDateProvider()
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -37,7 +40,10 @@ class RUMInstrumentationTests: XCTestCase {
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             longTaskThreshold: nil,
-            dateProvider: SystemDateProvider()
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -53,7 +59,10 @@ class RUMInstrumentationTests: XCTestCase {
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: 0.5,
-            dateProvider: SystemDateProvider()
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -72,7 +81,10 @@ class RUMInstrumentationTests: XCTestCase {
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: .mockRandom(min: -100, max: 0),
-            dateProvider: SystemDateProvider()
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            telemetry: NOPTelemetry()
         )
 
         // Then
@@ -87,7 +99,10 @@ class RUMInstrumentationTests: XCTestCase {
             uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
             uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             longTaskThreshold: 0.5,
-            dateProvider: SystemDateProvider()
+            appHangThreshold: .mockAny(),
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            telemetry: NOPTelemetry()
         )
         let subscriber = RUMCommandSubscriberMock()
 
