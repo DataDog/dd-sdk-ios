@@ -21,9 +21,11 @@ internal class WKWebViewRecorder: NodeRecorder {
         }
 
         let builder = WKWebViewWireframesBuilder(
-            wireframeID: context.ids.nodeID(view: webView, nodeRecorder: self),
+            wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
+            slotID: webView.configuration.userContentController.hash,
             attributes: attributes
         )
+
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
@@ -31,6 +33,8 @@ internal class WKWebViewRecorder: NodeRecorder {
 
 internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
     let wireframeID: WireframeID
+    /// The slot identifier of the webview controller.
+    let slotID: Int
     /// Attributes of the `UIView`.
     let attributes: ViewAttributes
 
@@ -43,7 +47,7 @@ internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
             builder.createWebViewWireframe(
                 id: wireframeID,
                 frame: wireframeRect,
-                slotId: String(wireframeID),
+                slotId: String(slotID),
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,

@@ -54,10 +54,12 @@ class WKWebViewRecorderTests: XCTestCase {
     func testWebViewWireframeBuilder() throws {
         // Given
         let id: WireframeID = .mockRandom()
+        let slotId: Int = .mockRandom()
         let attributes: ViewAttributes = .mock(fixture: .visible())
 
         let builder = WKWebViewWireframesBuilder(
             wireframeID: id,
+            slotID: slotId,
             attributes: attributes
         )
 
@@ -72,7 +74,7 @@ class WKWebViewRecorderTests: XCTestCase {
         }
 
         XCTAssertEqual(wireframe.id, id)
-        XCTAssertEqual(wireframe.slotId, String(id))
+        XCTAssertEqual(wireframe.slotId, String(slotId))
         XCTAssertNil(wireframe.clip)
         XCTAssertEqual(wireframe.x, Int64(withNoOverflow: attributes.frame.minX))
         XCTAssertEqual(wireframe.y, Int64(withNoOverflow: attributes.frame.minY))
