@@ -7,34 +7,6 @@
 #if os(iOS)
 import UIKit
 
-internal struct UIImageResource {
-    internal let image: UIImage
-    internal let tintColor: UIColor?
-
-    internal init(image: UIImage, tintColor: UIColor?) {
-        self.image = image
-        self.tintColor = tintColor
-    }
-}
-
-extension UIImageResource: Resource {
-    func calculateIdentifier() -> String {
-        var identifier = image.srIdentifier
-        if let tintColorIdentifier = tintColor?.srIdentifier {
-            identifier += tintColorIdentifier
-        }
-        return identifier
-    }
-
-    func calculateData() -> Data {
-        var image = self.image
-        if #available(iOS 13.0, *), let tintColor = tintColor {
-            image = image.withTintColor(tintColor)
-        }
-        return image.scaledDownToApproximateSize(1.MB) // Intake limit is 10MB - to be adjusted in RUM-2153
-    }
-}
-
 internal struct UIImageViewRecorder: NodeRecorder {
     internal let identifier = UUID()
 
@@ -92,31 +64,24 @@ internal struct UIImageViewRecorder: NodeRecorder {
         }
         let shouldRecordImage = shouldRecordImagePredicate(imageView)
         let tintColor = tintColorProvider(imageView)
+        let imageResource = imageView.image
+            .map { image in
+                UIImageResource(image: image, tintColor: tintColor)
+            }
         let builder = UIImageViewWireframesBuilder(
             wireframeID: ids[0],
             imageWireframeID: ids[1],
             attributes: attributes,
             contentFrame: contentFrame,
             clipsToBounds: imageView.clipsToBounds,
-            image: imageView.image,
-            imageDataProvider: context.imageDataProvider,
-            tintColor: tintColor,
+            imageResource: shouldRecordImage ? imageResource : nil,
             shouldRecordImage: shouldRecordImage
         )
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(
            subtreeStrategy: .record,
            nodes: [node],
-           resources: [imageView.image]
-            .filter { image in
-               defer {
-                   image?.recorded = shouldRecordImage
-               }
-               return image?.recorded == false && shouldRecordImage
-            }
-            .compactMap { image in
-                image.map { UIImageResource(image: $0, tintColor: tintColor) }
-            }
+           resources: [imageResource].filter { _ in shouldRecordImage }.compactMap { $0 }
        )
     }
 }
@@ -136,11 +101,7 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
 
     let clipsToBounds: Bool
 
-    let image: UIImage?
-
-    let imageDataProvider: ImageDataProviding
-
-    let tintColor: UIColor?
+    let imageResource: UIImageResource?
 
     let shouldRecordImage: Bool
 
@@ -179,18 +140,11 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
                 opacity: attributes.alpha
             )
         ]
-        var imageResource: ImageResource?
-        if shouldRecordImage {
-            imageResource = imageDataProvider.contentBase64String(
-                of: image,
-                tintColor: tintColor
-            )
-        }
         if let contentFrame = contentFrame {
             if let imageResource = imageResource {
                 wireframes.append(
                     builder.createImageWireframe(
-                        imageResource: imageResource,
+                        resourceId: imageResource.calculateIdentifier(),
                         id: imageWireframeID,
                         frame: contentFrame,
                         clip: clipsToBounds ? clip : nil

@@ -12,10 +12,13 @@ class MultipartBuilderSpy: MultipartFormDataBuilder {
     var formFiles: [(filename: String, data: Data, mimeType: String)] = []
     var returnedData: Data = .mockRandom()
 
-    var boundary = UUID()
+    let boundary: String = UUID().uuidString
+
     func addFormField(name: String, value: String) { formFields[name] = value }
+
     func addFormData(name: String, filename: String, data: Data, mimeType: String) {
         formFiles.append((filename: filename, data: data, mimeType: mimeType))
     }
-    var data: Data { returnedData }
+
+    func build() -> Data { returnedData }
 }

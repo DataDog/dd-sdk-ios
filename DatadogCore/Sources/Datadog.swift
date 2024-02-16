@@ -361,9 +361,12 @@ public enum Datadog {
         trackingConsent: TrackingConsent,
         instanceName: String = CoreRegistry.defaultInstanceName
     ) -> DatadogCoreProtocol {
-        // TODO: RUMM-511 remove this warning
         #if targetEnvironment(macCatalyst)
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        #endif
+
+        #if swift(>=5.9) && os(visionOS)
+        consolePrint("⚠️ VisionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
         do {

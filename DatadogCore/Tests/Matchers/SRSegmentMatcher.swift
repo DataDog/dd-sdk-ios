@@ -11,26 +11,6 @@ import TestUtilities
 ///
 /// See: ``DatadogSessionReplay.SRSegment`` to understand how underlying data is encoded.
 internal class SRSegmentMatcher: JSONObjectMatcher {
-    /// Creates matcher from Session Replay `URLRequest`. The `request` must be a valid Session Replay (multipart) request.
-    /// This method extracts SR segment from the "segment" file encoded in multipart request. Other multipart fields are ignored.
-    ///
-    /// - Parameter request: Session Replay request.
-    static func fromURLRequest(_ request: URLRequest) throws -> SRSegmentMatcher {
-        let requestMatcher = try SRRequestMatcher(request: request)
-        let segmentJSONObjectData = try requestMatcher.segmentJSONData()
-        return SRSegmentMatcher(jsonObject: try segmentJSONObjectData.toJSONObject())
-    }
-
-    /// Creates matcher from JSON-encoded SR segment.
-    /// - Parameter data: JSON-encoded SR segment data (not compressed).
-    static func fromJSONData(_ data: Data) throws -> SRSegmentMatcher {
-        return SRSegmentMatcher(jsonObject: try data.toJSONObject())
-    }
-
-    private init(jsonObject: [String: Any]) {
-        super.init(object: jsonObject)
-    }
-
     /// Enumerates SR record types.
     /// Raw values correspond to record types defined in SR JSON schema.
     ///
@@ -43,6 +23,39 @@ internal class SRSegmentMatcher: JSONObjectMatcher {
         case viewEndRecord = 7
         case visualViewportRecord = 8
     }
+
+    /// The value of "segment" field in underlying multipart form.
+    func segment() throws -> String { try value("segment") }
+
+    /// The value of "application.id" field in underlying multipart form.
+    func applicationID() throws -> String { try value("application.id") }
+
+    /// The value of "session.id" field in underlying multipart form.
+    func sessionID() throws -> String { try value("session.id") }
+
+    /// The  value of "view.id" field in underlying multipart form.
+    func viewID() throws -> String { try value("view.id") }
+
+    /// The  value of "has_full_snapshot" field in underlying multipart form.
+    func hasFullSnapshot() throws -> Bool { try value("has_full_snapshot") }
+
+    /// The  value of "records_count" field in underlying multipart form.
+    func recordsCount() throws -> Int { try value("records_count") }
+
+    /// The  value of "raw_segment_size" field in underlying multipart form.
+    func rawSegmentSize() throws -> Int { try value("raw_segment_size") }
+
+    /// The  value of "compressed_segment_size" field in underlying multipart form.
+    func compressedSegmentSize() throws -> Int { try value("compressed_segment_size") }
+
+    /// The  value of "start" field in underlying multipart form.
+    func start() throws -> Int { try value("start") }
+
+    /// The  value of "end" field in underlying multipart form.
+    func end() throws -> Int { try value("end") }
+
+    /// The  value of "source" field in underlying multipart form.
+    func source() throws -> String { try value("source") }
 
     /// Returns an array of JSON object matchers for all records in this segment.
     func records() throws -> [JSONObjectMatcher] {

@@ -61,43 +61,21 @@ internal struct SRRequestMatcher {
         self.multipartForm = try MultipartFormDataParser(data: multipartBody, boundary: multipartBoundary)
     }
 
-    /// The value of "segment" field in underlying multipart form.
-    func segment() throws -> String { try valueOfField(named: "segment") }
-
-    /// The value of "application.id" field in underlying multipart form.
-    func applicationID() throws -> String { try valueOfField(named: "application.id") }
-
-    /// The value of "session.id" field in underlying multipart form.
-    func sessionID() throws -> String { try valueOfField(named: "session.id") }
-
-    /// The  value of "view.id" field in underlying multipart form.
-    func viewID() throws -> String { try valueOfField(named: "view.id") }
-
-    /// The  value of "has_full_snapshot" field in underlying multipart form.
-    func hasFullSnapshot() throws -> String { try valueOfField(named: "has_full_snapshot") }
-
-    /// The  value of "records_count" field in underlying multipart form.
-    func recordsCount() throws -> String { try valueOfField(named: "records_count") }
-
-    /// The  value of "raw_segment_size" field in underlying multipart form.
-    func rawSegmentSize() throws -> String { try valueOfField(named: "raw_segment_size") }
-
-    /// The  value of "start" field in underlying multipart form.
-    func start() throws -> String { try valueOfField(named: "start") }
-
-    /// The  value of "end" field in underlying multipart form.
-    func end() throws -> String { try valueOfField(named: "end") }
-
-    /// The  value of "source" field in underlying multipart form.
-    func source() throws -> String { try valueOfField(named: "source") }
+    /// Returns the blob file.
+    func blob<T>(_ transform: (Data) throws -> T) throws -> T {
+        let data = try dataOfFile(named: "blob", fieldName: "event", mimeType: "application/json")
+        return try transform(data)
+    }
 
     /// Data of "segment" file in underlying multipart form.
-    func segmentJSONData() throws -> Data {
-        let compressedData = try dataOfFile(named: try sessionID(), fieldName: "segment", mimeType: "application/octet-stream")
+    func segment(at index: Int) throws -> SRSegmentMatcher {
+        let compressedData = try dataOfFile(named: "file\(index)", fieldName: "segment", mimeType: "application/octet-stream")
         guard let data = zlib.decode(compressedData) else {
             throw SRRequestException.segmentException("Failed to decompress segment JSON data: \(compressedData)")
         }
-        return data
+
+        let object = try data.toJSONObject()
+        return SRSegmentMatcher(object: object)
     }
 
     // MARK: - Querying Multipart Fields and Files

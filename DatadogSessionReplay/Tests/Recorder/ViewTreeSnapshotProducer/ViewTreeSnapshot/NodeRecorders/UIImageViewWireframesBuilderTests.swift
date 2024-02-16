@@ -25,9 +25,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: .mockRandom(),
-            imageDataProvider: MockImageDataProvider(),
-            tintColor: UIColor.mockRandom(),
+            imageResource: .mockRandom(),
             shouldRecordImage: true
         )
 
@@ -43,7 +41,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
 
         if case let .imageWireframe(imageWireframe) = wireframes[1] {
             XCTAssertEqual(imageWireframe.id, imageWireframeID)
-            XCTAssertEqual(imageWireframe.base64, "mock_base64_string")
+            XCTAssertNil(imageWireframe.base64) // deprecated field
         } else {
             XCTFail("Second wireframe needs to be imageWireframe case")
         }
@@ -58,9 +56,7 @@ class UIImageViewWireframesBuilderTests: XCTestCase {
             attributes: ViewAttributes.mock(fixture: .visible(.someAppearance)),
             contentFrame: CGRect(x: 10, y: 10, width: 200, height: 200),
             clipsToBounds: true,
-            image: .mockRandom(),
-            imageDataProvider: mockRandomImageDataProvider(),
-            tintColor: UIColor.mockRandom(),
+            imageResource: nil,
             shouldRecordImage: false
         )
 

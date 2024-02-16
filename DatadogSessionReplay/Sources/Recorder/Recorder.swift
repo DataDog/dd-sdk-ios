@@ -61,13 +61,13 @@ public class Recorder: Recording {
     /// Turns view tree snapshots into data models that will be uploaded to SR BE.
     private let snapshotProcessor: SnapshotProcessing
     /// Processes resources on a background thread.
-    private let resourceProcessor: ResourceProcessing? // RUM-2154 Optional until prod backend is ready
+    private let resourceProcessor: ResourceProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
-        resourceProcessor: ResourceProcessing?,
+        resourceProcessor: ResourceProcessing,
         telemetry: Telemetry,
         additionalNodeRecorders: [NodeRecorder]
     ) throws {
@@ -95,7 +95,7 @@ public class Recorder: Recording {
         viewTreeSnapshotProducer: ViewTreeSnapshotProducer,
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: SnapshotProcessing,
-        resourceProcessor: ResourceProcessing?,
+        resourceProcessor: ResourceProcessing,
         telemetry: Telemetry
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
@@ -124,7 +124,7 @@ public class Recorder: Recording {
             let touchSnapshot = touchSnapshotProducer.takeSnapshot(context: recorderContext)
             snapshotProcessor.process(viewTreeSnapshot: viewTreeSnapshot, touchSnapshot: touchSnapshot)
 
-            resourceProcessor?.process(
+            resourceProcessor.process(
                 resources: viewTreeSnapshot.resources,
                 context: .init(recorderContext.applicationID)
             )

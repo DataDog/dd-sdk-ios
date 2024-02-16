@@ -20,8 +20,6 @@ public struct SessionReplayViewTreeRecordingContext {
     let coordinateSpace: UICoordinateSpace
     /// Generates stable IDs for traversed views.
     public let ids: NodeIDGenerator
-    /// Provides base64 image data with a built in caching mechanism.
-    let imageDataProvider: ImageDataProviding
     /// Variable view controller related context
     var viewControllerContext: ViewControllerContext = .init()
 }

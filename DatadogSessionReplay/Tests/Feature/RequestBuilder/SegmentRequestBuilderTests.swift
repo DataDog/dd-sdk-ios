@@ -6,6 +6,8 @@
 
 import XCTest
 import DatadogInternal
+
+@_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
 
@@ -132,23 +134,99 @@ class SegmentRequestBuilderTests: XCTestCase {
         let multipartSpy = MultipartBuilderSpy()
         let builder = SegmentRequestBuilder(customUploadURL: nil, telemetry: TelemetryMock(), multipartBuilder: multipartSpy)
 
+        let encoder = JSONEncoder()
+        let decoder = JSONDecoder()
+
+        let context0: RUMContext = .mockRandom()
+        let context1: RUMContext = .mockRandom()
+        let events = try [
+            EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 5)),
+            EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 10)),
+            EnrichedRecord(context: .mockWith(rumContext: context0), records: .mockRandom(count: 15)),
+            EnrichedRecord(context: .mockWith(rumContext: context1), records: .mockRandom(count: 5)),
+            EnrichedRecord(context: .mockWith(rumContext: context1), records: .mockRandom(count: 10)),
+            EnrichedRecord(context: .mockWith(rumContext: context1), records: .mockRandom(count: 15)),
+        ].map {
+            try Event.mockWith(data: encoder.encode($0))
+        }
+
         // When
-        let request = try builder.request(for: mockEvents, with: .mockWith(source: "ios"))
+        let request = try builder.request(for: events, with: .mockWith(source: "ios"))
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
-        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary.uuidString)"))
-        XCTAssertEqual(multipartSpy.formFiles.first?.filename, rumContext.sessionID)
-        XCTAssertEqual(multipartSpy.formFiles.first?.mimeType, "application/octet-stream")
-        XCTAssertEqual(multipartSpy.formFields["segment"], rumContext.sessionID)
-        XCTAssertEqual(multipartSpy.formFields["application.id"], rumContext.applicationID)
-        XCTAssertEqual(multipartSpy.formFields["view.id"], rumContext.viewID!)
-        XCTAssertTrue(["true", "false"].contains(multipartSpy.formFields["has_full_snapshot"]!))
-        XCTAssertEqual(multipartSpy.formFields["records_count"], "30")
-        XCTAssertNotNil(multipartSpy.formFields["raw_segment_size"])
-        XCTAssertNotNil(multipartSpy.formFields["start"])
-        XCTAssertNotNil(multipartSpy.formFields["end"])
-        XCTAssertEqual(multipartSpy.formFields["source"], "ios")
+        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary)"))
+        XCTAssertEqual(multipartSpy.formFiles.count, 3)
+
+        let file0 = multipartSpy.formFiles[0]
+        XCTAssertEqual(file0.filename, "file0")
+        XCTAssertEqual(file0.mimeType, "application/octet-stream")
+
+        let segment0 = try decoder.decode(SRSegment.self, from: XCTUnwrap(zlib.decode(file0.data)))
+        XCTAssertEqual(segment0.application.id, context0.applicationID)
+        XCTAssertEqual(segment0.session.id, context0.sessionID)
+        XCTAssertEqual(segment0.view.id, context0.viewID)
+        XCTAssertEqual(segment0.source, .ios)
+        XCTAssertEqual(segment0.recordsCount, 30)
+
+        let file1 = multipartSpy.formFiles[1]
+        XCTAssertEqual(file1.filename, "file1")
+        XCTAssertEqual(file1.mimeType, "application/octet-stream")
+
+        let segment1 = try decoder.decode(SRSegment.self, from: XCTUnwrap(zlib.decode(file1.data)))
+        XCTAssertEqual(segment1.application.id, context1.applicationID)
+        XCTAssertEqual(segment1.session.id, context1.sessionID)
+        XCTAssertEqual(segment1.view.id, context1.viewID)
+        XCTAssertEqual(segment1.source, .ios)
+        XCTAssertEqual(segment1.recordsCount, 30)
+
+        let blob = multipartSpy.formFiles[2]
+        XCTAssertEqual(blob.filename, "blob")
+        XCTAssertEqual(blob.mimeType, "application/json")
+        let metadata = try decoder.decode([Metadata].self, from: blob.data)
+        XCTAssertEqual(metadata.count, 2)
+        XCTAssertEqual(metadata[0].application.id, context0.applicationID)
+        XCTAssertEqual(metadata[0].session.id, context0.sessionID)
+        XCTAssertEqual(metadata[0].view.id, context0.viewID)
+        XCTAssertNil(metadata[0].records)
+        XCTAssertGreaterThanOrEqual(metadata[0].rawSegmentSize, metadata[0].compressedSegmentSize)
+        XCTAssertEqual(metadata[1].application.id, context1.applicationID)
+        XCTAssertEqual(metadata[1].session.id, context1.sessionID)
+        XCTAssertEqual(metadata[1].view.id, context1.viewID)
+        XCTAssertNil(metadata[1].records)
+        XCTAssertGreaterThanOrEqual(metadata[1].rawSegmentSize, metadata[1].compressedSegmentSize)
+
+        // This definition is only used for assertion as it does not exist in the shared
+        // schema yet.
+        struct Metadata: Decodable {
+            let application: SRSegment.Application
+            let end: Int64
+            let hasFullSnapshot: Bool?
+            let indexInView: Int64?
+            let records: [SRRecord]?
+            let recordsCount: Int64
+            let session: SRSegment.Session
+            let source: SRSegment.Source
+            let start: Int64
+            let view: SRSegment.View
+            let rawSegmentSize: Int
+            let compressedSegmentSize: Int
+
+            enum CodingKeys: String, CodingKey {
+                case application = "application"
+                case end = "end"
+                case hasFullSnapshot = "has_full_snapshot"
+                case indexInView = "index_in_view"
+                case records = "records"
+                case recordsCount = "records_count"
+                case session = "session"
+                case source = "source"
+                case start = "start"
+                case view = "view"
+                case rawSegmentSize = "raw_segment_size"
+                case compressedSegmentSize = "compressed_segment_size"
+            }
+        }
     }
 
     func testWhenBatchDataIsMalformed_itThrows() {

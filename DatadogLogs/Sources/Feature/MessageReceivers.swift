@@ -261,7 +261,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { _, writer in
             writer.write(value: event)
         }
 
