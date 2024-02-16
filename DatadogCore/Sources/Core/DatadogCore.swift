@@ -314,11 +314,11 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         // (on user thread) request SDK context
         context { context in
             // (on context thread) call the block
-            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent, forceNewBatch: forceNewBatch)
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
         }
     }

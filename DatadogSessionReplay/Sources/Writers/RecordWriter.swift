@@ -18,31 +18,14 @@ internal class RecordWriter: RecordWriting {
     /// An instance of SDK core the SR feature is registered to.
     private weak var core: DatadogCoreProtocol?
 
-    /// The `viewID`  of last group of records written to core. If that ID changes, we request the core
-    /// to write new events to separate batch, so we receive them separately in `RequestBuilder`.
-    ///
-    /// This is to fulfill the SR payload requirement that each view needs to be send in separate segment.
-    private var lastViewID: String?
-
-    init(
-        core: DatadogCoreProtocol,
-        lastViewID: String? = nil
-    ) {
+    init(core: DatadogCoreProtocol) {
         self.core = core
-        self.lastViewID = lastViewID
     }
 
     // MARK: - Writing
 
     func write(nextRecord: EnrichedRecord) {
-        let forceNewBatch = lastViewID != nextRecord.viewID
-        lastViewID = nextRecord.viewID
-
-        guard let scope = core?.scope(for: SessionReplayFeature.name) else {
-            return
-        }
-
-        scope.eventWriteContext(bypassConsent: false, forceNewBatch: forceNewBatch) { _, recordWriter in
+        core?.scope(for: SessionReplayFeature.name)?.eventWriteContext { _, recordWriter in
             recordWriter.write(value: nextRecord)
         }
     }

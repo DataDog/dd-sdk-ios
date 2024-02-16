@@ -38,9 +38,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testWhenWritingEventsWithoutForcingNewBatch_itShouldWriteAllEventsToTheSameBatch() throws {
         // When
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event1": "1"])
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event2": "2"])
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event3": "3"])
+        storage.writer(for: .granted).write(value: ["event1": "1"])
+        storage.writer(for: .granted).write(value: ["event2": "2"])
+        storage.writer(for: .granted).write(value: ["event3": "3"])
 
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
@@ -52,32 +52,13 @@ class FeatureStorageTests: XCTestCase {
         XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
     }
 
-    func testWhenWritingEventsWithForcingNewBatch_itShouldWriteEachEventToSeparateBatch() throws {
-        // When
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event1": "1"])
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event2": "2"])
-        storage.writer(for: .granted, forceNewBatch: true).write(value: ["event3": "3"])
-
-        // Then
-        storage.setIgnoreFilesAgeWhenReading(to: true)
-
-        let batches = storage.reader.readNextBatches(3)
-        XCTAssertEqual(batches.count, 3)
-        batches.forEach { batch in
-            XCTAssertEqual(batch.events.count, 1)
-            storage.reader.markBatchAsRead(batch)
-        }
-
-        XCTAssertTrue(storage.reader.readNextBatches(1).isEmpty, "There must be no other batches")
-    }
-
     // MARK: - Behaviours on tracking consent
 
     func testWhenWritingEventsInDifferentConsents_itOnlyReadsGrantedEvents() throws {
         // When
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // Then
         storage.setIgnoreFilesAgeWhenReading(to: true)
@@ -91,9 +72,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToGranted_itMakesPendingEventsReadable() throws {
         // Given
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
         storage.migrateUnauthorizedData(toConsent: .granted)
@@ -114,9 +95,9 @@ class FeatureStorageTests: XCTestCase {
 
     func testGivenEventsWrittenInDifferentConsents_whenChangingConsentToNotGranted_itDeletesPendingEvents() throws {
         // Given
-        storage.writer(for: .granted, forceNewBatch: false).write(value: ["event.consent": "granted"])
-        storage.writer(for: .pending, forceNewBatch: false).write(value: ["event.consent": "pending"])
-        storage.writer(for: .notGranted, forceNewBatch: false).write(value: ["event.consent": "notGranted"])
+        storage.writer(for: .granted).write(value: ["event.consent": "granted"])
+        storage.writer(for: .pending).write(value: ["event.consent": "pending"])
+        storage.writer(for: .notGranted).write(value: ["event.consent": "notGranted"])
 
         // When
         storage.migrateUnauthorizedData(toConsent: .notGranted)
