@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
+		1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; };
+		1434A4642B7F73170072E3BB /* OpenTelemetryApi.xcframework in ⚙️ Embed Framework Dependencies */ = {isa = PBXBuildFile; fileRef = 3C1F88222B767CE200821579 /* OpenTelemetryApi.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
+		1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */; };
 		3C0D5DD72A543B3B00446CF9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DD62A543B3B00446CF9 /* Event.swift */; };
 		3C0D5DD82A543B3B00446CF9 /* Event.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DD62A543B3B00446CF9 /* Event.swift */; };
 		3C0D5DE22A543DC400446CF9 /* EventGeneratorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C0D5DDF2A543DAE00446CF9 /* EventGeneratorTests.swift */; };
@@ -1858,6 +1864,7 @@
 			files = (
 				D240685927CF5D0100C04F44 /* DatadogCrashReporting.framework in ⚙️ Embed Framework Dependencies */,
 				D240685527CF5D0100C04F44 /* DatadogCore.framework in ⚙️ Embed Framework Dependencies */,
+				1434A4642B7F73170072E3BB /* OpenTelemetryApi.xcframework in ⚙️ Embed Framework Dependencies */,
 				D24C9C4729A7A520002057CF /* DatadogLogs.framework in ⚙️ Embed Framework Dependencies */,
 				D240686027CF5D0100C04F44 /* DatadogObjc.framework in ⚙️ Embed Framework Dependencies */,
 			);
@@ -1872,6 +1879,7 @@
 			files = (
 				3C2206F82AB9DBC600DE780C /* DatadogInternal.framework in Embed Frameworks */,
 				3C2206F72AB9DBB600DE780C /* DatadogTrace.framework in Embed Frameworks */,
+				1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */,
 				3C2206F62AB9DBA700DE780C /* DatadogRUM.framework in Embed Frameworks */,
 				3C2206F52AB9DB9000DE780C /* DatadogSessionReplay.framework in Embed Frameworks */,
 				D240687E27CF982D00C04F44 /* DatadogCrashReporting.framework in Embed Frameworks */,
@@ -1886,6 +1894,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugOTelTracingViewController.swift; sourceTree = "<group>"; };
 		3C0D5DD62A543B3B00446CF9 /* Event.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Event.swift; sourceTree = "<group>"; };
 		3C0D5DDC2A543D5D00446CF9 /* EventGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventGenerator.swift; sourceTree = "<group>"; };
 		3C0D5DDF2A543DAE00446CF9 /* EventGeneratorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventGeneratorTests.swift; sourceTree = "<group>"; };
@@ -2807,6 +2816,7 @@
 				D240687827CF982B00C04F44 /* CrashReporter.xcframework in Frameworks */,
 				D240687B27CF982C00C04F44 /* DatadogCore.framework in Frameworks */,
 				D240687D27CF982D00C04F44 /* DatadogCrashReporting.framework in Frameworks */,
+				1434A4612B7F73110072E3BB /* OpenTelemetryApi.xcframework in Frameworks */,
 				D24C9C4229A7A50D002057CF /* DatadogLogs.framework in Frameworks */,
 				D240687F27CF982F00C04F44 /* DatadogObjc.framework in Frameworks */,
 			);
@@ -2926,6 +2936,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61A2CC342A44A6030000FF25 /* DatadogRUM.framework in Frameworks */,
+				1434A4632B7F73170072E3BB /* OpenTelemetryApi.xcframework in Frameworks */,
 				D25CFA9D29C4FC6E00E3A43D /* DatadogTrace.framework in Frameworks */,
 				9E5BD8062819742C00CB568E /* SwiftUI.framework in Frameworks */,
 				D240687027CF971C00C04F44 /* CrashReporter.xcframework in Frameworks */,
@@ -4273,6 +4284,7 @@
 			children = (
 				61441C942461A649003D8BB8 /* DebugLoggingViewController.swift */,
 				61441C932461A649003D8BB8 /* DebugTracingViewController.swift */,
+				1434A4652B7F8D880072E3BB /* DebugOTelTracingViewController.swift */,
 				617699202A8A7DF50030022B /* DebugManualTraceInjectionViewController.swift */,
 				61E5333724B84EE2003D6C4E /* DebugRUMViewController.swift */,
 				61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */,
@@ -7771,6 +7783,7 @@
 				61441C952461A649003D8BB8 /* ConsoleOutputInterceptor.swift in Sources */,
 				618236892710560900125326 /* DebugWebviewViewController.swift in Sources */,
 				61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */,
+				1434A4662B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */,
 				61E5333824B84EE2003D6C4E /* DebugRUMViewController.swift in Sources */,
 				61441C0524616DE9003D8BB8 /* ExampleAppDelegate.swift in Sources */,
 				61020C2C2758E853005EEAEA /* DebugBackgroundEventsViewController.swift in Sources */,
@@ -8128,6 +8141,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1434A4672B7F8D880072E3BB /* DebugOTelTracingViewController.swift in Sources */,
 				D2F44FC3299BD5600074B0D9 /* UIViewController+KeyboardControlling.swift in Sources */,
 				D240680827CE6C9E00C04F44 /* ConsoleOutputInterceptor.swift in Sources */,
 				D240681E27CE6C9E00C04F44 /* ExampleAppDelegate.swift in Sources */,

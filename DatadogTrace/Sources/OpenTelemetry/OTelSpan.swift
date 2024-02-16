@@ -171,9 +171,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
 
         // There is no need to lock here, because `DDSpan` is thread-safe
 
-        // fields needs to be a dictionary of [String: Encodable] which is satisfied by opentelemetry-swift
-        // and Datadog SDK doesn't care about the representation
-        ddSpan.log(message: name, fields: attributes, timestamp: timestamp)
+        ddSpan.log(message: name, fields: attributes.tags, timestamp: timestamp)
     }
 
     func end() {
