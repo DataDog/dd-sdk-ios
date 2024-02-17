@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
+import DatadogInternal
 import CrashReporter
 
 internal extension PLCrashReporterConfig {
