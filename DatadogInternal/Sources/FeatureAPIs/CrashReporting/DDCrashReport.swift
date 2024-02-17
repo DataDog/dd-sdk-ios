@@ -73,7 +73,7 @@ public final class DDCrashReport: NSObject, Codable {
     public let binaryImages: [BinaryImage]
     /// Meta information about the crash and process.
     public let meta: Meta
-    /// If any stack trace information was truncated due to crash report minimization.
+    /// If any stack trace information in `threads` was truncated due to stack trace minimization.
     public let wasTruncated: Bool
     /// The last context injected through `inject(context:)`
     public let context: Data?
