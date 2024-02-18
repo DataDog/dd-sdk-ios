@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 
 /// An interface for enabling crash reporting feature in Datadog SDK.

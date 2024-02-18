@@ -38,6 +38,10 @@ public final class CrashReporting {
 
             try core.register(feature: reporter)
 
+            if let plcr = PLCrashReporterPlugin.thirdPartyCrashReporter {
+                try core.register(backtraceReporter: BacktraceReporter(reporter: plcr))
+            }
+
             reporter.sendCrashReportIfFound()
 
             core.telemetry

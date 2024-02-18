@@ -229,8 +229,6 @@ extension DatadogCore: DatadogCoreProtocol {
     ///
     /// - Parameter feature: The Feature instance.
     func register<T>(feature: T) throws where T: DatadogFeature {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
-
         let performancePreset: PerformancePreset
         if let override = feature.performanceOverride {
             performancePreset = performance.updated(with: override)
@@ -239,6 +237,7 @@ extension DatadogCore: DatadogCoreProtocol {
         }
 
         if let feature = feature as? DatadogRemoteFeature {
+            let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
             let storage = FeatureStorage(
                 featureName: T.name,
                 queue: readWriteQueue,
