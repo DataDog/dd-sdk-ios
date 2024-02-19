@@ -16,6 +16,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
     init(
         appHangThreshold: TimeInterval,
         observedQueue: DispatchQueue,
+        backtraceReporter: BacktraceReporting,
         dateProvider: DateProvider,
         telemetry: Telemetry
     ) {
@@ -23,6 +24,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
             appHangThreshold: appHangThreshold,
             queue: observedQueue,
             dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter,
             telemetry: telemetry
         )
         watchdogThread.onHangEnded = { [weak self] appHang in

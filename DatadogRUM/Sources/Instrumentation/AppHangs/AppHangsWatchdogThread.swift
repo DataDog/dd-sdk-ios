@@ -41,6 +41,8 @@ internal final class AppHangsWatchdogThread: Thread {
     private let mainQueue: DispatchQueue
     /// SDK date provider.
     private let dateProvider: DateProvider
+    /// Backtrace reporter for hang's stack trace generation.
+    private let backtraceReporter: BacktraceReporting
     /// Telemetry interface.
     private let telemetry: Telemetry
     /// Closure to be notified when App Hang ends. It will be executed on the watchdog thread.
@@ -55,17 +57,20 @@ internal final class AppHangsWatchdogThread: Thread {
     ///   - appHangThreshold: Minimum duration of the `queue` hang to consider it an App Hang.
     ///   - queue: The queue to observe for hangs. (main queue)
     ///   - dateProvider: Date provider.
+    ///   - backtraceReporter: Backtrace reporter for hang's stack trace generation.
     ///   - telemetry: The handler to report issues through RUM Telemetry.
     init(
         appHangThreshold: TimeInterval,
         queue: DispatchQueue,
         dateProvider: DateProvider,
+        backtraceReporter: BacktraceReporting,
         telemetry: Telemetry
     ) {
         self.appHangThreshold = appHangThreshold
         self.idleInterval = appHangThreshold * Constants.tolerance
         self.mainQueue = queue
         self.dateProvider = dateProvider
+        self.backtraceReporter = backtraceReporter
         self.telemetry = telemetry
         super.init()
         self.name = "com.datadoghq.app-hang-watchdog"

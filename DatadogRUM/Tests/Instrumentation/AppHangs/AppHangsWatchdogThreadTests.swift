@@ -23,6 +23,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             appHangThreshold: appHangThreshold,
             queue: queue,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangEnded = { _ in
@@ -58,6 +59,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             appHangThreshold: appHangThreshold,
             queue: queue,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangEnded = { _ in
@@ -93,6 +95,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             appHangThreshold: appHangThreshold,
             queue: queue,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangEnded = { hang in
