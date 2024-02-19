@@ -6,6 +6,7 @@
 
 import XCTest
 import DatadogCrashReporting
+@testable import DatadogInternal
 
 /// Tests integration of `DatadogCore` and `DatadogCrashReporting` for backtrace generation.
 class GeneratingBacktraceTests: XCTestCase {
@@ -25,6 +26,7 @@ class GeneratingBacktraceTests: XCTestCase {
     func testGivenCrashReportingIsEnabled_thenCoreCanGenerateBacktrace() throws {
         // Given
         CrashReporting.enable(in: core)
+        XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` is registered")
 
         // When
         let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace())
