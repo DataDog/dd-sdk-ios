@@ -1,0 +1,81 @@
+name: Setup Issue
+description: Having a hard time setting up the SDK for the first time? Maybe a compilation issue or just nothing seems to be happening. Seek help with this.
+labels: ["compilation issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before creating an issue, please ensure you go through the [troubleshooting page](https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/troubleshooting/#debugging).
+  - type: textarea
+    id: issue
+    attributes:
+      label: Describe the issue 
+      description: Provide a clear and concise description of the issue. Include compilation logs and SDK debug logs if relevant. 
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: |
+        Provide a self-contained piece of code demonstrating the issue.
+        For a more complex setup consider creating a small app that showcases the problem. 
+        **Note** - Avoid sharing any business logic, credentials or tokens.
+    validations:
+      required: true
+  - type: textarea
+    id: device_info
+    attributes:
+      label: Device Information
+      description: |
+        What are the common characteristics of devices you're seeing this issue in? 
+        Simulators, specific models, OS versions, network state (wifi / cellular / offline), power state (plugged in / battery), etc.
+    validations:
+      required: false
+  - type: input
+    id: sdk_version
+    attributes:
+      label: SDK version
+      description: Which SDK version are you trying to use?
+    validations:
+      required: true
+  - type: dropdown
+    id: integration_method
+    attributes:
+      label: Integration Methods
+      options:
+        - SPM
+        - Cocoapods
+        - Carthage
+        - XCFramework
+        - Source
+    validations:
+        required: true
+  - type: input
+    id: xcode_version
+    attributes:
+      label: XCode Version
+      description: e.g. Xcode 11.5 (15C500b), obtained with **xcodebuild -version**
+  - type: input
+    id: swift_version
+    attributes:
+      label: Swift Version
+      description: e.g. Swift 5.9 , obtained with **swift —version** 
+  - type: input
+    id: mac_version
+    attributes:
+      label: MacOS Version
+      description: e.g. macOS Catalina 10.15.5 (19F96), obtained with **sw_vers**
+  - type: input
+    id: deployment_targe
+    attributes:
+      label: Deployment Target             
+      description: |
+        What is the Deployment Target of your app? e.g. *iOS 12*, *iPhone* + *iPad*
+  - type: textarea
+    id: other_info
+    attributes:
+      label: Other relevant information
+      description: |
+        Other relevant information such as additional tooling in place, proxies, etc.
+        Anything that might be relevant for troubleshooting your setup. 

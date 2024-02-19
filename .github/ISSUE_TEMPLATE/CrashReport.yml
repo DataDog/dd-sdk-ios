@@ -1,0 +1,76 @@
+name: Crash Report
+description: Report crashes caused by the SDK. 
+labels: ["crash"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report crashes caused by the SDK. Please try to be as detailed as possible. 
+        Before getting started, if the problem is urgent please use our [official support channel](https://www.datadoghq.com/support/).
+  - type: textarea
+    id: stacktrace
+    attributes:
+      label: Stack trace 
+      description: Please provide us with the stack trace of the crash or a crash report.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: |
+        Provide a self-contained piece of code demonstrating the crash if you can. 
+        For a more complex setup consider creating a small app that showcases the problem. 
+        **Note** - Avoid sharing any business logic, credentials or tokens.
+    validations:
+      required: false
+  - type: input
+    id: volume
+    attributes:
+      label: Volume
+      description: What percentage of your app sessions are impacted with this crash?
+    validations:
+      required: true
+  - type: input
+    id: affected_sdk_versions
+    attributes:
+      label: Affected SDK versions
+      description: What are the SDK versions you're seeing this crash in? 
+    validations:
+      required: true
+  - type: input
+    id: last_working_sdk_version
+    attributes:
+      label: Latest working SDK version
+      description: If you know, what was the last SDK version where the crash did manifest itself?
+    validations:
+      required: true
+  - type: dropdown
+    id: checked_lastest_sdk
+    attributes:
+      label: Does the crash manifest in the latest SDK version?
+      options:
+        - 'Yes'
+        - 'No'
+    validations:
+      required: true
+  - type: input
+    id: deployment_targe
+    attributes:
+      label: Deployment Target             
+      description: |
+        What is the Deployment Target of your app? e.g. *iOS 12*, *iPhone* + *iPad*
+  - type: textarea
+    id: device_info
+    attributes:
+      label: Device Information
+      description: |
+        What are the common characteristics of devices you're seeing this crash in? 
+        Specific models, OS versions, etc.
+    validations:
+      required: false
+  - type: textarea
+    id: other_info
+    attributes:
+      label: Other relevant information
+      description: Anything that might be relevant to pinpoint the source of the crash. 
