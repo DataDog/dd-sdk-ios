@@ -12,7 +12,9 @@ internal struct AppHang {
     let date: Date
     /// The duration of the hang.
     let duration: TimeInterval
-    // TODO: RUM-2925 Add hang stack trace
+    /// The snapshot of all running threads during the hang.
+    /// Might be unavailable if `BacktraceReportingFeature` is not available in core.
+    let backtrace: BacktraceReport?
 }
 
 internal final class AppHangsWatchdogThread: Thread {
@@ -107,7 +109,8 @@ internal final class AppHangsWatchdogThread: Thread {
                 continue // ignore likely false-positive
             }
 
-            // TODO: RUM-2925 Capture stack trace of the pending App Hang
+            // Capture the snapshot of all threads running during the hang (that includes the main thread)
+            let backtrace = backtraceReporter.generateBacktrace()
 
             // Previous wait timed out, so wait again for the task completion, this time infinitely until the hang ends.
             mainThreadTask.wait()
@@ -124,7 +127,8 @@ internal final class AppHangsWatchdogThread: Thread {
 
             let appHang = AppHang(
                 date: dateProvider.now,
-                duration: hangDuration
+                duration: hangDuration,
+                backtrace: backtrace
             )
             onHangEnded?(appHang)
         }

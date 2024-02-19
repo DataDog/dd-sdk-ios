@@ -99,12 +99,18 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     let type: String?
     /// Error stacktrace.
     let stack: String?
-    /// Whether this error crashed the host application
+    /// Whether this error has crashed the host application
     let isCrash: Bool?
     /// The origin of this error.
     let source: RUMInternalErrorSource
     /// The platform type of the error (iOS, React Native, ...)
     let errorSourceType: RUMErrorEvent.Error.SourceType
+    /// An information about the threads currently running in the process.
+    let threads: [DDThread]?
+    /// The list of binary images referenced from `stack` and `threads`.
+    let binaryImages: [BinaryImage]?
+    /// Indicates whether any stack trace information in `stack` or `threads` was truncated due to stack trace minimization.
+    let isStackTraceTruncated: Bool?
 
     init(
         time: Date,
@@ -123,6 +129,10 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
         self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.decoded()
+
+        self.threads = nil
+        self.binaryImages = nil
+        self.isStackTraceTruncated = nil
     }
 
     init(
@@ -142,6 +152,33 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
 
         self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
         self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
+
+        self.threads = nil
+        self.binaryImages = nil
+        self.isStackTraceTruncated = nil
+    }
+
+    init(
+        time: Date,
+        message: String,
+        type: String,
+        backtrace: BacktraceReport,
+        source: RUMInternalErrorSource,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        self.time = time
+        self.source = source
+        self.attributes = attributes
+
+        self.message = message
+        self.type = type
+        self.stack = backtrace.stack
+
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.isCrash = false // backtrace reports are not crashes
+        self.threads = backtrace.threads
+        self.binaryImages = backtrace.binaryImages
+        self.isStackTraceTruncated = backtrace.wasTruncated
     }
 }
 

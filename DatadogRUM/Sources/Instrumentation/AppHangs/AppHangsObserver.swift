@@ -8,6 +8,17 @@ import Foundation
 import DatadogInternal
 
 internal class AppHangsObserver: RUMCommandPublisher {
+    private enum Constants {
+        /// The standardized `error.message` for RUM errors describing an app hang.
+        static let appHangErrorMessage = "App Hang"
+
+        /// The standardized `error.type` for RUM errors describing an app hang.
+        static let appHangErrorType = "AppHang"
+
+        /// The standardized `error.stack` when a backtrace couldn't be generated.
+        static let appHangErrorNoStackMessage = "Stack trace was not generated because `DatadogCrashReporting` was not enabled"
+    }
+
     /// Watchdog thread that monitors the main queue for App Hangs.
     private let watchdogThread: AppHangsWatchdogThread
     /// Weak reference to RUM monitor for sending App Hang events.
@@ -46,16 +57,30 @@ internal class AppHangsObserver: RUMCommandPublisher {
     }
 
     private func report(appHang: AppHang) {
-        let addHangCommand = RUMAddCurrentViewErrorCommand(
-            time: appHang.date,
-            message: "App Hang",
-            type: "AppHang",
-            stack: nil, // TODO: RUM-2925 Add hang stack trace
-            source: .source,
-            attributes: [
-                "hang_duration": appHang.duration
-            ]
-        )
-        subscriber?.process(command: addHangCommand)
+        var command: RUMAddCurrentViewErrorCommand
+
+        if let backtrace = appHang.backtrace {
+            command = RUMAddCurrentViewErrorCommand(
+                time: appHang.date,
+                message: Constants.appHangErrorMessage,
+                type: Constants.appHangErrorType,
+                backtrace: backtrace,
+                source: .source,
+                attributes: [:]
+            )
+        } else {
+            command = RUMAddCurrentViewErrorCommand(
+                time: appHang.date,
+                message: Constants.appHangErrorMessage,
+                type: Constants.appHangErrorType,
+                stack: Constants.appHangErrorNoStackMessage,
+                source: .source,
+                attributes: [:]
+            )
+        }
+
+        command.attributes = ["hang_duration": appHang.duration]
+
+        subscriber?.process(command: command)
     }
 }

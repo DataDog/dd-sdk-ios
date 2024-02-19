@@ -584,7 +584,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
-                binaryImages: nil,
+                binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
                 causes: nil,
                 handling: nil,
                 handlingStack: nil,
@@ -596,9 +596,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 source: command.source.toRUMDataFormat,
                 sourceType: command.errorSourceType,
                 stack: command.stack,
-                threads: nil,
+                threads: command.threads?.compactMap { $0.toRUMDataFormat },
                 type: command.type,
-                wasTruncated: nil
+                wasTruncated: command.isStackTraceTruncated
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
             os: .init(context: context),
