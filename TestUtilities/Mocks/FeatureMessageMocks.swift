@@ -13,6 +13,11 @@ public extension Array where Element == FeatureMessage {
         return compactMap({ $0.asBaggage }).filter({ $0.key == key }).first?.baggage
     }
 
+    /// Unpacks the first "baggage message" with given key in this array.
+    func firstValue<T>(_ type: T.Type = T.self) -> T? {
+        return compactMap({ $0.asValue }).lazy.compactMap { $0 as? T }.first
+    }
+
     /// Unpacks the first "context message" in this array.
     func firstContext() -> DatadogContext? {
         return compactMap({ $0.asContext }).first
@@ -31,6 +36,14 @@ public extension FeatureMessage {
             return nil
         }
         return (key: key, baggage: baggage)
+    }
+
+    /// Extracts baggage attributes from feature message.
+    var asValue: Any? {
+        guard case let .value(value) = self else {
+            return nil
+        }
+        return value
     }
 
     /// Extracts context from feature message.

@@ -11,6 +11,49 @@ import DatadogInternal
 @testable import DatadogLogs
 
 class WebViewLogReceiverTests: XCTestCase {
+    func testParsingLogEvent() throws {
+        // Given
+        let data = """
+        {
+          "eventType": "log",
+          "event": {
+            "date": 1635932927012,
+            "error": {
+              "origin": "console"
+            },
+            "message": "console error: error",
+            "session_id": "0110cab4-7471-480e-aa4e-7ce039ced355",
+            "status": "error",
+            "view": {
+              "referrer": "",
+              "url": "https://datadoghq.dev/browser-sdk-test-playground"
+            }
+          },
+          "tags": [
+            "browser_sdk_version:3.6.13"
+          ]
+        }
+        """.utf8Data
+
+        // When
+        let decoder = JSONDecoder()
+        let message = try decoder.decode(WebViewMessage.self, from: data)
+
+        guard case let .log(event) = message else {
+            return XCTFail("not a log message")
+        }
+
+        // Then
+        let json = JSONObjectMatcher(object: event)
+        XCTAssertEqual(try json.value("date"), 1_635_932_927_012)
+        XCTAssertEqual(try json.value("error.origin"), "console")
+        XCTAssertEqual(try json.value("message"), "console error: error")
+        XCTAssertEqual(try json.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
+        XCTAssertEqual(try json.value("status"), "error")
+        XCTAssertEqual(try json.value("view.referrer"), "")
+        XCTAssertEqual(try json.value("view.url"), "https://datadoghq.dev/browser-sdk-test-playground")
+    }
+
     func testReceiveEvent() throws {
         // Given
         let messageReceiver = WebViewLogReceiver()
@@ -19,15 +62,12 @@ class WebViewLogReceiverTests: XCTestCase {
             expectation: expectation(description: "Send Event")
         )
 
-        // When
         let value: String = .mockRandom()
 
+        // When
         XCTAssert(
             messageReceiver.receive(
-                message: .baggage(
-                    key: LoggingMessageKeys.browserLog,
-                    value: AnyEncodable([ "test": value ])
-                ),
+                message: .value(WebViewMessage.log(["test": value])),
                 from: core
             )
         )
@@ -78,10 +118,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .baggage(
-                    key: LoggingMessageKeys.browserLog,
-                    value: AnyEncodable(webLogEvent)
-                ),
+                message: .value(WebViewMessage.log(webLogEvent)),
                 from: core
             )
         )
@@ -129,10 +166,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .baggage(
-                    key: LoggingMessageKeys.browserLog,
-                    value: AnyEncodable([ "test": "value" ])
-                ),
+                message: .value(WebViewMessage.log(["test": "value"])),
                 from: core
             )
         )
@@ -162,10 +196,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .baggage(
-                    key: LoggingMessageKeys.browserLog,
-                    value: AnyEncodable([ "test": "value" ])
-                ),
+                message: .value(WebViewMessage.log(["test": "value"])),
                 from: core
             )
         )
@@ -201,10 +232,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .baggage(
-                    key: LoggingMessageKeys.browserLog,
-                    value: AnyEncodable([ "test": "value" ])
-                ),
+                message: .value(WebViewMessage.log(["test": "value"])),
                 from: core
             )
         )

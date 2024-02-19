@@ -11,12 +11,6 @@ internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
 internal final class WebViewEventReceiver: FeatureMessageReceiver {
-    /// Defines keys referencing Browser event message on the bus.
-    enum MessageKeys {
-        /// The key references a browser event message.
-        static let browserEvent = "browser-rum-event"
-    }
-
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
     let commandSubscriber: RUMCommandSubscriber
 
@@ -37,23 +31,12 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard case let .baggage(label, baggage) = message, label == MessageKeys.browserEvent else {
-                return false
-            }
-
-            guard let event = try baggage.encode() as? JSON else {
-                throw InternalError(description: "Event is not a dictionary")
-            }
-
-            write(event: event, to: core)
-            return true
-        } catch {
-            core.telemetry
-                .error("Fails to decode browser event from RUM", error: error)
+        guard case let .rum(event) = message.value(WebViewMessage.self) else {
+            return false
         }
 
-        return false
+        write(event: event, to: core)
+        return true
     }
 
     /// Writes a Browser RUM event to the core.
@@ -80,7 +63,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if let date = event["date"] as? Int64 {
+                if let date = event["date"] as? Int {
                     let viewID = (event["view"] as? JSON)?["id"] as? String
                     let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
                     let correctedDate = Int64(date) + serverTimeOffsetInMs

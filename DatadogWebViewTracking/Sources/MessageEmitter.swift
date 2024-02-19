@@ -4,19 +4,21 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
+
+/// Errors that can be thrown when parsing a WebView message
+internal enum WebViewMessageError: Error, Equatable {
+    case dataSerialization(message: String)
+    case invalidMessage(description: String)
+}
 
 /// A type forwarding type-less messages received from Datadog Browser SDK to either `DatadogRUM` or `DatadogLogs`.
 internal final class MessageEmitter: InternalExtension<WebViewTracking>.AbstractMessageEmitter {
-    enum MessageKeys {
-        static let browserLog = "browser-log"
-        static let browserRUMEvent = "browser-rum-event"
-    }
-
-    /// Log events sampler.
-    let logsSampler: Sampler
     /// The core for events forwarding.
     private weak var core: DatadogCoreProtocol?
+    /// Log events sampler.
+    let logsSampler: Sampler
 
     init(
         logsSampler: Sampler,
@@ -28,29 +30,66 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
 
     /// Sends a bag of data to the message bus
     /// - Parameter body: The data to send, it must be parsable to `WebViewMessage`
-    override func send(body: Any) throws {
-        let message = try WebViewMessage(body: body)
-        send(message: message)
-    }
-
-    /// Sends a message to the message bus
-    /// - Parameter message: The message to send
-    private func send(message: WebViewMessage) {
+    override func send(body: Any, slotId: String? = nil) {
         guard let core = core else {
             return DD.logger.debug("Core must not be nil when using WebViewTracking")
         }
 
-        switch message {
-        case let .log(event):
-            if logsSampler.sample() {
-                core.send(message: .baggage(key: MessageKeys.browserLog, value: AnyEncodable(event)), else: {
-                    DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
-                })
+        do {
+            guard let body = body as? String else {
+                throw WebViewMessageError.invalidMessage(description: String(describing: body))
             }
-        case let .rum(event):
-            core.send(message: .baggage(key: MessageKeys.browserRUMEvent, value: AnyEncodable(event)), else: {
-                DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
-            })
+
+            guard let data = body.data(using: .utf8) else {
+                throw WebViewMessageError.dataSerialization(message: body)
+            }
+
+            let decoder = JSONDecoder()
+            let event = try decoder.decode(WebViewMessage.self, from: data)
+
+            switch event {
+            case .log:
+                send(log: event, in: core)
+            case .rum:
+                send(rum: event, in: core)
+            case let .record(event, view):
+                send(record: event, view: view, slotId: slotId, in: core)
+            }
+        } catch {
+            DD.logger.error("Encountered an error when receiving web view event", error: error)
+            core.telemetry.error("Encountered an error when receiving web view event", error: error)
         }
+    }
+
+    private func send(log message: WebViewMessage, in core: DatadogCoreProtocol) {
+        guard logsSampler.sample() else {
+            return
+        }
+
+        core.send(message: .value(message), else: {
+            DD.logger.warn("A WebView log is lost because Logging is disabled in the SDK")
+        })
+    }
+
+    private func send(rum message: WebViewMessage, in core: DatadogCoreProtocol) {
+        core.send(message: .value(message), else: {
+            DD.logger.warn("A WebView RUM event is lost because RUM is disabled in the SDK")
+        })
+    }
+
+    private func send(record event: WebViewMessage.Event, view: WebViewMessage.View, slotId: String?, in core: DatadogCoreProtocol) {
+        guard let slotId = slotId else {
+            return core.telemetry.error("web-view record lost because of a missing slot_id")
+        }
+
+        let record = WebViewRecord(
+            event: event,
+            view: view,
+            slotId: slotId
+        )
+
+        core.send(message: .value(record), else: {
+            DD.logger.warn("A WebView Replay record is lost because Session Replay is disabled in the SDK")
+        })
     }
 }

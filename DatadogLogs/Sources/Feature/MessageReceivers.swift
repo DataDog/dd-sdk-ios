@@ -14,9 +14,6 @@ internal enum LoggingMessageKeys {
 
     /// The key references a crash message.
     static let crash = "crash"
-
-    /// The key references a browser log message.
-    static let browserLog = "browser-log"
 }
 
 /// Receiver to consume a Log message
@@ -277,56 +274,45 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard case let .baggage(label, baggage) = message, label == LoggingMessageKeys.browserLog else {
-                return false
-            }
-
-            guard var event = try baggage.encode() as? [String: Any?] else {
-                throw InternalError(description: "event is not a dictionary")
-            }
-
-            let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
-            let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
-            let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
-            let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
-
-            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
-                let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
-
-                if let tags = event[tagsKey] as? String, !tags.isEmpty {
-                    event[tagsKey] = "\(ddTags),\(tags)"
-                } else {
-                    event[tagsKey] = ddTags
-                }
-
-                if let timestampInMs = event[dateKey] as? Int64 {
-                    let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
-                    let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
-                    event[dateKey] = correctedTimestamp
-                }
-
-                if let rum = context.baggages[RUMContext.key] {
-                    do {
-                        let rum = try rum.decode(type: RUMContext.self)
-                        event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                        event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                        event[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                        event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                    } catch {
-                        core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
-                    }
-                }
-
-                writer.write(value: AnyEncodable(event))
-            }
-
-            return true
-        } catch {
-            core.telemetry
-                .error("Failed to decode browser log in `LogMessageReceiver`", error: error)
+        guard case var .log(event) = message.value(WebViewMessage.self) else {
+            return false
         }
 
-        return false
+        let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
+        let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
+        let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
+        let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
+
+        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+            let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
+
+            if let tags = event[tagsKey] as? String, !tags.isEmpty {
+                event[tagsKey] = "\(ddTags),\(tags)"
+            } else {
+                event[tagsKey] = ddTags
+            }
+
+            if let timestampInMs = event[dateKey] as? Int {
+                let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
+                let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+                event[dateKey] = correctedTimestamp
+            }
+
+            if let rum = context.baggages[RUMContext.key] {
+                do {
+                    let rum = try rum.decode(type: RUMContext.self)
+                    event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                    event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                    event[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                    event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
+                } catch {
+                    core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
+                }
+            }
+
+            writer.write(value: AnyEncodable(event))
+        }
+
+        return true
     }
 }
