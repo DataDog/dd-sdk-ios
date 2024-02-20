@@ -87,7 +87,7 @@ class CrashLogReceiverTests: XCTestCase {
         wasTruncated: false
     )
 
-    private func crashContextWith(lastRUMViewEvent: AnyCodable?) -> CrashContext {
+    private func crashContextWith(lastRUMViewEvent: AnyCodable?, sourceType: String?) -> CrashContext {
         return .mockWith(
             serverTimeOffset: .mockRandom(),
             service: .mockRandom(),
@@ -104,13 +104,14 @@ class CrashLogReceiverTests: XCTestCase {
             userInfo: Bool.random() ? .mockRandom() : .empty,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: lastRUMViewEvent
+            lastRUMViewEvent: lastRUMViewEvent,
+            nativeSourceTypeOverride: sourceType
         )
     }
 
     func testWhenSendingCrashReport_itEncodesErrorInformation() throws {
         // Given (CR with no link to RUM view)
-        let crashContext = crashContextWith(lastRUMViewEvent: nil) // no RUM view information
+        let crashContext = crashContextWith(lastRUMViewEvent: nil, sourceType: nil) // no RUM view information
 
         // When
         let core = PassthroughCoreMock(
@@ -133,7 +134,8 @@ class CrashLogReceiverTests: XCTestCase {
             error: .init(
                 kind: crashReport.type,
                 message: crashReport.message,
-                stack: crashReport.stack
+                stack: crashReport.stack,
+                sourceType: "ios"
             ),
             serviceName: crashContext.service,
             environment: crashContext.env,
@@ -176,11 +178,14 @@ class CrashLogReceiverTests: XCTestCase {
     func testWhenSendingCrashReportWithRUMContext_itEncodesErrorInformation() throws {
         // Given (CR with the link to RUM view)
         let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable([ // partial RUM view information, necessary for the link
-                "application": ["id": "rum-app-id"],
-                "session": ["id": "rum-session-id"],
-                "view": ["id": "rum-view-id"],
-            ])
+            lastRUMViewEvent: AnyCodable(
+                [ // partial RUM view information, necessary for the link
+                    "application": ["id": "rum-app-id"],
+                    "session": ["id": "rum-session-id"],
+                    "view": ["id": "rum-view-id"],
+                ]
+            ),
+            sourceType: nil
         )
 
         // When
@@ -201,10 +206,29 @@ class CrashLogReceiverTests: XCTestCase {
     }
     // swiftlint:enable multiline_literal_brackets
 
+    func testWhenSendingCrashReportWithSourceType_itEncodesSourceType() throws {
+        // Given (CR with the link to RUM view)
+        let crashContext = crashContextWith(lastRUMViewEvent: nil, sourceType: "ios+il2cpp")
+
+        // When
+        let core = PassthroughCoreMock(
+            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
+        )
+
+        let sender = MessageBusSender(core: core)
+        sender.send(report: crashReport, with: crashContext)
+
+        // Then
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
+
+        XCTAssertEqual(log.error?.sourceType, "ios+il2cpp")
+    }
+
     func testWhenSendingCrashReportWithMalformedRUMContext_itSendsErrorTelemetry() throws {
         // Given (CR with the link to RUM view)
         let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable(["rum-view": "malformed"])
+            lastRUMViewEvent: AnyCodable(["rum-view": "malformed"]),
+            sourceType: nil
         )
 
         // When

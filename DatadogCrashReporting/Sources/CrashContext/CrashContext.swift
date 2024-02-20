@@ -69,6 +69,9 @@ internal struct CrashContext: Codable, Equatable {
     /// The last _"Is app in foreground?"_ information from crashed app process.
     let lastIsAppInForeground: Bool
 
+    /// The override for `source_type` for crashes.
+    let nativeSourceTypeOverride: String?
+
     // MARK: - Initialization
 
     init(
@@ -86,7 +89,8 @@ internal struct CrashContext: Codable, Equatable {
         carrierInfo: CarrierInfo?,
         lastRUMViewEvent: AnyCodable?,
         lastRUMSessionState: AnyCodable?,
-        lastIsAppInForeground: Bool
+        lastIsAppInForeground: Bool,
+        nativeSourceTypeOverride: String?
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service
@@ -103,6 +107,7 @@ internal struct CrashContext: Codable, Equatable {
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastIsAppInForeground = lastIsAppInForeground
+        self.nativeSourceTypeOverride = nativeSourceTypeOverride
     }
 
     init(
@@ -123,6 +128,7 @@ internal struct CrashContext: Codable, Equatable {
         self.networkConnectionInfo = context.networkConnectionInfo
         self.carrierInfo = context.carrierInfo
         self.lastIsAppInForeground = context.applicationStateHistory.currentSnapshot.state.isRunningInForeground
+        self.nativeSourceTypeOverride = context.nativeSourceOverride
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState

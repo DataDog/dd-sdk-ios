@@ -526,6 +526,39 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.wasTruncated]), crashReport.wasTruncated)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewAndOverridenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+
+        // Given
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let dateCorrectionOffset: TimeInterval = .mockRandom()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            serverTimeOffset: dateCorrectionOffset,
+            trackingConsent: .granted,
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent), // means there was a RUM session and it was sampled
+            nativeSourceTypeOverride: "ios+il2cpp"
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            dateProvider: RelativeDateProvider(using: crashDate),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            trackBackgroundEvents: .mockRandom() // no matter BET
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .baggage(
+                key: MessageBusSender.MessageKeys.crash,
+                value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+            ), from: core)
+        )
+
+        // Then
+        let sendRUMErrorEvent = core.events(ofType: RUMCrashEvent.self)[0]
+        XCTAssertEqual(sendRUMErrorEvent.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
 
     func testGivenCrashDuringRUMSessionWithNoActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
@@ -679,6 +712,78 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
+    func testGivenCrashDuringRUMSessionWithNoActiveViewAndOverriddenSourceType_whenSendingRUMViewEvent_itSendsOverridenSourceType() throws {
+        func test(
+            lastRUMSessionState: RUMSessionState,
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool
+        ) throws {
+            let mockApplicationId: String = .mockRandom(among: .alphanumerics)
+            let core = PassthroughCoreMock(
+                messageReceiver: CrashReportReceiver.mockWith(
+                    applicationID: mockApplicationId,
+                    sessionSampler: .mockKeepAll(),
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                    uuidGenerator: DefaultRUMUUIDGenerator()
+                )
+            )
+
+            // Given
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+            let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let crashContext: CrashContext = .mockWith(
+                serverTimeOffset: dateCorrectionOffset,
+                service: .mockRandom(),
+                version: .mockRandom(),
+                buildNumber: .mockRandom(),
+                source: .mockRandom(),
+                trackingConsent: .granted,
+                userInfo: .mockRandom(),
+                networkConnectionInfo: .mockRandom(),
+                carrierInfo: .mockRandom(),
+                lastRUMViewEvent: nil, // means there was no active RUM view
+                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastIsAppInForeground: launchInForeground,
+                nativeSourceTypeOverride: "ios+il2cpp"
+            )
+
+            let receiver: CrashReportReceiver = .mockWith(
+                applicationID: .mockRandom(among: .alphanumerics),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: core)
+            )
+
+            // Then
+            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            XCTAssertEqual(sentRUMError.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
+        }
+
+        try test(
+            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        try test(
+            lastRUMSessionState: .mockRandom(), // any sampled session
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true // BET enabled
+        )
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During App Launch
 
     func testGivenCrashDuringAppLaunch_whenSending_itIsSendAsRUMErrorInNewRUMSession() throws {
@@ -798,6 +903,77 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
             XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
+        }
+
+        try test(
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom(), // no matter BET
+            expectViewName: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            expectViewURL: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        )
+
+        try test(
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true, // BET enabled
+            expectViewName: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+            expectViewURL: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        )
+    }
+
+    func testGivenCrashDuringAppLaunchWithNativeSourceType_whenSending_itIsSendsWithNativeSourceType() throws {
+        func test(
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool,
+            expectViewName expectedViewName: String,
+            expectViewURL expectedViewURL: String
+        ) throws {
+            let core = PassthroughCoreMock(
+                messageReceiver: CrashReportReceiver.mockWith(
+                    applicationID: .mockRandom(among: .alphanumerics),
+                    sessionSampler: .mockKeepAll(),
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                    uuidGenerator: DefaultRUMUUIDGenerator()
+                )
+            )
+
+            // Given
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+
+            let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let crashContext: CrashContext = .mockWith(
+                serverTimeOffset: dateCorrectionOffset,
+                trackingConsent: .granted,
+                userInfo: .mockRandom(),
+                networkConnectionInfo: .mockRandom(),
+                carrierInfo: .mockRandom(),
+                lastRUMViewEvent: nil, // means there was no RUM session (it crashed during app launch)
+                lastRUMSessionState: nil, // means there was no RUM session (it crashed during app launch)
+                lastIsAppInForeground: launchInForeground,
+                nativeSourceTypeOverride: "ios+il2cpp"
+            )
+
+            let receiver: CrashReportReceiver = .mockWith(
+                applicationID: .mockRandom(),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: core)
+            )
+
+            // Then
+            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+
+            XCTAssertEqual(sentRUMError.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
         }
 
         try test(

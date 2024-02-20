@@ -89,6 +89,17 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let carrierInfo: CarrierInfo?
         /// Current user information.
         let userInfo: UserInfo?
+        /// Override of the `source_type` of native crashes
+        let nativeSourceTypeOverride: String?
+
+        var nativeSourceType: RUMErrorSourceType {
+            get {
+                guard let nativeSourceTypeOverride = nativeSourceTypeOverride else {
+                    return .ios
+                }
+                return RUMErrorSourceType(rawValue: nativeSourceTypeOverride) ?? .ios
+            }
+        }
     }
 
     private struct AdjustedCrashTimings {
@@ -165,7 +176,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
         if let lastRUMViewEvent = context.lastRUMViewEvent {
             if lastRUMViewEvent.view.crash?.count ?? 0 < 1 {
-                sendCrashReportLinkedToLastViewInPreviousSession(report, lastRUMViewEventInPreviousSession: lastRUMViewEvent, using: adjustedCrashTimings, to: core)
+                sendCrashReportLinkedToLastViewInPreviousSession(
+                    report,
+                    lastRUMViewEventInPreviousSession: lastRUMViewEvent,
+                    using: adjustedCrashTimings,
+                    sourceType: context.nativeSourceType,
+                    to: core
+                )
             } else {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
                 return false
@@ -188,15 +205,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         _ crashReport: CrashReport,
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
         using crashTimings: AdjustedCrashTimings,
+        sourceType: RUMErrorSourceType,
         to core: DatadogCoreProtocol
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
-            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, sourceType: sourceType, to: core)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
-            let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate)
+            let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: sourceType)
             core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { _, writer in
                 writer.write(value: rumError)
             }
@@ -251,7 +269,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, sourceType: crashContext.nativeSourceType, to: core)
         }
     }
 
@@ -305,15 +323,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, sourceType: crashContext.nativeSourceType, to: core)
         }
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
+    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, sourceType: RUMErrorSourceType, to core: DatadogCoreProtocol) {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
-        let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate)
+        let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: sourceType)
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
@@ -326,7 +344,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     // MARK: - Building RUM events
 
     /// Creates RUM error based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
-    private func createRUMError(from crashReport: CrashReport, and lastRUMView: RUMViewEvent, crashDate: Date) -> RUMCrashEvent {
+    private func createRUMError(from crashReport: CrashReport, and lastRUMView: RUMViewEvent, crashDate: Date, sourceType: RUMErrorSourceType) -> RUMCrashEvent {
         let errorType = crashReport.type
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
@@ -367,7 +385,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 meta: nil,
                 resource: nil,
                 source: .source,
-                sourceType: .ios,
+                sourceType: sourceType,
                 stack: errorStackTrace,
                 threads: nil,
                 type: errorType,

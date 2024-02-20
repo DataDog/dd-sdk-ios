@@ -412,6 +412,7 @@ public enum Datadog {
         let variant = configuration.additionalConfiguration[CrossPlatformAttributes.variant] as? String
         let sdkVersion = configuration.additionalConfiguration[CrossPlatformAttributes.sdkVersion] as? String ?? __sdkVersion
         let buildId = configuration.additionalConfiguration[CrossPlatformAttributes.buildId] as? String
+        let nativeSourceType = configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] as? String
 
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
@@ -441,6 +442,7 @@ public enum Datadog {
                 buildId: buildId,
                 variant: variant,
                 source: source,
+                nativeSourceOverride: nativeSourceType,
                 sdkVersion: sdkVersion,
                 ciAppOrigin: CITestIntegration.active?.origin,
                 applicationName: bundleName ?? bundleType.rawValue,

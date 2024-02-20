@@ -149,6 +149,10 @@ public struct CrossPlatformAttributes {
     /// It sets the GraphQL varibles as a JSON string if they were defined by the developer.
     /// Expects `String` value.
     public static let graphqlVariables = "_dd.graphql.variables"
+
+    /// Override the `source_type` of errors reported by the native crash handler. This is used on
+    /// platforms that can supply extra steps or information on a native crash (such as Unity's IL2CPP
+    public static let nativeSourceType = "_dd.native_source_type"
 }
 
 public struct LaunchArguments {

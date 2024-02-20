@@ -369,12 +369,31 @@ class DatadogConfigurationTests: XCTestCase {
         var configuration = defaultConfig
         configuration.additionalConfiguration[CrossPlatformAttributes.buildId] = buildId
 
+        // When
         Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
         defer { Datadog.flushAndDeinitialize() }
 
         let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
         let context = core.contextProvider.read()
 
+        // Then
         XCTAssertEqual(context.buildId, buildId)
+    }
+
+    func testGivenNativeSourceType_itSetsInContext() throws {
+        // Given
+        let nativeSourceType: String = .mockRandom()
+        var configuration = defaultConfig
+        configuration.additionalConfiguration[CrossPlatformAttributes.nativeSourceType] = nativeSourceType
+
+        // When
+        Datadog.initialize(with: configuration, trackingConsent: .mockRandom())
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+
+        // Then
+        XCTAssertEqual(context.nativeSourceOverride, nativeSourceType)
     }
 }

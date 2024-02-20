@@ -173,6 +173,8 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         /// The last RUM view in crashed app process.
         let lastRUMViewEvent: PartialRUMViewEvent?
+
+        let nativeSourceTypeOverride: String?
     }
 
     /// Time provider.
@@ -205,6 +207,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             .addingTimeInterval(context.serverTimeOffset)
 
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
+
         // Set crash attributes for the error
         errorAttributes[DDError.threads] = report.threads
         errorAttributes[DDError.binaryImages] = report.binaryImages
@@ -226,7 +229,8 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             error: .init(
                 kind: report.type,
                 message: report.message,
-                stack: report.stack
+                stack: report.stack,
+                sourceType: context.nativeSourceTypeOverride ?? "ios"
             ),
             serviceName: context.service,
             environment: context.env,
