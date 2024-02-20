@@ -1,0 +1,10 @@
+name: Question
+description: Do you just have a question about the SDK or a product? Ask here.
+labels: ["question"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question 
+    validations:
+      required: true
