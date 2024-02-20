@@ -45,6 +45,14 @@ internal final class AppHangsWatchdogThread: Thread {
     private let dateProvider: DateProvider
     /// Backtrace reporter for hang's stack trace generation.
     private let backtraceReporter: BacktraceReporting
+    /// An identifier of the main thread required for backtrace generation.
+    /// Because backtrace is generated from the watchdog thread, we must identify the main thread to be promoted in `BacktraceReport`. This value is
+    /// obtained at runtime, only once and it is cached for later use.
+    @ReadWriteLock
+    private var mainThreadID: ThreadID? = nil
+    /// If `mainThreadID` value was already obtained.
+    /// This flag doesn't require synchronization as it is only used from the main thread.
+    private var isMainThreadIDCached = false
     /// Telemetry interface.
     private let telemetry: Telemetry
     /// Closure to be notified when App Hang ends. It will be executed on the watchdog thread.
@@ -74,6 +82,13 @@ internal final class AppHangsWatchdogThread: Thread {
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
         self.telemetry = telemetry
+
+        if Thread.isMainThread {
+            // When initialization happens on the main thread, we can get its `ThreadID` right away, so startup hangs are covered
+            self.mainThreadID = backtraceReporter.currentThreadID()
+            self.isMainThreadIDCached = true
+        }
+
         super.init()
         self.name = "com.datadoghq.app-hang-watchdog"
     }
@@ -90,7 +105,15 @@ internal final class AppHangsWatchdogThread: Thread {
             let waitStart: DispatchTime = .now()
 
             // Schedule task on the main thread to measure how fast it responds
-            mainQueue.async {
+            mainQueue.async { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                if self.isMainThreadIDCached == false {
+                    // If initialization didin't happen on the main thread, capture and cache the `ThreadID` of the main thread.
+                    self.mainThreadID = backtraceReporter.currentThreadID()
+                    self.isMainThreadIDCached = true
+                }
                 mainThreadTask.signal()
             }
 
@@ -109,8 +132,12 @@ internal final class AppHangsWatchdogThread: Thread {
                 continue // ignore likely false-positive
             }
 
-            // Capture the snapshot of all threads running during the hang (that includes the main thread)
-            let backtrace = backtraceReporter.generateBacktrace()
+            // Capture the stack trace of all running threads with promoting the main thread stack.
+            guard let mainThreadID = mainThreadID else {
+                telemetry.error("Failed to determine main thread ID for backtrace generation")
+                continue // unexpected
+            }
+            let backtrace = backtraceReporter.generateBacktrace(threadID: mainThreadID)
 
             // Previous wait timed out, so wait again for the task completion, this time infinitely until the hang ends.
             mainThreadTask.wait()

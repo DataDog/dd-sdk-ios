@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 
 public struct BacktraceReporterMock: BacktraceReporting {
@@ -13,7 +14,7 @@ public struct BacktraceReporterMock: BacktraceReporting {
         self.backtrace = backtrace
     }
 
-    public func generateBacktrace() -> BacktraceReport? {
+    public func generateBacktrace(threadID: ThreadID) -> BacktraceReport? {
         return backtrace
     }
 }

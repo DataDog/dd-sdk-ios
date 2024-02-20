@@ -12,15 +12,11 @@ internal final class BacktraceReportingFeature: DatadogFeature {
     let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
 
     /// A type capable of generating backtrace reports.
-    private let reporter: BacktraceReporting
+    let reporter: BacktraceReporting
 
     /// Creates `BacktraceReportingFeature`.
     /// - Parameter reporter: An external implementation of a type capable of generating backtrace reports.
     init(reporter: BacktraceReporting) {
         self.reporter = reporter
-    }
-
-    internal func generateBacktrace() -> BacktraceReport? {
-        reporter.generateBacktrace()
     }
 }

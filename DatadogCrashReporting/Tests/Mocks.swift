@@ -50,43 +50,8 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
         hasPurgedPendingCrashReport = true
     }
 
-    func generateBacktrace() throws -> BacktraceReport {
+    func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport {
         return generatedBacktrace
-    }
-}
-
-internal extension BacktraceReport {
-    static func mockAny() -> BacktraceReport {
-        return BacktraceReport(
-            stack: "any",
-            threads: [],
-            binaryImages: [],
-            wasTruncated: false
-        )
-    }
-}
-
-internal extension DDCrashReport {
-    static func mockAny() -> DDCrashReport {
-        return DDCrashReport(
-            date: Date(),
-            type: "any",
-            message: "any",
-            stack: "any",
-            threads: [],
-            binaryImages: [],
-            meta: .init(
-                incidentIdentifier: "any",
-                process: "any",
-                parentProcess: "any",
-                path: "any",
-                codeType: "any",
-                exceptionType: "any",
-                exceptionCodes: "any"
-            ),
-            wasTruncated: false,
-            context: "any".data(using: .utf8)
-        )
     }
 }
 

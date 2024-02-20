@@ -8,7 +8,7 @@ import Foundation
 import DatadogInternal
 
 internal class AppHangsObserver: RUMCommandPublisher {
-    private enum Constants {
+    enum Constants {
         /// The standardized `error.message` for RUM errors describing an app hang.
         static let appHangErrorMessage = "App Hang"
 
@@ -16,7 +16,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
         static let appHangErrorType = "AppHang"
 
         /// The standardized `error.stack` when a backtrace couldn't be generated.
-        static let appHangErrorNoStackMessage = "Stack trace was not generated because `DatadogCrashReporting` was not enabled"
+        static let appHangNoStackErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` was not enabled"
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
@@ -73,13 +73,13 @@ internal class AppHangsObserver: RUMCommandPublisher {
                 time: appHang.date,
                 message: Constants.appHangErrorMessage,
                 type: Constants.appHangErrorType,
-                stack: Constants.appHangErrorNoStackMessage,
+                stack: Constants.appHangNoStackErrorMessage,
                 source: .source,
                 attributes: [:]
             )
         }
 
-        command.attributes = ["hang_duration": appHang.duration]
+        command.attributes["hang_duration"] = appHang.duration
 
         subscriber?.process(command: command)
     }

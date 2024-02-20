@@ -83,7 +83,7 @@ class AppHangsWatchdogThreadTests: XCTestCase {
         watchdogThread.cancel()
     }
 
-    func testItTracksHangDateAndDuration() {
+    func testItTracksHangDateStackAndDuration() {
         let trackHang = expectation(description: "track App Hang")
 
         // Given
@@ -95,11 +95,12 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             appHangThreshold: appHangThreshold,
             queue: queue,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
-            backtraceReporter: BacktraceReporterMock(),
+            backtraceReporter: BacktraceReporterMock(backtrace: .mockWith(stack: "Main thread stack")),
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangEnded = { hang in
             XCTAssertEqual(hang.date, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(hang.backtrace?.stack, "Main thread stack")
             XCTAssertGreaterThanOrEqual(hang.duration, hangDuration * (1 - AppHangsWatchdogThread.Constants.tolerance))
             XCTAssertLessThanOrEqual(hang.duration, hangDuration * (1 + AppHangsWatchdogThread.Constants.tolerance))
             trackHang.fulfill()

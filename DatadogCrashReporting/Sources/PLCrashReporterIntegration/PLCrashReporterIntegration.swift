@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import Foundation
 import DatadogInternal
 import CrashReporter
 
@@ -58,8 +59,8 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
         try crashReporter.purgePendingCrashReportAndReturnError()
     }
 
-    func generateBacktrace() throws -> BacktraceReport {
-        let liveReportData = try crashReporter.generateLiveReportAndReturnError()
+    func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport {
+        let liveReportData = crashReporter.generateLiveReport(withThread: threadID.thread_t)
         let liveReport = try PLCrashReport(data: liveReportData)
 
         // This is quite opportunistic - we map PLCR's live report through existing `DDCrashReport` builder to
