@@ -4336,12 +4336,12 @@
 			path = AppHangs;
 			sourceTree = "<group>";
 		};
-		6167E6DF2B81203A00C3CA2D /* FeatureAPIs */ = {
+		6167E6DF2B81203A00C3CA2D /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				6167E6E02B81204B00C3CA2D /* CrashReporting */,
 			);
-			path = FeatureAPIs;
+			path = Models;
 			sourceTree = "<group>";
 		};
 		6167E6E02B81204B00C3CA2D /* CrashReporting */ = {
@@ -5226,7 +5226,7 @@
 		D23039A6298D513D001A1FA3 /* DatadogInternal */ = {
 			isa = PBXGroup;
 			children = (
-				6167E6DF2B81203A00C3CA2D /* FeatureAPIs */,
+				6167E6DF2B81203A00C3CA2D /* Models */,
 				D23039CA298D5235001A1FA3 /* Attributes */,
 				D23039C3298D5235001A1FA3 /* Codable */,
 				D23039DA298D5235001A1FA3 /* Concurrency */,
