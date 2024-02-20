@@ -41,7 +41,22 @@ final class OTelSpanTests: XCTestCase {
         // Then
         let logs: [LogEvent] = core.waitAndReturnEvents(ofFeature: LogsFeature.name, ofType: LogEvent.self)
         XCTAssertEqual(logs.count, 1)
-        DDAssertJSONEqual(AnyEncodable(logs[0].attributes.userAttributes), AnyEncodable(attributes))
+
+        let expectedAttributes: [String: Encodable] = [
+            "string": "value",
+            "bool": "true",
+            "int": "2",
+            "double": "2.0",
+            "stringArray.0": "value1",
+            "stringArray.1": "value2",
+            "boolArray.0": "true",
+            "boolArray.1": "false",
+            "intArray.0": "1",
+            "intArray.1": "2",
+            "doubleArray.0": "1.0",
+            "doubleArray.1": "2.0"
+        ]
+        DDAssertJSONEqual(AnyEncodable(expectedAttributes), AnyEncodable(logs[0].attributes.userAttributes))
     }
 }
 
