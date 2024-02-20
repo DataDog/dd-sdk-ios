@@ -437,6 +437,53 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     }
 }
 
+/// Schema of all properties of a WebviewWireframe.
+@_spi(Internal)
+public struct SRWebviewWireframe: Codable, Hashable {
+    /// The border properties of this wireframe. The default value is null (no-border).
+    public let border: SRShapeBorder?
+
+    /// Schema of clipping information for a Wireframe.
+    public let clip: SRContentClip?
+
+    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+    public let height: Int64
+
+    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+    public let id: Int64
+
+    /// The style of this wireframe.
+    public let shapeStyle: SRShapeStyle?
+
+    /// Unique Id of the slot containing this webview.
+    public let slotId: String
+
+    /// The type of the wireframe.
+    public let type: String = "webview"
+
+    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+    public let width: Int64
+
+    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let x: Int64
+
+    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+    public let y: Int64
+
+    enum CodingKeys: String, CodingKey {
+        case border = "border"
+        case clip = "clip"
+        case height = "height"
+        case id = "id"
+        case shapeStyle = "shapeStyle"
+        case slotId = "slotId"
+        case type = "type"
+        case width = "width"
+        case x = "x"
+        case y = "y"
+    }
+}
+
 /// Schema of a Wireframe type.
 @_spi(Internal)
 public enum SRWireframe: Codable {
@@ -444,6 +491,7 @@ public enum SRWireframe: Codable {
     case textWireframe(value: SRTextWireframe)
     case imageWireframe(value: SRImageWireframe)
     case placeholderWireframe(value: SRPlaceholderWireframe)
+    case webviewWireframe(value: SRWebviewWireframe)
 
     // MARK: - Codable
 
@@ -459,6 +507,8 @@ public enum SRWireframe: Codable {
         case .imageWireframe(let value):
             try container.encode(value)
         case .placeholderWireframe(let value):
+            try container.encode(value)
+        case .webviewWireframe(let value):
             try container.encode(value)
         }
     }
@@ -481,6 +531,10 @@ public enum SRWireframe: Codable {
         }
         if let value = try? container.decode(SRPlaceholderWireframe.self) {
             self = .placeholderWireframe(value: value)
+            return
+        }
+        if let value = try? container.decode(SRWebviewWireframe.self) {
+            self = .webviewWireframe(value: value)
             return
         }
         let error = DecodingError.Context(
@@ -649,6 +703,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
                 case shapeWireframeUpdate(value: ShapeWireframeUpdate)
                 case imageWireframeUpdate(value: ImageWireframeUpdate)
                 case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
+                case webviewWireframeUpdate(value: WebviewWireframeUpdate)
 
                 // MARK: - Codable
 
@@ -664,6 +719,8 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     case .imageWireframeUpdate(let value):
                         try container.encode(value)
                     case .placeholderWireframeUpdate(let value):
+                        try container.encode(value)
+                    case .webviewWireframeUpdate(let value):
                         try container.encode(value)
                     }
                 }
@@ -686,6 +743,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     }
                     if let value = try? container.decode(PlaceholderWireframeUpdate.self) {
                         self = .placeholderWireframeUpdate(value: value)
+                        return
+                    }
+                    if let value = try? container.decode(WebviewWireframeUpdate.self) {
+                        self = .webviewWireframeUpdate(value: value)
                         return
                     }
                     let error = DecodingError.Context(
@@ -893,6 +954,53 @@ public struct SRIncrementalSnapshotRecord: Codable {
                         case y = "y"
                     }
                 }
+
+                /// Schema of all properties of a WebviewWireframeUpdate.
+                @_spi(Internal)
+                public struct WebviewWireframeUpdate: Codable {
+                    /// The border properties of this wireframe. The default value is null (no-border).
+                    public let border: SRShapeBorder?
+
+                    /// Schema of clipping information for a Wireframe.
+                    public let clip: SRContentClip?
+
+                    /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
+                    public let height: Int64?
+
+                    /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
+                    public let id: Int64
+
+                    /// The style of this wireframe.
+                    public let shapeStyle: SRShapeStyle?
+
+                    /// Unique Id of the slot containing this webview.
+                    public let slotId: String
+
+                    /// The type of the wireframe.
+                    public let type: String = "webview"
+
+                    /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
+                    public let width: Int64?
+
+                    /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let x: Int64?
+
+                    /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
+                    public let y: Int64?
+
+                    enum CodingKeys: String, CodingKey {
+                        case border = "border"
+                        case clip = "clip"
+                        case height = "height"
+                        case id = "id"
+                        case shapeStyle = "shapeStyle"
+                        case slotId = "slotId"
+                        case type = "type"
+                        case width = "width"
+                        case x = "x"
+                        case y = "y"
+                    }
+                }
             }
         }
 
@@ -1007,6 +1115,9 @@ public struct SRMetaRecord: Codable {
     /// The data contained by this record.
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -1015,6 +1126,7 @@ public struct SRMetaRecord: Codable {
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -1044,6 +1156,9 @@ public struct SRMetaRecord: Codable {
 public struct SRFocusRecord: Codable {
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -1052,6 +1167,7 @@ public struct SRFocusRecord: Codable {
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -1070,6 +1186,9 @@ public struct SRFocusRecord: Codable {
 /// Schema of a Record which signifies that view lifecycle ended.
 @_spi(Internal)
 public struct SRViewEndRecord: Codable {
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -1077,6 +1196,7 @@ public struct SRViewEndRecord: Codable {
     public let type: Int64 = 7
 
     enum CodingKeys: String, CodingKey {
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -1087,6 +1207,9 @@ public struct SRViewEndRecord: Codable {
 public struct SRVisualViewportRecord: Codable {
     public let data: Data
 
+    /// Unique ID of the slot that generated this record.
+    public let slotId: String?
+
     /// Defines the UTC time in milliseconds when this Record was performed.
     public let timestamp: Int64
 
@@ -1095,6 +1218,7 @@ public struct SRVisualViewportRecord: Codable {
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
+        case slotId = "slotId"
         case timestamp = "timestamp"
         case type = "type"
     }
@@ -1198,4 +1322,4 @@ public enum SRRecord: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/5a79d9a36b6e76493420792055fc50aed780569b
+// Generated from https://github.com/DataDog/rum-events-format/tree/c3747b3facf75e51cbad4c32f77ec3894f5a7249

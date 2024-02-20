@@ -1086,6 +1086,8 @@
 		D2B3F04E282A85FD00C2B5EE /* DatadogCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F04C282A85FD00C2B5EE /* DatadogCore.swift */; };
 		D2B3F052282E827700C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
 		D2B3F053282E827B00C2B5EE /* DDHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */; };
+		D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */; };
+		D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */; };
 		D2BEEDAC2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */; };
 		D2BEEDAD2B3356710065F3AC /* URLSessionTaskSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */; };
 		D2BEEDAF2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */; };
@@ -2611,6 +2613,8 @@
 		D2B3F051282E826A00C2B5EE /* DDHTTPHeadersWriter+apiTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "DDHTTPHeadersWriter+apiTests.m"; sourceTree = "<group>"; };
 		D2BCB11E29D30AF000737A9A /* URLSessionRUMResourcesHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandler.swift; sourceTree = "<group>"; };
 		D2BCB12129D34A5F00737A9A /* URLSessionRUMResourcesHandlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionRUMResourcesHandlerTests.swift; sourceTree = "<group>"; };
+		D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorder.swift; sourceTree = "<group>"; };
+		D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WKWebViewRecorderTests.swift; sourceTree = "<group>"; };
 		D2BEEDAB2B3356710065F3AC /* URLSessionTaskSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzler.swift; sourceTree = "<group>"; };
 		D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskSwizzlerTests.swift; sourceTree = "<group>"; };
 		D2BEEDB12B335DA90065F3AC /* URLSessionTaskDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionTaskDelegateSwizzler.swift; sourceTree = "<group>"; };
@@ -3209,6 +3213,7 @@
 				61054E342A6EE10A00AAA894 /* UITabBarRecorder.swift */,
 				61054E352A6EE10A00AAA894 /* UISegmentRecorder.swift */,
 				61054E362A6EE10A00AAA894 /* UnsupportedViewRecorder.swift */,
+				D2BCB2A02B7B8107005C2AAB /* WKWebViewRecorder.swift */,
 			);
 			path = NodeRecorders;
 			sourceTree = "<group>";
@@ -3489,6 +3494,7 @@
 				61054F762A6EE1BA00AAA894 /* UIImageViewWireframesBuilderTests.swift */,
 				61054F772A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift */,
 				61054F782A6EE1BA00AAA894 /* UITextViewRecorderTests.swift */,
+				D2BCB2A22B7B9683005C2AAB /* WKWebViewRecorderTests.swift */,
 				A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */,
 			);
 			path = NodeRecorders;
@@ -7564,6 +7570,7 @@
 				61054E862A6EE10A00AAA894 /* UnsupportedViewRecorder.swift in Sources */,
 				61054E882A6EE10A00AAA894 /* ViewTreeRecordingContext.swift in Sources */,
 				61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */,
+				D2BCB2A12B7B8107005C2AAB /* WKWebViewRecorder.swift in Sources */,
 				61054E712A6EE10A00AAA894 /* TouchSnapshot.swift in Sources */,
 				61054E8A2A6EE10A00AAA894 /* WindowViewTreeSnapshotProducer.swift in Sources */,
 				61054E7A2A6EE10A00AAA894 /* UIImageViewRecorder.swift in Sources */,
@@ -7610,6 +7617,7 @@
 				61054FCB2A6EE1BA00AAA894 /* QueueMocks.swift in Sources */,
 				61054FC42A6EE1BA00AAA894 /* RecorderTests.swift in Sources */,
 				61054FC22A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift in Sources */,
+				D2BCB2A32B7B9683005C2AAB /* WKWebViewRecorderTests.swift in Sources */,
 				61054FC62A6EE1BA00AAA894 /* CoreGraphicsMocks.swift in Sources */,
 				61054FCA2A6EE1BA00AAA894 /* TestScheduler.swift in Sources */,
 				61054FBD2A6EE1BA00AAA894 /* UIViewRecorderTests.swift in Sources */,
