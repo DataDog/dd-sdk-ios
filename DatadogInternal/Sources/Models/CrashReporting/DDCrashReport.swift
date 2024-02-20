@@ -7,8 +7,7 @@
 import Foundation
 
 /// Crash Report format supported by Datadog SDK.
-@objc
-public final class DDCrashReport: NSObject, Codable {
+public struct DDCrashReport: Codable {
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
     public struct Meta: Codable {
