@@ -3075,12 +3075,12 @@
 		61054E012A6EE0A400AAA894 /* DatadogSessionReplay */ = {
 			isa = PBXGroup;
 			children = (
+				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
+				61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */,
 				61054E3B2A6EE10A00AAA894 /* Feature */,
 				61054E482A6EE10A00AAA894 /* Processor */,
 				61054E0D2A6EE10A00AAA894 /* Recorder */,
-				61054E0C2A6EE10A00AAA894 /* SessionReplay.swift */,
-				61054E0B2A6EE10A00AAA894 /* SessionReplayConfiguration.swift */,
-				61054E542A6EE10A00AAA894 /* Utilities */,
+				61054E132A6EE10A00AAA894 /* Utilities */,
 				A7B932F62B1F6A0A00AE6477 /* Models */,
 				61054E032A6EE10A00AAA894 /* Writers */,
 			);
@@ -3118,13 +3118,13 @@
 		61054E0D2A6EE10A00AAA894 /* Recorder */ = {
 			isa = PBXGroup;
 			children = (
-				61054E0E2A6EE10A00AAA894 /* WindowObserver */,
+				61054E192A6EE10A00AAA894 /* RecordingCoordinator.swift */,
 				61054E112A6EE10A00AAA894 /* Recorder.swift */,
 				61054E122A6EE10A00AAA894 /* PrivacyLevel.swift */,
-				61054E132A6EE10A00AAA894 /* Utilities */,
-				61054E192A6EE10A00AAA894 /* RecordingCoordinator.swift */,
+				61054E0E2A6EE10A00AAA894 /* WindowObserver */,
 				61054E1A2A6EE10A00AAA894 /* TouchSnapshotProducer */,
 				61054E212A6EE10A00AAA894 /* ViewTreeSnapshotProducer */,
+				61054E542A6EE10A00AAA894 /* Utilities */,
 			);
 			path = Recorder;
 			sourceTree = "<group>";
@@ -3147,7 +3147,8 @@
 				61054E172A6EE10A00AAA894 /* SystemColors.swift */,
 				61054E182A6EE10A00AAA894 /* CGRect+ContentFrame.swift */,
 			);
-			path = Utilities;
+			name = Utilities;
+			path = Recorder/Utilities;
 			sourceTree = "<group>";
 		};
 		61054E1A2A6EE10A00AAA894 /* TouchSnapshotProducer */ = {
@@ -3317,7 +3318,8 @@
 				61054E5A2A6EE10A00AAA894 /* Colors.swift */,
 				61054E5B2A6EE10A00AAA894 /* Schedulers */,
 			);
-			path = Utilities;
+			name = Utilities;
+			path = ../Utilities;
 			sourceTree = "<group>";
 		};
 		61054E5B2A6EE10A00AAA894 /* Schedulers */ = {
