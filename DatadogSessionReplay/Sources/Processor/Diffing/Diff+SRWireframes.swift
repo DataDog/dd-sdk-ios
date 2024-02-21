@@ -35,6 +35,8 @@ extension SRWireframe: Diffable {
             return this.hashValue != other.hashValue
         case let (.placeholderWireframe(this), .placeholderWireframe(other)):
             return this.hashValue != other.hashValue
+        case let (.webviewWireframe(this), .webviewWireframe(other)):
+            return this.hashValue != other.hashValue
         default:
             return true
         }

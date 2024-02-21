@@ -43,11 +43,10 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         static let minWireframesInFullSnapshot = 5
 
         /// Total number of "incremental snapshot" records that send "wireframe mutation" data.
-        static let totalWireframeMutationRecords = 7
+        static let totalWireframeMutationRecords = 5
         /// Total number of "incremental snapshot" records that send "pointer interaction" data.
         static let totalTouchDataRecords = 10
     }
-
 
     func testSRMultipleViewsRecordingScenario() throws {
         // RUM endpoint in `HTTPServerMock`
