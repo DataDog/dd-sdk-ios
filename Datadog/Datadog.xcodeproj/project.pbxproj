@@ -99,8 +99,6 @@
 		61054E8E2A6EE10A00AAA894 /* SRContextPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */; };
 		61054E8F2A6EE10A00AAA894 /* SegmentRequestBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E412A6EE10A00AAA894 /* SegmentRequestBuilder.swift */; };
 		61054E902A6EE10A00AAA894 /* SegmentJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E432A6EE10A00AAA894 /* SegmentJSON.swift */; };
-		61054E912A6EE10A00AAA894 /* EnrichedRecordJSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E442A6EE10A00AAA894 /* EnrichedRecordJSON.swift */; };
-		61054E922A6EE10A00AAA894 /* SegmentJSONBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E452A6EE10A00AAA894 /* SegmentJSONBuilder.swift */; };
 		61054E932A6EE10A00AAA894 /* MultipartFormData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E472A6EE10A00AAA894 /* MultipartFormData.swift */; };
 		61054E942A6EE10A00AAA894 /* TextObfuscator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E4A2A6EE10A00AAA894 /* TextObfuscator.swift */; };
 		61054E952A6EE10A00AAA894 /* SnapshotProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054E4B2A6EE10A00AAA894 /* SnapshotProcessor.swift */; };
@@ -127,7 +125,6 @@
 		61054F9E2A6EE1BA00AAA894 /* SessionReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */; };
 		61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F4A2A6EE1BA00AAA894 /* RecordsWriterTests.swift */; };
 		61054FA02A6EE1BA00AAA894 /* SRCompressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F4B2A6EE1BA00AAA894 /* SRCompressionTests.swift */; };
-		61054FA12A6EE1BA00AAA894 /* EnrichedRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F4D2A6EE1BA00AAA894 /* EnrichedRecordTests.swift */; };
 		61054FA22A6EE1BA00AAA894 /* TextObfuscatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F502A6EE1BA00AAA894 /* TextObfuscatorTests.swift */; };
 		61054FA32A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F522A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift */; };
 		61054FA42A6EE1BA00AAA894 /* DiffTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F532A6EE1BA00AAA894 /* DiffTests.swift */; };
@@ -172,8 +169,6 @@
 		61054FCE2A6EE1BA00AAA894 /* RUMContextObserverMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F872A6EE1BA00AAA894 /* RUMContextObserverMock.swift */; };
 		61054FCF2A6EE1BA00AAA894 /* RUMContextReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F892A6EE1BA00AAA894 /* RUMContextReceiverTests.swift */; };
 		61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F8A2A6EE1BA00AAA894 /* SRContextPublisherTests.swift */; };
-		61054FD12A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F8D2A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift */; };
-		61054FD22A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F8E2A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift */; };
 		61054FD32A6EE1BA00AAA894 /* MultipartFormDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */; };
 		61054FD42A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */; };
 		61054FD52A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */; };
@@ -868,6 +863,7 @@
 		D2579596298AC927008A1BE5 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
 		D2579599298AD95F008A1BE5 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257953E298ABA65008A1BE5 /* TestUtilities.framework */; };
 		D257959A298AD967008A1BE5 /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
+		D25C834C2B8657CF008E73B1 /* SegmentJSONTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D25C834B2B8657CF008E73B1 /* SegmentJSONTests.swift */; };
 		D25CFA9829C4F41900E3A43D /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		D25CFA9929C4F41900E3A43D /* TestUtilities.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D257958B298ABB83008A1BE5 /* TestUtilities.framework */; };
 		D25CFA9C29C4FC6900E3A43D /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
@@ -1919,8 +1915,6 @@
 		61054E3F2A6EE10A00AAA894 /* SRContextPublisher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRContextPublisher.swift; sourceTree = "<group>"; };
 		61054E412A6EE10A00AAA894 /* SegmentRequestBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentRequestBuilder.swift; sourceTree = "<group>"; };
 		61054E432A6EE10A00AAA894 /* SegmentJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSON.swift; sourceTree = "<group>"; };
-		61054E442A6EE10A00AAA894 /* EnrichedRecordJSON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecordJSON.swift; sourceTree = "<group>"; };
-		61054E452A6EE10A00AAA894 /* SegmentJSONBuilder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSONBuilder.swift; sourceTree = "<group>"; };
 		61054E472A6EE10A00AAA894 /* MultipartFormData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultipartFormData.swift; sourceTree = "<group>"; };
 		61054E4A2A6EE10A00AAA894 /* TextObfuscator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextObfuscator.swift; sourceTree = "<group>"; };
 		61054E4B2A6EE10A00AAA894 /* SnapshotProcessor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SnapshotProcessor.swift; sourceTree = "<group>"; };
@@ -1947,7 +1941,6 @@
 		61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayTests.swift; sourceTree = "<group>"; };
 		61054F4A2A6EE1BA00AAA894 /* RecordsWriterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RecordsWriterTests.swift; sourceTree = "<group>"; };
 		61054F4B2A6EE1BA00AAA894 /* SRCompressionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRCompressionTests.swift; sourceTree = "<group>"; };
-		61054F4D2A6EE1BA00AAA894 /* EnrichedRecordTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecordTests.swift; sourceTree = "<group>"; };
 		61054F502A6EE1BA00AAA894 /* TextObfuscatorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextObfuscatorTests.swift; sourceTree = "<group>"; };
 		61054F522A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Diff+SRWireframesTests.swift"; sourceTree = "<group>"; };
 		61054F532A6EE1BA00AAA894 /* DiffTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DiffTests.swift; sourceTree = "<group>"; };
@@ -1992,8 +1985,6 @@
 		61054F872A6EE1BA00AAA894 /* RUMContextObserverMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMContextObserverMock.swift; sourceTree = "<group>"; };
 		61054F892A6EE1BA00AAA894 /* RUMContextReceiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RUMContextReceiverTests.swift; sourceTree = "<group>"; };
 		61054F8A2A6EE1BA00AAA894 /* SRContextPublisherTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SRContextPublisherTests.swift; sourceTree = "<group>"; };
-		61054F8D2A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentJSONBuilderTests.swift; sourceTree = "<group>"; };
-		61054F8E2A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EnrichedRecordJSONTests.swift; sourceTree = "<group>"; };
 		61054F902A6EE1BA00AAA894 /* MultipartFormDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MultipartFormDataTests.swift; sourceTree = "<group>"; };
 		61054F912A6EE1BA00AAA894 /* SegmentRequestBuilderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SegmentRequestBuilderTests.swift; sourceTree = "<group>"; };
 		61054F932A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XCTAssertRectsEqual.swift; sourceTree = "<group>"; };
@@ -2552,6 +2543,7 @@
 		D2579591298ABCED008A1BE5 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		D2579593298ABCF5008A1BE5 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/AppleTVOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		D25BADA029C1EF3000112069 /* TracingURLSessionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingURLSessionHandler.swift; sourceTree = "<group>"; };
+		D25C834B2B8657CF008E73B1 /* SegmentJSONTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentJSONTests.swift; sourceTree = "<group>"; };
 		D25CFA9E29C85FA400E3A43D /* TracingFeatureMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TracingFeatureMocks.swift; sourceTree = "<group>"; };
 		D25CFAA129C8644E00E3A43D /* Casting+Tracing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Casting+Tracing.swift"; sourceTree = "<group>"; };
 		D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogTrace.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -3091,13 +3083,13 @@
 		61054E022A6EE0DB00AAA894 /* DatadogSessionReplayTests */ = {
 			isa = PBXGroup;
 			children = (
+				61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */,
+				61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */,
 				61054F882A6EE1BA00AAA894 /* Feature */,
 				61054F922A6EE1BA00AAA894 /* Helpers */,
 				61054F7D2A6EE1BA00AAA894 /* Mocks */,
 				61054F4E2A6EE1BA00AAA894 /* Processor */,
 				61054F592A6EE1BA00AAA894 /* Recorder */,
-				61054F3D2A6EE1B900AAA894 /* SessionReplayConfigurationTests.swift */,
-				61054F482A6EE1B900AAA894 /* SessionReplayTests.swift */,
 				61054F3E2A6EE1B900AAA894 /* Utilities */,
 				61054F492A6EE1BA00AAA894 /* Writer */,
 			);
@@ -3247,8 +3239,6 @@
 			isa = PBXGroup;
 			children = (
 				61054E432A6EE10A00AAA894 /* SegmentJSON.swift */,
-				61054E442A6EE10A00AAA894 /* EnrichedRecordJSON.swift */,
-				61054E452A6EE10A00AAA894 /* SegmentJSONBuilder.swift */,
 			);
 			path = JSON;
 			sourceTree = "<group>";
@@ -3359,17 +3349,8 @@
 				A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */,
 				61054F4A2A6EE1BA00AAA894 /* RecordsWriterTests.swift */,
 				61054F4B2A6EE1BA00AAA894 /* SRCompressionTests.swift */,
-				61054F4C2A6EE1BA00AAA894 /* Models */,
 			);
 			path = Writer;
-			sourceTree = "<group>";
-		};
-		61054F4C2A6EE1BA00AAA894 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				61054F4D2A6EE1BA00AAA894 /* EnrichedRecordTests.swift */,
-			);
-			path = Models;
 			sourceTree = "<group>";
 		};
 		61054F4E2A6EE1BA00AAA894 /* Processor */ = {
@@ -3546,8 +3527,7 @@
 		61054F8C2A6EE1BA00AAA894 /* JSON */ = {
 			isa = PBXGroup;
 			children = (
-				61054F8D2A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift */,
-				61054F8E2A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift */,
+				D25C834B2B8657CF008E73B1 /* SegmentJSONTests.swift */,
 			);
 			path = JSON;
 			sourceTree = "<group>";
@@ -7517,7 +7497,6 @@
 				A7B932FB2B1F6A0A00AE6477 /* EnrichedRecord.swift in Sources */,
 				61054E8D2A6EE10A00AAA894 /* RUMContextReceiver.swift in Sources */,
 				A7B932FD2B1F6A0A00AE6477 /* EnrichedResource.swift in Sources */,
-				61054E922A6EE10A00AAA894 /* SegmentJSONBuilder.swift in Sources */,
 				61054E622A6EE10A00AAA894 /* RecordWriter.swift in Sources */,
 				61054E692A6EE10A00AAA894 /* UIImage+SessionReplay.swift in Sources */,
 				61054E782A6EE10A00AAA894 /* UIDatePickerRecorder.swift in Sources */,
@@ -7562,7 +7541,6 @@
 				61054E952A6EE10A00AAA894 /* SnapshotProcessor.swift in Sources */,
 				61054E722A6EE10A00AAA894 /* TouchIdentifierGenerator.swift in Sources */,
 				A7B932F52B1F694000AE6477 /* ResourcesProcessor.swift in Sources */,
-				61054E912A6EE10A00AAA894 /* EnrichedRecordJSON.swift in Sources */,
 				61054E742A6EE10A00AAA894 /* ViewTreeSnapshotProducer.swift in Sources */,
 				61054E7E2A6EE10A00AAA894 /* NodeRecorder.swift in Sources */,
 				61054E6F2A6EE10A00AAA894 /* UIApplicationSwizzler.swift in Sources */,
@@ -7599,7 +7577,6 @@
 				61054FB22A6EE1BA00AAA894 /* UILabelRecorderTests.swift in Sources */,
 				61054FCE2A6EE1BA00AAA894 /* RUMContextObserverMock.swift in Sources */,
 				61054FBA2A6EE1BA00AAA894 /* UIImageViewRecorderTests.swift in Sources */,
-				61054FD22A6EE1BA00AAA894 /* EnrichedRecordJSONTests.swift in Sources */,
 				61054FC02A6EE1BA00AAA894 /* UITextViewRecorderTests.swift in Sources */,
 				61054F9A2A6EE1BA00AAA894 /* CFType+SafetyTests.swift in Sources */,
 				61054F9E2A6EE1BA00AAA894 /* SessionReplayTests.swift in Sources */,
@@ -7611,6 +7588,7 @@
 				61054FD52A6EE1BA00AAA894 /* XCTAssertRectsEqual.swift in Sources */,
 				61054FC12A6EE1BA00AAA894 /* ViewTreeRecorderTests.swift in Sources */,
 				61054F982A6EE1BA00AAA894 /* CGRectExtensionsTests.swift in Sources */,
+				D25C834C2B8657CF008E73B1 /* SegmentJSONTests.swift in Sources */,
 				61054FB42A6EE1BA00AAA894 /* UITabBarRecorderTests.swift in Sources */,
 				61054FA22A6EE1BA00AAA894 /* TextObfuscatorTests.swift in Sources */,
 				A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */,
@@ -7635,7 +7613,6 @@
 				61054FB62A6EE1BA00AAA894 /* UnsupportedViewRecorderTests.swift in Sources */,
 				61054F9F2A6EE1BA00AAA894 /* RecordsWriterTests.swift in Sources */,
 				61054FB82A6EE1BA00AAA894 /* UIDatePickerRecorderTests.swift in Sources */,
-				61054FD12A6EE1BA00AAA894 /* SegmentJSONBuilderTests.swift in Sources */,
 				61054FA32A6EE1BA00AAA894 /* Diff+SRWireframesTests.swift in Sources */,
 				61054FAF2A6EE1BA00AAA894 /* ViewTreeRecordingContextTests.swift in Sources */,
 				61054FC52A6EE1BA00AAA894 /* UIKitMocks.swift in Sources */,
@@ -7654,7 +7631,6 @@
 				61054FD32A6EE1BA00AAA894 /* MultipartFormDataTests.swift in Sources */,
 				61054FB12A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift in Sources */,
 				61054F9C2A6EE1BA00AAA894 /* SwiftExtensionsTests.swift in Sources */,
-				61054FA12A6EE1BA00AAA894 /* EnrichedRecordTests.swift in Sources */,
 				61054FA72A6EE1BA00AAA894 /* NodesFlattenerTests.swift in Sources */,
 				61054F9D2A6EE1BA00AAA894 /* MainThreadSchedulerTests.swift in Sources */,
 				61054FAA2A6EE1BA00AAA894 /* UIKitExtensionsTests.swift in Sources */,
