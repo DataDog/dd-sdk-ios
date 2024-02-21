@@ -16,7 +16,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
     /// Creates message sent from `DatadogWebViewTracking`.
     private func webViewTrackingMessage(with webEvent: JSON) -> FeatureMessage {
-        return .value( WebViewMessage.rum(webEvent))
+        return .webview(.rum(webEvent))
     }
 
     // MARK: - Handling `FeatureMessage`

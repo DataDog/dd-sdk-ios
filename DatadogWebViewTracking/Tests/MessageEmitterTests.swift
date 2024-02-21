@@ -34,7 +34,7 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let message = try XCTUnwrap(receiverMock.messages.firstValue(WebViewMessage.self))
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
         guard case let .log(event) = message else {
             return XCTFail("not a log message")
         }
@@ -67,7 +67,7 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        XCTAssertNil(receiverMock.messages.firstValue(WebViewMessage.self))
+        XCTAssertNil(receiverMock.messages.firstWebViewMessage)
     }
 
     func testWhenReceivingEventOtherThanLog_itForwardsToRUM() throws {
@@ -89,7 +89,7 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let message = try XCTUnwrap(receiverMock.messages.firstValue(WebViewMessage.self))
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
         guard case let .rum(event) = message else {
             return XCTFail("not a log message")
         }

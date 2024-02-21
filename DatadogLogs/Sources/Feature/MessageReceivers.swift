@@ -274,7 +274,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case var .log(event) = message.value(WebViewMessage.self) else {
+        guard case var .webview(.log(event)) = message else {
             return false
         }
 

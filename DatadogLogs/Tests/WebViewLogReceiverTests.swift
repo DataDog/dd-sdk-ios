@@ -67,7 +67,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .value(WebViewMessage.log(["test": value])),
+                message: .webview(.log(["test": value])),
                 from: core
             )
         )
@@ -118,7 +118,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .value(WebViewMessage.log(webLogEvent)),
+                message: .webview(.log(webLogEvent)),
                 from: core
             )
         )
@@ -166,7 +166,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .value(WebViewMessage.log(["test": "value"])),
+                message: .webview(.log(["test": "value"])),
                 from: core
             )
         )
@@ -196,7 +196,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .value(WebViewMessage.log(["test": "value"])),
+                message: .webview(.log(["test": "value"])),
                 from: core
             )
         )
@@ -232,7 +232,7 @@ class WebViewLogReceiverTests: XCTestCase {
         // When
         XCTAssert(
             messageReceiver.receive(
-                message: .value(WebViewMessage.log(["test": "value"])),
+                message: .webview(.log(["test": "value"])),
                 from: core
             )
         )

@@ -31,7 +31,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .rum(event) = message.value(WebViewMessage.self) else {
+        guard case let .webview(.rum(event)) = message else {
             return false
         }
 

@@ -14,8 +14,8 @@ public extension Array where Element == FeatureMessage {
     }
 
     /// Unpacks the first "baggage message" with given key in this array.
-    func firstValue<T>(_ type: T.Type = T.self) -> T? {
-        return compactMap({ $0.asValue }).lazy.compactMap { $0 as? T }.first
+    var firstWebViewMessage: WebViewMessage? {
+        return lazy.compactMap { $0.asWebViewMessage }.first
     }
 
     /// Unpacks the first "context message" in this array.
@@ -39,11 +39,11 @@ public extension FeatureMessage {
     }
 
     /// Extracts baggage attributes from feature message.
-    var asValue: Any? {
-        guard case let .value(value) = self else {
+    var asWebViewMessage: WebViewMessage? {
+        guard case let .webview(message) = self else {
             return nil
         }
-        return value
+        return message
     }
 
     /// Extracts context from feature message.

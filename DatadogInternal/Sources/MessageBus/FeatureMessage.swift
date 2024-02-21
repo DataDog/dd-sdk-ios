@@ -20,11 +20,10 @@ public enum FeatureMessage {
         baggage: FeatureBaggage
     )
 
-    /// A message value.
+    /// A web-view message.
     ///
-    /// Use this message case when the value type is known end-to-end.
-    /// Such type can be defined as part of the `DatadogInternal` module.
-    case value(Any)
+    /// Represent a Browser SDK event sent through the JS bridge.
+    case webview(WebViewMessage)
 
     /// A core context message.
     ///
@@ -66,18 +65,5 @@ extension FeatureMessage {
         }
 
         return try baggage.decode(type: type)
-    }
-
-    /// Returns the value if the type matches.
-    ///
-    /// - Parameters:
-    ///   - type: The expected type of the message value.   
-    /// - Returns: The value, or nil if the type doesn't match.
-    public func value<Value>(_ type: Value.Type = Value.self) -> Value? {
-        guard case let .value(value) = self else {
-            return nil
-        }
-
-        return value as? Value
     }
 }

@@ -38,29 +38,6 @@ public enum WebViewMessage {
     case record(Event, View)
 }
 
-/// A web-view record associated with a `slot_id`.
-///
-/// The `slot_id` is the `webView.configuration.userContentController.hash` value
-/// and is used to match a browser record with the web-view container.
-public struct WebViewRecord {
-    /// The record event.
-    public let event: WebViewMessage.Event
-    /// The Browser SDK view of the record.
-    public let view: WebViewMessage.View
-    /// The container `slot_id`.
-    public let slotId: String
-
-    public init(
-        event: WebViewMessage.Event,
-        view: WebViewMessage.View,
-        slotId: String
-    ) {
-        self.event = event
-        self.view = view
-        self.slotId = slotId
-    }
-}
-
 extension WebViewMessage: Decodable {
     enum CodingKeys: CodingKey {
         case eventType

@@ -138,19 +138,20 @@ class WebViewTrackingTests: XCTestCase {
         let logMessageExpectation = expectation(description: "Log message received")
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
-                switch message.value(WebViewMessage.self) {
-                case let .log(event):
-                    XCTAssertEqual(event["date"] as? Int, 1_635_932_927_012)
-                    XCTAssertEqual(event["message"] as? String, "console error: error")
-                    XCTAssertEqual(event["status"] as? String, "error")
-                    XCTAssertEqual(event["view"] as? [String: String], ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
-                    XCTAssertEqual(event["error"] as? [String: String], ["origin": "console"])
-                    XCTAssertEqual(event["session_id"] as? String, "0110cab4-7471-480e-aa4e-7ce039ced355")
+                switch message {
+                case let .webview(.log(event)):
+                    let matcher = JSONObjectMatcher(object: event)
+                    XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
+                    XCTAssertEqual(try? matcher.value("message"), "console error: error")
+                    XCTAssertEqual(try? matcher.value("status"), "error")
+                    XCTAssertEqual(try? matcher.value("view"), ["referrer": "", "url": "https://datadoghq.dev/browser-sdk-test-playground"])
+                    XCTAssertEqual(try? matcher.value("error"), ["origin": "console"])
+                    XCTAssertEqual(try? matcher.value("session_id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
                     logMessageExpectation.fulfill()
-                case .none:
+                case .context:
                     break
                 default:
-                    XCTFail("Unexpected webview message received: \(message)")
+                    XCTFail("Unexpected message received: \(message)")
                 }
             }
         )
@@ -194,14 +195,15 @@ class WebViewTrackingTests: XCTestCase {
         let rumMessageExpectation = expectation(description: "RUM message received")
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
-                switch message.value(WebViewMessage.self) {
-                case let .rum(event):
-                    XCTAssertEqual((event["view"] as? [String: Any])?["id"] as? String, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                switch message {
+                case let .webview(.rum(event)):
+                    let matcher = JSONObjectMatcher(object: event)
+                    XCTAssertEqual(try? matcher.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                     rumMessageExpectation.fulfill()
-                case .none:
+                case .context:
                     break
                 default:
-                    XCTFail("Unexpected webview message received: \(message)")
+                    XCTFail("Unexpected message received: \(message)")
                 }
             }
         )
@@ -284,11 +286,11 @@ class WebViewTrackingTests: XCTestCase {
         let core = PassthroughCoreMock(
             messageReceiver: FeatureMessageReceiverMock { message in
                 switch message {
-                case .value(let record as WebViewRecord):
-                    XCTAssertEqual(record.view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
-                    XCTAssertEqual(record.slotId, "\(controller.hash)")
-                    let matcher = JSONObjectMatcher(object: record.event)
+                case let .webview(.record(event, view)):
+                    XCTAssertEqual(view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+                    let matcher = JSONObjectMatcher(object: event)
                     XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
+                    XCTAssertEqual(try? matcher.value("slotId"), "\(controller.hash)")
                     recordMessageExpectation.fulfill()
                 case .context:
                     break
