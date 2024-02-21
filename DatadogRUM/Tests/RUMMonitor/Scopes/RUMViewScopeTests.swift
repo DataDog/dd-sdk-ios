@@ -1420,7 +1420,7 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(1)
 
-        let customSourceType = String.mockAnySource()
+        let customSourceType = String.mockAnySourceType()
         let expectedSourceType = RUMErrorSourceType.init(rawValue: customSourceType)
         XCTAssertTrue(
             scope.process(

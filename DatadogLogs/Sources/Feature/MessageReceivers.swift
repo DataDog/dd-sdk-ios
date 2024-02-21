@@ -173,8 +173,6 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         /// The last RUM view in crashed app process.
         let lastRUMViewEvent: PartialRUMViewEvent?
-
-        let nativeSourceTypeOverride: String?
     }
 
     /// Time provider.
@@ -199,12 +197,12 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         return false
     }
 
-    private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: CrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
         let date = (report.date ?? dateProvider.now)
-            .addingTimeInterval(context.serverTimeOffset)
+            .addingTimeInterval(crashContext.serverTimeOffset)
 
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
 
@@ -215,57 +213,57 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         errorAttributes[DDError.wasTruncated] = report.wasTruncated
 
         // Set RUM context if available (so emergency error is linked to the RUM session in Datadog app)
-        errorAttributes[LogEvent.Attributes.RUM.applicationID] = context.lastRUMViewEvent?.application.id
-        errorAttributes[LogEvent.Attributes.RUM.sessionID] = context.lastRUMViewEvent?.session.id
-        errorAttributes[LogEvent.Attributes.RUM.viewID] = context.lastRUMViewEvent?.view.id
+        errorAttributes[LogEvent.Attributes.RUM.applicationID] = crashContext.lastRUMViewEvent?.application.id
+        errorAttributes[LogEvent.Attributes.RUM.sessionID] = crashContext.lastRUMViewEvent?.session.id
+        errorAttributes[LogEvent.Attributes.RUM.viewID] = crashContext.lastRUMViewEvent?.view.id
 
-        let user = context.userInfo
-        let deviceInfo = context.device
-
-        let event = LogEvent(
-            date: date,
-            status: .emergency,
-            message: report.message,
-            error: .init(
-                kind: report.type,
-                message: report.message,
-                stack: report.stack,
-                sourceType: context.nativeSourceTypeOverride ?? "ios"
-            ),
-            serviceName: context.service,
-            environment: context.env,
-            loggerName: "crash-reporter",
-            loggerVersion: context.sdkVersion,
-            threadName: nil,
-            applicationVersion: context.version,
-            applicationBuildNumber: context.buildNumber,
-            buildId: nil,
-            dd: .init(
-                device: .init(architecture: deviceInfo.architecture)
-            ),
-            os: .init(
-                name: context.device.osName,
-                version: context.device.osVersion,
-                build: context.device.osBuildNumber
-            ),
-            userInfo: .init(
-                id: user?.id,
-                name: user?.name,
-                email: user?.email,
-                extraInfo: user?.extraInfo ?? [:]
-            ),
-            networkConnectionInfo: context.networkConnectionInfo,
-            mobileCarrierInfo: context.carrierInfo,
-            attributes: .init(
-                userAttributes: [:],
-                internalAttributes: errorAttributes
-            ),
-            tags: nil
-        )
+        let user = crashContext.userInfo
+        let deviceInfo = crashContext.device
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { _, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+            let event = LogEvent(
+                date: date,
+                status: .emergency,
+                message: report.message,
+                error: .init(
+                    kind: report.type,
+                    message: report.message,
+                    stack: report.stack,
+                    sourceType: context.nativeSourceOverride ?? "ios"
+                ),
+                serviceName: crashContext.service,
+                environment: crashContext.env,
+                loggerName: "crash-reporter",
+                loggerVersion: crashContext.sdkVersion,
+                threadName: nil,
+                applicationVersion: crashContext.version,
+                applicationBuildNumber: crashContext.buildNumber,
+                buildId: nil,
+                dd: .init(
+                    device: .init(architecture: deviceInfo.architecture)
+                ),
+                os: .init(
+                    name: crashContext.device.osName,
+                    version: crashContext.device.osVersion,
+                    build: crashContext.device.osBuildNumber
+                ),
+                userInfo: .init(
+                    id: user?.id,
+                    name: user?.name,
+                    email: user?.email,
+                    extraInfo: user?.extraInfo ?? [:]
+                ),
+                networkConnectionInfo: crashContext.networkConnectionInfo,
+                mobileCarrierInfo: crashContext.carrierInfo,
+                attributes: .init(
+                    userAttributes: [:],
+                    internalAttributes: errorAttributes
+                ),
+                tags: nil
+            )
+
             writer.write(value: event)
         }
 

@@ -87,7 +87,7 @@ class CrashLogReceiverTests: XCTestCase {
         wasTruncated: false
     )
 
-    private func crashContextWith(lastRUMViewEvent: AnyCodable?, sourceType: String?) -> CrashContext {
+    private func crashContextWith(lastRUMViewEvent: AnyCodable?) -> CrashContext {
         return .mockWith(
             serverTimeOffset: .mockRandom(),
             service: .mockRandom(),
@@ -104,14 +104,13 @@ class CrashLogReceiverTests: XCTestCase {
             userInfo: Bool.random() ? .mockRandom() : .empty,
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
-            lastRUMViewEvent: lastRUMViewEvent,
-            nativeSourceTypeOverride: sourceType
+            lastRUMViewEvent: lastRUMViewEvent
         )
     }
 
     func testWhenSendingCrashReport_itEncodesErrorInformation() throws {
         // Given (CR with no link to RUM view)
-        let crashContext = crashContextWith(lastRUMViewEvent: nil, sourceType: nil) // no RUM view information
+        let crashContext = crashContextWith(lastRUMViewEvent: nil) // no RUM view information
 
         // When
         let core = PassthroughCoreMock(
@@ -184,8 +183,7 @@ class CrashLogReceiverTests: XCTestCase {
                     "session": ["id": "rum-session-id"],
                     "view": ["id": "rum-view-id"],
                 ]
-            ),
-            sourceType: nil
+            )
         )
 
         // When
@@ -208,10 +206,11 @@ class CrashLogReceiverTests: XCTestCase {
 
     func testWhenSendingCrashReportWithSourceType_itEncodesSourceType() throws {
         // Given (CR with the link to RUM view)
-        let crashContext = crashContextWith(lastRUMViewEvent: nil, sourceType: "ios+il2cpp")
+        let crashContext = crashContextWith(lastRUMViewEvent: nil)
 
         // When
         let core = PassthroughCoreMock(
+            context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
             messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
         )
 
@@ -227,8 +226,7 @@ class CrashLogReceiverTests: XCTestCase {
     func testWhenSendingCrashReportWithMalformedRUMContext_itSendsErrorTelemetry() throws {
         // Given (CR with the link to RUM view)
         let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable(["rum-view": "malformed"]),
-            sourceType: nil
+            lastRUMViewEvent: AnyCodable(["rum-view": "malformed"])
         )
 
         // When

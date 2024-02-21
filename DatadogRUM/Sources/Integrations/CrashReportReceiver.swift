@@ -89,17 +89,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let carrierInfo: CarrierInfo?
         /// Current user information.
         let userInfo: UserInfo?
-        /// Override of the `source_type` of native crashes
-        let nativeSourceTypeOverride: String?
-
-        var nativeSourceType: RUMErrorSourceType {
-            get {
-                guard let nativeSourceTypeOverride = nativeSourceTypeOverride else {
-                    return .ios
-                }
-                return RUMErrorSourceType(rawValue: nativeSourceTypeOverride) ?? .ios
-            }
-        }
     }
 
     private struct AdjustedCrashTimings {
@@ -180,7 +169,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                     report,
                     lastRUMViewEventInPreviousSession: lastRUMViewEvent,
                     using: adjustedCrashTimings,
-                    sourceType: context.nativeSourceType,
                     to: core
                 )
             } else {
@@ -205,17 +193,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         _ crashReport: CrashReport,
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
         using crashTimings: AdjustedCrashTimings,
-        sourceType: RUMErrorSourceType,
         to core: DatadogCoreProtocol
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
-            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, sourceType: sourceType, to: core)
+            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, to: core)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
-            let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: sourceType)
-            core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { _, writer in
+            core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+                let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: context.nativeSourceOverride)
                 writer.write(value: rumError)
             }
         }
@@ -269,7 +256,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, sourceType: crashContext.nativeSourceType, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
         }
     }
 
@@ -323,19 +310,20 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, sourceType: crashContext.nativeSourceType, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
         }
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, sourceType: RUMErrorSourceType, to core: DatadogCoreProtocol) {
+    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
-        let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: sourceType)
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { _, writer in
+        core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+            let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: context.nativeSourceOverride)
+
             writer.write(value: rumError)
             writer.write(value: updatedRUMView)
         }
@@ -344,7 +332,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     // MARK: - Building RUM events
 
     /// Creates RUM error based on the session information from `lastRUMViewEvent` and `DDCrashReport` details.
-    private func createRUMError(from crashReport: CrashReport, and lastRUMView: RUMViewEvent, crashDate: Date, sourceType: RUMErrorSourceType) -> RUMCrashEvent {
+    private func createRUMError(from crashReport: CrashReport, and lastRUMView: RUMViewEvent, crashDate: Date, sourceType: String?) -> RUMCrashEvent {
         let errorType = crashReport.type
         let errorMessage = crashReport.message
         let errorStackTrace = crashReport.stack
@@ -354,6 +342,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         errorAttributes[DDError.binaryImages] = crashReport.binaryImages
         errorAttributes[DDError.meta] = crashReport.meta
         errorAttributes[DDError.wasTruncated] = crashReport.wasTruncated
+
+        let rumSourceType: RUMErrorSourceType
+        if let sourceType = sourceType {
+            rumSourceType = RUMErrorSourceType(rawValue: sourceType) ?? .ios
+        } else {
+            rumSourceType = .ios
+        }
 
         let event = RUMErrorEvent(
             dd: .init(
@@ -385,7 +380,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 meta: nil,
                 resource: nil,
                 source: .source,
-                sourceType: sourceType,
+                sourceType: rumSourceType,
                 stack: errorStackTrace,
                 threads: nil,
                 type: errorType,

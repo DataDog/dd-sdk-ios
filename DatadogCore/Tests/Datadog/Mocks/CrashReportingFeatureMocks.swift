@@ -143,8 +143,7 @@ extension CrashContext {
         carrierInfo: CarrierInfo? = .mockAny(),
         lastRUMViewEvent: AnyCodable? = nil,
         lastRUMSessionState: AnyCodable? = nil,
-        lastIsAppInForeground: Bool = .mockAny(),
-        nativeSourceTypeOverride: String? = nil
+        lastIsAppInForeground: Bool = .mockAny()
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -161,8 +160,7 @@ extension CrashContext {
             carrierInfo: carrierInfo,
             lastRUMViewEvent: lastRUMViewEvent,
             lastRUMSessionState: lastRUMSessionState,
-            lastIsAppInForeground: lastIsAppInForeground,
-            nativeSourceTypeOverride: nativeSourceTypeOverride
+            lastIsAppInForeground: lastIsAppInForeground
         )
     }
 
@@ -182,8 +180,7 @@ extension CrashContext {
             carrierInfo: .mockRandom(),
             lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
             lastRUMSessionState: AnyCodable(mockRandomAttributes()),
-            lastIsAppInForeground: .mockRandom(),
-            nativeSourceTypeOverride: RUMErrorSourceType.mockRandom().rawValue
+            lastIsAppInForeground: .mockRandom()
         )
     }
 

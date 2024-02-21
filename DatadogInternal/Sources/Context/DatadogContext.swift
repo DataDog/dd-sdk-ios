@@ -39,7 +39,7 @@ public struct DatadogContext {
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     public let source: String
 
-    /// Denotes the source type for  crashes.. This is used for platforms that provide additional symbolication steps for native crashes.
+    /// Denotes the source type for  crashes. This is used for platforms that provide additional symbolication steps for native crashes.
     public let nativeSourceOverride: String?
 
     /// The version of Datadog iOS SDK.

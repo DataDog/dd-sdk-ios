@@ -29,19 +29,6 @@ class CrashContextTests: XCTestCase {
         XCTAssertEqual(deserializedContext.trackingConsent, randomConsent)
     }
 
-    func testGivenContextWithCustomNativeSourceType_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
-        // Given
-        let randomSourceType: String = .mockRandom()
-        let context: CrashContext = .mockWith(nativeSourceTypeOverride: randomSourceType)
-
-        // When
-        let serializedContext = try encoder.encode(context)
-
-        // Then
-        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
-        XCTAssertEqual(deserializedContext.nativeSourceTypeOverride, randomSourceType)
-    }
-
     func testGivenContextWithLastRUMViewEventSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
         let randomRUMViewEvent = AnyCodable(mockRandomAttributes())
 

@@ -527,6 +527,9 @@ class CrashReportReceiverTests: XCTestCase {
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewAndOverridenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
+        core = PassthroughCoreMock(
+            context: .mockWith(nativeSourceOverride: "ios+il2cpp")
+        )
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
@@ -536,8 +539,7 @@ class CrashReportReceiverTests: XCTestCase {
         let crashContext: CrashContext = .mockWith(
             serverTimeOffset: dateCorrectionOffset,
             trackingConsent: .granted,
-            lastRUMViewEvent: AnyCodable(lastRUMViewEvent), // means there was a RUM session and it was sampled
-            nativeSourceTypeOverride: "ios+il2cpp"
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
         )
 
         let receiver: CrashReportReceiver = .mockWith(
@@ -720,6 +722,7 @@ class CrashReportReceiverTests: XCTestCase {
         ) throws {
             let mockApplicationId: String = .mockRandom(among: .alphanumerics)
             let core = PassthroughCoreMock(
+                context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
                 messageReceiver: CrashReportReceiver.mockWith(
                     applicationID: mockApplicationId,
                     sessionSampler: .mockKeepAll(),
@@ -747,8 +750,7 @@ class CrashReportReceiverTests: XCTestCase {
                 carrierInfo: .mockRandom(),
                 lastRUMViewEvent: nil, // means there was no active RUM view
                 lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
-                lastIsAppInForeground: launchInForeground,
-                nativeSourceTypeOverride: "ios+il2cpp"
+                lastIsAppInForeground: launchInForeground
             )
 
             let receiver: CrashReportReceiver = .mockWith(
@@ -928,6 +930,7 @@ class CrashReportReceiverTests: XCTestCase {
             expectViewURL expectedViewURL: String
         ) throws {
             let core = PassthroughCoreMock(
+                context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
                 messageReceiver: CrashReportReceiver.mockWith(
                     applicationID: .mockRandom(among: .alphanumerics),
                     sessionSampler: .mockKeepAll(),
@@ -952,8 +955,7 @@ class CrashReportReceiverTests: XCTestCase {
                 carrierInfo: .mockRandom(),
                 lastRUMViewEvent: nil, // means there was no RUM session (it crashed during app launch)
                 lastRUMSessionState: nil, // means there was no RUM session (it crashed during app launch)
-                lastIsAppInForeground: launchInForeground,
-                nativeSourceTypeOverride: "ios+il2cpp"
+                lastIsAppInForeground: launchInForeground
             )
 
             let receiver: CrashReportReceiver = .mockWith(
