@@ -14,14 +14,12 @@ class AppHangsMonitoringTests: XCTestCase {
     private var rumConfig = RUM.Configuration(applicationID: .mockAny())
 
     override func setUp() {
-        super.setUp()
         core = DatadogCoreProxy()
     }
 
     override func tearDown() {
         core.flushAndTearDown()
         core = nil
-        super.tearDown()
     }
 
     func testWhenMainThreadHangsAboveThreshold_itTracksAppHang() throws {

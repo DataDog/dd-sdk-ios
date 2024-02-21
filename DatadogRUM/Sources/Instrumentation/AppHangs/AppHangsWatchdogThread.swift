@@ -16,7 +16,7 @@ internal struct AppHang {
 }
 
 internal final class AppHangsWatchdogThread: Thread {
-    struct Constants {
+    enum Constants {
         /// The "idle" interval for sleeping the watchdog thread before scheduling the next task on the main queue, represented as a percentage of the `appHangThreshold`.
         ///
         /// Introducing even a small sleep significantly reduces CPU consumption by the watchdog thread (nearly 0%). No sleep would result in close to 100% CPU usage.
@@ -114,7 +114,7 @@ internal final class AppHangsWatchdogThread: Thread {
                 // If the hang duration is irrealistically long (way more than assumed iOS watchdog termination limit: ~10s), send telemetry.
                 // This could be another false-positive caused by thread suspension between the two `wait()` calls.
                 telemetry.debug("Detected an App Hang with an unusually long duration", attributes: ["hang_duration": hangDuration])
-                return
+                continue
             }
 
             let appHang = AppHang(
