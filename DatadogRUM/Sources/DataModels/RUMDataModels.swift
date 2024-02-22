@@ -2863,11 +2863,14 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Vital properties
     public struct Vital: Codable {
-        /// User custom vital. As vital name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+        /// User custom vital.
         public let custom: [String: Double]?
 
         /// UUID of the vital
         public let id: String
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
 
         /// Type of the vital
         public let type: VitalType
@@ -2875,6 +2878,7 @@ public struct RUMVitalEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case custom = "custom"
             case id = "id"
+            case name = "name"
             case type = "type"
         }
 
@@ -3446,6 +3450,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
 
+            /// The version of Unity used in a Unity application
+            public var unityVersion: String?
+
             /// Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             public let useAllowedTracingOrigins: Bool?
 
@@ -3528,6 +3535,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
+                case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useBeforeSend = "use_before_send"
@@ -3964,4 +3972,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4912f5a003399ca25d7bbf323c6693a391520a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/78f17559b7898dad5a6b3b4af2fe4ab4a5be6b54

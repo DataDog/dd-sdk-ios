@@ -6282,6 +6282,10 @@ public class DDRUMVitalEventVital: NSObject {
         root.swiftModel.vital.id
     }
 
+    @objc public var name: String? {
+        root.swiftModel.vital.name
+    }
+
     @objc public var type: DDRUMVitalEventVitalVitalType {
         .init(swift: root.swiftModel.vital.type)
     }
@@ -7038,6 +7042,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
     }
 
+    @objc public var unityVersion: String? {
+        set { root.swiftModel.telemetry.configuration.unityVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.unityVersion }
+    }
+
     @objc public var useAllowedTracingOrigins: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
     }
@@ -7212,4 +7221,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4912f5a003399ca25d7bbf323c6693a391520a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/78f17559b7898dad5a6b3b4af2fe4ab4a5be6b54
