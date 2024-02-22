@@ -344,6 +344,7 @@ extension DatadogContextProvider {
         buildId: String?,
         variant: String?,
         source: String,
+        nativeSourceOverride: String?,
         sdkVersion: String,
         ciAppOrigin: String?,
         applicationName: String,
@@ -370,6 +371,7 @@ extension DatadogContextProvider {
             applicationBundleIdentifier: applicationBundleIdentifier,
             sdkInitDate: dateProvider.now,
             device: device,
+            nativeSourceOverride: nativeSourceOverride,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.

@@ -71,6 +71,8 @@ public struct LogEvent: Encodable {
         public var message: String?
         /// The Log error stack
         public var stack: String?
+        /// The Log error source_type. Used by cross platform SDKs
+        public var sourceType: String = "ios"
     }
 
     /// Device information.
@@ -157,6 +159,7 @@ internal struct LogEventEncoder {
         case errorKind = "error.kind"
         case errorMessage = "error.message"
         case errorStack = "error.stack"
+        case errorSourceType = "error.source_type"
 
         // MARK: - Application info
 
@@ -218,6 +221,7 @@ internal struct LogEventEncoder {
             try container.encode(someError.kind, forKey: .errorKind)
             try container.encode(someError.message, forKey: .errorMessage)
             try container.encode(someError.stack, forKey: .errorStack)
+            try container.encode(someError.sourceType, forKey: .errorSourceType)
         }
 
         // Encode logger info

@@ -61,6 +61,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.error?.kind, randomError.type)
             XCTAssertEqual(log.error?.message, randomError.message)
             XCTAssertEqual(log.error?.stack, randomError.stack)
+            XCTAssertEqual(log.error?.sourceType, "ios")
             XCTAssertEqual(log.attributes, randomAttributes)
             XCTAssertEqual(log.tags.map { Set($0) }, randomTags)
             XCTAssertEqual(log.serviceName, randomService)
