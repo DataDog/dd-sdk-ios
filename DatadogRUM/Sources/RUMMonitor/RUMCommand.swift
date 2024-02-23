@@ -161,24 +161,27 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
     init(
         time: Date,
         message: String,
-        type: String,
-        backtrace: BacktraceReport,
-        source: RUMInternalErrorSource,
-        attributes: [AttributeKey: AttributeValue]
+        type: String? = nil,
+        stack: String? = nil,
+        source: RUMInternalErrorSource = .source,
+        errorSourceType: RUMErrorEvent.Error.SourceType = .ios,
+        isCrash: Bool = false,
+        threads: [DDThread]? = nil,
+        binaryImages: [BinaryImage]? = nil,
+        isStackTraceTruncated: Bool? = nil,
+        attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         self.time = time
-        self.source = source
         self.attributes = attributes
-
         self.message = message
         self.type = type
-        self.stack = backtrace.stack
-
-        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
-        self.isCrash = false // backtrace reports are not crashes
-        self.threads = backtrace.threads
-        self.binaryImages = backtrace.binaryImages
-        self.isStackTraceTruncated = backtrace.wasTruncated
+        self.stack = stack
+        self.isCrash = isCrash
+        self.source = source
+        self.errorSourceType = errorSourceType
+        self.threads = threads
+        self.binaryImages = binaryImages
+        self.isStackTraceTruncated = isStackTraceTruncated
     }
 }
 

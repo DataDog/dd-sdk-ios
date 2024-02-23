@@ -16,7 +16,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
         static let appHangErrorType = "AppHang"
 
         /// The standardized `error.stack` when a backtrace couldn't be generated.
-        static let appHangNoStackErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` was not enabled"
+        static let appHangNoStackErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
@@ -57,29 +57,20 @@ internal class AppHangsObserver: RUMCommandPublisher {
     }
 
     private func report(appHang: AppHang) {
-        var command: RUMAddCurrentViewErrorCommand
-
-        if let backtrace = appHang.backtrace {
-            command = RUMAddCurrentViewErrorCommand(
-                time: appHang.date,
-                message: Constants.appHangErrorMessage,
-                type: Constants.appHangErrorType,
-                backtrace: backtrace,
-                source: .source,
-                attributes: [:]
-            )
-        } else {
-            command = RUMAddCurrentViewErrorCommand(
-                time: appHang.date,
-                message: Constants.appHangErrorMessage,
-                type: Constants.appHangErrorType,
-                stack: Constants.appHangNoStackErrorMessage,
-                source: .source,
-                attributes: [:]
-            )
-        }
-
-        command.attributes["hang_duration"] = appHang.duration
+        let command = RUMAddCurrentViewErrorCommand(
+            time: appHang.date,
+            message: Constants.appHangErrorMessage,
+            type: Constants.appHangErrorType,
+            stack: appHang.backtrace?.stack ?? Constants.appHangNoStackErrorMessage,
+            source: .source,
+            isCrash: false,
+            threads: appHang.backtrace?.threads,
+            binaryImages: appHang.backtrace?.binaryImages,
+            isStackTraceTruncated: appHang.backtrace?.wasTruncated,
+            attributes: [
+                "hang_duration": appHang.duration
+            ]
+        )
 
         subscriber?.process(command: command)
     }
