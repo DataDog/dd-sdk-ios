@@ -29,18 +29,20 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
     }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let fallbackSource: () -> SRSegment.Source = {
-            telemetry.error("[SR] Could not create segment source from provided string '\(context.source)'")
-            return .ios
+        guard !events.isEmpty else {
+            throw InternalError(description: "[SR] batch events must not be empty.")
         }
 
-        let source = SRSegment.Source(rawValue: context.source) ?? fallbackSource()
-        let segmentBuilder = SegmentJSONBuilder(source: source)
+        let source = SRSegment.Source(rawValue: context.source) ?? {
+            telemetry.error("[SR] Could not create segment source from provided string '\(context.source)'")
+            return .ios
+        }()
 
         // If we can't decode `events: [Data]` there is no way to recover, so we throw an
         // error to let the core delete the batch:
-        let records = try events.map { try EnrichedRecordJSON(jsonObjectData: $0.data) }
-        let segments = try segmentBuilder.segments(from: records)
+        let segments = try events
+            .map { try SegmentJSON($0.data, source: source) }
+            .merge()
 
         return try createRequest(segments: segments, context: context)
     }
@@ -63,10 +65,9 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         )
 
         let metadata = try segments.enumerated().map { index, segment in
-            // Session Replay BE accepts compressed segment data followed by newline character (before compression):
             var json = segment.toJSONObject()
-            var data = try JSONSerialization.data(withJSONObject: json)
-            data.append(SegmentRequestBuilder.newlineByte)
+            // Session Replay BE accepts compressed segment data followed by newline character (before compression):
+            let data = try JSONSerialization.data(withJSONObject: json) + SegmentRequestBuilder.newlineByte
             let compressedData = try SRCompression.compress(data: data)
             // Compressed segment is sent within multipart form data - with some of segment (metadata)
             // attributes listed as form fields:
@@ -99,4 +100,5 @@ internal struct SegmentRequestBuilder: FeatureRequestBuilder {
         customUploadURL ?? context.site.endpoint.appendingPathComponent("api/v2/replay")
     }
 }
+
 #endif
