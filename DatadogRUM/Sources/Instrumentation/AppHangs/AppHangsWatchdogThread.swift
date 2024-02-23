@@ -85,7 +85,7 @@ internal final class AppHangsWatchdogThread: Thread {
 
         if Thread.isMainThread {
             // When initialization happens on the main thread, we can get its `ThreadID` right away, so startup hangs are covered
-            self.mainThreadID = backtraceReporter.currentThreadID()
+            self.mainThreadID = Thread.currentThreadID
             self.isMainThreadIDCached = true
         }
 
@@ -111,7 +111,7 @@ internal final class AppHangsWatchdogThread: Thread {
                 }
                 if self.isMainThreadIDCached == false {
                     // If initialization didin't happen on the main thread, capture and cache the `ThreadID` of the main thread.
-                    self.mainThreadID = backtraceReporter.currentThreadID()
+                    self.mainThreadID = Thread.currentThreadID
                     self.isMainThreadIDCached = true
                 }
                 mainThreadTask.signal()

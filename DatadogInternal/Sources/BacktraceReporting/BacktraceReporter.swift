@@ -6,9 +6,14 @@
 
 import Foundation
 
-/// A type representing unique thread identifier for `BacktraceReport` generation.
-public struct ThreadID {
-    public let thread_t: thread_t
+/// A value identifying the thread for `BacktraceReport` generation.
+public typealias ThreadID = thread_t
+
+public extension Thread {
+    /// Obtains the `ThreadID` of the caller thread.
+    ///
+    /// Should be used in conjunction with `BacktraceReporting.generateBacktrace(threadID:)` to generate backtrace of particular thread.
+    static var currentThreadID: ThreadID { pthread_mach_thread_np(pthread_self()) }
 }
 
 /// A protocol for types capable of generating backtrace reports.
@@ -24,13 +29,6 @@ public protocol BacktraceReporting {
 }
 
 public extension BacktraceReporting {
-    /// Obtains the `ThreadID` of the caller thread. 
-    /// 
-    /// Should be used in conjunction with `generateBacktrace(threadID:)` to generate backtrace of particular thread.
-    func currentThreadID() -> ThreadID {
-        ThreadID(thread_t: pthread_mach_thread_np(pthread_self()))
-    }
-
     /// Generates a backtrace report for current thread.
     ///
     /// The caller thread will be promoted in the main stack of returned `BacktraceReport` (`report.stack`).
@@ -38,7 +36,7 @@ public extension BacktraceReporting {
     /// - Returns: A `BacktraceReport` starting on the current thread and containing information about all other threads
     ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
     func generateBacktrace() -> BacktraceReport? {
-        let callerThreadID = currentThreadID()
+        let callerThreadID = Thread.currentThreadID
         return generateBacktrace(threadID: callerThreadID)
     }
 }

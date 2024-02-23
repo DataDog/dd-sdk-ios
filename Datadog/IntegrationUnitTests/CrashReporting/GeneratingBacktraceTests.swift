@@ -68,7 +68,7 @@ class GeneratingBacktraceTests: XCTestCase {
 
         // When
         XCTAssertTrue(Thread.current.isMainThread)
-        let threadID = core.backtraceReporter.currentThreadID()
+        let threadID = Thread.currentThreadID
         let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace(threadID: threadID))
 
         // Then
@@ -84,9 +84,9 @@ class GeneratingBacktraceTests: XCTestCase {
         let semaphore = DispatchSemaphore(value: 0)
         var threadID: ThreadID?
 
-        let thread = Thread { [weak self] in
+        let thread = Thread {
             XCTAssertFalse(Thread.current.isMainThread)
-            threadID = self?.core.backtraceReporter.currentThreadID()
+            threadID = Thread.currentThreadID
             semaphore.signal()
         }
 
