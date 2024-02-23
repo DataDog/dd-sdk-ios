@@ -5118,7 +5118,7 @@
 		D21A94F02B838CCD00AC4256 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */,
+				D25C834D2B88A261008E73B1 /* WebViewTracking */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -5397,6 +5397,14 @@
 				61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */,
 			);
 			path = Helpers;
+			sourceTree = "<group>";
+		};
+		D25C834D2B88A261008E73B1 /* WebViewTracking */ = {
+			isa = PBXGroup;
+			children = (
+				D21A94F12B8397CA00AC4256 /* WebViewMessage.swift */,
+			);
+			path = WebViewTracking;
 			sourceTree = "<group>";
 		};
 		D25EE93529C4C3C300CE3839 /* DatadogTrace */ = {
