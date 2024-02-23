@@ -80,7 +80,10 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
-            dateProvider: configuration.dateProvider
+            appHangThreshold: configuration.defaultAppHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            telemetry: core.telemetry
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,

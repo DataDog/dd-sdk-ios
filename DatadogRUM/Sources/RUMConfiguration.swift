@@ -256,6 +256,10 @@ extension RUM {
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
 
         internal var dateProvider: DateProvider = SystemDateProvider()
+        /// The main queue, subject to App Hangs monitoring.
+        internal var mainQueue: DispatchQueue = .main
+        /// The minimum main queue hang to be tracked as App Hang.
+        internal var defaultAppHangThreshold: TimeInterval = 2
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
