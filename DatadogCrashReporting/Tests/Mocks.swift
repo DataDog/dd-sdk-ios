@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import DatadogInternal
 import CrashReporter
 
 @testable import DatadogCrashReporting
@@ -18,6 +19,8 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
 
     var hasPurgedPendingCrashReport = false
     var hasPurgedPendingCrashReportError: Error?
+
+    var generatedBacktrace: BacktraceReport = .mockAny()
 
     required init() throws {
         if let error = ThirdPartyCrashReporterMock.initializationError {
@@ -45,6 +48,21 @@ internal class ThirdPartyCrashReporterMock: ThirdPartyCrashReporter {
             throw error
         }
         hasPurgedPendingCrashReport = true
+    }
+
+    func generateBacktrace() throws -> BacktraceReport {
+        return generatedBacktrace
+    }
+}
+
+internal extension BacktraceReport {
+    static func mockAny() -> BacktraceReport {
+        return BacktraceReport(
+            stack: "any",
+            threads: [],
+            binaryImages: [],
+            wasTruncated: false
+        )
     }
 }
 
