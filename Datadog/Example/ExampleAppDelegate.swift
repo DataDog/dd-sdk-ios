@@ -66,7 +66,11 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
-                urlSessionTracking: .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100)),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { req, resp, data, err in
+                        print("⭐️ [Attributes Provider] data: \(data)")
+                        return [:]
+            }),
                 trackBackgroundEvents: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100

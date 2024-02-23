@@ -18,19 +18,26 @@ internal final class URLSessionSwizzler {
 
     /// Swizzles `URLSession.dataTask(with:completionHandler:)` methods (with `URL` and `URLRequest`).
     func swizzle(
-        interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void
+        interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void,
+        didReceive: @escaping (URLSessionTask, Data) -> Void
     ) throws {
         lock.lock()
         defer { lock.unlock() }
         dataTaskURLRequestCompletionHandler = try DataTaskURLRequestCompletionHandler.build()
-        dataTaskURLRequestCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
+        dataTaskURLRequestCompletionHandler?.swizzle(
+            interceptCompletion: interceptCompletionHandler,
+            didReceive: didReceive
+        )
 
         if #available(iOS 13.0, *) {
             // Prior to iOS 13.0 the `URLSession.dataTask(with:url, completionHandler:handler)` makes an internal
             // call to `URLSession.dataTask(with:request, completionHandler:handler)`. To avoid duplicated call
             // to the callback, we don't apply below swizzling prior to iOS 13.
             dataTaskURLCompletionHandler = try DataTaskURLCompletionHandler.build()
-            dataTaskURLCompletionHandler?.swizzle(interceptCompletion: interceptCompletionHandler)
+            dataTaskURLCompletionHandler?.swizzle(
+                interceptCompletion: interceptCompletionHandler,
+                didReceive: didReceive
+            )
         }
     }
 
@@ -71,7 +78,8 @@ internal final class URLSessionSwizzler {
         }
 
         func swizzle(
-            interceptCompletion: @escaping (URLSessionTask, Data?, Error?) -> Void
+            interceptCompletion: @escaping (URLSessionTask, Data?, Error?) -> Void,
+            didReceive: @escaping (URLSessionTask, Data) -> Void
         ) {
             typealias Signature = @convention(block) (URLSession, URLRequest, CompletionHandler?) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
@@ -87,13 +95,18 @@ internal final class URLSessionSwizzler {
 
                     var _task: URLSessionDataTask?
                     let task = previousImplementation(session, Self.selector, request) { data, response, error in
-                        completionHandler(data, response, error)
+                        if let task = _task, let data = data {
+                            didReceive(task, data)
+                        }
 
                         if let task = _task { // sanity check, should always succeed
                             interceptCompletion(task, data, error)
                         }
+
+                        completionHandler(data, response, error)
                     }
                     _task = task
+                    _task?.dd.hasCompletion = true
                     return task
                 }
             }
@@ -121,7 +134,8 @@ internal final class URLSessionSwizzler {
         }
 
         func swizzle(
-            interceptCompletion: @escaping (URLSessionTask, Data?, Error?) -> Void
+            interceptCompletion: @escaping (URLSessionTask, Data?, Error?) -> Void,
+            didReceive: @escaping (URLSessionTask, Data) -> Void
         ) {
             typealias Signature = @convention(block) (URLSession, URL, CompletionHandler?) -> URLSessionDataTask
             swizzle(method) { previousImplementation -> Signature in
@@ -137,6 +151,10 @@ internal final class URLSessionSwizzler {
 
                     var _task: URLSessionDataTask?
                     let task = previousImplementation(session, Self.selector, url) { data, response, error in
+                        if let task = _task, let data = data {
+                            didReceive(task, data)
+                        }
+
                         completionHandler(data, response, error)
 
                         if let task = _task { // sanity check, should always succeed
@@ -144,6 +162,7 @@ internal final class URLSessionSwizzler {
                         }
                     }
                     _task = task
+                    _task?.dd.hasCompletion = true
                     return task
                 }
             }
