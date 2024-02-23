@@ -84,3 +84,14 @@ internal class AppHangsObserver: RUMCommandPublisher {
         subscriber?.process(command: command)
     }
 }
+
+extension AppHangsObserver {
+    /// Awaits the processing of pending app hang.
+    ///
+    /// Note: This method is synchronous and will block the caller thread, in worst case up for `appHangThreshold`.
+    func flush() {
+        let semaphore = DispatchSemaphore(value: 0)
+        watchdogThread.onBeforeSleep = { semaphore.signal() }
+        semaphore.wait()
+    }
+}

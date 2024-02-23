@@ -58,6 +58,9 @@ internal final class AppHangsWatchdogThread: Thread {
     /// Closure to be notified when App Hang ends. It will be executed on the watchdog thread.
     @ReadWriteLock
     internal var onHangEnded: ((AppHang) -> Void)?
+    /// A block called after this thread finished its pass and will become idle.
+    @ReadWriteLock
+    internal var onBeforeSleep: (() -> Void)?
 
     /// Creates an instance of an App Hang watchdog thread.
     ///
@@ -98,7 +101,9 @@ internal final class AppHangsWatchdogThread: Thread {
 
         while !isCancelled {
             defer {
-                // Before continuing, sleep for a while, to reduce the CPU consumption by watchdog thread.
+                // Notify that thread finished its next pass and will be put to IDLE
+                onBeforeSleep?()
+                // Sleep (become idle) to reduce the CPU consumption by watchdog thread:
                 Thread.sleep(forTimeInterval: idleInterval)
             }
 

@@ -16,6 +16,7 @@ class AppHangsMonitoringTests: XCTestCase {
     private var rumConfig = RUM.Configuration(applicationID: .mockAny())
 
     override func setUp() {
+        rumConfig.defaultAppHangThreshold = 0.5
         core = DatadogCoreProxy()
     }
 
@@ -24,36 +25,46 @@ class AppHangsMonitoringTests: XCTestCase {
         core = nil
     }
 
-    func testGivenRUMEnabledButCrashReportingNot_whenMainThreadHangs_itTracksAppHangWithNoStack() throws {
-        let mainQueue = DispatchQueue(label: "main-queue", qos: .userInteractive)
-        rumConfig.mainQueue = mainQueue
-
+    func testWhenMainThreadIsHangedInitially_itTracksAppHangError() throws {
         // Given
         RUM.enable(with: rumConfig, in: core)
 
         // When
-        let beforeHang = Date()
-        mainQueue.sync {
-            Thread.sleep(forTimeInterval: self.rumConfig.defaultAppHangThreshold * 1.5)
-        }
+        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
+        Thread.sleep(forTimeInterval: hangDuration) // hang right after SDK is initialized
 
         // Then
-        Thread.sleep(forTimeInterval: 0.5) // wait to make sure watchdog thread completes hang tracking
-        RUMMonitor.shared(in: core).dd.flush() // flush RUM monitor to await hang processing
-
+        try flushHangsMonitoring()
         let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
         let appHangError = try XCTUnwrap(errors.first)
 
         XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
         XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
-        XCTAssertEqual(appHangError.error.stack, AppHangsObserver.Constants.appHangNoStackErrorMessage)
-        XCTAssertEqual(appHangError.error.source, .source)
-        XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as CrashReporting was not enabled")
-        XCTAssertNil(appHangError.error.binaryImages,  "Binary Images should be unavailable as CrashReporting was not enabled")
-        XCTAssertGreaterThanOrEqual(appHangError.date, beforeHang.timeIntervalSince1970.toInt64Milliseconds)
     }
 
-    func testGivenRUMAndCrashReportingEnabled_whenMainThreadHangs_itTracksAppHangWithMainThreadStack() throws {
+    func testWhenMainThreadIsHangedAfterInit_itTracksAppHangError() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+
+        // When
+        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
+        let hangEnded = expectation(description: "Await hang end")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // 0.5 s after init
+            Thread.sleep(forTimeInterval: hangDuration)
+            hangEnded.fulfill()
+        }
+        wait(for: [hangEnded], timeout: 2)
+
+        // Then
+        try flushHangsMonitoring()
+        let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
+        let appHangError = try XCTUnwrap(errors.first)
+
+        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+    }
+
+    func testGivenRUMAndCrashReportingEnabled_whenMainThreadHangs_thenAppHangErrorIncludesStackTrace() throws {
         // Given (no matter of RUM or CR initialization order)
         oneOf([
             {
@@ -68,16 +79,10 @@ class AppHangsMonitoringTests: XCTestCase {
 
         // When
         let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
-        let awaitMainThreadHang = expectation(description: "Wait until hang ends")
-        DispatchQueue.main.async {
-            Thread.sleep(forTimeInterval: hangDuration) // hang the main thread
-            DispatchQueue.main.async { awaitMainThreadHang.fulfill() } // hang ended, ready to run test assertions
-        }
-        waitForExpectations(timeout: rumConfig.defaultAppHangThreshold * 5)
+        Thread.sleep(forTimeInterval: hangDuration) // hang the app
 
         // Then
-        RUMMonitor.shared(in: core).dd.flush() // flush RUM monitor to await hang processing
-
+        try flushHangsMonitoring()
         let appHangError = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self).first)
         let mainThreadStack = try XCTUnwrap(appHangError.error.stack)
 
@@ -87,5 +92,38 @@ class AppHangsMonitoringTests: XCTestCase {
         XCTAssertEqual(appHangError.error.source, .source)
         XCTAssertNotNil(appHangError.error.threads, "Other threads should be available")
         XCTAssertNotNil(appHangError.error.binaryImages,  "Binary Images should be available for symbolication")
+    }
+
+    func testGivenOnlyRUMEnabled_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
+        // Given
+        RUM.enable(with: rumConfig, in: core)
+
+        // When
+        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
+        Thread.sleep(forTimeInterval: hangDuration) // hang the app
+
+        // Then
+        try flushHangsMonitoring()
+        let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
+        let appHangError = try XCTUnwrap(errors.first)
+
+        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.stack, AppHangsObserver.Constants.appHangNoStackErrorMessage)
+        XCTAssertEqual(appHangError.error.source, .source)
+        XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as CrashReporting was not enabled")
+        XCTAssertNil(appHangError.error.binaryImages,  "Binary Images should be unavailable as CrashReporting was not enabled")
+    }
+
+    private func flushHangsMonitoring() throws {
+        let hangObserver = try XCTUnwrap(core.get(feature: RUMFeature.self)?.instrumentation.appHangs)
+        let expectation = self.expectation(description: "Flush AppHangObserver")
+        DispatchQueue.main.async {
+            hangObserver.flush() // flush from async task on main queue, so we're sure watchdog thread finished processing previous hang
+            expectation.fulfill()
+        }
+        wait(for: [expectation], timeout: 2)
+
+        RUMMonitor.shared(in: core).dd.flush() // flush also RUMMonitor so it ends processing hangs flushed from `hangObserver`
     }
 }
