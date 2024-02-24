@@ -68,7 +68,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
                 applicationID: Environment.readRUMApplicationID(),
                 urlSessionTracking: .init(
                     resourceAttributesProvider: { req, resp, data, err in
-                        print("⭐️ [Attributes Provider] data: \(data)")
+                        print("⭐️ [Attributes Provider] data: \(String(describing: data))")
                         return [:]
             }),
                 trackBackgroundEvents: true,
