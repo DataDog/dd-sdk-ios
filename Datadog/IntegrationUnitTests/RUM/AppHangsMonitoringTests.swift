@@ -14,9 +14,14 @@ import DatadogCrashReporting
 class AppHangsMonitoringTests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
     private var rumConfig = RUM.Configuration(applicationID: .mockAny())
+    private var hangDuration: TimeInterval! // swiftlint:disable:this implicitly_unwrapped_optional
+    /// Use main queue mock, otherwise any `waitForExpectations(timeout:)` would be considered an app hang and may cause dead locks.
+    private let mainQueue = DispatchQueue(label: "main-queue-mock", qos: .userInteractive)
 
     override func setUp() {
-        rumConfig.defaultAppHangThreshold = 0.5
+        rumConfig.mainQueue = mainQueue
+        rumConfig.defaultAppHangThreshold = 0.4
+        hangDuration = rumConfig.defaultAppHangThreshold * 1.25
         core = DatadogCoreProxy()
     }
 
@@ -27,11 +32,12 @@ class AppHangsMonitoringTests: XCTestCase {
 
     func testWhenMainThreadIsHangedInitially_itTracksAppHangError() throws {
         // Given
-        RUM.enable(with: rumConfig, in: core)
+        mainQueue.sync {
+            RUM.enable(with: rumConfig, in: core)
 
-        // When
-        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
-        Thread.sleep(forTimeInterval: hangDuration) // hang right after SDK is initialized
+            // When
+            Thread.sleep(forTimeInterval: hangDuration) // hang right after SDK is initialized
+        }
 
         // Then
         try flushHangsMonitoring()
@@ -44,16 +50,14 @@ class AppHangsMonitoringTests: XCTestCase {
 
     func testWhenMainThreadIsHangedAfterInit_itTracksAppHangError() throws {
         // Given
-        RUM.enable(with: rumConfig, in: core)
+        mainQueue.sync {
+            RUM.enable(with: rumConfig, in: core)
+        }
 
         // When
-        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
-        let hangEnded = expectation(description: "Await hang end")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { // 0.5 s after init
+        mainQueue.sync { // hang in the main thread task that follows SDK is initialization
             Thread.sleep(forTimeInterval: hangDuration)
-            hangEnded.fulfill()
         }
-        wait(for: [hangEnded], timeout: 2)
 
         // Then
         try flushHangsMonitoring()
@@ -65,8 +69,8 @@ class AppHangsMonitoringTests: XCTestCase {
     }
 
     func testGivenRUMAndCrashReportingEnabled_whenMainThreadHangs_thenAppHangErrorIncludesStackTrace() throws {
-        // Given (no matter of RUM or CR initialization order)
-        oneOf([
+        // Given (initialize SDK on the main thread)
+        oneOf([ // no matter of RUM or CR initialization order
             {
                 RUM.enable(with: self.rumConfig, in: self.core)
                 CrashReporting.enable(in: self.core)
@@ -78,12 +82,14 @@ class AppHangsMonitoringTests: XCTestCase {
         ])
 
         // When
-        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
-        Thread.sleep(forTimeInterval: hangDuration) // hang the app
+        mainQueue.sync {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
 
         // Then
         try flushHangsMonitoring()
-        let appHangError = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self).first)
+        let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
+        let appHangError = try XCTUnwrap(errors.first)
         let mainThreadStack = try XCTUnwrap(appHangError.error.stack)
 
         XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
@@ -96,11 +102,14 @@ class AppHangsMonitoringTests: XCTestCase {
 
     func testGivenOnlyRUMEnabled_whenMainThreadHangs_itTracksAppHangWithNoStackTrace() throws {
         // Given
-        RUM.enable(with: rumConfig, in: core)
+        mainQueue.sync {
+            RUM.enable(with: rumConfig, in: core)
+        }
 
         // When
-        let hangDuration = rumConfig.defaultAppHangThreshold * 1.25
-        Thread.sleep(forTimeInterval: hangDuration) // hang the app
+        mainQueue.sync {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
 
         // Then
         try flushHangsMonitoring()
@@ -116,13 +125,12 @@ class AppHangsMonitoringTests: XCTestCase {
     }
 
     private func flushHangsMonitoring() throws {
+        mainQueue.sync {} // flush the mock main queue (by awaiting the next task after the hang)
+
+        // Flush the watchdog thread (by awaiting on the real main thread), to make sure the thread is done with any hang processing
+        // and it is idle:
         let hangObserver = try XCTUnwrap(core.get(feature: RUMFeature.self)?.instrumentation.appHangs)
-        let expectation = self.expectation(description: "Flush AppHangObserver")
-        DispatchQueue.main.async {
-            hangObserver.flush() // flush from async task on main queue, so we're sure watchdog thread finished processing previous hang
-            expectation.fulfill()
-        }
-        wait(for: [expectation], timeout: 2)
+        hangObserver.flush()
 
         RUMMonitor.shared(in: core).dd.flush() // flush also RUMMonitor so it ends processing hangs flushed from `hangObserver`
     }

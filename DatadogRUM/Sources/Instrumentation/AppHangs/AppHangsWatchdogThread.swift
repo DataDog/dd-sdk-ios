@@ -50,9 +50,6 @@ internal final class AppHangsWatchdogThread: Thread {
     /// obtained at runtime, only once and it is cached for later use.
     @ReadWriteLock
     private var mainThreadID: ThreadID? = nil
-    /// If `mainThreadID` value was already obtained.
-    /// This flag doesn't require synchronization as it is only used from the main thread.
-    private var isMainThreadIDCached = false
     /// Telemetry interface.
     private let telemetry: Telemetry
     /// Closure to be notified when App Hang ends. It will be executed on the watchdog thread.
@@ -86,14 +83,19 @@ internal final class AppHangsWatchdogThread: Thread {
         self.backtraceReporter = backtraceReporter
         self.telemetry = telemetry
 
+        super.init()
+        self.name = "com.datadoghq.app-hang-watchdog"
+
         if Thread.isMainThread {
             // When initialization happens on the main thread, we can get its `ThreadID` right away, so startup hangs are covered
             self.mainThreadID = Thread.currentThreadID
-            self.isMainThreadIDCached = true
+        } else {
+            // Otherwise, schedule async task to capture the main `ThreadID`. This task will execute before any other `mainThreadTask`
+            // scheduled by watchdog thread (in `main()`), making sure the thread ID is available as soon as possible.
+            self.mainQueue.async { [weak self] in
+                self?.mainThreadID = Thread.currentThreadID
+            }
         }
-
-        super.init()
-        self.name = "com.datadoghq.app-hang-watchdog"
     }
 
     override func main() {
@@ -110,15 +112,7 @@ internal final class AppHangsWatchdogThread: Thread {
             let waitStart: DispatchTime = .now()
 
             // Schedule task on the main thread to measure how fast it responds
-            mainQueue.async { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                if self.isMainThreadIDCached == false {
-                    // If initialization didin't happen on the main thread, capture and cache the `ThreadID` of the main thread.
-                    self.mainThreadID = Thread.currentThreadID
-                    self.isMainThreadIDCached = true
-                }
+            mainQueue.async {
                 mainThreadTask.signal()
             }
 
