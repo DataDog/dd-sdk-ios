@@ -313,6 +313,18 @@
 		6167E7072B82A9FD00C3CA2D /* GeneratingBacktraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7052B82A9FD00C3CA2D /* GeneratingBacktraceTests.swift */; };
 		6167E70E2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E70D2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift */; };
 		6167E70F2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E70D2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift */; };
+		6167E7142B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7112B837F0B00C3CA2D /* BacktraceReportingMocks.swift */; };
+		6167E7152B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7112B837F0B00C3CA2D /* BacktraceReportingMocks.swift */; };
+		6167E71B2B837F7A00C3CA2D /* BacktraceReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7182B837F7A00C3CA2D /* BacktraceReportMocks.swift */; };
+		6167E71C2B837F7A00C3CA2D /* BacktraceReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7182B837F7A00C3CA2D /* BacktraceReportMocks.swift */; };
+		6167E7202B837FB200C3CA2D /* DDThreadMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E71D2B837FB200C3CA2D /* DDThreadMocks.swift */; };
+		6167E7212B837FB200C3CA2D /* DDThreadMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E71D2B837FB200C3CA2D /* DDThreadMocks.swift */; };
+		6167E7252B837FF100C3CA2D /* BinaryImageMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7222B837FF100C3CA2D /* BinaryImageMocks.swift */; };
+		6167E7262B837FF100C3CA2D /* BinaryImageMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7222B837FF100C3CA2D /* BinaryImageMocks.swift */; };
+		6167E7292B84C11900C3CA2D /* DDCrashReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */; };
+		6167E72A2B84C11900C3CA2D /* DDCrashReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */; };
+		6167E72C2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */; };
+		6167E72D2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */; };
 		616B668E259CC28E00968EE8 /* DDRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */; };
 		6170DC1C25C18729003AED5C /* PLCrashReporterPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6170DC1B25C18729003AED5C /* PLCrashReporterPlugin.swift */; };
 		6172472725D673D7007085B3 /* CrashContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6172472625D673D7007085B3 /* CrashContextTests.swift */; };
@@ -2183,6 +2195,12 @@
 		6167E7022B81F2EB00C3CA2D /* BacktraceReporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BacktraceReporter.swift; sourceTree = "<group>"; };
 		6167E7052B82A9FD00C3CA2D /* GeneratingBacktraceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneratingBacktraceTests.swift; sourceTree = "<group>"; };
 		6167E70D2B83502200C3CA2D /* DatadogCore+FeatureDirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogCore+FeatureDirectoriesTests.swift"; sourceTree = "<group>"; };
+		6167E7112B837F0B00C3CA2D /* BacktraceReportingMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BacktraceReportingMocks.swift; sourceTree = "<group>"; };
+		6167E7182B837F7A00C3CA2D /* BacktraceReportMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BacktraceReportMocks.swift; sourceTree = "<group>"; };
+		6167E71D2B837FB200C3CA2D /* DDThreadMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDThreadMocks.swift; sourceTree = "<group>"; };
+		6167E7222B837FF100C3CA2D /* BinaryImageMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageMocks.swift; sourceTree = "<group>"; };
+		6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportMocks.swift; sourceTree = "<group>"; };
+		6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitHelpers.swift; sourceTree = "<group>"; };
 		616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMMonitorTests.swift; sourceTree = "<group>"; };
 		616C0A9D28573DFF00C13264 /* RUMOperatingSystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperatingSystemInfo.swift; sourceTree = "<group>"; };
 		616C0AA028573F6300C13264 /* RUMOperatingSystemInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperatingSystemInfoTests.swift; sourceTree = "<group>"; };
@@ -4364,6 +4382,25 @@
 			path = BacktraceReporting;
 			sourceTree = "<group>";
 		};
+		6167E7162B837F4200C3CA2D /* FeatureModels */ = {
+			isa = PBXGroup;
+			children = (
+				6167E7172B837F6300C3CA2D /* CrashReporting */,
+			);
+			path = FeatureModels;
+			sourceTree = "<group>";
+		};
+		6167E7172B837F6300C3CA2D /* CrashReporting */ = {
+			isa = PBXGroup;
+			children = (
+				6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */,
+				6167E7182B837F7A00C3CA2D /* BacktraceReportMocks.swift */,
+				6167E7222B837FF100C3CA2D /* BinaryImageMocks.swift */,
+				6167E71D2B837FB200C3CA2D /* DDThreadMocks.swift */,
+			);
+			path = CrashReporting;
+			sourceTree = "<group>";
+		};
 		616CCE11250A181C009FED46 /* Instrumentation */ = {
 			isa = PBXGroup;
 			children = (
@@ -5438,6 +5475,7 @@
 		D2579546298ABB04008A1BE5 /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				6167E7162B837F4200C3CA2D /* FeatureModels */,
 				6188900D2AC58B5D00D0B966 /* MessageReceiverMocks */,
 				61C713C52A3CA08B00FA735A /* CoreMocks */,
 				3C85D42B29F7C87D00AFF894 /* HostsSanitizerMock.swift */,
@@ -5448,6 +5486,7 @@
 				D257954B298ABB04008A1BE5 /* FoundationMocks.swift */,
 				D257954C298ABB04008A1BE5 /* AttributesMocks.swift */,
 				D2DA23C6298D5AC000C6C7E6 /* TelemetryMocks.swift */,
+				6167E7112B837F0B00C3CA2D /* BacktraceReportingMocks.swift */,
 				D2DA23C9298D5C1300C6C7E6 /* UIKitMocks.swift */,
 				D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */,
 				D24C9C5129A7BD12002057CF /* SamplerMock.swift */,
@@ -5471,6 +5510,7 @@
 				D2F44FBB299AA36D0074B0D9 /* Decompression.swift */,
 				61133C462423990D00786299 /* TestsDirectory.swift */,
 				61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */,
+				6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -8147,13 +8187,18 @@
 				D2579556298ABB04008A1BE5 /* FoundationMocks.swift in Sources */,
 				D2579553298ABB04008A1BE5 /* DatadogContextMock.swift in Sources */,
 				D24C9C6929A7CE06002057CF /* DDErrorMocks.swift in Sources */,
+				6167E7142B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D2579558298ABB04008A1BE5 /* Encoding.swift in Sources */,
+				6167E7202B837FB200C3CA2D /* DDThreadMocks.swift in Sources */,
 				D2EBEE4829BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */,
 				3C0D5DEF2A5442A900446CF9 /* EventMocks.swift in Sources */,
 				D24C9C5529A7C5F3002057CF /* DateProvider.swift in Sources */,
 				D2579559298ABB04008A1BE5 /* DDAssert.swift in Sources */,
 				D2579552298ABB04008A1BE5 /* FileWriterMock.swift in Sources */,
+				6167E72C2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */,
+				6167E7252B837FF100C3CA2D /* BinaryImageMocks.swift in Sources */,
 				61AE74172AD7DA9B008DB9BB /* FeatureMessageMocks.swift in Sources */,
+				6167E71B2B837F7A00C3CA2D /* BacktraceReportMocks.swift in Sources */,
 				D2A7840329A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840D29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
 				D2DA23CF298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
@@ -8164,6 +8209,7 @@
 				D2F44FBC299AA36D0074B0D9 /* Decompression.swift in Sources */,
 				D24C9C5229A7BD12002057CF /* SamplerMock.swift in Sources */,
 				D2579557298ABB04008A1BE5 /* AttributesMocks.swift in Sources */,
+				6167E7292B84C11900C3CA2D /* DDCrashReportMocks.swift in Sources */,
 				D2DA23C7298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,
 				D2DA23CA298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */,
 				6188900F2AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */,
@@ -8184,13 +8230,18 @@
 				D2579579298ABB83008A1BE5 /* FoundationMocks.swift in Sources */,
 				D257957A298ABB83008A1BE5 /* DatadogContextMock.swift in Sources */,
 				D24C9C6A29A7CE06002057CF /* DDErrorMocks.swift in Sources */,
+				6167E7152B837F0B00C3CA2D /* BacktraceReportingMocks.swift in Sources */,
 				D257957B298ABB83008A1BE5 /* Encoding.swift in Sources */,
+				6167E7212B837FB200C3CA2D /* DDThreadMocks.swift in Sources */,
 				D2EBEE4929BA17C400B15732 /* NetworkInstrumentationMocks.swift in Sources */,
 				3C0D5DF02A5442A900446CF9 /* EventMocks.swift in Sources */,
 				D24C9C5629A7C5F3002057CF /* DateProvider.swift in Sources */,
 				D257957C298ABB83008A1BE5 /* DDAssert.swift in Sources */,
 				D257957D298ABB83008A1BE5 /* FileWriterMock.swift in Sources */,
+				6167E72D2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */,
+				6167E7262B837FF100C3CA2D /* BinaryImageMocks.swift in Sources */,
 				61AE74182AD7DA9B008DB9BB /* FeatureMessageMocks.swift in Sources */,
+				6167E71C2B837F7A00C3CA2D /* BacktraceReportMocks.swift in Sources */,
 				D2A7840429A536AD003B03BB /* PrintFunctionMock.swift in Sources */,
 				D2A7840E29A53A4B003B03BB /* TestsDirectory.swift in Sources */,
 				D2DA23D0298D5F2300C6C7E6 /* FeatureMessageReceiverMock.swift in Sources */,
@@ -8201,6 +8252,7 @@
 				D2F44FBD299AA36D0074B0D9 /* Decompression.swift in Sources */,
 				D24C9C5329A7BD12002057CF /* SamplerMock.swift in Sources */,
 				D257957F298ABB83008A1BE5 /* AttributesMocks.swift in Sources */,
+				6167E72A2B84C11900C3CA2D /* DDCrashReportMocks.swift in Sources */,
 				D2DA23C8298D5AC000C6C7E6 /* TelemetryMocks.swift in Sources */,
 				D2DA23CB298D5C1300C6C7E6 /* UIKitMocks.swift in Sources */,
 				618890102AC58B8C00D0B966 /* TelemetryReceiverMock.swift in Sources */,

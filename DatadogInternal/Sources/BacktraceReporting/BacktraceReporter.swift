@@ -6,13 +6,39 @@
 
 import Foundation
 
+/// A value identifying the thread for `BacktraceReport` generation.
+public typealias ThreadID = thread_t
+
+public extension Thread {
+    /// Obtains the `ThreadID` of the caller thread.
+    ///
+    /// Should be used in conjunction with `BacktraceReporting.generateBacktrace(threadID:)` to generate backtrace of particular thread.
+    static var currentThreadID: ThreadID { pthread_mach_thread_np(pthread_self()) }
+}
+
 /// A protocol for types capable of generating backtrace reports.
 public protocol BacktraceReporting {
-    /// Generates a backtrace report.
-    /// - Returns: A `BacktraceReport` containing information about the current state of all running threads in the process,
-    ///            focusing on tracing back from the error point to the root cause or the origin of the problem. Returns `nil` if
-    ///            the backtrace report cannot be generated.
-    func generateBacktrace() -> BacktraceReport?
+    /// Generates a backtrace report for given thread ID.
+    ///
+    /// The thread given by `threadID` will be promoted in the main stack of returned `BacktraceReport` (`report.stack`).
+    ///
+    /// - Parameter threadID: An ID of the thread that backtrace generation should start on.
+    /// - Returns: A `BacktraceReport` starting on the given thread and containing information about all other threads
+    ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
+    func generateBacktrace(threadID: ThreadID) -> BacktraceReport?
+}
+
+public extension BacktraceReporting {
+    /// Generates a backtrace report for current thread.
+    ///
+    /// The caller thread will be promoted in the main stack of returned `BacktraceReport` (`report.stack`).
+    ///
+    /// - Returns: A `BacktraceReport` starting on the current thread and containing information about all other threads
+    ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
+    func generateBacktrace() -> BacktraceReport? {
+        let callerThreadID = Thread.currentThreadID
+        return generateBacktrace(threadID: callerThreadID)
+    }
 }
 
 internal struct CoreBacktraceReporter: BacktraceReporting {
@@ -28,10 +54,11 @@ internal struct CoreBacktraceReporter: BacktraceReporting {
         self.core = core
     }
 
-    func generateBacktrace() -> BacktraceReport? {
+    func generateBacktrace(threadID: ThreadID) -> BacktraceReport? {
         guard let core = core else {
             return nil
         }
+
         guard let backtraceFeature = core.get(feature: BacktraceReportingFeature.self) else {
             DD.logger.warn(
                 """
@@ -41,7 +68,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting {
             )
             return nil
         }
-        return backtraceFeature.generateBacktrace()
+        return backtraceFeature.reporter.generateBacktrace(threadID: threadID)
     }
 }
 

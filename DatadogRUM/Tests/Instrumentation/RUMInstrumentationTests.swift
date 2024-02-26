@@ -21,6 +21,7 @@ class RUMInstrumentationTests: XCTestCase {
             appHangThreshold: .mockAny(),
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: NOPTelemetry()
         )
 
@@ -43,6 +44,7 @@ class RUMInstrumentationTests: XCTestCase {
             appHangThreshold: .mockAny(),
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: NOPTelemetry()
         )
 
@@ -62,6 +64,7 @@ class RUMInstrumentationTests: XCTestCase {
             appHangThreshold: .mockAny(),
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: NOPTelemetry()
         )
 
@@ -84,6 +87,7 @@ class RUMInstrumentationTests: XCTestCase {
             appHangThreshold: .mockAny(),
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: NOPTelemetry()
         )
 
@@ -102,6 +106,7 @@ class RUMInstrumentationTests: XCTestCase {
             appHangThreshold: .mockAny(),
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
             telemetry: NOPTelemetry()
         )
         let subscriber = RUMCommandSubscriberMock()

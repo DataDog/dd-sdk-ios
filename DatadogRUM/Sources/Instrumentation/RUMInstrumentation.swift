@@ -38,6 +38,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         appHangThreshold: TimeInterval,
         mainQueue: DispatchQueue,
         dateProvider: DateProvider,
+        backtraceReporter: BacktraceReporting,
         telemetry: Telemetry
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
@@ -89,6 +90,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.appHangs = AppHangsObserver(
             appHangThreshold: appHangThreshold,
             observedQueue: mainQueue,
+            backtraceReporter: backtraceReporter,
             dateProvider: dateProvider,
             telemetry: telemetry
         )

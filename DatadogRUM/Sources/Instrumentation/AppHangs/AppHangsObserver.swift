@@ -8,6 +8,17 @@ import Foundation
 import DatadogInternal
 
 internal class AppHangsObserver: RUMCommandPublisher {
+    enum Constants {
+        /// The standardized `error.message` for RUM errors describing an app hang.
+        static let appHangErrorMessage = "App Hang"
+
+        /// The standardized `error.type` for RUM errors describing an app hang.
+        static let appHangErrorType = "AppHang"
+
+        /// The standardized `error.stack` when a backtrace couldn't be generated.
+        static let appHangNoStackErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
+    }
+
     /// Watchdog thread that monitors the main queue for App Hangs.
     private let watchdogThread: AppHangsWatchdogThread
     /// Weak reference to RUM monitor for sending App Hang events.
@@ -16,6 +27,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
     init(
         appHangThreshold: TimeInterval,
         observedQueue: DispatchQueue,
+        backtraceReporter: BacktraceReporting,
         dateProvider: DateProvider,
         telemetry: Telemetry
     ) {
@@ -23,6 +35,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
             appHangThreshold: appHangThreshold,
             queue: observedQueue,
             dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter,
             telemetry: telemetry
         )
         watchdogThread.onHangEnded = { [weak self] appHang in
@@ -44,16 +57,32 @@ internal class AppHangsObserver: RUMCommandPublisher {
     }
 
     private func report(appHang: AppHang) {
-        let addHangCommand = RUMAddCurrentViewErrorCommand(
+        let command = RUMAddCurrentViewErrorCommand(
             time: appHang.date,
-            message: "App Hang",
-            type: "AppHang",
-            stack: nil, // TODO: RUM-2925 Add hang stack trace
+            message: Constants.appHangErrorMessage,
+            type: Constants.appHangErrorType,
+            stack: appHang.backtrace?.stack ?? Constants.appHangNoStackErrorMessage,
             source: .source,
+            isCrash: false,
+            threads: appHang.backtrace?.threads,
+            binaryImages: appHang.backtrace?.binaryImages,
+            isStackTraceTruncated: appHang.backtrace?.wasTruncated,
             attributes: [
                 "hang_duration": appHang.duration
             ]
         )
-        subscriber?.process(command: addHangCommand)
+
+        subscriber?.process(command: command)
+    }
+}
+
+extension AppHangsObserver {
+    /// Awaits the processing of pending app hang.
+    ///
+    /// Note: This method is synchronous and will block the caller thread, in worst case up for `appHangThreshold`.
+    func flush() {
+        let semaphore = DispatchSemaphore(value: 0)
+        watchdogThread.onBeforeSleep = { semaphore.signal() }
+        semaphore.wait()
     }
 }

@@ -83,6 +83,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             appHangThreshold: configuration.defaultAppHangThreshold,
             mainQueue: configuration.mainQueue,
             dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
             telemetry: core.telemetry
         )
         self.requestBuilder = RequestBuilder(

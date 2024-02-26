@@ -28,5 +28,5 @@ internal protocol ThirdPartyCrashReporter {
 
     // MARK: - Backtrace Generation
 
-    func generateBacktrace() throws -> BacktraceReport
+    func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport
 }

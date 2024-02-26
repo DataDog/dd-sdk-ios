@@ -109,7 +109,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        installConsoleOutputInterceptor()
+        if Environment.isRunningInteractive() {
+            installConsoleOutputInterceptor()
+        }
         return true
     }
 

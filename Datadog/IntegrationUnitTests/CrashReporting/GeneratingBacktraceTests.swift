@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogCrashReporting
 @testable import DatadogInternal
 
@@ -23,10 +24,10 @@ class GeneratingBacktraceTests: XCTestCase {
         super.tearDown()
     }
 
-    func testGivenCrashReportingIsEnabled_thenCoreCanGenerateBacktrace() throws {
+    func testGeneratingBacktraceOfTheCurrentThread() throws {
         // Given
         CrashReporting.enable(in: core)
-        XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` is registered")
+        XCTAssertNotNil(core.get(feature: BacktraceReportingFeature.self), "`BacktraceReportingFeature` must be registered")
 
         // When
         let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace())
@@ -59,5 +60,44 @@ class GeneratingBacktraceTests: XCTestCase {
             backtrace.binaryImages.contains(where: { $0.libraryName.hasPrefix("XCTest") }),
             "Backtrace should include the image for `XCTest`"
         )
+    }
+
+    func testGeneratingBacktraceOfTheMainThread() throws {
+        // Given
+        CrashReporting.enable(in: core)
+
+        // When
+        XCTAssertTrue(Thread.current.isMainThread)
+        let threadID = Thread.currentThreadID
+        let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace(threadID: threadID))
+
+        // Then
+        XCTAssertFalse(backtrace.stack.isEmpty)
+        XCTAssertTrue(backtrace.stack.contains(uiKitLibraryName), "Main thread stack should include UIKit symbols")
+    }
+
+    func testGeneratingBacktraceOfSecondaryThread() throws {
+        // Given
+        CrashReporting.enable(in: core)
+
+        // When
+        let semaphore = DispatchSemaphore(value: 0)
+        var threadID: ThreadID?
+
+        let thread = Thread {
+            XCTAssertFalse(Thread.current.isMainThread)
+            threadID = Thread.currentThreadID
+            semaphore.signal()
+        }
+
+        thread.start()
+        XCTAssertEqual(semaphore.wait(timeout: .now() + 5), .success)
+        thread.cancel()
+
+        let backtrace = try XCTUnwrap(core.backtraceReporter.generateBacktrace(threadID: threadID!))
+
+        // Then
+        XCTAssertFalse(backtrace.stack.isEmpty)
+        XCTAssertFalse(backtrace.stack.contains(uiKitLibraryName), "Secondary thread stack should NOT include UIKit symbols")
     }
 }
