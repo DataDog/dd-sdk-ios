@@ -28,14 +28,11 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
+        let hash = userContentController.hash
         // message.body must be called within UI thread
-        let messageBody = message.body
+        let body = message.body
         queue.async {
-            do {
-                try self.emitter.send(body: messageBody)
-            } catch {
-                DD.logger.error("Encountered an error when receiving web view event", error: error)
-            }
+            self.emitter.send(body: body, slotId: String(hash))
         }
     }
 }
