@@ -45,7 +45,7 @@ internal struct Meter {
                 )
             )
 
-            writer.write(value: submission)
+            writer.write(value: MetricMessage.submission(submission))
         }
     }
 }

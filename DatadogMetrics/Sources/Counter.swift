@@ -29,10 +29,6 @@ public final class Counter {
         )
     }
 
-    init(meter: Meter) {
-        self.meter = meter
-    }
-
     /// Increment the counter.
     ///
     /// - parameters:

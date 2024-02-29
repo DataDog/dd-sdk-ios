@@ -79,3 +79,8 @@ extension Submission.Metadata: Hashable {
         lhs.name == rhs.name && lhs.type == rhs.type
     }
 }
+
+internal enum MetricMessage: Codable {
+    case submission(Submission)
+    case serie(Serie)
+}

@@ -14,6 +14,8 @@ internal struct MetricFeature: DatadogRemoteFeature {
     let messageReceiver: DatadogInternal.FeatureMessageReceiver = NOPFeatureMessageReceiver()
     let subscriber: DatadogMetricSubscriber
 
+    var performanceOverride: PerformancePresetOverride? { nil }
+
     init(
         apiKey: String,
         subscriber: DatadogMetricSubscriber,
@@ -65,24 +67,32 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let submissions = try events.map(\.data).map { try decoder.decode(Submission.self, from: $0) }
+        let messages = try events.map(\.data).map { try decoder.decode(MetricMessage.self, from: $0) }
 
-        let aggregators: [Submission.Metadata: Aggregator] = submissions.reduce(into: [:]) { aggregators, submission in
-            var aggregator = aggregators[submission.metadata] ?? {
-                switch submission.metadata.type {
-                case .count: return CountAggregator()
-                case .gauge: return GaugeAggregator()
-                case .histogram: return HistogramAggregator()
-                }
-            }()
+        var aggregators: [Submission.Metadata: Aggregator] = [:]
+        var series: [Serie] = []
 
-            aggregator.add(submission)
-            aggregators[submission.metadata] = aggregator
+        messages.forEach { message in
+            switch message {
+            case let .serie(serie):
+                series.append(serie)
+            case let .submission(submission):
+                var aggregator = aggregators[submission.metadata] ?? {
+                    switch submission.metadata.type {
+                    case .count: return CountAggregator()
+                    case .gauge: return GaugeAggregator()
+                    case .histogram: return HistogramAggregator()
+                    }
+                }()
+
+                aggregator.add(submission)
+                aggregators[submission.metadata] = aggregator
+            }
         }
 
         let data = try aggregators.values
             .map { $0.flush() }
-            .reduce([], +)
+            .reduce(series, +)
             .map { try encoder.encode($0) }
 
         let builder = URLRequestBuilder(

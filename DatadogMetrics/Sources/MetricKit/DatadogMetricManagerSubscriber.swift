@@ -48,6 +48,10 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
                 record(name: "cumulativeGPUTime", timestamp: timestamp, gpuMetrics.cumulativeGPUTime)
             }
 
+            if let cellularConditionMetrics = payload.cellularConditionMetrics {
+                record(name: "cellularConditionTime", timestamp: timestamp, cellularConditionMetrics.histogrammedCellularConditionTime)
+            }
+
             if let applicationTimeMetrics = payload.applicationTimeMetrics {
                 record(name: "cumulativeForegroundTime", timestamp: timestamp, applicationTimeMetrics.cumulativeForegroundTime)
                 record(name: "cumulativeBackgroundTime", timestamp: timestamp, applicationTimeMetrics.cumulativeBackgroundTime)
@@ -71,6 +75,23 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
                 record(name: "cumulativeCellularDownload", timestamp: timestamp, networkTransferMetrics.cumulativeCellularDownload)
             }
 
+            if let applicationLaunchMetrics = payload.applicationLaunchMetrics {
+                record(name: "timeToFirstDraw", timestamp: timestamp, applicationLaunchMetrics.histogrammedTimeToFirstDraw)
+                record(name: "applicationResumeTime", timestamp: timestamp, applicationLaunchMetrics.histogrammedApplicationResumeTime)
+
+                if #available(iOS 15.2, *) {
+                    record(name: "optimizedTimeToFirstDraw", timestamp: timestamp, applicationLaunchMetrics.histogrammedOptimizedTimeToFirstDraw)
+                }
+
+                if #available(iOS 16.0, *) {
+                    record(name: "extendedLaunch", timestamp: timestamp, applicationLaunchMetrics.histogrammedExtendedLaunch)
+                }
+            }
+
+            if let applicationResponsivenessMetrics = payload.applicationResponsivenessMetrics {
+                record(name: "applicationHangTime", timestamp: timestamp, applicationResponsivenessMetrics.histogrammedApplicationHangTime)
+            }
+
             if let diskIOMetrics = payload.diskIOMetrics {
                 record(name: "cumulativeLogicalWrites", timestamp: timestamp, diskIOMetrics.cumulativeLogicalWrites)
             }
@@ -90,7 +111,6 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
         }
     }
 
-
     // Receive diagnostics immediately when available.
     @available(iOS 14.0, *)
     func didReceive(_ payloads: [MXDiagnosticPayload]) {
@@ -100,32 +120,133 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
 
 extension DatadogMetricSubscriber {
 
-    func record<UnitType>(name: String, timestamp: Date, _ measure: Measurement<UnitType>
-    ) {
+    func record<UnitType>(name: String, timestamp: Date, _ measure: Measurement<UnitType>) {
         core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
-            let submission = Submission(
-                metadata: Submission.Metadata(
-                    name: "\(context.source).\(context.applicationBundleIdentifier).\(name)",
-                    type: .gauge,
-                    interval: nil,
-                    unit: measure.unit.symbol,
-                    resources: [],
-                    tags: [
-                        "service:\(context.service)",
-                        "env:\(context.env)",
-                        "version:\(context.version)",
-                        "build_number:\(context.buildNumber)",
-                        "source:\(context.source)",
-                        "application_name:\(context.applicationName)",
-                    ]
-                ),
-                point: Serie.Point(
-                    timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-                    value: measure.value
-                )
+            let serie = Serie(
+                type: .gauge,
+                interval: nil,
+                metric: "\(context.source).\(context.applicationBundleIdentifier).\(name)",
+                unit: measure.unit.symbol,
+                points: [
+                    Serie.Point(
+                        timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                        value: measure.value
+                    )
+                ],
+                resources: [],
+                tags: [
+                    "service:\(context.service)",
+                    "env:\(context.env)",
+                    "version:\(context.version)",
+                    "build_number:\(context.buildNumber)",
+                    "source:\(context.source)",
+                    "application_name:\(context.applicationName)",
+                ]
             )
 
-            writer.write(value: submission)
+            writer.write(value: MetricMessage.serie(serie))
+        }
+    }
+
+    func record<UnitType>(name: String, timestamp: Date, _ histogram: MXHistogram<UnitType>) {
+        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
+            let metric = "\(context.source).\(context.applicationBundleIdentifier).\(name)"
+            let tags = [
+                "service:\(context.service)",
+                "env:\(context.env)",
+                "version:\(context.version)",
+                "build_number:\(context.buildNumber)",
+                "source:\(context.source)",
+                "application_name:\(context.applicationName)",
+            ]
+
+            let enumarator = histogram.bucketEnumerator
+            while let bucket = enumarator.nextObject() as? MXHistogramBucket<UnitType> {
+                let min = Serie(
+                    type: .gauge,
+                    interval: nil,
+                    metric: "\(metric).min",
+                    unit: bucket.bucketStart.unit.symbol,
+                    points: [
+                        Serie.Point(
+                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                            value: bucket.bucketStart.value
+                        )
+                    ],
+                    resources: [],
+                    tags: tags
+                )
+
+                let max = Serie(
+                    type: .gauge,
+                    interval: nil,
+                    metric: "\(metric).max",
+                    unit: bucket.bucketEnd.unit.symbol,
+                    points: [
+                        Serie.Point(
+                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                            value: bucket.bucketEnd.value
+                        )
+                    ],
+                    resources: [],
+                    tags: tags
+                )
+
+                let bucketCount = Double(bucket.bucketCount)
+                let count = Serie(
+                    type: .count,
+                    interval: nil,
+                    metric: "\(metric).count",
+                    unit: nil,
+                    points: [
+                        Serie.Point(
+                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                            value: bucketCount
+                        )
+                    ],
+                    resources: [],
+                    tags: tags
+                )
+
+//                // Just a guess, not a good one
+//                let bucketAverage = (bucket.bucketEnd + bucket.bucketStart) / 2
+//                let avg = Serie(
+//                    type: .gauge,
+//                    interval: nil,
+//                    metric: "\(metric).avg",
+//                    unit: bucketAverage.unit.symbol,
+//                    points: [
+//                        Serie.Point(
+//                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+//                            value: bucketAverage.value
+//                        )
+//                    ],
+//                    resources: [],
+//                    tags: tags
+//                )
+//
+//                let bucketSum = bucketAverage * bucketCount
+//                let sum = Serie(
+//                    type: .gauge,
+//                    interval: nil,
+//                    metric: "\(metric).sum",
+//                    unit: bucketSum.unit.symbol,
+//                    points: [
+//                        Serie.Point(
+//                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+//                            value: bucketSum.value
+//                        )
+//                    ],
+//                    resources: [],
+//                    tags: tags
+//                )
+
+                writer.write(value: MetricMessage.serie(min))
+                writer.write(value: MetricMessage.serie(max))
+                writer.write(value: MetricMessage.serie(count))
+//                writer.write(value: MetricMessage.serie(avg))
+//                writer.write(value: MetricMessage.serie(sum))
+            }
         }
     }
 }
