@@ -10,9 +10,6 @@ import DatadogInternal
 public final class Counter {
     let meter: Meter
 
-    @Mutex
-    var value: Double = 0
-
     /// Create a new `Counter`.
     public init(
         name: String,
@@ -41,10 +38,7 @@ public final class Counter {
     /// - parameters:
     ///     - by: Amount to increment by.
     public func increment<FloatingPoint>(by amount: FloatingPoint = 1) where FloatingPoint: BinaryFloatingPoint {
-        _value.lock { value in
-            value += Double(amount)
-            meter.record(value)
-        }
+        meter.record(Double(amount))
     }
 
     /// Increment the counter.
@@ -52,9 +46,6 @@ public final class Counter {
     /// - parameters:
     ///     - by: Amount to increment by.
     public func increment<Integer>(by amount: Integer) where Integer: BinaryInteger {
-        _value.lock { value in
-            value += Double(amount)
-            meter.record(value)
-        }
+        meter.record(Double(amount))
     }
 }

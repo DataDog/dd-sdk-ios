@@ -11,15 +11,8 @@ import DatadogInternal
 internal class DatadogCounterMetric<Value>: BoundCounterMetric<Value>, CounterMetric where Value: OpenTelemetryMetricValue {
     let meter: Meter
 
-    @Mutex
-    var value: Value
-
-    required init(
-        meter: Meter,
-        value: Value = .zero
-    ) {
+    required init(meter: Meter) {
         self.meter = meter
-        self.value = value
     }
 
     func add(value: Value, labelset: OpenTelemetryApi.LabelSet) {
@@ -27,11 +20,7 @@ internal class DatadogCounterMetric<Value>: BoundCounterMetric<Value>, CounterMe
     }
 
     func add(value: Value, labels: [String : String]) {
-        let meter = Meter(meter, labels: labels)
-        _value.lock {
-            $0 += value
-            meter.record($0.doubleValue)
-        }
+        bind(labels: labels).add(value: value)
     }
 
     func bind(labelset: OpenTelemetryApi.LabelSet) -> BoundCounterMetric<Value> {
@@ -39,16 +28,10 @@ internal class DatadogCounterMetric<Value>: BoundCounterMetric<Value>, CounterMe
     }
 
     func bind(labels: [String: String]) -> BoundCounterMetric<Value> {
-        Self(
-            meter: Meter(meter, labels: labels),
-            value: value
-        )
+        Self(meter: Meter(meter, labels: labels))
     }
 
     override func add(value: Value) {
-        _value.lock {
-            $0 += value
-            meter.record($0.doubleValue)
-        }
+        meter.record(value.doubleValue)
     }
 }

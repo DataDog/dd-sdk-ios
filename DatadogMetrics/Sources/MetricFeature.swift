@@ -50,6 +50,7 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     /// Telemetry interface.
     let telemetry: Telemetry
 
+    let format = DataFormat(prefix: #"{ "series": ["#, suffix: "] }", separator: ",")
     let encoder = JSONEncoder()
     let decoder = JSONDecoder()
 
@@ -64,25 +65,25 @@ internal struct RequestBuilder: FeatureRequestBuilder {
     }
 
     func request(for events: [Event], with context: DatadogContext) throws -> URLRequest {
-        let metrics = try events.map(\.data).map { try decoder.decode(AggregationRequest.self, from: $0) }
+        let submissions = try events.map(\.data).map { try decoder.decode(Submission.self, from: $0) }
 
-        let series: [String: Serie] = metrics.reduce(into: [:]) { series, metric in
-            var points = series[metric.metadata.name]?.points ?? []
-            points.insert(point: metric.point, interval: metric.metadata.interval)
+        let aggregators: [Submission.Metadata: Aggregator] = submissions.reduce(into: [:]) { aggregators, submission in
+            var aggregator = aggregators[submission.metadata] ?? {
+                switch submission.metadata.type {
+                case .count: return CountAggregator()
+                case .gauge: return GaugeAggregator()
+                case .histogram: return HistogramAggregator()
+                }
+            }()
 
-            series[metric.metadata.name] = Serie(
-                type: metric.metadata.type,
-                interval: metric.metadata.interval,
-                metric: metric.metadata.name,
-                unit: metric.metadata.unit,
-                points: points,
-                resources: metric.metadata.resources,
-                tags: metric.metadata.tags
-            )
+            aggregator.add(submission)
+            aggregators[submission.metadata] = aggregator
         }
 
-        let format = DataFormat(prefix: #"{ "series": ["#, suffix: "] }", separator: ",")
-        let data = try series.values.map { try encoder.encode($0) }
+        let data = try aggregators.values
+            .map { $0.flush() }
+            .reduce([], +)
+            .map { try encoder.encode($0) }
 
         let builder = URLRequestBuilder(
             url: url(with: context),

@@ -34,7 +34,60 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
 
     // Receive daily metrics.
     func didReceive(_ payloads: [MXMetricPayload]) {
-       // Process metrics.
+        for payload in payloads {
+            let timestamp = Date() // payload.timeStampEnd
+            if let cpuMetrics = payload.cpuMetrics {
+                record(name: "cumulativeCPUTime", timestamp: timestamp, cpuMetrics.cumulativeCPUTime)
+
+                if #available(iOS 14.0, *) {
+                    record(name: "cumulativeCPUInstructions", timestamp: timestamp, cpuMetrics.cumulativeCPUInstructions)
+                }
+            }
+
+            if let gpuMetrics = payload.gpuMetrics {
+                record(name: "cumulativeGPUTime", timestamp: timestamp, gpuMetrics.cumulativeGPUTime)
+            }
+
+            if let applicationTimeMetrics = payload.applicationTimeMetrics {
+                record(name: "cumulativeForegroundTime", timestamp: timestamp, applicationTimeMetrics.cumulativeForegroundTime)
+                record(name: "cumulativeBackgroundTime", timestamp: timestamp, applicationTimeMetrics.cumulativeBackgroundTime)
+                record(name: "cumulativeBackgroundAudioTime", timestamp: timestamp, applicationTimeMetrics.cumulativeBackgroundAudioTime)
+                record(name: "cumulativeBackgroundLocationTime", timestamp: timestamp, applicationTimeMetrics.cumulativeBackgroundLocationTime)
+            }
+
+            if let locationActivityMetrics = payload.locationActivityMetrics {
+                record(name: "cumulativeBestAccuracyTime", timestamp: timestamp, locationActivityMetrics.cumulativeBestAccuracyTime)
+                record(name: "cumulativeBestAccuracyForNavigationTime", timestamp: timestamp, locationActivityMetrics.cumulativeBestAccuracyForNavigationTime)
+                record(name: "cumulativeNearestTenMetersAccuracyTime", timestamp: timestamp, locationActivityMetrics.cumulativeNearestTenMetersAccuracyTime)
+                record(name: "cumulativeHundredMetersAccuracyTime", timestamp: timestamp, locationActivityMetrics.cumulativeHundredMetersAccuracyTime)
+                record(name: "cumulativeKilometerAccuracyTime", timestamp: timestamp, locationActivityMetrics.cumulativeKilometerAccuracyTime)
+                record(name: "cumulativeThreeKilometersAccuracyTime", timestamp: timestamp, locationActivityMetrics.cumulativeThreeKilometersAccuracyTime)
+            }
+
+            if let networkTransferMetrics = payload.networkTransferMetrics {
+                record(name: "cumulativeWifiUpload", timestamp: timestamp, networkTransferMetrics.cumulativeWifiUpload)
+                record(name: "cumulativeWifiDownload", timestamp: timestamp, networkTransferMetrics.cumulativeWifiDownload)
+                record(name: "cumulativeCellularUpload", timestamp: timestamp, networkTransferMetrics.cumulativeCellularUpload)
+                record(name: "cumulativeCellularDownload", timestamp: timestamp, networkTransferMetrics.cumulativeCellularDownload)
+            }
+
+            if let diskIOMetrics = payload.diskIOMetrics {
+                record(name: "cumulativeLogicalWrites", timestamp: timestamp, diskIOMetrics.cumulativeLogicalWrites)
+            }
+
+            if let memoryMetrics = payload.memoryMetrics {
+                record(name: "peakMemoryUsage", timestamp: timestamp, memoryMetrics.peakMemoryUsage)
+                // add averageSuspendedMemory
+            }
+
+//            if let displayMetrics = payload.displayMetrics {
+//                // add averagePixelLuminance
+//            }
+
+            if #available(iOS 14.0, *), let animationMetrics = payload.animationMetrics {
+                record(name: "scrollHitchTimeRatio", timestamp: timestamp, animationMetrics.scrollHitchTimeRatio)
+            }
+        }
     }
 
 
@@ -45,27 +98,34 @@ internal final class DatadogMetricSubscriber: NSObject, MXMetricManagerSubscribe
     }
 }
 
-
-
 extension DatadogMetricSubscriber {
 
-    func record<UnitType>(name: String, _ measure: Measurement<UnitType>) {
-        let timestamp = Date()
+    func record<UnitType>(name: String, timestamp: Date, _ measure: Measurement<UnitType>
+    ) {
         core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
-//            let value = Metric(
-//                name: self.name,
-//                type: self.type,
-//                point: Serie.Point(
-//                    timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-//                    value: value
-//                ),
-//                interval: self.interval,
-//                unit: self.unit,
-//                resources: self.resources,
-//                tags: self.tags
-//            )
-//
-//            writer.write(value: value)
+            let submission = Submission(
+                metadata: Submission.Metadata(
+                    name: "\(context.source).\(context.applicationBundleIdentifier).\(name)",
+                    type: .gauge,
+                    interval: nil,
+                    unit: measure.unit.symbol,
+                    resources: [],
+                    tags: [
+                        "service:\(context.service)",
+                        "env:\(context.env)",
+                        "version:\(context.version)",
+                        "build_number:\(context.buildNumber)",
+                        "source:\(context.source)",
+                        "application_name:\(context.applicationName)",
+                    ]
+                ),
+                point: Serie.Point(
+                    timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                    value: measure.value
+                )
+            )
+
+            writer.write(value: submission)
         }
     }
 }

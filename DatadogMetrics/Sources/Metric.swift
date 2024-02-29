@@ -34,17 +34,13 @@ internal struct Serie: Codable {
     let tags: [String]
 }
 
-internal struct Series: Encodable {
-    let series: [Serie]
-}
-
 enum SubmissionType: Int, Codable {
     case count
     case gauge
     case histogram
 }
 
-internal struct AggregationRequest: Codable {
+internal struct Submission: Codable {
     struct Metadata: Codable {
         let name: String
         let type: SubmissionType
@@ -58,22 +54,28 @@ internal struct AggregationRequest: Codable {
     let point: Serie.Point
 }
 
-extension Array where Element == Serie.Point {
-    mutating func insert(point: Serie.Point, interval: Int64?) {
-        let found = interval.flatMap {
-            firstIndex(timestamp: point.timestamp, interval: $0)
-        }
-
-        if let index = found {
-            self[index] = point
-        } else {
-            append(point)
-        }
+extension Submission.Metadata: Hashable {
+    /// Hashes the essential components of this value by feeding them into the
+    /// given hasher.
+    ///
+    /// Implement this method to conform to the `Hashable` protocol. The
+    /// components used for hashing must be the same as the components compared
+    /// in your type's `==` operator implementation. Call `hasher.combine(_:)`
+    /// with each of these components.
+    ///
+    /// - Important: In your implementation of `hash(into:)`,
+    ///   don't call `finalize()` on the `hasher` instance provided,
+    ///   or replace it with a different instance.
+    ///   Doing so may become a compile-time error in the future.
+    ///
+    /// - Parameter hasher: The hasher to use when combining the components
+    ///   of this instance.
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(name)
+        hasher.combine(type)
     }
 
-    func firstIndex(timestamp: Int64, interval: Int64) -> Int? {
-        firstIndex(
-            where: { ($0.timestamp - interval..<$0.timestamp).contains(timestamp) }
-        )
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.name == rhs.name && lhs.type == rhs.type
     }
 }

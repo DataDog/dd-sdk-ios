@@ -23,9 +23,9 @@ internal struct Meter {
     func record(_ value: Double) {
         let timestamp = Date()
         core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
-            let request = AggregationRequest(
-                metadata: AggregationRequest.Metadata(
-                    name: self.name, 
+            let submission = Submission(
+                metadata: Submission.Metadata(
+                    name: "\(context.source).\(context.applicationBundleIdentifier).\(self.name)",
                     type: self.type,
                     interval: self.interval,
                     unit: self.unit,
@@ -37,7 +37,6 @@ internal struct Meter {
                         "build_number:\(context.buildNumber)",
                         "source:\(context.source)",
                         "application_name:\(context.applicationName)",
-                        "application_bundle_identifier:\(context.applicationBundleIdentifier)",
                     ]
                 ),
                 point: Serie.Point(
@@ -46,7 +45,7 @@ internal struct Meter {
                 )
             )
 
-            writer.write(value: request)
+            writer.write(value: submission)
         }
     }
 }
