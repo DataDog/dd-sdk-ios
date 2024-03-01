@@ -172,7 +172,9 @@ extension FrameInfoProvider {
 extension CADisplayLink: FrameInfoProvider {
     var maximumDeviceFramesPerSecond: Int {
         #if swift(>=5.9) && os(visionOS)
-        120
+        // Hardcoded as for now there's no good way of extracting maximum FPS on VisionOS
+        // https://developer.apple.com/documentation/visionos/analyzing-the-performance-of-your-visionos-app/
+        90
         #else
         UIScreen.main.maximumFramesPerSecond
         #endif
