@@ -68,7 +68,7 @@ extension DeviceInfo {
         if let archInfo = NXGetLocalArchInfo()?.pointee {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
-        Host.current().name
+
 
         let build = try? Sysctl.osVersion()
 
