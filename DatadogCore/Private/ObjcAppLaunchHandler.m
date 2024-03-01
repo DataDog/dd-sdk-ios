@@ -4,6 +4,7 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
+#if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
 #import <pthread.h>
 #import <sys/sysctl.h>
@@ -128,3 +129,4 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval) {
     *timeInterval = processStartTime - kCFAbsoluteTimeIntervalSince1970;
     return res;
 }
+#endif

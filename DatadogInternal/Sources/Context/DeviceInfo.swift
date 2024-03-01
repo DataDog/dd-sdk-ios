@@ -49,10 +49,10 @@ public struct DeviceInfo: Codable, Equatable, PassthroughAnyCodable {
     }
 }
 
-#if canImport(UIKit)
-
-import UIKit
 import MachO
+
+#if canImport(UIKit)
+import UIKit
 
 extension DeviceInfo {
     /// Creates device info based on UIKit description.
@@ -68,6 +68,7 @@ extension DeviceInfo {
         if let archInfo = NXGetLocalArchInfo()?.pointee {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
+        Host.current().name
 
         let build = try? Sysctl.osVersion()
 
@@ -94,6 +95,36 @@ extension DeviceInfo {
             architecture: architecture
         )
         #endif
+    }
+}
+#else
+/// Creates device info based on Host description.
+///
+/// - Parameters:
+///   - processInfo: The current process information.
+///   - device: The `Host` description.
+extension DeviceInfo {
+    public init(
+        processInfo: ProcessInfo = .processInfo
+    ) {
+        var architecture = "unknown"
+        if let archInfo = NXGetLocalArchInfo()?.pointee {
+            architecture = String(utf8String: archInfo.name) ?? "unknown"
+        }
+        Host.current().name
+
+        let build = (try? Sysctl.osVersion()) ?? ""
+        let model = (try? Sysctl.model()) ?? ""
+        let systemVersion = processInfo.operatingSystemVersion
+
+        self.init(
+            name: model.components(separatedBy: CharacterSet.letters.inverted).joined(),
+            model: model,
+            osName: "macOS",
+            osVersion: "\(systemVersion.majorVersion).\(systemVersion.minorVersion).\(systemVersion.patchVersion)",
+            osBuildNumber: build,
+            architecture: architecture
+        )
     }
 }
 #endif

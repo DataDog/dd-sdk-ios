@@ -21,7 +21,7 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 
     /// Returns the delegate instance the task is reporting to.
     var delegate: URLSessionDelegate? {
-        if #available(iOS 15.0, tvOS 15.0, *), let delegate = type.delegate {
+        if #available(iOS 15.0, tvOS 15.0, macOS 12.0, *), let delegate = type.delegate {
             return delegate
         }
 
