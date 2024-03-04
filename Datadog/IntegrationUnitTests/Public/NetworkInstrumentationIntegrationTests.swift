@@ -199,7 +199,6 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
     class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {
         func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
-            print(data)
         }
     }
 }
