@@ -121,6 +121,8 @@ public struct LogEvent: Encodable {
     public let applicationBuildNumber: String
     /// The id of the current build (used for some cross platform frameworks)
     public let buildId: String?
+    /// The variant of the current build (used in some cross platform frameworks)
+    public let variant: String?
     /// Datadog specific attributes
     public let dd: Dd
     /// The associated log error
@@ -294,6 +296,9 @@ internal struct LogEventEncoder {
         var tags = log.tags ?? []
         tags.append("env:\(log.environment)") // include default env tag
         tags.append("version:\(log.applicationVersion)") // include default version tag
+        if let variant = log.variant {
+            tags.append("variant:\(variant)")
+        }
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }

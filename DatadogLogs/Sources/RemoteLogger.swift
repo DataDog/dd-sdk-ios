@@ -187,12 +187,16 @@ internal final class RemoteLogger: LoggerProtocol {
 extension RemoteLogger: InternalLoggerProtocol {
     func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
         var ddError: DDError?
+        // Find and remove source_type if it's in the attributes
+        var logAttributes = attributes
+        let sourceType = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String
+
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
             // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
             // for any values that are empty.
-            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "", sourceType: sourceType ?? "ios")
         }
 
-        internalLog(level: level, message: message, error: ddError, attributes: attributes)
+        internalLog(level: level, message: message, error: ddError, attributes: logAttributes)
     }
 }
