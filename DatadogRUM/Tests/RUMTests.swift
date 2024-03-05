@@ -163,7 +163,7 @@ class RUMTests: XCTestCase {
         RUM.enable(with: config, in: core)
 
         // Then
-        XCTAssertEqual(dd.logger.errorLog?.message, "`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. App Hangs monitoring will be disabled.")
+        XCTAssertEqual(dd.logger.warnLog?.message, "`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. A value of 0.1s will be used.")
     }
 
     func testWhenEnabledWithURLSessionTracking() throws {

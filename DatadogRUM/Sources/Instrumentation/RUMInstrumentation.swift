@@ -94,18 +94,19 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             }
         }
 
-        if let appHangThreshold = appHangThreshold {
-            if appHangThreshold >= Constants.minAppHangThreshold {
-                appHangs = AppHangsObserver(
-                    appHangThreshold: appHangThreshold,
-                    observedQueue: mainQueue,
-                    backtraceReporter: backtraceReporter,
-                    dateProvider: dateProvider,
-                    telemetry: telemetry
-                )
-            } else {
-                DD.logger.error("`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. App Hangs monitoring will be disabled.")
+        if var appHangThreshold = appHangThreshold {
+            if appHangThreshold < Constants.minAppHangThreshold {
+                appHangThreshold = Constants.minAppHangThreshold
+                DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")
             }
+
+            appHangs = AppHangsObserver(
+                appHangThreshold: appHangThreshold,
+                observedQueue: mainQueue,
+                backtraceReporter: backtraceReporter,
+                dateProvider: dateProvider,
+                telemetry: telemetry
+            )
         }
 
         self.viewsHandler = viewsHandler
