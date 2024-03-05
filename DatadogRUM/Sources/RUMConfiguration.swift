@@ -127,6 +127,8 @@ extension RUM {
         ///         The SDK implements a secondary thread for monitoring App Hangs. To reduce CPU utilization, it tracks hangs with a tolerance of 2.5%, meaning that
         ///         some hangs lasting very close to this threshold may not be reported.
         ///
+        /// - Note: App Hangs monitoring requires Datadog Crash Reporting to be enabled. Otherwise stack trace will be not reported in App Hang errors.
+        ///
         /// - Default: `nil` (hangs monitoring disabled).
         public var appHangThreshold: TimeInterval?
 
