@@ -160,95 +160,106 @@ extension DatadogMetricSubscriber {
                 "application_name:\(context.applicationName)",
             ]
 
-            let enumarator = histogram.bucketEnumerator
-            while let bucket = enumarator.nextObject() as? MXHistogramBucket<UnitType> {
-                let min = Serie(
-                    type: .gauge,
-                    interval: nil,
-                    metric: "\(metric).min",
-                    unit: bucket.bucketStart.unit.symbol,
-                    points: [
-                        Serie.Point(
-                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-                            value: bucket.bucketStart.value
+            let measures: MXHistogramMeasures<UnitType>? = histogram
+                .bucketEnumerator
+                .compactMap { $0 as? MXHistogramBucket<UnitType> }
+                .reduce(nil) { measures, bucket in
+                    guard let measures = measures else {
+                        return MXHistogramMeasures(
+                            min: bucket.bucketStart,
+                            max: bucket.bucketEnd,
+                            total: bucket.bucketEnd * Double(bucket.bucketCount),
+                            count: bucket.bucketCount
                         )
-                    ],
-                    resources: [],
-                    tags: tags
-                )
+                    }
 
-                let max = Serie(
-                    type: .gauge,
-                    interval: nil,
-                    metric: "\(metric).max",
-                    unit: bucket.bucketEnd.unit.symbol,
-                    points: [
-                        Serie.Point(
-                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-                            value: bucket.bucketEnd.value
-                        )
-                    ],
-                    resources: [],
-                    tags: tags
-                )
+                    return MXHistogramMeasures(
+                        min: Swift.min(measures.min, bucket.bucketStart),
+                        max: Swift.max(measures.max, bucket.bucketEnd),
+                        total: measures.total + (bucket.bucketEnd * Double(bucket.bucketCount)),
+                        count: measures.count + bucket.bucketCount
+                    )
+                }
 
-                let bucketCount = Double(bucket.bucketCount)
-                let count = Serie(
-                    type: .count,
-                    interval: nil,
-                    metric: "\(metric).count",
-                    unit: nil,
-                    points: [
-                        Serie.Point(
-                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-                            value: bucketCount
-                        )
-                    ],
-                    resources: [],
-                    tags: tags
-                )
-
-//                // Just a guess, not a good one
-//                let bucketAverage = (bucket.bucketEnd + bucket.bucketStart) / 2
-//                let avg = Serie(
-//                    type: .gauge,
-//                    interval: nil,
-//                    metric: "\(metric).avg",
-//                    unit: bucketAverage.unit.symbol,
-//                    points: [
-//                        Serie.Point(
-//                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-//                            value: bucketAverage.value
-//                        )
-//                    ],
-//                    resources: [],
-//                    tags: tags
-//                )
-//
-//                let bucketSum = bucketAverage * bucketCount
-//                let sum = Serie(
-//                    type: .gauge,
-//                    interval: nil,
-//                    metric: "\(metric).sum",
-//                    unit: bucketSum.unit.symbol,
-//                    points: [
-//                        Serie.Point(
-//                            timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
-//                            value: bucketSum.value
-//                        )
-//                    ],
-//                    resources: [],
-//                    tags: tags
-//                )
-
-                writer.write(value: MetricMessage.serie(min))
-                writer.write(value: MetricMessage.serie(max))
-                writer.write(value: MetricMessage.serie(count))
-//                writer.write(value: MetricMessage.serie(avg))
-//                writer.write(value: MetricMessage.serie(sum))
+            guard let measures = measures else {
+                return
             }
+
+            let min = Serie(
+                type: .gauge,
+                interval: nil,
+                metric: "\(metric).min",
+                unit: measures.min.unit.symbol,
+                points: [
+                    Serie.Point(
+                        timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                        value: measures.min.value
+                    )
+                ],
+                resources: [],
+                tags: tags
+            )
+
+            let max = Serie(
+                type: .gauge,
+                interval: nil,
+                metric: "\(metric).max",
+                unit: measures.max.unit.symbol,
+                points: [
+                    Serie.Point(
+                        timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                        value: measures.max.value
+                    )
+                ],
+                resources: [],
+                tags: tags
+            )
+
+            let count = Serie(
+                type: .count,
+                interval: nil,
+                metric: "\(metric).count",
+                unit: nil,
+                points: [
+                    Serie.Point(
+                        timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                        value: Double(measures.count)
+                    )
+                ],
+                resources: [],
+                tags: tags
+            )
+
+            // Just a guess, not a good one
+            let average = measures.total / Double(measures.count)
+            let avg = Serie(
+                type: .gauge,
+                interval: nil,
+                metric: "\(metric).avg",
+                unit: average.unit.symbol,
+                points: [
+                    Serie.Point(
+                        timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+                        value: average.value
+                    )
+                ],
+                resources: [],
+                tags: tags
+            )
+
+            writer.write(value: MetricMessage.serie(min))
+            writer.write(value: MetricMessage.serie(max))
+            writer.write(value: MetricMessage.serie(count))
+            writer.write(value: MetricMessage.serie(avg))
         }
     }
+}
+
+internal struct MXHistogramMeasures<UnitType> where UnitType: Unit {
+    let min: Measurement<UnitType>
+    let max: Measurement<UnitType>
+    let total: Measurement<UnitType>
+    let count: Int
 }
 
 #endif

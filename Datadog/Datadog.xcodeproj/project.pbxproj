@@ -1134,6 +1134,8 @@
 		D26F8D1E2B8F3F31004AB3A7 /* Mutex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F8D1C2B8F3F31004AB3A7 /* Mutex.swift */; };
 		D26F8D212B8F43A2004AB3A7 /* DatadogMetricManagerSubscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F8D202B8F43A2004AB3A7 /* DatadogMetricManagerSubscriber.swift */; };
 		D26F8D232B8F92F8004AB3A7 /* Aggregator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F8D222B8F92F8004AB3A7 /* Aggregator.swift */; };
+		D26F8D252B90DC56004AB3A7 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F8D242B90DC56004AB3A7 /* Recorder.swift */; };
+		D26F8D272B91CF1D004AB3A7 /* MXMetricPayloadMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D26F8D262B91CF1D004AB3A7 /* MXMetricPayloadMock.swift */; };
 		D270CDDD2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D270CDDC2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift */; };
 		D270CDDE2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift in Sources */ = {isa = PBXBuildFile; fileRef = D270CDDC2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift */; };
 		D270CDE02B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */; };
@@ -2970,6 +2972,8 @@
 		D26F8D1C2B8F3F31004AB3A7 /* Mutex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mutex.swift; sourceTree = "<group>"; };
 		D26F8D202B8F43A2004AB3A7 /* DatadogMetricManagerSubscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogMetricManagerSubscriber.swift; sourceTree = "<group>"; };
 		D26F8D222B8F92F8004AB3A7 /* Aggregator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aggregator.swift; sourceTree = "<group>"; };
+		D26F8D242B90DC56004AB3A7 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
+		D26F8D262B91CF1D004AB3A7 /* MXMetricPayloadMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MXMetricPayloadMock.swift; sourceTree = "<group>"; };
 		D270CDDC2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzler.swift; sourceTree = "<group>"; };
 		D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
 		D2777D9C29F6A75800FFBB40 /* TelemetryReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiverTests.swift; sourceTree = "<group>"; };
@@ -6216,6 +6220,7 @@
 				D26F8D0D2B8E412F004AB3A7 /* Gauge.swift */,
 				D26F8D092B8D0F76004AB3A7 /* Metric.swift */,
 				D26F8D222B8F92F8004AB3A7 /* Aggregator.swift */,
+				D26F8D242B90DC56004AB3A7 /* Recorder.swift */,
 				D26F8D082B8CE77E004AB3A7 /* OpenTelemetry */,
 				D26F8D1F2B8F437B004AB3A7 /* MetricKit */,
 			);
@@ -6246,6 +6251,7 @@
 			isa = PBXGroup;
 			children = (
 				D26F8D202B8F43A2004AB3A7 /* DatadogMetricManagerSubscriber.swift */,
+				D26F8D262B91CF1D004AB3A7 /* MXMetricPayloadMock.swift */,
 			);
 			path = MetricKit;
 			sourceTree = "<group>";
@@ -9200,6 +9206,8 @@
 				D26F8D192B8F3EF0004AB3A7 /* DatadogMeasureMetric.swift in Sources */,
 				D26F8D0A2B8D0F76004AB3A7 /* Metric.swift in Sources */,
 				D26F8D152B8E5F9D004AB3A7 /* Meter.swift in Sources */,
+				D26F8D272B91CF1D004AB3A7 /* MXMetricPayloadMock.swift in Sources */,
+				D26F8D252B90DC56004AB3A7 /* Recorder.swift in Sources */,
 				D26F8D012B8CA47D004AB3A7 /* MetricFeature.swift in Sources */,
 				D26F8D1A2B8F3EF0004AB3A7 /* DatadogCounterMetric.swift in Sources */,
 				D26F8CF82B8CA0DF004AB3A7 /* Metrics.swift in Sources */,

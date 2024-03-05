@@ -35,6 +35,7 @@ public enum Metrics {
     public static func enable(with configuration: Configuration, in core: DatadogCoreProtocol = CoreRegistry.default) {
         let feature = MetricFeature(
             apiKey: configuration.apiKey,
+            recorder: Recorder(core: core),
             subscriber: DatadogMetricSubscriber(core: core),
             customIntakeURL: configuration.customEndpoint,
             telemetry: core.telemetry
@@ -47,3 +48,14 @@ public enum Metrics {
        }
     }
 }
+
+#if canImport(MetricKit)
+import MetricKit
+
+extension Metrics {
+    static public func send(_ payloads: [MXMetricPayload], to core: DatadogCoreProtocol = CoreRegistry.default) {
+        core.get(feature: MetricFeature.self)?.subscriber.didReceive(payloads)
+    }
+}
+
+#endif

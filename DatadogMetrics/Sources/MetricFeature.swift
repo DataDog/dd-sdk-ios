@@ -12,12 +12,14 @@ internal struct MetricFeature: DatadogRemoteFeature {
 
     let requestBuilder: DatadogInternal.FeatureRequestBuilder
     let messageReceiver: DatadogInternal.FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let recorder: Recorder
     let subscriber: DatadogMetricSubscriber
 
     var performanceOverride: PerformancePresetOverride? { nil }
 
     init(
         apiKey: String,
+        recorder: Recorder,
         subscriber: DatadogMetricSubscriber,
         customIntakeURL: URL? = nil,
         telemetry: Telemetry = NOPTelemetry()
@@ -28,15 +30,18 @@ internal struct MetricFeature: DatadogRemoteFeature {
                 customIntakeURL: customIntakeURL,
                 telemetry: telemetry
             ),
+            recorder: recorder,
             subscriber: subscriber
         )
     }
 
     init(
         requestBuilder: FeatureRequestBuilder,
+        recorder: Recorder,
         subscriber: DatadogMetricSubscriber
     ) {
         self.requestBuilder = requestBuilder
+        self.recorder = recorder
         self.subscriber = subscriber
     }
 }

@@ -22,30 +22,46 @@ internal struct Meter {
     /// - Parameter value: The metric value
     func record(_ value: Double) {
         let timestamp = Date()
-        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
-            let submission = Submission(
+        core?.get(feature: MetricFeature.self)?.recorder.submit(
+            Submission(
                 metadata: Submission.Metadata(
-                    name: "\(context.source).\(context.applicationBundleIdentifier).\(self.name)",
+                    name: self.name,
                     type: self.type,
                     interval: self.interval,
                     unit: self.unit,
                     resources: self.resources,
-                    tags: self.tags + [
-                        "service:\(context.service)",
-                        "env:\(context.env)",
-                        "version:\(context.version)",
-                        "build_number:\(context.buildNumber)",
-                        "source:\(context.source)",
-                        "application_name:\(context.applicationName)",
-                    ]
+                    tags: self.tags
                 ),
                 point: Serie.Point(
                     timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
                     value: value
                 )
             )
-
-            writer.write(value: MetricMessage.submission(submission))
-        }
+        )
+//        core?.scope(for: MetricFeature.name)?.eventWriteContext { context, writer in
+//            let submission = Submission(
+//                metadata: Submission.Metadata(
+//                    name: "\(context.source).\(context.applicationBundleIdentifier).\(self.name)",
+//                    type: self.type,
+//                    interval: self.interval,
+//                    unit: self.unit,
+//                    resources: self.resources,
+//                    tags: self.tags + [
+//                        "service:\(context.service)",
+//                        "env:\(context.env)",
+//                        "version:\(context.version)",
+//                        "build_number:\(context.buildNumber)",
+//                        "source:\(context.source)",
+//                        "application_name:\(context.applicationName)",
+//                    ]
+//                ),
+//                point: Serie.Point(
+//                    timestamp: Int64(withNoOverflow: timestamp.timeIntervalSince1970),
+//                    value: value
+//                )
+//            )
+//
+//            writer.write(value: MetricMessage.submission(submission))
+//        }
     }
 }
