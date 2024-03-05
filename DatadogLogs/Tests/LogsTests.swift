@@ -80,4 +80,37 @@ class LogsTests: XCTestCase {
         // Then
         XCTAssertTrue(config._internalEventMapper is LogEventMapperMock)
     }
+
+    func testLogsAddAttributeForwardedToFeature() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let config = Logs.Configuration()
+        Logs.enable(with: config, in: core)
+
+        // When
+        let attributeKey: String = .mockRandom()
+        let attributeValue: String = .mockRandom()
+        Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
+
+        // Then
+        let feature = try XCTUnwrap(core.get(feature: LogsFeature.self))
+        XCTAssertEqual(feature.getAttributes()[attributeKey] as? String, attributeValue)
+    }
+
+    func testLogsRemoveAttributeForwardedToFeature() throws {
+        // Given
+        let core = FeatureRegistrationCoreMock()
+        let config = Logs.Configuration()
+        Logs.enable(with: config, in: core)
+        let attributeKey: String = .mockRandom()
+        let attributeValue: String = .mockRandom()
+        Logs.addAttribute(forKey: attributeKey, value: attributeValue, in: core)
+
+        // When
+        Logs.removeAttribute(forKey: attributeKey, in: core)
+
+        // Then
+        let feature = try XCTUnwrap(core.get(feature: LogsFeature.self))
+        XCTAssertNil(feature.getAttributes()[attributeKey])
+    }
 }

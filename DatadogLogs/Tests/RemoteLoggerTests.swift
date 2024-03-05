@@ -14,9 +14,17 @@ private class ErrorMessageReceiverMock: FeatureMessageReceiver {
     struct ErrorMessage: Decodable {
         /// The Log error message
         let message: String
+        /// The Log error type
+        let type: String?
+        /// The Log error stack
+        let stack: String?
+        /// The Log error stack
+        let source: String
+        /// The Log attributes
+        let attributes: [String: AnyCodable]
     }
 
-    var errors: [String] = []
+    var errors: [ErrorMessage] = []
 
     /// Adds RUM Error with given message and stack to current RUM View.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -26,7 +34,7 @@ private class ErrorMessageReceiverMock: FeatureMessageReceiver {
             return false
         }
 
-        self.errors.append(error.message)
+        self.errors.append(error)
 
         return true
     }
@@ -57,7 +65,7 @@ class RemoteLoggerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertEqual(messageReceiver.errors.count, 1)
-        XCTAssertEqual(messageReceiver.errors.first, "Error message")
+        XCTAssertEqual(messageReceiver.errors.first?.message, "Error message")
     }
 
     func testItDoesNotSendErrorAlongWithCrossPlatformCrashLog() throws {
@@ -84,6 +92,142 @@ class RemoteLoggerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertEqual(messageReceiver.errors.count, 0)
+    }
+
+    // MARK: - Attributes
+
+    func testWhenFeatureHasAttributes_itSendsAttributesOnLog() throws {
+        // Given
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let attributeKey = String.mockRandom()
+        let attributeValue = String.mockRandom()
+        logsFeature.addAttribute(forKey: attributeKey, value: attributeValue)
+
+        logger.info("Information message")
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, attributeValue)
+    }
+
+    func testWhenFeatureHasAttributes_andLoggerHasAttributes_itSendsLoggerAttributesOnLog() throws {
+        // Given
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let attributeKey = String.mockRandom()
+        let featureAttributeValue = String.mockRandom()
+        let loggerAttributeValue = String.mockRandom()
+        logsFeature.addAttribute(forKey: attributeKey, value: featureAttributeValue)
+        logger.addAttribute(forKey: attributeKey, value: loggerAttributeValue)
+
+        logger.info("Information message")
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, loggerAttributeValue)
+    }
+
+    func testWhenFeatureHasAttributes_andLogCallHasAttributes_itSendsLogCallAttributesOnLog() throws {
+        // Given
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let attributeKey = String.mockRandom()
+        let featureAttributeValue = String.mockRandom()
+        logsFeature.addAttribute(forKey: attributeKey, value: featureAttributeValue)
+
+        let logCallValue = String.mockRandom()
+        logger.info("Information message", attributes: [attributeKey: logCallValue])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertEqual(log.attributes.userAttributes[attributeKey] as? String, logCallValue)
+    }
+
+    func testItSendsGlobalAttributesErrorAlongWithErrorLog() throws {
+        // Given
+        let messageReceiver = ErrorMessageReceiverMock()
+
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send error"),
+            messageReceiver: messageReceiver
+        )
+
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let attributeKey = String.mockRandom()
+        let attributeValue = String.mockRandom()
+        logsFeature.addAttribute(forKey: attributeKey, value: attributeValue)
+
+        // When
+        logger.error("Error message")
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        XCTAssertEqual(messageReceiver.errors.count, 1)
+        let error = try XCTUnwrap(messageReceiver.errors.first)
+        XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
     }
 
     // MARK: - RUM Integration
