@@ -26,12 +26,12 @@ internal class RecordsBuilder {
     func createMetaRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRMetaRecord(
             data: .init(
-                height: Int64(withNoOverflow: snapshot.viewportSize.height),
+                height: Int(withNoOverflow: snapshot.viewportSize.height),
                 href: nil,
-                width: Int64(withNoOverflow: snapshot.viewportSize.width)
+                width: Int(withNoOverflow: snapshot.viewportSize.width)
             ),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
         )
         return .metaRecord(value: record)
     }
@@ -42,7 +42,7 @@ internal class RecordsBuilder {
         let record = SRFocusRecord(
             data: SRFocusRecord.Data(hasFocus: true),
             slotId: nil,
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
         )
         return .focusRecord(value: record)
     }
@@ -53,7 +53,7 @@ internal class RecordsBuilder {
     func createFullSnapshotRecord(from snapshot: ViewTreeSnapshot, wireframes: [SRWireframe]) -> SRRecord {
         let record = SRFullSnapshotRecord(
             data: .init(wireframes: wireframes),
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
         )
 
         return .fullSnapshotRecord(value: record)
@@ -95,7 +95,7 @@ internal class RecordsBuilder {
                     }
                 )
             ),
-            timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+            timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
         )
 
         return .incrementalSnapshotRecord(value: record)
@@ -119,7 +119,7 @@ internal class RecordsBuilder {
                         y: round(touch.position.y)
                     )
                 ),
-                timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+                timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
             )
             return .incrementalSnapshotRecord(value: record)
         }
@@ -136,11 +136,11 @@ internal class RecordsBuilder {
             value: SRIncrementalSnapshotRecord(
                 data: .viewportResizeData(
                     value: .init(
-                        height: Int64(withNoOverflow: snapshot.viewportSize.height),
-                        width: Int64(withNoOverflow: snapshot.viewportSize.width)
+                        height: Int(withNoOverflow: snapshot.viewportSize.height),
+                        width: Int(withNoOverflow: snapshot.viewportSize.width)
                     )
                 ),
-                timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
+                timestamp: Int(snapshot.date.timeIntervalSince1970.toMilliseconds)
             )
         )
     }

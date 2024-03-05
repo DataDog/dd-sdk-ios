@@ -18,19 +18,19 @@ public struct SRSegment: SRDataModel {
     public let application: Application
 
     /// The end UTC timestamp in milliseconds corresponding to the last record in the Segment data. Each timestamp is computed as the UTC interval since 00:00:00.000 01.01.1970.
-    public let end: Int64
+    public let end: Int
 
     /// Whether this Segment contains a full snapshot record or not.
     public let hasFullSnapshot: Bool?
 
     /// The index of this Segment in the segments list that was recorded for this view ID. Starts from 0.
-    public let indexInView: Int64?
+    public let indexInView: Int?
 
     /// The records contained by this Segment.
     public let records: [SRRecord]
 
     /// The number of records in this Segment.
-    public let recordsCount: Int64
+    public let recordsCount: Int
 
     /// Session properties
     public let session: Session
@@ -39,7 +39,7 @@ public struct SRSegment: SRDataModel {
     public let source: Source
 
     /// The start UTC timestamp in milliseconds corresponding to the first record in the Segment data. Each timestamp is computed as the UTC interval since 00:00:00.000 01.01.1970.
-    public let start: Int64
+    public let start: Int
 
     /// View properties
     public let view: View
@@ -107,7 +107,7 @@ public struct SRShapeBorder: Codable, Hashable {
     public let color: String
 
     /// The width of the border in pixels.
-    public let width: Int64
+    public let width: Int
 
     enum CodingKeys: String, CodingKey {
         case color = "color"
@@ -119,16 +119,16 @@ public struct SRShapeBorder: Codable, Hashable {
 @_spi(Internal)
 public struct SRContentClip: Codable, Hashable {
     /// The amount of space in pixels that needs to be clipped (masked) at the bottom of the wireframe.
-    public let bottom: Int64?
+    public let bottom: Int?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the left of the wireframe.
-    public let left: Int64?
+    public let left: Int?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the right of the wireframe.
-    public let right: Int64?
+    public let right: Int?
 
     /// The amount of space in pixels that needs to be clipped (masked) at the top of the wireframe.
-    public let top: Int64?
+    public let top: Int?
 
     enum CodingKeys: String, CodingKey {
         case bottom = "bottom"
@@ -167,10 +167,10 @@ public struct SRShapeWireframe: Codable, Hashable {
     public let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    public let height: Int64
+    public let height: Int
 
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    public let id: Int64
+    public let id: Int
 
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
@@ -179,13 +179,13 @@ public struct SRShapeWireframe: Codable, Hashable {
     public let type: String = "shape"
 
     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    public let width: Int64
+    public let width: Int
 
     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let x: Int64
+    public let x: Int
 
     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let y: Int64
+    public let y: Int
 
     enum CodingKeys: String, CodingKey {
         case border = "border"
@@ -245,16 +245,16 @@ public struct SRTextPosition: Codable, Hashable {
     @_spi(Internal)
     public struct Padding: Codable, Hashable {
         /// The bottom padding in pixels. The default value is 0.
-        public let bottom: Int64?
+        public let bottom: Int?
 
         /// The left padding in pixels. The default value is 0.
-        public let left: Int64?
+        public let left: Int?
 
         /// The right padding in pixels. The default value is 0.
-        public let right: Int64?
+        public let right: Int?
 
         /// The top padding in pixels. The default value is 0.
-        public let top: Int64?
+        public let top: Int?
 
         enum CodingKeys: String, CodingKey {
             case bottom = "bottom"
@@ -275,7 +275,7 @@ public struct SRTextStyle: Codable, Hashable {
     public let family: String
 
     /// The font size in pixels.
-    public let size: Int64
+    public let size: Int
 
     enum CodingKeys: String, CodingKey {
         case color = "color"
@@ -294,10 +294,10 @@ public struct SRTextWireframe: Codable, Hashable {
     public let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    public let height: Int64
+    public let height: Int
 
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    public let id: Int64
+    public let id: Int
 
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
@@ -315,13 +315,13 @@ public struct SRTextWireframe: Codable, Hashable {
     public let type: String = "text"
 
     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    public let width: Int64
+    public let width: Int
 
     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let x: Int64
+    public let x: Int
 
     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let y: Int64
+    public let y: Int
 
     enum CodingKeys: String, CodingKey {
         case border = "border"
@@ -352,10 +352,10 @@ public struct SRImageWireframe: Codable, Hashable {
     public let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    public let height: Int64
+    public let height: Int
 
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    public let id: Int64
+    public let id: Int
 
     /// Flag describing an image wireframe that should render an empty state placeholder
     public var isEmpty: Bool?
@@ -373,13 +373,13 @@ public struct SRImageWireframe: Codable, Hashable {
     public let type: String = "image"
 
     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    public let width: Int64
+    public let width: Int
 
     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let x: Int64
+    public let x: Int
 
     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let y: Int64
+    public let y: Int
 
     enum CodingKeys: String, CodingKey {
         case base64 = "base64"
@@ -405,10 +405,10 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     public let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    public let height: Int64
+    public let height: Int
 
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    public let id: Int64
+    public let id: Int
 
     /// Label of the placeholder
     public var label: String?
@@ -417,13 +417,13 @@ public struct SRPlaceholderWireframe: Codable, Hashable {
     public let type: String = "placeholder"
 
     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    public let width: Int64
+    public let width: Int
 
     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let x: Int64
+    public let x: Int
 
     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let y: Int64
+    public let y: Int
 
     enum CodingKeys: String, CodingKey {
         case clip = "clip"
@@ -447,10 +447,10 @@ public struct SRWebviewWireframe: Codable, Hashable {
     public let clip: SRContentClip?
 
     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-    public let height: Int64
+    public let height: Int
 
     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-    public let id: Int64
+    public let id: Int
 
     /// The style of this wireframe.
     public let shapeStyle: SRShapeStyle?
@@ -462,13 +462,13 @@ public struct SRWebviewWireframe: Codable, Hashable {
     public let type: String = "webview"
 
     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-    public let width: Int64
+    public let width: Int
 
     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let x: Int64
+    public let x: Int
 
     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-    public let y: Int64
+    public let y: Int
 
     enum CodingKeys: String, CodingKey {
         case border = "border"
@@ -554,10 +554,10 @@ public struct SRFullSnapshotRecord: Codable {
     public let data: Data
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 10
+    public let type: Int = 10
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
@@ -583,10 +583,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
     public let data: Data
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 11
+    public let type: Int = 11
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
@@ -660,7 +660,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
             public let removes: [Removes]
 
             /// The source of this type of incremental data.
-            public let source: Int64 = 0
+            public let source: Int = 0
 
             /// Contains the updated wireframes mutations.
             public let updates: [Updates]
@@ -675,7 +675,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
             @_spi(Internal)
             public struct Adds: Codable {
                 /// The previous wireframe id next or after which this new wireframe is drawn or attached to, respectively.
-                public let previousId: Int64?
+                public let previousId: Int?
 
                 /// Schema of a Wireframe type.
                 public let wireframe: SRWireframe
@@ -689,7 +689,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
             @_spi(Internal)
             public struct Removes: Codable {
                 /// The id of the wireframe that needs to be removed.
-                public let id: Int64
+                public let id: Int
 
                 enum CodingKeys: String, CodingKey {
                     case id = "id"
@@ -769,10 +769,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-                    public let height: Int64?
+                    public let height: Int?
 
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-                    public let id: Int64
+                    public let id: Int
 
                     /// The style of this wireframe.
                     public let shapeStyle: SRShapeStyle?
@@ -790,13 +790,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let type: String = "text"
 
                     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-                    public let width: Int64?
+                    public let width: Int?
 
                     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let x: Int64?
+                    public let x: Int?
 
                     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let y: Int64?
+                    public let y: Int?
 
                     enum CodingKeys: String, CodingKey {
                         case border = "border"
@@ -824,10 +824,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-                    public let height: Int64?
+                    public let height: Int?
 
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-                    public let id: Int64
+                    public let id: Int
 
                     /// The style of this wireframe.
                     public let shapeStyle: SRShapeStyle?
@@ -836,13 +836,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let type: String = "shape"
 
                     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-                    public let width: Int64?
+                    public let width: Int?
 
                     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let x: Int64?
+                    public let x: Int?
 
                     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let y: Int64?
+                    public let y: Int?
 
                     enum CodingKeys: String, CodingKey {
                         case border = "border"
@@ -870,10 +870,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-                    public let height: Int64?
+                    public let height: Int?
 
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-                    public let id: Int64
+                    public let id: Int
 
                     /// Flag describing an image wireframe that should render an empty state placeholder
                     public var isEmpty: Bool?
@@ -891,13 +891,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let type: String = "image"
 
                     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-                    public let width: Int64?
+                    public let width: Int?
 
                     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let x: Int64?
+                    public let x: Int?
 
                     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let y: Int64?
+                    public let y: Int?
 
                     enum CodingKeys: String, CodingKey {
                         case base64 = "base64"
@@ -923,10 +923,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-                    public let height: Int64?
+                    public let height: Int?
 
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-                    public let id: Int64
+                    public let id: Int
 
                     /// Label of the placeholder
                     public var label: String?
@@ -935,13 +935,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let type: String = "placeholder"
 
                     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-                    public let width: Int64?
+                    public let width: Int?
 
                     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let x: Int64?
+                    public let x: Int?
 
                     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let y: Int64?
+                    public let y: Int?
 
                     enum CodingKeys: String, CodingKey {
                         case clip = "clip"
@@ -965,10 +965,10 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let clip: SRContentClip?
 
                     /// The height in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height of all UI elements is divided by 2 to get a normalized height.
-                    public let height: Int64?
+                    public let height: Int?
 
                     /// Defines the unique ID of the wireframe. This is persistent throughout the view lifetime.
-                    public let id: Int64
+                    public let id: Int
 
                     /// The style of this wireframe.
                     public let shapeStyle: SRShapeStyle?
@@ -980,13 +980,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
                     public let type: String = "webview"
 
                     /// The width in pixels of the UI element, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width of all UI elements is divided by 2 to get a normalized width.
-                    public let width: Int64?
+                    public let width: Int?
 
                     /// The position in pixels on X axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let x: Int64?
+                    public let x: Int?
 
                     /// The position in pixels on Y axis of the UI element in absolute coordinates. The anchor point is always the top-left corner of the wireframe.
-                    public let y: Int64?
+                    public let y: Int?
 
                     enum CodingKeys: String, CodingKey {
                         case border = "border"
@@ -1011,7 +1011,7 @@ public struct SRIncrementalSnapshotRecord: Codable {
             public let positions: [Positions]?
 
             /// The source of this type of incremental data.
-            public let source: Int64 = 2
+            public let source: Int = 2
 
             enum CodingKeys: String, CodingKey {
                 case positions = "positions"
@@ -1021,16 +1021,16 @@ public struct SRIncrementalSnapshotRecord: Codable {
             @_spi(Internal)
             public struct Positions: Codable {
                 /// The touch id of the touch event this position corresponds to. In mobile it is possible to have multiple touch events (fingers touching the screen) happening at the same time.
-                public let id: Int64
+                public let id: Int
 
                 /// The UTC timestamp in milliseconds corresponding to the moment the position change was recorded. Each timestamp is computed as the UTC interval since 00:00:00.000 01.01.1970.
-                public let timestamp: Int64
+                public let timestamp: Int
 
                 /// The x coordinate value of the position.
-                public let x: Int64
+                public let x: Int
 
                 /// The y coordinate value of the position.
-                public let y: Int64
+                public let y: Int
 
                 enum CodingKeys: String, CodingKey {
                     case id = "id"
@@ -1045,13 +1045,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
         @_spi(Internal)
         public struct ViewportResizeData: Codable {
             /// The new height of the screen in pixels, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the height is divided by 2 to get a normalized height.
-            public let height: Int64
+            public let height: Int
 
             /// The source of this type of incremental data.
-            public let source: Int64 = 4
+            public let source: Int = 4
 
             /// The new width of the screen in pixels, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the width is divided by 2 to get a normalized width.
-            public let width: Int64
+            public let width: Int
 
             enum CodingKeys: String, CodingKey {
                 case height = "height"
@@ -1067,13 +1067,13 @@ public struct SRIncrementalSnapshotRecord: Codable {
             public let pointerEventType: PointerEventType
 
             /// Id of the pointer of this PointerInteraction.
-            public let pointerId: Int64
+            public let pointerId: Int
 
             /// Schema of an PointerType
             public let pointerType: PointerType
 
             /// The source of this type of incremental data.
-            public let source: Int64 = 9
+            public let source: Int = 9
 
             /// X-axis coordinate for this PointerInteraction.
             public let x: Double
@@ -1119,10 +1119,10 @@ public struct SRMetaRecord: Codable {
     public let slotId: String?
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 4
+    public let type: Int = 4
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
@@ -1135,13 +1135,13 @@ public struct SRMetaRecord: Codable {
     @_spi(Internal)
     public struct Data: Codable {
         /// The height of the screen in pixels, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the normalized height is the current height divided by 2.
-        public let height: Int64
+        public let height: Int
 
         /// Browser-specific. URL of the view described by this record.
         public let href: String?
 
         /// The width of the screen in pixels, normalized based on the device pixels per inch density (DPI). Example: if a device has a DPI = 2, the normalized width is the current width divided by 2.
-        public let width: Int64
+        public let width: Int
 
         enum CodingKeys: String, CodingKey {
             case height = "height"
@@ -1160,10 +1160,10 @@ public struct SRFocusRecord: Codable {
     public let slotId: String?
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 6
+    public let type: Int = 6
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
@@ -1190,10 +1190,10 @@ public struct SRViewEndRecord: Codable {
     public let slotId: String?
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 7
+    public let type: Int = 7
 
     enum CodingKeys: String, CodingKey {
         case slotId = "slotId"
@@ -1211,10 +1211,10 @@ public struct SRVisualViewportRecord: Codable {
     public let slotId: String?
 
     /// Defines the UTC time in milliseconds when this Record was performed.
-    public let timestamp: Int64
+    public let timestamp: Int
 
     /// The type of this Record.
-    public let type: Int64 = 8
+    public let type: Int = 8
 
     enum CodingKeys: String, CodingKey {
         case data = "data"
@@ -1322,4 +1322,4 @@ public enum SRRecord: Codable {
     }
 }
 #endif
-// Generated from https://github.com/DataDog/rum-events-format/tree/c3747b3facf75e51cbad4c32f77ec3894f5a7249
+// Generated from https://github.com/DataDog/rum-events-format/tree/78f17559b7898dad5a6b3b4af2fe4ab4a5be6b54

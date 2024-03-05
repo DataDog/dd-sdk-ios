@@ -23,7 +23,7 @@ class SRContextPublisherTests: XCTestCase {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
 
-        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
+        let recordsCountByViewID: [String: Int] = ["view-id": 2]
         srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
 
         XCTAssertEqual(core.recordsCountByViewID, recordsCountByViewID)
@@ -32,7 +32,7 @@ class SRContextPublisherTests: XCTestCase {
     func testItDoesNotOverridePreviouslySetValue() throws {
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let recordsCountByViewID: [String: Int64] = ["view-id": 2]
+        let recordsCountByViewID: [String: Int] = ["view-id": 2]
 
         srContextPublisher.setHasReplay(true)
         srContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
@@ -52,7 +52,7 @@ class SRContextPublisherTests: XCTestCase {
 private extension PassthroughCoreMock {
     var hasReplay: Bool? { try? context.baggages["sr_has_replay"]?.decode() }
 
-    var recordsCountByViewID: [String: Int64]? {
+    var recordsCountByViewID: [String: Int]? {
         try? context.baggages["sr_records_count_by_view_id"]?.decode()
     }
 }

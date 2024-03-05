@@ -116,8 +116,8 @@ class SegmentJSONTests: XCTestCase {
 
     // MARK: - Fuzzy Helpers
 
-    private func generateSegment(maxRecordsCount: Int64 = 100, source: SRSegment.Source = .mockRandom()) -> SRSegment {
-        let recordsCount: Int64 = .mockRandom(min: 1, max: maxRecordsCount)
+    private func generateSegment(maxRecordsCount: Int = 100, source: SRSegment.Source = .mockRandom()) -> SRSegment {
+        let recordsCount: Int = .mockRandom(min: 1, max: maxRecordsCount)
         let records: [SRRecord] = (0..<recordsCount).map { _ in .mockRandom() }
         let timestamps = records.map { $0.timestamp }
         let hasFullSnapshot = records.contains {

@@ -114,10 +114,10 @@ internal struct UIImageViewWireframesBuilder: NodeWireframesBuilder {
         let bottom = max(contentFrame.height - (relativeIntersectedRect.height + top), 0)
         let right = max(contentFrame.width - (relativeIntersectedRect.width + left), 0)
         return SRContentClip(
-            bottom: Int64(withNoOverflow: bottom),
-            left: Int64(withNoOverflow: left),
-            right: Int64(withNoOverflow: right),
-            top: Int64(withNoOverflow: top)
+            bottom: Int(withNoOverflow: bottom),
+            left: Int(withNoOverflow: left),
+            right: Int(withNoOverflow: right),
+            top: Int(withNoOverflow: top)
         )
     }
 

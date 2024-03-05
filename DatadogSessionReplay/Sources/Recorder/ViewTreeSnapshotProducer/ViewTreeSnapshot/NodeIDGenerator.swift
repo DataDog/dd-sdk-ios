@@ -11,7 +11,7 @@ import UIKit
 /// Single unique ID of a view in view-tree hierarchy.
 /// It is used to mark `UIViews` which correspond to single wireframe in the replay.
 @_spi(Internal)
-public typealias NodeID = Int64
+public typealias NodeID = Int
 
 /// Manages `NodeIDs` for `UIView` instances.
 ///
@@ -27,7 +27,7 @@ public final class NodeIDGenerator {
     /// Tracks next `NodeID` to assign.
     private var currentID: NodeID
 
-    init(currentID: NodeID = 0, maxID: NodeID = Int64(Int32.max)) {
+    init(currentID: NodeID = 0, maxID: NodeID = .max) {
         self.currentID = currentID
         self.maxID = maxID
     }

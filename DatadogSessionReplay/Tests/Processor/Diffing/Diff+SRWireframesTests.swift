@@ -13,7 +13,7 @@ class DiffSRWireframes: XCTestCase {
     // MARK: - Diffable Conformance
 
     func testDiffID() {
-        let randomID: Int64 = .mockRandom()
+        let randomID: Int = .mockRandom()
         let wireframes: [SRWireframe] = [
             .shapeWireframe(value: .mockWith(id: randomID)),
             .textWireframe(value: .mockWith(id: randomID)),

@@ -57,12 +57,12 @@ public class SessionReplayWireframesBuilder {
         let wireframe = SRShapeWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            height: Int(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int(withNoOverflow: frame.width),
+            x: Int(withNoOverflow: frame.minX),
+            y: Int(withNoOverflow: frame.minY)
         )
 
         return .shapeWireframe(value: wireframe)
@@ -84,15 +84,15 @@ public class SessionReplayWireframesBuilder {
             base64: nil, // field deprecated - we should use resource endpoint instead
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            height: Int(withNoOverflow: frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: mimeType,
             resourceId: resourceId,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int(withNoOverflow: frame.width),
+            x: Int(withNoOverflow: frame.minX),
+            y: Int(withNoOverflow: frame.minY)
         )
         return .imageWireframe(value: wireframe)
     }
@@ -118,18 +118,18 @@ public class SessionReplayWireframesBuilder {
         let textPosition = SRTextPosition(
             alignment: textAlignment,
             padding: .init(
-                bottom: Int64(withNoOverflow: frame.maxY - textFrame.maxY),
-                left: Int64(withNoOverflow: textFrame.minX - frame.minX),
-                right: Int64(withNoOverflow: frame.maxX - textFrame.maxX),
-                top: Int64(withNoOverflow: textFrame.minY - frame.minY)
+                bottom: Int(withNoOverflow: frame.maxY - textFrame.maxY),
+                left: Int(withNoOverflow: textFrame.minX - frame.minX),
+                right: Int(withNoOverflow: frame.maxX - textFrame.maxX),
+                top: Int(withNoOverflow: textFrame.minY - frame.minY)
             )
         )
 
-        var fontSize = Int64(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
+        var fontSize = Int(withNoOverflow: fontOverride?.size ?? font?.pointSize ?? Fallback.fontSize)
         if text.count > 0, fontScalingEnabled {
             // Calculates the approximate font size for available text area √(frameArea / numberOfCharacters)
             let area = textFrame.width * textFrame.height
-            let calculatedFontSize = Int64(sqrt(area / CGFloat(text.count)))
+            let calculatedFontSize = Int(sqrt(area / CGFloat(text.count)))
             if calculatedFontSize < fontSize {
                 fontSize = calculatedFontSize
             }
@@ -145,40 +145,40 @@ public class SessionReplayWireframesBuilder {
         let wireframe = SRTextWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            height: Int(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             text: text,
             textPosition: textPosition,
             textStyle: textStyle,
-            width: Int64(withNoOverflow: frame.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int(withNoOverflow: frame.width),
+            x: Int(withNoOverflow: frame.minX),
+            y: Int(withNoOverflow: frame.minY)
         )
 
         return .textWireframe(value: wireframe)
     }
 
     public func createPlaceholderWireframe(
-        id: Int64,
+        id: Int,
         frame: CGRect,
         label: String,
         clip: SRContentClip? = nil
     ) -> SRWireframe {
         let wireframe = SRPlaceholderWireframe(
             clip: clip,
-            height: Int64(withNoOverflow: frame.size.height),
+            height: Int(withNoOverflow: frame.size.height),
             id: id,
             label: label,
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int(withNoOverflow: frame.size.width),
+            x: Int(withNoOverflow: frame.minX),
+            y: Int(withNoOverflow: frame.minY)
         )
         return .placeholderWireframe(value: wireframe)
     }
 
     public func createWebViewWireframe(
-        id: Int64,
+        id: Int,
         frame: CGRect,
         slotId: String,
         clip: SRContentClip? = nil,
@@ -191,13 +191,13 @@ public class SessionReplayWireframesBuilder {
         let wireframe = SRWebviewWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
-            height: Int64(withNoOverflow: frame.height),
+            height: Int(withNoOverflow: frame.height),
             id: id,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             slotId: slotId,
-            width: Int64(withNoOverflow: frame.size.width),
-            x: Int64(withNoOverflow: frame.minX),
-            y: Int64(withNoOverflow: frame.minY)
+            width: Int(withNoOverflow: frame.size.width),
+            x: Int(withNoOverflow: frame.minX),
+            y: Int(withNoOverflow: frame.minY)
         )
 
         return .webviewWireframe(value: wireframe)
@@ -212,7 +212,7 @@ public class SessionReplayWireframesBuilder {
 
         return .init(
             color: hexString(from: borderColor) ?? Fallback.color,
-            width: Int64(withNoOverflow: borderWidth.rounded(.up))
+            width: Int(withNoOverflow: borderWidth.rounded(.up))
         )
     }
 
@@ -253,10 +253,10 @@ extension SRContentClip {
     /// This method is a convenience for exposing the internal default init.
     @_spi(Internal)
     public static func create(
-        bottom: Int64?,
-        left: Int64?,
-        right: Int64?,
-        top: Int64?
+        bottom: Int?,
+        left: Int?,
+        right: Int?,
+        top: Int?
     ) -> SRContentClip {
         return SRContentClip(
             bottom: bottom,

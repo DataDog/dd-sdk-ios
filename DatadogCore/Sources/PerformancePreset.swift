@@ -28,7 +28,7 @@ internal protocol StoragePerformancePreset {
     var maxFileAgeForRead: TimeInterval { get }
     /// Maximum number of serialized objects written to a single file.
     /// If number of objects in recently used file reaches this limit, new file is created for new data.
-    var maxObjectsInFile: Int { get }
+    var maxObjectsInFile: UInt64 { get }
     /// Maximum size of serialized object data (in bytes).
     /// If serialized object data exceeds this limit, it is skipped (not written to file and not uploaded).
     var maxObjectSize: UInt64 { get }
@@ -56,7 +56,7 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
     let maxFileAgeForWrite: TimeInterval
     let minFileAgeForRead: TimeInterval
     let maxFileAgeForRead: TimeInterval
-    let maxObjectsInFile: Int
+    let maxObjectsInFile: UInt64
     let maxObjectSize: UInt64
 
     // MARK: - UploadPerformancePreset

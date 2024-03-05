@@ -227,14 +227,15 @@ class SnapshotProcessorTests: XCTestCase {
             "Segment must start with 'meta' → 'focus' → 'full snapshot' records"
         )
 
-        try enrichedRecord.records[3..<13].forEach { record in
+        let remainingRecords = enrichedRecord.records[3..<13]
+        try remainingRecords.forEach { (record: SRRecord) in
             let pointerInteractionData = try XCTUnwrap(
                 record.incrementalSnapshot?.pointerInteractionData,
                 "Touch information must be send in 'incremental snapshot'"
             )
             XCTAssertEqual(pointerInteractionData.pointerType, .touch)
-            XCTAssertGreaterThanOrEqual(record.timestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
-            XCTAssertLessThanOrEqual(record.timestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
+            XCTAssertGreaterThanOrEqual(record.timestamp, Int(earliestTouchTime.timeIntervalSince1970.toMilliseconds))
+            XCTAssertLessThanOrEqual(record.timestamp, Int(snapshotTime.timeIntervalSince1970.toMilliseconds))
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 13])
@@ -342,7 +343,7 @@ class SnapshotProcessorTests: XCTestCase {
 }
 
 fileprivate extension PassthroughCoreMock {
-    var recordsCountByViewID: [String: Int64]? {
+    var recordsCountByViewID: [String: Int]? {
         return try? context.baggages["sr_records_count_by_view_id"]?.decode()
     }
 }

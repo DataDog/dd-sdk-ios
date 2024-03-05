@@ -76,9 +76,9 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframe.id, id)
         XCTAssertEqual(wireframe.slotId, String(slotId))
         XCTAssertNil(wireframe.clip)
-        XCTAssertEqual(wireframe.x, Int64(withNoOverflow: attributes.frame.minX))
-        XCTAssertEqual(wireframe.y, Int64(withNoOverflow: attributes.frame.minY))
-        XCTAssertEqual(wireframe.width, Int64(withNoOverflow: attributes.frame.width))
-        XCTAssertEqual(wireframe.height, Int64(withNoOverflow: attributes.frame.height))
+        XCTAssertEqual(wireframe.x, Int(withNoOverflow: attributes.frame.minX))
+        XCTAssertEqual(wireframe.y, Int(withNoOverflow: attributes.frame.minY))
+        XCTAssertEqual(wireframe.width, Int(withNoOverflow: attributes.frame.width))
+        XCTAssertEqual(wireframe.height, Int(withNoOverflow: attributes.frame.height))
     }
 }

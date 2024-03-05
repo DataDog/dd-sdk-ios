@@ -89,7 +89,7 @@ class DiffTests: XCTestCase {
 
     func testWhenApplyingDiffOnTopOfTheOriginalSequence_itShouldProduceTheOtherSequence() throws {
         // Test for short long sequences to cover more edge cases
-        let testedLengths: [Int64] = [2, 5, 500, 1_000]
+        let testedLengths: [Int] = [2, 5, 500, 1_000]
 
         try testedLengths.forEach { length in
             // Given

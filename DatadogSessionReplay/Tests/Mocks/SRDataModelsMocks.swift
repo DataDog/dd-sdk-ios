@@ -39,16 +39,16 @@ extension SRTextWireframe: AnyMockable, RandomMockable {
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
         clip: SRContentClip? = .mockAny(),
-        height: Int64 = .mockAny(),
-        id: Int64 = .mockAny(),
+        height: Int = .mockAny(),
+        id: Int = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
         text: String = .mockAny(),
         textPosition: SRTextPosition? = .mockAny(),
         textStyle: SRTextStyle = .mockAny(),
         type: String = .mockAny(),
-        width: Int64 = .mockAny(),
-        x: Int64 = .mockAny(),
-        y: Int64 = .mockAny()
+        width: Int = .mockAny(),
+        x: Int = .mockAny(),
+        y: Int = .mockAny()
     ) -> SRTextWireframe {
         return SRTextWireframe(
             border: border,
@@ -82,7 +82,7 @@ extension SRTextStyle: AnyMockable, RandomMockable {
     static func mockWith(
         color: String = .mockAny(),
         family: String = .mockAny(),
-        size: Int64 = .mockAny()
+        size: Int = .mockAny()
     ) -> SRTextStyle {
         return SRTextStyle(
             color: color,
@@ -130,10 +130,10 @@ extension SRTextPosition.Padding: AnyMockable, RandomMockable {
     }
 
     static func mockWith(
-        bottom: Int64? = .mockAny(),
-        left: Int64? = .mockAny(),
-        right: Int64? = .mockAny(),
-        top: Int64? = .mockAny()
+        bottom: Int? = .mockAny(),
+        left: Int? = .mockAny(),
+        right: Int? = .mockAny(),
+        top: Int? = .mockAny()
     ) -> SRTextPosition.Padding {
         return SRTextPosition.Padding(
             bottom: bottom,
@@ -212,12 +212,12 @@ extension SRShapeWireframe: AnyMockable, RandomMockable {
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
         clip: SRContentClip? = .mockAny(),
-        height: Int64 = .mockAny(),
-        id: Int64 = .mockAny(),
+        height: Int = .mockAny(),
+        id: Int = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
-        width: Int64 = .mockAny(),
-        x: Int64 = .mockAny(),
-        y: Int64 = .mockAny()
+        width: Int = .mockAny(),
+        x: Int = .mockAny(),
+        y: Int = .mockAny()
     ) -> SRShapeWireframe {
         return SRShapeWireframe(
             border: border,
@@ -272,7 +272,7 @@ extension SRShapeBorder: AnyMockable, RandomMockable {
 
     static func mockWith(
         color: String = .mockAny(),
-        width: Int64 = .mockAny()
+        width: Int = .mockAny()
     ) -> SRShapeBorder {
         return SRShapeBorder(
             color: color,
@@ -296,10 +296,10 @@ extension SRContentClip: AnyMockable, RandomMockable {
     }
 
     static func mockWith(
-        bottom: Int64? = .mockAny(),
-        left: Int64? = .mockAny(),
-        right: Int64? = .mockAny(),
-        top: Int64? = .mockAny()
+        bottom: Int? = .mockAny(),
+        left: Int? = .mockAny(),
+        right: Int? = .mockAny(),
+        top: Int? = .mockAny()
     ) -> SRContentClip {
         return SRContentClip(
             bottom: bottom,
@@ -335,11 +335,11 @@ extension SRPlaceholderWireframe: AnyMockable, RandomMockable {
 
     static func mockWith(
         clip: SRContentClip? = .mockAny(),
-        height: Int64 = .mockAny(),
-        id: Int64 = .mockAny(),
-        width: Int64 = .mockAny(),
-        x: Int64 = .mockAny(),
-        y: Int64 = .mockAny()
+        height: Int = .mockAny(),
+        id: Int = .mockAny(),
+        width: Int = .mockAny(),
+        x: Int = .mockAny(),
+        y: Int = .mockAny()
     ) -> SRPlaceholderWireframe {
         return SRPlaceholderWireframe(
             clip: clip,
@@ -400,14 +400,14 @@ extension SRImageWireframe: AnyMockable, RandomMockable {
         base64: String? = .mockAny(),
         border: SRShapeBorder? = .mockAny(),
         clip: SRContentClip? = .mockAny(),
-        height: Int64 = .mockAny(),
-        id: Int64 = .mockAny(),
+        height: Int = .mockAny(),
+        id: Int = .mockAny(),
         isEmpty: Bool = .mockAny(),
         mimeType: String? = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
-        width: Int64 = .mockAny(),
-        x: Int64 = .mockAny(),
-        y: Int64 = .mockAny()
+        width: Int = .mockAny(),
+        x: Int = .mockAny(),
+        y: Int = .mockAny()
     ) -> SRImageWireframe {
         return SRImageWireframe(
             base64: base64,
@@ -492,7 +492,7 @@ extension SRVisualViewportRecord: AnyMockable, RandomMockable {
 
     static func mockWith(
         data: Data = .mockAny(),
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRVisualViewportRecord {
         return SRVisualViewportRecord(
             data: data,
@@ -553,7 +553,7 @@ extension SRViewEndRecord: AnyMockable, RandomMockable {
     }
 
     static func mockWith(
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRViewEndRecord {
         return SRViewEndRecord(
             slotId: .mockRandom(),
@@ -577,7 +577,7 @@ extension SRFocusRecord: AnyMockable, RandomMockable {
 
     static func mockWith(
         data: Data = .mockAny(),
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRFocusRecord {
         return SRFocusRecord(
             data: data,
@@ -622,7 +622,7 @@ extension SRMetaRecord: AnyMockable, RandomMockable {
 
     static func mockWith(
         data: Data = .mockAny(),
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRMetaRecord {
         return SRMetaRecord(
             data: data,
@@ -646,9 +646,9 @@ extension SRMetaRecord.Data: AnyMockable, RandomMockable {
     }
 
     static func mockWith(
-        height: Int64 = .mockAny(),
+        height: Int = .mockAny(),
         href: String? = .mockAny(),
-        width: Int64 = .mockAny()
+        width: Int = .mockAny()
     ) -> SRMetaRecord.Data {
         return SRMetaRecord.Data(
             height: height,
@@ -672,7 +672,7 @@ extension SRIncrementalSnapshotRecord: AnyMockable, RandomMockable {
 
     static func mockWith(
         data: Data = .mockAny(),
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRIncrementalSnapshotRecord {
         return SRIncrementalSnapshotRecord(
             data: data,
@@ -713,7 +713,7 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, 
 
     static func mockWith(
         pointerEventType: PointerEventType = .mockAny(),
-        pointerId: Int64 = .mockAny(),
+        pointerId: Int = .mockAny(),
         pointerType: PointerType = .mockAny(),
         x: Double = .mockAny(),
         y: Double = .mockAny()
@@ -769,8 +769,8 @@ extension SRIncrementalSnapshotRecord.Data.ViewportResizeData: AnyMockable, Rand
     }
 
     static func mockWith(
-        height: Int64 = .mockAny(),
-        width: Int64 = .mockAny()
+        height: Int = .mockAny(),
+        width: Int = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.ViewportResizeData {
         return SRIncrementalSnapshotRecord.Data.ViewportResizeData(
             height: height,
@@ -814,10 +814,10 @@ extension SRIncrementalSnapshotRecord.Data.TouchData.Positions: AnyMockable, Ran
     }
 
     static func mockWith(
-        id: Int64 = .mockAny(),
-        timestamp: Int64 = .mockAny(),
-        x: Int64 = .mockAny(),
-        y: Int64 = .mockAny()
+        id: Int = .mockAny(),
+        timestamp: Int = .mockAny(),
+        x: Int = .mockAny(),
+        y: Int = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.TouchData.Positions {
         return SRIncrementalSnapshotRecord.Data.TouchData.Positions(
             id: id,
@@ -888,12 +888,12 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUp
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
         clip: SRContentClip? = .mockAny(),
-        height: Int64? = .mockAny(),
-        id: Int64 = .mockAny(),
+        height: Int? = .mockAny(),
+        id: Int = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
-        width: Int64? = .mockAny(),
-        x: Int64? = .mockAny(),
-        y: Int64? = .mockAny()
+        width: Int? = .mockAny(),
+        x: Int? = .mockAny(),
+        y: Int? = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.ShapeWireframeUpdate(
             border: border,
@@ -932,15 +932,15 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpd
     static func mockWith(
         border: SRShapeBorder? = .mockAny(),
         clip: SRContentClip? = .mockAny(),
-        height: Int64? = .mockAny(),
-        id: Int64 = .mockAny(),
+        height: Int? = .mockAny(),
+        id: Int = .mockAny(),
         shapeStyle: SRShapeStyle? = .mockAny(),
         text: String? = .mockAny(),
         textPosition: SRTextPosition? = .mockAny(),
         textStyle: SRTextStyle? = .mockAny(),
-        width: Int64? = .mockAny(),
-        x: Int64? = .mockAny(),
-        y: Int64? = .mockAny()
+        width: Int? = .mockAny(),
+        x: Int? = .mockAny(),
+        y: Int? = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate {
         return SRIncrementalSnapshotRecord.Data.MutationData.Updates.TextWireframeUpdate(
             border: border,
@@ -970,7 +970,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Removes: AnyMockable, Ra
     }
 
     static func mockWith(
-        id: Int64 = .mockAny()
+        id: Int = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Removes {
         return SRIncrementalSnapshotRecord.Data.MutationData.Removes(
             id: id
@@ -991,7 +991,7 @@ extension SRIncrementalSnapshotRecord.Data.MutationData.Adds: AnyMockable, Rando
     }
 
     static func mockWith(
-        previousId: Int64? = .mockAny(),
+        previousId: Int? = .mockAny(),
         wireframe: SRWireframe = .mockAny()
     ) -> SRIncrementalSnapshotRecord.Data.MutationData.Adds {
         return SRIncrementalSnapshotRecord.Data.MutationData.Adds(
@@ -1015,7 +1015,7 @@ extension SRFullSnapshotRecord: AnyMockable, RandomMockable {
 
     static func mockWith(
         data: Data = .mockAny(),
-        timestamp: Int64 = .mockAny()
+        timestamp: Int = .mockAny()
     ) -> SRFullSnapshotRecord {
         return SRFullSnapshotRecord(
             data: data,
@@ -1068,14 +1068,14 @@ extension SRSegment: AnyMockable, RandomMockable {
 
     static func mockWith(
         application: Application = .mockAny(),
-        end: Int64 = .mockAny(),
+        end: Int = .mockAny(),
         hasFullSnapshot: Bool? = .mockAny(),
-        indexInView: Int64? = .mockAny(),
+        indexInView: Int? = .mockAny(),
         records: [SRRecord] = .mockAny(),
-        recordsCount: Int64 = .mockAny(),
+        recordsCount: Int = .mockAny(),
         session: Session = .mockAny(),
         source: Source = .mockAny(),
-        start: Int64 = .mockAny(),
+        start: Int = .mockAny(),
         view: View = .mockAny()
     ) -> SRSegment {
         return SRSegment(
@@ -1213,7 +1213,7 @@ internal extension SRRecord {
         }
     }
 
-    var timestamp: Int64 {
+    var timestamp: Int {
         switch self {
         case .fullSnapshotRecord(let record):           return record.timestamp
         case .incrementalSnapshotRecord(let record):    return record.timestamp

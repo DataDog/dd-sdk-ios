@@ -39,13 +39,13 @@ internal struct SegmentJSON {
     /// The `source` of SDK in which the segment was recorded (e.g. `"ios"`).
     let source: String
     /// The timestamp of the earliest record.
-    let start: Int64
+    let start: Int
     /// The timestamp of the latest record.
-    let end: Int64
+    let end: Int
     /// Records to be sent in this segment.
     let records: [JSONObject]
     /// Number of records.
-    let recordsCount: Int64
+    let recordsCount: Int
     /// If there is a Full Snapshot among records.
     let hasFullSnapshot: Bool
 
@@ -54,10 +54,10 @@ internal struct SegmentJSON {
         sessionID: String,
         viewID: String,
         source: String,
-        start: Int64,
-        end: Int64,
+        start: Int,
+        end: Int,
         records: [JSONObject],
-        recordsCount: Int64,
+        recordsCount: Int,
         hasFullSnapshot: Bool
     ) {
         self.applicationID = applicationID
@@ -80,17 +80,17 @@ internal struct SegmentJSON {
         let json: JSONObject = try decode(data)
 
         self.records = try read(codingKey: .records, from: json)
-        self.recordsCount = Int64(records.count)
+        self.recordsCount = records.count
 
         var hasFullSnapshot = false
-        var start: Int64 = .max
-        var end: Int64 = .min
+        var start: Int = .max
+        var end: Int = .min
 
         // loop through the records to compute the
         // `start`, `end, and `has_full_snapshot` fieds
         // of the segment
         for record in records {
-            guard let timestamp = record[Constants.timestampKey] as? Int64 else {
+            guard let timestamp = record[Constants.timestampKey] as? Int else {
                 // records must contain a timestamp
                 throw InternalError(description: "Record is missing timestamp")
             }
@@ -98,7 +98,7 @@ internal struct SegmentJSON {
             start = min(timestamp, start)
             end = max(timestamp, end)
 
-            guard let type = record[Constants.typeKey] as? Int64 else {
+            guard let type = record[Constants.typeKey] as? Int else {
                 continue // ignore records with no type
             }
 

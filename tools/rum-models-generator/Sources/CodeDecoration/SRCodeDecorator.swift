@@ -47,14 +47,6 @@ public class SRCodeDecorator: SwiftCodeDecorator {
 
     // MARK: - Types customiation
 
-    override public func transform(primitive: SwiftPrimitiveType) -> SwiftPrimitiveType {
-        if primitive is SwiftPrimitive<Int> {
-            return SwiftPrimitive<Int64>() // Replace all `Int` with `Int64`
-        } else {
-            return super.transform(primitive: primitive)
-        }
-    }
-
     override public func transform(struct: SwiftStruct) throws -> SwiftStruct {
         var `struct` = try super.transform(struct: `struct`)
 

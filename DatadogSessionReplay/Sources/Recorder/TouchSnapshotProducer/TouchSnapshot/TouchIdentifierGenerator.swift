@@ -12,7 +12,7 @@ import UIKit
 ///
 /// Ref.: https://developer.apple.com/documentation/uikit/uitouch
 /// > If you need to store information about a touch outside of a multi-touch sequence, copy that information from the touch.
-internal typealias TouchIdentifier = Int64
+internal typealias TouchIdentifier = Int
 
 /// Manages `TouchIdentifier` for `UITouch` instances.
 ///

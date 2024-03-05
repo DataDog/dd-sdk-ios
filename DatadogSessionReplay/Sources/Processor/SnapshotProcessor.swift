@@ -56,7 +56,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
 
     private var srContextPublisher: SRContextPublisher
 
-    private var recordsCountByViewID: [String: Int64] = [:]
+    private var recordsCountByViewID: [String: Int] = [:]
 
     init(
         queue: Queue,
@@ -126,7 +126,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
             // Transform `[SRRecord]` to `EnrichedRecord` so we can write it to `DatadogCore` and
             // later read it back (as `EnrichedRecordJSON`) for preparing upload request(s):
             let enrichedRecord = EnrichedRecord(context: viewTreeSnapshot.context, records: records)
-            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+            trackRecord(key: enrichedRecord.viewID, value: records.count)
 
             recordWriter.write(nextRecord: enrichedRecord)
         }
@@ -136,7 +136,7 @@ internal class SnapshotProcessor: SnapshotProcessing {
         lastWireframes = wireframes
     }
 
-    private func trackRecord(key: String, value: Int64) {
+    private func trackRecord(key: String, value: Int) {
         if let existingValue = recordsCountByViewID[key] {
             recordsCountByViewID[key] = existingValue + value
         } else {

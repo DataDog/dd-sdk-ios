@@ -7,7 +7,7 @@
 #if os(iOS)
 import Foundation
 
-internal typealias DiffableID = Int64
+internal typealias DiffableID = Int
 
 /// A base interface of array elements compared in `computeDiff(oldArray:newArray:)`.
 internal protocol Diffable {
