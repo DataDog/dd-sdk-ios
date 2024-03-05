@@ -9,6 +9,13 @@ import DatadogInternal
 
 /// Bundles RUM instrumentation components.
 internal final class RUMInstrumentation: RUMCommandPublisher {
+    private enum Constants {
+        /// Minimum allowed value for long task threshold configuration.
+        static let minLongTaskThreshold: TimeInterval = 0
+        /// Minimum allowed value for app hang threshold configuration.
+        static let minAppHangThreshold: TimeInterval = 0.1
+    }
+
     /// Swizzles `UIViewController` for intercepting its lifecycle callbacks.
     /// It is `nil` (no swizzling) if RUM View instrumentaiton is not enabled.
     let viewControllerSwizzler: UIViewControllerSwizzler?
@@ -26,7 +33,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     /// Instruments RUM Long Tasks. It is `nil` if long tasks tracking is not enabled.
     let longTasks: LongTaskObserver?
 
-    /// Instruments App Hangs.
+    /// Instruments App Hangs. It is `nil` if hangs monitoring is not enabled.
     let appHangs: AppHangsObserver?
 
     // MARK: - Initialization
@@ -35,7 +42,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         longTaskThreshold: TimeInterval?,
-        appHangThreshold: TimeInterval,
+        appHangThreshold: TimeInterval?,
         mainQueue: DispatchQueue,
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
@@ -50,8 +57,9 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         var actionsHandler: UIKitRUMUserActionsHandler? = nil
         var uiApplicationSwizzler: UIApplicationSwizzler? = nil
 
-        // Create long tasks observer only if configured:
+        // Create long tasks and app hang observers only if configured:
         var longTasks: LongTaskObserver? = nil
+        var appHangs: AppHangsObserver? = nil
 
         do {
             if uiKitRUMViewsPredicate != nil {
@@ -78,8 +86,26 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             )
         }
 
-        if let threshold = longTaskThreshold, threshold > 0 {
-            longTasks = LongTaskObserver(threshold: threshold, dateProvider: dateProvider)
+        if let longTaskThreshold = longTaskThreshold {
+            if longTaskThreshold > Constants.minLongTaskThreshold {
+                longTasks = LongTaskObserver(threshold: longTaskThreshold, dateProvider: dateProvider)
+            } else {
+                DD.logger.error("`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
+            }
+        }
+
+        if let appHangThreshold = appHangThreshold {
+            if appHangThreshold >= Constants.minAppHangThreshold {
+                appHangs = AppHangsObserver(
+                    appHangThreshold: appHangThreshold,
+                    observedQueue: mainQueue,
+                    backtraceReporter: backtraceReporter,
+                    dateProvider: dateProvider,
+                    telemetry: telemetry
+                )
+            } else {
+                DD.logger.error("`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. App Hangs monitoring will be disabled.")
+            }
         }
 
         self.viewsHandler = viewsHandler
@@ -87,13 +113,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         self.actionsHandler = actionsHandler
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.longTasks = longTasks
-        self.appHangs = AppHangsObserver(
-            appHangThreshold: appHangThreshold,
-            observedQueue: mainQueue,
-            backtraceReporter: backtraceReporter,
-            dateProvider: dateProvider,
-            telemetry: telemetry
-        )
+        self.appHangs = appHangs
 
         // Enable configured instrumentations:
         self.viewControllerSwizzler?.swizzle()
