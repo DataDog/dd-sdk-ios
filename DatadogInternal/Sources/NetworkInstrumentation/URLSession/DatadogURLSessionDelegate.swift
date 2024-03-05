@@ -139,6 +139,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
             try swizzler.swizzle(
                 interceptCompletionHandler: { [weak self] task, _, error in
                     self?.interceptor?.task(task, didCompleteWithError: error)
+                }, didReceive: { _, _ in
                 }
             )
         } catch {

@@ -23,9 +23,13 @@ internal final class NetworkInstrumentationSwizzler {
 
     /// Swizzles `URLSession.dataTask(with:completionHandler:)` methods (with `URL` and `URLRequest`).
     func swizzle(
-        interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void
+        interceptCompletionHandler: @escaping (URLSessionTask, Data?, Error?) -> Void,
+        didReceive: @escaping (URLSessionTask, Data) -> Void
     ) throws {
-        try urlSessionSwizzler.swizzle(interceptCompletionHandler: interceptCompletionHandler)
+        try urlSessionSwizzler.swizzle(
+            interceptCompletionHandler: interceptCompletionHandler,
+            didReceive: didReceive
+        )
     }
 
     /// Swizzles `URLSessionTask.resume()` method.
