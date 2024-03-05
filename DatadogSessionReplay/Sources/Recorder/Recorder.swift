@@ -64,6 +64,8 @@ public class Recorder: Recording {
     private let resourceProcessor: ResourceProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
+    /// The sampler for internal telemetry.
+    private let telemetrySampler: Sampler
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
@@ -86,7 +88,8 @@ public class Recorder: Recording {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: snapshotProcessor,
             resourceProcessor: resourceProcessor,
-            telemetry: telemetry
+            telemetry: telemetry,
+            telemetrySampler: Sampler(samplingRate: 0.005) // 0.5% of calls
         )
     }
 
@@ -96,7 +99,8 @@ public class Recorder: Recording {
         touchSnapshotProducer: TouchSnapshotProducer,
         snapshotProcessor: SnapshotProcessing,
         resourceProcessor: ResourceProcessing,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        telemetrySampler: Sampler
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
@@ -104,6 +108,7 @@ public class Recorder: Recording {
         self.snapshotProcessor = snapshotProcessor
         self.resourceProcessor = resourceProcessor
         self.telemetry = telemetry
+        self.telemetrySampler = telemetrySampler
         uiApplicationSwizzler.swizzle()
     }
 
@@ -116,6 +121,11 @@ public class Recorder: Recording {
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     func captureNextRecord(_ recorderContext: Context) {
+        let sample = telemetrySampler.sample()
+        var start: TimeInterval?
+        if sample {
+            start = Date().timeIntervalSince1970
+        }
         do {
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
@@ -130,6 +140,17 @@ public class Recorder: Recording {
             )
         } catch let error {
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
+        }
+        if sample {
+            let end = Date().timeIntervalSince1970
+            let executionTime = end - (start ?? 0)
+            telemetry.metric(
+                name: "Method Called",
+                attributes: [
+                    "name" : "captureNextRecord",
+                    "duration" : executionTime.toInt64Nanoseconds,
+                ]
+            )
         }
     }
 }
