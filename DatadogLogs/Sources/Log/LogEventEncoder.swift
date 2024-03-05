@@ -71,6 +71,8 @@ public struct LogEvent: Encodable {
         public var message: String?
         /// The Log error stack
         public var stack: String?
+        /// The Log error source_type. Used by cross platform SDKs
+        public var sourceType: String = "ios"
     }
 
     /// Device information.
@@ -119,6 +121,8 @@ public struct LogEvent: Encodable {
     public let applicationBuildNumber: String
     /// The id of the current build (used for some cross platform frameworks)
     public let buildId: String?
+    /// The variant of the current build (used in some cross platform frameworks)
+    public let variant: String?
     /// Datadog specific attributes
     public let dd: Dd
     /// The associated log error
@@ -157,6 +161,7 @@ internal struct LogEventEncoder {
         case errorKind = "error.kind"
         case errorMessage = "error.message"
         case errorStack = "error.stack"
+        case errorSourceType = "error.source_type"
 
         // MARK: - Application info
 
@@ -218,6 +223,7 @@ internal struct LogEventEncoder {
             try container.encode(someError.kind, forKey: .errorKind)
             try container.encode(someError.message, forKey: .errorMessage)
             try container.encode(someError.stack, forKey: .errorStack)
+            try container.encode(someError.sourceType, forKey: .errorSourceType)
         }
 
         // Encode logger info
@@ -290,6 +296,9 @@ internal struct LogEventEncoder {
         var tags = log.tags ?? []
         tags.append("env:\(log.environment)") // include default env tag
         tags.append("version:\(log.applicationVersion)") // include default version tag
+        if let variant = log.variant {
+            tags.append("variant:\(variant)")
+        }
         let tagsString = tags.joined(separator: ",")
         try container.encode(tagsString, forKey: .tags)
     }

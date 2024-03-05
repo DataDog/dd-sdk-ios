@@ -8,9 +8,10 @@ import XCTest
 
 #if !os(tvOS)
 import WebKit
-import DatadogLogs
+
+@testable import DatadogLogs
 @testable import DatadogRUM
-import DatadogWebViewTracking
+@testable import DatadogWebViewTracking
 
 class WebLogIntegrationTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
@@ -136,4 +137,3 @@ class WebLogIntegrationTests: XCTestCase {
 }
 
 #endif
-

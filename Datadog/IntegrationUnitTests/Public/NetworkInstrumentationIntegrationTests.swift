@@ -52,6 +52,7 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     }
     
     func testParentSpanPropagation() throws {
+        let expectation = expectation(description: "request completes")
         // Given
         let request: URLRequest = .mockWith(url: "https://www.example.com")
         let span = Tracer.shared(in: core).startRootSpan(operationName: "root")
@@ -60,15 +61,16 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
         // When
         span.setActive() // start root span
-        
+
         session
             .dataTask(with: request) { _,_,_ in
                 span.finish() // finish root span
+                expectation.fulfill()
             }
             .resume()
 
         // Then
-        server.waitFor(requestsCompletion: 1)
+        waitForExpectations(timeout: 1)
         let matchers = try core.waitAndReturnSpanMatchers()
 
         let matcher1 = try XCTUnwrap(matchers.first)
