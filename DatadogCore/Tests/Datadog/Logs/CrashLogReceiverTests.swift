@@ -133,7 +133,8 @@ class CrashLogReceiverTests: XCTestCase {
             error: .init(
                 kind: crashReport.type,
                 message: crashReport.message,
-                stack: crashReport.stack
+                stack: crashReport.stack,
+                sourceType: "ios"
             ),
             serviceName: crashContext.service,
             environment: crashContext.env,
@@ -143,6 +144,7 @@ class CrashLogReceiverTests: XCTestCase {
             applicationVersion: crashContext.version,
             applicationBuildNumber: crashContext.buildNumber,
             buildId: nil,
+            variant: core.context.variant,
             dd: .init(
                 device: .init(
                     brand: crashContext.device.brand,
@@ -183,11 +185,13 @@ class CrashLogReceiverTests: XCTestCase {
     func testWhenSendingCrashReportWithRUMContext_itEncodesErrorInformation() throws {
         // Given (CR with the link to RUM view)
         let crashContext = crashContextWith(
-            lastRUMViewEvent: AnyCodable([ // partial RUM view information, necessary for the link
-                "application": ["id": "rum-app-id"],
-                "session": ["id": "rum-session-id"],
-                "view": ["id": "rum-view-id"],
-            ])
+            lastRUMViewEvent: AnyCodable(
+                [ // partial RUM view information, necessary for the link
+                    "application": ["id": "rum-app-id"],
+                    "session": ["id": "rum-session-id"],
+                    "view": ["id": "rum-view-id"],
+                ]
+            )
         )
 
         // When
@@ -207,6 +211,25 @@ class CrashLogReceiverTests: XCTestCase {
         XCTAssertNil(log.attributes.internalAttributes?[LogEvent.Attributes.RUM.actionID])
     }
     // swiftlint:enable multiline_literal_brackets
+
+    func testWhenSendingCrashReportWithSourceType_itEncodesSourceType() throws {
+        // Given (CR with the link to RUM view)
+        let crashContext = crashContextWith(lastRUMViewEvent: nil)
+
+        // When
+        let core = PassthroughCoreMock(
+            context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
+            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
+        )
+
+        let sender = MessageBusSender(core: core)
+        sender.send(report: crashReport, with: crashContext)
+
+        // Then
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
+
+        XCTAssertEqual(log.error?.sourceType, "ios+il2cpp")
+    }
 
     func testWhenSendingCrashReportWithMalformedRUMContext_itSendsErrorTelemetry() throws {
         // Given (CR with the link to RUM view)

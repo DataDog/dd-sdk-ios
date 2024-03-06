@@ -37,7 +37,8 @@ internal class SnapshotTestCase: XCTestCase {
 
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(with privacyLevel: SessionReplay.Configuration.PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
-        let expectation = self.expectation(description: "Wait for wireframes")
+        let expectWireframes = self.expectation(description: "Wait for wireframes")
+        let expectResources = self.expectation(description: "Wait for resources")
 
         // Set up SR recorder:
         let snapshotProcessor = SnapshotProcessor(
@@ -57,11 +58,18 @@ internal class SnapshotTestCase: XCTestCase {
             additionalNodeRecorders: []
         )
 
-        // Set up wireframes interception :
+        // Set up wireframes interception:
         var wireframes: [SRWireframe]?
         snapshotProcessor.interceptWireframes = {
             wireframes = $0
-            expectation.fulfill()
+            expectWireframes.fulfill()
+        }
+
+        // Set up resource interception:
+        var resources: [Resource]?
+        resourceProcessor.interceptResources = {
+            resources = $0
+            expectResources.fulfill()
         }
 
         // Capture next record with mock RUM Context
@@ -76,7 +84,7 @@ internal class SnapshotTestCase: XCTestCase {
             XCTFail("Recorded no wireframes.")
             return UIImage()
         }
-        let renderedWireframes = renderImage(for: wireframes)
+        let renderedWireframes = renderImage(for: wireframes, resources: resources ?? [])
         let appImage = app.keyWindow.map { renderImage(for: $0) } ?? UIImage()
 
         // Add XCTest attachements for debugging and troubleshooting:
@@ -106,8 +114,9 @@ internal class SnapshotTestCase: XCTestCase {
         waitForExpectations(timeout: seconds * 2)
     }
 
-    func forEachPrivacyMode(do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
-        let modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput]
+    func forPrivacyModes(
+        _ modes: [SessionReplay.Configuration.PrivacyLevel] = [.mask, .allow, .maskUserInput],
+        do work: (SessionReplay.Configuration.PrivacyLevel) throws -> Void) rethrows {
         try modes.forEach { try work($0) }
     }
 }

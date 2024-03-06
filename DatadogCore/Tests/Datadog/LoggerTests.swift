@@ -211,6 +211,7 @@ class LoggerTests: XCTestCase {
             matcher.assertValue(forKeyPath: "error.stack", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.message", equals: "TestError(description: \"Test description\")")
             matcher.assertValue(forKeyPath: "error.kind", equals: "TestError")
+            matcher.assertValue(forKeyPath: "error.source_type", equals: "ios")
         }
     }
 
@@ -239,6 +240,38 @@ class LoggerTests: XCTestCase {
             logMatcher.assertValue(forKeyPath: "error.kind", equals: errorKind)
             logMatcher.assertValue(forKeyPath: "error.message", equals: errorMessage)
             logMatcher.assertValue(forKeyPath: "error.stack", equals: stackTrace)
+            logMatcher.assertValue(forKeyPath: "error.source_type", equals: "ios")
+        }
+    }
+
+    func testLoggingErrorWithSourceType() throws {
+        core.context = .mockAny()
+
+        let feature: LogsFeature = .mockAny()
+        try core.register(feature: feature)
+
+        let logger = Logger.create(in: core)
+        let errorKind = String.mockRandom()
+        let errorMessage = String.mockRandom()
+        let stackTrace = String.mockRandom()
+        logger._internal.log(level: .info,
+                   message: .mockAny(),
+                   errorKind: errorKind,
+                   errorMessage: errorMessage,
+                   stackTrace: stackTrace,
+                   attributes: [
+                    "_dd.error.source_type": "flutter"
+                   ]
+        )
+
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        let logMatcher = logMatchers.first
+        XCTAssertNotNil(logMatcher)
+        if let logMatcher = logMatcher {
+            logMatcher.assertValue(forKeyPath: "error.kind", equals: errorKind)
+            logMatcher.assertValue(forKeyPath: "error.message", equals: errorMessage)
+            logMatcher.assertValue(forKeyPath: "error.stack", equals: stackTrace)
+            logMatcher.assertValue(forKeyPath: "error.source_type", equals: "flutter")
         }
     }
 
@@ -547,6 +580,45 @@ class LoggerTests: XCTestCase {
         logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3"])
         logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3"])
         logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3"])
+    }
+
+    func testSendingTagsWithVariant() throws {
+        core.context = .mockWith(
+            env: "tests",
+            version: "1.2.3",
+            variant: "integration"
+        )
+
+        let feature: LogsFeature = .mockAny()
+        try core.register(feature: feature)
+
+        let logger = Logger.create(in: core)
+
+        // add tag
+        logger.add(tag: "tag1")
+
+        // send message
+        logger.info("info message 1")
+
+        // add tag with key
+        logger.addTag(withKey: "tag2", value: "abcd")
+
+        // send message
+        logger.info("info message 2")
+
+        // remove tag with key
+        logger.removeTag(withKey: "tag2")
+
+        // remove tag
+        logger.remove(tag: "tag1")
+
+        // send message
+        logger.info("info message 3")
+
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        logMatchers[0].assertTags(equal: ["tag1", "env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[1].assertTags(equal: ["tag1", "tag2:abcd", "env:tests", "version:1.2.3", "variant:integration"])
+        logMatchers[2].assertTags(equal: ["env:tests", "version:1.2.3", "variant:integration"])
     }
 
     // MARK: - Integration With RUM Feature

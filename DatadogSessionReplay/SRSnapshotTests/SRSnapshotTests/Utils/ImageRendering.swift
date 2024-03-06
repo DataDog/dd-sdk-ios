@@ -36,13 +36,13 @@ internal struct WireframesRenderingDebugInfo {
 }
 
 /// Renders wireframes into image.
-internal func renderImage(for wireframes: [SRWireframe]) -> (image: UIImage, debugInfo: WireframesRenderingDebugInfo) {
+internal func renderImage(for wireframes: [SRWireframe], resources: [Resource]) -> (image: UIImage, debugInfo: WireframesRenderingDebugInfo) {
     precondition(!wireframes.isEmpty)
-    let frame = wireframes[0].toFrame()
+    let frame = wireframes[0].toFrame(resources: resources)
     let canvas = FramerCanvas.create(size: CGSize(width: frame.width, height: frame.height))
     let blueprint = Blueprint(
         id: "snapshot",
-        contents: wireframes.map { .frame($0.toFrame()) }
+        contents: wireframes.map { .frame($0.toFrame(resources: resources)) }
     )
     canvas.draw(blueprint: blueprint)
     let debugInfo = WireframesRenderingDebugInfo(wireframes: wireframes, blueprint: blueprint)
@@ -52,16 +52,22 @@ internal func renderImage(for wireframes: [SRWireframe]) -> (image: UIImage, deb
 // MARK: - Wireframes Rendering with Framer
 
 private extension SRWireframe {
-    func toFrame() -> BlueprintFrame {
+    func toFrame(resources: [Resource]) -> BlueprintFrame {
         switch self {
         case .shapeWireframe(let shape):
             return shape.toFrame()
         case .textWireframe(let text):
             return text.toFrame()
         case .imageWireframe(value: let image):
-            return image.toFrame()
+            return image.toFrame(
+                imageData: resources.first {
+                    $0.calculateIdentifier() == image.resourceId
+                }?.calculateData()
+            )
         case .placeholderWireframe(value: let placeholder):
             return placeholder.toFrame()
+        case .webviewWireframe(value: let webview):
+            return webview.toFrame()
         }
     }
 }
@@ -93,6 +99,19 @@ private extension SRTextWireframe {
 }
 
 private extension SRImageWireframe {
+    func toFrame(imageData: Data?) -> BlueprintFrame {
+        BlueprintFrame(
+            x: CGFloat(x),
+            y: CGFloat(y),
+            width: CGFloat(width),
+            height: CGFloat(height),
+            style: frameStyle(border: border, style: shapeStyle),
+            content: frameContent(imageData: imageData)
+        )
+    }
+}
+
+private extension SRWebviewWireframe {
     func toFrame() -> BlueprintFrame {
         BlueprintFrame(
             x: CGFloat(x),
@@ -100,7 +119,14 @@ private extension SRImageWireframe {
             width: CGFloat(width),
             height: CGFloat(height),
             style: frameStyle(border: border, style: shapeStyle),
-            content: frameContent(base64ImageString: base64)
+            content: frameContent(
+                text: "WKWebView",
+                textStyle: nil,
+                textPosition: SRTextPosition(
+                    alignment: SRTextPosition.Alignment(horizontal: .center, vertical: .center),
+                    padding: nil
+                )
+            )
         )
     }
 }
@@ -193,10 +219,8 @@ private func frameContent(text: String, textStyle: SRTextStyle?, textPosition: S
     )
 }
 
-private func frameContent(base64ImageString: String?) -> BlueprintFrame.Content {
-    let base64Data = base64ImageString?.data(using: .utf8) ?? Data()
-    let imageData = Data(base64Encoded: base64Data) ?? Data()
-    let image = UIImage(data: imageData, scale: UIScreen.main.scale) ?? UIImage()
+private func frameContent(imageData: Data?) -> BlueprintFrame.Content {
+    let image = UIImage(data: imageData ?? Data(), scale: UIScreen.main.scale) ?? UIImage()
     let contentType: BlueprintFrame.Content.ContentType = .image(image: image)
     return .init(contentType: contentType)
 }

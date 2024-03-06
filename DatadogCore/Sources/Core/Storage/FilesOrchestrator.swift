@@ -10,7 +10,6 @@ import DatadogInternal
 internal protocol FilesOrchestratorType: AnyObject {
     var performance: StoragePerformancePreset { get }
 
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile
     func getWritableFile(writeSize: UInt64) throws -> WritableFile
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile]
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason)
@@ -66,21 +65,6 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
     // MARK: - `WritableFile` orchestration
 
-    /// Creates and returns new writable file by ignoring the heuristic of reusing files.
-    ///
-    /// Note: the `getWritableFile(writeSize:)` should be preferred, unless the caller has specific reason for
-    /// enforcing new files to be created (e.g. batching is managed in upstream state).
-    ///
-    /// - Parameter writeSize: the size of data to be written
-    /// - Returns: `WritableFile` capable of writing data of given size
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile {
-        try validate(writeSize: writeSize)
-        if let closedBatchName = lastWritableFileName {
-            sendBatchClosedMetric(fileName: closedBatchName, forcedNew: true)
-        }
-        return try createNewWritableFile(writeSize: writeSize)
-    }
-
     /// Returns writable file accordingly to default heuristic of creating and reusing files.
     ///
     /// - Parameter writeSize: the size of data to be written
@@ -94,7 +78,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             return lastWritableFile
         } else {
             if let closedBatchName = lastWritableFileName {
-                sendBatchClosedMetric(fileName: closedBatchName, forcedNew: false)
+                sendBatchClosedMetric(fileName: closedBatchName)
             }
             return try createNewWritableFile(writeSize: writeSize)
         }
@@ -263,8 +247,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Sends "Batch Closed" telemetry log.
     /// - Parameters:
     ///   - fileName: The name of the batch that was closed.
-    ///   - forcedNew: If the batch was closed due to default heuristic or because a new batch was forced by feature.
-    private func sendBatchClosedMetric(fileName: String, forcedNew: Bool) {
+    private func sendBatchClosedMetric(fileName: String) {
         guard let metricsData = metricsData else {
             return // do not track metrics for this orchestrator
         }
@@ -280,8 +263,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
                 BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,
                 BatchClosedMetric.batchSizeKey: lastWritableFileApproximatedSize,
                 BatchClosedMetric.batchEventsCountKey: lastWritableFileObjectsCount,
-                BatchClosedMetric.batchDurationKey: batchDuration.toMilliseconds,
-                BatchClosedMetric.forcedNewKey: forcedNew
+                BatchClosedMetric.batchDurationKey: batchDuration.toMilliseconds
             ]
         )
     }

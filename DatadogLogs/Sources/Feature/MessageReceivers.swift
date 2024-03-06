@@ -14,9 +14,6 @@ internal enum LoggingMessageKeys {
 
     /// The key references a crash message.
     static let crash = "crash"
-
-    /// The key references a browser log message.
-    static let browserLog = "browser-log"
 }
 
 /// Receiver to consume a Log message
@@ -197,14 +194,15 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         return false
     }
 
-    private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: CrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
         let date = (report.date ?? dateProvider.now)
-            .addingTimeInterval(context.serverTimeOffset)
+            .addingTimeInterval(crashContext.serverTimeOffset)
 
         var errorAttributes: [AttributeKey: AttributeValue] = [:]
+
         // Set crash attributes for the error
         errorAttributes[DDError.threads] = report.threads
         errorAttributes[DDError.binaryImages] = report.binaryImages
@@ -212,61 +210,63 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         errorAttributes[DDError.wasTruncated] = report.wasTruncated
 
         // Set RUM context if available (so emergency error is linked to the RUM session in Datadog app)
-        errorAttributes[LogEvent.Attributes.RUM.applicationID] = context.lastRUMViewEvent?.application.id
-        errorAttributes[LogEvent.Attributes.RUM.sessionID] = context.lastRUMViewEvent?.session.id
-        errorAttributes[LogEvent.Attributes.RUM.viewID] = context.lastRUMViewEvent?.view.id
+        errorAttributes[LogEvent.Attributes.RUM.applicationID] = crashContext.lastRUMViewEvent?.application.id
+        errorAttributes[LogEvent.Attributes.RUM.sessionID] = crashContext.lastRUMViewEvent?.session.id
+        errorAttributes[LogEvent.Attributes.RUM.viewID] = crashContext.lastRUMViewEvent?.view.id
 
-        let user = context.userInfo
-        let deviceInfo = context.device
-
-        let event = LogEvent(
-            date: date,
-            status: .emergency,
-            message: report.message,
-            error: .init(
-                kind: report.type,
-                message: report.message,
-                stack: report.stack
-            ),
-            serviceName: context.service,
-            environment: context.env,
-            loggerName: "crash-reporter",
-            loggerVersion: context.sdkVersion,
-            threadName: nil,
-            applicationVersion: context.version,
-            applicationBuildNumber: context.buildNumber,
-            buildId: nil,
-            dd: .init(
-                device: .init(
-                    brand: deviceInfo.brand,
-                    name: deviceInfo.name,
-                    model: deviceInfo.model,
-                    architecture: deviceInfo.architecture
-                )
-            ),
-            os: .init(
-                name: context.device.osName,
-                version: context.device.osVersion,
-                build: context.device.osBuildNumber
-            ),
-            userInfo: .init(
-                id: user?.id,
-                name: user?.name,
-                email: user?.email,
-                extraInfo: user?.extraInfo ?? [:]
-            ),
-            networkConnectionInfo: context.networkConnectionInfo,
-            mobileCarrierInfo: context.carrierInfo,
-            attributes: .init(
-                userAttributes: [:],
-                internalAttributes: errorAttributes
-            ),
-            tags: nil
-        )
+        let user = crashContext.userInfo
+        let deviceInfo = crashContext.device
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true, forceNewBatch: false) { _, writer in
+        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+            let event = LogEvent(
+                date: date,
+                status: .emergency,
+                message: report.message,
+                error: .init(
+                    kind: report.type,
+                    message: report.message,
+                    stack: report.stack,
+                    sourceType: context.nativeSourceOverride ?? "ios"
+                ),
+                serviceName: crashContext.service,
+                environment: crashContext.env,
+                loggerName: "crash-reporter",
+                loggerVersion: crashContext.sdkVersion,
+                threadName: nil,
+                applicationVersion: crashContext.version,
+                applicationBuildNumber: crashContext.buildNumber,
+                buildId: nil,
+                variant: context.variant,
+                dd: .init(
+                    device: .init(
+                        brand: deviceInfo.brand,
+                        name: deviceInfo.name,
+                        model: deviceInfo.model,
+                        architecture: deviceInfo.architecture
+                    )
+                ),
+                os: .init(
+                    name: crashContext.device.osName,
+                    version: crashContext.device.osVersion,
+                    build: crashContext.device.osBuildNumber
+                ),
+                userInfo: .init(
+                    id: user?.id,
+                    name: user?.name,
+                    email: user?.email,
+                    extraInfo: user?.extraInfo ?? [:]
+                ),
+                networkConnectionInfo: crashContext.networkConnectionInfo,
+                mobileCarrierInfo: crashContext.carrierInfo,
+                attributes: .init(
+                    userAttributes: [:],
+                    internalAttributes: errorAttributes
+                ),
+                tags: nil
+            )
+
             writer.write(value: event)
         }
 
@@ -282,56 +282,45 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
     ///   - message: The Feature message
     ///   - core: The core from which the message is transmitted.
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard case let .baggage(label, baggage) = message, label == LoggingMessageKeys.browserLog else {
-                return false
-            }
-
-            guard var event = try baggage.encode() as? [String: Any?] else {
-                throw InternalError(description: "event is not a dictionary")
-            }
-
-            let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
-            let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
-            let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
-            let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
-
-            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
-                let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
-
-                if let tags = event[tagsKey] as? String, !tags.isEmpty {
-                    event[tagsKey] = "\(ddTags),\(tags)"
-                } else {
-                    event[tagsKey] = ddTags
-                }
-
-                if let timestampInMs = event[dateKey] as? Int64 {
-                    let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
-                    let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
-                    event[dateKey] = correctedTimestamp
-                }
-
-                if let rum = context.baggages[RUMContext.key] {
-                    do {
-                        let rum = try rum.decode(type: RUMContext.self)
-                        event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
-                        event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
-                        event[LogEvent.Attributes.RUM.viewID] = rum.viewID
-                        event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
-                    } catch {
-                        core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
-                    }
-                }
-
-                writer.write(value: AnyEncodable(event))
-            }
-
-            return true
-        } catch {
-            core.telemetry
-                .error("Failed to decode browser log in `LogMessageReceiver`", error: error)
+        guard case var .webview(.log(event)) = message else {
+            return false
         }
 
-        return false
+        let versionKey = LogEventEncoder.StaticCodingKeys.applicationVersion.rawValue
+        let envKey = LogEventEncoder.StaticCodingKeys.environment.rawValue
+        let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
+        let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
+
+        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+            let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
+
+            if let tags = event[tagsKey] as? String, !tags.isEmpty {
+                event[tagsKey] = "\(ddTags),\(tags)"
+            } else {
+                event[tagsKey] = ddTags
+            }
+
+            if let timestampInMs = event[dateKey] as? Int {
+                let serverTimeOffsetInMs = context.serverTimeOffset.toInt64Milliseconds
+                let correctedTimestamp = Int64(timestampInMs) + serverTimeOffsetInMs
+                event[dateKey] = correctedTimestamp
+            }
+
+            if let rum = context.baggages[RUMContext.key] {
+                do {
+                    let rum = try rum.decode(type: RUMContext.self)
+                    event[LogEvent.Attributes.RUM.applicationID] = rum.applicationID
+                    event[LogEvent.Attributes.RUM.sessionID] = rum.sessionID
+                    event[LogEvent.Attributes.RUM.viewID] = rum.viewID
+                    event[LogEvent.Attributes.RUM.actionID] = rum.userActionID
+                } catch {
+                    core.telemetry.error("Fails to decode RUM context from Logs in `WebViewLogReceiver`", error: error)
+                }
+            }
+
+            writer.write(value: AnyEncodable(event))
+        }
+
+        return true
     }
 }

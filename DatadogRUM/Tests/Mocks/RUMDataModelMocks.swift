@@ -398,11 +398,13 @@ extension RUMErrorEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             error: .init(
+                binaryImages: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: .mockRandom(),
                 isCrash: .random(),
                 message: .mockRandom(),
+                meta: nil,
                 resource: .init(
                     method: .mockRandom(),
                     provider: .init(
@@ -416,7 +418,9 @@ extension RUMErrorEvent: RandomMockable {
                 source: [.source, .network, .custom].randomElement()!,
                 sourceType: .mockRandom(),
                 stack: .mockRandom(),
-                type: .mockRandom()
+                threads: nil,
+                type: .mockRandom(),
+                wasTruncated: .mockRandom()
             ),
             os: .mockRandom(),
             service: .mockRandom(),

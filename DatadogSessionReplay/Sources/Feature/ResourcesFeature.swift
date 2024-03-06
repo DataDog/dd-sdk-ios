@@ -12,6 +12,7 @@ internal class ResourcesFeature: DatadogRemoteFeature {
     static var name = "session-replay-resources"
 
     let messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
+    let performanceOverride: PerformancePresetOverride?
 
     let requestBuilder: FeatureRequestBuilder
 
@@ -22,6 +23,10 @@ internal class ResourcesFeature: DatadogRemoteFeature {
         self.requestBuilder = ResourceRequestBuilder(
             customUploadURL: configuration.customEndpoint,
             telemetry: core.telemetry
+        )
+        self.performanceOverride = PerformancePresetOverride(
+            maxFileSize: SessionReplay.maxObjectSize,
+            maxObjectSize: SessionReplay.maxObjectSize
         )
     }
 }

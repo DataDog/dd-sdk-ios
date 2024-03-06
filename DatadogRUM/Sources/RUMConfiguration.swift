@@ -221,6 +221,8 @@ extension RUM {
             /// attributes for RUM resource based on the provided request, response, data, and error.
             /// Keep the implementation fast and do not make any assumptions on the thread used to run it.
             ///
+            /// Note: This is not supported for async-await APIs.
+            ///
             /// Default: `nil`.
             public var resourceAttributesProvider: RUM.ResourceAttributesProvider?
 

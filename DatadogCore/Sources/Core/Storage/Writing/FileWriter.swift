@@ -16,20 +16,16 @@ internal struct FileWriter: Writer {
     let orchestrator: FilesOrchestratorType
     /// Algorithm to encrypt written data.
     let encryption: DataEncryption?
-    /// If this writer should force creation of a new file for writing events.
-    let forceNewFile: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
 
     init(
         orchestrator: FilesOrchestratorType,
-        forceNewFile: Bool,
         encryption: DataEncryption?,
         telemetry: Telemetry
     ) {
         self.orchestrator = orchestrator
         self.encryption = encryption
-        self.forceNewFile = forceNewFile
         self.telemetry = telemetry
     }
 
@@ -55,7 +51,7 @@ internal struct FileWriter: Writer {
             // This is to avoid a situation where event is written to one file and event metadata to another.
             // If this happens, the reader will not be able to match event with its metadata.
             let writeSize = UInt64(encoded.count)
-            let file = try forceNewFile ? orchestrator.getNewWritableFile(writeSize: writeSize) : orchestrator.getWritableFile(writeSize: writeSize)
+            let file = try orchestrator.getWritableFile(writeSize: writeSize)
             try file.append(data: encoded)
         } catch {
             DD.logger.error("Failed to write data", error: error)

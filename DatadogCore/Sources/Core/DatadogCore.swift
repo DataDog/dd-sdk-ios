@@ -314,11 +314,11 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
 
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         // (on user thread) request SDK context
         context { context in
             // (on context thread) call the block
-            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent, forceNewBatch: forceNewBatch)
+            let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
         }
     }
@@ -344,6 +344,7 @@ extension DatadogContextProvider {
         buildId: String?,
         variant: String?,
         source: String,
+        nativeSourceOverride: String?,
         sdkVersion: String,
         ciAppOrigin: String?,
         applicationName: String,
@@ -370,6 +371,7 @@ extension DatadogContextProvider {
             applicationBundleIdentifier: applicationBundleIdentifier,
             sdkInitDate: dateProvider.now,
             device: device,
+            nativeSourceOverride: nativeSourceOverride,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
@@ -386,8 +388,7 @@ extension DatadogContextProvider {
         } else {
             assign(reader: SCNetworkReachabilityReader(), to: \.networkConnectionInfo)
         }
-
-        #if os(iOS) && !targetEnvironment(macCatalyst)
+        #if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
         if #available(iOS 12, *) {
             subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
         } else {

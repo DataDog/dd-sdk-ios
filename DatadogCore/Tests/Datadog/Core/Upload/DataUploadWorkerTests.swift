@@ -21,7 +21,6 @@ class DataUploadWorkerTests: XCTestCase {
     )
     lazy var writer = FileWriter(
         orchestrator: orchestrator,
-        forceNewFile: false,
         encryption: nil,
         telemetry: NOPTelemetry()
     )

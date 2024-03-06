@@ -685,6 +685,9 @@ public struct RUMErrorEvent: RUMDataModel {
 
     /// Error properties
     public struct Error: Codable {
+        /// Description of each binary image (native libraries; for Android: .so files) loaded or referenced by the process/application.
+        public let binaryImages: [BinaryImages]?
+
         /// Causes of the error
         public var causes: [Causes]?
 
@@ -706,6 +709,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Error message
         public var message: String
 
+        /// Platform-specific metadata of the error event.
+        public let meta: Meta?
+
         /// Resource properties of the error
         public var resource: Resource?
 
@@ -718,10 +724,17 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Stacktrace of the error
         public var stack: String?
 
+        /// Description of each thread in the process when error happened.
+        public let threads: [Threads]?
+
         /// The type of the error
         public let type: String?
 
+        /// A boolean value saying if any of the stack traces was truncated due to minification.
+        public let wasTruncated: Bool?
+
         enum CodingKeys: String, CodingKey {
+            case binaryImages = "binary_images"
             case causes = "causes"
             case fingerprint = "fingerprint"
             case handling = "handling"
@@ -729,11 +742,44 @@ public struct RUMErrorEvent: RUMDataModel {
             case id = "id"
             case isCrash = "is_crash"
             case message = "message"
+            case meta = "meta"
             case resource = "resource"
             case source = "source"
             case sourceType = "source_type"
             case stack = "stack"
+            case threads = "threads"
             case type = "type"
+            case wasTruncated = "was_truncated"
+        }
+
+        /// Description of the binary image (native library; for Android: .so file) loaded or referenced by the process/application.
+        public struct BinaryImages: Codable {
+            /// CPU architecture from the library.
+            public let arch: String?
+
+            /// Determines if it's a system or user library.
+            public let isSystem: Bool
+
+            /// Library's load address (hexadecimal).
+            public let loadAddress: String?
+
+            /// Max value from the library address range (hexadecimal).
+            public let maxAddress: String?
+
+            /// Name of the library.
+            public let name: String
+
+            /// Build UUID that uniquely identifies the binary image.
+            public let uuid: String
+
+            enum CodingKeys: String, CodingKey {
+                case arch = "arch"
+                case isSystem = "is_system"
+                case loadAddress = "load_address"
+                case maxAddress = "max_address"
+                case name = "name"
+                case uuid = "uuid"
+            }
         }
 
         /// Properties for one of the error causes
@@ -774,6 +820,40 @@ public struct RUMErrorEvent: RUMDataModel {
         public enum Handling: String, Codable {
             case handled = "handled"
             case unhandled = "unhandled"
+        }
+
+        /// Platform-specific metadata of the error event.
+        public struct Meta: Codable {
+            /// The CPU architecture of the process that crashed.
+            public let codeType: String?
+
+            /// CPU specific information about the exception encoded into 64-bit hexadecimal number preceded by the signal code.
+            public let exceptionCodes: String?
+
+            /// The name of the corresponding BSD termination signal. (in case of iOS crash)
+            public let exceptionType: String?
+
+            /// A client-generated 16-byte UUID of the incident.
+            public let incidentIdentifier: String?
+
+            /// Parent process information.
+            public let parentProcess: String?
+
+            /// The location of the executable.
+            public let path: String?
+
+            /// The name of the crashed process.
+            public let process: String?
+
+            enum CodingKeys: String, CodingKey {
+                case codeType = "code_type"
+                case exceptionCodes = "exception_codes"
+                case exceptionType = "exception_type"
+                case incidentIdentifier = "incident_identifier"
+                case parentProcess = "parent_process"
+                case path = "path"
+                case process = "process"
+            }
         }
 
         /// Resource properties of the error
@@ -854,6 +934,31 @@ public struct RUMErrorEvent: RUMDataModel {
             case reactNative = "react-native"
             case flutter = "flutter"
             case roku = "roku"
+            case ndk = "ndk"
+            case iosIl2cpp = "ios+il2cpp"
+            case ndkIl2cpp = "ndk+il2cpp"
+        }
+
+        /// Description of the thread in the process when error happened.
+        public struct Threads: Codable {
+            /// Tells if the thread crashed.
+            public let crashed: Bool
+
+            /// Name of the thread (e.g. 'Thread 0').
+            public let name: String
+
+            /// Unsymbolicated stack trace of the given thread.
+            public let stack: String
+
+            /// Platform-specific state of the thread when its state was captured (CPU registers dump for iOS, thread state enum for Android, etc.).
+            public let state: String?
+
+            enum CodingKeys: String, CodingKey {
+                case crashed = "crashed"
+                case name = "name"
+                case stack = "stack"
+                case state = "state"
+            }
         }
     }
 
@@ -2491,6 +2596,299 @@ extension RUMViewEvent.FeatureFlags {
     }
 }
 
+/// Schema of all properties of a Vital event
+public struct RUMVitalEvent: RUMDataModel {
+    /// Internal properties
+    public let dd: DD
+
+    /// Application properties
+    public let application: Application
+
+    /// Generated unique ID of the application build. Unlike version or build_version this field is not meant to be coming from the user, but rather generated by the tooling for each build.
+    public let buildId: String?
+
+    /// The build version for this application
+    public let buildVersion: String?
+
+    /// CI Visibility properties
+    public let ciTest: RUMCITest?
+
+    /// Device connectivity properties
+    public let connectivity: RUMConnectivity?
+
+    /// View Container properties (view wrapping the current view)
+    public let container: Container?
+
+    /// User provided context
+    public internal(set) var context: RUMEventAttributes?
+
+    /// Start of the event in ms from epoch
+    public let date: Int64
+
+    /// Device properties
+    public let device: RUMDevice?
+
+    /// Display properties
+    public let display: Display?
+
+    /// Operating system properties
+    public let os: RUMOperatingSystem?
+
+    /// The service name for this application
+    public let service: String?
+
+    /// Session properties
+    public let session: Session
+
+    /// The source of this event
+    public let source: Source?
+
+    /// Synthetics properties
+    public let synthetics: RUMSyntheticsTest?
+
+    /// RUM event type
+    public let type: String = "vital"
+
+    /// User properties
+    public internal(set) var usr: RUMUser?
+
+    /// The version for this application
+    public let version: String?
+
+    /// View properties
+    public var view: View
+
+    /// Vital properties
+    public let vital: Vital
+
+    enum CodingKeys: String, CodingKey {
+        case dd = "_dd"
+        case application = "application"
+        case buildId = "build_id"
+        case buildVersion = "build_version"
+        case ciTest = "ci_test"
+        case connectivity = "connectivity"
+        case container = "container"
+        case context = "context"
+        case date = "date"
+        case device = "device"
+        case display = "display"
+        case os = "os"
+        case service = "service"
+        case session = "session"
+        case source = "source"
+        case synthetics = "synthetics"
+        case type = "type"
+        case usr = "usr"
+        case version = "version"
+        case view = "view"
+        case vital = "vital"
+    }
+
+    /// Internal properties
+    public struct DD: Codable {
+        /// Browser SDK version
+        public let browserSdkVersion: String?
+
+        /// Subset of the SDK configuration options in use during its execution
+        public let configuration: Configuration?
+
+        /// Version of the RUM event format
+        public let formatVersion: Int64 = 2
+
+        /// Session-related internal properties
+        public let session: Session?
+
+        enum CodingKeys: String, CodingKey {
+            case browserSdkVersion = "browser_sdk_version"
+            case configuration = "configuration"
+            case formatVersion = "format_version"
+            case session = "session"
+        }
+
+        /// Subset of the SDK configuration options in use during its execution
+        public struct Configuration: Codable {
+            /// The percentage of sessions with RUM & Session Replay pricing tracked
+            public let sessionReplaySampleRate: Double?
+
+            /// The percentage of sessions tracked
+            public let sessionSampleRate: Double
+
+            enum CodingKeys: String, CodingKey {
+                case sessionReplaySampleRate = "session_replay_sample_rate"
+                case sessionSampleRate = "session_sample_rate"
+            }
+        }
+
+        /// Session-related internal properties
+        public struct Session: Codable {
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public let plan: Plan?
+
+            /// The precondition that led to the creation of the session
+            public let sessionPrecondition: RUMSessionPrecondition?
+
+            enum CodingKeys: String, CodingKey {
+                case plan = "plan"
+                case sessionPrecondition = "session_precondition"
+            }
+
+            /// Session plan: 1 is the plan without replay, 2 is the plan with replay (deprecated)
+            public enum Plan: Int, Codable {
+                case plan1 = 1
+                case plan2 = 2
+            }
+        }
+    }
+
+    /// Application properties
+    public struct Application: Codable {
+        /// UUID of the application
+        public let id: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+        }
+    }
+
+    /// View Container properties (view wrapping the current view)
+    public struct Container: Codable {
+        /// Source of the parent view
+        public let source: Source
+
+        /// Attributes of the view's container
+        public let view: View
+
+        enum CodingKeys: String, CodingKey {
+            case source = "source"
+            case view = "view"
+        }
+
+        /// Source of the parent view
+        public enum Source: String, Codable {
+            case android = "android"
+            case ios = "ios"
+            case browser = "browser"
+            case flutter = "flutter"
+            case reactNative = "react-native"
+            case roku = "roku"
+            case unity = "unity"
+        }
+
+        /// Attributes of the view's container
+        public struct View: Codable {
+            /// ID of the parent view
+            public let id: String
+
+            enum CodingKeys: String, CodingKey {
+                case id = "id"
+            }
+        }
+    }
+
+    /// Display properties
+    public struct Display: Codable {
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public let viewport: Viewport?
+
+        enum CodingKeys: String, CodingKey {
+            case viewport = "viewport"
+        }
+
+        /// The viewport represents the rectangular area that is currently being viewed. Content outside the viewport is not visible onscreen until scrolled into view.
+        public struct Viewport: Codable {
+            /// Height of the viewport (in pixels)
+            public let height: Double
+
+            /// Width of the viewport (in pixels)
+            public let width: Double
+
+            enum CodingKeys: String, CodingKey {
+                case height = "height"
+                case width = "width"
+            }
+        }
+    }
+
+    /// Session properties
+    public struct Session: Codable {
+        /// Whether this session has a replay
+        public let hasReplay: Bool?
+
+        /// UUID of the session
+        public let id: String
+
+        /// Type of the session
+        public let type: RUMSessionType
+
+        enum CodingKeys: String, CodingKey {
+            case hasReplay = "has_replay"
+            case id = "id"
+            case type = "type"
+        }
+    }
+
+    /// The source of this event
+    public enum Source: String, Codable {
+        case android = "android"
+        case ios = "ios"
+        case browser = "browser"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+        case roku = "roku"
+        case unity = "unity"
+    }
+
+    /// View properties
+    public struct View: Codable {
+        /// UUID of the view
+        public let id: String
+
+        /// User defined name of the view
+        public var name: String?
+
+        /// URL that linked to the initial view of the page
+        public var referrer: String?
+
+        /// URL of the view
+        public var url: String
+
+        enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case referrer = "referrer"
+            case url = "url"
+        }
+    }
+
+    /// Vital properties
+    public struct Vital: Codable {
+        /// User custom vital.
+        public let custom: [String: Double]?
+
+        /// UUID of the vital
+        public let id: String
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
+
+        /// Type of the vital
+        public let type: VitalType
+
+        enum CodingKeys: String, CodingKey {
+            case custom = "custom"
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Type of the vital
+        public enum VitalType: String, Codable {
+            case duration = "duration"
+        }
+    }
+}
+
 /// Schema of all properties of a telemetry error event
 public struct TelemetryErrorEvent: RUMDataModel {
     /// Internal properties
@@ -3052,6 +3450,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
 
+            /// The version of Unity used in a Unity application
+            public var unityVersion: String?
+
             /// Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             public let useAllowedTracingOrigins: Bool?
 
@@ -3134,6 +3535,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
+                case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useBeforeSend = "use_before_send"
@@ -3565,6 +3967,9 @@ public enum RUMMethod: String, Codable {
     case put = "PUT"
     case delete = "DELETE"
     case patch = "PATCH"
+    case trace = "TRACE"
+    case options = "OPTIONS"
+    case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/389581be98dcf8efbfcfe7bffaa32d53f960fb6f
+// Generated from https://github.com/DataDog/rum-events-format/tree/78f17559b7898dad5a6b3b4af2fe4ab4a5be6b54

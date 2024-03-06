@@ -65,7 +65,6 @@ class UIImageViewRecorderTests: XCTestCase {
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertFalse(builder.shouldRecordImage)
         XCTAssertNil(semantics.resources.first as? UIImage)
-        XCTAssertEqual(imageView.image?.recorded, false)
     }
 
     func testWhenShouldRecordImagePredicateReturnsTrue() throws {
@@ -81,21 +80,6 @@ class UIImageViewRecorderTests: XCTestCase {
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
         XCTAssertTrue(builder.shouldRecordImage)
         XCTAssertNotNil(semantics.resources.first)
-        XCTAssertEqual(imageView.image?.recorded, true)
-    }
-
-    func testWhenTintColorIsProvided() throws {
-        // When
-        let recorder = UIImageViewRecorder(tintColorProvider: { _ in return .red })
-        imageView.image = UIImage()
-        viewAttributes = .mock(fixture: .visible())
-
-        // Then
-        let semantics = try XCTUnwrap(recorder.semantics(of: imageView, with: viewAttributes, in: .mockAny()))
-        XCTAssertTrue(semantics is SpecificElement)
-        XCTAssertEqual(semantics.subtreeStrategy, .record, "Image view's subtree should be recorded")
-        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? UIImageViewWireframesBuilder)
-        XCTAssertEqual(builder.tintColor, .red)
     }
 
     func testWhenViewIsNotOfExpectedType() {
