@@ -585,6 +585,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             error: .init(
                 binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
+                category: nil, // TODO: RUM-2925 set category
                 causes: nil,
                 handling: nil,
                 handlingStack: nil,
@@ -601,6 +602,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 wasTruncated: command.isStackTraceTruncated
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
+            freeze: nil, // TODO: RUM-2925 set app hang duration
             os: .init(context: context),
             service: context.service,
             session: .init(

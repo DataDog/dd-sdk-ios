@@ -277,6 +277,7 @@ internal class RUMResourceScope: RUMScope {
             display: nil,
             error: .init(
                 binaryImages: nil,
+                category: nil, // TODO: RUM-2925 set category
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
@@ -296,6 +297,7 @@ internal class RUMResourceScope: RUMScope {
                 type: command.errorType,
                 wasTruncated: nil
             ),
+            freeze: nil,
             os: .init(context: context),
             service: context.service,
             session: .init(

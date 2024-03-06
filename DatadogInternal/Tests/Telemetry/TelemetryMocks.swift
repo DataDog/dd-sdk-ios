@@ -14,6 +14,7 @@ extension ConfigurationTelemetry {
             actionNameAttribute: .mockRandom(),
             allowFallbackToLocalStorage: .mockRandom(),
             allowUntrustedEvents: .mockRandom(),
+            appHangThreshold: .mockRandom(),
             backgroundTasksEnabled: .mockRandom(),
             batchProcessingLevel: .mockRandom(),
             batchSize: .mockRandom(),
