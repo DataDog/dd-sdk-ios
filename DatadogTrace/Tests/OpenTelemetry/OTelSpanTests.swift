@@ -31,6 +31,27 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.operationName, "OperationName")
     }
 
+    func testSpanResourceNameAttribute() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
+
+        // When
+        span.setAttribute(key: "resource.name", value: "ResourceName")
+        span.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 1)
+        let recordedSpan = recordedSpans.first!
+        XCTAssertEqual(recordedSpan.resource, "ResourceName")
+        XCTAssertEqual(recordedSpan.operationName, "OperationName")
+    }
+
     func testSpanSetName() {
         let writeSpanExpectation = expectation(description: "write span event")
         let core = PassthroughCoreMock(expectation: writeSpanExpectation)
