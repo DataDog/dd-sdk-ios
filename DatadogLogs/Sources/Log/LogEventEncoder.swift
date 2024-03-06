@@ -83,7 +83,7 @@ public struct LogEvent: Encodable {
 
         /// Device model name, e.g. "iPhone10,1", "iPhone13,2".
         public let model: String
-        
+
         /// The architecture of the device
         public let architecture: String
     }

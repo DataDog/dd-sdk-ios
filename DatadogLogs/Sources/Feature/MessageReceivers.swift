@@ -241,7 +241,8 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                     brand: deviceInfo.brand,
                     name: deviceInfo.name,
                     model: deviceInfo.model,
-                    architecture: deviceInfo.architecture)
+                    architecture: deviceInfo.architecture
+                )
             ),
             os: .init(
                 name: context.device.osName,
