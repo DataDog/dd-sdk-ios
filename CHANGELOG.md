@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Propagate parent span in distributing tracing. See [#1627][]
+- [IMPROVEMENT] Add Device's Brand, Name, and Model in LogEvent. See [#1672][] (Thanks [@aldoKelvianto][])
 - [FEATURE] Improved image recording in Session Replay. See [#1592][]
 
 # 2.7.1 / 12-02-2024
@@ -595,6 +596,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1637]: https://github.com/DataDog/dd-sdk-ios/pull/1637
 [#1541]: https://github.com/DataDog/dd-sdk-ios/pull/1541
 [#1592]: https://github.com/DataDog/dd-sdk-ios/pull/1592
+[#1672]: https://github.com/DataDog/dd-sdk-ios/pull/1672
 [#1596]: https://github.com/DataDog/dd-sdk-ios/pull/1596
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
 [#1627]: https://github.com/DataDog/dd-sdk-ios/pull/1627
@@ -618,6 +620,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [@lgaches]: https://github.com/lgaches
 [@lmramirez]: https://github.com/lmramirez
 [@marcusway]: https://github.com/marcusway
+[@aldoKelvianto]: https://github.com/aldoKelvianto
 [@matcartmill]: https://github.com/matcartmill
 [@michalsrutek]: https://github.com/michalsrutek
 [@philtre]: https://github.com/philtre
