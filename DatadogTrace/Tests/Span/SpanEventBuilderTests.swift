@@ -280,6 +280,58 @@ class SpanEventBuilderTests: XCTestCase {
         XCTAssertEqual(span.tags, [:])
     }
 
+    func testBuildingSpanWithOperationNameTagSet() {
+        let builder: SpanEventBuilder = .mockAny()
+
+        // given
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [
+                SpanTags.operation: "custom operation name"
+            ],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // then
+        XCTAssertEqual(span.operationName, "custom operation name")
+        XCTAssertEqual(span.tags, [:])
+    }
+
+    func testBuildingSpanWithServiceNameTagSet() {
+        let builder: SpanEventBuilder = .mockAny()
+
+        // given
+        let span = builder.createSpanEvent(
+            context: .mockAny(),
+            traceID: .mockAny(),
+            spanID: .mockAny(),
+            parentSpanID: .mockAny(),
+            operationName: .mockAny(),
+            startTime: .mockAny(),
+            finishTime: .mockAny(),
+            samplingRate: .mockAny(),
+            isKept: .mockAny(),
+            tags: [
+                SpanTags.service: "custom service name"
+            ],
+            baggageItems: [:],
+            logFields: []
+        )
+
+        // then
+        XCTAssertEqual(span.serviceName, "custom service name")
+        XCTAssertEqual(span.tags, [:])
+    }
+
     func testItSendsBaggageItemsAsTags() {
         let builder: SpanEventBuilder = .mockAny()
 
