@@ -80,7 +80,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
-            appHangThreshold: configuration.defaultAppHangThreshold,
+            appHangThreshold: configuration.appHangThreshold,
             mainQueue: configuration.mainQueue,
             dateProvider: configuration.dateProvider,
             backtraceReporter: core.backtraceReporter,

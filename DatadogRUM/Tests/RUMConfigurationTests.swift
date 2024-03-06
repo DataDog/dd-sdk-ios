@@ -22,6 +22,7 @@ class RUMConfigurationTests: XCTestCase {
         XCTAssertTrue(config.trackFrustrations)
         XCTAssertFalse(config.trackBackgroundEvents)
         XCTAssertEqual(config.longTaskThreshold, 0.1)
+        XCTAssertNil(config.appHangThreshold)
         XCTAssertEqual(config.vitalsUpdateFrequency, .average)
         XCTAssertNil(config.viewEventMapper)
         XCTAssertNil(config.resourceEventMapper)
