@@ -149,7 +149,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
             active: false,
             attributes: [:],
             parent: .currentSpan,
-            spanKind: .client,
+            spanKind: .internal,
             spanName: spanName,
             startTime: nil,
             tracer: self
