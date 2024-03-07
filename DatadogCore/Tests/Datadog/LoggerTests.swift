@@ -39,6 +39,8 @@ class LoggerTests: XCTestCase {
             sdkVersion: "1.2.3",
             applicationBundleIdentifier: "com.datadoghq.ios-sdk",
             device: .mockWith(
+                name: "Device Name",
+                model: "Model Name",
                 osName: "testOS",
                 osVersion: "1.0",
                 osBuildNumber: "FFFFFF",
@@ -74,6 +76,9 @@ class LoggerTests: XCTestCase {
           "ddtags": "env:tests,version:1.0.0",
           "_dd": {
             "device": {
+              "brand": "Apple",
+              "name": "Device Name",
+              "model": "Model Name",
               "architecture": "testArch"
             }
           }
