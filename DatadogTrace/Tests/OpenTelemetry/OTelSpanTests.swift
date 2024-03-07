@@ -169,7 +169,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.operationName, name)
         let expectedTags = [
             "key": "value",
-            "span.kind": "client",
+            "span.kind": "internal",
         ]
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
@@ -276,7 +276,7 @@ final class OTelSpanTests: XCTestCase {
             "key2": "value2",
             "key3": "3",
             "key4": "4.0",
-            "span.kind": "client",
+            "span.kind": "internal",
         ]
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
