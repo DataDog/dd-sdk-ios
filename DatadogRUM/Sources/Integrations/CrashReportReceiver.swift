@@ -372,7 +372,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             display: nil,
             error: .init(
                 binaryImages: nil,
-                category: nil, // TODO: RUM-2925 set category
+                category: .exception, // crashes are categorised as "Exception"
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

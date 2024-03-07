@@ -219,7 +219,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
 
         // Error command
-        case let command as RUMAddCurrentViewErrorCommand where isActiveView:
+        case let command as RUMErrorCommand where isActiveView:
             sendErrorEvent(on: command, context: context, writer: writer)
 
         case let command as RUMAddLongTaskCommand where isActiveView:
@@ -439,7 +439,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             attributes.merge(rumCommandAttributes: command.attributes)
         }
 
-        let isCrash = (command as? RUMAddCurrentViewErrorCommand).map { $0.isCrash ?? false } ?? false
+        let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
@@ -558,7 +558,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
+    private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
 
         let errorEvent = RUMErrorEvent(
@@ -585,7 +585,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             display: nil,
             error: .init(
                 binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
-                category: nil, // TODO: RUM-2925 set category
+                category: command.category,
                 causes: nil,
                 handling: nil,
                 handlingStack: nil,
@@ -602,7 +602,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 wasTruncated: command.isStackTraceTruncated
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
-            freeze: nil, // TODO: RUM-2925 set app hang duration
+            freeze: (command as? RUMAddCurrentViewAppHangCommand).map { appHangCommand in
+                .init(duration: appHangCommand.hangDuration.toInt64Nanoseconds)
+            },
             os: .init(context: context),
             service: context.service,
             session: .init(

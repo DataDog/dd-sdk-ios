@@ -63,14 +63,14 @@ internal extension RUMResourceType {
 internal typealias RUMErrorSourceType = RUMErrorEvent.Error.SourceType
 
 internal extension RUMErrorSourceType {
-    static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> Self {
+    static func extract(from attributes: inout [AttributeKey: AttributeValue]) -> RUMErrorSourceType? {
         return (attributes.removeValue(forKey: CrossPlatformAttributes.errorSourceType))
             .flatMap({
                 $0.decoded()
             })
             .flatMap {
                 return RUMErrorEvent.Error.SourceType(rawValue: $0)
-            } ?? .ios
+            }
     }
 }
 
@@ -105,6 +105,9 @@ internal enum RUMInternalErrorSource: String, Decodable {
         }
     }
 }
+
+/// A mobile-specific category of the error. It provides a high-level grouping for different types of errors.
+internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 internal class Monitor: RUMCommandSubscriber {
     let scopes: RUMApplicationScope
