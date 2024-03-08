@@ -78,6 +78,8 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         )
         RUMMonitor.shared().debug = true
 
+        Logs.addAttribute(forKey: "testing-attribute", value: "my-value")
+
         // Create Logger
         logger = Logger.create(
             with: Logger.Configuration(

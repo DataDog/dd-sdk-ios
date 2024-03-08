@@ -76,6 +76,11 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
         XCTFail("Unsupported architecture")
 #endif
 
+        crashLog.assertAttributes(equal: [
+            "global-attribute": "string-a",
+            "global-attribute-2": 1_150
+        ])
+
         crashLog.assertValue(
             forKeyPath: LogMatcher.JSONKey.errorStack,
             isTypeOf: String.self

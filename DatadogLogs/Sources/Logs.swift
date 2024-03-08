@@ -85,6 +85,7 @@ public enum Logs {
             return
         }
         feature.addAttribute(forKey: key, value: value)
+        sendAttributesChanged(for: feature, in: core)
     }
 
     /// Removes the custom attribute from all future logs sent any logger created from the provided Core..
@@ -98,6 +99,16 @@ public enum Logs {
             return
         }
         feature.removeAttribute(forKey: key)
+        sendAttributesChanged(for: feature, in: core)
+    }
+
+    private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
+        core.send(
+            message: .baggage(
+                key: GlobalLogAttributes.key,
+                value: GlobalLogAttributes(attributes: feature.getAttributes())
+            )
+        )
     }
 }
 

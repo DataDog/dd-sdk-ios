@@ -168,8 +168,24 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
             let view: View
         }
 
+        struct GlobalLogAttributes: Decodable {
+            let attributes: [AttributeKey: AttributeValue]
+
+            init(from decoder: Decoder) throws {
+                // Decode other properties into [String: Codable] dictionary:
+                let dynamicContainer = try decoder.container(keyedBy: DynamicCodingKey.self)
+                self.attributes = try dynamicContainer.allKeys
+                    .reduce(into: [:]) {
+                        $0[$1.stringValue] = try dynamicContainer.decode(AnyCodable.self, forKey: $1)
+                    }
+            }
+        }
+
         /// The last RUM view in crashed app process.
         let lastRUMViewEvent: PartialRUMViewEvent?
+
+        /// Last global log attributes
+        let lastLogAttributes: GlobalLogAttributes?
     }
 
     /// Time provider.
@@ -216,6 +232,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         let user = crashContext.userInfo
         let deviceInfo = crashContext.device
+        let userAttributes = crashContext.lastLogAttributes?.attributes
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
@@ -261,7 +278,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                 networkConnectionInfo: crashContext.networkConnectionInfo,
                 mobileCarrierInfo: crashContext.carrierInfo,
                 attributes: .init(
-                    userAttributes: [:],
+                    userAttributes: userAttributes ?? [:],
                     internalAttributes: errorAttributes
                 ),
                 tags: nil
