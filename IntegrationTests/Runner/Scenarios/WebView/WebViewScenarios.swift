@@ -8,6 +8,7 @@ import UIKit
 import DatadogCore
 import DatadogRUM
 import DatadogLogs
+import DatadogSessionReplay
 
 private struct WebViewTrackingScenarioPredicate: UIKitRUMViewsPredicate {
     private let defaultPredicate = DefaultUIKitRUMViewsPredicate()
@@ -25,10 +26,20 @@ final class WebViewTrackingScenario: TestScenario {
     static var storyboardName: String = "WebViewTrackingScenario"
 
     func configureFeatures() {
-        var config = RUM.Configuration(applicationID: "rum-application-id")
-        config.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
-        config.uiKitViewsPredicate = WebViewTrackingScenarioPredicate()
-        RUM.enable(with: config)
+        RUM.enable(
+            with: RUM.Configuration(
+                applicationID: "rum-application-id",
+                uiKitViewsPredicate: WebViewTrackingScenarioPredicate(),
+                customEndpoint: Environment.serverMockConfiguration()?.rumEndpoint
+            )
+        )
+
+        SessionReplay.enable(
+            with: SessionReplay.Configuration(
+                replaySampleRate: 100,
+                customEndpoint: Environment.serverMockConfiguration()?.srEndpoint
+            )
+        )
 
         Logs.enable(
             with: Logs.Configuration(

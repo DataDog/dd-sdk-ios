@@ -40,6 +40,7 @@ internal struct RUMScopeDependencies {
     let syntheticsTest: RUMSyntheticsTest?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
+    let viewCache: ViewCache
 
     var telemetry: Telemetry {
         core?.telemetry ?? NOPTelemetry()
