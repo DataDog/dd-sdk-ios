@@ -133,7 +133,7 @@ class LogsTests: XCTestCase {
         XCTAssertEqual(logMessage.count, 1)
         let message = try XCTUnwrap(logMessage.first)
         let baggage: GlobalLogAttributes = try XCTUnwrap(message.baggage(forKey: GlobalLogAttributes.key))
-        XCTAssertEqual(baggage.attributes[attributeKey] as? String, attributeValue)
+        XCTAssertEqual((baggage.attributes[attributeKey] as? AnyCodable)?.value as? String, attributeValue)
     }
 
     func testItSendsGlobalLogUpdates_whenRemovettribute() throws {

@@ -284,7 +284,7 @@ class CrashLogReceiverTests: XCTestCase {
             [
                 "mock-string-attribute": stringAttribute,
                 "mock-bool-attribute": boolAttribute
-            ]
+            ] as [String: Any]
         ))
         let core = PassthroughCoreMock(
             messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
