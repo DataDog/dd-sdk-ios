@@ -258,7 +258,10 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, error: error, source: source, attributes: attributes
+            time: time,
+            error: error,
+            source: source,
+            attributes: attributes
         )
     }
 
@@ -271,7 +274,12 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, message: message, type: type, stack: stack, source: source, attributes: attributes
+            time: time,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes
         )
     }
 }

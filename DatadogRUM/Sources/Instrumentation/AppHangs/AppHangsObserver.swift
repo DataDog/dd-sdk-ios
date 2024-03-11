@@ -57,19 +57,16 @@ internal class AppHangsObserver: RUMCommandPublisher {
     }
 
     private func report(appHang: AppHang) {
-        let command = RUMAddCurrentViewErrorCommand(
+        let command = RUMAddCurrentViewAppHangCommand(
             time: appHang.date,
+            attributes: [:],
             message: Constants.appHangErrorMessage,
             type: Constants.appHangErrorType,
             stack: appHang.backtrace?.stack ?? Constants.appHangNoStackErrorMessage,
-            source: .source,
-            isCrash: false,
             threads: appHang.backtrace?.threads,
             binaryImages: appHang.backtrace?.binaryImages,
             isStackTraceTruncated: appHang.backtrace?.wasTruncated,
-            attributes: [
-                "hang_duration": appHang.duration
-            ]
+            hangDuration: appHang.duration
         )
 
         subscriber?.process(command: command)

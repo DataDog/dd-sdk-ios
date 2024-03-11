@@ -18,6 +18,12 @@ class AppHangsMonitoringTests: XCTestCase {
     /// Use main queue mock, otherwise any `waitForExpectations(timeout:)` would be considered an app hang and may cause dead locks.
     private let mainQueue = DispatchQueue(label: "main-queue-mock", qos: .userInteractive)
 
+    private var expectedHangDurationRangeNs: ClosedRange<Int64> {
+        let min = hangDuration.toInt64Nanoseconds / 2 // -50% margin
+        let max = hangDuration.toInt64Nanoseconds * 5 // +500% margin to avoid flakiness
+        return (min...max)
+    }
+
     override func setUp() {
         rumConfig.mainQueue = mainQueue
         rumConfig.appHangThreshold = 0.4
@@ -43,9 +49,12 @@ class AppHangsMonitoringTests: XCTestCase {
         try flushHangsMonitoring()
         let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
         let appHangError = try XCTUnwrap(errors.first)
+        let actualHangDuration = try XCTUnwrap(appHangError.freeze?.duration)
 
         XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
         XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.category, .appHang)
+        XCTAssertTrue(expectedHangDurationRangeNs.contains(actualHangDuration))
     }
 
     func testWhenMainThreadIsHangedAfterInit_itTracksAppHangError() throws {
@@ -63,9 +72,12 @@ class AppHangsMonitoringTests: XCTestCase {
         try flushHangsMonitoring()
         let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
         let appHangError = try XCTUnwrap(errors.first)
+        let actualHangDuration = try XCTUnwrap(appHangError.freeze?.duration)
 
         XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
         XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.category, .appHang)
+        XCTAssertTrue(expectedHangDurationRangeNs.contains(actualHangDuration))
     }
 
     func testGivenRUMAndCrashReportingEnabled_whenMainThreadHangs_thenAppHangErrorIncludesStackTrace() throws {

@@ -495,6 +495,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Feature flags properties
     public internal(set) var featureFlags: FeatureFlags?
 
+    /// Properties of App Hang and ANR errors
+    public let freeze: Freeze?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -537,6 +540,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case display = "display"
         case error = "error"
         case featureFlags = "feature_flags"
+        case freeze = "freeze"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -688,6 +692,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Description of each binary image (native libraries; for Android: .so files) loaded or referenced by the process/application.
         public let binaryImages: [BinaryImages]?
 
+        /// The specific category of the error. It provides a high-level grouping for different types of errors.
+        public let category: Category?
+
         /// Causes of the error
         public var causes: [Causes]?
 
@@ -735,6 +742,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case binaryImages = "binary_images"
+            case category = "category"
             case causes = "causes"
             case fingerprint = "fingerprint"
             case handling = "handling"
@@ -780,6 +788,13 @@ public struct RUMErrorEvent: RUMDataModel {
                 case name = "name"
                 case uuid = "uuid"
             }
+        }
+
+        /// The specific category of the error. It provides a high-level grouping for different types of errors.
+        public enum Category: String, Codable {
+            case aNR = "ANR"
+            case appHang = "App Hang"
+            case exception = "Exception"
         }
 
         /// Properties for one of the error causes
@@ -965,6 +980,16 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
+    }
+
+    /// Properties of App Hang and ANR errors
+    public struct Freeze: Codable {
+        /// Duration of the main thread freeze (in ns)
+        public let duration: Int64
+
+        enum CodingKeys: String, CodingKey {
+            case duration = "duration"
+        }
     }
 
     /// Session properties
@@ -3333,6 +3358,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether untrusted events are allowed
             public let allowUntrustedEvents: Bool?
 
+            /// The threshold used for iOS App Hangs monitoring (in milliseconds)
+            public let appHangThreshold: Int64?
+
             /// Whether UIApplication background tasks are enabled
             public let backgroundTasksEnabled: Bool?
 
@@ -3496,6 +3524,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case actionNameAttribute = "action_name_attribute"
                 case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
                 case allowUntrustedEvents = "allow_untrusted_events"
+                case appHangThreshold = "app_hang_threshold"
                 case backgroundTasksEnabled = "background_tasks_enabled"
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
@@ -3972,4 +4001,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/78f17559b7898dad5a6b3b4af2fe4ab4a5be6b54
+// Generated from https://github.com/DataDog/rum-events-format/tree/3a5e8766c3a7a136607540e0f78d7810acf03038
