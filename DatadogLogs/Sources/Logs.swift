@@ -74,7 +74,7 @@ public enum Logs {
         }
     }
 
-    /// Adds a custom attribute to all future logs sent by any logger created from the provided Core..
+    /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
     /// - Parameters:
     ///   - key: the attribute key. See `AttributeKey` documentation for information on nesting attributes with dot `.` syntax.
     ///   - value: the attribute value that conforms to `Encodable`. See `AttributeValue` documentation
@@ -88,7 +88,7 @@ public enum Logs {
         sendAttributesChanged(for: feature, in: core)
     }
 
-    /// Removes the custom attribute from all future logs sent any logger created from the provided Core..
+    /// Removes the custom attribute from all future logs sent any logger created from the provided Core.
     ///
     /// Previous logs won't lose this attribute if sent prior to this call.
     /// - Parameters:

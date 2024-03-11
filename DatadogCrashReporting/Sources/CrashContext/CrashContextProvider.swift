@@ -151,7 +151,7 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
                 self.logAttributes = try baggage.decode(type: AnyCodable.self)
             } catch {
                 core?.telemetry
-                    .error("Fails to decode RUM session state from Crash Reporting", error: error)
+                    .error("Fails to decode log attributes from Crash Reporting", error: error)
             }
         }
     }
