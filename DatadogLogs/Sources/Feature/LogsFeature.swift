@@ -16,6 +16,9 @@ internal struct LogsFeature: DatadogRemoteFeature {
 
     let logEventMapper: LogEventMapper?
 
+    @ReadWriteLock
+    private var attributes: [String: Encodable] = [:]
+
     /// Time provider.
     let dateProvider: DateProvider
 
@@ -50,5 +53,17 @@ internal struct LogsFeature: DatadogRemoteFeature {
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
         self.dateProvider = dateProvider
+    }
+
+    internal func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        _attributes.mutate { $0[key] = value }
+    }
+
+    internal func removeAttribute(forKey key: AttributeKey) {
+        _attributes.mutate { $0.removeValue(forKey: key) }
+    }
+
+    internal func getAttributes() -> [String: Encodable] {
+        return attributes
     }
 }

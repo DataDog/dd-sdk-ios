@@ -69,6 +69,9 @@ internal struct CrashContext: Codable, Equatable {
     /// The last _"Is app in foreground?"_ information from crashed app process.
     let lastIsAppInForeground: Bool
 
+    /// Last global log attributes, set with Logs.addAttribute / Logs.removeAttribute
+    var lastLogAttributes: AnyCodable?
+
     // MARK: - Initialization
 
     init(
@@ -86,7 +89,8 @@ internal struct CrashContext: Codable, Equatable {
         carrierInfo: CarrierInfo?,
         lastRUMViewEvent: AnyCodable?,
         lastRUMSessionState: AnyCodable?,
-        lastIsAppInForeground: Bool
+        lastIsAppInForeground: Bool,
+        lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service
@@ -103,12 +107,14 @@ internal struct CrashContext: Codable, Equatable {
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastIsAppInForeground = lastIsAppInForeground
+        self.lastLogAttributes = lastLogAttributes
     }
 
     init(
         _ context: DatadogContext,
         lastRUMViewEvent: AnyCodable?,
-        lastRUMSessionState: AnyCodable?
+        lastRUMSessionState: AnyCodable?,
+        lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = context.serverTimeOffset
         self.service = context.service
@@ -126,6 +132,7 @@ internal struct CrashContext: Codable, Equatable {
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
+        self.lastLogAttributes = lastLogAttributes
     }
 
     static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {

@@ -100,6 +100,8 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
+        let globalAttributes = self.core.get(feature: LogsFeature.self)?.getAttributes()
+
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
@@ -110,6 +112,12 @@ internal final class RemoteLogger: LoggerProtocol {
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
+        let combinedAttributes: [String: any Encodable]
+        if let globalAttributes = globalAttributes {
+            combinedAttributes = globalAttributes.merging(userAttributes) { $1 }
+        } else {
+            combinedAttributes = userAttributes
+        }
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
@@ -155,7 +163,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 message: message,
                 error: error,
                 attributes: .init(
-                    userAttributes: userAttributes,
+                    userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes
                 ),
                 tags: tags,
@@ -175,7 +183,7 @@ internal final class RemoteLogger: LoggerProtocol {
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(userAttributes)
+                            attributes: .init(combinedAttributes)
                         )
                     )
                 )
