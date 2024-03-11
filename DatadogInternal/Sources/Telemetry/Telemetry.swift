@@ -30,6 +30,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
+    public let tracerAPI: String?
+    public let tracerAPIVersion: String?
     public let traceSampleRate: Int64?
     public let trackBackgroundEvents: Bool?
     public let trackCrossPlatformLongTasks: Bool?
@@ -201,6 +203,8 @@ extension Telemetry {
         startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
+        tracerAPI: String? = nil,
+        tracerAPIVersion: String? = nil,
         traceSampleRate: Int64? = nil,
         trackBackgroundEvents: Bool? = nil,
         trackCrossPlatformLongTasks: Bool? = nil,
@@ -253,6 +257,8 @@ extension Telemetry {
             startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
+            tracerAPI: tracerAPI,
+            tracerAPIVersion: tracerAPIVersion,
             traceSampleRate: traceSampleRate,
             trackBackgroundEvents: trackBackgroundEvents,
             trackCrossPlatformLongTasks: trackCrossPlatformLongTasks,
@@ -360,6 +366,8 @@ extension ConfigurationTelemetry {
             startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
+            tracerAPI: other.tracerAPI ?? tracerAPI,
+            tracerAPIVersion: other.tracerAPIVersion ?? tracerAPIVersion,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,
             trackBackgroundEvents: other.trackBackgroundEvents ?? trackBackgroundEvents,
             trackCrossPlatformLongTasks: other.trackCrossPlatformLongTasks ?? trackCrossPlatformLongTasks,

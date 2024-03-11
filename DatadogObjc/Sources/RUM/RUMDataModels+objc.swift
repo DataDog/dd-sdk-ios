@@ -1612,6 +1612,10 @@ public class DDRUMErrorEventError: NSObject {
         get { root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) } }
     }
 
+    @objc public var csp: DDRUMErrorEventErrorCSP? {
+        root.swiftModel.error.csp != nil ? DDRUMErrorEventErrorCSP(root: root) : nil
+    }
+
     @objc public var fingerprint: String? {
         set { root.swiftModel.error.fingerprint = newValue }
         get { root.swiftModel.error.fingerprint }
@@ -1795,6 +1799,42 @@ public enum DDRUMErrorEventErrorCausesSource: Int {
     case agent
     case webview
     case custom
+    case report
+}
+
+@objc
+public class DDRUMErrorEventErrorCSP: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var disposition: DDRUMErrorEventErrorCSPDisposition {
+        .init(swift: root.swiftModel.error.csp!.disposition)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorCSPDisposition: Int {
+    internal init(swift: RUMErrorEvent.Error.CSP.Disposition?) {
+        switch swift {
+        case nil: self = .none
+        case .enforce?: self = .enforce
+        case .report?: self = .report
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.CSP.Disposition? {
+        switch self {
+        case .none: return nil
+        case .enforce: return .enforce
+        case .report: return .report
+        }
+    }
+
+    case none
+    case enforce
     case report
 }
 
@@ -6931,6 +6971,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
     }
 
+    @objc public var compressIntakeRequests: NSNumber? {
+        root.swiftModel.telemetry.configuration.compressIntakeRequests as NSNumber?
+    }
+
     @objc public var dartVersion: String? {
         set { root.swiftModel.telemetry.configuration.dartVersion = newValue }
         get { root.swiftModel.telemetry.configuration.dartVersion }
@@ -7019,6 +7063,16 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.traceSampleRate as NSNumber?
     }
 
+    @objc public var tracerApi: String? {
+        set { root.swiftModel.telemetry.configuration.tracerApi = newValue }
+        get { root.swiftModel.telemetry.configuration.tracerApi }
+    }
+
+    @objc public var tracerApiVersion: String? {
+        set { root.swiftModel.telemetry.configuration.tracerApiVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.tracerApiVersion }
+    }
+
     @objc public var trackBackgroundEvents: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackBackgroundEvents = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackBackgroundEvents as NSNumber? }
@@ -7091,6 +7145,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
     @objc public var trackViewsManually: NSNumber? {
         set { root.swiftModel.telemetry.configuration.trackViewsManually = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
+    }
+
+    @objc public var trackingConsent: String? {
+        root.swiftModel.telemetry.configuration.trackingConsent
     }
 
     @objc public var unityVersion: String? {
@@ -7272,4 +7330,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330
+// Generated from https://github.com/DataDog/rum-events-format/tree/29008e6da435c4573160a2f549a4d657c7315d31

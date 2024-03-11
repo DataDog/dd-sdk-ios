@@ -284,6 +284,8 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
             traceSampleRate: configuration.traceSampleRate,
+            tracerApi: configuration.tracerAPI,
+            tracerApiVersion: configuration.tracerAPIVersion,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackCrossPlatformLongTasks: configuration.trackCrossPlatformLongTasks,
             trackErrors: configuration.trackErrors,

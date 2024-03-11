@@ -698,6 +698,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Causes of the error
         public var causes: [Causes]?
 
+        /// Content Security Violation properties
+        public let csp: CSP?
+
         /// Fingerprint used for Error Tracking custom grouping
         public var fingerprint: String?
 
@@ -744,6 +747,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case binaryImages = "binary_images"
             case category = "category"
             case causes = "causes"
+            case csp = "csp"
             case fingerprint = "fingerprint"
             case handling = "handling"
             case handlingStack = "handling_stack"
@@ -827,6 +831,22 @@ public struct RUMErrorEvent: RUMDataModel {
                 case agent = "agent"
                 case webview = "webview"
                 case custom = "custom"
+                case report = "report"
+            }
+        }
+
+        /// Content Security Violation properties
+        public struct CSP: Codable {
+            /// In the context of CSP errors, indicates how the violated policy is configured to be treated by the user agent.
+            public let disposition: Disposition?
+
+            enum CodingKeys: String, CodingKey {
+                case disposition = "disposition"
+            }
+
+            /// In the context of CSP errors, indicates how the violated policy is configured to be treated by the user agent.
+            public enum Disposition: String, Codable {
+                case enforce = "enforce"
                 case report = "report"
             }
         }
@@ -3373,6 +3393,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
 
+            /// Whether intake requests are compressed
+            public let compressIntakeRequests: Bool?
+
             /// The version of Dart used in a Flutter application
             public var dartVersion: String?
 
@@ -3433,6 +3456,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of requests traced
             public let traceSampleRate: Int64?
 
+            /// The tracer API used by the SDK. Possible values: 'Datadog', 'OpenTelemetry', 'OpenTracing'
+            public var tracerApi: String?
+
+            /// The version of the tracer API used by the SDK. Eg. '0.1.0'
+            public var tracerApiVersion: String?
+
             /// Whether RUM events are tracked when the application is in Background
             public var trackBackgroundEvents: Bool?
 
@@ -3477,6 +3506,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
+
+            /// The initial tracking consent value
+            public let trackingConsent: String?
 
             /// The version of Unity used in a Unity application
             public var unityVersion: String?
@@ -3529,6 +3561,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
                 case forwardConsoleLogs = "forward_console_logs"
@@ -3549,6 +3582,8 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
                 case traceSampleRate = "trace_sample_rate"
+                case tracerApi = "tracer_api"
+                case tracerApiVersion = "tracer_api_version"
                 case trackBackgroundEvents = "track_background_events"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
@@ -3564,6 +3599,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
+                case trackingConsent = "tracking_consent"
                 case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
@@ -4001,4 +4037,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330
+// Generated from https://github.com/DataDog/rum-events-format/tree/29008e6da435c4573160a2f549a4d657c7315d31

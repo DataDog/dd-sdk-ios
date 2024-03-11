@@ -61,6 +61,9 @@ public class OTelTracerProvider: OpenTelemetryApi.TracerProvider {
                 )
             }
 
+            // Send tracer API usage to telemetry
+            core?.telemetry.configuration(tracerAPI: "OpenTelemetry", tracerAPIVersion: OpenTelemetry.version)
+
             return feature.tracer
         } catch {
             consolePrint("\(error)", .error)
