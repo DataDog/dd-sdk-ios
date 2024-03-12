@@ -68,6 +68,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                     level: log.level,
                     message: log.message,
                     error: log.error,
+                    errorFingerprint: nil,
                     attributes: .init(
                         userAttributes: log.userAttributes ?? [:],
                         internalAttributes: log.internalAttributes

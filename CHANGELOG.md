@@ -4,6 +4,7 @@
 - [FIX] Propagate parent span in distributing tracing. See [#1627][]
 - [IMPROVEMENT] Add Device's Brand, Name, and Model in LogEvent. See [#1672][] (Thanks [@aldoKelvianto][])
 - [FEATURE] Improved image recording in Session Replay. See [#1592][]
+- [FEATURE] Allow custom error fingerprinting on logs with a special attribute. See [#1722][]
 
 # 2.7.1 / 12-02-2024
 
@@ -605,6 +606,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1685]: https://github.com/DataDog/dd-sdk-ios/pull/1685
 [#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
 [#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
+[#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
