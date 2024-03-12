@@ -201,6 +201,7 @@ class TelemetryTest: Telemetry {
             actionNameAttribute: configuration.actionNameAttribute,
             allowFallbackToLocalStorage: configuration.allowFallbackToLocalStorage,
             allowUntrustedEvents: configuration.allowUntrustedEvents,
+            appHangThreshold: configuration.appHangThreshold,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,

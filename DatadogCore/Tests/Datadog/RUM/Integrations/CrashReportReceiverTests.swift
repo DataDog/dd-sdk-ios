@@ -694,6 +694,7 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.binaryImages], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
             XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
+            XCTAssertEqual(sentRUMError.model.error.category, .exception, "Crashes are considered exceptions")
             XCTAssertNil(sentRUMView.context, "It musn't contain context as there was no last active view")
         }
 

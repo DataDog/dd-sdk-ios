@@ -118,6 +118,20 @@ extension RUM {
         /// Default: `0.1`.
         public var longTaskThreshold: TimeInterval?
 
+        /// Enables App Hangs monitoring with the given threshold (in seconds).
+        ///
+        /// Only App Hangs that last more than this threshold will be reported. The minimal allowed value for this option is `0.1` seconds.
+        /// To disable hangs monitoring, set this parameter to `nil`.
+        ///
+        /// - Note: Be cautious when setting the threshold to very small values, as it may lead to excessive reporting of hangs.
+        ///         The SDK implements a secondary thread for monitoring App Hangs. To reduce CPU utilization, it tracks hangs with a tolerance of 2.5%, meaning that
+        ///         some hangs lasting very close to this threshold may not be reported.
+        ///
+        /// - Note: App Hangs monitoring requires Datadog Crash Reporting to be enabled. Otherwise stack trace will be not reported in App Hang errors.
+        ///
+        /// - Default: `nil` (hangs monitoring disabled).
+        public var appHangThreshold: TimeInterval?
+
         /// Sets the preferred frequency for collecting RUM vitals.
         ///
         /// To disable RUM vitals monitoring, set `nil`.
@@ -258,6 +272,8 @@ extension RUM {
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
 
         internal var dateProvider: DateProvider = SystemDateProvider()
+        /// The main queue, subject to App Hangs monitoring.
+        internal var mainQueue: DispatchQueue = .main
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
         internal var debugViews: Bool = ProcessInfo.processInfo.arguments.contains("DD_DEBUG_RUM")
@@ -308,6 +324,7 @@ extension RUM.Configuration {
     ///   - trackFrustrations: Determines whether automatic tracking of user frustrations should be enabled. Default: `true`.
     ///   - trackBackgroundEvents: Determines whether RUM events should be tracked when no view is active. Default: `false`.
     ///   - longTaskThreshold: The threshold for RUM long tasks tracking (in seconds). Default: `0.1`.
+    ///   - appHangThreshold: The threshold for App Hangs monitoring (in seconds). Default: `nil`.
     ///   - vitalsUpdateFrequency: The preferred frequency for collecting RUM vitals. Default: `.average`.
     ///   - viewEventMapper: Custom mapper for RUM view events. Default: `nil`.
     ///   - resourceEventMapper: Custom mapper for RUM resource events. Default: `nil`.
@@ -326,6 +343,7 @@ extension RUM.Configuration {
         trackFrustrations: Bool = true,
         trackBackgroundEvents: Bool = false,
         longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
         vitalsUpdateFrequency: VitalsFrequency? = .average,
         viewEventMapper: RUM.ViewEventMapper? = nil,
         resourceEventMapper: RUM.ResourceEventMapper? = nil,
@@ -344,6 +362,7 @@ extension RUM.Configuration {
         self.trackFrustrations = trackFrustrations
         self.trackBackgroundEvents = trackBackgroundEvents
         self.longTaskThreshold = longTaskThreshold
+        self.appHangThreshold = appHangThreshold
         self.vitalsUpdateFrequency = vitalsUpdateFrequency
         self.viewEventMapper = viewEventMapper
         self.resourceEventMapper = resourceEventMapper

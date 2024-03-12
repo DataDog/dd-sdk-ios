@@ -372,6 +372,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             display: nil,
             error: .init(
                 binaryImages: nil,
+                category: .exception, // crashes are categorised as "Exception"
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
@@ -386,6 +387,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 type: errorType,
                 wasTruncated: nil
             ),
+            freeze: nil,
             os: lastRUMView.os,
             service: lastRUMView.service,
             session: .init(

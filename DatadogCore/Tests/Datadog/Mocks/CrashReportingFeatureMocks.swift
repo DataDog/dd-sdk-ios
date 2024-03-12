@@ -200,7 +200,7 @@ internal extension DDCrashReport {
         type: String = .mockAny(),
         message: String = .mockAny(),
         stack: String = .mockAny(),
-        threads: [Thread] = [],
+        threads: [DDThread] = [],
         binaryImages: [BinaryImage] = [],
         meta: Meta = .mockAny(),
         wasTruncated: Bool = .mockAny(),
