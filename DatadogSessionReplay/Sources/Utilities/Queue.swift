@@ -23,7 +23,7 @@ internal class BackgroundAsyncQueue: Queue {
     private let queue: DispatchQueue
 
     init(named queueName: String) {
-        self.queue = DispatchQueue(label: queueName, qos: .utility)
+        self.queue = DispatchQueue(label: queueName, qos: .utility, autoreleaseFrequency: .workItem)
     }
 
     func run(_ block: @escaping () -> Void) {

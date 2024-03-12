@@ -275,7 +275,6 @@ internal class NOPFilesOrchestrator: FilesOrchestratorType {
 
     var performance: StoragePerformancePreset { StoragePerformanceMock.noOp }
 
-    func getNewWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getWritableFile(writeSize: UInt64) throws -> WritableFile { NOPFile() }
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String>, limit: Int) -> [ReadableFile] { [] }
     func delete(readableFile: ReadableFile, deletionReason: BatchDeletedMetric.RemovalReason) { }

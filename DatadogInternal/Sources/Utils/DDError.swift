@@ -24,11 +24,13 @@ public struct DDError: Equatable, Codable, PassthroughAnyCodable {
     public let type: String
     public let message: String
     public let stack: String
+    public let sourceType: String
 
-    public init(type: String, message: String, stack: String) {
+    public init(type: String, message: String, stack: String, sourceType: String = "ios") {
         self.type = type
         self.message = message
         self.stack = stack
+        self.sourceType = sourceType
     }
 }
 
@@ -49,6 +51,8 @@ extension DDError {
             self.message = "\(swiftError)"
             self.stack = "\(swiftError)"
         }
+
+        self.sourceType = "ios"
     }
 }
 

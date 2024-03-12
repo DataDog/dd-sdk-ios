@@ -100,6 +100,8 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
+        let globalAttributes = self.core.get(feature: LogsFeature.self)?.getAttributes()
+
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
@@ -110,6 +112,12 @@ internal final class RemoteLogger: LoggerProtocol {
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
+        let combinedAttributes: [String: any Encodable]
+        if let globalAttributes = globalAttributes {
+            combinedAttributes = globalAttributes.merging(userAttributes) { $1 }
+        } else {
+            combinedAttributes = userAttributes
+        }
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
@@ -155,7 +163,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 message: message,
                 error: error,
                 attributes: .init(
-                    userAttributes: userAttributes,
+                    userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes
                 ),
                 tags: tags,
@@ -175,7 +183,7 @@ internal final class RemoteLogger: LoggerProtocol {
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(userAttributes)
+                            attributes: .init(combinedAttributes)
                         )
                     )
                 )
@@ -187,12 +195,16 @@ internal final class RemoteLogger: LoggerProtocol {
 extension RemoteLogger: InternalLoggerProtocol {
     func log(level: LogLevel, message: String, errorKind: String?, errorMessage: String?, stackTrace: String?, attributes: [String: Encodable]?) {
         var ddError: DDError?
+        // Find and remove source_type if it's in the attributes
+        var logAttributes = attributes
+        let sourceType = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorSourceType) as? String
+
         if errorKind != nil || errorMessage != nil || stackTrace != nil {
             // Cross platform frameworks don't necessarilly send all values for errors. Send empty strings
             // for any values that are empty.
-            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "")
+            ddError = DDError(type: errorKind ?? "", message: errorMessage ?? "", stack: stackTrace ?? "", sourceType: sourceType ?? "ios")
         }
 
-        internalLog(level: level, message: message, error: ddError, attributes: attributes)
+        internalLog(level: level, message: message, error: ddError, attributes: logAttributes)
     }
 }

@@ -136,7 +136,7 @@ extension InternalExtension where ExtendedType == WebViewTracking {
         /// Sends a web-view message.
         ///
         /// - Parameter message: The message to send
-        public func send(body: Any) throws {}
+        public func send(body: Any, slotId: String? = nil) {}
     }
 
     /// Creates a web-view message emitter for cross-platform.

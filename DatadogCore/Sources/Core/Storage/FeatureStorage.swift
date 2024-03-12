@@ -23,13 +23,12 @@ internal struct FeatureStorage {
     /// Telemetry interface.
     let telemetry: Telemetry
 
-    func writer(for trackingConsent: TrackingConsent, forceNewBatch: Bool) -> Writer {
+    func writer(for trackingConsent: TrackingConsent) -> Writer {
         switch trackingConsent {
         case .granted:
             return AsyncWriter(
                 execute: FileWriter(
                     orchestrator: authorizedFilesOrchestrator,
-                    forceNewFile: forceNewBatch,
                     encryption: encryption,
                     telemetry: telemetry
                 ),
@@ -41,7 +40,6 @@ internal struct FeatureStorage {
             return AsyncWriter(
                 execute: FileWriter(
                     orchestrator: unauthorizedFilesOrchestrator,
-                    forceNewFile: forceNewBatch,
                     encryption: encryption,
                     telemetry: telemetry
                 ),

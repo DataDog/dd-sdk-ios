@@ -40,14 +40,11 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
     ///                  is invoked.
     ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `bypassConsent` parameter set to `true`.
-    ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
-    ///                  is invoked with `forceNewBatch` parameter set to `true`.
     public required init(
         context: DatadogContext = .mockAny(),
         feature: Feature? = nil,
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
-        forceNewBatchExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.feature = feature
@@ -56,7 +53,6 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
             context: context,
             expectation: expectation,
             bypassConsentExpectation: bypassConsentExpectation,
-            forceNewBatchExpectation: forceNewBatchExpectation,
             messageReceiver: messageReceiver
         )
     }
@@ -69,13 +65,10 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
     ///                  is invoked.
     ///   - bypassConsentExpectation: The test exepection to fullfill when `eventWriteContext`
     ///                  is invoked with `bypassConsent` parameter set to `true`.
-    ///   - forceNewBatchExpectation: The test exepection to fullfill when `eventWriteContext`
-    ///                  is invoked with `forceNewBatch` parameter set to `true`.
     public required init(
         context: DatadogContext = .mockAny(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
-        forceNewBatchExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.feature = nil
@@ -84,7 +77,6 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
             context: context,
             expectation: expectation,
             bypassConsentExpectation: bypassConsentExpectation,
-            forceNewBatchExpectation: forceNewBatchExpectation,
             messageReceiver: messageReceiver
         )
     }

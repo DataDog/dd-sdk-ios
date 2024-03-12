@@ -132,57 +132,6 @@ class DatadogCoreTests: XCTestCase {
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 1, "It should send only one request")
     }
 
-    func testWhenWritingEventsWithForcingNewBatch_itUploadsEachEventInSeparateRequest() throws {
-        // Given
-        let core = DatadogCore(
-            directory: temporaryCoreDirectory,
-            dateProvider: RelativeDateProvider(advancingBySeconds: 0.01),
-            initialConsent: .granted,
-            performance: .mockRandom(),
-            httpClient: HTTPClientMock(),
-            encryption: nil,
-            contextProvider: .mockAny(),
-            applicationVersion: .mockAny(),
-            maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
-            backgroundTasksEnabled: .mockAny()
-        )
-
-        let requestBuilderSpy = FeatureRequestBuilderSpy()
-        try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
-
-        // When
-        scope.eventWriteContext(forceNewBatch: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "1"))
-        }
-
-        scope.eventWriteContext(forceNewBatch: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "2"))
-        }
-
-        scope.eventWriteContext(forceNewBatch: true) { context, writer in
-            writer.write(value: FeatureMock.Event(event: "3"))
-        }
-
-        // Then
-        core.flushAndTearDown()
-
-        let uploadedEvents = requestBuilderSpy.requestParameters
-            .flatMap { $0.events }
-            .map { $0.data.utf8String }
-
-        XCTAssertEqual(
-            uploadedEvents,
-            [
-                #"{"event":"1"}"#,
-                #"{"event":"2"}"#,
-                #"{"event":"3"}"#,
-            ],
-            "It should upload all events"
-        )
-        XCTAssertEqual(requestBuilderSpy.requestParameters.count, 3, "It should send 3 requests")
-    }
-
     func testWhenFeatureBaggageIsUpdated_thenNewValueIsImmediatellyAvailable() throws {
         // Given
         let core = DatadogCore(
@@ -197,7 +146,6 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
-        defer { core.flushAndTearDown() }
 
         let feature = FeatureMock()
         try core.register(feature: feature)

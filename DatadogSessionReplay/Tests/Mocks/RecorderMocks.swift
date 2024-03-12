@@ -291,6 +291,12 @@ struct MockResource: Resource, AnyMockable, RandomMockable {
     }
 }
 
+extension UIImageResource: RandomMockable {
+    public static func mockRandom() -> UIImageResource {
+        return .init(image: .mockRandom(), tintColor: .mockRandom())
+    }
+}
+
 extension Collection where Element == Resource {
     static func mockAny() -> [Resource] {
         return [MockResource].mockAny()
@@ -338,22 +344,19 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         return .init(
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
-            ids: NodeIDGenerator(),
-            imageDataProvider: mockRandomImageDataProvider()
+            ids: NodeIDGenerator()
         )
     }
 
     static func mockWith(
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
-        ids: NodeIDGenerator = NodeIDGenerator(),
-        imageDataProvider: ImageDataProviding = MockImageDataProvider()
+        ids: NodeIDGenerator = NodeIDGenerator()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
-            ids: ids,
-            imageDataProvider: imageDataProvider
+            ids: ids
         )
     }
 }

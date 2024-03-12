@@ -34,7 +34,7 @@ class CrashReportingPluginTests: XCTestCase {
 
         // When
         plugin.readPendingCrashReport { crashReport in
-            XCTAssertEqual(crashReport, crashReporter.pendingCrashReport)
+            DDAssertReflectionEqual(crashReport, crashReporter.pendingCrashReport)
             expectation.fulfill()
             return true // the caller succeeded in processing the crash report
         }
@@ -55,7 +55,7 @@ class CrashReportingPluginTests: XCTestCase {
 
         // When
         plugin.readPendingCrashReport { crashReport in
-            XCTAssertEqual(crashReport, crashReporter.pendingCrashReport)
+            DDAssertReflectionEqual(crashReport, crashReporter.pendingCrashReport)
             expectation.fulfill()
             return true
         }

@@ -26,17 +26,17 @@ extension UIImage {
     ///     if let imageData = originalImage?.scaledDownToApproximateSize(desiredSizeInBytes) {
     ///         // Use the scaled down image data.
     ///     }
-    func scaledDownToApproximateSize(_ desiredSizeInBytes: Int) -> Data {
+    func scaledDownToApproximateSize(_ desiredSizeInBytes: UInt64, tint: UIColor? = nil) -> Data {
         guard let imageData = pngData() else {
             return Data()
         }
-        guard imageData.count > desiredSizeInBytes else {
+        guard tint != nil || imageData.count > desiredSizeInBytes else {
             return imageData
         }
         // Initial scale is approximatation based on the average side of square for given size ratio.
         // When running experiments it appeared to be closer to desired scale than using just a size ratio.
-        let initialScale = sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count))
-        var scaledImage = scaledImage(by: initialScale)
+        let initialScale = min(1, sqrt(CGFloat(desiredSizeInBytes) / CGFloat(imageData.count)))
+        var scaledImage = scaledImage(by: initialScale, tint: tint)
 
         var scale: Double = 1
         let maxIterations = 20
@@ -48,7 +48,7 @@ extension UIImage {
                 return scaledImageData
             }
             scale *= 0.9
-            scaledImage = scaledImage.scaledImage(by: scale)
+            scaledImage = scaledImage.scaledImage(by: scale, tint: tint)
         }
         guard let scaledImageData = scaledImage.pngData() else {
             return imageData
@@ -63,13 +63,18 @@ extension UIImage {
     ///
     /// This private helper function takes a CGFloat percentage as input and scales the image accordingly.
     /// It ensures that the resulting image has a size proportional to the original one, maintaining its aspect ratio.
-    private func scaledImage(by percentage: CGFloat) -> UIImage {
+    private func scaledImage(by percentage: CGFloat, tint: UIColor?) -> UIImage {
         guard percentage > 0 else {
             return UIImage()
         }
         let newSize = CGSize(width: size.width * percentage, height: size.height * percentage)
         UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0)
-        draw(in: CGRect(origin: .zero, size: newSize))
+        let drawRect = CGRect(origin: .zero, size: newSize)
+        if let tint = tint {
+            tint.setFill()
+            UIRectFill(drawRect)
+        }
+        draw(in: drawRect, blendMode: .destinationIn, alpha: 1.0)
         let scaledImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
 

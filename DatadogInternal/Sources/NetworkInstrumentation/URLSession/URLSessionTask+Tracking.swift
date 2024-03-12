@@ -33,4 +33,20 @@ extension DatadogExtension where ExtendedType: URLSessionTask {
 
         return session.delegate
     }
+
+    var hasCompletion: Bool {
+        get {
+            let value = objc_getAssociatedObject(type, &hasCompletionKey) as? Bool
+            return value == true
+        }
+        set {
+            if newValue {
+                objc_setAssociatedObject(type, &hasCompletionKey, true, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            } else {
+                objc_setAssociatedObject(type, &hasCompletionKey, nil, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+            }
+        }
+    }
 }
+
+private var hasCompletionKey: Void?

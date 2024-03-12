@@ -24,19 +24,34 @@ class RUMCommandTests: XCTestCase {
     )
 
     func testWhenRUMAddCurrentViewErrorCommand_isBuildWithErrorObject() {
-        var command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftError(), source: .source, attributes: [:])
+        var command = RUMAddCurrentViewErrorCommand(
+            time: .mockAny(),
+            error: SwiftError(),
+            source: .source,
+            attributes: [:]
+        )
 
         XCTAssertEqual(command.type, "SwiftError")
         XCTAssertEqual(command.message, "error description")
         XCTAssertEqual(command.stack, "error description")
 
-        command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: SwiftEnumeratedError.errorLabel, source: .source, attributes: [:])
+        command = RUMAddCurrentViewErrorCommand(
+            time: .mockAny(),
+            error: SwiftEnumeratedError.errorLabel,
+            source: .source,
+            attributes: [:]
+        )
 
         XCTAssertEqual(command.type, "SwiftEnumeratedError")
         XCTAssertEqual(command.message, "errorLabel")
         XCTAssertEqual(command.stack, "errorLabel")
 
-        command = RUMAddCurrentViewErrorCommand(time: .mockAny(), error: nsError, source: .source, attributes: [:])
+        command = RUMAddCurrentViewErrorCommand(
+            time: .mockAny(),
+            error: nsError,
+            source: .source,
+            attributes: [:]
+        )
 
         XCTAssertEqual(command.type, "custom-domain - 10")
         XCTAssertEqual(command.message, "error description")

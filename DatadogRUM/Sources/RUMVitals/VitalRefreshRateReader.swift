@@ -171,7 +171,11 @@ extension FrameInfoProvider {
 
 extension CADisplayLink: FrameInfoProvider {
     var maximumDeviceFramesPerSecond: Int {
+        #if swift(>=5.9) && os(visionOS)
+        120
+        #else
         UIScreen.main.maximumFramesPerSecond
+        #endif
     }
 
     var currentFrameTimestamp: CFTimeInterval {

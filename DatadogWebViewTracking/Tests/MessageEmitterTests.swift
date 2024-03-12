@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+
 @testable import DatadogWebViewTracking
 
 class MessageEmitterTests: XCTestCase {
@@ -14,7 +15,6 @@ class MessageEmitterTests: XCTestCase {
 
     func testGivenSampleRate100_whenReceivingLogEvent_itForwardsToLogs() throws {
         let sampler = Sampler(samplingRate: 100)
-        let eventType = "log"
 
         // Given
         let receiverMock = FeatureMessageReceiverMock()
@@ -22,9 +22,9 @@ class MessageEmitterTests: XCTestCase {
         let emitter = MessageEmitter(logsSampler: sampler, core: core)
 
         // When
-        try emitter.send(body: """
+        emitter.send(body: """
         {
-          "eventType": "\(eventType)",
+          "eventType": "log",
           "event": {
             "attribute1": 123,
             "attribute2": "foo",
@@ -34,9 +34,12 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let messageKey = MessageEmitter.MessageKeys.browserLog
-        let message = try XCTUnwrap(receiverMock.messages.firstBaggage(withKey: messageKey))
-        let json = JSONObjectMatcher(object: try message.encode() as! JSON)
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .log(event) = message else {
+            return XCTFail("not a log message")
+        }
+
+        let json = JSONObjectMatcher(object: event)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
@@ -52,7 +55,7 @@ class MessageEmitterTests: XCTestCase {
         let emitter = MessageEmitter(logsSampler: sampler, core: core)
 
         // When
-        try emitter.send(body: """
+        emitter.send(body: """
         {
           "eventType": "\(eventType)",
           "event": {
@@ -64,22 +67,19 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let messageKey = MessageEmitter.MessageKeys.browserLog
-        XCTAssertNil(receiverMock.messages.firstBaggage(withKey: messageKey))
+        XCTAssertNil(receiverMock.messages.firstWebViewMessage)
     }
 
     func testWhenReceivingEventOtherThanLog_itForwardsToRUM() throws {
-        let eventType: String = .mockRandom(otherThan: ["log"])
-
         // Given
         let receiverMock = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiverMock)
         let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
 
         // When
-        try emitter.send(body: """
+        emitter.send(body: """
         {
-          "eventType": "\(eventType)",
+          "eventType": "rum",
           "event": {
             "attribute1": 123,
             "attribute2": "foo",
@@ -89,9 +89,12 @@ class MessageEmitterTests: XCTestCase {
         """)
 
         // Then
-        let messageKey = MessageEmitter.MessageKeys.browserRUMEvent
-        let message = try XCTUnwrap(receiverMock.messages.firstBaggage(withKey: messageKey))
-        let json = JSONObjectMatcher(object: try message.encode() as! JSON)
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .rum(event) = message else {
+            return XCTFail("not a log message")
+        }
+
+        let json = JSONObjectMatcher(object: event)
         XCTAssertEqual(try json.value("attribute1"), 123)
         XCTAssertEqual(try json.value("attribute2"), "foo")
         XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
@@ -99,16 +102,21 @@ class MessageEmitterTests: XCTestCase {
 
     // MARK: - Parsing
 
-    func testWhenMessageIsInvalid_itThrows() {
-        let bridge = MessageEmitter(logsSampler: .mockAny(), core: PassthroughCoreMock())
+    func testWhenMessageIsInvalid_itReportTheError() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
 
-        let messageInvalidJSON = """
-        { 123: foobar }
-        """
+        // Given
+        let telemetry = TelemetryReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: telemetry)
+        let bridge = MessageEmitter(logsSampler: .mockAny(), core: core)
 
-        XCTAssertThrowsError(
-            try bridge.send(body: messageInvalidJSON),
-            "Non-string keys (123) should throw"
-        )
+        // When
+        bridge.send(body: 123)
+
+        // Then
+        XCTAssertEqual(dd.logger.errorLog?.message, "Encountered an error when receiving web view event")
+        XCTAssertEqual(dd.logger.errorLog?.error?.message, #"invalidMessage(description: "123")"#)
+        XCTAssertEqual(telemetry.messages.first?.asError?.message, #"Encountered an error when receiving web view event - invalidMessage(description: "123")"#)
     }
 }

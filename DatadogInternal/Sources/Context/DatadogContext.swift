@@ -39,6 +39,9 @@ public struct DatadogContext {
     ///  - See: Datadog [Reserved Attributes](https://docs.datadoghq.com/logs/log_configuration/attributes_naming_convention/#reserved-attributes).
     public let source: String
 
+    /// Denotes the source type for  crashes. This is used for platforms that provide additional symbolication steps for native crashes.
+    public let nativeSourceOverride: String?
+
     /// The version of Datadog iOS SDK.
     public let sdkVersion: String
 
@@ -124,6 +127,7 @@ public struct DatadogContext {
         applicationBundleIdentifier: String,
         sdkInitDate: Date,
         device: DeviceInfo,
+        nativeSourceOverride: String? = nil,
         userInfo: UserInfo? = nil,
         trackingConsent: TrackingConsent = .pending,
         launchTime: LaunchTime? = nil,
@@ -150,6 +154,7 @@ public struct DatadogContext {
         self.applicationBundleIdentifier = applicationBundleIdentifier
         self.sdkInitDate = sdkInitDate
         self.device = device
+        self.nativeSourceOverride = nativeSourceOverride
         self.userInfo = userInfo
         self.trackingConsent = trackingConsent
         self.launchTime = launchTime

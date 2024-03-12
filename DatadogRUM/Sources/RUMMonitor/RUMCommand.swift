@@ -87,25 +87,51 @@ internal struct RUMStopViewCommand: RUMCommand, RUMViewScopePropagatableAttribut
     let identity: ViewIdentifier
 }
 
-internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
+/// Any error command, like exception or App Hang.
+internal protocol RUMErrorCommand: RUMCommand {
+    /// The error message.
+    var message: String { get }
+    /// Error type.
+    var type: String? { get }
+    /// Error stacktrace.
+    var stack: String? { get }
+    /// Mobile-specific category of the error to empower high-level grouping of different types of errors.
+    var category: RUMErrorCategory { get }
+    /// Whether this error has crashed the host application
+    var isCrash: Bool? { get }
+    /// The origin of this error.
+    var source: RUMInternalErrorSource { get }
+    /// The platform type of the error (iOS, React Native, ...)
+    var errorSourceType: RUMErrorEvent.Error.SourceType { get }
+    /// An information about the threads currently running in the process.
+    var threads: [DDThread]? { get }
+    /// The list of binary images referenced from `stack` and `threads`.
+    var binaryImages: [BinaryImage]? { get }
+    /// Indicates whether any stack trace information in `stack` or `threads` was truncated due to stack trace minimization.
+    var isStackTraceTruncated: Bool? { get }
+}
+
+/// Adds exception error to current view.
+///
+/// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
+internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     var time: Date
     var attributes: [AttributeKey: AttributeValue]
     let canStartBackgroundView = true // yes, we want to track errors in "Background" view
     let isUserInteraction = false // an error is not an interactive event
 
-    /// The error message.
     let message: String
-    /// Error type.
     let type: String?
-    /// Error stacktrace.
     let stack: String?
-    /// Whether this error crashed the host application
+    let category: RUMErrorCategory = .exception
     let isCrash: Bool?
-    /// The origin of this error.
     let source: RUMInternalErrorSource
-    /// The platform type of the error (iOS, React Native, ...)
     let errorSourceType: RUMErrorEvent.Error.SourceType
+    let threads: [DDThread]?
+    let binaryImages: [BinaryImage]?
+    let isStackTraceTruncated: Bool?
 
+    /// Constructor dedicated to errors defined by message, type and stack.
     init(
         time: Date,
         message: String,
@@ -114,35 +140,95 @@ internal struct RUMAddCurrentViewErrorCommand: RUMCommand {
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        self.time = time
-        self.source = source
-        self.attributes = attributes
-        self.message = message
-        self.type = type
-        self.stack = stack
-
-        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
-        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.decoded()
+        self.init(
+            time: time,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            isCrash: nil,
+            threads: nil,
+            binaryImages: nil,
+            isStackTraceTruncated: nil,
+            attributes: attributes
+        )
     }
 
+    /// Constructor dedicated to errors defined by `Error` object.
     init(
         time: Date,
         error: Error,
         source: RUMInternalErrorSource,
         attributes: [AttributeKey: AttributeValue]
     ) {
-        self.time = time
-        self.source = source
-        self.attributes = attributes
-
         let dderror = DDError(error: error)
-        self.message = dderror.message
-        self.type = dderror.type
-        self.stack = dderror.stack
-
-        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
-        self.isCrash = self.attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash) as? Bool
+        self.init(
+            time: time,
+            message: dderror.message,
+            type: dderror.type,
+            stack: dderror.stack,
+            source: source,
+            isCrash: nil,
+            threads: nil,
+            binaryImages: nil,
+            isStackTraceTruncated: nil,
+            attributes: attributes
+        )
     }
+
+    /// Broad constructor for all kinds of errors.
+    init(
+        time: Date,
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMInternalErrorSource,
+        isCrash: Bool?,
+        threads: [DDThread]?,
+        binaryImages: [BinaryImage]?,
+        isStackTraceTruncated: Bool?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        var attributes = attributes
+        let isCrossPlatformCrash: Bool? = attributes.removeValue(forKey: CrossPlatformAttributes.errorIsCrash)?.decoded()
+        let crossPlatformSourceType = RUMErrorSourceType.extract(from: &attributes)
+
+        self.time = time
+        self.attributes = attributes
+        self.message = message
+        self.type = type
+        self.stack = stack
+        self.isCrash = isCrossPlatformCrash ?? isCrash
+        self.source = source
+        self.errorSourceType = crossPlatformSourceType ?? .ios
+        self.threads = threads
+        self.binaryImages = binaryImages
+        self.isStackTraceTruncated = isStackTraceTruncated
+    }
+}
+
+/// Adds App Hang error to current view.
+///
+/// Using this command results with classifying the error as "App Hang" in Datadog app (`@error.category: App Hang`).
+internal struct RUMAddCurrentViewAppHangCommand: RUMErrorCommand {
+    var time: Date
+    var attributes: [AttributeKey: AttributeValue]
+    let canStartBackgroundView = false // no, we don't want to track App Hangs in "Background" view
+    let isUserInteraction = false // an error is not an interactive event
+
+    let message: String
+    let type: String?
+    let stack: String?
+    let category: RUMErrorCategory = .appHang
+    let isCrash: Bool? = false
+    let source: RUMInternalErrorSource = .source
+    let errorSourceType: RUMErrorEvent.Error.SourceType = .ios
+    let threads: [DDThread]?
+    let binaryImages: [BinaryImage]?
+    let isStackTraceTruncated: Bool?
+
+    /// The duration of hang.
+    let hangDuration: TimeInterval
 }
 
 internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAttributes {
@@ -256,7 +342,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         // The stack will be meaningless in most cases as it will go down to the networking code:
         self.stack = nil
 
-        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes) ?? .ios
     }
 
     init(
@@ -279,7 +365,7 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
         // The stack will give the networking error (`NSError`) description in most cases:
         self.stack = dderror.stack
 
-        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes)
+        self.errorSourceType = RUMErrorSourceType.extract(from: &self.attributes) ?? .ios
     }
 }
 

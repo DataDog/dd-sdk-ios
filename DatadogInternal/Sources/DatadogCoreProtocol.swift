@@ -214,12 +214,8 @@ public protocol FeatureScope {
     ///   - bypassConsent: `true` to bypass the current core consent and write events as authorized.
     ///                    Default is `false`, setting `true` must still respect user's consent for
     ///                    collecting information.
-    ///   - forceNewBatch: `true` to enforce that event will be written to a separate batch than previous events.
-    ///                     Default is `false`, which means the core uses its own heuristic to split events between
-    ///                     batches. This parameter can be leveraged in Features which require a clear separation
-    ///                     of group of events for preparing their upload (a single upload is always constructed from a single batch).
     ///   - block: The block to execute; it is called on the context queue.
-    func eventWriteContext(bypassConsent: Bool, forceNewBatch: Bool, _ block: @escaping (DatadogContext, Writer) -> Void)
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void)
 
     /// Retrieve the core context.
     ///
@@ -249,8 +245,8 @@ public extension FeatureScope {
     ///                     batches. This parameter can be leveraged in Features which require a clear separation
     ///                     of group of events for preparing their upload (a single upload is always constructed from a single batch).
     ///   - block: The block to execute; it is called on the context queue.
-    func eventWriteContext(bypassConsent: Bool = false, forceNewBatch: Bool = false, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        eventWriteContext(bypassConsent: bypassConsent, forceNewBatch: forceNewBatch, block)
+    func eventWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
+        eventWriteContext(bypassConsent: false, block)
     }
 }
 

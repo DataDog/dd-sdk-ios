@@ -30,6 +30,7 @@ internal class RecordsBuilder {
                 href: nil,
                 width: Int64(withNoOverflow: snapshot.viewportSize.width)
             ),
+            slotId: nil,
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
         return .metaRecord(value: record)
@@ -40,6 +41,7 @@ internal class RecordsBuilder {
     func createFocusRecord(from snapshot: ViewTreeSnapshot) -> SRRecord {
         let record = SRFocusRecord(
             data: SRFocusRecord.Data(hasFocus: true),
+            slotId: nil,
             timestamp: snapshot.date.timeIntervalSince1970.toInt64Milliseconds
         )
         return .focusRecord(value: record)

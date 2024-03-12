@@ -26,21 +26,20 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
         core: DatadogCoreProtocol,
         configuration: SessionReplay.Configuration
     ) throws {
-        let queue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processor")
+        let processorsQueue = BackgroundAsyncQueue(named: "com.datadoghq.session-replay.processors")
         let snapshotProcessor = SnapshotProcessor(
-            queue: queue,
+            queue: processorsQueue,
             recordWriter: RecordWriter(core: core),
             srContextPublisher: SRContextPublisher(core: core),
             telemetry: core.telemetry
         )
-        // RUM-2154 Disabled until prod backend is ready
-        _ = ResourceProcessor(
-            queue: queue,
+        let resourceProcessor = ResourceProcessor(
+            queue: processorsQueue,
             resourcesWriter: ResourcesWriter(core: core)
         )
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,
-            resourceProcessor: nil,
+            resourceProcessor: resourceProcessor,
             telemetry: core.telemetry,
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
@@ -61,8 +60,8 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             telemetry: core.telemetry
         )
         self.performanceOverride = PerformancePresetOverride(
-            maxFileSize: 10.MB.asUInt64(),
-            maxObjectSize: 10.MB.asUInt64(),
+            maxFileSize: SessionReplay.maxObjectSize,
+            maxObjectSize: SessionReplay.maxObjectSize,
             meanFileAge: 2, // vs 5s with `batchSize: .small` - see `DatadogCore.PerformancePreset`
             uploadDelay: (
                 initial: 2, // vs 5s with `uploadFrequency: .frequent`

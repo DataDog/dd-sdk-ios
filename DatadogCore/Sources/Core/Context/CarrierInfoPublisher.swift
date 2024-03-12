@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
 
 import CoreTelephony
 

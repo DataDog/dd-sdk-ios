@@ -8,27 +8,29 @@
 import Foundation
 
 internal protocol MultipartFormDataBuilder {
-    /// The boundary UUID of this multipart form.
-    var boundary: UUID { get }
+    /// The boundary  of this multipart form.
+    var boundary: String { get }
     /// Adds a field.
     mutating func addFormField(name: String, value: String)
     /// Adds a file.
     mutating func addFormData(name: String, filename: String, data: Data, mimeType: String)
     /// Returns the entire multipart body data (as it should be applied to request).
-    var data: Data { get }
+    mutating func build() -> Data
 }
 
 /// A helper facilitating creation of `multipart/form-data` body.
 internal struct MultipartFormData: MultipartFormDataBuilder {
-    let boundary: UUID
-    private var body = Data()
+    private var body: Data
 
-    init(boundary: UUID) {
-        self.boundary = boundary
+    private(set) var boundary: String
+
+    init(boundary: UUID = UUID()) {
+        self.body = Data()
+        self.boundary = boundary.uuidString
     }
 
     mutating func addFormField(name: String, value: String) {
-        body.append(string: "--\(boundary.uuidString)\r\n")
+        body.append(string: "--\(boundary)\r\n")
         body.append(string: "Content-Disposition: form-data; name=\"\(name)\"\r\n")
         body.append(string: "\r\n")
         body.append(string: value)
@@ -36,7 +38,7 @@ internal struct MultipartFormData: MultipartFormDataBuilder {
     }
 
     mutating func addFormData(name: String, filename: String, data: Data, mimeType: String) {
-        body.append(string: "--\(boundary.uuidString)\r\n")
+        body.append(string: "--\(boundary)\r\n")
         body.append(string: "Content-Disposition: form-data; name=\"\(name)\"; filename=\"\(filename)\"\r\n")
         body.append(string: "Content-Type: \(mimeType)\r\n")
         body.append(string: "\r\n")
@@ -44,10 +46,15 @@ internal struct MultipartFormData: MultipartFormDataBuilder {
         body.append(string: "\r\n")
     }
 
-    var data: Data {
-        var data = body
-        data.append(string: "--\(boundary.uuidString)--")
-        return data
+    mutating func build() -> Data {
+        defer {
+            // reset builder
+            body = Data()
+            boundary = UUID().uuidString
+        }
+
+        body.append(string: "--\(boundary)--")
+        return body
     }
 }
 

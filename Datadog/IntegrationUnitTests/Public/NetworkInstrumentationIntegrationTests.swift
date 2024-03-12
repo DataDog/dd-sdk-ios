@@ -8,6 +8,7 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
+@testable import DatadogRUM
 @testable import DatadogTrace
 @testable import DatadogCore
 
@@ -50,8 +51,9 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         core.flushAndTearDown()
         core = nil
     }
-    
+
     func testParentSpanPropagation() throws {
+        let expectation = expectation(description: "request completes")
         // Given
         let request: URLRequest = .mockWith(url: "https://www.example.com")
         let span = Tracer.shared(in: core).startRootSpan(operationName: "root")
@@ -60,15 +62,16 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
         // When
         span.setActive() // start root span
-        
+
         session
             .dataTask(with: request) { _,_,_ in
                 span.finish() // finish root span
+                expectation.fulfill()
             }
             .resume()
 
         // Then
-        server.waitFor(requestsCompletion: 1)
+        waitForExpectations(timeout: 1)
         let matchers = try core.waitAndReturnSpanMatchers()
 
         let matcher1 = try XCTUnwrap(matchers.first)
@@ -85,5 +88,117 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
     }
 
     class MockDelegate: NSObject, URLSessionDataDelegate {
+    }
+
+    func testResourceAttributesProvider_givenURLSessionDataTaskRequest() {
+        core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.1.1",
+                serverTimeOffset: 123
+            )
+        )
+
+        let providerExpectation = expectation(description: "provider called")
+        var providerDataCount = 0
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { req, resp, data, err in
+                        XCTAssertNotNil(data)
+                        XCTAssertTrue(data!.count > 0)
+                        providerDataCount = data!.count
+                        providerExpectation.fulfill()
+                        return [:]
+                })
+            ),
+            in: core
+        )
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: InstrumentedSessionDelegate.self
+            ),
+            in: core
+        )
+
+        let session = URLSession(
+            configuration: .ephemeral,
+            delegate: InstrumentedSessionDelegate(),
+            delegateQueue: nil
+        )
+        var request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+        request.httpMethod = "GET"
+
+        let task = session.dataTask(with: request)
+        task.resume()
+
+        wait(for: [providerExpectation], timeout: 10)
+        XCTAssertTrue(providerDataCount > 0)
+    }
+
+    func testResourceAttributesProvider_givenURLSessionDataTaskRequestWithCompletionHandler() {
+        core = DatadogCoreProxy(
+            context: .mockWith(
+                env: "test",
+                version: "1.1.1",
+                serverTimeOffset: 123
+            )
+        )
+
+        let providerExpectation = expectation(description: "provider called")
+        var providerDataCount = 0
+        var providerData: Data?
+        RUM.enable(
+            with: .init(
+                applicationID: .mockAny(),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { req, resp, data, err in
+                        XCTAssertNotNil(data)
+                        XCTAssertTrue(data!.count > 0)
+                        providerDataCount = data!.count
+                        data.map { providerData = $0 }
+                        providerExpectation.fulfill()
+                        return [:]
+                })
+            ),
+            in: core
+        )
+
+        URLSessionInstrumentation.enable(
+            with: .init(
+                delegateClass: InstrumentedSessionDelegate.self
+            ),
+            in: core
+        )
+
+        let session = URLSession(
+            configuration: .ephemeral,
+            delegate: InstrumentedSessionDelegate(),
+            delegateQueue: nil
+        )
+        let request = URLRequest(url: URL(string: "https://www.datadoghq.com/")!)
+
+        let taskExpectation = self.expectation(description: "task completed")
+        var taskDataCount = 0
+        var taskData: Data?
+        let task = session.dataTask(with: request) { data, _, _ in
+            XCTAssertNotNil(data)
+            XCTAssertTrue(data!.count > 0)
+            taskDataCount = data!.count
+            data.map { taskData = $0 }
+            taskExpectation.fulfill()
+        }
+        task.resume()
+
+        wait(for: [providerExpectation, taskExpectation], timeout: 10)
+        XCTAssertEqual(providerDataCount, taskDataCount)
+        XCTAssertEqual(providerData, taskData)
+    }
+
+    class InstrumentedSessionDelegate: NSObject, URLSessionDataDelegate {
+        func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        }
     }
 }

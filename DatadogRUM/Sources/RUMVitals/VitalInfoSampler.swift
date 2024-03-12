@@ -41,12 +41,22 @@ internal final class VitalInfoSampler {
 
     private var timer: Timer?
 
+    private static var maximumFramesPerSecond: Double {
+        get {
+            #if swift(>=5.9) && os(visionOS)
+            return 120.0 // Hardcoded to enable VisionOS compilation
+            #else
+            return Double(UIScreen.main.maximumFramesPerSecond)
+            #endif
+        }
+    }
+
     init(
         cpuReader: SamplingBasedVitalReader,
         memoryReader: SamplingBasedVitalReader,
         refreshRateReader: ContinuousVitalReader,
         frequency: TimeInterval,
-        maximumRefreshRate: Double = Double(UIScreen.main.maximumFramesPerSecond)
+        maximumRefreshRate: Double = VitalInfoSampler.maximumFramesPerSecond
     ) {
         self.cpuReader = cpuReader
 

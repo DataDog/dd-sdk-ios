@@ -78,7 +78,7 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertFirstRUMSessionWasCollected(by: rumServerSession)
+        try assertRUMSessionWasCollected(by: rumServerSession)
         server.clearAllRequests()
 
         // Stop the core and replay the scenario
@@ -100,7 +100,7 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
 
         try assertLoggingDataWasCollected(by: loggingServerSession)
         try assertTracingDataWasCollected(by: tracingServerSession)
-        try assertFirstRUMSessionWasCollected(by: rumServerSession)
+        try assertRUMSessionWasCollected(by: rumServerSession)
     }
 
     /// Plays following scenario for started application:
@@ -148,10 +148,10 @@ class StopCoreScenarioTests: IntegrationTests, LoggingCommonAsserts, TracingComm
         XCTAssertEqual(try spanMatcher.operationName(), "test span")
     }
 
-    private func assertFirstRUMSessionWasCollected(by serverSession: ServerSession) throws {
+    private func assertRUMSessionWasCollected(by serverSession: ServerSession) throws {
         // Get RUM Sessions with expected number of View visits
         let recordedRequests = try serverSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try RUMSessionMatcher.singleSession(from: requests)?.views.count == 4
+            try RUMSessionMatcher.singleSession(from: requests)?.actionEventMatchers.count == 8
         }
 
         assertRUM(requests: recordedRequests)
