@@ -4037,4 +4037,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/29008e6da435c4573160a2f549a4d657c7315d31
+// Generated from https://github.com/DataDog/rum-events-format/tree/61560c6502ebf333e71631ee35d00b9c09aadf8e
