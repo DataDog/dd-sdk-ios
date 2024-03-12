@@ -278,6 +278,7 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 binaryImages: nil,
                 category: .exception, // resource errors are categorised as "Exception"
+                csp: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
