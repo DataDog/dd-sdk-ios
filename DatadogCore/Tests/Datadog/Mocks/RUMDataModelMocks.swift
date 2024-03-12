@@ -386,6 +386,7 @@ extension RUMErrorEvent: RandomMockable {
             display: nil,
             error: .init(
                 binaryImages: nil,
+                category: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: .mockRandom(),
@@ -409,6 +410,7 @@ extension RUMErrorEvent: RandomMockable {
                 type: .mockRandom(),
                 wasTruncated: .mockRandom()
             ),
+            freeze: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -505,6 +507,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     actionNameAttribute: nil,
                     allowFallbackToLocalStorage: nil,
                     allowUntrustedEvents: nil,
+                    appHangThreshold: .mockRandom(),
                     backgroundTasksEnabled: .mockRandom(),
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),

@@ -48,13 +48,11 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
         XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
         XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
-        XCTAssertEqual(enrichedRecord.earliestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(enrichedRecord.latestTimestamp, time.timeIntervalSince1970.toInt64Milliseconds)
 
         XCTAssertEqual(enrichedRecord.records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecord.records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecord.records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot)
+        XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 3])
     }
@@ -90,7 +88,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(enrichedRecords[1].records.count, 1, "It should follow with 'incremental snapshot' record")
         XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
@@ -102,10 +100,6 @@ class SnapshotProcessorTests: XCTestCase {
             XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
             XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
             XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
-
-            let expectedTime = time.addingTimeInterval(TimeInterval(index))
-            XCTAssertEqual(enrichedRecord.earliestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
-            XCTAssertEqual(enrichedRecord.latestTimestamp, expectedTime.timeIntervalSince1970.toInt64Milliseconds)
         }
 
         XCTAssertEqual(core.recordsCountByViewID, ["abc": 5])
@@ -138,10 +132,10 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(enrichedRecords[1].records.count, 2, "It should follow with 'full snapshot' → 'incremental snapshot' records")
-        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord && enrichedRecords[1].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[1].records[0].isFullSnapshotRecord)
         XCTAssertTrue(enrichedRecords[1].records[1].isIncrementalSnapshotRecord)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.height, 100)
         XCTAssertEqual(enrichedRecords[1].records[1].incrementalSnapshot?.viewportResizeData?.width, 200)
@@ -178,7 +172,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(enrichedRecords[1].records.count, 1, "It should follow with 'incremental snapshot' record")
         XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)
@@ -186,7 +180,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[2].records.count, 3, "Next segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[2].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[2].records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecords[2].records[2].isFullSnapshotRecord && enrichedRecords[2].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[2].records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(enrichedRecords[3].records.count, 1, "Next segment should follow with 'incremental snapshot' record")
         XCTAssertTrue(enrichedRecords[3].records[0].isIncrementalSnapshotRecord)
@@ -224,14 +218,12 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecord.applicationID, rum.applicationID)
         XCTAssertEqual(enrichedRecord.sessionID, rum.sessionID)
         XCTAssertEqual(enrichedRecord.viewID, rum.viewID)
-        XCTAssertEqual(enrichedRecord.earliestTimestamp, earliestTouchTime.timeIntervalSince1970.toInt64Milliseconds)
-        XCTAssertEqual(enrichedRecord.latestTimestamp, snapshotTime.timeIntervalSince1970.toInt64Milliseconds)
 
         XCTAssertEqual(enrichedRecord.records.count, 13)
         XCTAssertTrue(
             enrichedRecord.records[0].isMetaRecord &&
             enrichedRecord.records[1].isFocusRecord &&
-            enrichedRecord.records[2].isFullSnapshotRecord && enrichedRecord.hasFullSnapshot,
+            enrichedRecord.records[2].isFullSnapshotRecord,
             "Segment must start with 'meta' → 'focus' → 'full snapshot' records"
         )
 
@@ -273,7 +265,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertEqual(enrichedRecords[0].records.count, 3, "Segment must start with 'meta' → 'focus' → 'full snapshot' records")
         XCTAssertTrue(enrichedRecords[0].records[0].isMetaRecord)
         XCTAssertTrue(enrichedRecords[0].records[1].isFocusRecord)
-        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord && enrichedRecords[0].hasFullSnapshot)
+        XCTAssertTrue(enrichedRecords[0].records[2].isFullSnapshotRecord)
 
         XCTAssertEqual(enrichedRecords[1].records.count, 1, "It should follow with 'incremental snapshot' record")
         XCTAssertTrue(enrichedRecords[1].records[0].isIncrementalSnapshotRecord)

@@ -1,0 +1,32 @@
+name: Feature Request
+description: Have an idea or need a new feature? Request it here.
+labels: ["feature"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Feature description 
+      description: |
+        Provide a description for the feature request. Please include:
+        1. Use case
+        2. How the SDK currently delivers (or doesn't)
+        3. What would you like to see
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: |
+        How would you implement this?
+        Propose an idea, solution or reference implementation. 
+    validations:
+      required: false
+  - type: textarea
+    id: other_info
+    attributes:
+      label: Other relevant information
+      description: Any other relevant information you'd like we take into consideration.
+    validations:
+      required: false
+  

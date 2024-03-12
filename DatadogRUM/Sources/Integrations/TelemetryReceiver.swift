@@ -260,6 +260,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             actionNameAttribute: nil,
             allowFallbackToLocalStorage: nil,
             allowUntrustedEvents: nil,
+            appHangThreshold: configuration.appHangThreshold,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,

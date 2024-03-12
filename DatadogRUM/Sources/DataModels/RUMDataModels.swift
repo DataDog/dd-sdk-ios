@@ -495,6 +495,9 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Feature flags properties
     public internal(set) var featureFlags: FeatureFlags?
 
+    /// Properties of App Hang and ANR errors
+    public let freeze: Freeze?
+
     /// Operating system properties
     public let os: RUMOperatingSystem?
 
@@ -537,6 +540,7 @@ public struct RUMErrorEvent: RUMDataModel {
         case display = "display"
         case error = "error"
         case featureFlags = "feature_flags"
+        case freeze = "freeze"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -688,6 +692,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Description of each binary image (native libraries; for Android: .so files) loaded or referenced by the process/application.
         public let binaryImages: [BinaryImages]?
 
+        /// The specific category of the error. It provides a high-level grouping for different types of errors.
+        public let category: Category?
+
         /// Causes of the error
         public var causes: [Causes]?
 
@@ -735,6 +742,7 @@ public struct RUMErrorEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case binaryImages = "binary_images"
+            case category = "category"
             case causes = "causes"
             case fingerprint = "fingerprint"
             case handling = "handling"
@@ -780,6 +788,13 @@ public struct RUMErrorEvent: RUMDataModel {
                 case name = "name"
                 case uuid = "uuid"
             }
+        }
+
+        /// The specific category of the error. It provides a high-level grouping for different types of errors.
+        public enum Category: String, Codable {
+            case aNR = "ANR"
+            case appHang = "App Hang"
+            case exception = "Exception"
         }
 
         /// Properties for one of the error causes
@@ -965,6 +980,16 @@ public struct RUMErrorEvent: RUMDataModel {
     /// Feature flags properties
     public struct FeatureFlags: Codable {
         public internal(set) var featureFlagsInfo: [String: Encodable]
+    }
+
+    /// Properties of App Hang and ANR errors
+    public struct Freeze: Codable {
+        /// Duration of the main thread freeze (in ns)
+        public let duration: Int64
+
+        enum CodingKeys: String, CodingKey {
+            case duration = "duration"
+        }
     }
 
     /// Session properties
@@ -2863,11 +2888,14 @@ public struct RUMVitalEvent: RUMDataModel {
 
     /// Vital properties
     public struct Vital: Codable {
-        /// User custom vital. As vital name is used as facet path, it must contain only letters, digits, or the characters - _ . @ $
+        /// User custom vital.
         public let custom: [String: Double]?
 
         /// UUID of the vital
         public let id: String
+
+        /// Name of the vital, as it is also used as facet path for its value, it must contain only letters, digits, or the characters - _ . @ $
+        public let name: String?
 
         /// Type of the vital
         public let type: VitalType
@@ -2875,6 +2903,7 @@ public struct RUMVitalEvent: RUMDataModel {
         enum CodingKeys: String, CodingKey {
             case custom = "custom"
             case id = "id"
+            case name = "name"
             case type = "type"
         }
 
@@ -3329,6 +3358,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether untrusted events are allowed
             public let allowUntrustedEvents: Bool?
 
+            /// The threshold used for iOS App Hangs monitoring (in milliseconds)
+            public let appHangThreshold: Int64?
+
             /// Whether UIApplication background tasks are enabled
             public let backgroundTasksEnabled: Bool?
 
@@ -3446,6 +3478,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
 
+            /// The version of Unity used in a Unity application
+            public var unityVersion: String?
+
             /// Whether the allowed tracing origins list is used (deprecated in favor of use_allowed_tracing_urls)
             public let useAllowedTracingOrigins: Bool?
 
@@ -3489,6 +3524,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case actionNameAttribute = "action_name_attribute"
                 case allowFallbackToLocalStorage = "allow_fallback_to_local_storage"
                 case allowUntrustedEvents = "allow_untrusted_events"
+                case appHangThreshold = "app_hang_threshold"
                 case backgroundTasksEnabled = "background_tasks_enabled"
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
@@ -3528,6 +3564,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
+                case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
                 case useBeforeSend = "use_before_send"
@@ -3964,4 +4001,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4912f5a003399ca25d7bbf323c6693a391520a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330

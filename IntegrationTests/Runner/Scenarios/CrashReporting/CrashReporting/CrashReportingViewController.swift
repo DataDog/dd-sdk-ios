@@ -6,6 +6,7 @@
 
 import UIKit
 import DatadogCore
+import DatadogLogs
 
 internal class CrashReportingViewController: UIViewController {
     @IBOutlet weak var sendingCrashReportLabel: UILabel!
@@ -15,6 +16,9 @@ internal class CrashReportingViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        Logs.addAttribute(forKey: "global-attribute", value: "string-a")        
+        Logs.addAttribute(forKey: "global-attribute-2", value: 1_150)
 
         let testScenario = (appConfiguration.testScenario as! CrashReportingBaseScenario)
         sendingCrashReportLabel.isHidden = !testScenario.hadPendingCrashReportDataOnStartup

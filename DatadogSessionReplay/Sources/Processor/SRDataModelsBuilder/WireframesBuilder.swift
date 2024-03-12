@@ -177,6 +177,32 @@ public class SessionReplayWireframesBuilder {
         return .placeholderWireframe(value: wireframe)
     }
 
+    public func createWebViewWireframe(
+        id: Int64,
+        frame: CGRect,
+        slotId: String,
+        clip: SRContentClip? = nil,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SRWebviewWireframe(
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: clip,
+            height: Int64(withNoOverflow: frame.height),
+            id: id,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
+            slotId: slotId,
+            width: Int64(withNoOverflow: frame.size.width),
+            x: Int64(withNoOverflow: frame.minX),
+            y: Int64(withNoOverflow: frame.minY)
+        )
+
+        return .webviewWireframe(value: wireframe)
+    }
+
     // MARK: - Private
 
     private func createShapeBorder(borderColor: CGColor?, borderWidth: CGFloat?) -> SRShapeBorder? {

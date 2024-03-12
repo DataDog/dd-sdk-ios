@@ -229,16 +229,16 @@ extension DatadogCore: DatadogCoreProtocol {
     ///
     /// - Parameter feature: The Feature instance.
     func register<T>(feature: T) throws where T: DatadogFeature {
-        let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
-
-        let performancePreset: PerformancePreset
-        if let override = feature.performanceOverride {
-            performancePreset = performance.updated(with: override)
-        } else {
-            performancePreset = performance
-        }
-
         if let feature = feature as? DatadogRemoteFeature {
+            let featureDirectories = try directory.getFeatureDirectories(forFeatureNamed: T.name)
+
+            let performancePreset: PerformancePreset
+            if let override = feature.performanceOverride {
+                performancePreset = performance.updated(with: override)
+            } else {
+                performancePreset = performance
+            }
+
             let storage = FeatureStorage(
                 featureName: T.name,
                 queue: readWriteQueue,
@@ -344,6 +344,7 @@ extension DatadogContextProvider {
         buildId: String?,
         variant: String?,
         source: String,
+        nativeSourceOverride: String?,
         sdkVersion: String,
         ciAppOrigin: String?,
         applicationName: String,
@@ -370,6 +371,7 @@ extension DatadogContextProvider {
             applicationBundleIdentifier: applicationBundleIdentifier,
             sdkInitDate: dateProvider.now,
             device: device,
+            nativeSourceOverride: nativeSourceOverride,
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.

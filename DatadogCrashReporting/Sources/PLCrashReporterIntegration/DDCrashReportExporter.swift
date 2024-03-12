@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import Foundation
+import DatadogInternal
 
 /// Exports intermediate `CrashReport` to `DDCrashReport`.
 ///
@@ -141,9 +141,9 @@ internal struct DDCrashReportExporter {
 
     // MARK: - Exporting threads and binary images
 
-    private func formattedThreads(from crashReport: CrashReport) -> [DDCrashReport.Thread] {
+    private func formattedThreads(from crashReport: CrashReport) -> [DDThread] {
         return crashReport.threads.map { thread in
-            return DDCrashReport.Thread(
+            return DDThread(
                 name: "Thread \(thread.threadNumber)",
                 stack: string(from: thread.stackFrames), // we don't sanitize frames in `error.threads[]`
                 crashed: thread.crashed,
@@ -152,7 +152,7 @@ internal struct DDCrashReportExporter {
         }
     }
 
-    private func formattedBinaryImages(from crashReport: CrashReport) -> [DDCrashReport.BinaryImage] {
+    private func formattedBinaryImages(from crashReport: CrashReport) -> [BinaryImage] {
         return crashReport.binaryImages.map { image in
             // Ref. for this computation:
             // https://github.com/microsoft/plcrashreporter/blob/dbb05c0bc883bde1cfcad83e7add25862c95d11f/Source/PLCrashReportTextFormatter.m#L447
@@ -162,7 +162,7 @@ internal struct DDCrashReportExporter {
             let maxAddress = image.imageBaseAddress.addIfNoOverflow(maxAddressOffset) ?? image.imageBaseAddress
             let maxAddressHex = "0x\(maxAddress.toHex)"
 
-            return DDCrashReport.BinaryImage(
+            return BinaryImage(
                 libraryName: image.imageName,
                 uuid: image.uuid ?? unavailable,
                 architecture: image.codeType?.architectureName ?? unavailable,

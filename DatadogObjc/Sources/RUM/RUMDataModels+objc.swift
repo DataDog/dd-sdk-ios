@@ -1058,6 +1058,10 @@ public class DDRUMErrorEvent: NSObject {
         root.swiftModel.featureFlags != nil ? DDRUMErrorEventFeatureFlags(root: root) : nil
     }
 
+    @objc public var freeze: DDRUMErrorEventFreeze? {
+        root.swiftModel.freeze != nil ? DDRUMErrorEventFreeze(root: root) : nil
+    }
+
     @objc public var os: DDRUMErrorEventRUMOperatingSystem? {
         root.swiftModel.os != nil ? DDRUMErrorEventRUMOperatingSystem(root: root) : nil
     }
@@ -1599,6 +1603,10 @@ public class DDRUMErrorEventError: NSObject {
         root.swiftModel.error.binaryImages?.map { DDRUMErrorEventErrorBinaryImages(swiftModel: $0) }
     }
 
+    @objc public var category: DDRUMErrorEventErrorCategory {
+        .init(swift: root.swiftModel.error.category)
+    }
+
     @objc public var causes: [DDRUMErrorEventErrorCauses]? {
         set { root.swiftModel.error.causes = newValue?.map { $0.swiftModel } }
         get { root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) } }
@@ -1696,6 +1704,32 @@ public class DDRUMErrorEventErrorBinaryImages: NSObject {
     @objc public var uuid: String {
         root.swiftModel.uuid
     }
+}
+
+@objc
+public enum DDRUMErrorEventErrorCategory: Int {
+    internal init(swift: RUMErrorEvent.Error.Category?) {
+        switch swift {
+        case nil: self = .none
+        case .aNR?: self = .aNR
+        case .appHang?: self = .appHang
+        case .exception?: self = .exception
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.Category? {
+        switch self {
+        case .none: return nil
+        case .aNR: return .aNR
+        case .appHang: return .appHang
+        case .exception: return .exception
+        }
+    }
+
+    case none
+    case aNR
+    case appHang
+    case exception
 }
 
 @objc
@@ -2089,6 +2123,19 @@ public class DDRUMErrorEventFeatureFlags: NSObject {
 
     @objc public var featureFlagsInfo: [String: Any] {
         root.swiftModel.featureFlags!.featureFlagsInfo.castToObjectiveC()
+    }
+}
+
+@objc
+public class DDRUMErrorEventFreeze: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var duration: NSNumber {
+        root.swiftModel.freeze!.duration as NSNumber
     }
 }
 
@@ -6282,6 +6329,10 @@ public class DDRUMVitalEventVital: NSObject {
         root.swiftModel.vital.id
     }
 
+    @objc public var name: String? {
+        root.swiftModel.vital.name
+    }
+
     @objc public var type: DDRUMVitalEventVitalVitalType {
         .init(swift: root.swiftModel.vital.type)
     }
@@ -6860,6 +6911,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.allowUntrustedEvents as NSNumber?
     }
 
+    @objc public var appHangThreshold: NSNumber? {
+        root.swiftModel.telemetry.configuration.appHangThreshold as NSNumber?
+    }
+
     @objc public var backgroundTasksEnabled: NSNumber? {
         root.swiftModel.telemetry.configuration.backgroundTasksEnabled as NSNumber?
     }
@@ -7038,6 +7093,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
     }
 
+    @objc public var unityVersion: String? {
+        set { root.swiftModel.telemetry.configuration.unityVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.unityVersion }
+    }
+
     @objc public var useAllowedTracingOrigins: NSNumber? {
         root.swiftModel.telemetry.configuration.useAllowedTracingOrigins as NSNumber?
     }
@@ -7212,4 +7272,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/4912f5a003399ca25d7bbf323c6693a391520a8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330

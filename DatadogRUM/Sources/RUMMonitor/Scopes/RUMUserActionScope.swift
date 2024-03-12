@@ -116,7 +116,7 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
         case is RUMStopResourceWithErrorCommand:
             activeResourcesCount -= 1
             errorsCount += 1
-        case is RUMAddCurrentViewErrorCommand:
+        case is RUMErrorCommand:
             errorsCount += 1
         case is RUMAddLongTaskCommand:
             // TODO: RUMM-1616 this command is ignored if arrived after 100ms
