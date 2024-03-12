@@ -12,8 +12,8 @@ class W3CHTTPHeadersReaderTests: XCTestCase {
         let w3cHTTPHeadersReader = W3CHTTPHeadersReader(httpHeaderFields: ["traceparent": "00-4d2-929-01"])
         let ids = w3cHTTPHeadersReader.read()
 
-        XCTAssertEqual(ids?.traceID, TraceID(rawValue: 1_234))
-        XCTAssertEqual(ids?.spanID, TraceID(rawValue: 2_345))
+        XCTAssertEqual(ids?.traceID, TraceID(idLo: 1_234))
+        XCTAssertEqual(ids?.spanID, SpanID(2_345))
         XCTAssertNil(ids?.parentSpanID)
     }
 

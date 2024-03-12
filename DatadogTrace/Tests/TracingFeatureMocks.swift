@@ -19,8 +19,8 @@ extension DDSpanContext {
 
     static func mockWith(
         traceID: TraceID = .mockAny(),
-        spanID: TraceID = .mockAny(),
-        parentSpanID: TraceID? = .mockAny(),
+        spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = .mockAny(),
         baggageItems: BaggageItems = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
@@ -91,8 +91,8 @@ extension DDSpan {
 extension SpanEvent: AnyMockable, RandomMockable {
     static func mockWith(
         traceID: TraceID = .mockAny(),
-        spanID: TraceID = .mockAny(),
-        parentID: TraceID? = .mockAny(),
+        spanID: SpanID = .mockAny(),
+        parentID: SpanID? = .mockAny(),
         operationName: String = .mockAny(),
         serviceName: String = .mockAny(),
         resource: String = .mockAny(),
@@ -137,9 +137,9 @@ extension SpanEvent: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> SpanEvent {
         return SpanEvent(
-            traceID: .init(rawValue: .mockRandom()),
-            spanID: .init(rawValue: .mockRandom()),
-            parentID: .init(rawValue: .mockRandom()),
+            traceID: .mock(.mockRandom(), .mockRandom()),
+            spanID: .mock(.mockRandom()),
+            parentID: .mock(.mockRandom()),
             operationName: .mockRandom(),
             serviceName: .mockRandom(),
             resource: .mockRandom(),
@@ -198,7 +198,8 @@ extension DatadogTracer {
         core: DatadogCoreProtocol,
         sampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
-        tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
         loggingIntegration: TracingWithLoggingIntegration = .mockAny()
@@ -207,7 +208,8 @@ extension DatadogTracer {
             core: core,
             sampler: sampler,
             tags: tags,
-            tracingUUIDGenerator: tracingUUIDGenerator,
+            traceIDGenerator: traceIDGenerator,
+            spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
             spanEventBuilder: spanEventBuilder

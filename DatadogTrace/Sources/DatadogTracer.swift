@@ -15,7 +15,9 @@ internal class DatadogTracer: OTTracer {
     /// Integration with Logging.
     let loggingIntegration: TracingWithLoggingIntegration
 
-    let tracingUUIDGenerator: TraceIDGenerator
+    let traceIDGenerator: TraceIDGenerator
+
+    let spanIDGenerator: SpanIDGenerator
 
     /// Date provider for traces.
     let dateProvider: DateProvider
@@ -32,14 +34,16 @@ internal class DatadogTracer: OTTracer {
         core: DatadogCoreProtocol,
         sampler: Sampler,
         tags: [String: Encodable],
-        tracingUUIDGenerator: TraceIDGenerator,
+        traceIDGenerator: TraceIDGenerator,
+        spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
         spanEventBuilder: SpanEventBuilder
     ) {
         self.core = core
         self.tags = tags
-        self.tracingUUIDGenerator = tracingUUIDGenerator
+        self.traceIDGenerator = traceIDGenerator
+        self.spanIDGenerator = spanIDGenerator
         self.dateProvider = dateProvider
         self.loggingIntegration = loggingIntegration
         self.sampler = sampler
@@ -84,8 +88,8 @@ internal class DatadogTracer: OTTracer {
 
     internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
         return DDSpanContext(
-            traceID: parentSpanContext?.traceID ?? tracingUUIDGenerator.generate(),
-            spanID: tracingUUIDGenerator.generate(),
+            traceID: parentSpanContext?.traceID ?? traceIDGenerator.generate(),
+            spanID: spanIDGenerator.generate(),
             parentSpanID: parentSpanContext?.spanID,
             baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
         )
@@ -133,8 +137,8 @@ internal class DatadogTracer: OTTracer {
         core?.set(
             baggage: context.map {
                 SpanCoreContext(
-                    traceID: String($0.traceID),
-                    spanID: String($0.spanID)
+                    traceID: String($0.traceID, representation: .hexadecimal),
+                    spanID: String($0.spanID, representation: .decimal)
                 )
             },
             forKey: SpanCoreContext.key

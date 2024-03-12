@@ -34,7 +34,8 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
                 )
             )
         )
-        config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 1)
+        config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100))
+        config.spanIDGenerator = RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1)
 
         Trace.enable(
             with: config,
@@ -76,15 +77,15 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
         let matcher1 = try XCTUnwrap(matchers.first)
         try XCTAssertEqual(matcher1.operationName(), "root")
-        try XCTAssertEqual(matcher1.traceID(), "1")
-        try XCTAssertEqual(matcher1.spanID(), "2")
+        try XCTAssertEqual(matcher1.traceID(), "64")
+        try XCTAssertEqual(matcher1.spanID(), "64")
         try XCTAssertEqual(matcher1.metrics.isRootSpan(), 1)
 
         let matcher2 = try XCTUnwrap(matchers.last)
         try XCTAssertEqual(matcher2.operationName(), "urlsession.request")
-        try XCTAssertEqual(matcher2.traceID(), "1")
-        try XCTAssertEqual(matcher2.parentSpanID(), "2")
-        try XCTAssertEqual(matcher2.spanID(), "3")
+        try XCTAssertEqual(matcher2.traceID(), "64")
+        try XCTAssertEqual(matcher2.parentSpanID(), "64")
+        try XCTAssertEqual(matcher2.spanID(), "65")
     }
 
     class MockDelegate: NSObject, URLSessionDataDelegate {

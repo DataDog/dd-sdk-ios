@@ -121,6 +121,7 @@ internal class SpanMatcher {
     struct Meta {
         fileprivate let matcher: SpanMatcher
 
+        func tid()                  throws -> String { try matcher.meta(forKeyPath: "meta._dd.p.tid") }
         func source()               throws -> String { try matcher.meta(forKeyPath: "meta._dd.source") }
         func applicationVersion()   throws -> String { try matcher.meta(forKeyPath: "meta.version") }
         func tracerVersion()        throws -> String { try matcher.meta(forKeyPath: "meta.tracer.version") }

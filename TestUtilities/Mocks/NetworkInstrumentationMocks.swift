@@ -7,13 +7,32 @@
 import Foundation
 import DatadogInternal
 
-extension TraceID {
-    public static func mockAny() -> TraceID {
-        return TraceID(rawValue: .mockAny())
+extension SpanID {
+    public static func mockAny() -> SpanID {
+        return SpanID(rawValue: .mockAny())
     }
 
-    public static func mock(_ rawValue: UInt64) -> TraceID {
+    public static func mock(_ rawValue: UInt64) -> SpanID {
+        return SpanID(rawValue: rawValue)
+    }
+}
+
+
+extension TraceID {
+    public static func mockAny() -> TraceID {
+        return TraceID(rawValue: (.mockAny(), .mockAny()))
+    }
+
+    public static func mock(_ rawValue: (UInt64, UInt64)) -> TraceID {
         return TraceID(rawValue: rawValue)
+    }
+
+    public static func mock(_ idHi: UInt64, _ idLo: UInt64) -> TraceID {
+        return TraceID(idHi: idHi, idLo: idLo)
+    }
+
+    public static func mock(_ idLo: UInt64) -> TraceID {
+        return TraceID(idLo: idLo)
     }
 }
 
@@ -29,14 +48,36 @@ public class RelativeTracingUUIDGenerator: TraceIDGenerator {
 
     public func generate() -> TraceID {
         return queue.sync {
+            defer { uuid = uuid + (0, count) }
+            return uuid
+        }
+    }
+}
+
+public class RelativeSpanIDGenerator: SpanIDGenerator {
+    private(set) var uuid: SpanID
+    internal let count: UInt64
+    private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
+
+    public init(startingFrom uuid: SpanID, advancingByCount count: UInt64 = 1) {
+        self.uuid = uuid
+        self.count = count
+    }
+
+    public func generate() -> SpanID {
+        return queue.sync {
             defer { uuid = uuid + count }
             return uuid
         }
     }
 }
 
-private func + (lhs: TraceID, rhs: UInt64) -> TraceID {
-    return TraceID(rawValue: (UInt64(String(lhs)) ?? 0) + rhs)
+private func + (lhs: SpanID, rhs: UInt64) -> SpanID {
+    return SpanID(rawValue: lhs.rawValue + rhs)
+}
+
+private func + (lhs: TraceID, rhs: (UInt64, UInt64)) -> TraceID {
+    return TraceID(rawValue: (lhs.rawValue.0 + rhs.0, lhs.rawValue.1 + rhs.1))
 }
 
 extension URLSession {

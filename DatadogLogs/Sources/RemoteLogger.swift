@@ -139,11 +139,11 @@ internal final class RemoteLogger: LoggerProtocol {
             }
 
             // When bundle with Trace is enabled, link RUM context (if available):
-            if self.activeSpanIntegration, let span = context.baggages[SpanContext.key] {
+            if self.activeSpanIntegration, let spanContext = context.baggages[SpanContext.key] {
                 do {
-                    let trace = try span.decode(type: SpanContext.self)
-                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID
-                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID
+                    let trace = try spanContext.decode(type: SpanContext.self)
+                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
+                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
                 } catch {
                     self.core.telemetry
                         .error("Fails to decode Span context from Logs", error: error)

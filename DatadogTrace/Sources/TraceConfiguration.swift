@@ -123,6 +123,7 @@ extension Trace {
         // MARK: - Internal
 
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
+        internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
         internal var dateProvider: DateProvider = SystemDateProvider()
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
 

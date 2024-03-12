@@ -200,15 +200,15 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDHTTPHeadersWriter(sampleRate: 100)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "x-datadog-trace-id": "1",
-            "x-datadog-parent-id": "2",
+            "x-datadog-trace-id": "a0000000000000064",
+            "x-datadog-parent-id": "c8",
             "x-datadog-sampling-priority": "1",
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
@@ -218,7 +218,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDHTTPHeadersWriter(sampleRate: 0)
@@ -233,7 +233,7 @@ class DDTracerTests: XCTestCase {
     func testInjectingSpanContextToInvalidCarrierOrFormat() throws {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDHTTPHeadersWriter(sampleRate: 100)
         let objcInvalidFormat = "foo"
@@ -252,14 +252,14 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(sampleRate: 100)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000000"
+            "b3": "000000000000000a0000000000000064-00000000000000c8-1-0000000000000000"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -268,7 +268,7 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDB3HTTPHeadersWriter(sampleRate: 0)
@@ -283,7 +283,7 @@ class DDTracerTests: XCTestCase {
     func testInjectingSpanContextToInvalidCarrierOrFormatForB3() throws {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDB3HTTPHeadersWriter(sampleRate: 100)
         let objcInvalidFormat = "foo"
@@ -302,15 +302,15 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(sampleRate: 100)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01",
-            "tracestate": "dd=p:0000000000000002;s:1"
+            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-01",
+            "tracestate": "dd=p:00000000000000c8;s:1"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -319,15 +319,15 @@ class DDTracerTests: XCTestCase {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
         let objcSpanContext = DDSpanContextObjc(
-            swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2)
+            swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200)
         )
 
         let objcWriter = DDW3CHTTPHeadersWriter(sampleRate: 0)
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00",
-            "tracestate": "dd=p:0000000000000002;s:0"
+            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-00",
+            "tracestate": "dd=p:00000000000000c8;s:0"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -335,7 +335,7 @@ class DDTracerTests: XCTestCase {
     func testInjectingSpanContextToInvalidCarrierOrFormatForW3C() throws {
         Trace.enable(with: config)
         let objcTracer = DDTracer.shared()
-        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: 1, spanID: 2))
+        let objcSpanContext = DDSpanContextObjc(swiftSpanContext: DDSpanContext.mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200))
 
         let objcValidWriter = DDW3CHTTPHeadersWriter(sampleRate: 100)
         let objcInvalidFormat = "foo"
