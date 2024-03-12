@@ -115,7 +115,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
         // When:
         // - then request new batch, which triggers directory purging
         dateProvider.advance(bySeconds: expectedBatchAge)
-        _ = try orchestrator.getNewWritableFile(writeSize: 1)
+        _ = try orchestrator.getWritableFile(writeSize: 1)
 
         // Then
         let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Deleted"))
@@ -161,39 +161,7 @@ class FilesOrchestrator_MetricsTests: XCTestCase {
             "uploader_window": storage.uploaderWindow.toMilliseconds,
             "batch_size": expectedWrites.reduce(0, +),
             "batch_events_count": expectedWrites.count,
-            "batch_duration": (storage.maxFileAgeForWrite + 1).toMilliseconds,
-            "forced_new": false
-        ])
-    }
-
-    func testWhenNewBatchIsForced_itSendsBatchClosedMetric() throws {
-        // Given
-        // - request batch to be created
-        // - request few writes on that batch
-        let orchestrator = createOrchestrator()
-        let expectedWrites: [UInt64] = [10, 5, 2]
-        try expectedWrites.forEach { writeSize in
-            _ = try orchestrator.getWritableFile(writeSize: writeSize)
-        }
-        let expectedBatchDuration = storage.maxFileAgeForWrite - 1
-
-        // When
-        // - wait less than allowed batch age for writes
-        // - then request new batch, which closes the previous one
-        dateProvider.advance(bySeconds: expectedBatchDuration)
-        _ = try orchestrator.getNewWritableFile(writeSize: 1)
-
-        // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: "Batch Closed"))
-        DDAssertReflectionEqual(metric.attributes, [
-            "metric_type": "batch closed",
-            "track": "track name",
-            "consent": "consent value",
-            "uploader_window": storage.uploaderWindow.toMilliseconds,
-            "batch_size": expectedWrites.reduce(0, +),
-            "batch_events_count": expectedWrites.count,
-            "batch_duration": expectedBatchDuration.toMilliseconds,
-            "forced_new": true
+            "batch_duration": (storage.maxFileAgeForWrite + 1).toMilliseconds
         ])
     }
 }

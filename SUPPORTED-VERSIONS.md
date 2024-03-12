@@ -5,9 +5,13 @@
 | **iOS**    |     ✅    |  `11+` |
 | **tvOS**   |     ✅    |  `11+` |
 | **iPadOS** |     ✅    |  `11+` |
+| **VisionOS** |   ⚠️    |  `1.1+` |
 | **watchOS**|     ❌    |  `n/a` |
 | **macOS**  |     ❌    |  `n/a` |
 | **Linux**  |     ❌    |  `n/a` |
+
+## VisionOS
+VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional.
 
 ## Xcode
 

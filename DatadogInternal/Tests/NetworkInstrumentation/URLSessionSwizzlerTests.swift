@@ -10,6 +10,9 @@ import XCTest
 
 class URLSessionSwizzlerTests: XCTestCase {
     func testSwizzling_dataTaskWithCompletion() throws {
+        let didReceive = expectation(description: "didReceive")
+        didReceive.expectedFulfillmentCount = 2
+
         let didInterceptCompletion = expectation(description: "interceptCompletion")
         didInterceptCompletion.expectedFulfillmentCount = 2
 
@@ -18,6 +21,8 @@ class URLSessionSwizzlerTests: XCTestCase {
         try swizzler.swizzle(
             interceptCompletionHandler: { _, _, _ in
                 didInterceptCompletion.fulfill()
+            }, didReceive: { _, _ in
+                didReceive.fulfill()
             }
         )
 
@@ -30,6 +35,6 @@ class URLSessionSwizzlerTests: XCTestCase {
         session.dataTask(with: url) { _, _, _ in }.resume() // not intercepted
         session.dataTask(with: URLRequest(url: url)) { _, _, _ in }.resume() // not intercepted
 
-        wait(for: [didInterceptCompletion], timeout: 5)
+        wait(for: [didReceive, didInterceptCompletion], timeout: 5)
     }
 }

@@ -26,6 +26,7 @@ extension DatadogContext: AnyMockable {
         applicationName: String = .mockAny(),
         applicationBundleIdentifier: String = .mockAny(),
         sdkInitDate: Date = Date(),
+        nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
         userInfo: UserInfo = .mockAny(),
         trackingConsent: TrackingConsent = .pending,
@@ -54,6 +55,7 @@ extension DatadogContext: AnyMockable {
             applicationBundleIdentifier: applicationBundleIdentifier,
             sdkInitDate: sdkInitDate,
             device: device,
+            nativeSourceOverride: nativeSourceOverride,
             userInfo: userInfo,
             trackingConsent: trackingConsent,
             launchTime: launchTime,
@@ -323,7 +325,11 @@ extension TrackingConsent {
 
 extension String {
     public static func mockAnySource() -> String {
-        return ["ios", "android", "browser", "ios", "react-native", "flutter"].randomElement()!
+        return ["ios", "android", "browser", "ios", "react-native", "flutter", "unity"].randomElement()!
+    }
+
+    public static func mockAnySourceType() -> String {
+        return ["ios", "android", "browser", "react-native", "flutter", "roku", "ndk", "ios+il2cpp", "ndk+il2cpp"].randomElement()!
     }
 }
 

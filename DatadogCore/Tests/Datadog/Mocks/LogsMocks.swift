@@ -102,6 +102,7 @@ extension LogEvent: AnyMockable, RandomMockable {
         applicationVersion: String = .mockAny(),
         applicationBuildNumber: String = .mockAny(),
         buildId: String? = .mockAny(),
+        variant: String? = .mockAny(),
         dd: LogEvent.Dd = .mockAny(),
         os: LogEvent.OperatingSystem = .mockAny(),
         userInfo: UserInfo = .mockAny(),
@@ -123,6 +124,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationVersion: applicationVersion,
             applicationBuildNumber: applicationBuildNumber,
             buildId: buildId,
+            variant: variant,
             dd: dd,
             os: os,
             userInfo: userInfo,
@@ -147,6 +149,7 @@ extension LogEvent: AnyMockable, RandomMockable {
             applicationVersion: .mockRandom(),
             applicationBuildNumber: .mockRandom(),
             buildId: .mockRandom(),
+            variant: .mockRandom(),
             dd: .mockRandom(),
             os: .mockRandom(),
             userInfo: .mockRandom(),
@@ -227,12 +230,18 @@ extension LogEvent.OperatingSystem: AnyMockable, RandomMockable {
 extension LogEvent.DeviceInfo: AnyMockable, RandomMockable {
     public static func mockAny() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
+            brand: .mockAny(),
+            name: .mockAny(),
+            model: .mockAny(),
             architecture: .mockAny()
         )
     }
 
     public static func mockRandom() -> LogEvent.DeviceInfo {
         return LogEvent.DeviceInfo(
+            brand: .mockRandom(),
+            name: .mockRandom(),
+            model: .mockRandom(),
             architecture: .mockRandom()
         )
     }

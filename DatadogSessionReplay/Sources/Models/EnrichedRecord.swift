@@ -16,73 +16,28 @@ import Foundation
 /// `EnrichedRecord` conforms to `Encodable` so it can be encoded by `DatadogCore`.
 /// For decoding `EnrichedRecord` information, see `EnrichedRecordJSON` type.
 internal struct EnrichedRecord: Encodable {
-    /// Records enriched with further information.
-    let records: [SRRecord]
-
     /// The RUM application ID of all records.
     let applicationID: String
     /// The RUM session ID of all records.
     let sessionID: String
     /// The RUM view ID of all records.
     let viewID: String
-    /// If there is a Full Snapshot among records.
-    let hasFullSnapshot: Bool
-    /// The timestamp of the earliest record.
-    let earliestTimestamp: Int64
-    /// The timestamp of the latest record.
-    let latestTimestamp: Int64
+    /// Records enriched with further information.
+    let records: [SRRecord]
 
     enum CodingKeys: String, CodingKey {
         case records
         case applicationID
         case sessionID
         case viewID
-        case hasFullSnapshot
-        case earliestTimestamp
-        case latestTimestamp
     }
 
     init(context: Recorder.Context, records: [SRRecord]) {
-        self.records = records
         self.applicationID = context.applicationID
         self.sessionID = context.sessionID
         self.viewID = context.viewID
-
-        var hasFullSnapshot = false
-        var earliestTimestamp: Int64 = .max
-        var latestTimestamp: Int64 = .min
-
-        for record in records {
-            hasFullSnapshot = hasFullSnapshot || record.isFullSnapshot
-            earliestTimestamp = min(record.timestamp, earliestTimestamp)
-            latestTimestamp = max(record.timestamp, latestTimestamp)
-        }
-
-        self.hasFullSnapshot = hasFullSnapshot
-        self.earliestTimestamp = earliestTimestamp
-        self.latestTimestamp = latestTimestamp
+        self.records = records
     }
 }
 
-// MARK: - Convenience
-
-extension SRRecord {
-    var isFullSnapshot: Bool {
-        switch self {
-        case .fullSnapshotRecord: return true
-        default: return false
-        }
-    }
-
-    var timestamp: Int64 {
-        switch self {
-        case .fullSnapshotRecord(let record):           return record.timestamp
-        case .incrementalSnapshotRecord(let record):    return record.timestamp
-        case .metaRecord(let record):                   return record.timestamp
-        case .focusRecord(let record):                  return record.timestamp
-        case .viewEndRecord(let record):                return record.timestamp
-        case .visualViewportRecord(let record):         return record.timestamp
-        }
-    }
-}
 #endif

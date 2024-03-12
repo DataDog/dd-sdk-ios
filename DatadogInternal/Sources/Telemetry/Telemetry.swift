@@ -10,6 +10,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let actionNameAttribute: String?
     public let allowFallbackToLocalStorage: Bool?
     public let allowUntrustedEvents: Bool?
+    public let appHangThreshold: Int64?
     public let backgroundTasksEnabled: Bool?
     public let batchProcessingLevel: Int64?
     public let batchSize: Int64?
@@ -174,12 +175,13 @@ extension Telemetry {
 
     /// Report a Configuration Telemetry.
     ///
-    /// The configuration can be partial, the telemtry should support accumulation of
-    /// configuration for lazy initialization of the SDK.
+    /// The configuration can be partial, the telemetry supports accumulation of
+    /// configuration for lazy initialization of different SDK features.
     public func configuration(
         actionNameAttribute: String? = nil,
         allowFallbackToLocalStorage: Bool? = nil,
         allowUntrustedEvents: Bool? = nil,
+        appHangThreshold: Int64? = nil,
         backgroundTasksEnabled: Bool? = nil,
         batchProcessingLevel: Int64? = nil,
         batchSize: Int64? = nil,
@@ -231,6 +233,7 @@ extension Telemetry {
             actionNameAttribute: actionNameAttribute,
             allowFallbackToLocalStorage: allowFallbackToLocalStorage,
             allowUntrustedEvents: allowUntrustedEvents,
+            appHangThreshold: appHangThreshold,
             backgroundTasksEnabled: backgroundTasksEnabled,
             batchProcessingLevel: batchProcessingLevel,
             batchSize: batchSize,
@@ -337,6 +340,7 @@ extension ConfigurationTelemetry {
             actionNameAttribute: other.actionNameAttribute ?? actionNameAttribute,
             allowFallbackToLocalStorage: other.allowFallbackToLocalStorage ?? allowFallbackToLocalStorage,
             allowUntrustedEvents: other.allowUntrustedEvents ?? allowUntrustedEvents,
+            appHangThreshold: other.appHangThreshold ?? appHangThreshold,
             backgroundTasksEnabled: other.backgroundTasksEnabled ?? backgroundTasksEnabled,
             batchProcessingLevel: other.batchProcessingLevel ?? batchProcessingLevel,
             batchSize: other.batchSize ?? batchSize,

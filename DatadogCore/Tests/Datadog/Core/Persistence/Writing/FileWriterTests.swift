@@ -31,7 +31,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -69,7 +68,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { data in
                     "encrypted".utf8Data + data + "encrypted".utf8Data
@@ -111,7 +109,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -135,42 +132,6 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
     }
 
-    func testWhenForceNewBatchIsSet_itWritesDataToSeparateFilesInTLVFormat() throws {
-        let writer = FileWriter(
-            orchestrator: FilesOrchestrator(
-                directory: directory,
-                performance: PerformancePreset.mockAny(),
-                dateProvider: RelativeDateProvider(advancingBySeconds: 1),
-                telemetry: NOPTelemetry()
-            ),
-            forceNewFile: true,
-            encryption: nil,
-            telemetry: NOPTelemetry()
-        )
-
-        writer.write(value: ["key1": "value1"])
-        writer.write(value: ["key2": "value2"])
-        writer.write(value: ["key3": "value3"])
-
-        XCTAssertEqual(try directory.files().count, 3)
-
-        let dataBlocks = try directory.files()
-            .sorted { $0.name < $1.name } // read files in their creation order
-            .map { try DataBlockReader(input: $0.stream()).all() }
-
-        XCTAssertEqual(dataBlocks[0].count, 1)
-        XCTAssertEqual(dataBlocks[0][0].type, .event)
-        XCTAssertEqual(dataBlocks[0][0].data, #"{"key1":"value1"}"#.utf8Data)
-
-        XCTAssertEqual(dataBlocks[1].count, 1)
-        XCTAssertEqual(dataBlocks[1][0].type, .event)
-        XCTAssertEqual(dataBlocks[1][0].data, #"{"key2":"value2"}"#.utf8Data)
-
-        XCTAssertEqual(dataBlocks[2].count, 1)
-        XCTAssertEqual(dataBlocks[2][0].type, .event)
-        XCTAssertEqual(dataBlocks[2][0].data, #"{"key3":"value3"}"#.utf8Data)
-    }
-
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
         let dd = DD.mockWith(logger: CoreLoggerMock())
         defer { dd.reset() }
@@ -190,7 +151,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -223,7 +183,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -245,7 +204,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -276,7 +234,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -339,7 +296,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
             ),

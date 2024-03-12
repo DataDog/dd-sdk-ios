@@ -278,7 +278,10 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, error: error, source: source, attributes: attributes
+            time: time,
+            error: error,
+            source: source,
+            attributes: attributes
         )
     }
 
@@ -291,7 +294,56 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, message: message, type: type, stack: stack, source: source, attributes: attributes
+            time: time,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes
+        )
+    }
+}
+
+extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddCurrentViewAppHangCommand {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> RUMAddCurrentViewAppHangCommand {
+        return RUMAddCurrentViewAppHangCommand(
+            time: .mockRandom(),
+            attributes: mockRandomAttributes(),
+            message: .mockRandom(),
+            type: .mockRandom(),
+            stack: .mockRandom(),
+            threads: .mockRandom(),
+            binaryImages: .mockRandom(),
+            isStackTraceTruncated: .mockRandom(),
+            hangDuration: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        message: String = .mockAny(),
+        type: String? = .mockAny(),
+        stack: String? = .mockAny(),
+        threads: [DDThread]? = .mockAny(),
+        binaryImages: [BinaryImage]? = .mockAny(),
+        isStackTraceTruncated: Bool? = .mockAny(),
+        hangDuration: TimeInterval = .mockAny()
+    ) -> RUMAddCurrentViewAppHangCommand {
+        return RUMAddCurrentViewAppHangCommand(
+            time: time,
+            attributes: attributes,
+            message: message,
+            type: type,
+            stack: stack,
+            threads: threads,
+            binaryImages: binaryImages,
+            isStackTraceTruncated: isStackTraceTruncated,
+            hangDuration: hangDuration
         )
     }
 }

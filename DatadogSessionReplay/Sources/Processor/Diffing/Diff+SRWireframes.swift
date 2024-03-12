@@ -20,6 +20,8 @@ extension SRWireframe: Diffable {
             return wireframe.id
         case .placeholderWireframe(let wireframe):
             return wireframe.id
+        case .webviewWireframe(let wireframe):
+            return wireframe.id
         }
     }
 
@@ -70,6 +72,8 @@ extension SRWireframe: MutableWireframe {
         case .textWireframe(let this):
             return try this.mutations(from: otherWireframe)
         case .placeholderWireframe(let this):
+            return try this.mutations(from: otherWireframe)
+        case .webviewWireframe(let this):
             return try this.mutations(from: otherWireframe)
         }
     }
@@ -167,6 +171,31 @@ extension SRTextWireframe: MutableWireframe {
                 text: use(text, ifDifferentThan: other.text),
                 textPosition: use(textPosition, ifDifferentThan: other.textPosition),
                 textStyle: use(textStyle, ifDifferentThan: other.textStyle),
+                width: use(width, ifDifferentThan: other.width),
+                x: use(x, ifDifferentThan: other.x),
+                y: use(y, ifDifferentThan: other.y)
+            )
+        )
+    }
+}
+
+extension SRWebviewWireframe: MutableWireframe {
+    func mutations(from otherWireframe: SRWireframe) throws -> WireframeMutation {
+        guard case .webviewWireframe(let other) = otherWireframe else {
+            throw WireframeMutationError.typeMismatch
+        }
+        guard other.id == id, other.slotId == slotId else {
+            throw WireframeMutationError.idMismatch
+        }
+
+        return .webviewWireframeUpdate(
+            value: .init(
+                border: use(border, ifDifferentThan: other.border),
+                clip: use(clip, ifDifferentThan: other.clip),
+                height: use(height, ifDifferentThan: other.height),
+                id: id,
+                shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
+                slotId: slotId,
                 width: use(width, ifDifferentThan: other.width),
                 x: use(x, ifDifferentThan: other.x),
                 y: use(y, ifDifferentThan: other.y)

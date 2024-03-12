@@ -69,7 +69,7 @@ public class SessionReplayWireframesBuilder {
     }
 
     public func createImageWireframe(
-        imageResource: ImageResource,
+        resourceId: String,
         id: WireframeID,
         frame: CGRect,
         mimeType: String = "png",
@@ -81,14 +81,14 @@ public class SessionReplayWireframesBuilder {
         opacity: CGFloat? = nil
     ) -> SRWireframe {
         let wireframe = SRImageWireframe(
-            base64: imageResource.base64,
+            base64: nil, // field deprecated - we should use resource endpoint instead
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
             isEmpty: false, // field deprecated - we should use placeholder wireframe instead
             mimeType: mimeType,
-            resourceId: imageResource.identifier,
+            resourceId: resourceId,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             width: Int64(withNoOverflow: frame.width),
             x: Int64(withNoOverflow: frame.minX),
@@ -175,6 +175,32 @@ public class SessionReplayWireframesBuilder {
             y: Int64(withNoOverflow: frame.minY)
         )
         return .placeholderWireframe(value: wireframe)
+    }
+
+    public func createWebViewWireframe(
+        id: Int64,
+        frame: CGRect,
+        slotId: String,
+        clip: SRContentClip? = nil,
+        borderColor: CGColor? = nil,
+        borderWidth: CGFloat? = nil,
+        backgroundColor: CGColor? = nil,
+        cornerRadius: CGFloat? = nil,
+        opacity: CGFloat? = nil
+    ) -> SRWireframe {
+        let wireframe = SRWebviewWireframe(
+            border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
+            clip: clip,
+            height: Int64(withNoOverflow: frame.height),
+            id: id,
+            shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
+            slotId: slotId,
+            width: Int64(withNoOverflow: frame.size.width),
+            x: Int64(withNoOverflow: frame.minX),
+            y: Int64(withNoOverflow: frame.minY)
+        )
+
+        return .webviewWireframe(value: wireframe)
     }
 
     // MARK: - Private

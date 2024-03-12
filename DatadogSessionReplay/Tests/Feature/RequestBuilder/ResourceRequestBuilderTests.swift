@@ -135,7 +135,7 @@ class ResourceRequestBuilderTests: XCTestCase {
 
         // Then
         let contentType = try XCTUnwrap(request.allHTTPHeaderFields?["Content-Type"])
-        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary.uuidString)"))
+        XCTAssertTrue(contentType.matches(regex: "multipart/form-data; boundary=\(multipartSpy.boundary)"))
 
         for i in 0..<resources.count {
             XCTAssertNotNil(multipartSpy.formFiles[i].filename)

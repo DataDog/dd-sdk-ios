@@ -13,22 +13,36 @@ internal protocol ResourceProcessing {
 }
 
 internal class ResourceProcessor: ResourceProcessing {
+    /// Interception callback for snapshot tests.
+    /// Only available in Debug configuration, solely made for testing purpose.
+    var interceptResources: (([Resource]) -> Void)? = nil
+
     private let queue: Queue
     private let resourcesWriter: ResourcesWriting
 
+    private var processedIdentifiers = Set<String>()
+
     func process(resources: [Resource], context: EnrichedResource.Context) {
-        guard !resources.isEmpty else {
-            return
-        }
-        queue.run { [resourcesWriter] in
-            resourcesWriter.write(
-                resources: resources.map {
-                    EnrichedResource(
-                        identifier: $0.calculateIdentifier(),
+        interceptResources?(resources)
+        queue.run { [weak self] in
+            let resources = resources
+                .compactMap {
+                    let identifier = $0.calculateIdentifier()
+                    let isProcessed = self?.processedIdentifiers.contains(identifier) == true
+                    if !isProcessed {
+                        self?.processedIdentifiers.insert(identifier)
+                    }
+                    return !isProcessed ? EnrichedResource(
+                        identifier: identifier,
                         data: $0.calculateData(),
                         context: context
-                    )
+                    ) : nil
                 }
+            guard !resources.isEmpty else {
+                return
+            }
+            self?.resourcesWriter.write(
+                resources: resources
             )
         }
     }

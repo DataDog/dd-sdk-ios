@@ -398,11 +398,14 @@ extension RUMErrorEvent: RandomMockable {
             device: .mockRandom(),
             display: nil,
             error: .init(
+                binaryImages: nil,
+                category: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: .mockRandom(),
                 isCrash: .random(),
                 message: .mockRandom(),
+                meta: nil,
                 resource: .init(
                     method: .mockRandom(),
                     provider: .init(
@@ -416,8 +419,11 @@ extension RUMErrorEvent: RandomMockable {
                 source: [.source, .network, .custom].randomElement()!,
                 sourceType: .mockRandom(),
                 stack: .mockRandom(),
-                type: .mockRandom()
+                threads: nil,
+                type: .mockRandom(),
+                wasTruncated: .mockRandom()
             ),
+            freeze: nil,
             os: .mockRandom(),
             service: .mockRandom(),
             session: .init(
@@ -514,6 +520,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     actionNameAttribute: nil,
                     allowFallbackToLocalStorage: nil,
                     allowUntrustedEvents: nil,
+                    appHangThreshold: .mockRandom(),
                     backgroundTasksEnabled: .mockRandom(),
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
