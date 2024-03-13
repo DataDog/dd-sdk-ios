@@ -5,72 +5,12 @@
  */
 
 import Foundation
-import DatadogInternal
-
-/// Block size binary type
-internal typealias BlockSize = UInt32
-
-/// Default max data length in block (safety check) - 10 MB
-private let MAX_DATA_LENGTH: UInt64 = 10 * 1_024 * 1_024
-
-/// Block type supported in data stream
-internal enum BlockType: UInt16 {
-    /// Represents an event
-    case event = 0x00
-    /// Represents an event metadata associated with the previous event.
-    /// This block is optional and may be omitted.
-    case eventMetadata = 0x01
-}
-
-/// Reported errors while manipulating data blocks.
-internal enum DataBlockError: Error {
-    case readOperationFailed(streamStatus: Stream.Status, streamError: Error?)
-    case invalidDataType(got: UInt16)
-    case invalidByteSequence(expected: Int, got: Int)
-    case bytesLengthExceedsLimit(limit: UInt64)
-    case dataAllocationFailure
-    case endOfStream
-}
-
-/// A data block in defined by its type and a byte sequence.
-///
-/// A block can be serialized in data stream by following TLV format.
-internal struct DataBlock {
-    /// Type describing the data block.
-    let type: BlockType
-
-    /// The data.
-    var data: Data
-
-    /// Returns a Data block in Type-Length-Value format.
-    ///
-    /// A block follow TLV with bytes aligned such as:
-    ///
-    ///     +-  2 bytes -+-   4 bytes   -+- n bytes -|
-    ///     | block type | data size (n) |    data   |
-    ///     +------------+---------------+-----------+
-    /// - Parameter maxLength: Maximum data length of a block.
-    /// - Returns: a data block in TLV.
-    func serialize(maxLength: UInt64 = MAX_DATA_LENGTH) throws -> Data {
-        var buffer = Data()
-        // T
-        withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
-        // L
-        guard let length = BlockSize(exactly: data.count), length <= maxLength else {
-            throw DataBlockError.bytesLengthExceedsLimit(limit: maxLength)
-        }
-        withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
-        // V
-        buffer += data
-        return buffer
-    }
-}
 
 /// A block reader can read TLV formatted blocks from a data input.
 ///
 /// This class provides methods to iteratively retrieve a sequence of
 /// `DataBlock`.
-internal final class DataBlockReader {
+internal final class TLVBlockReader<BlockType: TLVBlockType> {
     /// The input data stream.
     private let stream: InputStream
 
@@ -103,7 +43,7 @@ internal final class DataBlockReader {
     ///
     /// - Throws: `DataBlockError` while reading the input stream.
     /// - Returns: The next block or nil if none could be found.
-    func next() throws -> DataBlock? {
+    func next() throws -> TLVBlock<BlockType>? {
         // look for the next known block
         while true {
             do {
@@ -123,8 +63,8 @@ internal final class DataBlockReader {
     ///
     /// - Throws: `DataBlockError` while reading the input stream.
     /// - Returns: The block sequence found in the input
-    func all(maxDataLength: UInt64 = MAX_DATA_LENGTH) throws -> [DataBlock] {
-        var blocks: [DataBlock] = []
+    func all(maxDataLength: UInt64 = MAX_DATA_LENGTH) throws -> [TLVBlock<BlockType>] {
+        var blocks: [TLVBlock<BlockType>] = []
 
         while let block = try next() {
             blocks.append(block)
@@ -171,7 +111,7 @@ internal final class DataBlockReader {
     }
 
     /// Reads a block.
-    private func readBlock() throws -> DataBlock {
+    private func readBlock() throws -> TLVBlock<BlockType> {
         // read an entire block before inferring the data type
         // to leave the stream in a usuable state if an unkown
         // type was encountered.
@@ -182,7 +122,7 @@ internal final class DataBlockReader {
             throw DataBlockError.invalidDataType(got: type)
         }
 
-        return DataBlock(type: type, data: data)
+        return TLVBlock(type: type, data: data)
     }
 
     /// Reads a block type.
