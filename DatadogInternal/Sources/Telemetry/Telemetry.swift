@@ -73,6 +73,66 @@ public protocol Telemetry {
     ///
     /// - Parameter telemetry: The telemtry message
     func send(telemetry: TelemetryMessage)
+
+    /// Starts a method call.
+    ///
+    /// - Parameters:
+    ///   - operationName: Platform agnostic name of the operation.
+    ///   - callerClass: The name of the class that calls the method.
+    ///   - samplingRate: The sampling rate of the method call.
+    ///
+    /// - Returns: A `MethodCalledTrace` instance.
+    func startMethodCall(
+        operationName: String,
+        callerClass: String,
+        samplingRate: Float
+    ) -> MethodCalledTrace?
+
+    /// Stops a method call.
+    ///
+    /// - Parameters
+    ///   - metric: The `MethodCalledTrace` instance.
+    ///   - isSuccessful: A flag indicating if the method call was successful.
+    func stopMethodCall(_ metric: MethodCalledTrace?, isSuccessful: Bool)
+}
+
+extension Telemetry {
+    /// Convenience method to start a method call with a default sampling rate of 100.
+    func startMethodCall(
+        operationName: String,
+        callerClass: String
+    ) -> MethodCalledTrace? {
+        startMethodCall(operationName: operationName, callerClass: callerClass, samplingRate: 100)
+    }
+    /// Convenience method to stop a method call that assumes success.
+    func stopMethodCall(_ metric: MethodCalledTrace?) {
+        stopMethodCall(metric, isSuccessful: true)
+    }
+}
+
+/// A metric to measure the time of a method call.
+public struct MethodCalledTrace {
+    let operationName: String
+    let callerClass: String
+    let startTime = Date()
+
+    var exectutionTime: TimeInterval {
+        return startTime.timeIntervalSinceNow
+    }
+
+    func asTelemetryMetric(isSuccessful: Bool) -> TelemetryMessage {
+        return .metric(
+            name: MethodCalledMetric.name,
+            attributes: [
+                MethodCalledMetric.executionTime: exectutionTime,
+                MethodCalledMetric.startTime: startTime,
+                MethodCalledMetric.operationName: operationName,
+                MethodCalledMetric.callerClass: callerClass,
+                MethodCalledMetric.isSuccessful: isSuccessful,
+                BasicMetric.typeKey: MethodCalledMetric.typeValue
+            ]
+        )
+    }
 }
 
 extension Telemetry {
@@ -300,6 +360,8 @@ public struct NOPTelemetry: Telemetry {
     public init() { }
     /// no-op
     public func send(telemetry: TelemetryMessage) { }
+    public func startMethodCall(operationName: String, callerClass: String, samplingRate: Float) -> MethodCalledTrace? { return nil }
+    public func stopMethodCall(_ metric: MethodCalledTrace?, isSuccessful: Bool) { }
 }
 
 internal struct CoreTelemetry: Telemetry {
@@ -324,6 +386,41 @@ internal struct CoreTelemetry: Telemetry {
     /// - Parameter telemetry: The telemtry message.
     func send(telemetry: TelemetryMessage) {
         core?.send(message: .telemetry(telemetry))
+    }
+
+    /// Starts a method call.
+    ///
+    /// - Parameters:
+    ///   - operationName: Platform agnostic name of the operation.
+    ///   - callerClass: The name of the class that calls the method.
+    ///   - samplingRate: The sampling rate of the method call. Value between `0.0` and `100.0`, where `0.0` means NO event will be processed and `100.0` means ALL events will be processed. Note that this value is multiplicated by telemetry sampling (by default 20%) and metric events sampling (hardcoded to 15%). Making it effectively 3% sampling rate for sending events, when this value is set to `100`.
+    ///
+    /// - Returns: A `MethodCalledTrace` instance to be used to stop the method call and measure it's execution time. It can be `nil` if the method call is not sampled.
+    func startMethodCall(
+        operationName: String,
+        callerClass: String,
+        samplingRate: Float
+    ) -> MethodCalledTrace? {
+        if Sampler(samplingRate: samplingRate).sample() {
+            return MethodCalledTrace(
+                operationName: operationName,
+                callerClass: callerClass
+            )
+        } else {
+            return nil
+        }
+    }
+
+    /// Stops a method call, transforms method call metric to telemetry message,
+    /// and transmits on the message-bus of the core.
+    ///
+    /// - Parameters
+    ///   - metric: The `MethodCalledTrace` instance.
+    ///   - isSuccessful: A flag indicating if the method call was successful.
+    func stopMethodCall(_ metric: MethodCalledTrace?, isSuccessful: Bool) {
+        if let metric = metric {
+            send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
+        }
     }
 }
 

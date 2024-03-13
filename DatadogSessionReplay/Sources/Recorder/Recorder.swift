@@ -121,11 +121,12 @@ public class Recorder: Recording {
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     func captureNextRecord(_ recorderContext: Context) {
-        let sample = telemetrySampler.sample()
-        var start: TimeInterval?
-        if sample {
-            start = Date().timeIntervalSince1970
-        }
+        let methodCallTrace = telemetry.startMethodCall(
+            operationName: MethodCallConstants.captureRecordOperationName,
+            callerClass: MethodCallConstants.className,
+            samplingRate: MethodCallConstants.captureRecordSampling // Effectively 3% * 15% = 0.45% of calls
+        )
+        var isSuccesful = true
         do {
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
@@ -139,19 +140,16 @@ public class Recorder: Recording {
                 context: .init(recorderContext.applicationID)
             )
         } catch let error {
+            isSuccesful = false
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }
-        if sample {
-            let end = Date().timeIntervalSince1970
-            let executionTime = end - (start ?? 0)
-            telemetry.metric(
-                name: "Method Called",
-                attributes: [
-                    "name" : "captureNextRecord",
-                    "duration" : executionTime.toInt64Nanoseconds,
-                ]
-            )
-        }
+        telemetry.stopMethodCall(methodCallTrace, isSuccessful: isSuccesful)
+    }
+
+    private enum MethodCallConstants {
+        static let captureRecordOperationName = "Capture Record"
+        static let className = "Recorder"
+        static let captureRecordSampling: Float = 15.0
     }
 }
 #endif
