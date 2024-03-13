@@ -34,6 +34,8 @@ extension ConfigurationTelemetry {
             startSessionReplayRecordingManually: .mockRandom(),
             telemetryConfigurationSampleRate: .mockRandom(),
             telemetrySampleRate: .mockRandom(),
+            tracerAPI: .mockRandom(),
+            tracerAPIVersion: .mockRandom(),
             traceSampleRate: .mockRandom(),
             trackBackgroundEvents: .mockRandom(),
             trackCrossPlatformLongTasks: .mockRandom(),

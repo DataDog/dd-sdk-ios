@@ -587,6 +587,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
                 category: command.category,
                 causes: nil,
+                csp: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

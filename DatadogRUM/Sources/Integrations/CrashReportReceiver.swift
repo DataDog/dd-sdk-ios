@@ -373,6 +373,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             error: .init(
                 binaryImages: nil,
                 category: .exception, // crashes are categorised as "Exception"
+                csp: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

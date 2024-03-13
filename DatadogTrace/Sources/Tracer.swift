@@ -76,6 +76,9 @@ public class Tracer {
                 )
             }
 
+            // Send tracer API usage to telemetry
+            core.telemetry.configuration(tracerAPI: "OpenTracing")
+
             return feature.tracer
         } catch {
             consolePrint("\(error)", .error)
