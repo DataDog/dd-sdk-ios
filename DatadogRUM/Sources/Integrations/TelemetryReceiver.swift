@@ -259,7 +259,7 @@ fileprivate extension [String: Encodable] {
         with context: DatadogContext
     ) -> [String: Encodable] {
         /// Method Called metric needs to be enriched with device and os information, only available in the `DatadogContext`.
-        if let key = self[BasicMetric.key] as? String, key == MethodCalledMetric.type {
+        if let key = self[BasicMetric.typeKey] as? String, key == MethodCalledMetric.typeValue {
             var attributes = self
             attributes[MethodCalledMetric.Device.key] = [
                 MethodCalledMetric.Device.model: context.device.model,
@@ -272,8 +272,9 @@ fileprivate extension [String: Encodable] {
                 MethodCalledMetric.OS.build: context.device.osBuildNumber,
             ]
             return attributes
+        } else {
+            return self
         }
-        return self
     }
 }
 

@@ -121,7 +121,7 @@ public class Recorder: Recording {
     /// Initiates the capture of a next record.
     /// **Note**: This is called on the main thread.
     func captureNextRecord(_ recorderContext: Context) {
-        let methodCallTrace = telemetry.startMethodCall(
+        let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
             samplingRate: MethodCallConstants.captureRecordSampling // Effectively 3% * 15% = 0.45% of calls
@@ -143,7 +143,7 @@ public class Recorder: Recording {
             isSuccesful = false
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }
-        telemetry.stopMethodCall(methodCallTrace, isSuccessful: isSuccesful)
+        telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccesful)
     }
 
     private enum MethodCallConstants {

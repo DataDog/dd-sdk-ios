@@ -26,8 +26,6 @@ public enum MethodCalledMetric {
     public static let callerClass = "caller_class"
     /// The key for is successful.
     public static let isSuccessful = "is_successful"
-    /// They key for start time.
-    public static let startTime = "start_time"
     /// The key for execution time.
     public static let executionTime = "execution_time"
 
