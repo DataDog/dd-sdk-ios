@@ -41,16 +41,16 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
     /// This method returns `nil` when the entire data was traversed but no more
     /// block could be found.
     ///
-    /// - Throws: `DataBlockError` while reading the input stream.
+    /// - Throws: `TLVBlockError` while reading the input stream.
     /// - Returns: The next block or nil if none could be found.
     func next() throws -> TLVBlock<BlockType>? {
         // look for the next known block
         while true {
             do {
                 return try readBlock()
-            } catch DataBlockError.invalidDataType {
+            } catch TLVBlockError.invalidDataType {
                 continue
-            } catch DataBlockError.endOfStream {
+            } catch TLVBlockError.endOfStream {
                 // Some streams won't return false for hasBytesAvailable until a read is attempted
                 return nil
             } catch {
@@ -61,7 +61,7 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
 
     /// Reads all data blocks from current index in the stream.
     ///
-    /// - Throws: `DataBlockError` while reading the input stream.
+    /// - Throws: `TLVBlockError` while reading the input stream.
     /// - Returns: The block sequence found in the input
     func all(maxDataLength: UInt64 = MAX_DATA_LENGTH) throws -> [TLVBlock<BlockType>] {
         var blocks: [TLVBlock<BlockType>] = []
@@ -76,7 +76,7 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
     /// Reads `length` bytes from stream.
     ///
     /// - Parameter length: The number of byte to read
-    /// - Throws: `DataBlockError` while reading the input stream.
+    /// - Throws: `TLVBlockError` while reading the input stream.
     /// - Returns: Data bytes from stream.
     private func read(length: Int) throws -> Data {
         guard length > 0 else {
@@ -87,24 +87,24 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
         var data = Data(count: length)
         let count: Int = try data.withUnsafeMutableBytes {
             guard let buffer = $0.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
-                throw DataBlockError.dataAllocationFailure
+                throw TLVBlockError.dataAllocationFailure
             }
             return stream.read(buffer, maxLength: length)
         }
 
         if count < 0 {
-            throw DataBlockError.readOperationFailed(
+            throw TLVBlockError.readOperationFailed(
                 streamStatus: stream.streamStatus,
                 streamError: stream.streamError
             )
         }
 
         if count == 0 {
-            throw DataBlockError.endOfStream
+            throw TLVBlockError.endOfStream
         }
 
         guard count == length else {
-            throw DataBlockError.invalidByteSequence(expected: length, got: count)
+            throw TLVBlockError.invalidByteSequence(expected: length, got: count)
         }
 
         return data
@@ -119,7 +119,7 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
         let data = try readData()
 
         guard let type = BlockType(rawValue: type) else {
-            throw DataBlockError.invalidDataType(got: type)
+            throw TLVBlockError.invalidDataType(got: type)
         }
 
         return TLVBlock(type: type, data: data)
@@ -133,22 +133,22 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
 
     /// Reads block data.
     private func readData() throws -> Data {
-        let data = try read(length: MemoryLayout<BlockSize>.size)
-        let size = data.withUnsafeBytes { $0.load(as: BlockSize.self) }
+        let data = try read(length: MemoryLayout<TLVBlockSize>.size)
+        let size = data.withUnsafeBytes { $0.load(as: TLVBlockSize.self) }
 
-        // even if `Int` is able to represent all `BlockSize` on 64 bit
+        // even if `Int` is able to represent all `TLVBlockSize` on 64 bit
         // arch, we make sure to avoid overflow and get the exact data
         // length.
         // Additionally check that length hasn't been corrupted and
         // we don't try to generate a huge buffer.
         guard let length = Int(exactly: size), length <= maxBlockLength else {
-            throw DataBlockError.bytesLengthExceedsLimit(limit: maxBlockLength)
+            throw TLVBlockError.bytesLengthExceedsLimit(limit: maxBlockLength)
         }
 
         return try read(length: length)
     }
 }
-extension DataBlockError: CustomStringConvertible {
+extension TLVBlockError: CustomStringConvertible {
     var description: String {
         switch self {
         case .readOperationFailed(let status, let error):

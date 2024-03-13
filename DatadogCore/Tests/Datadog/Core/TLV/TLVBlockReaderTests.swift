@@ -120,7 +120,7 @@ class TLVBlockReaderTests: XCTestCase {
         let reader = BlockReader(data: data, maxBlockLength: 1)
 
         XCTAssertThrowsError(try reader.next()) { error in
-            guard let error = error as? DataBlockError, case DataBlockError.bytesLengthExceedsLimit(let limit) = error else {
+            guard let error = error as? TLVBlockError, case TLVBlockError.bytesLengthExceedsLimit(let limit) = error else {
                 XCTFail("Unexpected error: \(error)")
                 return
             }
@@ -137,7 +137,7 @@ class TLVBlockReaderTests: XCTestCase {
         let reader = BlockReader(input: stream)
 
         XCTAssertThrowsError(try reader.next()) { error in
-            guard let error = error as? DataBlockError, case DataBlockError.readOperationFailed(_, let nsError as NSError) = error else {
+            guard let error = error as? TLVBlockError, case TLVBlockError.readOperationFailed(_, let nsError as NSError) = error else {
                 XCTFail("Unexpected error: \(error)")
                 return
             }
