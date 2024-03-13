@@ -5,12 +5,22 @@
  */
 
 import UIKit
+import DatadogRUM
 
 internal class SendRUMFixture3ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
         rumMonitor.startView(key: "fixture3-vc", name: "SendRUMFixture3View")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+            rumMonitor.addError(
+                message: "Simulated view error with fingerprint",
+                source: .source, attributes: [
+                    RUM.Attributes.errorFingerprint: "fake-fingerprint"
+                ]
+            )
+        }
     }
 
     override func viewWillDisappear(_ animated: Bool) {

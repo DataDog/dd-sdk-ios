@@ -128,6 +128,9 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertNotNil(view3.viewEvents.last?.device)
         XCTAssertEqual(view3.viewEvents.last?.view.action.count, 0)
         XCTAssertEqual(view3.viewEvents.last?.view.resource.count, 0)
-        XCTAssertEqual(view3.viewEvents.last?.view.error.count, 0)
+        XCTAssertEqual(view3.viewEvents.last?.view.error.count, 1)
+        let view3Error = try XCTUnwrap(view3.errorEvents[0])
+        XCTAssertEqual(view3Error.error.message, "Simulated view error with fingerprint")
+        XCTAssertEqual(view3Error.error.fingerprint, "fake-fingerprint")
     }
 }

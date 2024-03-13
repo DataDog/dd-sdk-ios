@@ -54,11 +54,11 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
             // Don't check "attribute" because local attributes should override
         ])
 
-        logMatchers[7].assertStatus(equals: "errpr")
+        logMatchers[7].assertStatus(equals: "error")
         logMatchers[7].assertMessage(equals: "error with fingerprint")
         logMatchers[7].assertAttributes(equal: [
-            "error.message": "MockError",
-            "error.fingerprint": "global value",
+            "error.message": "Runner.SendLogsFixtureViewController.MockError",
+            "error.fingerprint": "custom_fingerprint",
         ])
 
 

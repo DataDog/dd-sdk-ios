@@ -42,7 +42,10 @@ internal class SendLogsFixtureViewController: UIViewController {
         logger?.error(
             "error with fingerprint",
             error: MockError(),
-            attributes: [Logs.Attributes.errorFingerprint: "custom_fingerprint"]
+            attributes: [
+                Logs.Attributes.errorFingerprint: "custom_fingerprint",
+                "attribute": "value"
+            ]
         )
     }
 }

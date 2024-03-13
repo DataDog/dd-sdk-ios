@@ -115,6 +115,7 @@ public enum Logs {
 extension Logs {
     /// Attributes that can be added to logs that have special properies in Datadog.
     public struct Attributes {
+        /// Add a custom fingerprint to the error in this log. Requires that the log be supplied with an Error.
         public static let errorFingerprint = "_dd.error.fingerprint"
     }
 }
