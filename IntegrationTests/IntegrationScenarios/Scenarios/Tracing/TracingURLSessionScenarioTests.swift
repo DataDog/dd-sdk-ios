@@ -5,6 +5,7 @@
  */
 
 import HTTPServerMock
+import DatadogInternal
 import XCTest
 
 private extension ExampleApplication {
@@ -33,7 +34,7 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
             )
         )
     }
-    
+
     func testTracingURLSessionScenario_directWithGlobalFirstPartyHosts() throws {
         try runTest(
             for: "TracingURLSessionScenario",
@@ -237,8 +238,8 @@ class TracingURLSessionScenarioTests: IntegrationTests, TracingCommonAsserts {
         XCTAssertEqual(firstPartyRequests.count, 1)
 
         let firstPartyRequest = firstPartyRequests[0]
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-trace-id"], try taskWithRequest.traceID().hexadecimalNumberToDecimal)
-        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-parent-id"], try taskWithRequest.spanID().hexadecimalNumberToDecimal)
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-trace-id"], try taskWithRequest.traceID()?.toString(representation: .hexadecimal))
+        XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-parent-id"], try taskWithRequest.spanID()?.toString(representation: .hexadecimal))
         XCTAssertEqual(firstPartyRequest.httpHeaders["x-datadog-sampling-priority"], "1")
         XCTAssertNil(firstPartyRequest.httpHeaders["x-datadog-origin"])
     }

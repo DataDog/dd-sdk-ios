@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /// Implemented by types allowed to represent span attribute `.*` value in JSON.
 protocol AllowedSpanAttributeValue {}
@@ -81,9 +82,26 @@ internal class SpanMatcher {
 
     // MARK: - Attributes matching
 
-    func traceID()          throws -> String { try attribute(forKeyPath: "trace_id") }
-    func spanID()           throws -> String { try attribute(forKeyPath: "span_id") }
-    func parentSpanID()     throws -> String { try attribute(forKeyPath: "parent_id") }
+    func traceID() throws -> TraceID? {
+        let idLoStr: String = try attribute(forKeyPath: "trace_id")
+        let idHiStr = try dd.matcher.meta.tid()
+
+        let idHi = UInt64(idHiStr, radix: 16) ?? UInt64(0)
+        let idLo = UInt64(idLoStr, radix: 16) ?? UInt64(0)
+
+        return .init(idHi: idHi, idLo: idLo)
+    }
+
+    func spanID() throws -> SpanID? {
+        let spanId: String = try attribute(forKeyPath: "span_id")
+        return .init(spanId, representation: .hexadecimal)
+    }
+
+    func parentSpanID() throws -> SpanID? {
+        let spanId: String = try attribute(forKeyPath: "parent_id")
+        return .init(spanId, representation: .hexadecimal)
+    }
+
     func operationName()    throws -> String { try attribute(forKeyPath: "name") }
     func serviceName()      throws -> String { try attribute(forKeyPath: "service") }
     func resource()         throws -> String { try attribute(forKeyPath: "resource") }
