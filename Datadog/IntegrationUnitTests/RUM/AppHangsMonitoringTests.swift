@@ -130,7 +130,7 @@ class AppHangsMonitoringTests: XCTestCase {
 
         XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
         XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
-        XCTAssertEqual(appHangError.error.stack, AppHangsObserver.Constants.appHangNoStackErrorMessage)
+        XCTAssertEqual(appHangError.error.stack, AppHangsObserver.Constants.appHangStackNotAvailableErrorMessage)
         XCTAssertEqual(appHangError.error.source, .source)
         XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as CrashReporting was not enabled")
         XCTAssertNil(appHangError.error.binaryImages,  "Binary Images should be unavailable as CrashReporting was not enabled")
