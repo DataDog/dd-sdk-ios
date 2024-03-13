@@ -126,7 +126,11 @@ let package = Package(
             dependencies: [
                 .target(name: "DatadogInternal"),
             ],
-            path: "DatadogRUM/Sources"
+            path: "DatadogRUM",
+            sources: ["Sources"],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ]
         ),
         .testTarget(
             name: "DatadogRUMTests",
