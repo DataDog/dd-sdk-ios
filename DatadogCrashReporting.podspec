@@ -24,4 +24,8 @@ Pod::Spec.new do |s|
   s.source_files = "DatadogCrashReporting/Sources/**/*.swift"
   s.dependency 'DatadogInternal', s.version.to_s
   s.dependency 'PLCrashReporter', '~> 1.11.1'
+
+  s.resource_bundle = {
+    "DatadogPrivacyInfo" => "DatadogCrashReporting/Resources/PrivacyInfo.xcprivacy"
+  }
 end

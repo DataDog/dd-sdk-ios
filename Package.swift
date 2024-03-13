@@ -147,7 +147,11 @@ let package = Package(
                 .target(name: "DatadogInternal"),
                 .product(name: "CrashReporter", package: "PLCrashReporter"),
             ],
-            path: "DatadogCrashReporting/Sources"
+            path: "DatadogCrashReporting",
+            sources: ["Sources"],
+            resources: [
+                .copy("Resources/PrivacyInfo.xcprivacy")
+            ]
         ),
         .testTarget(
             name: "DatadogCrashReportingTests",
