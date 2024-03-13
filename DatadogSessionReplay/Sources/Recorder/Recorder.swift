@@ -64,8 +64,8 @@ public class Recorder: Recording {
     private let resourceProcessor: ResourceProcessing
     /// Sends telemetry through sdk core.
     private let telemetry: Telemetry
-    /// The sampler for internal telemetry.
-    private let telemetrySampler: Sampler
+    /// The sampling rate for internal telemetry of method call.
+    private let methodCallTelemetrySamplingRate: Float
 
     convenience init(
         snapshotProcessor: SnapshotProcessing,
@@ -88,8 +88,7 @@ public class Recorder: Recording {
             touchSnapshotProducer: touchSnapshotProducer,
             snapshotProcessor: snapshotProcessor,
             resourceProcessor: resourceProcessor,
-            telemetry: telemetry,
-            telemetrySampler: Sampler(samplingRate: 0.005) // 0.5% of calls
+            telemetry: telemetry
         )
     }
 
@@ -100,7 +99,7 @@ public class Recorder: Recording {
         snapshotProcessor: SnapshotProcessing,
         resourceProcessor: ResourceProcessing,
         telemetry: Telemetry,
-        telemetrySampler: Sampler
+        methodCallTelemetrySamplingRate: Float = 15
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
@@ -108,7 +107,7 @@ public class Recorder: Recording {
         self.snapshotProcessor = snapshotProcessor
         self.resourceProcessor = resourceProcessor
         self.telemetry = telemetry
-        self.telemetrySampler = telemetrySampler
+        self.methodCallTelemetrySamplingRate = methodCallTelemetrySamplingRate
         uiApplicationSwizzler.swizzle()
     }
 
@@ -124,7 +123,7 @@ public class Recorder: Recording {
         let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
-            samplingRate: MethodCallConstants.captureRecordSampling // Effectively 3% * 15% = 0.45% of calls
+            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 15% = 0.45% of calls
         )
         var isSuccesful = true
         do {
@@ -149,7 +148,6 @@ public class Recorder: Recording {
     private enum MethodCallConstants {
         static let captureRecordOperationName = "Capture Record"
         static let className = "Recorder"
-        static let captureRecordSampling: Float = 15.0
     }
 }
 #endif
