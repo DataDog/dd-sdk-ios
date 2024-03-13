@@ -203,9 +203,8 @@ class TracerTests: XCTestCase {
         // Assert child-parent relationship
 
         XCTAssertEqual(try grandchildMatcher.operationName(), "grandchild operation")
-        XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID.idLoHex)
-        XCTAssertEqual(try grandchildMatcher.meta.tid(), rootSpan.context.dd.traceID.idHiHex)
-        XCTAssertEqual(try grandchildMatcher.parentSpanID(), String(childSpan.context.dd.spanID, representation: .hexadecimal))
+        XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID)
+        XCTAssertEqual(try grandchildMatcher.parentSpanID(), childSpan.context.dd.spanID)
         XCTAssertNil(try? grandchildMatcher.metrics.isRootSpan())
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
@@ -214,16 +213,15 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.overwritten"), "b", "Tags should have higher priority than baggage items")
 
         XCTAssertEqual(try childMatcher.operationName(), "child operation")
-        XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID.idLoHex)
-        XCTAssertEqual(try childMatcher.meta.tid(), rootSpan.context.dd.traceID.idHiHex)
-        XCTAssertEqual(try childMatcher.parentSpanID(), String(rootSpan.context.dd.spanID, representation: .hexadecimal))
+        XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID)
+        XCTAssertEqual(try childMatcher.parentSpanID(), rootSpan.context.dd.spanID)
         XCTAssertNil(try? childMatcher.metrics.isRootSpan())
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
         XCTAssertNil(try? childMatcher.meta.custom(keyPath: "meta.grandchild-item"))
 
         XCTAssertEqual(try rootMatcher.operationName(), "root operation")
-        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try rootMatcher.parentSpanID(), .invalid)
         XCTAssertEqual(try rootMatcher.metrics.isRootSpan(), 1)
         XCTAssertEqual(try rootMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertNil(try? rootMatcher.meta.custom(keyPath: "meta.child-item"))
@@ -263,7 +261,7 @@ class TracerTests: XCTestCase {
         let child1Matcher = spanMatchers[1]
         let child2Matcher = spanMatchers[0]
 
-        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try rootMatcher.parentSpanID(), .invalid)
         XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
         XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
     }
@@ -296,8 +294,8 @@ class TracerTests: XCTestCase {
 
         waitForExpectations(timeout: 5)
         let spanMatchers = try core.waitAndReturnSpanMatchers()
-        XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
-        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
+        XCTAssertEqual(try spanMatchers[0].parentSpanID(), .invalid)
+        XCTAssertEqual(try spanMatchers[1].parentSpanID(), .invalid)
     }
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
@@ -329,9 +327,9 @@ class TracerTests: XCTestCase {
         let request2Matcher = spanMatchers[3]
 
         XCTAssertEqual(try response1Matcher.parentSpanID(), try request1Matcher.spanID())
-        XCTAssertEqual(try request1Matcher.parentSpanID(), "0")
+        XCTAssertEqual(try request1Matcher.parentSpanID(), .invalid)
         XCTAssertEqual(try response2Matcher.parentSpanID(), try request2Matcher.spanID())
-        XCTAssertEqual(try request2Matcher.parentSpanID(), "0")
+        XCTAssertEqual(try request2Matcher.parentSpanID(), .invalid)
     }
 
     // MARK: - Sending user info

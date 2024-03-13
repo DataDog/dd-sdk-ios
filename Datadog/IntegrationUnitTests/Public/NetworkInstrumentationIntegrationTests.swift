@@ -77,15 +77,15 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 
         let matcher1 = try XCTUnwrap(matchers.first)
         try XCTAssertEqual(matcher1.operationName(), "root")
-        try XCTAssertEqual(matcher1.traceID(), "64")
-        try XCTAssertEqual(matcher1.spanID(), "64")
+        try XCTAssertEqual(matcher1.traceID(), .init(idHi: 10, idLo: 100))
+        try XCTAssertEqual(matcher1.spanID(), .init(rawValue: 100))
         try XCTAssertEqual(matcher1.metrics.isRootSpan(), 1)
 
         let matcher2 = try XCTUnwrap(matchers.last)
         try XCTAssertEqual(matcher2.operationName(), "urlsession.request")
-        try XCTAssertEqual(matcher2.traceID(), "64")
-        try XCTAssertEqual(matcher2.parentSpanID(), "64")
-        try XCTAssertEqual(matcher2.spanID(), "65")
+        try XCTAssertEqual(matcher2.traceID(), .init(idHi: 10, idLo: 100))
+        try XCTAssertEqual(matcher2.parentSpanID(), .init(rawValue: 100))
+        try XCTAssertEqual(matcher2.spanID(), .init(rawValue: 101))
     }
 
     class MockDelegate: NSObject, URLSessionDataDelegate {
