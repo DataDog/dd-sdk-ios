@@ -28,9 +28,9 @@ extension File {
         try FileManager.default.setAttributes([.immutable: false], ofItemAtPath: url.path)
     }
 
-    /// Reads the file content and returns events data assuming that file uses TLV format.
-    func readTLVEvents() throws -> [Data] {
-        let blocks = try DataBlockReader(input: stream()).all()
+    /// Reads the file content and returns events data. It assumes that `self` is a batch file storing events in TLV format.
+    func readBatchEvents() throws -> [Data] {
+        let blocks = try BatchDataBlockReader(input: stream()).all()
         return blocks.map { $0.data }
     }
 }

@@ -9,7 +9,7 @@ import XCTest
 
 final class EventGeneratorTests: XCTestCase {
     func testEmpty() throws {
-        let dataBlocks = [DataBlock]()
+        let dataBlocks = [BatchDataBlock]()
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
         let events = sut.map { $0 }
@@ -17,7 +17,7 @@ final class EventGeneratorTests: XCTestCase {
     }
 
     func testWithoutEvent() throws {
-        let dataBlocks = [DataBlock(type: .eventMetadata, data: Data([0x01]))]
+        let dataBlocks = [BatchDataBlock(type: .eventMetadata, data: Data([0x01]))]
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
         let events = sut.map { $0 }
@@ -25,7 +25,7 @@ final class EventGeneratorTests: XCTestCase {
     }
 
     func testEventWithoutMetadata() throws {
-        let dataBlocks = [DataBlock(type: .event, data: Data([0x01]))]
+        let dataBlocks = [BatchDataBlock(type: .event, data: Data([0x01]))]
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
         let events = sut.map { $0 }
@@ -36,8 +36,8 @@ final class EventGeneratorTests: XCTestCase {
 
     func testEventWithMetadata() throws {
         let dataBlocks = [
-            DataBlock(type: .eventMetadata, data: Data([0x02])),
-            DataBlock(type: .event, data: Data([0x01]))
+            BatchDataBlock(type: .eventMetadata, data: Data([0x02])),
+            BatchDataBlock(type: .event, data: Data([0x01]))
         ]
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
@@ -49,9 +49,9 @@ final class EventGeneratorTests: XCTestCase {
 
     func testEventWithCurruptedMetadata() throws {
         let dataBlocks = [
-            DataBlock(type: .eventMetadata, data: Data([0x03])), // skipped from reading
-            DataBlock(type: .eventMetadata, data: Data([0x02])),
-            DataBlock(type: .event, data: Data([0x01]))
+            BatchDataBlock(type: .eventMetadata, data: Data([0x03])), // skipped from reading
+            BatchDataBlock(type: .eventMetadata, data: Data([0x02])),
+            BatchDataBlock(type: .event, data: Data([0x01]))
         ]
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
@@ -63,10 +63,10 @@ final class EventGeneratorTests: XCTestCase {
 
     func testEvents() {
         let dataBlocks = [
-            DataBlock(type: .eventMetadata, data: Data([0x02])),
-            DataBlock(type: .event, data: Data([0x01])),
-            DataBlock(type: .event, data: Data([0x03])),
-            DataBlock(type: .event, data: Data([0x05]))
+            BatchDataBlock(type: .eventMetadata, data: Data([0x02])),
+            BatchDataBlock(type: .event, data: Data([0x01])),
+            BatchDataBlock(type: .event, data: Data([0x03])),
+            BatchDataBlock(type: .event, data: Data([0x05]))
         ]
 
         let sut = EventGenerator(dataBlocks: dataBlocks)
