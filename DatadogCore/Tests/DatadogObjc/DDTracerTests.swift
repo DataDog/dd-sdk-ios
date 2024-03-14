@@ -207,9 +207,10 @@ class DDTracerTests: XCTestCase {
         try objcTracer.inject(objcSpanContext, format: OT.formatTextMap, carrier: objcWriter)
 
         let expectedHTTPHeaders = [
-            "x-datadog-trace-id": "a0000000000000064",
+            "x-datadog-trace-id": "64",
             "x-datadog-parent-id": "c8",
             "x-datadog-sampling-priority": "1",
+            "x-datadog-tags": "_dd.p.tid=a"
         ]
         XCTAssertEqual(objcWriter.traceHeaderFields, expectedHTTPHeaders)
     }

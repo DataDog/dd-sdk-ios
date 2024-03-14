@@ -26,4 +26,13 @@ public enum TracingHTTPHeaders {
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public static let originField = "x-datadog-origin"
+
+    /// The Datadog tags of the Trace.
+    public static let tagsField = "x-datadog-tags"
+
+    /// Keys for Datadog tags.
+    public enum TagKeys {
+        /// The Datadog tag key for the higher order 64 bits of the trace ID.
+        public static let traceIDHi = "_dd.p.tid"
+    }
 }

@@ -760,9 +760,10 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "x-datadog-trace-id": "a0000000000000064",
+            "x-datadog-trace-id": "64",
             "x-datadog-parent-id": "c8",
             "x-datadog-sampling-priority": "1",
+            "x-datadog-tags": "_dd.p.tid=a"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
@@ -774,6 +775,7 @@ class TracerTests: XCTestCase {
             "x-datadog-trace-id": "3",
             "x-datadog-parent-id": "4",
             "x-datadog-sampling-priority": "1",
+            "x-datadog-tags": "_dd.p.tid=0"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
     }
