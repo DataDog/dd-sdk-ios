@@ -13,7 +13,7 @@ public struct DDThread: Codable {
     /// Unsymbolicated stack trace of the crash.
     public let stack: String
     /// If the thread was halted.
-    public let crashed: Bool
+    public var crashed: Bool
     /// Thread state (CPU registers dump), only available for halted thread.
     public let state: String?
 

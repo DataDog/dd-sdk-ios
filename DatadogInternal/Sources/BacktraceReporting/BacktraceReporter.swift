@@ -25,7 +25,7 @@ public protocol BacktraceReporting {
     /// - Parameter threadID: An ID of the thread that backtrace generation should start on.
     /// - Returns: A `BacktraceReport` starting on the given thread and containing information about all other threads
     ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
-    func generateBacktrace(threadID: ThreadID) -> BacktraceReport?
+    func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport?
 }
 
 public extension BacktraceReporting {
@@ -35,9 +35,9 @@ public extension BacktraceReporting {
     ///
     /// - Returns: A `BacktraceReport` starting on the current thread and containing information about all other threads
     ///            running in the process. Returns `nil` if the backtrace report cannot be generated.
-    func generateBacktrace() -> BacktraceReport? {
+    func generateBacktrace() throws -> BacktraceReport? {
         let callerThreadID = Thread.currentThreadID
-        return generateBacktrace(threadID: callerThreadID)
+        return try generateBacktrace(threadID: callerThreadID)
     }
 }
 
@@ -54,7 +54,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting {
         self.core = core
     }
 
-    func generateBacktrace(threadID: ThreadID) -> BacktraceReport? {
+    func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
         guard let core = core else {
             return nil
         }
@@ -68,7 +68,7 @@ internal struct CoreBacktraceReporter: BacktraceReporting {
             )
             return nil
         }
-        return backtraceFeature.reporter.generateBacktrace(threadID: threadID)
+        return try backtraceFeature.reporter.generateBacktrace(threadID: threadID)
     }
 }
 

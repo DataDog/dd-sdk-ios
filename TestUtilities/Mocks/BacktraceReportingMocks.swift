@@ -8,13 +8,24 @@ import Foundation
 import DatadogInternal
 
 public struct BacktraceReporterMock: BacktraceReporting {
+    /// The backtrace that will be returned by this mock.
     public var backtrace: BacktraceReport?
-
-    public init(backtrace: BacktraceReport? = .mockAny()) {
+    /// The error thrown that will be thrown by this mock during backtrace generation. It takes priority over returning the `backtrace` value.
+    public var backtraceGenerationError: Error?
+    
+    /// Creates backtrace reporter mock.
+    /// - Parameters:
+    ///   - backtrace: The backtrace that will be returned.
+    ///   - backtraceGenerationError: The error thrown during backtrace generation. It takes priority over returning the `backtrace`.
+    public init(backtrace: BacktraceReport? = .mockAny(), backtraceGenerationError: Error? = nil) {
         self.backtrace = backtrace
+        self.backtraceGenerationError = backtraceGenerationError
     }
 
-    public func generateBacktrace(threadID: ThreadID) -> BacktraceReport? {
+    public func generateBacktrace(threadID: ThreadID) throws -> BacktraceReport? {
+        if let error = backtraceGenerationError {
+            throw error
+        }
         return backtrace
     }
 }

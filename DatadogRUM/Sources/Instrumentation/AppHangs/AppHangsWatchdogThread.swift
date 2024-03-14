@@ -7,16 +7,6 @@
 import Foundation
 import DatadogInternal
 
-internal struct AppHang {
-    /// The date of hang end.
-    let date: Date
-    /// The duration of the hang.
-    let duration: TimeInterval
-    /// The snapshot of all running threads during the hang.
-    /// Might be unavailable if `BacktraceReportingFeature` is not available in core.
-    let backtrace: BacktraceReport?
-}
-
 internal final class AppHangsWatchdogThread: Thread {
     enum Constants {
         /// The "idle" interval for sleeping the watchdog thread before scheduling the next task on the main queue, represented as a percentage of the `appHangThreshold`.
@@ -136,7 +126,19 @@ internal final class AppHangsWatchdogThread: Thread {
                 telemetry.error("Failed to determine main thread ID for backtrace generation")
                 continue // unexpected
             }
-            let backtrace = backtraceReporter.generateBacktrace(threadID: mainThreadID)
+
+            let backtraceResult: AppHang.BacktraceGenerationResult
+            do {
+                if let backtrace = try backtraceReporter.generateBacktrace(threadID: mainThreadID) {
+                    backtraceResult = .succeeded(backtrace)
+                } else {
+                    backtraceResult = .notAvailable
+                }
+            } catch let error {
+                backtraceResult = .failed
+                DD.logger.error("Encountered an error when generating App Hang backtrace", error: error)
+                telemetry.error("Failed to generate App Hang backtrace", error: error)
+            }
 
             // Previous wait timed out, so wait again for the task completion, this time infinitely until the hang ends.
             mainThreadTask.wait()
@@ -154,7 +156,7 @@ internal final class AppHangsWatchdogThread: Thread {
             let appHang = AppHang(
                 date: dateProvider.now,
                 duration: hangDuration,
-                backtrace: backtrace
+                backtraceResult: backtraceResult
             )
             onHangEnded?(appHang)
         }
