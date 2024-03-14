@@ -577,6 +577,72 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.os?.name, "device-os")
     }
 
+    func testGivenStartedResource_whenResourceLoadingEndsWithErrorAndFingerprintAttribute_itSendsErrorEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        currentTime.addTimeInterval(2)
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand(
+                    resourceKey: "/resource/1",
+                    time: currentTime,
+                    error: ErrorMock("network issue explanation"),
+                    source: .network,
+                    httpStatusCode: 500,
+                    attributes: [
+                        "foo": "bar",
+                        RUM.Attributes.errorFingerprint: "custom-fingerprint"
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.date, currentTime.timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(event.application.id, scope.context.rumApplicationID)
+        XCTAssertEqual(event.session.id, scope.context.sessionID.toRUMDataFormat)
+        XCTAssertEqual(event.session.type, .user)
+        XCTAssertEqual(event.view.id, rumContext.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(event.view.url, "FooViewController")
+        XCTAssertEqual(event.view.name, "FooViewName")
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertEqual(event.error.message, "network issue explanation")
+        XCTAssertEqual(event.error.fingerprint, "custom-fingerprint")
+        XCTAssertEqual(event.error.source, .network)
+        XCTAssertEqual(event.error.stack, "network issue explanation")
+        XCTAssertEqual(event.error.category, .exception)
+        XCTAssertEqual(event.error.resource?.method, .post)
+        XCTAssertEqual(event.error.type, "ErrorMock")
+        XCTAssertNil(event.error.resource?.provider)
+        XCTAssertEqual(event.error.resource?.statusCode, 500)
+        XCTAssertEqual(event.error.resource?.url, "https://foo.com/resource/1")
+        XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
+        XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
+        XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        XCTAssertEqual(event.source, .ios)
+        XCTAssertEqual(event.service, "test-service")
+        XCTAssertEqual(event.version, "test-version")
+        XCTAssertEqual(event.buildVersion, "test-build")
+        XCTAssertEqual(event.buildId, context.buildId)
+        XCTAssertEqual(event.device?.name, "device-name")
+        XCTAssertEqual(event.os?.name, "device-os")
+    }
+
     func testGivenStartedResourceInCITest_whenResourceLoadingEndsWithError_itSendsErrorEvent() throws {
         var currentTime: Date = .mockDecember15th2019At10AMUTC()
         let fakeCITestId: String = .mockRandom()

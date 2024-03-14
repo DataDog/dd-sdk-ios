@@ -94,6 +94,7 @@ class RUMManualInstrumentationScenarioTests: IntegrationTests, RUMCommonAsserts 
         XCTAssertEqual(view1.errorEvents[0].error.resource?.url, "https://foo.com/resource/2")
         XCTAssertEqual(view1.errorEvents[0].error.resource?.method, .get)
         XCTAssertEqual(view1.errorEvents[0].error.resource?.statusCode, 400)
+        XCTAssertEqual(view1.errorEvents[0].error.fingerprint, "custom-fingerprint")
         let featureFlags = try XCTUnwrap(view1.viewEvents.last?.featureFlags)
         XCTAssertEqual(featureFlags.featureFlagsInfo.count, 0)
         RUMSessionMatcher.assertViewWasEventuallyInactive(view1)
