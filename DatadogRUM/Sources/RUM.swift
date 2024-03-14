@@ -57,7 +57,8 @@ public enum RUM {
 extension RUM {
     /// Attributes that can be added to RUM calls that have special properies in Datadog.
     public struct Attributes {
-        /// Add a custom fingerprint to the error in this log. Requires that the log be supplied with an Error.
+        /// Add a custom fingerprint to the RUM error.
+        /// The value of this attribute must be a `String`.
         public static let errorFingerprint = "_dd.error.fingerprint"
     }
 }

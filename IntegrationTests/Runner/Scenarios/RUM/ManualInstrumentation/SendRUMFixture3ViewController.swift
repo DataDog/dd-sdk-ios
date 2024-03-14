@@ -16,7 +16,8 @@ internal class SendRUMFixture3ViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
             rumMonitor.addError(
                 message: "Simulated view error with fingerprint",
-                source: .source, attributes: [
+                source: .source, 
+                attributes: [
                     RUM.Attributes.errorFingerprint: "fake-fingerprint"
                 ]
             )
