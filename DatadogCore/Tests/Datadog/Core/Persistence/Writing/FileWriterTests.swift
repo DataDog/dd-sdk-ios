@@ -42,7 +42,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"{"meta1":"metaValue1"}"#.utf8Data)
@@ -83,7 +83,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"encrypted{"meta1":"metaValue1"}encrypted"#.utf8Data)
@@ -120,7 +120,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
@@ -158,14 +158,14 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key1": "value1"]) // will be written
 
         XCTAssertEqual(try directory.files().count, 1)
-        var reader = try DataBlockReader(input: directory.files()[0].stream())
+        var reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         var blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1)
         XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
         writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
-        reader = try DataBlockReader(input: directory.files()[0].stream())
+        reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
@@ -267,7 +267,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
 
         let stream = try directory.files()[0].stream()
-        let blocks = try DataBlockReader(input: stream).all()
+        let blocks = try BatchDataBlockReader(input: stream).all()
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
@@ -311,7 +311,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
 
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)

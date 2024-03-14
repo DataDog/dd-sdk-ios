@@ -9,7 +9,7 @@ import DatadogInternal
 
 internal struct Batch {
     /// Data blocks in the batch.
-    let dataBlocks: [DataBlock]
+    let dataBlocks: [BatchDataBlock]
     /// File from which `data` was read.
     let file: ReadableFile
 }
