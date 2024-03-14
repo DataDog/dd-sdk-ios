@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+
 /// Indicates the main directory for a given instance of the SDK.
 /// Each instance of `DatadogCore` creates its own `CoreDirectory` to manage data for registered Features.
 /// The core directory is created under `/Library/Caches` and uses a name that identifies the certain instance
@@ -24,7 +25,7 @@ internal struct CoreDirectory {
     /// The core directory specific to this instance of the SDK: `/Library/Cache/com.datadoghq/v2/<sdk-instance-uuid>`.
     let coreDirectory: Directory
 
-    /// Obtains subdirectories for managing Feature data (creates if don't exist).
+    /// Obtains subdirectories for managing batch files for given Feature  (creates if don't exist).
     ///
     /// - Parameter name: The given Feature name.
     /// - Returns: The Feature's directories

@@ -297,7 +297,13 @@ extension DatadogCore: DatadogCoreProtocol {
 
         return DatadogCoreFeatureScope(
             contextProvider: contextProvider,
-            storage: storage
+            storage: storage,
+            store: FeatureDataStore(
+                feature: feature,
+                directory: directory,
+                queue: readWriteQueue,
+                telemetry: telemetry
+            )
         )
     }
 
@@ -313,6 +319,7 @@ extension DatadogCore: DatadogCoreProtocol {
 internal struct DatadogCoreFeatureScope: FeatureScope {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
+    let store: FeatureDataStore
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         // (on user thread) request SDK context
@@ -329,6 +336,10 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
             // (on context thread) call the block
             block(context)
         }
+    }
+
+    func dataStore() -> DataStore {
+        return store
     }
 }
 

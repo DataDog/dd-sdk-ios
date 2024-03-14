@@ -125,6 +125,10 @@ private struct FeatureScopeProxy: FeatureScope {
             interceptor.leave()
         }
     }
+
+    func dataStore() -> DataStore {
+        proxy.dataStore()
+    }
 }
 
 private class FeatureScopeInterceptor {

@@ -63,7 +63,7 @@ internal final class TLVBlockReader<BlockType: TLVBlockType> {
     ///
     /// - Throws: `TLVBlockError` while reading the input stream.
     /// - Returns: The block sequence found in the input
-    func all(maxDataLength: UInt64 = MAX_DATA_LENGTH) throws -> [TLVBlock<BlockType>] {
+    func all() throws -> [TLVBlock<BlockType>] {
         var blocks: [TLVBlock<BlockType>] = []
 
         while let block = try next() {
