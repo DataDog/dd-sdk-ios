@@ -99,7 +99,7 @@ public class Recorder: Recording {
         snapshotProcessor: SnapshotProcessing,
         resourceProcessor: ResourceProcessing,
         telemetry: Telemetry,
-        methodCallTelemetrySamplingRate: Float = 15
+        methodCallTelemetrySamplingRate: Float = 5
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
@@ -123,9 +123,9 @@ public class Recorder: Recording {
         let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
-            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 15% = 0.45% of calls
+            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 5% = 0.15% of calls
         )
-        var isSuccesful = true
+        var isSuccessful = true
         do {
             guard let viewTreeSnapshot = try viewTreeSnapshotProducer.takeSnapshot(with: recorderContext) else {
                 // There is nothing visible yet (i.e. the key window is not yet ready).
@@ -139,15 +139,17 @@ public class Recorder: Recording {
                 context: .init(recorderContext.applicationID)
             )
         } catch let error {
-            isSuccesful = false
+            isSuccessful = false
             telemetry.error("[SR] Failed to take snapshot", error: DDError(error: error))
         }
-        telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccesful)
+        telemetry.stopMethodCalled(methodCalledTrace, isSuccessful: isSuccessful)
     }
 
     private enum MethodCallConstants {
         static let captureRecordOperationName = "Capture Record"
-        static let className = "Recorder"
+        static let className = {
+            String(reflecting: Recorder.self)
+        }()
     }
 }
 #endif

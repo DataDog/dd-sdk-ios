@@ -54,3 +54,9 @@ public enum MethodCalledMetric {
         public static let build = "build"
     }
 }
+
+public extension [String: Encodable] {
+    var isMethodCallAttributes: Bool {
+        self[BasicMetric.typeKey] as? String == MethodCalledMetric.typeValue
+    }
+}

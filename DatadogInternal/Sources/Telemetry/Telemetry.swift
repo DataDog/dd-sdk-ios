@@ -87,7 +87,7 @@ public extension Telemetry {
     func startMethodCalled(
         operationName: String,
         callerClass: String,
-        samplingRate: Float
+        samplingRate: Float = 100.0
     ) -> MethodCalledTrace? {
         if Sampler(samplingRate: samplingRate).sample() {
             return MethodCalledTrace(
@@ -105,22 +105,10 @@ public extension Telemetry {
     /// - Parameters
     ///   - metric: The `MethodCalledTrace` instance.
     ///   - isSuccessful: A flag indicating if the method call was successful.
-    func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool) {
+    func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool = true) {
         if let metric = metric {
             send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
         }
-    }
-
-    /// Convenience method to start a method call with a default sampling rate of 100.
-    func startMethodCalled(
-        operationName: String,
-        callerClass: String
-    ) -> MethodCalledTrace? {
-        startMethodCalled(operationName: operationName, callerClass: callerClass, samplingRate: 100)
-    }
-    /// Convenience method to stop a method call that assumes success.
-    func stopMethodCalled(_ metric: MethodCalledTrace?) {
-        stopMethodCalled(metric, isSuccessful: true)
     }
 }
 
