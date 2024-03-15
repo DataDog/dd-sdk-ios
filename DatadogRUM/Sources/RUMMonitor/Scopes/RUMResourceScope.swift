@@ -253,6 +253,8 @@ internal class RUMResourceScope: RUMScope {
     private func sendErrorEvent(on command: RUMStopResourceWithErrorCommand, context: DatadogContext, writer: Writer) {
         attributes.merge(rumCommandAttributes: command.attributes)
 
+        let errorFingerprint = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -278,6 +280,7 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 binaryImages: nil,
                 category: .exception, // resource errors are categorised as "Exception"
+                fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

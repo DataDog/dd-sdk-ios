@@ -556,6 +556,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
 
+        var commandAttributes = command.attributes
+        let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -574,7 +577,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.attributes),
+            context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
@@ -582,6 +585,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
                 category: command.category,
                 causes: nil,
+                fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

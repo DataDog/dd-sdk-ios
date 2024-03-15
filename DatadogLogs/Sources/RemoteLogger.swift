@@ -110,6 +110,7 @@ internal final class RemoteLogger: LoggerProtocol {
         let tags = self.tags
         var logAttributes = attributes
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
+        let errorFingerprint = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint) as? String
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
         let combinedAttributes: [String: any Encodable]
@@ -162,6 +163,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 level: level,
                 message: message,
                 error: error,
+                errorFingerprint: errorFingerprint,
                 attributes: .init(
                     userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes

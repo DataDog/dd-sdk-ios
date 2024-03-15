@@ -1503,6 +1503,60 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(scope.attributes["foo"])
     }
 
+    func testGivenStartedView_whenErrorWithFingerprintAttributesIsAdded_itAddsFingerprintToError() throws {
+        // Given
+        let hasReplay: Bool = .mockRandom()
+        let fakeFingerprint: String = .mockRandom()
+        var context = self.context
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        RUM.Attributes.errorFingerprint: fakeFingerprint
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.error.fingerprint, fakeFingerprint)
+        XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
+    }
+
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
