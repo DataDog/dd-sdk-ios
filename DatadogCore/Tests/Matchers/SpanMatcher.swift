@@ -84,12 +84,9 @@ internal class SpanMatcher {
 
     func traceID() throws -> TraceID? {
         let idLoStr: String = try attribute(forKeyPath: "trace_id")
-        let idHiStr = try dd.matcher.meta.tid()
-
-        let idHi = UInt64(idHiStr, radix: 16) ?? UInt64(0)
         let idLo = UInt64(idLoStr, radix: 16) ?? UInt64(0)
 
-        return .init(idHi: idHi, idLo: idLo)
+        return .init(idLo: idLo)
     }
 
     func spanID() throws -> SpanID? {

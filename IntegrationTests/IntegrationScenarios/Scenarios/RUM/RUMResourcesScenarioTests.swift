@@ -392,10 +392,25 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
     }
 
     private func getTraceID(from request: Request) -> TraceID? {
-        guard let traceId = request.httpHeaders["x-datadog-trace-id"] else {
+        guard let traceIDLoValue = request.httpHeaders["x-datadog-trace-id"] else {
             return nil
         }
-        return .init(traceId, representation: .hexadecimal)
+
+        // tags are comma separated key=value pairs
+        let tags = request.httpHeaders[TracingHTTPHeaders.tagsField]?.split(separator: ",")
+            .map { $0.split(separator: "=") }
+            .reduce(into: [String: String]()) { result, pair in
+                if pair.count == 2 {
+                    result[String(pair[0])] = String(pair[1])
+                }
+            } ?? [:]
+
+        let traceIDHiValue = tags[TracingHTTPHeaders.TagKeys.traceIDHi] ?? "0"
+        
+        return .init(
+            idHi: UInt64(traceIDHiValue, radix: 16) ?? 0,
+            idLo: UInt64(traceIDLoValue, radix: 16) ?? 0
+        )
     }
     private func getSpanID(from request: Request) -> SpanID? {
         guard let spanId = request.httpHeaders["x-datadog-parent-id"] else {
