@@ -72,9 +72,9 @@ internal struct FileWriter: Writer {
     ///
     /// - Parameter event: The value to encode.
     /// - Returns: Data representation of the value.
-    private func encode<T: Encodable>(value: T, blockType: BlockType) throws -> Data {
+    private func encode<T: Encodable>(value: T, blockType: BatchBlockType) throws -> Data {
         let data = try jsonEncoder.encode(value)
-        return try DataBlock(
+        return try BatchDataBlock(
             type: blockType,
             data: encrypt(data: data)
         ).serialize(

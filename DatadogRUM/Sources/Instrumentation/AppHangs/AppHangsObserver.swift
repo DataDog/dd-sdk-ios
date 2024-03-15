@@ -15,8 +15,11 @@ internal class AppHangsObserver: RUMCommandPublisher {
         /// The standardized `error.type` for RUM errors describing an app hang.
         static let appHangErrorType = "AppHang"
 
-        /// The standardized `error.stack` when a backtrace couldn't be generated.
-        static let appHangNoStackErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
+        /// The standardized `error.stack` when backtrace generation was not available.
+        static let appHangStackNotAvailableErrorMessage = "Stack trace was not generated because `DatadogCrashReporting` had not been enabled."
+
+        /// The standardized `error.stack` when backtrace generation failed due to an internal error.
+        static let appHangStackGenerationFailedErrorMessage = "Failed to generate stack trace. This is a known issue and we work on it."
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
@@ -62,10 +65,10 @@ internal class AppHangsObserver: RUMCommandPublisher {
             attributes: [:],
             message: Constants.appHangErrorMessage,
             type: Constants.appHangErrorType,
-            stack: appHang.backtrace?.stack ?? Constants.appHangNoStackErrorMessage,
-            threads: appHang.backtrace?.threads,
-            binaryImages: appHang.backtrace?.binaryImages,
-            isStackTraceTruncated: appHang.backtrace?.wasTruncated,
+            stack: appHang.backtraceResult.stack,
+            threads: appHang.backtraceResult.threads,
+            binaryImages: appHang.backtraceResult.binaryImages,
+            isStackTraceTruncated: appHang.backtraceResult.wasTruncated,
             hangDuration: appHang.duration
         )
 
@@ -81,5 +84,36 @@ extension AppHangsObserver {
         let semaphore = DispatchSemaphore(value: 0)
         watchdogThread.onBeforeSleep = { semaphore.signal() }
         semaphore.wait()
+    }
+}
+
+internal extension AppHang.BacktraceGenerationResult {
+    var stack: String {
+        switch self {
+        case .succeeded(let backtrace): return backtrace.stack
+        case .failed: return AppHangsObserver.Constants.appHangStackGenerationFailedErrorMessage
+        case .notAvailable: return AppHangsObserver.Constants.appHangStackNotAvailableErrorMessage
+        }
+    }
+
+    var threads: [DDThread]? {
+        switch self {
+        case .succeeded(let backtrace): return backtrace.threads
+        case .failed, .notAvailable: return nil
+        }
+    }
+
+    var binaryImages: [BinaryImage]? {
+        switch self {
+        case .succeeded(let backtrace): return backtrace.binaryImages
+        case .failed, .notAvailable: return nil
+        }
+    }
+
+    var wasTruncated: Bool? {
+        switch self {
+        case .succeeded(let backtrace): return backtrace.wasTruncated
+        case .failed, .notAvailable: return nil
+        }
     }
 }

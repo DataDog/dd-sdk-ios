@@ -9,12 +9,7 @@ import DatadogInternal
 internal struct BacktraceReporter: DatadogInternal.BacktraceReporting {
     let reporter: ThirdPartyCrashReporter
 
-    func generateBacktrace(threadID: ThreadID) -> DatadogInternal.BacktraceReport? {
-        do {
-            return try reporter.generateBacktrace(threadID: threadID)
-        } catch let error {
-            DD.logger.error("Encountered an error when generating backtrace for thread ID: \(threadID)", error: error)
-            return nil
-        }
+    func generateBacktrace(threadID: ThreadID) throws -> DatadogInternal.BacktraceReport? {
+        return try reporter.generateBacktrace(threadID: threadID)
     }
 }

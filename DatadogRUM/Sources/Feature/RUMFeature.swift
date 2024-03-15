@@ -67,7 +67,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
-            onSessionStart: configuration.onSessionStart
+            onSessionStart: configuration.onSessionStart,
+            viewCache: ViewCache()
         )
 
         self.monitor = Monitor(
@@ -101,7 +102,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ErrorMessageReceiver(monitor: monitor),
             WebViewEventReceiver(
                 dateProvider: configuration.dateProvider,
-                commandSubscriber: monitor
+                commandSubscriber: monitor,
+                viewCache: dependencies.viewCache
             ),
             CrashReportReceiver(
                 applicationID: configuration.applicationID,

@@ -435,4 +435,58 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.view?.id, viewId)
         XCTAssertEqual(event?.action?.id, actionId)
     }
+
+    func testMethodCallTelemetryPropagetsAllData() throws {
+        // Given
+        core.messageReceiver = TelemetryReceiver.mockWith(
+            dateProvider: RelativeDateProvider(
+                using: .init(timeIntervalSince1970: 0)
+            )
+        )
+
+        let operationName = String.mockRandom()
+        let callerClass = String.mockRandom()
+        let isSuccessful = Bool.random()
+        let trace = core.telemetry.startMethodCalled(
+            operationName: operationName,
+            callerClass: callerClass,
+            samplingRate: 100
+        )
+        core.telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful)
+
+        let event = core.events(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] Method Called")
+        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[BasicMetric.typeKey] as? String), MethodCalledMetric.typeValue)
+        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.operationName] as? String), operationName)
+        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.callerClass] as? String), callerClass)
+        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)
+        XCTAssertGreaterThan(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.executionTime] as? Int64), 0)
+        let device = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.Device.key] as? [String: String])
+        XCTAssertTrue(device[MethodCalledMetric.Device.model]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.brand]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.architecture]?.isEmpty == false)
+        let os = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.OS.key] as? [String: String])
+        XCTAssertTrue(os[MethodCalledMetric.OS.version]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.build]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.name]?.isEmpty == false)
+    }
+
+    func testMethodCallTelemetryDroppedWhenSampledOut() {
+        // Given
+        core.messageReceiver = TelemetryReceiver.mockWith(
+            dateProvider: RelativeDateProvider(
+                using: .init(timeIntervalSince1970: 0)
+            )
+        )
+
+        let trace = core.telemetry.startMethodCalled(
+            operationName: .mockAny(),
+            callerClass: .mockAny(),
+            samplingRate: 0
+        )
+        core.telemetry.stopMethodCalled(trace, isSuccessful: true)
+
+        let event = core.events(ofType: TelemetryDebugEvent.self).first
+        XCTAssertNil(event)
+    }
 }
