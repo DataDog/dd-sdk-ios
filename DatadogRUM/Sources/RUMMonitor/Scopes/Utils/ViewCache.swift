@@ -33,7 +33,7 @@ internal final class ViewCache {
     ///   - capacity: The maximum number of ids to store.
     init(
         dateProvider: DateProvider = SystemDateProvider(),
-        ttl: TimeInterval = 3 * 60,
+        ttl: TimeInterval = 3.minutes,
         capacity: Int = 30
     ) {
         self.dateProvider = dateProvider
