@@ -128,6 +128,50 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 
+    func testWhenViewStarts_itUpdatesTheViewCache() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let ttl: TimeInterval = .mockRandom(min: 2, max: 10)
+        let viewCache = ViewCache(ttl: ttl)
+
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: dateProvider.now,
+            dependencies: .mockWith(viewCache: viewCache)
+        )
+
+        // When - starting a view
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: dateProvider.now,
+                attributes: ["foo": "bar 2"],
+                identity: .mockRandomString()
+            ),
+            context: context,
+            writer: writer
+        )
+
+        dateProvider.advance(bySeconds: 1)
+
+        // Then - the view is added to the cache
+        let firstViewID = try XCTUnwrap(scope.viewScopes.first?.context.activeViewID?.toRUMDataFormat)
+        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds), firstViewID)
+
+        // When - updating the view
+        dateProvider.advance(bySeconds: ttl)
+
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(
+                time: dateProvider.now
+            ),
+            context: context,
+            writer: writer
+        )
+
+        // Then - it updates the timestamp in cache
+        XCTAssertEqual(viewCache.lastView(before: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds), firstViewID)
+    }
+
     // MARK: - Background Events Tracking
 
     func testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope() {

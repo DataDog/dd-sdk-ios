@@ -881,6 +881,10 @@
 		D24C9C7229A7D57A002057CF /* DirectoriesMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D24C9C7029A7D57A002057CF /* DirectoriesMock.swift */; };
 		D25085102976E30000E931C3 /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250850F2976E30000E931C3 /* DatadogRemoteFeatureMock.swift */; };
 		D25085112976E30000E931C3 /* DatadogRemoteFeatureMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D250850F2976E30000E931C3 /* DatadogRemoteFeatureMock.swift */; };
+		D253EE962B988CA90010B589 /* ViewCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D253EE952B988CA90010B589 /* ViewCache.swift */; };
+		D253EE972B988CA90010B589 /* ViewCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D253EE952B988CA90010B589 /* ViewCache.swift */; };
+		D253EE9B2B98B37B0010B589 /* ViewCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D253EE982B98B3690010B589 /* ViewCacheTests.swift */; };
+		D253EE9C2B98B37C0010B589 /* ViewCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D253EE982B98B3690010B589 /* ViewCacheTests.swift */; };
 		D2553807288AA84F00727FAD /* UploadMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553806288AA84F00727FAD /* UploadMock.swift */; };
 		D2553808288AA84F00727FAD /* UploadMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553806288AA84F00727FAD /* UploadMock.swift */; };
 		D2553826288F0B1A00727FAD /* BatteryStatusPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2553825288F0B1A00727FAD /* BatteryStatusPublisher.swift */; };
@@ -2600,6 +2604,8 @@
 		D24C9C6629A7CBF0002057CF /* DDErrorMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDErrorMocks.swift; sourceTree = "<group>"; };
 		D24C9C7029A7D57A002057CF /* DirectoriesMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DirectoriesMock.swift; sourceTree = "<group>"; };
 		D250850F2976E30000E931C3 /* DatadogRemoteFeatureMock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogRemoteFeatureMock.swift; sourceTree = "<group>"; };
+		D253EE952B988CA90010B589 /* ViewCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewCache.swift; sourceTree = "<group>"; };
+		D253EE982B98B3690010B589 /* ViewCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewCacheTests.swift; sourceTree = "<group>"; };
 		D2546BF029AF4F550054E00B /* DatadogTracer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatadogTracer.swift; sourceTree = "<group>"; };
 		D2546C0329AF55AA0054E00B /* TraceFeature.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TraceFeature.swift; sourceTree = "<group>"; };
 		D2546C0729AF55E90054E00B /* RequestBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestBuilder.swift; sourceTree = "<group>"; };
@@ -4215,6 +4221,7 @@
 			children = (
 				61C1510C25AC8C1B00362D4B /* ViewIdentifierTests.swift */,
 				61A614E9276B9D4C00A06CE7 /* RUMOffViewEventsHandlingRuleTests.swift */,
+				D253EE982B98B3690010B589 /* ViewCacheTests.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -4275,6 +4282,7 @@
 			children = (
 				61FF9A4425AC5DEA001058CC /* ViewIdentifier.swift */,
 				61A614E7276B2BD000A06CE7 /* RUMOffViewEventsHandlingRule.swift */,
+				D253EE952B988CA90010B589 /* ViewCache.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -8121,6 +8129,7 @@
 				D23F8E5729DDCD28001CFAE8 /* RUMScopeDependencies.swift in Sources */,
 				D23F8E5829DDCD28001CFAE8 /* VitalMemoryReader.swift in Sources */,
 				D23F8E5929DDCD28001CFAE8 /* WebViewEventReceiver.swift in Sources */,
+				D253EE972B988CA90010B589 /* ViewCache.swift in Sources */,
 				D23F8E5A29DDCD28001CFAE8 /* RUMResourceScope.swift in Sources */,
 				D23F8E5C29DDCD28001CFAE8 /* RUMApplicationScope.swift in Sources */,
 				D23F8E5D29DDCD28001CFAE8 /* SwiftUIViewModifier.swift in Sources */,
@@ -8220,6 +8229,7 @@
 				D23F8EBE29DDCD38001CFAE8 /* WebViewEventReceiverTests.swift in Sources */,
 				D23F8EBF29DDCD38001CFAE8 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,
 				D23F8EC029DDCD38001CFAE8 /* RUMEventSanitizerTests.swift in Sources */,
+				D253EE9C2B98B37C0010B589 /* ViewCacheTests.swift in Sources */,
 				6176C1732ABDBA2E00131A70 /* MonitorTests.swift in Sources */,
 				D23F8EC129DDCD38001CFAE8 /* RUMEventsMapperTests.swift in Sources */,
 				6167E6DB2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */,
@@ -8397,6 +8407,7 @@
 				D29A9F5A29DD85BB005C54A4 /* RUMScopeDependencies.swift in Sources */,
 				D29A9F5B29DD85BB005C54A4 /* VitalMemoryReader.swift in Sources */,
 				D29A9F6229DD85BB005C54A4 /* WebViewEventReceiver.swift in Sources */,
+				D253EE962B988CA90010B589 /* ViewCache.swift in Sources */,
 				D29A9F8429DD85BB005C54A4 /* RUMResourceScope.swift in Sources */,
 				D29A9F7329DD85BB005C54A4 /* RUMApplicationScope.swift in Sources */,
 				D29A9F6A29DD85BB005C54A4 /* SwiftUIViewModifier.swift in Sources */,
@@ -8496,6 +8507,7 @@
 				D29A9FA429DDB483005C54A4 /* WebViewEventReceiverTests.swift in Sources */,
 				D29A9F9A29DDB483005C54A4 /* URLSessionRUMResourcesHandlerTests.swift in Sources */,
 				D29A9FA229DDB483005C54A4 /* RUMEventSanitizerTests.swift in Sources */,
+				D253EE9B2B98B37B0010B589 /* ViewCacheTests.swift in Sources */,
 				6176C1722ABDBA2E00131A70 /* MonitorTests.swift in Sources */,
 				D29A9FB929DDB483005C54A4 /* RUMEventsMapperTests.swift in Sources */,
 				6167E6DA2B8004A500C3CA2D /* AppHangsWatchdogThreadTests.swift in Sources */,

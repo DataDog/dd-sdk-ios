@@ -17,6 +17,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The date provider.
     let dateProvider: DateProvider
 
+    /// The view cache containing ids of current and previous views.
+    let viewCache: ViewCache
+
     /// Creates a new receiver.
     ///
     /// - Parameters:
@@ -24,10 +27,12 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     init(
         dateProvider: DateProvider,
-        commandSubscriber: RUMCommandSubscriber
+        commandSubscriber: RUMCommandSubscriber,
+        viewCache: ViewCache
     ) {
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
+        self.viewCache = viewCache
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -68,6 +73,14 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
                     let correctedDate = Int64(date) + serverTimeOffsetInMs
                     event["date"] = correctedDate
+
+                    // Inject the container source and view id
+                    if let viewID = self.viewCache.lastView(before: date, hasReplay: true) {
+                        event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
+                            source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
+                            view: RUMViewEvent.Container.View(id: viewID)
+                        )
+                    }
                 }
 
                 if var application = event["application"] as? JSON {

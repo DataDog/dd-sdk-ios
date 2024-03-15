@@ -129,7 +129,8 @@ class WebViewEventReceiverTests: XCTestCase {
         // Given
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: commandsSubscriberMock
+            commandSubscriber: commandsSubscriberMock,
+            viewCache: ViewCache()
         )
 
         // When
@@ -148,7 +149,8 @@ class WebViewEventReceiverTests: XCTestCase {
         // Given
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When
@@ -163,18 +165,32 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextAvailable_whenReceivingWebEvent_itGetsEnrichedWithOtherMobileContextAndWritten() throws {
         let core = PassthroughCoreMock(
-            context: .mockWith(serverTimeOffset: .mockRandom(min: -10, max: 10).rounded())
+            context: .mockWith(
+                source: "react-native",
+                serverTimeOffset: .mockRandom(min: -10, max: 10).rounded()
+            )
         )
 
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         core.set(baggage: rumContext, forKey: RUMFeature.name)
+        let dateProvider = RelativeDateProvider()
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
+        let containerViewID: String = .mockRandom()
+        receiver.viewCache.insert(
+            id: containerViewID,
+            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            hasReplay: true
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -182,10 +198,11 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": String.mockRandom()],
             "session": ["id": String.mockRandom()],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": 1_000_000,
+            "date": Int(date),
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
+
         let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
 
         // Then
@@ -195,10 +212,14 @@ class WebViewEventReceiverTests: XCTestCase {
                 "session": ["plan": 1],
                 "browser_sdk_version": "5.2.0"
             ] as [String: Any],
+            "container": [
+                "source": "react-native",
+                "view": [ "id": containerViewID ]
+            ] as [String: Any],
             "application": ["id": rumContext.applicationID],
             "session": ["id": rumContext.sessionID],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": 1_000_000 + core.context.serverTimeOffset.toInt64Milliseconds,
+            "date": date + core.context.serverTimeOffset.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -215,7 +236,8 @@ class WebViewEventReceiverTests: XCTestCase {
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When
@@ -239,7 +261,8 @@ class WebViewEventReceiverTests: XCTestCase {
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When
