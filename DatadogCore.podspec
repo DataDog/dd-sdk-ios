@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
                     "DatadogCore/Private/**/*.{h,m}"]
 
   s.resource_bundle = {
-    "DatadogPrivacyInfo" => "DatadogCore/Resources/PrivacyInfo.xcprivacy"
+    "DatadogCore" => "DatadogCore/Resources/PrivacyInfo.xcprivacy"
   }
 
   s.dependency 'DatadogInternal', s.version.to_s
