@@ -22,6 +22,10 @@ Pod::Spec.new do |s|
   
   s.source_files = ["DatadogRUM/Sources/**/*.swift"]
 
+  s.resource_bundle = {
+    "DatadogRUM" => "DatadogRUM/Resources/PrivacyInfo.xcprivacy"
+  }
+
   s.dependency 'DatadogInternal', s.version.to_s
 
 end

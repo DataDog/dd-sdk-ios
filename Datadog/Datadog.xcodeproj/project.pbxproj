@@ -1120,6 +1120,10 @@
 		D2A7841029A53B2F003B03BB /* Directory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAB2423979B00786299 /* Directory.swift */; };
 		D2A7841129A53B2F003B03BB /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAC2423979B00786299 /* File.swift */; };
 		D2A7841229A53B2F003B03BB /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61133BAC2423979B00786299 /* File.swift */; };
+		D2A7A8FF2BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */; };
+		D2A7A9002BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */; };
+		D2A7A9022BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
+		D2A7A9032BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */; };
 		D2B249942A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249952A4598FE00DD4F9F /* LoggerProtocol+Internal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */; };
 		D2B249972A45E10500DD4F9F /* LoggerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2B249962A45E10500DD4F9F /* LoggerTests.swift */; };
@@ -2672,6 +2676,8 @@
 		D2A434AD2A8E426C0028E329 /* DDSessionReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSessionReplayTests.swift; sourceTree = "<group>"; };
 		D2A7840129A534F9003B03BB /* DatadogLogsTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogLogsTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D2A7840229A536AD003B03BB /* PrintFunctionMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintFunctionMock.swift; sourceTree = "<group>"; };
+		D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = ../Resources/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D2B249932A4598FE00DD4F9F /* LoggerProtocol+Internal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LoggerProtocol+Internal.swift"; sourceTree = "<group>"; };
 		D2B249962A45E10500DD4F9F /* LoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggerTests.swift; sourceTree = "<group>"; };
 		D2B3F0432823EE8300C2B5EE /* TLVBlockTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLVBlockTests.swift; sourceTree = "<group>"; };
@@ -4443,6 +4449,7 @@
 		6170DC1325C1864B003AED5C /* DatadogCrashReporting */ = {
 			isa = PBXGroup;
 			children = (
+				D2A7A9012BA1C4B100F46845 /* PrivacyInfo.xcprivacy */,
 				6161247825CA9CA6009901BE /* CrashReporting.swift */,
 				61DE333525C8278A008E3EC2 /* CrashReportingPlugin.swift */,
 				D293302B2A137DAD0029C9EA /* CrashReportingFeature.swift */,
@@ -5645,6 +5652,7 @@
 		D29A9F3529DD84AA005C54A4 /* DatadogRUM */ = {
 			isa = PBXGroup;
 			children = (
+				D2A7A8FE2BA1C24A00F46845 /* PrivacyInfo.xcprivacy */,
 				61C713B82A3C935C00FA735A /* RUM.swift */,
 				49D8C0B62AC5D2160075E427 /* RUM+Internal.swift */,
 				61C713A02A3B78F900FA735A /* RUMMonitorProtocol.swift */,
@@ -7033,6 +7041,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A7A9022BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7075,6 +7084,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A7A9002BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7125,6 +7135,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A7A8FF2BA1C24A00F46845 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7182,6 +7193,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A7A9032BA1C4B100F46845 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
