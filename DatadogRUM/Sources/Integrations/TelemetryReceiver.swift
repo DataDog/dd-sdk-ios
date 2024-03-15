@@ -211,7 +211,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: "[Mobile Metric] \(name)",
-                    telemetryInfo: attributes
+                    telemetryInfo: attributes.enrichIfNeeded(with: context)
                 ),
                 version: context.sdkVersion,
                 view: rum?.viewID.map { .init(id: $0) }
@@ -250,6 +250,29 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                     operation(context, writer)
                 }
             }
+        }
+    }
+}
+
+fileprivate extension [String: Encodable] {
+    func enrichIfNeeded(
+        with context: DatadogContext
+    ) -> [String: Encodable] {
+        if isMethodCallAttributes {
+            var attributes = self
+            attributes[MethodCalledMetric.Device.key] = [
+                MethodCalledMetric.Device.model: context.device.model,
+                MethodCalledMetric.Device.brand: context.device.brand,
+                MethodCalledMetric.Device.architecture: context.device.architecture
+            ]
+            attributes[MethodCalledMetric.OS.key] = [
+                MethodCalledMetric.OS.name: context.device.osName,
+                MethodCalledMetric.OS.version: context.device.osVersion,
+                MethodCalledMetric.OS.build: context.device.osBuildNumber,
+            ]
+            return attributes
+        } else {
+            return self
         }
     }
 }
