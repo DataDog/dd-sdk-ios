@@ -321,6 +321,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackResources: nil,
             trackSessionAcrossSubdomains: nil,
             trackViewsManually: configuration.trackViewsManually,
+            unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: nil,
             useAllowedTracingUrls: nil,
             useBeforeSend: nil,

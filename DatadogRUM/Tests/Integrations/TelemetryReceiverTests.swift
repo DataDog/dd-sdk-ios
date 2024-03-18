@@ -311,6 +311,7 @@ class TelemetryReceiverTests: XCTestCase {
         let trackNativeViews: Bool? = .mockRandom()
         let trackNetworkRequests: Bool? = .mockRandom()
         let trackViewsManually: Bool? = .mockRandom()
+        let unityVersion: String? = .mockRandom()
         let useFirstPartyHosts: Bool? = .mockRandom()
         let useLocalEncryption: Bool? = .mockRandom()
         let useProxy: Bool? = .mockRandom()
@@ -338,6 +339,7 @@ class TelemetryReceiverTests: XCTestCase {
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: trackNetworkRequests,
             trackViewsManually: trackViewsManually,
+            unityVersion: unityVersion,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
             useProxy: useProxy,
@@ -370,6 +372,7 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.trackNativeViews, trackNativeViews)
         XCTAssertEqual(event?.telemetry.configuration.trackNetworkRequests, trackNetworkRequests)
         XCTAssertEqual(event?.telemetry.configuration.trackViewsManually, trackViewsManually)
+        XCTAssertEqual(event?.telemetry.configuration.unityVersion, unityVersion)
         XCTAssertEqual(event?.telemetry.configuration.useFirstPartyHosts, useFirstPartyHosts)
         XCTAssertEqual(event?.telemetry.configuration.useLocalEncryption, useLocalEncryption)
         XCTAssertEqual(event?.telemetry.configuration.useProxy, useProxy)

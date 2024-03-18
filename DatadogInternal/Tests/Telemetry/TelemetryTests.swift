@@ -257,6 +257,7 @@ class TelemetryTest: Telemetry {
             trackSessionAcrossSubdomains: configuration.trackSessionAcrossSubdomains,
             trackUserInteractions: configuration.trackUserInteractions,
             trackViewsManually: configuration.trackViewsManually,
+            unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: configuration.useAllowedTracingOrigins,
             useAllowedTracingUrls: configuration.useAllowedTracingUrls,
             useBeforeSend: configuration.useBeforeSend,
