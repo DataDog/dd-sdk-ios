@@ -33,12 +33,15 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.debug("Debug Telemetry", attributes: ["debug.attribute": 42])
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42])
+        core.telemetry.stopMethodCalled(
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+        )
 
         // Then
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
 
-        XCTAssertEqual(debugEvents.count, 2) // metrics are transported as debug events
+        XCTAssertEqual(debugEvents.count, 3) // metrics are transported as debug events
         XCTAssertEqual(errorEvents.count, 1)
 
         let debug = debugEvents[0]
@@ -51,6 +54,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         let metric = debugEvents[1]
         XCTAssertEqual(metric.telemetry.message, "[Mobile Metric] Metric Name")
         DDAssertReflectionEqual(metric.telemetry.telemetryInfo, ["metric.attribute": 42])
+
+        let methodCalledMetric = debugEvents[2]
+        XCTAssertEqual(methodCalledMetric.telemetry.message, "[Mobile Metric] Method Called")
     }
 
     func testGivenRUMEnabled_whenNoViewIsActive_telemetryEventsAreLinkedToSession() throws {
@@ -68,6 +74,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.stopMethodCalled(
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+        )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
@@ -89,6 +98,12 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNotNil(metric.session?.id)
         XCTAssertNil(metric.view?.id)
         XCTAssertNil(metric.action?.id)
+
+        let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
+        XCTAssertEqual(methodCalledMetric.application?.id, "rum-app-id")
+        XCTAssertNotNil(methodCalledMetric.session?.id)
+        XCTAssertNil(methodCalledMetric.view?.id)
+        XCTAssertNil(methodCalledMetric.action?.id)
     }
 
     func testGivenRUMEnabled_whenViewIsActive_telemetryEventsAreLinkedToView() throws {
@@ -105,6 +120,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.stopMethodCalled(
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+        )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
@@ -126,6 +144,12 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNotNil(metric.session?.id)
         XCTAssertNotNil(metric.view?.id)
         XCTAssertNil(metric.action?.id)
+
+        let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
+        XCTAssertEqual(methodCalledMetric.application?.id, "rum-app-id")
+        XCTAssertNotNil(methodCalledMetric.session?.id)
+        XCTAssertNotNil(methodCalledMetric.view?.id)
+        XCTAssertNil(methodCalledMetric.action?.id)
     }
 
     func testGivenRUMEnabled_whenActionIsActive_telemetryEventsAreLinkedToAction() throws {
@@ -143,6 +167,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         core.telemetry.debug("Debug Telemetry")
         core.telemetry.error("Error Telemetry")
         core.telemetry.metric(name: "Metric Name", attributes: [:])
+        core.telemetry.stopMethodCalled(
+            core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
+        )
 
         let debugEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryDebugEvent.self)
         let errorEvents = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: TelemetryErrorEvent.self)
@@ -164,5 +191,11 @@ class CoreTelemetryIntegrationTests: XCTestCase {
         XCTAssertNotNil(metric.session?.id)
         XCTAssertNotNil(metric.view?.id)
         XCTAssertNotNil(metric.action?.id)
+
+        let methodCalledMetric = try XCTUnwrap(debugEvents.first(where: { $0.telemetry.message == "[Mobile Metric] Method Called" }))
+        XCTAssertEqual(methodCalledMetric.application?.id, "rum-app-id")
+        XCTAssertNotNil(methodCalledMetric.session?.id)
+        XCTAssertNotNil(methodCalledMetric.view?.id)
+        XCTAssertNotNil(methodCalledMetric.action?.id)
     }
 }

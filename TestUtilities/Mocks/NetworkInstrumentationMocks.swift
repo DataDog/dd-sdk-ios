@@ -49,6 +49,7 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     public var firstPartyHosts: FirstPartyHosts
 
     public var modifiedRequest: URLRequest?
+    public var parentSpan: TraceContext?
     public var shouldInterceptRequest: ((URLRequest) -> Bool)?
 
     public var onRequestMutation: ((URLRequest, Set<TracingHeaderType>) -> Void)?
@@ -74,6 +75,10 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     public func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest {
         onRequestMutation?(request, headerTypes)
         return modifiedRequest ?? request
+    }
+
+    public func traceContext() -> TraceContext? {
+        parentSpan
     }
 
     public func interceptionDidStart(interception: URLSessionTaskInterception) {

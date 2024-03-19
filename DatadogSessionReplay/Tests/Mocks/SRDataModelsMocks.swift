@@ -240,8 +240,8 @@ extension SRShapeStyle: AnyMockable, RandomMockable {
     public static func mockRandom() -> SRShapeStyle {
         return SRShapeStyle(
             backgroundColor: .mockRandom(),
-            cornerRadius: .mockRandom(),
-            opacity: .mockRandom()
+            cornerRadius: .randomInteger(),
+            opacity: .randomInteger()
         )
     }
 
@@ -485,6 +485,7 @@ extension SRVisualViewportRecord: AnyMockable, RandomMockable {
     public static func mockRandom() -> SRVisualViewportRecord {
         return SRVisualViewportRecord(
             data: .mockRandom(),
+            slotId: .mockRandom(),
             timestamp: .mockRandom()
         )
     }
@@ -495,6 +496,7 @@ extension SRVisualViewportRecord: AnyMockable, RandomMockable {
     ) -> SRVisualViewportRecord {
         return SRVisualViewportRecord(
             data: data,
+            slotId: .mockRandom(),
             timestamp: timestamp
         )
     }
@@ -507,13 +509,13 @@ extension SRVisualViewportRecord.Data: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> SRVisualViewportRecord.Data {
         return SRVisualViewportRecord.Data(
-            height: .mockRandom(),
-            offsetLeft: .mockRandom(),
-            offsetTop: .mockRandom(),
-            pageLeft: .mockRandom(),
-            pageTop: .mockRandom(),
-            scale: .mockRandom(),
-            width: .mockRandom()
+            height: .randomInteger(),
+            offsetLeft: .randomInteger(),
+            offsetTop: .randomInteger(),
+            pageLeft: .randomInteger(),
+            pageTop: .randomInteger(),
+            scale: .randomInteger(),
+            width: .randomInteger()
         )
     }
 
@@ -545,6 +547,7 @@ extension SRViewEndRecord: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> SRViewEndRecord {
         return SRViewEndRecord(
+            slotId: .mockRandom(),
             timestamp: .mockRandom()
         )
     }
@@ -553,6 +556,7 @@ extension SRViewEndRecord: AnyMockable, RandomMockable {
         timestamp: Int64 = .mockAny()
     ) -> SRViewEndRecord {
         return SRViewEndRecord(
+            slotId: .mockRandom(),
             timestamp: timestamp
         )
     }
@@ -566,6 +570,7 @@ extension SRFocusRecord: AnyMockable, RandomMockable {
     public static func mockRandom() -> SRFocusRecord {
         return SRFocusRecord(
             data: .mockRandom(),
+            slotId: .mockRandom(),
             timestamp: .mockRandom()
         )
     }
@@ -576,6 +581,7 @@ extension SRFocusRecord: AnyMockable, RandomMockable {
     ) -> SRFocusRecord {
         return SRFocusRecord(
             data: data,
+            slotId: .mockRandom(),
             timestamp: timestamp
         )
     }
@@ -609,6 +615,7 @@ extension SRMetaRecord: AnyMockable, RandomMockable {
     public static func mockRandom() -> SRMetaRecord {
         return SRMetaRecord(
             data: .mockRandom(),
+            slotId: .mockRandom(),
             timestamp: .mockRandom()
         )
     }
@@ -619,6 +626,7 @@ extension SRMetaRecord: AnyMockable, RandomMockable {
     ) -> SRMetaRecord {
         return SRMetaRecord(
             data: data,
+            slotId: .mockRandom(),
             timestamp: timestamp
         )
     }
@@ -698,8 +706,8 @@ extension SRIncrementalSnapshotRecord.Data.PointerInteractionData: AnyMockable, 
             pointerEventType: .mockRandom(),
             pointerId: .mockRandom(),
             pointerType: .mockRandom(),
-            x: .mockRandom(),
-            y: .mockRandom()
+            x: .randomInteger(),
+            y: .randomInteger()
         )
     }
 
@@ -1244,5 +1252,13 @@ extension SRIncrementalSnapshotRecord {
         case .viewportResizeData(let value): return value
         default: return nil
         }
+    }
+}
+
+private extension Double {
+    /// Returns random integer from given range represented as `Double`.
+    static func randomInteger(min: Int = -10_000, max: Int = 10_000) -> Double {
+        let integer = Int.mockRandom(min: min, max: max)
+        return Double(integer)
     }
 }

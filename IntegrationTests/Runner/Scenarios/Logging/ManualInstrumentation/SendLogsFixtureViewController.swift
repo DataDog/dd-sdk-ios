@@ -5,8 +5,17 @@
  */
 
 import UIKit
+import DatadogLogs
 
 internal class SendLogsFixtureViewController: UIViewController {
+    class MockError: LocalizedError {
+        var title: String {
+            get { return "MockError" }
+        }
+        var code: Int {
+            get { return 406 }
+        }
+    }
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -24,5 +33,19 @@ internal class SendLogsFixtureViewController: UIViewController {
         logger?.warn("warn message", attributes: ["attribute": "value"])
         logger?.error("error message", attributes: ["attribute": "value"])
         logger?.critical("critical message", attributes: ["attribute": "value"])
+
+        Logs.addAttribute(forKey: "global-attribute-1", value: "global value")
+        Logs.addAttribute(forKey: "global-attribute-2", value: 1_540)
+        Logs.addAttribute(forKey: "attribute", value: 20)
+
+        logger?.notice("notice message with global", attributes: ["attribute": "value"])
+        logger?.error(
+            "error with fingerprint",
+            error: MockError(),
+            attributes: [
+                Logs.Attributes.errorFingerprint: "custom_fingerprint",
+                "attribute": "value"
+            ]
+        )
     }
 }

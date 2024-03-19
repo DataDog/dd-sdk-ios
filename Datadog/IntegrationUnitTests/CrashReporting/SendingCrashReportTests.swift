@@ -48,7 +48,8 @@ class SendingCrashReportTests: XCTestCase {
         let crashReport: DDCrashReport = .mockRandomWith(
             context: .mockWith(
                 trackingConsent: .granted, // CR from the app session that has enabled data collection
-                lastIsAppInForeground: true // CR occurred while the app was in the foreground
+                lastIsAppInForeground: true, // CR occurred while the app was in the foreground
+                lastLogAttributes: .init(mockRandomAttributes())
             )
         )
 
@@ -64,6 +65,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertEqual(log.error?.message, crashReport.message)
         XCTAssertEqual(log.error?.kind, crashReport.type)
         XCTAssertEqual(log.error?.stack, crashReport.stack)
+        XCTAssertFalse(log.attributes.userAttributes.isEmpty)
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.meta])

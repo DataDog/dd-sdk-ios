@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
 
 import CoreTelephony
 
@@ -66,6 +66,7 @@ extension CarrierInfo {
 
 /// Carrier info provider for iOS 11.
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` each time.
+@available(iOS, deprecated: 12)
 internal struct iOS11CarrierInfoReader: ContextValueReader {
     private let networkInfo: CTTelephonyNetworkInfo
 
@@ -79,6 +80,7 @@ internal struct iOS11CarrierInfoReader: ContextValueReader {
 }
 
 extension CarrierInfo {
+    @available(iOS, deprecated: 12)
     init?(_ info: CTTelephonyNetworkInfo) {
         guard
             let radioTechnology = info.currentRadioAccessTechnology,

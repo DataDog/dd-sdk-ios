@@ -67,7 +67,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     telemetry: core.telemetry
                 )
             },
-            onSessionStart: configuration.onSessionStart
+            onSessionStart: configuration.onSessionStart,
+            viewCache: ViewCache()
         )
 
         self.monitor = Monitor(
@@ -80,7 +81,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
-            dateProvider: configuration.dateProvider
+            appHangThreshold: configuration.appHangThreshold,
+            mainQueue: configuration.mainQueue,
+            dateProvider: configuration.dateProvider,
+            backtraceReporter: core.backtraceReporter,
+            telemetry: core.telemetry
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -97,7 +102,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ErrorMessageReceiver(monitor: monitor),
             WebViewEventReceiver(
                 dateProvider: configuration.dateProvider,
-                commandSubscriber: monitor
+                commandSubscriber: monitor,
+                viewCache: dependencies.viewCache
             ),
             CrashReportReceiver(
                 applicationID: configuration.applicationID,
@@ -122,6 +128,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
 
         // Send configuration telemetry:
         core.telemetry.configuration(
+            appHangThreshold: configuration.appHangThreshold?.toInt64Milliseconds,
             mobileVitalsUpdatePeriod: configuration.vitalsUpdateFrequency?.timeInterval.toInt64Milliseconds,
             sessionSampleRate: Int64(withNoOverflow: configuration.sessionSampleRate),
             telemetrySampleRate: Int64(withNoOverflow: configuration.telemetrySampleRate),

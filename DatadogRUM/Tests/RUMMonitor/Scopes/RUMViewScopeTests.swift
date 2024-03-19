@@ -1330,6 +1330,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.connectivity)
         XCTAssertEqual(error.error.type, "abc")
         XCTAssertEqual(error.error.message, "view error")
+        XCTAssertEqual(error.error.category, .exception)
         XCTAssertEqual(error.error.source, .source)
         XCTAssertEqual(error.error.sourceType, .ios)
         XCTAssertNil(error.error.stack)
@@ -1420,7 +1421,7 @@ class RUMViewScopeTests: XCTestCase {
 
         currentTime.addTimeInterval(1)
 
-        let customSourceType = String.mockAnySource()
+        let customSourceType = String.mockAnySourceType()
         let expectedSourceType = RUMErrorSourceType.init(rawValue: customSourceType)
         XCTAssertTrue(
             scope.process(
@@ -1439,6 +1440,7 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(error.error.sourceType, expectedSourceType)
         XCTAssertTrue(error.error.isCrash ?? false)
         XCTAssertEqual(error.source, expectedSource)
+        XCTAssertEqual(error.error.category, .exception)
         XCTAssertEqual(error.service, "test-service")
 
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
@@ -1501,6 +1503,60 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(scope.attributes["foo"])
     }
 
+    func testGivenStartedView_whenErrorWithFingerprintAttributesIsAdded_itAddsFingerprintToError() throws {
+        // Given
+        let hasReplay: Bool = .mockRandom()
+        let fakeFingerprint: String = .mockRandom()
+        var context = self.context
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        RUM.Attributes.errorFingerprint: fakeFingerprint
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.error.fingerprint, fakeFingerprint)
+        XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
+    }
+
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1542,6 +1598,65 @@ class RUMViewScopeTests: XCTestCase {
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.view.error.count, 1, "Failed Resource should be counted as Error")
+    }
+
+    // MARK: - App Hangs
+
+    func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() throws {
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let hangDuration: TimeInterval = .mockRandom(min: 1, max: 10)
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewAppHangCommand.mockWith(
+                    time: currentTime,
+                    message: "App Hang",
+                    type: "AppHang",
+                    stack: "<hang stack>",
+                    hangDuration: hangDuration
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.date, Date.mockDecember15th2019At10AMUTC(addingTimeInterval: 1).timeIntervalSince1970.toInt64Milliseconds)
+        XCTAssertEqual(error.view.url, "UIViewController")
+        XCTAssertEqual(error.view.name, "ViewName")
+        XCTAssertEqual(error.error.message, "App Hang")
+        XCTAssertEqual(error.error.type, "AppHang")
+        XCTAssertEqual(error.error.stack, "<hang stack>")
+        XCTAssertEqual(error.error.category, .appHang)
+        XCTAssertEqual(error.error.source, .source)
+        XCTAssertEqual(error.error.sourceType, .ios)
+        XCTAssertTrue(error.error.isCrash == false)
+        XCTAssertEqual(error.freeze?.duration, hangDuration.toInt64Nanoseconds)
+
+        let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        XCTAssertEqual(viewUpdate.view.error.count, 1)
     }
 
     // MARK: - Long tasks

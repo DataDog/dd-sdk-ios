@@ -73,6 +73,52 @@ public enum Logs {
             consolePrint("\(error)", .error)
         }
     }
+
+    /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
+    /// - Parameters:
+    ///   - key: the attribute key. See `AttributeKey` documentation for information on nesting attributes with dot `.` syntax.
+    ///   - value: the attribute value that conforms to `Encodable`. See `AttributeValue` documentation
+    ///     for information on nested encoding containers limitation.
+    ///   - core: the `DatadogCoreProtocol` to add the attribute to.
+    public static func addAttribute(forKey key: AttributeKey, value: AttributeValue, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        guard let feature = core.get(feature: LogsFeature.self) else {
+            return
+        }
+        feature.addAttribute(forKey: key, value: value)
+        sendAttributesChanged(for: feature, in: core)
+    }
+
+    /// Removes the custom attribute from all future logs sent any logger created from the provided Core.
+    ///
+    /// Previous logs won't lose this attribute if sent prior to this call.
+    /// - Parameters:
+    ///   - key: the key of an attribute that will be removed.
+    ///   - core: the `DatadogCoreProtocol` to remove the attribute from.
+    public static func removeAttribute(forKey key: AttributeKey, in core: DatadogCoreProtocol = CoreRegistry.default) {
+        guard let feature = core.get(feature: LogsFeature.self) else {
+            return
+        }
+        feature.removeAttribute(forKey: key)
+        sendAttributesChanged(for: feature, in: core)
+    }
+
+    private static func sendAttributesChanged(for feature: LogsFeature, in core: DatadogCoreProtocol) {
+        core.send(
+            message: .baggage(
+                key: GlobalLogAttributes.key,
+                value: GlobalLogAttributes(attributes: feature.getAttributes())
+            )
+        )
+    }
+}
+
+extension Logs {
+    /// Attributes that can be added to logs that have special properies in Datadog.
+    public struct Attributes {
+        /// Add a custom fingerprint to the error in this log. Requires that the log is supplied with an Error.
+        /// The value of this attribute must be a `String`.
+        public static let errorFingerprint = "_dd.error.fingerprint"
+    }
 }
 
 extension Logs.Configuration: InternalExtended { }

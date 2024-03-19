@@ -24,5 +24,5 @@ create-src-from-xcodeproj:
 		rm -rf SPMProject.xcodeproj.src
 		cp -r SPMProject.xcodeproj SPMProject.xcodeproj.src
 		rm SPMProject.xcodeproj.src/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-		sed "s|\"${GIT_REFERENCE}\"|GIT_REFERENCE|g" SPMProject.xcodeproj/project.pbxproj > SPMProject.xcodeproj.src/project.pbxproj
+		sed "s|${GIT_REFERENCE}|GIT_REFERENCE|g" SPMProject.xcodeproj/project.pbxproj > SPMProject.xcodeproj.src/project.pbxproj
 		@echo "OK 👌"

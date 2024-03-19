@@ -278,7 +278,10 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, error: error, source: source, attributes: attributes
+            time: time,
+            error: error,
+            source: source,
+            attributes: attributes
         )
     }
 
@@ -291,7 +294,56 @@ extension RUMAddCurrentViewErrorCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:]
     ) -> RUMAddCurrentViewErrorCommand {
         return RUMAddCurrentViewErrorCommand(
-            time: time, message: message, type: type, stack: stack, source: source, attributes: attributes
+            time: time,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes
+        )
+    }
+}
+
+extension RUMAddCurrentViewAppHangCommand: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMAddCurrentViewAppHangCommand {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> RUMAddCurrentViewAppHangCommand {
+        return RUMAddCurrentViewAppHangCommand(
+            time: .mockRandom(),
+            attributes: mockRandomAttributes(),
+            message: .mockRandom(),
+            type: .mockRandom(),
+            stack: .mockRandom(),
+            threads: .mockRandom(),
+            binaryImages: .mockRandom(),
+            isStackTraceTruncated: .mockRandom(),
+            hangDuration: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        time: Date = .mockAny(),
+        attributes: [AttributeKey: AttributeValue] = [:],
+        message: String = .mockAny(),
+        type: String? = .mockAny(),
+        stack: String? = .mockAny(),
+        threads: [DDThread]? = .mockAny(),
+        binaryImages: [BinaryImage]? = .mockAny(),
+        isStackTraceTruncated: Bool? = .mockAny(),
+        hangDuration: TimeInterval = .mockAny()
+    ) -> RUMAddCurrentViewAppHangCommand {
+        return RUMAddCurrentViewAppHangCommand(
+            time: time,
+            attributes: attributes,
+            message: message,
+            type: type,
+            stack: stack,
+            threads: threads,
+            binaryImages: binaryImages,
+            isStackTraceTruncated: isStackTraceTruncated,
+            hangDuration: hangDuration
         )
     }
 }
@@ -702,7 +754,8 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
+        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
+        viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: core,
@@ -716,7 +769,8 @@ extension RUMScopeDependencies {
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart,
+            viewCache: viewCache
         )
     }
 
@@ -732,7 +786,8 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: RUM.SessionListener? = nil
+        onSessionStart: RUM.SessionListener? = nil,
+        viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             core: self.core,
@@ -746,7 +801,8 @@ extension RUMScopeDependencies {
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
-            onSessionStart: onSessionStart ?? self.onSessionStart
+            onSessionStart: onSessionStart ?? self.onSessionStart,
+            viewCache: viewCache ?? self.viewCache
         )
     }
 }

@@ -35,8 +35,8 @@ class FileReaderTests: XCTestCase {
         )
         let dataProvider = RelativeDateProvider()
         let dataBlocks = [
-            DataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
-            DataBlock(type: .event, data: "ABCD".utf8Data)
+            BatchDataBlock(type: .eventMetadata, data: "EFGH".utf8Data),
+            BatchDataBlock(type: .event, data: "ABCD".utf8Data)
         ]
         let data = try dataBlocks
             .map { try $0.serialize() }
@@ -66,11 +66,11 @@ class FileReaderTests: XCTestCase {
 
     func testItReadsEncryptedBatches() throws {
         let dataBlocks = [
-            DataBlock(type: .eventMetadata, data: "foo".utf8Data),
-            DataBlock(type: .event, data: "foo".utf8Data),
-            DataBlock(type: .event, data: "foo".utf8Data),
-            DataBlock(type: .eventMetadata, data: "foo".utf8Data),
-            DataBlock(type: .event, data: "foo".utf8Data)
+            BatchDataBlock(type: .eventMetadata, data: "foo".utf8Data),
+            BatchDataBlock(type: .event, data: "foo".utf8Data),
+            BatchDataBlock(type: .event, data: "foo".utf8Data),
+            BatchDataBlock(type: .eventMetadata, data: "foo".utf8Data),
+            BatchDataBlock(type: .event, data: "foo".utf8Data)
         ]
         let data = try dataBlocks
             .map { Data(try $0.serialize()) }
@@ -127,15 +127,15 @@ class FileReaderTests: XCTestCase {
             telemetry: NOPTelemetry()
         )
         let file1 = try directory.createFile(named: dateProvider.now.toFileName)
-        try file1.append(data: DataBlock(type: .eventMetadata, data: "2".utf8Data).serialize())
-        try file1.append(data: DataBlock(type: .event, data: "1".utf8Data).serialize())
+        try file1.append(data: BatchDataBlock(type: .eventMetadata, data: "2".utf8Data).serialize())
+        try file1.append(data: BatchDataBlock(type: .event, data: "1".utf8Data).serialize())
 
         let file2 = try directory.createFile(named: dateProvider.now.toFileName)
-        try file2.append(data: DataBlock(type: .event, data: "2".utf8Data).serialize())
+        try file2.append(data: BatchDataBlock(type: .event, data: "2".utf8Data).serialize())
 
         let file3 = try directory.createFile(named: dateProvider.now.toFileName)
-        try file3.append(data: DataBlock(type: .eventMetadata, data: "4".utf8Data).serialize())
-        try file3.append(data: DataBlock(type: .event, data: "3".utf8Data).serialize())
+        try file3.append(data: BatchDataBlock(type: .eventMetadata, data: "4".utf8Data).serialize())
+        try file3.append(data: BatchDataBlock(type: .event, data: "3".utf8Data).serialize())
 
         let expected = [
             Event(data: "1".utf8Data, metadata: "2".utf8Data),

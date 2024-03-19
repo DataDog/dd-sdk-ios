@@ -16,8 +16,6 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
-    /// Provides base64 image data with a built in caching mechanism.
-    let imageDataProvider: ImageDataProviding
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -30,8 +28,7 @@ internal struct ViewTreeSnapshotBuilder {
         let context = ViewTreeRecordingContext(
             recorder: recorderContext,
             coordinateSpace: rootView,
-            ids: idsGenerator,
-            imageDataProvider: imageDataProvider
+            ids: idsGenerator
         )
         let recording = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
@@ -49,8 +46,7 @@ extension ViewTreeSnapshotBuilder {
     init(additionalNodeRecorders: [NodeRecorder]) {
         self.init(
             viewTreeRecorder: ViewTreeRecorder(nodeRecorders: createDefaultNodeRecorders() + additionalNodeRecorders),
-            idsGenerator: NodeIDGenerator(),
-            imageDataProvider: ImageDataProvider()
+            idsGenerator: NodeIDGenerator()
         )
     }
 }

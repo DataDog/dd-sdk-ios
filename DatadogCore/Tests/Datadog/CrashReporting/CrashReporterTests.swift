@@ -40,7 +40,7 @@ class CrashReporterTests: XCTestCase {
         feature.sendCrashReportIfFound()
 
         waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
+        DDAssertReflectionEqual(sender.sentCrashReport, crashReport, "It should send the crash report retrieved from the `plugin`")
         let sentCrashContext = try XCTUnwrap(sender.sentCrashContext, "It should send the crash context")
         DDAssertDictionariesEqual(
             try sentCrashContext.data.toJSONObject(),

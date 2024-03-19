@@ -101,6 +101,7 @@ class RUMTests: XCTestCase {
         config.uiKitViewsPredicate = UIKitRUMViewsPredicateMock()
         config.uiKitActionsPredicate = UIKitRUMActionsPredicateMock()
         config.longTaskThreshold = 0.5
+        config.appHangThreshold = 2
 
         // When
         RUM.enable(with: config, in: core)
@@ -111,6 +112,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, rum.instrumentation.viewsHandler.subscriber)
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
+        XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.subscriber)
     }
 
     func testWhenEnabledWithNoInstrumentations() throws {
@@ -118,6 +120,7 @@ class RUMTests: XCTestCase {
         config.uiKitViewsPredicate = nil
         config.uiKitActionsPredicate = nil
         config.longTaskThreshold = nil
+        config.appHangThreshold = nil
 
         // When
         RUM.enable(with: config, in: core)
@@ -132,6 +135,35 @@ class RUMTests: XCTestCase {
         )
         XCTAssertNil(rum.instrumentation.actionsHandler)
         XCTAssertNil(rum.instrumentation.longTasks)
+        XCTAssertNil(rum.instrumentation.appHangs)
+    }
+
+    func testWhenEnabledWithInvalidLongTasksThreshold() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        config.longTaskThreshold = -5
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(dd.logger.errorLog?.message, "`RUM.Configuration.longTaskThreshold` cannot be less than 0s. Long Tasks monitoring will be disabled.")
+    }
+
+    func testWhenEnabledWithInvalidAppHangThreshold() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        config.appHangThreshold = .mockRandom(min: -10, max: 0.0999)
+
+        // When
+        RUM.enable(with: config, in: core)
+
+        // Then
+        XCTAssertEqual(dd.logger.warnLog?.message, "`RUM.Configuration.appHangThreshold` cannot be less than 0.1s. A value of 0.1s will be used.")
     }
 
     func testWhenEnabledWithURLSessionTracking() throws {

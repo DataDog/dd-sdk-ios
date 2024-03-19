@@ -45,6 +45,7 @@ internal struct LogEventBuilder {
         level: LogLevel,
         message: String,
         error: DDError?,
+        errorFingerprint: String?,
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,
@@ -61,7 +62,9 @@ internal struct LogEventBuilder {
                 .init(
                     kind: $0.type,
                     message: $0.message,
-                    stack: $0.stack
+                    stack: $0.stack,
+                    sourceType: $0.sourceType,
+                    fingerprint: errorFingerprint
                 )
             },
             serviceName: service,
@@ -72,8 +75,14 @@ internal struct LogEventBuilder {
             applicationVersion: context.version,
             applicationBuildNumber: context.buildNumber,
             buildId: context.buildId,
+            variant: context.variant,
             dd: LogEvent.Dd(
-                device: LogEvent.DeviceInfo(architecture: context.device.architecture)
+                device: LogEvent.DeviceInfo(
+                    brand: context.device.brand,
+                    name: context.device.name,
+                    model: context.device.model,
+                    architecture: context.device.architecture
+                )
             ),
             os: .init(
                 name: context.device.osName,

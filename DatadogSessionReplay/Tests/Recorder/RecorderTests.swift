@@ -72,7 +72,8 @@ class RecorderTests: XCTestCase {
             touchSnapshotProducer: TouchSnapshotProducerMock(),
             snapshotProcessor: SnapshotProcessorSpy(),
             resourceProcessor: ResourceProcessorSpy(),
-            telemetry: telemetry
+            telemetry: telemetry,
+            methodCallTelemetrySamplingRate: 0
         )
 
         // When
@@ -86,6 +87,27 @@ class RecorderTests: XCTestCase {
              - [error] [SR] Failed to take snapshot - snapshot creation error, kind: ErrorMock, stack: snapshot creation error
             """
         )
+    }
+
+    func testWhenCapturingSnapshot_itSendsMethodCalledTelemetry() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        let recorder = Recorder(
+            uiApplicationSwizzler: .mockAny(),
+            viewTreeSnapshotProducer: ViewTreeSnapshotProducerMock(succeedingSnapshots: .mockRandom()),
+            touchSnapshotProducer: TouchSnapshotProducerMock(),
+            snapshotProcessor: SnapshotProcessorSpy(),
+            resourceProcessor: ResourceProcessorSpy(),
+            telemetry: telemetry,
+            methodCallTelemetrySamplingRate: 100
+        )
+
+        // When
+        recorder.captureNextRecord(.mockRandom())
+
+        // Then
+        let metric = try XCTUnwrap(telemetry.messages.last?.asMetric)
+        XCTAssertEqual(metric.name, "Method Called")
     }
 
     func testWhenCapturingSnapshots_itUsesAdditionalNodeRecorders() throws {

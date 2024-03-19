@@ -17,6 +17,7 @@ class LogEventBuilderTests: XCTestCase {
         let randomLevel: LogLevel = .mockRandom()
         let randomMessage: String = .mockRandom()
         let randomError: DDError = .mockRandom()
+        let randomErrorFingerprint: String? = .mockRandom()
         let randomAttributes: LogEvent.Attributes = .mockRandom()
         let randomTags: Set<String> = .mockRandom()
         let randomService: String = .mockRandom()
@@ -25,6 +26,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomOsName: String = .mockRandom()
         let randomOsVersion: String = .mockRandom()
         let randomOsBuildNumber: String = .mockRandom()
+        let randomName: String = .mockRandom()
+        let randomModel: String = .mockRandom()
         let randomArchitecture: String = .mockRandom()
 
         // Given
@@ -41,11 +44,14 @@ class LogEventBuilderTests: XCTestCase {
             level: randomLevel,
             message: randomMessage,
             error: randomError,
+            errorFingerprint: randomErrorFingerprint,
             attributes: randomAttributes,
             tags: randomTags,
             context: .mockWith(
                 serverTimeOffset: 0,
                 device: .mockWith(
+                    name: randomName,
+                    model: randomModel,
                     osName: randomOsName,
                     osVersion: randomOsVersion,
                     osBuildNumber: randomOsBuildNumber,
@@ -61,11 +67,16 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.error?.kind, randomError.type)
             XCTAssertEqual(log.error?.message, randomError.message)
             XCTAssertEqual(log.error?.stack, randomError.stack)
+            XCTAssertEqual(log.error?.sourceType, "ios")
+            XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
             XCTAssertEqual(log.attributes, randomAttributes)
             XCTAssertEqual(log.tags.map { Set($0) }, randomTags)
             XCTAssertEqual(log.serviceName, randomService)
             XCTAssertEqual(log.loggerName, randomLoggerName)
             XCTAssertEqual(log.threadName, randomThreadName)
+            XCTAssertEqual(log.dd.device.brand, "Apple")
+            XCTAssertEqual(log.dd.device.name, randomName)
+            XCTAssertEqual(log.dd.device.model, randomModel)
             XCTAssertEqual(log.dd.device.architecture, randomArchitecture)
             XCTAssertEqual(log.os.name, randomOsName)
             XCTAssertEqual(log.os.version, randomOsVersion)
@@ -89,6 +100,8 @@ class LogEventBuilderTests: XCTestCase {
         let randomNetworkInfo: NetworkConnectionInfo = .mockRandom()
         let randomCarrierInfo: CarrierInfo = .mockRandom()
         let randomServerOffset: TimeInterval = .mockRandom(min: -10, max: 10)
+        let randomName: String = .mockRandom()
+        let randomModel: String = .mockRandom()
         let randomOSVersion: String = .mockRandom()
         let randomOSBuild: String = .mockRandom()
 
@@ -99,6 +112,8 @@ class LogEventBuilderTests: XCTestCase {
             sdkVersion: randomSDKVersion,
             serverTimeOffset: randomServerOffset,
             device: .mockWith(
+                name: randomName,
+                model: randomModel,
                 osVersion: randomOSVersion,
                 osBuildNumber: randomOSBuild
             ),
@@ -121,6 +136,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: randomSDKContext,
@@ -139,6 +155,9 @@ class LogEventBuilderTests: XCTestCase {
             DDAssertDictionariesEqual(log.userInfo.extraInfo, randomUserInfo.extraInfo)
             XCTAssertEqual(log.networkConnectionInfo, randomNetworkInfo)
             XCTAssertEqual(log.mobileCarrierInfo, randomCarrierInfo)
+            XCTAssertEqual(log.dd.device.brand, "Apple")
+            XCTAssertEqual(log.dd.device.name, randomName)
+            XCTAssertEqual(log.dd.device.model, randomModel)
             XCTAssertEqual(log.os.version, randomOSVersion)
             XCTAssertEqual(log.os.build, randomOSBuild)
             expectation.fulfill()
@@ -167,6 +186,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: randomSDKContext,
@@ -193,6 +213,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockWith(
@@ -233,6 +254,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: "original message",
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockAny(),
@@ -266,6 +288,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockAny(),

@@ -143,14 +143,14 @@ class StartingRUMSessionTests: XCTestCase {
         let rumTime = DateProviderMock()
         rumConfig.dateProvider = rumTime
         rumConfig.trackBackgroundEvents = .mockRandom() // no matter BET state
-        
+
         // When
         rumTime.now = sdkInitTime
         RUM.enable(with: rumConfig, in: core)
-        
+
         rumTime.now = firstRUMTime
         RUMMonitor.shared(in: core).startView(key: "key", name: "FirstView")
-        
+
         // Then
         let session = try RUMSessionMatcher
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
@@ -158,7 +158,7 @@ class StartingRUMSessionTests: XCTestCase {
 
         XCTAssertEqual(session.views.count, 1)
         XCTAssertTrue(try session.has(sessionPrecondition: .backgroundLaunch), "Session must be marked as 'background launch'")
-        
+
         let firstView = try XCTUnwrap(session.views.first)
         XCTAssertFalse(firstView.isApplicationLaunchView(), "Session should not begin with 'app launch' view")
         XCTAssertEqual(firstView.name, "FirstView")

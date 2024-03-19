@@ -31,7 +31,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -43,7 +42,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"{"meta1":"metaValue1"}"#.utf8Data)
@@ -69,7 +68,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { data in
                     "encrypted".utf8Data + data + "encrypted".utf8Data
@@ -85,7 +83,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)
         XCTAssertEqual(block?.data, #"encrypted{"meta1":"metaValue1"}encrypted"#.utf8Data)
@@ -111,7 +109,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -123,7 +120,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
         var block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key1":"value1"}"#.utf8Data)
@@ -133,42 +130,6 @@ class FileWriterTests: XCTestCase {
         block = try reader.next()
         XCTAssertEqual(block?.type, .event)
         XCTAssertEqual(block?.data, #"{"key3":"value3"}"#.utf8Data)
-    }
-
-    func testWhenForceNewBatchIsSet_itWritesDataToSeparateFilesInTLVFormat() throws {
-        let writer = FileWriter(
-            orchestrator: FilesOrchestrator(
-                directory: directory,
-                performance: PerformancePreset.mockAny(),
-                dateProvider: RelativeDateProvider(advancingBySeconds: 1),
-                telemetry: NOPTelemetry()
-            ),
-            forceNewFile: true,
-            encryption: nil,
-            telemetry: NOPTelemetry()
-        )
-
-        writer.write(value: ["key1": "value1"])
-        writer.write(value: ["key2": "value2"])
-        writer.write(value: ["key3": "value3"])
-
-        XCTAssertEqual(try directory.files().count, 3)
-
-        let dataBlocks = try directory.files()
-            .sorted { $0.name < $1.name } // read files in their creation order
-            .map { try DataBlockReader(input: $0.stream()).all() }
-
-        XCTAssertEqual(dataBlocks[0].count, 1)
-        XCTAssertEqual(dataBlocks[0][0].type, .event)
-        XCTAssertEqual(dataBlocks[0][0].data, #"{"key1":"value1"}"#.utf8Data)
-
-        XCTAssertEqual(dataBlocks[1].count, 1)
-        XCTAssertEqual(dataBlocks[1][0].type, .event)
-        XCTAssertEqual(dataBlocks[1][0].data, #"{"key2":"value2"}"#.utf8Data)
-
-        XCTAssertEqual(dataBlocks[2].count, 1)
-        XCTAssertEqual(dataBlocks[2][0].type, .event)
-        XCTAssertEqual(dataBlocks[2][0].data, #"{"key3":"value3"}"#.utf8Data)
     }
 
     func testGivenErrorVerbosity_whenIndividualDataExceedsMaxWriteSize_itDropsDataAndPrintsError() throws {
@@ -190,7 +151,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -198,14 +158,14 @@ class FileWriterTests: XCTestCase {
         writer.write(value: ["key1": "value1"]) // will be written
 
         XCTAssertEqual(try directory.files().count, 1)
-        var reader = try DataBlockReader(input: directory.files()[0].stream())
+        var reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         var blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1)
         XCTAssertEqual(blocks[0].data, #"{"key1":"value1"}"#.utf8Data)
 
         writer.write(value: ["key2": "value3 that makes it exceed 23 bytes"]) // will be dropped
 
-        reader = try DataBlockReader(input: directory.files()[0].stream())
+        reader = try BatchDataBlockReader(input: directory.files()[0].stream())
         blocks = try XCTUnwrap(reader.all())
         XCTAssertEqual(blocks.count, 1) // same content as before
         XCTAssertEqual(dd.logger.errorLog?.message, "Failed to write data")
@@ -223,7 +183,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -245,7 +204,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -276,7 +234,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -310,7 +267,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
 
         let stream = try directory.files()[0].stream()
-        let blocks = try DataBlockReader(input: stream).all()
+        let blocks = try BatchDataBlockReader(input: stream).all()
 
         // Assert that data written is not malformed
         let jsonDecoder = JSONDecoder()
@@ -339,7 +296,6 @@ class FileWriterTests: XCTestCase {
                 dateProvider: SystemDateProvider(),
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: DataEncryptionMock(
                 encrypt: { _ in "foo".utf8Data }
             ),
@@ -355,7 +311,7 @@ class FileWriterTests: XCTestCase {
         XCTAssertEqual(try directory.files().count, 1)
         let stream = try directory.files()[0].stream()
 
-        let reader = DataBlockReader(input: stream)
+        let reader = BatchDataBlockReader(input: stream)
 
         var block = try reader.next()
         XCTAssertEqual(block?.type, .eventMetadata)

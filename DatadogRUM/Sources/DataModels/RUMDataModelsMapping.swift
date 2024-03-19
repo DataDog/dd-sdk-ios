@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 /* Collection of mappings from various types to `RUMDataModel` format. */
 
@@ -76,5 +77,29 @@ internal extension RUMViewEvent {
     /// - Returns: The `Metadata` for the given `RUMViewEvent`.
     func metadata() -> Metadata {
         return Metadata(id: view.id, documentVersion: dd.documentVersion)
+    }
+}
+
+internal extension DDThread {
+    var toRUMDataFormat: RUMErrorEvent.Error.Threads {
+        return .init(
+            crashed: crashed,
+            name: name,
+            stack: stack,
+            state: nil
+        )
+    }
+}
+
+internal extension BinaryImage {
+    var toRUMDataFormat: RUMErrorEvent.Error.BinaryImages {
+        return .init(
+            arch: architecture,
+            isSystem: isSystemLibrary,
+            loadAddress: loadAddress,
+            maxAddress: maxAddress,
+            name: libraryName,
+            uuid: uuid
+        )
     }
 }

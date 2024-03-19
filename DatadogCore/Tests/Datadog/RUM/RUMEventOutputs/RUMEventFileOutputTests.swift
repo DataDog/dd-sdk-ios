@@ -37,7 +37,6 @@ class RUMEventFileOutputTests: XCTestCase {
                 dateProvider: fileCreationDateProvider,
                 telemetry: NOPTelemetry()
             ),
-            forceNewFile: false,
             encryption: nil,
             telemetry: NOPTelemetry()
         )
@@ -54,7 +53,7 @@ class RUMEventFileOutputTests: XCTestCase {
         writer.write(value: event2)
 
         let event1FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC())
-        let event1FileEvents = try directory.file(named: event1FileName).readTLVEvents()
+        let event1FileEvents = try directory.file(named: event1FileName).readBatchEvents()
         XCTAssertEqual(event1FileEvents.count, 1)
 
         let event1Matcher = try RUMEventMatcher.fromJSONObjectData(event1FileEvents[0])
@@ -62,7 +61,7 @@ class RUMEventFileOutputTests: XCTestCase {
         DDAssertReflectionEqual(try event1Matcher.model(), expectedDatamodel1)
 
         let event2FileName = fileNameFrom(fileCreationDate: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1))
-        let event2FileEvents = try directory.file(named: event2FileName).readTLVEvents()
+        let event2FileEvents = try directory.file(named: event2FileName).readBatchEvents()
         XCTAssertEqual(event2FileEvents.count, 1)
         let event2Matcher = try RUMEventMatcher.fromJSONObjectData(event2FileEvents[0])
         DDAssertReflectionEqual(try event2Matcher.model(), dataModel2)

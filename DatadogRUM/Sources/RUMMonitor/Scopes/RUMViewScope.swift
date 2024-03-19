@@ -124,11 +124,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
-
-        // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
-            print("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
-        }
     }
 
     // MARK: - RUMContextProvider
@@ -219,7 +214,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             }
 
         // Error command
-        case let command as RUMAddCurrentViewErrorCommand where isActiveView:
+        case let command as RUMErrorCommand where isActiveView:
             sendErrorEvent(on: command, context: context, writer: writer)
 
         case let command as RUMAddLongTaskCommand where isActiveView:
@@ -439,7 +434,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             attributes.merge(rumCommandAttributes: command.attributes)
         }
 
-        let isCrash = (command as? RUMAddCurrentViewErrorCommand).map { $0.isCrash ?? false } ?? false
+        let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
         // RUMM-1779 Keep view active as long as we have ongoing resources
         let isActive = isActiveView || !resourceScopes.isEmpty
         // RUMM-2079 `time_spent` can't be lower than 1ns
@@ -558,8 +553,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func sendErrorEvent(on command: RUMAddCurrentViewErrorCommand, context: DatadogContext, writer: Writer) {
+    private func sendErrorEvent(on command: RUMErrorCommand, context: DatadogContext, writer: Writer) {
         errorsCount += 1
+
+        var commandAttributes = command.attributes
+        let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -579,24 +577,33 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             ciTest: dependencies.ciTest,
             connectivity: .init(context: context),
             container: nil,
-            context: .init(contextInfo: command.attributes),
+            context: .init(contextInfo: commandAttributes),
             date: command.time.addingTimeInterval(serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
+                binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
+                category: command.category,
                 causes: nil,
+                fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,
                 isCrash: command.isCrash ?? false,
                 message: command.message,
+                meta: nil,
                 resource: nil,
                 source: command.source.toRUMDataFormat,
                 sourceType: command.errorSourceType,
                 stack: command.stack,
-                type: command.type
+                threads: command.threads?.compactMap { $0.toRUMDataFormat },
+                type: command.type,
+                wasTruncated: command.isStackTraceTruncated
             ),
             featureFlags: .init(featureFlagsInfo: featureFlags),
+            freeze: (command as? RUMAddCurrentViewAppHangCommand).map { appHangCommand in
+                .init(duration: appHangCommand.hangDuration.toInt64Nanoseconds)
+            },
             os: .init(context: context),
             service: context.service,
             session: .init(

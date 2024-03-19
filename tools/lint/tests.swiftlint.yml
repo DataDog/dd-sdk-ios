@@ -68,10 +68,10 @@ attributes:
 custom_rules:
   todo_without_jira: # enforces that all TODO comments must be followed by JIRA reference
     name: "TODO without JIRA"
-    regex: "(TODO|TO DO|FIX|FIXME|FIX ME|todo)(?!:? RUMM-[0-9]{2,})" # "TODO: RUMM-123", "TODO RUMM-123", "FIX RUMM-123", etc.
+    regex: "(TODO|TO DO|FIX|FIXME|FIX ME|todo)(?!:? (RUMM|RUM)-[0-9]{2,})" # "TODO: RUM-123", "TODO RUM-123", "FIX RUM-123", etc.
     match_kinds:
       - comment
-    message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUMM-123\""
+    message: "All TODOs must be followed by JIRA reference, for example: \"TODO: RUM-123\""
     severity: error
   unmanaged_deallocation: # prevents from unmanaged singletons deallocation with `.instance = nil`
     name: "Unmanaged singleton deallocation: `.instance = nil`"

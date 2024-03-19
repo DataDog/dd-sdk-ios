@@ -40,22 +40,5 @@ class RecordsWriterTests: XCTestCase {
 
         XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 0)
     }
-
-    func testWhenSucceedingRecordsDescribeDifferentRUMViews_itWritesThemToSeparateBatches() throws {
-        // Given
-        let forceNewBatchExpectation = expectation(description: "Should force new batch on view-id change")
-        forceNewBatchExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(forceNewBatchExpectation: forceNewBatchExpectation)
-
-        // When
-        let writer = RecordWriter(core: core)
-
-        // Then
-        writer.write(nextRecord: EnrichedRecord(context: .mockWith(rumContext: .mockWith(viewID: "view1")), records: .mockRandom()))
-        writer.write(nextRecord: EnrichedRecord(context: .mockWith(rumContext: .mockWith(viewID: "view2")), records: .mockRandom()))
-
-        XCTAssertEqual(core.events(ofType: EnrichedRecord.self).count, 2)
-        waitForExpectations(timeout: 0.5, handler: nil)
-    }
 }
 // swiftlint:enable empty_xctest_method

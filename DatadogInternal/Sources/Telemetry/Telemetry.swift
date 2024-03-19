@@ -10,6 +10,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let actionNameAttribute: String?
     public let allowFallbackToLocalStorage: Bool?
     public let allowUntrustedEvents: Bool?
+    public let appHangThreshold: Int64?
     public let backgroundTasksEnabled: Bool?
     public let batchProcessingLevel: Int64?
     public let batchSize: Int64?
@@ -45,6 +46,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackSessionAcrossSubdomains: Bool?
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
+    public let unityVersion: String?
     public let useAllowedTracingOrigins: Bool?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
@@ -72,6 +74,67 @@ public protocol Telemetry {
     ///
     /// - Parameter telemetry: The telemtry message
     func send(telemetry: TelemetryMessage)
+}
+
+public extension Telemetry {
+    /// Starts a method call.
+    ///
+    /// - Parameters:
+    ///   - operationName: Platform agnostic name of the operation.
+    ///   - callerClass: The name of the class that calls the method.
+    ///   - samplingRate: The sampling rate of the method call. Value between `0.0` and `100.0`, where `0.0` means NO event will be processed and `100.0` means ALL events will be processed. Note that this value is multiplicated by telemetry sampling (by default 20%) and metric events sampling (hardcoded to 15%). Making it effectively 3% sampling rate for sending events, when this value is set to `100`.
+    ///
+    /// - Returns: A `MethodCalledTrace` instance to be used to stop the method call and measure it's execution time. It can be `nil` if the method call is not sampled.
+    func startMethodCalled(
+        operationName: String,
+        callerClass: String,
+        samplingRate: Float = 100.0
+    ) -> MethodCalledTrace? {
+        if Sampler(samplingRate: samplingRate).sample() {
+            return MethodCalledTrace(
+                operationName: operationName,
+                callerClass: callerClass
+            )
+        } else {
+            return nil
+        }
+    }
+
+    /// Stops a method call, transforms method call metric to telemetry message,
+    /// and transmits on the message-bus of the core.
+    ///
+    /// - Parameters
+    ///   - metric: The `MethodCalledTrace` instance.
+    ///   - isSuccessful: A flag indicating if the method call was successful.
+    func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool = true) {
+        if let metric = metric {
+            send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
+        }
+    }
+}
+
+/// A metric to measure the time of a method call.
+public struct MethodCalledTrace {
+    let operationName: String
+    let callerClass: String
+    let startTime = Date()
+
+    var exectutionTime: Int64 {
+        return -startTime.timeIntervalSinceNow.toInt64Nanoseconds
+    }
+
+    func asTelemetryMetric(isSuccessful: Bool) -> TelemetryMessage {
+        return .metric(
+            name: MethodCalledMetric.name,
+            attributes: [
+                MethodCalledMetric.executionTime: exectutionTime,
+                MethodCalledMetric.operationName: operationName,
+                MethodCalledMetric.callerClass: callerClass,
+                MethodCalledMetric.isSuccessful: isSuccessful,
+                BasicMetric.typeKey: MethodCalledMetric.typeValue
+            ]
+        )
+    }
 }
 
 extension Telemetry {
@@ -174,12 +237,13 @@ extension Telemetry {
 
     /// Report a Configuration Telemetry.
     ///
-    /// The configuration can be partial, the telemtry should support accumulation of
-    /// configuration for lazy initialization of the SDK.
+    /// The configuration can be partial, the telemetry supports accumulation of
+    /// configuration for lazy initialization of different SDK features.
     public func configuration(
         actionNameAttribute: String? = nil,
         allowFallbackToLocalStorage: Bool? = nil,
         allowUntrustedEvents: Bool? = nil,
+        appHangThreshold: Int64? = nil,
         backgroundTasksEnabled: Bool? = nil,
         batchProcessingLevel: Int64? = nil,
         batchSize: Int64? = nil,
@@ -215,6 +279,7 @@ extension Telemetry {
         trackSessionAcrossSubdomains: Bool? = nil,
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
+        unityVersion: String? = nil,
         useAllowedTracingOrigins: Bool? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
@@ -231,6 +296,7 @@ extension Telemetry {
             actionNameAttribute: actionNameAttribute,
             allowFallbackToLocalStorage: allowFallbackToLocalStorage,
             allowUntrustedEvents: allowUntrustedEvents,
+            appHangThreshold: appHangThreshold,
             backgroundTasksEnabled: backgroundTasksEnabled,
             batchProcessingLevel: batchProcessingLevel,
             batchSize: batchSize,
@@ -266,6 +332,7 @@ extension Telemetry {
             trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
+            unityVersion: unityVersion,
             useAllowedTracingOrigins: useAllowedTracingOrigins,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
@@ -297,6 +364,8 @@ public struct NOPTelemetry: Telemetry {
     public init() { }
     /// no-op
     public func send(telemetry: TelemetryMessage) { }
+    public func startMethodCalled(operationName: String, callerClass: String, samplingRate: Float) -> MethodCalledTrace? { return nil }
+    public func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool) { }
 }
 
 internal struct CoreTelemetry: Telemetry {
@@ -337,6 +406,7 @@ extension ConfigurationTelemetry {
             actionNameAttribute: other.actionNameAttribute ?? actionNameAttribute,
             allowFallbackToLocalStorage: other.allowFallbackToLocalStorage ?? allowFallbackToLocalStorage,
             allowUntrustedEvents: other.allowUntrustedEvents ?? allowUntrustedEvents,
+            appHangThreshold: other.appHangThreshold ?? appHangThreshold,
             backgroundTasksEnabled: other.backgroundTasksEnabled ?? backgroundTasksEnabled,
             batchProcessingLevel: other.batchProcessingLevel ?? batchProcessingLevel,
             batchSize: other.batchSize ?? batchSize,
@@ -372,6 +442,7 @@ extension ConfigurationTelemetry {
             trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
+            unityVersion: other.unityVersion ?? unityVersion,
             useAllowedTracingOrigins: other.useAllowedTracingOrigins ?? useAllowedTracingOrigins,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,

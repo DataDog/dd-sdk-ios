@@ -28,6 +28,12 @@ SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DD_SDK_ENABLE_EXPERIMENTAL_AP
 // To build only active architecture for all configurations. This gives us ~10% build time gain\n
 // in targets which do not use 'Debug' configuration.\n
 ONLY_ACTIVE_ARCH = YES\n
+\n
+// Adjust the deployment target for all projects and targets in `dd-sdk-ios` (including Datadog.xcworkspace and IntegrationTests.xcworkspace).\n
+// This is to fix Xcode 15 warnings and errors like:\n
+// - 'The iOS Simulator deployment target 'IPHONEOS_DEPLOYMENT_TARGET' is set to 11.0, but the range of supported deployment target versions is 12.0 to 17.0.99.'.\n
+// - 'Compiling for iOS 11.0, but module 'SRFixtures' has a minimum deployment target of iOS 12.0'\n
+IPHONEOS_DEPLOYMENT_TARGET=12.0\n
 endef
 export DD_SDK_BASE_XCCONFIG
 
@@ -37,6 +43,9 @@ SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
 \n
 // If running on CI. This value is injected to some targets through their `Info.plist`:\n
 IS_CI = true\n 
+\n
+// Use iOS 11 deployment target on CI as long as we use Xcode 14.x for integration\n
+IPHONEOS_DEPLOYMENT_TARGET=11.0\n
 endef
 export DD_SDK_BASE_XCCONFIG_CI
 
@@ -71,6 +80,16 @@ ifndef DD_DISABLE_TEST_INSTRUMENTING
 endif
 		
 endif
+
+# Prepare project on GitLab CI (this will replace `make dependencies` once we're fully on GitLab).
+dependencies-gitlab:
+		@echo "📝  Source xcconfigs..."
+		@echo $$DD_SDK_BASE_XCCONFIG > xcconfigs/Base.local.xcconfig;
+		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
+		# We use Xcode 15 on GitLab, so overwrite deployment target in all projects to avoid build errors:
+		@echo "IPHONEOS_DEPLOYMENT_TARGET=12.0\n" >> xcconfigs/Base.local.xcconfig;
+		@echo "⚙️  Carthage bootstrap..."
+		@carthage bootstrap --platform iOS,tvOS --use-xcframeworks
 
 xcodeproj-session-replay:
 		@echo "⚙️  Generating 'DatadogSessionReplay.xcodeproj'..."

@@ -211,7 +211,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: "[Mobile Metric] \(name)",
-                    telemetryInfo: attributes
+                    telemetryInfo: attributes.enrichIfNeeded(with: context)
                 ),
                 version: context.sdkVersion,
                 view: rum?.viewID.map { .init(id: $0) }
@@ -254,12 +254,36 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 }
 
+fileprivate extension [String: Encodable] {
+    func enrichIfNeeded(
+        with context: DatadogContext
+    ) -> [String: Encodable] {
+        if isMethodCallAttributes {
+            var attributes = self
+            attributes[MethodCalledMetric.Device.key] = [
+                MethodCalledMetric.Device.model: context.device.model,
+                MethodCalledMetric.Device.brand: context.device.brand,
+                MethodCalledMetric.Device.architecture: context.device.architecture
+            ]
+            attributes[MethodCalledMetric.OS.key] = [
+                MethodCalledMetric.OS.name: context.device.osName,
+                MethodCalledMetric.OS.version: context.device.osVersion,
+                MethodCalledMetric.OS.build: context.device.osBuildNumber,
+            ]
+            return attributes
+        } else {
+            return self
+        }
+    }
+}
+
 private extension TelemetryConfigurationEvent.Telemetry.Configuration {
     init(_ configuration: DatadogInternal.ConfigurationTelemetry) {
         self.init(
             actionNameAttribute: nil,
             allowFallbackToLocalStorage: nil,
             allowUntrustedEvents: nil,
+            appHangThreshold: configuration.appHangThreshold,
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,
@@ -297,6 +321,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackResources: nil,
             trackSessionAcrossSubdomains: nil,
             trackViewsManually: configuration.trackViewsManually,
+            unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: nil,
             useAllowedTracingUrls: nil,
             useBeforeSend: nil,

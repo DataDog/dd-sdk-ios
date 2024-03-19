@@ -16,13 +16,111 @@ class WebViewEventReceiverTests: XCTestCase {
 
     /// Creates message sent from `DatadogWebViewTracking`.
     private func webViewTrackingMessage(with webEvent: JSON) -> FeatureMessage {
-        return .baggage(
-            key: WebViewEventReceiver.MessageKeys.browserEvent,
-            value: AnyEncodable(webEvent)
-        )
+        return .webview(.rum(webEvent))
     }
 
     // MARK: - Handling `FeatureMessage`
+
+    func testParsingViewEvent() throws {
+        // Given
+        let data = """
+        {
+          "eventType": "view",
+          "event": {
+            "application": {
+              "id": "xxx"
+            },
+            "date": 1635933113708,
+            "service": "super",
+            "session": {
+              "id": "0110cab4-7471-480e-aa4e-7ce039ced355",
+              "type": "user"
+            },
+            "type": "view",
+            "view": {
+              "action": {
+                "count": 0
+              },
+              "cumulative_layout_shift": 0,
+              "dom_complete": 152800000,
+              "dom_content_loaded": 118300000,
+              "dom_interactive": 116400000,
+              "error": {
+                "count": 0
+              },
+              "first_contentful_paint": 121300000,
+              "id": "64308fd4-83f9-48cb-b3e1-1e91f6721230",
+              "in_foreground_periods": [],
+              "is_active": true,
+              "largest_contentful_paint": 121299000,
+              "load_event": 152800000,
+              "loading_time": 152800000,
+              "loading_type": "initial_load",
+              "long_task": {
+                "count": 0
+              },
+              "referrer": "",
+              "resource": {
+                "count": 3
+              },
+              "time_spent": 3120000000,
+              "url": "http://localhost:8080/test.html"
+            },
+            "_dd": {
+              "document_version": 2,
+              "drift": 0,
+              "format_version": 2,
+              "session": {
+                "plan": 2
+              }
+            }
+          },
+          "tags": [
+            "browser_sdk_version:3.6.13"
+          ]
+        }
+        """.utf8Data
+
+        // When
+        let decoder = JSONDecoder()
+        let message = try decoder.decode(WebViewMessage.self, from: data)
+
+        guard case let .rum(event) = message else {
+            return XCTFail("not a rum message")
+        }
+
+        // Then
+        let json = JSONObjectMatcher(object: event) // only partial matching
+        XCTAssertEqual(try json.value("application.id"), "xxx")
+        XCTAssertEqual(try json.value("date"), 1_635_933_113_708)
+        XCTAssertEqual(try json.value("service"), "super")
+        XCTAssertEqual(try json.value("session.id"), "0110cab4-7471-480e-aa4e-7ce039ced355")
+        XCTAssertEqual(try json.value("session.type"), "user")
+        XCTAssertEqual(try json.value("type"), "view")
+        XCTAssertEqual(try json.value("view.action.count"), 0)
+        XCTAssertEqual(try json.value("view.cumulative_layout_shift"), 0)
+        XCTAssertEqual(try json.value("view.dom_complete"), 152_800_000)
+        XCTAssertEqual(try json.value("view.dom_content_loaded"), 118_300_000)
+        XCTAssertEqual(try json.value("view.dom_interactive"), 116_400_000)
+        XCTAssertEqual(try json.value("view.error.count"), 0)
+        XCTAssertEqual(try json.value("view.first_contentful_paint"), 121_300_000)
+        XCTAssertEqual(try json.value("view.id"), "64308fd4-83f9-48cb-b3e1-1e91f6721230")
+        XCTAssertEqual(try json.array("view.in_foreground_periods").count, 0)
+        XCTAssertEqual(try json.value("view.is_active"), true)
+        XCTAssertEqual(try json.value("view.largest_contentful_paint"), 121_299_000)
+        XCTAssertEqual(try json.value("view.load_event"), 152_800_000)
+        XCTAssertEqual(try json.value("view.loading_time"), 152_800_000)
+        XCTAssertEqual(try json.value("view.loading_type"), "initial_load")
+        XCTAssertEqual(try json.value("view.long_task.count"), 0)
+        XCTAssertEqual(try json.value("view.referrer"), "")
+        XCTAssertEqual(try json.value("view.resource.count"), 3)
+        XCTAssertEqual(try json.value("view.time_spent"), 3_120_000_000)
+        XCTAssertEqual(try json.value("view.url"), "http://localhost:8080/test.html")
+        XCTAssertEqual(try json.value("_dd.document_version"), 2)
+        XCTAssertEqual(try json.value("_dd.drift"), 0)
+        XCTAssertEqual(try json.value("_dd.format_version"), 2)
+        XCTAssertEqual(try json.value("_dd.session.plan"), 2)
+    }
 
     func testWhenReceivingWebViewTrackingMessageWithValidEvent_itAcknowledgesTheMessageAndKeepsRUMSessionAlive() throws {
         let core = PassthroughCoreMock()
@@ -31,7 +129,8 @@ class WebViewEventReceiverTests: XCTestCase {
         // Given
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
-            commandSubscriber: commandsSubscriberMock
+            commandSubscriber: commandsSubscriberMock,
+            viewCache: ViewCache()
         )
 
         // When
@@ -44,33 +143,14 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
-    func testWhenReceivingWebViewTrackingMessageWithInvalidEvent_itRejectsTheMessageAndSendsErrorTelemetry() throws {
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: telemetryReceiver)
-
-        // Given
-        let receiver = WebViewEventReceiver(
-            dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
-        )
-
-        // When
-        let invalidMessage: FeatureMessage = .baggage(key: WebViewEventReceiver.MessageKeys.browserEvent, value: "not a JSON object")
-        let result = receiver.receive(message: invalidMessage, from: core)
-
-        // Then
-        XCTAssertFalse(result, "It must reject the message")
-        let errorTelemetry = try XCTUnwrap(telemetryReceiver.messages.firstError(), "It must send error telemetry")
-        XCTAssertEqual(errorTelemetry.message, "Fails to decode browser event from RUM - Event is not a dictionary")
-    }
-
     func testWhenReceivingOtherMessage_itRejectsIt() throws {
         let core = PassthroughCoreMock()
 
         // Given
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When
@@ -85,18 +165,32 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextAvailable_whenReceivingWebEvent_itGetsEnrichedWithOtherMobileContextAndWritten() throws {
         let core = PassthroughCoreMock(
-            context: .mockWith(serverTimeOffset: .mockRandom(min: -10, max: 10).rounded())
+            context: .mockWith(
+                source: "react-native",
+                serverTimeOffset: .mockRandom(min: -10, max: 10).rounded()
+            )
         )
 
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         core.set(baggage: rumContext, forKey: RUMFeature.name)
+        let dateProvider = RelativeDateProvider()
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
         )
 
+        let containerViewID: String = .mockRandom()
+        receiver.viewCache.insert(
+            id: containerViewID,
+            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            hasReplay: true
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webEventMock: JSON = [
             // Known properties:
@@ -104,10 +198,11 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": String.mockRandom()],
             "session": ["id": String.mockRandom()],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": 1_000_000,
+            "date": Int(date),
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         // When
+
         let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
 
         // Then
@@ -117,10 +212,14 @@ class WebViewEventReceiverTests: XCTestCase {
                 "session": ["plan": 1],
                 "browser_sdk_version": "5.2.0"
             ] as [String: Any],
+            "container": [
+                "source": "react-native",
+                "view": [ "id": containerViewID ]
+            ] as [String: Any],
             "application": ["id": rumContext.applicationID],
             "session": ["id": rumContext.sessionID],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": 1_000_000 + core.context.serverTimeOffset.toInt64Milliseconds,
+            "date": date + core.context.serverTimeOffset.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
@@ -137,7 +236,8 @@ class WebViewEventReceiverTests: XCTestCase {
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When
@@ -161,7 +261,8 @@ class WebViewEventReceiverTests: XCTestCase {
 
         let receiver = WebViewEventReceiver(
             dateProvider: DateProviderMock(),
-            commandSubscriber: RUMCommandSubscriberMock()
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache()
         )
 
         // When

@@ -66,13 +66,19 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: Environment.readRUMApplicationID(),
-                urlSessionTracking: .init(firstPartyHostsTracing: .trace(hosts: [], sampleRate: 100)),
+                urlSessionTracking: .init(
+                    resourceAttributesProvider: { req, resp, data, err in
+                        print("⭐️ [Attributes Provider] data: \(String(describing: data))")
+                        return [:]
+            }),
                 trackBackgroundEvents: true,
                 customEndpoint: Environment.readCustomRUMURL(),
                 telemetrySampleRate: 100
             )
         )
         RUMMonitor.shared().debug = true
+
+        Logs.addAttribute(forKey: "testing-attribute", value: "my-value")
 
         // Create Logger
         logger = Logger.create(
@@ -109,7 +115,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        installConsoleOutputInterceptor()
+        if Environment.isRunningInteractive() {
+            installConsoleOutputInterceptor()
+        }
         return true
     }
 

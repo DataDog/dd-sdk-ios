@@ -11,17 +11,14 @@ internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
 internal final class WebViewEventReceiver: FeatureMessageReceiver {
-    /// Defines keys referencing Browser event message on the bus.
-    enum MessageKeys {
-        /// The key references a browser event message.
-        static let browserEvent = "browser-rum-event"
-    }
-
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
     let commandSubscriber: RUMCommandSubscriber
 
     /// The date provider.
     let dateProvider: DateProvider
+
+    /// The view cache containing ids of current and previous views.
+    let viewCache: ViewCache
 
     /// Creates a new receiver.
     ///
@@ -30,30 +27,21 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     init(
         dateProvider: DateProvider,
-        commandSubscriber: RUMCommandSubscriber
+        commandSubscriber: RUMCommandSubscriber,
+        viewCache: ViewCache
     ) {
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
+        self.viewCache = viewCache
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        do {
-            guard case let .baggage(label, baggage) = message, label == MessageKeys.browserEvent else {
-                return false
-            }
-
-            guard let event = try baggage.encode() as? JSON else {
-                throw InternalError(description: "Event is not a dictionary")
-            }
-
-            write(event: event, to: core)
-            return true
-        } catch {
-            core.telemetry
-                .error("Fails to decode browser event from RUM", error: error)
+        guard case let .webview(.rum(event)) = message else {
+            return false
         }
 
-        return false
+        write(event: event, to: core)
+        return true
     }
 
     /// Writes a Browser RUM event to the core.
@@ -80,11 +68,19 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if let date = event["date"] as? Int64 {
+                if let date = event["date"] as? Int {
                     let viewID = (event["view"] as? JSON)?["id"] as? String
                     let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
                     let correctedDate = Int64(date) + serverTimeOffsetInMs
                     event["date"] = correctedDate
+
+                    // Inject the container source and view id
+                    if let viewID = self.viewCache.lastView(before: date, hasReplay: true) {
+                        event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
+                            source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
+                            view: RUMViewEvent.Container.View(id: viewID)
+                        )
+                    }
                 }
 
                 if var application = event["application"] as? JSON {

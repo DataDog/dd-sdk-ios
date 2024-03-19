@@ -92,7 +92,7 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
             interceptDidFinishCollecting: { [weak self] session, task, metrics in
                 self?.task(task, didFinishCollecting: metrics)
 
-                if #available(iOS 15, tvOS 15, *) {
+                if #available(iOS 15, tvOS 15, *), !task.dd.hasCompletion {
                     // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
                     // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
                     self?.task(task, didCompleteWithError: task.error)
@@ -113,6 +113,8 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
         try swizzler.swizzle(
             interceptCompletionHandler: { [weak self] task, _, error in
                 self?.task(task, didCompleteWithError: error)
+            }, didReceive: { [weak self] task, data in
+                self?.task(task, didReceive: data)
             }
         )
     }
@@ -151,6 +153,9 @@ extension NetworkInstrumentationFeature {
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
+        // Get the current trace context from all handlers.
+        let traceContexts = handlers.compactMap { $0.traceContext() }
+
         queue.async { [weak self] in
             guard let self = self, let request = task.currentRequest else {
                 return
@@ -167,7 +172,19 @@ extension NetworkInstrumentationFeature {
             interception.register(request: request)
 
             if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
-                interception.register(traceID: trace.traceID, spanID: trace.spanID, parentSpanID: trace.parentSpanID)
+                // The parent span id is extracted from the headers unless
+                // the propagation headers does not support it (only B3 does).
+                // In that case, we register the current trace context as parent
+                // if the trace ID matches.
+                let parentSpanID = trace.parentSpanID ??
+                    traceContexts.first(where: { $0.traceID == trace.traceID })?.spanID
+
+                // Register the trace with parent
+                interception.register(trace: TraceContext(
+                    traceID: trace.traceID,
+                    spanID: trace.spanID,
+                    parentSpanID: parentSpanID
+                ))
             }
 
             if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
