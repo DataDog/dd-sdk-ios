@@ -59,10 +59,17 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
 
 /// A `CrashReportingScenario` which uploads the crash report as "EMERGENCY" Log.
 final class CrashReportingCollectOrSendWithLoggingScenario: CrashReportingBaseScenario, TestScenario {
+    func logEventMapper(event: LogEvent) -> LogEvent? {
+        var event = event
+        event.error?.fingerprint = "mapped fingerprint"
+        return event
+    }
+
     func configureFeatures() {
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
+                eventMapper: logEventMapper,
                 customEndpoint: Environment.serverMockConfiguration()?.logsEndpoint
             )
         )

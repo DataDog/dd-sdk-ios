@@ -191,6 +191,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
     /// Time provider.
     let dateProvider: DateProvider
+    let logEventMapper: LogEventMapper?
 
     /// Process messages receives from the bus.
     ///
@@ -285,7 +286,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                 tags: nil
             )
 
-            writer.write(value: event)
+            logEventMapper?.map(event: event, callback: writer.write) ?? writer.write(value: event)
         }
 
         return true

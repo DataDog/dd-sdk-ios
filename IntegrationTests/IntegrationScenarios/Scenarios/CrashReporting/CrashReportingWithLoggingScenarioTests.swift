@@ -106,5 +106,8 @@ class CrashReportingWithLoggingScenarioTests: IntegrationTests, LoggingCommonAss
         crashLog.assertLoggerName(equals: "crash-reporter")
         crashLog.assertApplicationVersion(equals: "1.0")
         crashLog.assertApplicationBuildNumber(equals: "1")
+
+        // Assert mapped value
+        crashLog.assertErrorFingerprint(equals: "mapped fingerprint")
     }
 }
