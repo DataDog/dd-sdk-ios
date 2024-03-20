@@ -54,6 +54,9 @@ let package = Package(
                 .target(name: "DatadogPrivate"),
             ],
             path: "DatadogCore",
+            exclude: [
+                "Sources/Datadog.modulemap"
+            ],
             sources: ["Sources"],
             resources: [
                 .copy("Resources/PrivacyInfo.xcprivacy")
