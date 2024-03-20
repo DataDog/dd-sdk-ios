@@ -117,14 +117,6 @@ extension TracingCommonAsserts {
     }
 }
 
-extension String {
-    /// Tracing feature uses hexadecimal representation of trace and span IDs, while Logging uses decimals.
-    /// This helper converts hexadecimal string to decimal string for comparison.
-    var hexadecimalNumberToDecimal: String {
-        return "\(UInt64(self, radix: 16)!)"
-    }
-}
-
 extension SpanMatcher {
     class func from(requests: [HTTPServerMock.Request]) throws -> [SpanMatcher] {
         return try requests

@@ -270,6 +270,7 @@ extension RUM {
         internal var uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator()
 
         internal var traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator()
+        internal var spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator()
 
         internal var dateProvider: DateProvider = SystemDateProvider()
         /// The main queue, subject to App Hangs monitoring.

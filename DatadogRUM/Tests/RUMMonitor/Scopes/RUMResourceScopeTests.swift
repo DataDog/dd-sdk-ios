@@ -68,7 +68,11 @@ class RUMResourceScopeTests: XCTestCase {
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+            spanContext: .init(
+                traceID: .init(idLo: 100),
+                spanID: .init(rawValue: 200),
+                samplingRate: 0.42
+            )
         )
 
         currentTime.addTimeInterval(2)
@@ -116,7 +120,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -145,7 +149,11 @@ class RUMResourceScopeTests: XCTestCase {
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+            spanContext: .init(
+                traceID: .init(idLo: 100),
+                spanID: .init(rawValue: 200),
+                samplingRate: 0.42
+            )
         )
 
         currentTime.addTimeInterval(2)
@@ -193,7 +201,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -224,7 +232,11 @@ class RUMResourceScopeTests: XCTestCase {
             url: "https://foo.com/resource/1",
             httpMethod: .post,
             resourceKindBasedOnRequest: nil,
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+            spanContext: .init(
+                traceID: .init(idLo: 100),
+                spanID: .init(rawValue: 200),
+                samplingRate: 0.42
+            )
         )
 
         currentTime.addTimeInterval(2)
@@ -272,7 +284,7 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertNil(event.resource.download)
         XCTAssertEqual(try XCTUnwrap(event.action?.id.stringValue), rumContext.activeUserActionID?.toRUMDataFormat)
         XCTAssertEqual(event.context?.contextInfo as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
         XCTAssertEqual(event.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
@@ -292,7 +304,11 @@ class RUMResourceScopeTests: XCTestCase {
             context: rumContext,
             dependencies: dependencies,
             resourceKey: "/resource/1",
-            spanContext: .init(traceID: "100", spanID: "200", samplingRate: 0.42)
+            spanContext: .init(
+                traceID: .init(idLo: 100),
+                spanID: .init(rawValue: 200),
+                samplingRate: 0.42
+            )
         )
 
         // When
@@ -306,7 +322,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).first)
-        XCTAssertEqual(event.dd.traceId, "100")
+        XCTAssertEqual(event.dd.traceId, "64")
         XCTAssertEqual(event.dd.spanId, "200")
         XCTAssertEqual(event.dd.rulePsr, 0.42)
     }

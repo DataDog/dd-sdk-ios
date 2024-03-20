@@ -53,13 +53,15 @@ extension InternalExtension where ExtendedType == RUM {
             distributedTracing = DistributedTracing(
                 sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hosts),
-                traceIDGenerator: rumConfiguration.traceIDGenerator
+                traceIDGenerator: rumConfiguration.traceIDGenerator,
+                spanIDGenerator: rumConfiguration.spanIDGenerator
             )
         case let .traceWithHeaders(hostsWithHeaders, sampleRate):
             distributedTracing = DistributedTracing(
                 sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
-                traceIDGenerator: rumConfiguration.traceIDGenerator
+                traceIDGenerator: rumConfiguration.traceIDGenerator,
+                spanIDGenerator: rumConfiguration.spanIDGenerator
             )
         case .none:
             distributedTracing = nil

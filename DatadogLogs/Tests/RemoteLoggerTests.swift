@@ -395,14 +395,14 @@ class RemoteLoggerTests: XCTestCase {
             activeSpanIntegration: true
         )
 
-        let traceID: String = .mockRandom()
-        let spanID: String = .mockRandom()
+        let traceID: TraceID = .mock(.mockRandom(), .mockRandom())
+        let spanID: SpanID = .mock(.mockRandom())
 
         // When
         core.set(
             baggage: [
-                "dd.trace_id": traceID,
-                "dd.span_id": spanID
+                "dd.trace_id": traceID.toString(representation: .hexadecimal),
+                "dd.span_id": spanID.toString(representation: .decimal)
             ],
             forKey: "span_context"
         )
@@ -416,8 +416,8 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
-        XCTAssertEqual(log.attributes.internalAttributes?["dd.trace_id"] as? String, traceID)
-        XCTAssertEqual(log.attributes.internalAttributes?["dd.span_id"] as? String, spanID)
+        XCTAssertEqual(log.attributes.internalAttributes?["dd.trace_id"] as? String, traceID.toString(representation: .hexadecimal))
+        XCTAssertEqual(log.attributes.internalAttributes?["dd.span_id"] as? String, spanID.toString(representation: .decimal))
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() throws {

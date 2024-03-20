@@ -473,10 +473,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         var request: URLRequest = .mockWith(url: "https://test.com")
         let writer = HTTPHeadersWriter(sampler: .mockKeepAll())
         handler.firstPartyHosts = .init(["test.com": [.datadog]])
-        handler.parentSpan = TraceContext(traceID: .mock(1), spanID: .mock(2))
+        handler.parentSpan = TraceContext(traceID: .mock(1, 1), spanID: .mock(2))
 
         // When
-        writer.write(traceID: .mock(1), spanID: .mock(3))
+        writer.write(traceID: .mock(1, 1), spanID: .mock(3))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
@@ -486,7 +486,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1))
+        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
         XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
         XCTAssertEqual(interception?.trace?.spanID, .mock(3))
     }
@@ -498,7 +498,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.firstPartyHosts = .init(["test.com": [.b3]])
 
         // When
-        writer.write(traceID: .mock(1), spanID: .mock(3), parentSpanID: .mock(2))
+        writer.write(traceID: .mock(1, 1), spanID: .mock(3), parentSpanID: .mock(2))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
@@ -508,7 +508,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1))
+        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
         XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
         XCTAssertEqual(interception?.trace?.spanID, .mock(3))
     }
@@ -520,7 +520,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         handler.firstPartyHosts = .init(["test.com": [.b3multi]])
 
         // When
-        writer.write(traceID: .mock(1), spanID: .mock(3), parentSpanID: .mock(2))
+        writer.write(traceID: .mock(1, 1), spanID: .mock(3), parentSpanID: .mock(2))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
@@ -530,7 +530,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1))
+        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
         XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
         XCTAssertEqual(interception?.trace?.spanID, .mock(3))
     }
@@ -545,10 +545,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             ]
         )
         handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
-        handler.parentSpan = TraceContext(traceID: .mock(1), spanID: .mock(2))
+        handler.parentSpan = TraceContext(traceID: .mock(1, 1), spanID: .mock(2))
 
         // When
-        writer.write(traceID: .mock(1), spanID: .mock(3))
+        writer.write(traceID: .mock(1, 1), spanID: .mock(3))
         request.allHTTPHeaderFields = writer.traceHeaderFields
 
         let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
@@ -558,7 +558,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         // Then
         let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1))
+        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
         XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
         XCTAssertEqual(interception?.trace?.spanID, .mock(3))
     }

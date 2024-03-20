@@ -5,6 +5,7 @@
  */
 
 import HTTPServerMock
+import DatadogInternal
 import XCTest
 
 private extension ExampleApplication {
@@ -303,12 +304,12 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         XCTAssertGreaterThan(firstPartyResource2.resource.duration!, 0)
         XCTAssertEqual(
             firstPartyResource2.dd.traceId,
-            firstPartyPOSTRequestTraceID,
+            firstPartyPOSTRequestTraceID.toString(representation: .hexadecimal),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
         XCTAssertEqual(
             firstPartyResource2.dd.spanId,
-            firstPartyPOSTRequestSpanID,
+            firstPartyPOSTRequestSpanID.toString(representation: .decimal),
             "Tracing information should be propagated to `firstPartyPOSTResourceURL`"
         )
         let firstPartyResource2SampleRate = try XCTUnwrap(firstPartyResource2.dd.rulePsr, "Traced resource should send sample rate")
@@ -390,7 +391,32 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         }
     }
 
-    private func getTraceID(from request: Request) -> String? { request.httpHeaders["x-datadog-trace-id"] }
-    private func getSpanID(from request: Request) -> String? { request.httpHeaders["x-datadog-parent-id"] }
+    private func getTraceID(from request: Request) -> TraceID? {
+        guard let traceIDLoValue = request.httpHeaders["x-datadog-trace-id"] else {
+            return nil
+        }
+
+        // tags are comma separated key=value pairs
+        let tags = request.httpHeaders[TracingHTTPHeaders.tagsField]?.split(separator: ",")
+            .map { $0.split(separator: "=") }
+            .reduce(into: [String: String]()) { result, pair in
+                if pair.count == 2 {
+                    result[String(pair[0])] = String(pair[1])
+                }
+            } ?? [:]
+
+        let traceIDHiValue = tags[TracingHTTPHeaders.TagKeys.traceIDHi] ?? "0"
+        
+        return .init(
+            idHi: UInt64(traceIDHiValue, radix: 16) ?? 0,
+            idLo: UInt64(traceIDLoValue, radix: 16) ?? 0
+        )
+    }
+    private func getSpanID(from request: Request) -> SpanID? {
+        guard let spanId = request.httpHeaders["x-datadog-parent-id"] else {
+            return nil
+        }
+        return .init(spanId, representation: .hexadecimal)
+    }
     private func isValid(sampleRate: Double) -> Bool { sampleRate >= 0 && sampleRate <= 1 }
 }

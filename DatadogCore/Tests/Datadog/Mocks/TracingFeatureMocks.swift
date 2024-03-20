@@ -84,8 +84,8 @@ extension DDSpanContext {
 
     static func mockWith(
         traceID: TraceID = .mockAny(),
-        spanID: TraceID = .mockAny(),
-        parentSpanID: TraceID? = .mockAny(),
+        spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = .mockAny(),
         baggageItems: BaggageItems = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
@@ -114,7 +114,8 @@ extension DatadogTracer {
         core: DatadogCoreProtocol,
         sampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
-        tracingUUIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
+        spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
         dateProvider: DateProvider = SystemDateProvider(),
         spanEventBuilder: SpanEventBuilder = .mockAny(),
         loggingIntegration: TracingWithLoggingIntegration = .mockAny()
@@ -123,7 +124,8 @@ extension DatadogTracer {
             core: core,
             sampler: sampler,
             tags: tags,
-            tracingUUIDGenerator: tracingUUIDGenerator,
+            traceIDGenerator: traceIDGenerator,
+            spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
             spanEventBuilder: spanEventBuilder

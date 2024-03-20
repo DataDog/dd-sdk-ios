@@ -154,10 +154,10 @@ internal struct SpanEventEncoder {
 
     func encode(_ span: SpanEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-        try container.encode(String(span.traceID, representation: .hexadecimal), forKey: .traceID)
+        try container.encode(span.traceID.idLoHex, forKey: .traceID)
         try container.encode(String(span.spanID, representation: .hexadecimal), forKey: .spanID)
 
-        let parentSpanID = span.parentID ?? TraceID(rawValue: 0) // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
+        let parentSpanID = span.parentID ?? SpanID.invalid // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
         try container.encode(String(parentSpanID, representation: .hexadecimal), forKey: .parentID)
 
         try container.encode(span.operationName, forKey: .operationName)
@@ -247,5 +247,8 @@ internal struct SpanEventEncoder {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
+
+        let metaDdPTid = "meta._dd.p.tid"
+        try container.encode(span.traceID.idHiHex, forKey: DynamicCodingKey(metaDdPTid))
     }
 }
