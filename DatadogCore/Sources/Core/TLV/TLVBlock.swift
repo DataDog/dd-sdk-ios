@@ -19,17 +19,10 @@ internal enum TLVBlockError: Error {
     case dataAllocationFailure
     case endOfStream
 }
-
-internal protocol TLVBlockType {
-    associatedtype RawValue = UInt16
-    init?(rawValue: RawValue)
-    var rawValue: RawValue { get }
-}
-
 /// A data block in defined by its type and a byte sequence.
 ///
 /// A block can be serialized in data stream by following TLV format.
-internal struct TLVBlock<BlockType: TLVBlockType> {
+internal struct TLVBlock<BlockType> where BlockType: RawRepresentable, BlockType.RawValue == UInt16 {
     /// Type describing the data block.
     let type: BlockType
 

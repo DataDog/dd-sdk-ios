@@ -126,9 +126,7 @@ private struct FeatureScopeProxy: FeatureScope {
         }
     }
 
-    func dataStore() -> DataStore {
-        proxy.dataStore()
-    }
+    var dataStore: DataStore { proxy.dataStore }
 }
 
 private class FeatureScopeInterceptor {

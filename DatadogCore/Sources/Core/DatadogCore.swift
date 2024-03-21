@@ -338,9 +338,7 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
         }
     }
 
-    func dataStore() -> DataStore {
-        return store
-    }
+    var dataStore: DataStore { store }
 }
 
 extension DatadogContextProvider {

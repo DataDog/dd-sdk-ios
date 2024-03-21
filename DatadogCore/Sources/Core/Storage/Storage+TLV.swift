@@ -10,7 +10,7 @@ import Foundation
 internal let MAX_DATA_LENGTH: UInt64 = 10.MB.asUInt64()
 
 /// TLV block type used in batch files.
-internal enum BatchBlockType: UInt16, TLVBlockType {
+internal enum BatchBlockType: UInt16 {
     /// Represents an event
     case event = 0x00
     /// Represents an event metadata associated with the previous event.

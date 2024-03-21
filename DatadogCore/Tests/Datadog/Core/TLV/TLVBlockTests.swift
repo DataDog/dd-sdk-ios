@@ -8,7 +8,7 @@ import XCTest
 import TestUtilities
 @testable import DatadogCore
 
-private enum BlockType: UInt16, TLVBlockType {
+private enum BlockType: UInt16 {
     case one = 0x01
     case two = 0x02
     case three = 0x03

@@ -10,7 +10,7 @@ import Foundation
 ///
 /// This class provides methods to iteratively retrieve a sequence of
 /// `DataBlock`.
-internal final class TLVBlockReader<BlockType: TLVBlockType> {
+internal final class TLVBlockReader<BlockType> where BlockType: RawRepresentable, BlockType.RawValue == UInt16 {
     /// The input data stream.
     private let stream: InputStream
 

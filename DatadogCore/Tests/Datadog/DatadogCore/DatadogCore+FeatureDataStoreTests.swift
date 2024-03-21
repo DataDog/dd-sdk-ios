@@ -49,17 +49,17 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         let scopeB = try XCTUnwrap(core.scope(for: FeatureBMock.name))
 
         let commonKey = "key"
-        scopeA.dataStore().setValue("feature A data".utf8Data, forKey: commonKey)
-        scopeB.dataStore().setValue("feature B data".utf8Data, forKey: commonKey)
+        scopeA.dataStore.setValue("feature A data".utf8Data, forKey: commonKey)
+        scopeB.dataStore.setValue("feature B data".utf8Data, forKey: commonKey)
 
         // Then
         var dataInA: Data?
         var dataInB: Data?
-        scopeA.dataStore().value(forKey: commonKey) { dataInA = $0.data() }
-        scopeB.dataStore().value(forKey: commonKey) { dataInB = $0.data() }
+        scopeA.dataStore.value(forKey: commonKey) { dataInA = $0.data() }
+        scopeB.dataStore.value(forKey: commonKey) { dataInB = $0.data() }
 
-        (scopeA.dataStore() as? FeatureDataStore)?.flush()
-        (scopeB.dataStore() as? FeatureDataStore)?.flush()
+        (scopeA.dataStore as? FeatureDataStore)?.flush()
+        (scopeB.dataStore as? FeatureDataStore)?.flush()
 
         XCTAssertEqual(dataInA?.utf8String, "feature A data")
         XCTAssertEqual(dataInB?.utf8String, "feature B data")
@@ -108,17 +108,17 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         let scope2 = try XCTUnwrap(core2.scope(for: FeatureAMock.name))
 
         let commonKey = "key"
-        scope1.dataStore().setValue("feature data in core 1".utf8Data, forKey: commonKey)
-        scope2.dataStore().setValue("feature data in core 2".utf8Data, forKey: commonKey)
+        scope1.dataStore.setValue("feature data in core 1".utf8Data, forKey: commonKey)
+        scope2.dataStore.setValue("feature data in core 2".utf8Data, forKey: commonKey)
 
         // Then
         var dataIn1: Data?
         var dataIn2: Data?
-        scope1.dataStore().value(forKey: commonKey) { dataIn1 = $0.data() }
-        scope2.dataStore().value(forKey: commonKey) { dataIn2 = $0.data() }
+        scope1.dataStore.value(forKey: commonKey) { dataIn1 = $0.data() }
+        scope2.dataStore.value(forKey: commonKey) { dataIn2 = $0.data() }
 
-        (scope1.dataStore() as? FeatureDataStore)?.flush()
-        (scope2.dataStore() as? FeatureDataStore)?.flush()
+        (scope1.dataStore as? FeatureDataStore)?.flush()
+        (scope2.dataStore as? FeatureDataStore)?.flush()
 
         XCTAssertEqual(dataIn1?.utf8String, "feature data in core 1")
         XCTAssertEqual(dataIn2?.utf8String, "feature data in core 2")

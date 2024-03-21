@@ -224,9 +224,8 @@ public protocol FeatureScope {
     /// - Parameter block: The block to execute; it is called on the context queue.
     func context(_ block: @escaping (DatadogContext) -> Void)
 
-    /// Retrieve data store.
-    /// - Returns: Data store configured for storing data for this feature.
-    func dataStore() -> DataStore
+    /// Data store configured for storing data for this feature.
+    var dataStore: DataStore { get }
 }
 
 /// Feature scope provides a context and a writer to build a record event.
@@ -261,7 +260,7 @@ public extension FeatureScope {
     /// - Parameter block: The block to execute; it is called on the context queue.
     func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void) {
         context { context in
-            block(context, dataStore())
+            block(context, dataStore)
         }
     }
 }

@@ -7,7 +7,7 @@
 import Foundation
 
 /// Represents the type of TLV block used in Data Store files.
-internal enum DataStoreBlockType: UInt16, TLVBlockType {
+internal enum DataStoreBlockType: UInt16 {
     /// The version of data format in `data` block.
     case version = 0x00
     /// The actual data stored in the file.

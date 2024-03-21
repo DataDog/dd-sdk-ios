@@ -116,9 +116,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         block(context)
     }
 
-    public func dataStore() -> DataStore {
-        NOPDataStore()
-    }
+    public var dataStore: DataStore { NOPDataStore() }
 
     /// Recorded events from feature scopes.
     ///
