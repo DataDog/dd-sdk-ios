@@ -56,13 +56,16 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if let date = event["date"] as? Int {
-                    if let id = (event["view"] as? JSON)?["id"] as? String {
-                        event["date"] = Int64(date) + self.offset(forView: id, context: context)
-                    }
+                if
+                    let date = event["date"] as? Int,
+                    let view = event["view"] as? JSON,
+                    let id = view["id"] as? String
+                {
+                    let correctedDate = Int64(date) + self.offset(forView: id, context: context)
+                    event["date"] = correctedDate
 
                     // Inject the container source and view id
-                    if let viewID = self.viewCache.lastView(before: date, hasReplay: true) {
+                    if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
                         event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                             source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                             view: RUMViewEvent.Container.View(id: viewID)
