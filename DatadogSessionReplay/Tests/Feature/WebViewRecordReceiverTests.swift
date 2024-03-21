@@ -12,11 +12,15 @@ import TestUtilities
 
 class WebViewRecordReceiverTests: XCTestCase {
     func testGivenRUMContextAvailable_whenReceivingWebRecord_itCreatesSegment() throws {
-        let rumContext: RUMContext = .mockRandom()
+        let serverTimeOffset: TimeInterval = .mockRandom(min: -10, max: 10).rounded()
+
+        let rumContext: RUMContext = .mockWith(
+            serverTimeOffset: serverTimeOffset
+        )
+
         let core = PassthroughCoreMock(
             context: .mockWith(
                 source: "react-native",
-                serverTimeOffset: .mockRandom(min: -10, max: 10).rounded(),
                 baggages: ["rum": FeatureBaggage(rumContext)]
             )
         )
@@ -44,7 +48,7 @@ class WebViewRecordReceiverTests: XCTestCase {
             "viewID": browserViewID,
             "records": [
                 [
-                    "timestamp": 100_000 + core.context.serverTimeOffset.toInt64Milliseconds,
+                    "timestamp": 100_000 + serverTimeOffset.toInt64Milliseconds,
                     "type": 2
                 ].merging(random, uniquingKeysWith: { old, _ in old })
             ]

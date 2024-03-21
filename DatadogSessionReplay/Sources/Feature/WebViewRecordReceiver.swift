@@ -33,8 +33,8 @@ internal final class WebViewRecordReceiver: FeatureMessageReceiver {
 
                 var event = event
 
-                if let timestamp = event["timestamp"] as? Int {
-                    event["timestamp"] = Int64(timestamp) + self.offset(forView: view.id, context: context)
+                if let timestamp = event["timestamp"] as? Int, let offset = rumContext.viewServerTimeOffset {
+                    event["timestamp"] = Int64(timestamp) + offset.toInt64Milliseconds
                 }
 
                 let record = WebRecord(
@@ -53,21 +53,5 @@ internal final class WebViewRecordReceiver: FeatureMessageReceiver {
         }
 
         return true
-    }
-
-    // MARK: - Time offsets
-
-    private var offsets: [(id: String, value: Int64)] = []
-
-    private func offset(forView id: String, context: DatadogContext) -> Int64 {
-        if let found = offsets.first(where: { $0.id == id }) {
-            return found.value
-        }
-
-        let offset = context.serverTimeOffset.toInt64Milliseconds
-        offsets.insert((id, offset), at: 0)
-        // only retain 3 offsets
-        offsets = Array(offsets.prefix(3))
-        return offset
     }
 }
