@@ -21,6 +21,12 @@ var rumMonitor: RUMMonitorProtocol { RUMMonitor.shared() }
 class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
+    func logEventMapper(event: LogEvent) -> LogEvent {
+        var event = event
+        event.error?.fingerprint = "mapped"
+        return event
+    }
+
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         if Environment.isRunningUnitTests() {
             return false
@@ -44,6 +50,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Enable Logs
         Logs.enable(
             with: Logs.Configuration(
+                eventMapper: logEventMapper,
                 customEndpoint: Environment.readCustomLogsURL()
             )
         )
