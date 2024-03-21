@@ -8,9 +8,9 @@ import Foundation
 import DatadogInternal
 
 /// An intermediate representation of an App Hang.
-internal struct AppHang {
+internal struct AppHang: Codable {
     /// The result of generating backtrace for this hang.
-    enum BacktraceGenerationResult {
+    enum BacktraceGenerationResult: Codable {
         /// Indicates that backtrace generation succeeded.
         /// The associated `BacktraceReport` includes the snapshot of all running threads during the hang.
         case succeeded(BacktraceReport)
@@ -21,10 +21,8 @@ internal struct AppHang {
         case notAvailable
     }
 
-    /// The date of hang end.
-    let date: Date
-    /// The duration of the hang.
-    let duration: TimeInterval
+    /// The date of hang start.
+    let startDate: Date
     /// The result of generating backtrace for the hang.
     let backtraceResult: BacktraceGenerationResult
 }

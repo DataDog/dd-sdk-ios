@@ -41,9 +41,9 @@ internal class AppHangsObserver: RUMCommandPublisher {
             backtraceReporter: backtraceReporter,
             telemetry: telemetry
         )
-        watchdogThread.onHangEnded = { [weak self] appHang in
+        watchdogThread.onHangEnded = { [weak self] appHang, duration in
             // called on watchdog thread
-            self?.report(appHang: appHang)
+            self?.report(nonFatal: appHang, duration: duration)
         }
     }
 
@@ -59,9 +59,9 @@ internal class AppHangsObserver: RUMCommandPublisher {
         self.subscriber = subscriber
     }
 
-    private func report(appHang: AppHang) {
+    private func report(nonFatal appHang: AppHang, duration: TimeInterval) {
         let command = RUMAddCurrentViewAppHangCommand(
-            time: appHang.date,
+            time: appHang.startDate,
             attributes: [:],
             message: Constants.appHangErrorMessage,
             type: Constants.appHangErrorType,
@@ -69,7 +69,7 @@ internal class AppHangsObserver: RUMCommandPublisher {
             threads: appHang.backtraceResult.threads,
             binaryImages: appHang.backtraceResult.binaryImages,
             isStackTraceTruncated: appHang.backtraceResult.wasTruncated,
-            hangDuration: appHang.duration
+            hangDuration: duration
         )
 
         subscriber?.process(command: command)

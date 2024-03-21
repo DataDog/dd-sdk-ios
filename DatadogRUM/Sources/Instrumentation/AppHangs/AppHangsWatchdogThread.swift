@@ -21,6 +21,12 @@ internal final class AppHangsWatchdogThread: Thread {
         /// Because the sleep might start right at the moment of hang beginning on the main thread, the watchdog thread will miss the first 50 milliseconds of hang duration.
         /// If the actual hang lasts exactly 2 seconds, the watchdog will measure it as 1950 milliseconds. As a result, the SDK will not report it as it falls under `appHangThreshold`.
         static let tolerance: Double = 0.025 // 2.5%
+
+        /// Hang's duration threshold to consider it a false-positive.
+        ///
+        /// It is used to skip hangs with irrealistically long duration (way more than assumed iOS watchdog termination limit: ~10s).
+        /// This is to anticipate false-positives caused by watchdog thread suspension when app leaves the foreground.
+        static let falsePositiveThreshold: TimeInterval = 30
     }
 
     /// The minimal duration of the main thread hang to consider it an App Hang.
@@ -35,6 +41,8 @@ internal final class AppHangsWatchdogThread: Thread {
     private let dateProvider: DateProvider
     /// Backtrace reporter for hang's stack trace generation.
     private let backtraceReporter: BacktraceReporting
+    /// The hang's duration threshold to consider it a false-positive.
+    private let falsePositiveThreshold: TimeInterval
     /// An identifier of the main thread required for backtrace generation.
     /// Because backtrace is generated from the watchdog thread, we must identify the main thread to be promoted in `BacktraceReport`. This value is
     /// obtained at runtime, only once and it is cached for later use.
@@ -42,9 +50,18 @@ internal final class AppHangsWatchdogThread: Thread {
     private var mainThreadID: ThreadID? = nil
     /// Telemetry interface.
     private let telemetry: Telemetry
-    /// Closure to be notified when App Hang ends. It will be executed on the watchdog thread.
+    /// Closure to be notified when App Hang starts.
+    /// It is executed on the watchdog thread.
     @ReadWriteLock
-    internal var onHangEnded: ((AppHang) -> Void)?
+    internal var onHangStarted: ((AppHang) -> Void)?
+    /// Closure to be notified when App Hang gets cancelled due to possible false-positive.
+    /// It is executed on the watchdog thread.
+    @ReadWriteLock
+    internal var onHangCancelled: ((AppHang) -> Void)?
+    /// Closure to be notified when App Hang ends. It passes the hang and its duration.
+    /// It is executed on the watchdog thread.
+    @ReadWriteLock
+    internal var onHangEnded: ((AppHang, TimeInterval) -> Void)?
     /// A block called after this thread finished its pass and will become idle.
     @ReadWriteLock
     internal var onBeforeSleep: (() -> Void)?
@@ -64,13 +81,15 @@ internal final class AppHangsWatchdogThread: Thread {
         queue: DispatchQueue,
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        falsePositiveThreshold: TimeInterval = Constants.falsePositiveThreshold
     ) {
         self.appHangThreshold = appHangThreshold
         self.idleInterval = appHangThreshold * Constants.tolerance
         self.mainQueue = queue
         self.dateProvider = dateProvider
         self.backtraceReporter = backtraceReporter
+        self.falsePositiveThreshold = falsePositiveThreshold
         self.telemetry = telemetry
 
         super.init()
@@ -100,6 +119,7 @@ internal final class AppHangsWatchdogThread: Thread {
             }
 
             let waitStart: DispatchTime = .now()
+            let hangStart = dateProvider.now
 
             // Schedule task on the main thread to measure how fast it responds
             mainQueue.async {
@@ -140,25 +160,27 @@ internal final class AppHangsWatchdogThread: Thread {
                 telemetry.error("Failed to generate App Hang backtrace", error: error)
             }
 
+            let hang = AppHang(
+                startDate: hangStart,
+                backtraceResult: backtraceResult
+            )
+            onHangStarted?(hang)
+
             // Previous wait timed out, so wait again for the task completion, this time infinitely until the hang ends.
             mainThreadTask.wait()
 
             // The hang has finished.
             let hangDuration = interval(from: waitStart, to: .now())
 
-            if hangDuration > 30 { // sanity-check
+            if hangDuration > falsePositiveThreshold { // sanity-check
                 // If the hang duration is irrealistically long (way more than assumed iOS watchdog termination limit: ~10s), send telemetry.
                 // This could be another false-positive caused by thread suspension between the two `wait()` calls.
-                telemetry.debug("Detected an App Hang with an unusually long duration", attributes: ["hang_duration": hangDuration])
+                telemetry.debug("Detected an App Hang with an unusually long duration >\(falsePositiveThreshold)s", attributes: ["hang_duration": hangDuration])
+                onHangCancelled?(hang) // cancel hang as possible false-positive
                 continue
             }
 
-            let appHang = AppHang(
-                date: dateProvider.now,
-                duration: hangDuration,
-                backtraceResult: backtraceResult
-            )
-            onHangEnded?(appHang)
+            onHangEnded?(hang, hangDuration)
         }
     }
 
