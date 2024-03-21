@@ -111,6 +111,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let syntheticsTest: RUMSyntheticsTest?
     /// Telemetry interface.
     let telemetry: Telemetry
+    let eventsMapper: RUMEventsMapper
 
     // MARK: - Initialization
 
@@ -122,7 +123,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
-        telemetry: Telemetry
+        telemetry: Telemetry,
+        eventsMapper: RUMEventsMapper
     ) {
         self.applicationID = applicationID
         self.dateProvider = dateProvider
@@ -132,6 +134,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.telemetry = telemetry
+        self.eventsMapper = eventsMapper
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -203,7 +206,9 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             DD.logger.debug("Sending crash as RUM error.")
             core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
                 let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: context.nativeSourceOverride)
-                writer.write(value: rumError)
+                if let mappedError = self.eventsMapper.map(event: rumError) {
+                    writer.write(value: mappedError)
+                }
             }
         }
     }
@@ -324,8 +329,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         core.scope(for: RUMFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
             let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: context.nativeSourceOverride)
 
-            writer.write(value: rumError)
-            writer.write(value: updatedRUMView)
+            if let mappedError = self.eventsMapper.map(event: rumError) {
+                writer.write(value: mappedError)
+            }
+            if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
+                writer.write(value: self.eventsMapper.map(event: mappedView))
+            }
         }
     }
 

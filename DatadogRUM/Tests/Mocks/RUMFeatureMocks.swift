@@ -38,7 +38,8 @@ extension CrashReportReceiver: AnyMockable {
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
-        telemetry: Telemetry = NOPTelemetry()
+        telemetry: Telemetry = NOPTelemetry(),
+        eventsMapper: RUMEventsMapper = .mockNoOp()
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -48,7 +49,8 @@ extension CrashReportReceiver: AnyMockable {
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
-            telemetry: telemetry
+            telemetry: telemetry,
+            eventsMapper: eventsMapper
         )
     }
 }

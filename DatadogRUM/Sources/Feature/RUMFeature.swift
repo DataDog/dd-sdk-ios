@@ -25,6 +25,14 @@ internal final class RUMFeature: DatadogRemoteFeature {
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+        let eventsMapper = RUMEventsMapper(
+            viewEventMapper: configuration.viewEventMapper,
+            errorEventMapper: configuration.errorEventMapper,
+            resourceEventMapper: configuration.resourceEventMapper,
+            actionEventMapper: configuration.actionEventMapper,
+            longTaskEventMapper: configuration.longTaskEventMapper,
+            telemetry: core.telemetry
+        )
 
         let dependencies = RUMScopeDependencies(
             core: core,
@@ -43,14 +51,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 }
             }(),
             eventBuilder: RUMEventBuilder(
-                eventsMapper: RUMEventsMapper(
-                    viewEventMapper: configuration.viewEventMapper,
-                    errorEventMapper: configuration.errorEventMapper,
-                    resourceEventMapper: configuration.resourceEventMapper,
-                    actionEventMapper: configuration.actionEventMapper,
-                    longTaskEventMapper: configuration.longTaskEventMapper,
-                    telemetry: core.telemetry
-                )
+                eventsMapper: eventsMapper
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
@@ -119,7 +120,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                         return nil
                     }
                 }(),
-                telemetry: core.telemetry
+                telemetry: core.telemetry,
+                eventsMapper: eventsMapper
             )
         )
 

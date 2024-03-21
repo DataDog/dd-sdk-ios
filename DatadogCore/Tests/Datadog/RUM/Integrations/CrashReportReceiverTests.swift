@@ -561,6 +561,54 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(sendRUMErrorEvent.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewAndEventMapper_whenSendingRUMViewEvent_itSendsMappedEvents() throws {
+        // Given
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let dateCorrectionOffset: TimeInterval = .mockRandom()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            serverTimeOffset: dateCorrectionOffset,
+            trackingConsent: .granted,
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent) // means there was a RUM session and it was sampled
+        )
+
+        let modifiedViewName = String.mockRandom()
+        let errorFingerprint = String.mockRandom()
+        let receiver: CrashReportReceiver = .mockWith(
+            dateProvider: RelativeDateProvider(using: crashDate),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            trackBackgroundEvents: .mockRandom(), // no matter BET
+            eventsMapper: .mockWith(
+                viewEventMapper: { event in
+                    var event = event
+                    event.view.name = modifiedViewName
+                    return event
+                },
+                errorEventMapper: { event in
+                    var event = event
+                    event.error.fingerprint = errorFingerprint
+                    return event
+                }
+            )
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .baggage(
+                key: MessageBusSender.MessageKeys.crash,
+                value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+            ), from: core)
+        )
+
+        // Then
+        let sendRUMViewEvent = core.events(ofType: RUMViewEvent.self).last
+        XCTAssertEqual(sendRUMViewEvent?.view.name, modifiedViewName, "Must send event mapper modified view event")
+
+        let sendRUMErrorEvent = core.events(ofType: RUMCrashEvent.self)[0]
+        XCTAssertEqual(sendRUMErrorEvent.model.error.fingerprint, errorFingerprint, "Must send event mapper modified error event")
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
 
     func testGivenCrashDuringRUMSessionWithNoActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
@@ -787,6 +835,94 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
+    func testGivenCrashDuringRUMSessionWithNoActiveViewAndEventMapper_whenSendingRUMViewEvent_itSendsMappedEvents() throws {
+        func test(
+            lastRUMSessionState: RUMSessionState,
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool
+        ) throws {
+            let mockApplicationId: String = .mockRandom(among: .alphanumerics)
+            let core = PassthroughCoreMock(
+                messageReceiver: CrashReportReceiver.mockWith(
+                    applicationID: mockApplicationId,
+                    sessionSampler: .mockKeepAll(),
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                    uuidGenerator: DefaultRUMUUIDGenerator()
+                )
+            )
+
+            // Given
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+            let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let crashContext: CrashContext = .mockWith(
+                serverTimeOffset: dateCorrectionOffset,
+                service: .mockRandom(),
+                version: .mockRandom(),
+                buildNumber: .mockRandom(),
+                source: .mockRandom(),
+                trackingConsent: .granted,
+                userInfo: .mockRandom(),
+                networkConnectionInfo: .mockRandom(),
+                carrierInfo: .mockRandom(),
+                lastRUMViewEvent: nil, // means there was no active RUM view
+                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastIsAppInForeground: launchInForeground
+            )
+
+            let mappedViewName = String.mockRandom()
+            let errorFingerprint = String.mockRandom()
+            let receiver: CrashReportReceiver = .mockWith(
+                applicationID: .mockRandom(among: .alphanumerics),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                eventsMapper: .mockWith(
+                    viewEventMapper: { event in
+                        var event = event
+                        event.view.name = mappedViewName
+                        return event
+                    },
+                    errorEventMapper: { event in
+                        var event = event
+                        event.error.fingerprint = errorFingerprint
+                        return event
+                    }
+                )
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: core)
+            )
+
+            // Then
+            let sentRUMView = core.events(ofType: RUMViewEvent.self).last
+            XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUMView event")
+
+            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            XCTAssertEqual(sentRUMError.model.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
+        }
+
+        try test(
+            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        try test(
+            lastRUMSessionState: .mockRandom(), // any sampled session
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true // BET enabled
+        )
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During App Launch
 
     func testGivenCrashDuringAppLaunch_whenSending_itIsSendAsRUMErrorInNewRUMSession() throws {
@@ -977,6 +1113,92 @@ class CrashReportReceiverTests: XCTestCase {
             let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
 
             XCTAssertEqual(sentRUMError.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
+        }
+
+        try test(
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom(), // no matter BET
+            expectViewName: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            expectViewURL: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        )
+
+        try test(
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true, // BET enabled
+            expectViewName: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+            expectViewURL: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        )
+    }
+
+    func testGivenCrashDuringAppLaunchWithEventMappers_whenSending_itSendsWithMappedEvents() throws {
+        func test(
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool,
+            expectViewName expectedViewName: String,
+            expectViewURL expectedViewURL: String
+        ) throws {
+            let core = PassthroughCoreMock(
+                messageReceiver: CrashReportReceiver.mockWith(
+                    applicationID: .mockRandom(among: .alphanumerics),
+                    sessionSampler: .mockKeepAll(),
+                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                    uuidGenerator: DefaultRUMUUIDGenerator()
+                )
+            )
+
+            // Given
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+
+            let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let crashContext: CrashContext = .mockWith(
+                serverTimeOffset: dateCorrectionOffset,
+                trackingConsent: .granted,
+                userInfo: .mockRandom(),
+                networkConnectionInfo: .mockRandom(),
+                carrierInfo: .mockRandom(),
+                lastRUMViewEvent: nil, // means there was no RUM session (it crashed during app launch)
+                lastRUMSessionState: nil, // means there was no RUM session (it crashed during app launch)
+                lastIsAppInForeground: launchInForeground
+            )
+
+            let mappedViewName = String.mockRandom()
+            let errorFingerprint = String.mockRandom()
+            let receiver: CrashReportReceiver = .mockWith(
+                applicationID: .mockRandom(),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                eventsMapper: .mockWith(
+                    viewEventMapper: { event in
+                        var event = event
+                        event.view.name = mappedViewName
+                        return event
+                    },
+                    errorEventMapper: { event in
+                        var event = event
+                        event.error.fingerprint = errorFingerprint
+                        return event
+                    }
+                )
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: core)
+            )
+
+            // Then
+            let sentRUMView = core.events(ofType: RUMViewEvent.self).last
+            XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUM view event")
+
+            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            XCTAssertEqual(sentRUMError.model.error.fingerprint, errorFingerprint, "Must send mapped RUM Error event")
         }
 
         try test(
