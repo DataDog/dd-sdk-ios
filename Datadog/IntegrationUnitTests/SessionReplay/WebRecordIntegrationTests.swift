@@ -43,6 +43,7 @@ class WebRecordIntegrationTests: XCTestCase {
 
     func testWebRecordIntegration() throws {
         // Given
+        let webView = WKWebView()
         let randomApplicationID: String = .mockRandom()
         let randomUUID: UUID = .mockRandom()
         let randomBrowserViewID: UUID = .mockRandom()
@@ -65,7 +66,7 @@ class WebRecordIntegrationTests: XCTestCase {
 
         // When
         RUMMonitor.shared(in: core).startView(key: "web-view")
-        controller.send(body: body)
+        controller.send(body: body, from: webView)
         controller.flush()
 
         // Then
@@ -74,7 +75,7 @@ class WebRecordIntegrationTests: XCTestCase {
         let segment = try XCTUnwrap(segments.first)
 
         let expectedUUID = randomUUID.uuidString.lowercased()
-        let expectedSlotID = "\(controller.hash as Int)" // explicitly get the NSObject.hash
+        let expectedSlotID = String(webView.hash)
 
         XCTAssertEqual(segment.applicationID, randomApplicationID)
         XCTAssertEqual(segment.sessionID, expectedUUID)

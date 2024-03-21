@@ -329,6 +329,7 @@ class WebViewTrackingTests: XCTestCase {
 
     func testSendingWebRecordEvent() throws {
         let recordMessageExpectation = expectation(description: "Record message received")
+        let webView = WKWebView()
         let controller = DDUserContentController()
 
         let core = PassthroughCoreMock(
@@ -338,7 +339,7 @@ class WebViewTrackingTests: XCTestCase {
                     XCTAssertEqual(view.id, "64308fd4-83f9-48cb-b3e1-1e91f6721230")
                     let matcher = JSONObjectMatcher(object: event)
                     XCTAssertEqual(try? matcher.value("date"), 1_635_932_927_012)
-                    XCTAssertEqual(try? matcher.value("slotId"), "\(controller.hash)")
+                    XCTAssertEqual(try? matcher.value("slotId"), String(webView.hash))
                     recordMessageExpectation.fulfill()
                 case .context:
                     break
@@ -366,7 +367,7 @@ class WebViewTrackingTests: XCTestCase {
           },
           "view": { "id": "64308fd4-83f9-48cb-b3e1-1e91f6721230" }
         }
-        """)
+        """, webView: webView)
 
         messageHandler?.userContentController(controller, didReceive: webLogMessage)
         waitForExpectations(timeout: 1)

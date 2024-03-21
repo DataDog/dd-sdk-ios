@@ -33,8 +33,6 @@ internal protocol SnapshotProcessing {
 internal class SnapshotProcessor: SnapshotProcessing {
     /// Flattens VTS received from `Recorder` by removing invisible nodes.
     private let nodesFlattener = NodesFlattener()
-    /// Builds SR wireframes to describe UI elements.
-    private let wireframesBuilder = WireframesBuilder()
     /// Builds SR records to transport SR wireframes.
     private let recordsBuilder: RecordsBuilder
 
@@ -78,10 +76,18 @@ internal class SnapshotProcessor: SnapshotProcessing {
     }
 
     private func processSync(viewTreeSnapshot: ViewTreeSnapshot, touchSnapshot: TouchSnapshot?) {
-        let flattenedNodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
-        let wireframes: [SRWireframe] = flattenedNodes
-            .map { node in node.wireframesBuilder }
-            .flatMap { nodeBuilder in nodeBuilder.buildWireframes(with: wireframesBuilder) }
+        let builder = WireframesBuilder(webviews: viewTreeSnapshot.webviews)
+        let nodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
+
+        // build wireframe from nodes
+        var wireframes: [SRWireframe] = nodes.flatMap { node in
+            node.wireframesBuilder.buildWireframes(with: builder)
+        }
+
+        // build hidden webview wireframe and place them at the beginning
+        wireframes = builder.webviews.values.flatMap { webview in
+            webview.hiddenWireframes(with: builder)
+        } + wireframes
 
         interceptWireframes?(wireframes)
 

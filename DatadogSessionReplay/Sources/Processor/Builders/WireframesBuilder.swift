@@ -20,6 +20,34 @@ public typealias WireframeID = NodeID
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
 @_spi(Internal)
 public class SessionReplayWireframesBuilder {
+    /// The cache of webview slots in memory during snapshot.
+    private(set) var webviews: [Int: WebViewSlot]
+
+    /// Creates a builder for builder wireframes in snapshot processing.
+    ///
+    /// The builder takes optional webview slots in cache that can be updated
+    /// while traversing the node. The cache will be used to create wireframes
+    /// that are not visible be still need to be kept by the player.
+    ///
+    /// - Parameter webviews: The webview slot cache.
+    init(webviews: [Int: WebViewSlot] = [:]) {
+        self.webviews = webviews
+    }
+
+    /// Removes a webview slot.
+    ///
+    /// Any node builder should remove the slot that is visible so it can be
+    /// placed at the right index in the wireframe list. Any remaining slot in
+    /// cache are considered hidden.
+    ///
+    /// - Parameter id: The id of the slot to remove.
+    func removeWebView(withSlotID id: Int) {
+        webviews[id] = nil
+    }
+}
+
+@_spi(Internal)
+extension SessionReplayWireframesBuilder {
     /// A set of fallback values to use if the actual value cannot be read or converted.
     ///
     /// The idea is to always provide value, which would make certain element visible in the player.
@@ -186,13 +214,15 @@ public class SessionReplayWireframesBuilder {
         borderWidth: CGFloat? = nil,
         backgroundColor: CGColor? = nil,
         cornerRadius: CGFloat? = nil,
-        opacity: CGFloat? = nil
+        opacity: CGFloat? = nil,
+        isVisible: Bool? = nil
     ) -> SRWireframe {
         let wireframe = SRWebviewWireframe(
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
             id: id,
+            isVisible: isVisible,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
             slotId: slotId,
             width: Int64(withNoOverflow: frame.size.width),

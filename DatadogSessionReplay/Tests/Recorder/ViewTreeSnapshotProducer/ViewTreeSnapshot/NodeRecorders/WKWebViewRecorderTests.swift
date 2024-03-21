@@ -31,10 +31,14 @@ class WKWebViewRecorderTests: XCTestCase {
         let viewAttributes: ViewAttributes = .mock(fixture: .invisible)
 
         // When
-        let semantics = try XCTUnwrap(recorder.semantics(of: webView, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: webView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
         // Then
-        XCTAssertTrue(semantics is InvisibleElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore, "WebView's subtree should not be recorded")
+
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? WKWebViewWireframesBuilder)
+        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        XCTAssert(wireframes.isEmpty)
     }
 
     func testWhenWebViewIsVisible() throws {
@@ -48,23 +52,16 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(semantics.subtreeStrategy, .ignore, "WebView's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? WKWebViewWireframesBuilder)
-        XCTAssertEqual(builder.attributes, viewAttributes)
+        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        XCTAssertFalse(wireframes.isEmpty)
     }
 
-    func testWebViewWireframeBuilder() throws {
+    func testHiddenWebViewSlot() throws {
         // Given
-        let id: WireframeID = .mockRandom()
-        let slotId: Int = .mockRandom()
-        let attributes: ViewAttributes = .mock(fixture: .visible())
-
-        let builder = WKWebViewWireframesBuilder(
-            wireframeID: id,
-            slotID: slotId,
-            attributes: attributes
-        )
+        let slot = WKWebViewSlot(webview: webView)
 
         // When
-        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        let wireframes = slot.hiddenWireframes(with: WireframesBuilder())
 
         // Then
         XCTAssertEqual(wireframes.count, 1)
@@ -73,12 +70,58 @@ class WKWebViewRecorderTests: XCTestCase {
             return XCTFail("First wireframe needs to be webviewWireframe case")
         }
 
-        XCTAssertEqual(wireframe.id, id)
-        XCTAssertEqual(wireframe.slotId, String(slotId))
+        XCTAssertEqual(wireframe.id, Int64(webView.hash))
+        XCTAssertEqual(wireframe.slotId, String(webView.hash))
+        XCTAssertNil(wireframe.clip)
+        XCTAssertEqual(wireframe.x, 0)
+        XCTAssertEqual(wireframe.y, 0)
+        XCTAssertEqual(wireframe.width, 0)
+        XCTAssertEqual(wireframe.height, 0)
+        XCTAssertFalse(wireframe.isVisible ?? true)
+    }
+
+    func testVisibleWebViewSlot() throws {
+        // Given
+        let attributes: ViewAttributes = .mock(fixture: .visible())
+        let slot = WKWebViewSlot(webview: webView)
+
+        let builder = WireframesBuilder(webviews: [slot.id: slot])
+
+        // When
+        let wireframes = WKWebViewWireframesBuilder(slot: slot, attributes: attributes)
+            .buildWireframes(with: builder)
+
+        // Then
+        XCTAssertEqual(wireframes.count, 1)
+
+        guard case let .webviewWireframe(wireframe) = wireframes.first else {
+            return XCTFail("First wireframe needs to be webviewWireframe case")
+        }
+
+        XCTAssertEqual(wireframe.id, Int64(webView.hash))
+        XCTAssertEqual(wireframe.slotId, String(webView.hash))
         XCTAssertNil(wireframe.clip)
         XCTAssertEqual(wireframe.x, Int64(withNoOverflow: attributes.frame.minX))
         XCTAssertEqual(wireframe.y, Int64(withNoOverflow: attributes.frame.minY))
         XCTAssertEqual(wireframe.width, Int64(withNoOverflow: attributes.frame.width))
         XCTAssertEqual(wireframe.height, Int64(withNoOverflow: attributes.frame.height))
+        XCTAssertTrue(wireframe.isVisible ?? false)
+        XCTAssertNil(builder.webviews[slot.id], "webview slot should be removed from builder")
     }
+
+// This test should pass but it doesn't because `WKWebView` apparently leaks.
+//
+//    func testDeallocatedWebViewSlot() throws {
+//        var slot: WebViewSlot? = WKWebViewSlot(webview: webView)
+//        slot = slot?.reset()
+//        XCTAssertNotNil(slot)
+//
+//        autoreleasepool {
+//            let webView = WKWebView()
+//            slot = WKWebViewSlot(webview: webView)
+//        }
+//
+//        slot = slot?.reset()
+//        XCTAssertNil(slot)
+//    }
 }

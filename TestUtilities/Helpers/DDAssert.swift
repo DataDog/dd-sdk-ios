@@ -72,8 +72,8 @@ private func _DDAssertReflectionEqual(_ expression1: @autoclosure () throws -> A
 
     switch (mirror1.displayStyle, mirror2.displayStyle) {
     case (.dictionary?, .dictionary?): // two dictionaries
-        let dictionary1 = value1 as! [String: Any]
-        let dictionary2 = value2 as! [String: Any]
+        let dictionary1 = value1 as! [AnyHashable: Any]
+        let dictionary2 = value2 as! [AnyHashable: Any]
 
         guard dictionary1.keys.count == dictionary2.keys.count else {
             throw DDAssertError.expectedFailure("dictionaries have different number of keys", keyPath: keyPath)
@@ -84,7 +84,7 @@ private func _DDAssertReflectionEqual(_ expression1: @autoclosure () throws -> A
                 throw DDAssertError.expectedFailure("dictionaries have different key names", keyPath: keyPath)
             }
 
-            try _DDAssertReflectionEqual(value1, value2, keyPath: keyPath + [key1])
+            try _DDAssertReflectionEqual(value1, value2, keyPath: keyPath + [key1.description])
         }
 
         return // dictionaries are equal

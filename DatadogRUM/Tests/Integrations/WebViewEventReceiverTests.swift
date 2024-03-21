@@ -165,10 +165,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
     func testGivenRUMContextAvailable_whenReceivingWebEvent_itGetsEnrichedWithOtherMobileContextAndWritten() throws {
         let core = PassthroughCoreMock(
-            context: .mockWith(
-                source: "react-native",
-                serverTimeOffset: .mockRandom(min: -10, max: 10).rounded()
-            )
+            context: .mockWith(source: "react-native")
         )
 
         // Given

@@ -30,13 +30,16 @@ final class MockMessageHandler: NSObject, WKScriptMessageHandler {
 }
 
 final class MockScriptMessage: WKScriptMessage {
-    let mockBody: Any
+    private let _body: Any
+    private weak var _webView: WKWebView?
 
-    init(body: Any) {
-        self.mockBody = body
+    init(body: Any, webView: WKWebView? = nil) {
+        _body = body
+        _webView = webView
     }
 
-    override var body: Any { return mockBody }
+    override var body: Any { _body }
+    override weak var webView: WKWebView? { _webView }
 }
 
 extension WebViewTracking.SessionReplayConfiguration.PrivacyLevel: AnyMockable, RandomMockable {
