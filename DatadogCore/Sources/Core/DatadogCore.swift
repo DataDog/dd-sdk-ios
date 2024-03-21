@@ -290,21 +290,25 @@ extension DatadogCore: DatadogCoreProtocol {
         features[T.name] as? T
     }
 
-    func scope(for feature: String) -> FeatureScope? {
-        guard let storage = stores[feature]?.storage else {
+    /// Obtain "event store" for known feature type.
+    func eventStore<T>(for featureType: T.Type) -> FeatureEventStore? where T : DatadogRemoteFeature {
+        guard let storage = stores[T.name]?.storage else {
             return nil
         }
 
-        return DatadogCoreFeatureScope(
+        return DatadogFeatureEventStore(
             contextProvider: contextProvider,
-            storage: storage,
-            store: FeatureDataStore(
-                feature: feature,
-                directory: directory,
-                queue: readWriteQueue,
-                telemetry: telemetry
-            )
+            storage: storage
         )
+    }
+
+    /// Obtain "data store" for known feature type.
+    func dataStore<T>(for featureType: T.Type) -> FeatureDataStore where T: DatadogFeature {
+        return DatadogFeatureDataStore(core: self, featureName: T.name)
+    }
+
+    var context: FeatureContext {
+        return DatadogFeatureContext(core: self)
     }
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
@@ -316,10 +320,10 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal struct DatadogCoreFeatureScope: FeatureScope {
+/// Allows feature to write events into batch files.
+private struct DatadogFeatureEventStore: FeatureEventStore {
     let contextProvider: DatadogContextProvider
     let storage: FeatureStorage
-    let store: FeatureDataStore
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
         // (on user thread) request SDK context
@@ -337,8 +341,49 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
             block(context)
         }
     }
+}
 
+/// Allows feature to write data into its data store.
+private struct DatadogFeatureDataStore: FeatureDataStore {
+    private let contextProvider: DatadogContextProvider
+    private let store: DataStore
+
+    init(core: DatadogCore, featureName: String) {
+        self.contextProvider = core.contextProvider
+        self.store = PersistentDataStore(
+            feature: featureName,
+            directory: core.directory,
+            queue: core.readWriteQueue,
+            telemetry: core.telemetry
+        )
+    }
+
+    /// for "no context" access
     var dataStore: DataStore { store }
+
+    /// for "with context" access
+    func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void) {
+        // (on user thread) request SDK context
+        contextProvider.read { context in
+            // (on context thread) call the block
+            block(context, store)
+        }
+    }
+}
+
+/// Allows feature to obtain DatadogContext in arbitrary way.
+private struct DatadogFeatureContext: FeatureContext {
+    private let contextProvider: DatadogContextProvider
+
+    init(core: DatadogCore) {
+        self.contextProvider = core.contextProvider
+    }
+
+    func get(_ block: @escaping (DatadogContext) -> Void) {
+        contextProvider.read { context in
+            block(context)
+        }
+    }
 }
 
 extension DatadogContextProvider {

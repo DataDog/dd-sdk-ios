@@ -59,7 +59,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        core.scope(for: RUMFeature.name)?.eventWriteContext { [weak core] context, writer in
+        core.eventStore(for: RUMFeature.self)?.eventWriteContext { [weak core] context, writer in
             guard let rumBaggage = context.baggages[RUMFeature.name] else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }

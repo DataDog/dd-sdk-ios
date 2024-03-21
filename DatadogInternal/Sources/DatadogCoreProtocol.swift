@@ -36,16 +36,16 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// - Returns: The Feature if any.
     func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
-    /// Retrieves a Feature Scope by its name.
-    ///
-    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
-    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
-    /// according to the performance presets defined on initialization.
-    ///
-    /// - Parameters:
-    ///   - feature: The Feature's name.
-    /// - Returns: The Feature scope if a Feature with given name was registered.
-    func scope(for feature: String) -> FeatureScope?
+    /// Only "remote features" can obtain event store.
+    /// Generic constraints this to only obtaining "self" event store (for current module).
+    func eventStore<T>(for featureType: T.Type) -> FeatureEventStore? where T: DatadogRemoteFeature
+
+    /// All features can obtain data store.
+    /// Generic constraints this to only obtaining "self" data store (for current module).
+    func dataStore<T>(for featureType: T.Type) -> FeatureDataStore where T: DatadogFeature
+
+    /// All features can obtain Datadog Context.
+    var context: FeatureContext { get }
 
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
@@ -199,8 +199,17 @@ extension DatadogCoreProtocol {
     }
 }
 
+public protocol FeatureContext {
+    /// Retrieve the core context.
+    ///
+    /// A feature can use this method to request the Datadog context valid at the moment of the call.
+    ///
+    /// - Parameter block: The block to execute; it is called on the context queue.
+    func get(_ block: @escaping (DatadogContext) -> Void)
+}
+
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope {
+public protocol FeatureEventStore {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -216,20 +225,10 @@ public protocol FeatureScope {
     ///                    collecting information.
     ///   - block: The block to execute; it is called on the context queue.
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void)
-
-    /// Retrieve the core context.
-    ///
-    /// A feature can use this method to request the Datadog context valid at the moment of the call.
-    ///
-    /// - Parameter block: The block to execute; it is called on the context queue.
-    func context(_ block: @escaping (DatadogContext) -> Void)
-
-    /// Data store configured for storing data for this feature.
-    var dataStore: DataStore { get }
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-public extension FeatureScope {
+public extension FeatureEventStore {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -251,18 +250,14 @@ public extension FeatureScope {
     func eventWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
         eventWriteContext(bypassConsent: false, block)
     }
+}
 
-    /// Retrieve the core context and data store.
-    ///
-    /// Can be used to store data that depends on the current Datadog context. The provided context is valid at the moment
-    /// of the call, meaning that it includes all changes that happened earlier on the same thread.
-    ///
-    /// - Parameter block: The block to execute; it is called on the context queue.
-    func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void) {
-        context { context in
-            block(context, dataStore)
-        }
-    }
+public protocol FeatureDataStore {
+    /// for "no context" access
+    var dataStore: DataStore { get }
+
+    /// for "with context" access
+    func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void)
 }
 
 /// No-op implementation of `DatadogFeatureRegistry`.
@@ -273,9 +268,25 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
-    public func scope(for feature: String) -> FeatureScope? { nil }
+    public func eventStore<T>(for featureType: T.Type) -> FeatureEventStore? where T : DatadogRemoteFeature { nil }
+    /// no-op
+    public func dataStore<T>(for featureType: T.Type) -> FeatureDataStore where T : DatadogFeature { NOPFeatureDataStore() }
+    /// no-op
+    public var context: FeatureContext { NOPFeatureContext() }
     /// no-op
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+}
+
+internal struct NOPFeatureDataStore: FeatureDataStore {
+    /// no-op
+    let dataStore: DataStore = NOPDataStore()
+    /// no-op
+    func dataStoreContext(_ block: @escaping (DatadogContext, DataStore) -> Void) {}
+}
+
+internal struct NOPFeatureContext: FeatureContext {
+    /// no-op
+    func get(_ block: @escaping (DatadogContext) -> Void) {}
 }

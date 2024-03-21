@@ -225,8 +225,8 @@
 		612556BB268DD9BF002BCE74 /* DDCrashReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */; };
 		6128F56A2BA2237300D35B08 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5692BA2237300D35B08 /* DataStore.swift */; };
 		6128F56B2BA2237300D35B08 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5692BA2237300D35B08 /* DataStore.swift */; };
-		6128F56E2BA223A100D35B08 /* FeatureDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F56D2BA223A100D35B08 /* FeatureDataStore.swift */; };
-		6128F56F2BA223A100D35B08 /* FeatureDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F56D2BA223A100D35B08 /* FeatureDataStore.swift */; };
+		6128F56E2BA223A100D35B08 /* PersistentDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F56D2BA223A100D35B08 /* PersistentDataStore.swift */; };
+		6128F56F2BA223A100D35B08 /* PersistentDataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F56D2BA223A100D35B08 /* PersistentDataStore.swift */; };
 		6128F5712BA223D100D35B08 /* DataStore+TLV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5702BA223D100D35B08 /* DataStore+TLV.swift */; };
 		6128F5722BA223D100D35B08 /* DataStore+TLV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5702BA223D100D35B08 /* DataStore+TLV.swift */; };
 		6128F5742BA3280300D35B08 /* DataStoreFileReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6128F5732BA3280300D35B08 /* DataStoreFileReader.swift */; };
@@ -2141,7 +2141,7 @@
 		612556AF268C8D31002BCE74 /* CrashReport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReport.swift; sourceTree = "<group>"; };
 		612556BA268DD9BF002BCE74 /* DDCrashReportExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportExporter.swift; sourceTree = "<group>"; };
 		6128F5692BA2237300D35B08 /* DataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
-		6128F56D2BA223A100D35B08 /* FeatureDataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeatureDataStore.swift; sourceTree = "<group>"; };
+		6128F56D2BA223A100D35B08 /* PersistentDataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PersistentDataStore.swift; sourceTree = "<group>"; };
 		6128F5702BA223D100D35B08 /* DataStore+TLV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DataStore+TLV.swift"; sourceTree = "<group>"; };
 		6128F5732BA3280300D35B08 /* DataStoreFileReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreFileReader.swift; sourceTree = "<group>"; };
 		6128F5762BA32DE500D35B08 /* DataStoreFileWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreFileWriter.swift; sourceTree = "<group>"; };
@@ -4155,7 +4155,7 @@
 			isa = PBXGroup;
 			children = (
 				6128F5702BA223D100D35B08 /* DataStore+TLV.swift */,
-				6128F56D2BA223A100D35B08 /* FeatureDataStore.swift */,
+				6128F56D2BA223A100D35B08 /* PersistentDataStore.swift */,
 				6128F5732BA3280300D35B08 /* DataStoreFileReader.swift */,
 				6128F5762BA32DE500D35B08 /* DataStoreFileWriter.swift */,
 			);
@@ -7530,7 +7530,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61DA8CA928609C5B0074A606 /* Directories.swift in Sources */,
-				6128F56E2BA223A100D35B08 /* FeatureDataStore.swift in Sources */,
+				6128F56E2BA223A100D35B08 /* PersistentDataStore.swift in Sources */,
 				D2EFA868286DA85700F1FAA6 /* DatadogContextProvider.swift in Sources */,
 				D26C49BF288982DA00802B2D /* FeatureUpload.swift in Sources */,
 				A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */,
@@ -8674,7 +8674,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D20605AA2874C1CD0047275C /* NetworkConnectionInfoPublisher.swift in Sources */,
-				6128F56F2BA223A100D35B08 /* FeatureDataStore.swift in Sources */,
+				6128F56F2BA223A100D35B08 /* PersistentDataStore.swift in Sources */,
 				D29CDD3328211A2200F7DAA5 /* TLVBlock.swift in Sources */,
 				D2612F48290197C700509B7D /* LaunchTimePublisher.swift in Sources */,
 				A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */,

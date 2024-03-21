@@ -104,7 +104,7 @@ internal class DatadogTracer: OTTracer {
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
         // available on the caller thread.
-        let writer = LazySpanWriteContext(core: core)
+        let writer = LazySpanWriteContext(context: core.context, eventStore: core.eventStore(for: TraceFeature.self))
         let span = DDSpan(
             tracer: self,
             context: spanContext,
