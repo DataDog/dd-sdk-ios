@@ -230,6 +230,36 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
     }
 
+    func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
+        // Given
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let randomErrorFingerprint = String.mockRandom()
+        logger.error("Information message", error: ErrorMock(), attributes: [Logs.Attributes.errorFingerprint: randomErrorFingerprint])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertNil(log.attributes.userAttributes[Logs.Attributes.errorFingerprint])
+        XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
+    }
+
     // MARK: - RUM Integration
 
     func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {

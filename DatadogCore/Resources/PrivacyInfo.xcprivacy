@@ -2,15 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSPrivacyTrackingDomains</key>
-	<array>
-		<string>browser-intake-datadoghq.com</string>
-		<string>browser-intake-us3-datadoghq.com</string>
-		<string>browser-intake-us5-datadoghq.com</string>
-		<string>browser-intake-datadoghq.eu</string>
-		<string>browser-intake-ap1-datadoghq.com</string>
-		<string>browser-intake-ddog-gov.com</string>
-	</array>
 	<key>NSPrivacyCollectedDataTypes</key>
 	<array>
 		<dict>

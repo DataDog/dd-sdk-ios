@@ -21,7 +21,7 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
 
         // Get expected number of `LogMatchers`
         let recordedRequests = try loggingServerSession.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
-            try LogMatcher.from(requests: requests).count >= 7
+            try LogMatcher.from(requests: requests).count >= 8
         }
         let logMatchers = try LogMatcher.from(requests: recordedRequests)
 
@@ -48,11 +48,17 @@ class LoggingScenarioTests: IntegrationTests, LoggingCommonAsserts {
 
         logMatchers[6].assertStatus(equals: "notice")
         logMatchers[6].assertMessage(equals: "notice message with global")
-
         logMatchers[6].assertAttributes(equal: [
             "global-attribute-1": "global value",
             "global-attribute-2": 1540
             // Don't check "attribute" because local attributes should override
+        ])
+
+        logMatchers[7].assertStatus(equals: "error")
+        logMatchers[7].assertMessage(equals: "error with fingerprint")
+        logMatchers[7].assertAttributes(equal: [
+            "error.message": "Runner.SendLogsFixtureViewController.MockError",
+            "error.fingerprint": "custom_fingerprint",
         ])
 
 

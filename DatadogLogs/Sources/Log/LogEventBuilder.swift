@@ -45,6 +45,7 @@ internal struct LogEventBuilder {
         level: LogLevel,
         message: String,
         error: DDError?,
+        errorFingerprint: String?,
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,
@@ -62,7 +63,8 @@ internal struct LogEventBuilder {
                     kind: $0.type,
                     message: $0.message,
                     stack: $0.stack,
-                    sourceType: $0.sourceType
+                    sourceType: $0.sourceType,
+                    fingerprint: errorFingerprint
                 )
             },
             serviceName: service,

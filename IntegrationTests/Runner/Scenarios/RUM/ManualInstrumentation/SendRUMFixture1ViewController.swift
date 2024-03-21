@@ -5,6 +5,7 @@
  */
 
 import UIKit
+import DatadogRUM
 
 internal class SendRUMFixture1ViewController: UIViewController {
     @IBOutlet weak var pushNextScreenButton: UIButton!
@@ -80,7 +81,10 @@ internal class SendRUMFixture1ViewController: UIViewController {
                     statusCode: 400,
                     httpVersion: nil,
                     headerFields: nil
-                )!
+                )!,
+                attributes: [
+                    RUM.Attributes.errorFingerprint: "custom-fingerprint"
+                ]
             )
 
             // Reveal the "Push Next Screen" button so UITest can continue

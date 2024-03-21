@@ -46,6 +46,7 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackSessionAcrossSubdomains: Bool?
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
+    public let unityVersion: String?
     public let useAllowedTracingOrigins: Bool?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
@@ -278,6 +279,7 @@ extension Telemetry {
         trackSessionAcrossSubdomains: Bool? = nil,
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
+        unityVersion: String? = nil,
         useAllowedTracingOrigins: Bool? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
@@ -330,6 +332,7 @@ extension Telemetry {
             trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
+            unityVersion: unityVersion,
             useAllowedTracingOrigins: useAllowedTracingOrigins,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
@@ -439,6 +442,7 @@ extension ConfigurationTelemetry {
             trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
+            unityVersion: other.unityVersion ?? unityVersion,
             useAllowedTracingOrigins: other.useAllowedTracingOrigins ?? useAllowedTracingOrigins,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
