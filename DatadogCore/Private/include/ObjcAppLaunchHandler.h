@@ -4,7 +4,6 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
-#if TARGET_OS_IPHONE
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
@@ -47,4 +46,3 @@ typedef void (^UIApplicationDidBecomeActiveCallback) (NSTimeInterval);
 @end
 
 NS_ASSUME_NONNULL_END
-#endif

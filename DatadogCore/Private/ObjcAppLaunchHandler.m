@@ -4,12 +4,14 @@
 * Copyright 2019-Present Datadog, Inc.
 */
 
-#if TARGET_OS_IPHONE
-#import <UIKit/UIKit.h>
 #import <pthread.h>
 #import <sys/sysctl.h>
 
 #import "ObjcAppLaunchHandler.h"
+
+#if TARGET_OS_IPHONE
+#import <UIKit/UIKit.h>
+#endif
 
 // A very long application launch time is most-likely the result of a pre-warmed process.
 // We consider 30s as a threshold for pre-warm detection.
@@ -40,7 +42,7 @@ static __dd_private_AppLaunchHandler *_shared;
     // This is called at the `DatadogPrivate` load time, keep the work minimal
     _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
                                        loadTime:CFAbsoluteTimeGetCurrent()];
-
+#if TARGET_OS_IPHONE
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
     id __block __unused token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
                                                     object:nil
@@ -56,6 +58,7 @@ static __dd_private_AppLaunchHandler *_shared;
         [center removeObserver:token];
         token = nil;
     }];
+#endif
 }
 
 + (__dd_private_AppLaunchHandler *)shared {
@@ -129,4 +132,3 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval) {
     *timeInterval = processStartTime - kCFAbsoluteTimeIntervalSince1970;
     return res;
 }
-#endif
