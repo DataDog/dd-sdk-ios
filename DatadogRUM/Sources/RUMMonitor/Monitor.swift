@@ -134,7 +134,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         // process command in event context
-        core?.scope(for: RUMFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: RUMFeature.self).eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
 
@@ -218,7 +218,7 @@ extension Monitor: RUMMonitorProtocol {
         // Even though we're not writing anything, need to get the write context
         // to make sure we're returning the correct sessionId after all other
         // events have processed.
-        core?.scope(for: RUMFeature.name)?.eventWriteContext { _, _ in
+        core?.scope(for: RUMFeature.self).eventWriteContext { _, _ in
             self.queue.sync {
                 guard let sessionId = self.scopes.activeSession?.sessionUUID else {
                     completion(nil)

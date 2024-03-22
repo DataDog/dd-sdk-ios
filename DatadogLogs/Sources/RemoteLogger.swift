@@ -122,7 +122,7 @@ internal final class RemoteLogger: LoggerProtocol {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+        self.core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
