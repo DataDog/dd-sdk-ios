@@ -25,11 +25,18 @@ internal final class LowPowerModePublisher: ContextValuePublisher {
         processInfo: ProcessInfo = .processInfo,
         notificationCenter: NotificationCenter = .default
     ) {
-        self.initialValue = processInfo.isLowPowerModeEnabled
+        if #available(macOS 12.0, *) {
+            self.initialValue = processInfo.isLowPowerModeEnabled
+        } else {
+            self.initialValue = false
+        }
         self.notificationCenter = notificationCenter
     }
 
     func publish(to receiver: @escaping ContextValueReceiver<Bool>) {
+        guard #available(macOS 12.0, *) else {
+            return
+        }
         self.observer = notificationCenter
             .addObserver(
                 forName: .NSProcessInfoPowerStateDidChange,
