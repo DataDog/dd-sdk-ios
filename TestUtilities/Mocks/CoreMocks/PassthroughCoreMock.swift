@@ -6,7 +6,7 @@
 
 import Foundation
 import XCTest
-@testable import DatadogInternal
+import DatadogInternal
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
 ///
