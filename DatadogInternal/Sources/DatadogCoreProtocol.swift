@@ -278,11 +278,12 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
 }
 
-internal struct NOPFeatureScope: FeatureScope {
+public struct NOPFeatureScope: FeatureScope {
+    public init() { }
     /// no-op
-    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
+    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
     /// no-op
-    func context(_ block: @escaping (DatadogContext) -> Void) { }
+    public func context(_ block: @escaping (DatadogContext) -> Void) { }
     /// no-op
-    var dataStore: DataStore { NOPDataStore() }
+    public var dataStore: DataStore { NOPDataStore() }
 }

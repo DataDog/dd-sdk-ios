@@ -74,10 +74,11 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         return core.get(feature: type)
     }
 
-    func scope(for feature: String) -> FeatureScope? {
-        return core.scope(for: feature).map { scope in
-            FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[feature]!)
-        }
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
+        return FeatureScopeProxy(
+            proxy: core.scope(for: featureType),
+            interceptor: featureScopeInterceptors[T.name]!
+        )
     }
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
