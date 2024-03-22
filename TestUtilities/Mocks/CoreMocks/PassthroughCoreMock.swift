@@ -6,7 +6,7 @@
 
 import Foundation
 import XCTest
-import DatadogInternal
+@testable import DatadogInternal
 
 /// Passthrough core mocks feature-scope allowing recording events in **sync**.
 ///
@@ -90,7 +90,6 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         self
     }
 
-
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         context.baggages[key] = baggage()
     }
@@ -116,6 +115,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public func context(_ block: @escaping (DatadogContext) -> Void) {
         block(context)
     }
+
+    public var dataStore: DataStore { NOPDataStore() }
 
     /// Recorded events from feature scopes.
     ///

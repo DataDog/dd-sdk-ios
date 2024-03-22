@@ -50,7 +50,7 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
         // not supported - use different type of core mock if you need this
         return nil
     }
-    
+
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         // not supported - use different type of core mock if you need this
     }

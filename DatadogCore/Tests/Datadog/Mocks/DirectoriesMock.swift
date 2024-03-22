@@ -12,10 +12,16 @@ import TestUtilities
 /// `CoreDirectory` pointing to subfolders in `/var/folders/`.
 /// This location does not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
 /// which guarantees clear state before and after test.
-let temporaryCoreDirectory = CoreDirectory(
-    osDirectory: .init(url: obtainUniqueTemporaryDirectory()),
-    coreDirectory: .init(url: obtainUniqueTemporaryDirectory())
-)
+let temporaryCoreDirectory = temporaryUniqueCoreDirectory()
+
+/// `CoreDirectory` pointing to subfolders in `/var/folders/`.
+/// This location does not exist by default and should be created and deleted by calling `.create()` and `.delete()` in each test,
+func temporaryUniqueCoreDirectory(uuid: UUID = UUID()) -> CoreDirectory {
+    return CoreDirectory(
+        osDirectory: .init(url: obtainUniqueTemporaryDirectory()),
+        coreDirectory: .init(url: obtainUniqueTemporaryDirectory())
+    )
+}
 
 extension CoreDirectory {
     /// Creates temporary core directory.
