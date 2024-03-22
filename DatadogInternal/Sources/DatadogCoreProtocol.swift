@@ -36,16 +36,14 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// - Returns: The Feature if any.
     func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
-    /// Retrieves a Feature Scope by its name.
+    /// Retrieves a Feature Scope for given feature type..
     ///
-    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
-    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
-    /// according to the performance presets defined on initialization.
+    /// TODO: RUM-3462 update API comment
     ///
     /// - Parameters:
-    ///   - feature: The Feature's name.
-    /// - Returns: The Feature scope if a Feature with given name was registered.
-    func scope(for feature: String) -> FeatureScope?
+    ///   - type: The Feature instance type.
+    /// - Returns: TODO: RUM-3462 update API comment
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
 
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
@@ -273,9 +271,18 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
-    public func scope(for feature: String) -> FeatureScope? { nil }
+    public func scope<T>(for featureType: T.Type) -> FeatureScope { NOPFeatureScope() }
     /// no-op
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+}
+
+internal struct NOPFeatureScope: FeatureScope {
+    /// no-op
+    func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
+    /// no-op
+    func context(_ block: @escaping (DatadogContext) -> Void) { }
+    /// no-op
+    var dataStore: DataStore { NOPDataStore() }
 }
