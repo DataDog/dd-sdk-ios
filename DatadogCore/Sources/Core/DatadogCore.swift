@@ -318,30 +318,26 @@ internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFea
     }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        // Capture the core reference so it is available until async block completion. This is ensure
-        // that we write events which were collected right before deallocating the core on the current thread.
         guard let core = core else {
-            return // core is deinitialized
+            return  // core is deinitialized
+        }
+        // Capture the storage reference so it is available until async block completion. This is to ensure
+        // that we write events which were collected on the caller thread even if the core was released in the meantime.
+        guard let storage = core.stores[Feature.name]?.storage else {
+            if core.get(feature: Feature.self) != nil { // the feature is running, but has no storage
+                DD.logger.error(
+                    "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
+                )
+                #if DEBUG
+                assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
+                #endif
+            }
+            return
         }
 
         // (on user thread) request SDK context
         context { context in
             // (on context thread)
-            guard let storage = core.stores[Feature.name]?.storage else {
-                if core.get(feature: Feature.self) == nil { // the core was stopped
-                    DD.logger.warn(
-                        "Failed to obtain Event Write Context for '\(Feature.name)' because this feature is no longer running."
-                    )
-                } else { // core is running, but this is wrong Feature type
-                    DD.logger.error(
-                        "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
-                    )
-                    #if DEBUG
-                    assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
-                    #endif
-                }
-                return
-            }
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
         }
