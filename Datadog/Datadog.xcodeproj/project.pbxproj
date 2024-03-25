@@ -534,7 +534,6 @@
 		A71013D62B178FAD00101E60 /* ResourcesWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */; };
 		A71265862B17980C007D63CE /* MockFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = A71265852B17980C007D63CE /* MockFeature.swift */; };
 		A727C4BB2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */; };
-		A727C4BC2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A795069D2B974CAA00AC4814 /* DDSessionReplay+apiTests.m */; };
 		A728ADAB2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADAC2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */; };
 		A728ADB02934EB0900397996 /* DDW3CHTTPHeadersWriter+apiTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A728ADAD2934EB0300397996 /* DDW3CHTTPHeadersWriter+apiTests.m */; };
@@ -8813,7 +8812,6 @@
 				D2A1EE35287EB8DB00D28DFB /* ServerOffsetPublisherTests.swift in Sources */,
 				D22743E129DEB8B5001A7EF9 /* VitalRefreshRateReaderTests.swift in Sources */,
 				D2CB6F2027C520D400A62B57 /* DatadogConfigurationTests.swift in Sources */,
-				A727C4BC2BADB3AB00707DFD /* DDSessionReplay+apiTests.m in Sources */,
 				D2CB6F2127C520D400A62B57 /* URLSessionClientTests.swift in Sources */,
 				D2CB6F2227C520D400A62B57 /* DatadogTests.swift in Sources */,
 				61DA8CAD2861C3720074A606 /* DirectoriesTests.swift in Sources */,
