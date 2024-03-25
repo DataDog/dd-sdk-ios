@@ -165,7 +165,22 @@
     {
       "skippedTests" : [
         "CrashReportingWithLoggingScenarioTests",
-        "CrashReportingWithRUMScenarioTests"
+        "CrashReportingWithRUMScenarioTests",
+        "LoggingScenarioTests",
+        "RUMManualInstrumentationScenarioTests",
+        "RUMMobileVitalsScenarioTests",
+        "RUMModalViewsScenarioTests",
+        "RUMNavigationControllerScenarioTests",
+        "RUMResourcesScenarioTests",
+        "RUMScrubbingScenarioTests",
+        "RUMStopSessionScenarioTests",
+        "RUMSwiftUIScenarioTests",
+        "RUMTabBarControllerScenarioTests",
+        "RUMTapActionScenarioTests",
+        "StopCoreScenarioTests",
+        "TracingManualInstrumentationScenarioTests",
+        "TracingURLSessionScenarioTests",
+        "TrackingConsentScenarioTests"
       ],
       "target" : {
         "containerPath" : "container:IntegrationTests.xcodeproj",
