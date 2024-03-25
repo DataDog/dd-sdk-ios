@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject {
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
     /// Registers a Feature instance.
     ///
     /// Feature can interact with the core and other Feature through the message bus. Some specific Features
@@ -44,7 +44,22 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - type: The Feature instance type.
     /// - Returns: TODO: RUM-3462 update API comment
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
+}
 
+public protocol MessageSending {
+    /// Sends a message on the bus shared by features registered in this core.
+    ///
+    /// If the message could not be processed by any registered feature, the fallback closure
+    /// will be invoked. Do not make any assumption on which thread the fallback is called.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    ///   - fallback: The fallback closure to call when the message could not be
+    ///               processed by any Features on the bus.
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+}
+
+public protocol BaggageSharing {
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
     /// This method provides a passive communication chanel between Features of the Core.
@@ -75,20 +90,9 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - baggage: The Feature's baggage to set.
     ///   - key: The baggage's key.
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
-
-    /// Sends a message on the bus shared by features registered in this core.
-    ///
-    /// If the message could not be processed by any registered feature, the fallback closure
-    /// will be invoked. Do not make any assumption on which thread the fallback is called.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    ///   - fallback: The fallback closure to call when the message could not be
-    ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
-extension DatadogCoreProtocol {
+extension MessageSending {
     /// Sends a message on the bus shared by features registered in this core.
     ///
     /// - Parameters:
@@ -96,7 +100,9 @@ extension DatadogCoreProtocol {
     public func send(message: FeatureMessage) {
         send(message: message, else: {})
     }
+}
 
+extension BaggageSharing {
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
     /// This method provides a passive communication chanel between Features of the Core.
@@ -198,7 +204,7 @@ extension DatadogCoreProtocol {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope {
+public protocol FeatureScope: MessageSending, BaggageSharing {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -224,6 +230,8 @@ public protocol FeatureScope {
 
     /// Data store configured for storing data for this feature.
     var dataStore: DataStore { get }
+
+    var telemetry: Telemetry { get }
 }
 
 /// Feature scope provides a context and a writer to build a record event.
@@ -286,4 +294,10 @@ public struct NOPFeatureScope: FeatureScope {
     public func context(_ block: @escaping (DatadogContext) -> Void) { }
     /// no-op
     public var dataStore: DataStore { NOPDataStore() }
+    /// no-op
+    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    /// no-op
+    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
+    /// no-op
+    public var telemetry: Telemetry { NOPTelemetry() }
 }

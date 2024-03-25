@@ -127,7 +127,16 @@ private struct FeatureScopeProxy: FeatureScope {
         }
     }
 
+    var telemetry: Telemetry { proxy.telemetry }
     var dataStore: DataStore { proxy.dataStore }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        proxy.send(message: message, else: fallback)
+    }
+
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        proxy.set(baggage: baggage, forKey: key)
+    }
 }
 
 private class FeatureScopeInterceptor {

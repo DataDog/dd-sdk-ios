@@ -359,6 +359,18 @@ internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFea
         // Data store is only available when core instance exists.
         return (core != nil) ? store : NOPDataStore()
     }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        core?.send(message: message, else: fallback)
+    }
+
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        core?.set(baggage: baggage, forKey: key)
+    }
+
+    var telemetry: Telemetry {
+        return core?.telemetry ?? NOPTelemetry()
+    }
 }
 
 extension DatadogContextProvider {
