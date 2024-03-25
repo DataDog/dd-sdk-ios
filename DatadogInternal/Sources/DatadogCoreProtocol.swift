@@ -36,18 +36,22 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
     /// - Returns: The Feature if any.
     func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
-    /// Retrieves a Feature Scope for given feature type..
+    /// Retrieves a Feature Scope for given feature type.
     ///
-    /// TODO: RUM-3462 update API comment
+    /// The scope manages the underlying core's reference in safe way, guaranteeing no reference leaks.
+    /// It is available right away even before the feature registration completes in the core, so some capabilities
+    /// might be not available before the feature is fully registered.
+    ///
+    /// If possible, feature implementation must to take dependency on `FeatureScope` rather than `DatadogCoreProtocol` itself.
     ///
     /// - Parameters:
     ///   - type: The Feature instance type.
-    /// - Returns: TODO: RUM-3462 update API comment
+    /// - Returns: The scope for requested feature type.
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
 }
 
 public protocol MessageSending {
-    /// Sends a message on the bus shared by features registered in this core.
+    /// Sends a message on the bus shared by features registered to the sam core..
     ///
     /// If the message could not be processed by any registered feature, the fallback closure
     /// will be invoked. Do not make any assumption on which thread the fallback is called.
@@ -93,7 +97,7 @@ public protocol BaggageSharing {
 }
 
 extension MessageSending {
-    /// Sends a message on the bus shared by features registered in this core.
+    /// Sends a message on the bus shared by features registered to the same core..
     ///
     /// - Parameters:
     ///   - message: The message.
@@ -228,9 +232,14 @@ public protocol FeatureScope: MessageSending, BaggageSharing {
     /// - Parameter block: The block to execute; it is called on the context queue.
     func context(_ block: @escaping (DatadogContext) -> Void)
 
-    /// Data store configured for storing data for this feature.
+    /// Data store endpoint.
+    ///
+    /// Use this property to store data for this feature. Data will be persisted between app launches.
     var dataStore: DataStore { get }
 
+    /// Telemetry endpoint.
+    ///
+    /// Use this property to report any telemetry event to the core.
     var telemetry: Telemetry { get }
 }
 
