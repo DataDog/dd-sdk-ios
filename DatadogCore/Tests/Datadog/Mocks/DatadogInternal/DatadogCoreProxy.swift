@@ -33,6 +33,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
 
+    @ReadWriteLock
     private var featureScopeInterceptors: [String: FeatureScopeInterceptor] = [:]
 
     init(context: DatadogContext = .mockAny()) {
@@ -66,7 +67,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     }
 
     func register<T>(feature: T) throws where T: DatadogFeature {
-        featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
         try core.register(feature: feature)
     }
 
@@ -75,6 +75,9 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     }
 
     func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
+        if featureScopeInterceptors[T.name] == nil {
+            featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
+        }
         return FeatureScopeProxy(
             proxy: core.scope(for: featureType),
             interceptor: featureScopeInterceptors[T.name]!
@@ -187,7 +190,9 @@ extension DatadogCoreProxy {
     /// - Returns: A list of events.
     func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
         flush()
-        let interceptor = self.featureScopeInterceptors[name]!
+        guard let interceptor = self.featureScopeInterceptors[name] else {
+            return [] // feature scope was not requested, so there's no interception
+        }
         return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.event as? T }
     }
 
@@ -197,7 +202,9 @@ extension DatadogCoreProxy {
     /// - Returns: A list of serialized events.
     func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
         flush()
-        let interceptor = self.featureScopeInterceptors[name]!
+        guard let interceptor = self.featureScopeInterceptors[name] else {
+            return [] // feature scope was not requested, so there's no interception
+        }
         return interceptor.waitAndReturnEvents(timeout: timeout).map { $0.data }
     }
 }
