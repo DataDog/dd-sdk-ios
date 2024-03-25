@@ -51,7 +51,7 @@ public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
 }
 
 public protocol MessageSending {
-    /// Sends a message on the bus shared by features registered to the sam core..
+    /// Sends a message on the bus shared by features registered to the sam core.
     ///
     /// If the message could not be processed by any registered feature, the fallback closure
     /// will be invoked. Do not make any assumption on which thread the fallback is called.
@@ -97,7 +97,7 @@ public protocol BaggageSharing {
 }
 
 extension MessageSending {
-    /// Sends a message on the bus shared by features registered to the same core..
+    /// Sends a message on the bus shared by features registered to the same core.
     ///
     /// - Parameters:
     ///   - message: The message.
@@ -304,9 +304,9 @@ public struct NOPFeatureScope: FeatureScope {
     /// no-op
     public var dataStore: DataStore { NOPDataStore() }
     /// no-op
+    public var telemetry: Telemetry { NOPTelemetry() }
+    /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
     /// no-op
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
-    /// no-op
-    public var telemetry: Telemetry { NOPTelemetry() }
 }

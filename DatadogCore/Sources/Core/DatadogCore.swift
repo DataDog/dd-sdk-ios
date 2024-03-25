@@ -337,7 +337,7 @@ internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFea
 
         // (on user thread) request SDK context
         context { context in
-            // (on context thread)
+            // (on context thread) call the block
             let writer = storage.writer(for: bypassConsent ? .granted : context.trackingConsent)
             block(context, writer)
         }
@@ -352,8 +352,7 @@ internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFea
     }
 
     var dataStore: DataStore {
-        // Data store is only available when core instance exists.
-        return (core != nil) ? store : NOPDataStore()
+        return (core != nil) ? store : NOPDataStore() // only available when the core exists
     }
 
     func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
