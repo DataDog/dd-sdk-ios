@@ -52,6 +52,9 @@ public protocol DataStore {
     /// - Parameters:
     ///   - key: The unique identifier for the data. Must be a valid file name, as it will be persisted in files.
     ///   - callback: A closure providing the result asynchronously on an internal queue.
+    ///
+    /// Note: The implementation must log errors to console and notify them through telemetry. Callers are not required
+    /// to implement logging of errors upon receiving `.error()` result.
     func value(forKey key: String, callback: @escaping (DataStoreValueResult) -> Void)
 
     /// Deletes the value associated with the specified key from the data store.

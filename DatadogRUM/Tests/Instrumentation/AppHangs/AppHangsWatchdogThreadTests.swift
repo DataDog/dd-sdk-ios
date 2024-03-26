@@ -143,11 +143,11 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangStarted = { hang in
-            XCTAssertEqual(hang.backtraceResult.stack, AppHangsObserver.Constants.appHangStackNotAvailableErrorMessage)
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage)
             trackHangStart.fulfill()
         }
         watchdogThread.onHangEnded = { hang, _ in
-            XCTAssertEqual(hang.backtraceResult.stack, AppHangsObserver.Constants.appHangStackNotAvailableErrorMessage)
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage)
             trackHangEnd.fulfill()
         }
         watchdogThread.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
@@ -180,11 +180,11 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             telemetry: TelemetryMock()
         )
         watchdogThread.onHangStarted = { hang in
-            XCTAssertEqual(hang.backtraceResult.stack, AppHangsObserver.Constants.appHangStackGenerationFailedErrorMessage)
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackGenerationFailedErrorMessage)
             trackHangStart.fulfill()
         }
         watchdogThread.onHangEnded = { hang, _ in
-            XCTAssertEqual(hang.backtraceResult.stack, AppHangsObserver.Constants.appHangStackGenerationFailedErrorMessage)
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackGenerationFailedErrorMessage)
             trackHangEnd.fulfill()
         }
         watchdogThread.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }

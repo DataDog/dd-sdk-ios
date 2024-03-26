@@ -7,7 +7,22 @@
 import Foundation
 import DatadogInternal
 
-internal final class AppHangsWatchdogThread: Thread {
+internal protocol AppHangsObservingThread: AnyObject {
+    /// Starts the thread.
+    func start()
+    /// Stops the thread.
+    func stop()
+    /// Closure to be notified when App Hang starts.
+    var onHangStarted: ((AppHang) -> Void)? { set get }
+    /// Closure to be notified when App Hang gets cancelled due to possible false-positive.
+    var onHangCancelled: ((AppHang) -> Void)? { set get }
+    /// Closure to be notified when App Hang ends. It passes the hang and its duration.
+    var onHangEnded: ((AppHang, TimeInterval) -> Void)? { set get }
+    /// A block called after the thread finished its pass and will become idle.
+    var onBeforeSleep: (() -> Void)? { set get }
+}
+
+internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
     enum Constants {
         /// The "idle" interval for sleeping the watchdog thread before scheduling the next task on the main queue, represented as a percentage of the `appHangThreshold`.
         ///
@@ -106,6 +121,8 @@ internal final class AppHangsWatchdogThread: Thread {
             }
         }
     }
+
+    func stop() { cancel() }
 
     override func main() {
         let mainThreadTask = self.mainThreadTask

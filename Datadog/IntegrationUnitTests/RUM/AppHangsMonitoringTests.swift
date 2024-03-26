@@ -51,8 +51,8 @@ class AppHangsMonitoringTests: XCTestCase {
         let appHangError = try XCTUnwrap(errors.first)
         let actualHangDuration = try XCTUnwrap(appHangError.freeze?.duration)
 
-        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
-        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
         XCTAssertEqual(appHangError.error.category, .appHang)
         XCTAssertTrue(expectedHangDurationRangeNs.contains(actualHangDuration))
     }
@@ -74,8 +74,8 @@ class AppHangsMonitoringTests: XCTestCase {
         let appHangError = try XCTUnwrap(errors.first)
         let actualHangDuration = try XCTUnwrap(appHangError.freeze?.duration)
 
-        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
-        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
         XCTAssertEqual(appHangError.error.category, .appHang)
         XCTAssertTrue(expectedHangDurationRangeNs.contains(actualHangDuration))
     }
@@ -104,8 +104,8 @@ class AppHangsMonitoringTests: XCTestCase {
         let appHangError = try XCTUnwrap(errors.first)
         let mainThreadStack = try XCTUnwrap(appHangError.error.stack)
 
-        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
-        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
         XCTAssertTrue(mainThreadStack.contains(uiKitLibraryName), "Main thread stack should include UIKit symbols")
         XCTAssertEqual(appHangError.error.source, .source)
         XCTAssertNotNil(appHangError.error.threads, "Other threads should be available")
@@ -128,9 +128,9 @@ class AppHangsMonitoringTests: XCTestCase {
         let errors = core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self)
         let appHangError = try XCTUnwrap(errors.first)
 
-        XCTAssertEqual(appHangError.error.message, AppHangsObserver.Constants.appHangErrorMessage)
-        XCTAssertEqual(appHangError.error.type, AppHangsObserver.Constants.appHangErrorType)
-        XCTAssertEqual(appHangError.error.stack, AppHangsObserver.Constants.appHangStackNotAvailableErrorMessage)
+        XCTAssertEqual(appHangError.error.message, AppHangsMonitor.Constants.appHangErrorMessage)
+        XCTAssertEqual(appHangError.error.type, AppHangsMonitor.Constants.appHangErrorType)
+        XCTAssertEqual(appHangError.error.stack, AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage)
         XCTAssertEqual(appHangError.error.source, .source)
         XCTAssertNil(appHangError.error.threads, "Threads should be unavailable as CrashReporting was not enabled")
         XCTAssertNil(appHangError.error.binaryImages,  "Binary Images should be unavailable as CrashReporting was not enabled")

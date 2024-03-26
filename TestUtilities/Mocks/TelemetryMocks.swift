@@ -9,7 +9,7 @@ import XCTest
 import DatadogInternal
 
 public class CoreLoggerMock: CoreLogger {
-    private let queue = DispatchQueue(label: "core-logger-mock")
+    @ReadWriteLock
     public private(set) var recordedLogs: [(level: CoreLoggerLevel, message: String, error: Error?)] = []
 
     public init() { }
@@ -18,11 +18,11 @@ public class CoreLoggerMock: CoreLogger {
 
     public func log(_ level: CoreLoggerLevel, message: @autoclosure () -> String, error: Error?) {
         let newLog = (level, message(), error)
-        queue.async { self.recordedLogs.append(newLog) }
+        recordedLogs.append(newLog)
     }
 
     public func reset() {
-        queue.async { self.recordedLogs = [] }
+        recordedLogs = []
     }
 
     // MARK: - Matching
@@ -30,11 +30,9 @@ public class CoreLoggerMock: CoreLogger {
     public typealias RecordedLog = (message: String, error: DDError?)
 
     private func recordedLogs(ofLevel level: CoreLoggerLevel) -> [RecordedLog] {
-        return queue.sync {
-            recordedLogs
+        return recordedLogs
                 .filter({ $0.level == level })
                 .map { ($0.message, $0.error.map({ DDError(error: $0) })) }
-        }
     }
 
     public var debugLogs: [RecordedLog] { recordedLogs(ofLevel: .debug) }
