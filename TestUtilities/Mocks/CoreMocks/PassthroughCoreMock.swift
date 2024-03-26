@@ -62,11 +62,13 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
 
     public required init(
         context: DatadogContext = .mockAny(),
+        dataStore: DataStore = NOPDataStore(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.context = context
+        self.dataStore = dataStore
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
@@ -116,7 +118,7 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
         block(context)
     }
 
-    public var dataStore: DataStore { NOPDataStore() }
+    public var dataStore: DataStore
 
     /// Recorded events from feature scopes.
     ///
