@@ -40,18 +40,6 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             return false
         }
 
-        write(event: event, to: core)
-        return true
-    }
-
-    /// Writes a Browser RUM event to the core.
-    ///
-    /// The receiver will inject current RUM context and apply server-time offset to the event.
-    ///
-    /// - Parameters:
-    ///   - event: The Browser RUM event.
-    ///   - core: The core to write the event.
-    private func write(event: JSON, to core: DatadogCoreProtocol) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -68,14 +56,16 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if let date = event["date"] as? Int {
-                    let viewID = (event["view"] as? JSON)?["id"] as? String
-                    let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
-                    let correctedDate = Int64(date) + serverTimeOffsetInMs
+                if
+                    let date = event["date"] as? Int,
+                    let view = event["view"] as? JSON,
+                    let id = view["id"] as? String
+                {
+                    let correctedDate = Int64(date) + self.offset(forView: id, context: context)
                     event["date"] = correctedDate
 
                     // Inject the container source and view id
-                    if let viewID = self.viewCache.lastView(before: date, hasReplay: true) {
+                    if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
                         event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                             source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                             view: RUMViewEvent.Container.View(id: viewID)
@@ -105,32 +95,24 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 core?.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
             }
         }
+
+        return true
     }
 
     // MARK: - Time offsets
 
-    private typealias Offset = Int64
-    private typealias ViewIDOffsetPair = (viewID: String, offset: Offset)
-    private var viewIDOffsetPairs = [ViewIDOffsetPair]()
+    private var offsets: [(id: String, value: Int64)] = []
 
-    private func getOffsetInMs(viewID: String?, context: DatadogContext) -> Offset {
-        guard let viewID = viewID else {
-            return 0
+    private func offset(forView id: String, context: DatadogContext) -> Int64 {
+        if let found = offsets.first(where: { $0.id == id }) {
+            return found.value
         }
 
-        purgeOffsets()
-        let found = viewIDOffsetPairs.first { $0.viewID == viewID }
-        if let found = found {
-            return found.offset
-        }
         let offset = context.serverTimeOffset.toInt64Milliseconds
-        viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
-        return offset
-    }
+        offsets.insert((id, offset), at: 0)
+        // only retain 3 offsets
+        offsets = Array(offsets.prefix(3))
 
-    private func purgeOffsets() {
-        while viewIDOffsetPairs.count > 3 {
-            _ = viewIDOffsetPairs.popLast()
-        }
+        return offset
     }
 }

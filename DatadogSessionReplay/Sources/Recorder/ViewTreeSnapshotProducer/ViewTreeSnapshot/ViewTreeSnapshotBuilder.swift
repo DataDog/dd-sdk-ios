@@ -68,6 +68,7 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UITabBarRecorder(),
         UIPickerViewRecorder(),
         UIDatePickerRecorder(),
+        WKWebViewRecorder()
     ]
 }
 #endif

@@ -19,7 +19,7 @@ internal enum RUMDependency {
 }
 
 /// The RUM context received from `DatadogCore`.
-internal struct RUMContext: Decodable, Equatable {
+internal struct RUMContext: Codable, Equatable {
     static let key = "rum"
 
     enum CodingKeys: String, CodingKey {
