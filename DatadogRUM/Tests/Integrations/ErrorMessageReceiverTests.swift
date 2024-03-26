@@ -16,6 +16,7 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     override func setUp() {
         receiver = ErrorMessageReceiver(
+            featureScope: featureScope,
             monitor: Monitor(
                 featureScope: featureScope,
                 dependencies: .mockAny(),
