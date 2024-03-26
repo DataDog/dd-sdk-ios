@@ -38,11 +38,13 @@ extension WebViewEventReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
         viewCache: ViewCache = ViewCache()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             dateProvider: dateProvider,
             commandSubscriber: commandSubscriber,
             viewCache: viewCache

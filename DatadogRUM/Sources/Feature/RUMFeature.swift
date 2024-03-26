@@ -102,6 +102,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             ),
             ErrorMessageReceiver(monitor: monitor),
             WebViewEventReceiver(
+                featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache

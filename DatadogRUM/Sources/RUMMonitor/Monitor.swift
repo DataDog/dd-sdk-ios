@@ -110,6 +110,7 @@ internal enum RUMInternalErrorSource: String, Decodable {
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 internal class Monitor: RUMCommandSubscriber {
+    /// RUM feature scope.
     let featureScope: FeatureScope
     let scopes: RUMApplicationScope
     let dateProvider: DateProvider
