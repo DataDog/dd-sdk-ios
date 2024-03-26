@@ -28,7 +28,7 @@ internal struct VitalsReaders {
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
     /// The RUM feature scope to interact with core.
-    let scope: FeatureScope
+    let featureScope: FeatureScope
     let rumApplicationID: String
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
@@ -43,7 +43,7 @@ internal struct RUMScopeDependencies {
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
 
-    var telemetry: Telemetry { scope.telemetry }
+    var telemetry: Telemetry { featureScope.telemetry }
 
     var sessionType: RUMSessionType {
         if ciTest != nil {

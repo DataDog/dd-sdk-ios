@@ -700,7 +700,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        scope: FeatureScope = NOPFeatureScope(),
+        featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = .mockAny(),
@@ -715,7 +715,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            scope: scope,
+            featureScope: featureScope,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -747,7 +747,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            scope: self.scope,
+            featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,

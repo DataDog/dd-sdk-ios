@@ -542,7 +542,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
             // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
             // have recent information if process is interrupted by crash):
-            dependencies.scope.send(
+            dependencies.featureScope.send(
                 message: .baggage(
                     key: RUMBaggageKeys.viewEvent,
                     value: event

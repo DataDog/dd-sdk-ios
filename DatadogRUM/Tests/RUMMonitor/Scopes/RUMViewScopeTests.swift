@@ -2448,7 +2448,7 @@ class RUMViewScopeTests: XCTestCase {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(scope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",

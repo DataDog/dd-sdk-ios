@@ -27,6 +27,9 @@ public protocol FeatureMessageReceiver {
     /// - Returns: `true` if the message was processed by the receiver;`false` if it was ignored.
     @discardableResult
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool
+    // ^ TODO: RUM-3717
+    // Remove `core:` parameter from this API once all features are migrated to depend on `FeatureScope` interface
+    // instead of depending on directly on `core`.
 }
 
 public struct NOPFeatureMessageReceiver: FeatureMessageReceiver {

@@ -10,7 +10,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class MonitorTests: XCTestCase {
-    private let scope = FeatureScopeMock()
+    private let featureScope = FeatureScopeMock()
 
     func testWhenSessionIsSampled_itSetsRUMContextInCore() throws {
         // Given
@@ -18,8 +18,7 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            featureScope: scope,
-            dependencies: .mockWith(scope: scope, sessionSampler: sampler),
+            dependencies: .mockWith(featureScope: featureScope, sessionSampler: sampler),
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
@@ -27,7 +26,7 @@ class MonitorTests: XCTestCase {
 
         // Then
         let expectedContext = monitor.currentRUMContext
-        let rumBaggage = try XCTUnwrap(scope.contextMock.baggages[RUMFeature.name])
+        let rumBaggage = try XCTUnwrap(featureScope.contextMock.baggages[RUMFeature.name])
         let rumContext = try rumBaggage.decode(type: RUMCoreContext.self)
         XCTAssertEqual(rumContext.applicationID, expectedContext.rumApplicationID)
         XCTAssertEqual(rumContext.sessionID, expectedContext.sessionID.toRUMDataFormat)
@@ -40,15 +39,14 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            featureScope: scope,
-            dependencies: .mockWith(scope: scope, sessionSampler: sampler),
+            dependencies: .mockWith(featureScope: featureScope, sessionSampler: sampler),
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
         monitor.flush()
 
         // Then
-        XCTAssertNil(scope.contextMock.baggages[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
     }
 
     func testStartView_withViewController_itUsesClassNameAsViewName() throws {
@@ -57,8 +55,7 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            featureScope: scope,
-            dependencies: .mockWith(scope: scope, sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(featureScope: featureScope, sessionSampler: .mockKeepAll()),
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc)
@@ -75,8 +72,7 @@ class MonitorTests: XCTestCase {
 
         // When
         let monitor = Monitor(
-            featureScope: scope,
-            dependencies: .mockWith(scope: scope, sessionSampler: .mockKeepAll()),
+            dependencies: .mockWith(featureScope: featureScope, sessionSampler: .mockKeepAll()),
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc, name: "Some View")

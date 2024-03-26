@@ -18,8 +18,7 @@ class ErrorMessageReceiverTests: XCTestCase {
         receiver = ErrorMessageReceiver(
             featureScope: featureScope,
             monitor: Monitor(
-                featureScope: featureScope,
-                dependencies: .mockAny(),
+                dependencies: .mockWith(featureScope: featureScope),
                 dateProvider: SystemDateProvider()
             )
         )

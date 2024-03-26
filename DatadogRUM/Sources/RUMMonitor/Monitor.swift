@@ -124,11 +124,10 @@ internal class Monitor: RUMCommandSubscriber {
     private var attributes: [AttributeKey: AttributeValue] = [:]
 
     init(
-        featureScope: FeatureScope,
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider
     ) {
-        self.featureScope = featureScope
+        self.featureScope = dependencies.featureScope
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
     }

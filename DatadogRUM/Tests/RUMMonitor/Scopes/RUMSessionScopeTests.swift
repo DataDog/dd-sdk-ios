@@ -348,7 +348,7 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             dependencies: .mockWith(
-                scope: featureScope,
+                featureScope: featureScope,
                 sessionSampler: .mockRandom() // no matter if sampled or not
             ),
             hasReplay: randomIsReplayBeingRecorded
@@ -377,7 +377,7 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(scope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope),
             hasReplay: randomIsReplayBeingRecorded
         )
 
@@ -406,7 +406,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(scope: featureScope)
+            dependencies: .mockWith(featureScope: featureScope)
         )
 
         // When
@@ -564,7 +564,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date(),
-            dependencies: .mockWith(scope: featureScope)
+            dependencies: .mockWith(featureScope: featureScope)
         )
 
         let command = RUMStartViewCommand.mockWith(time: Date(), identity: .mockViewIdentifier(), name: "ActiveView")
@@ -593,7 +593,7 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date(),
-            dependencies: .mockWith(scope: featureScope)
+            dependencies: .mockWith(featureScope: featureScope)
         )
 
         let startViewCommand = RUMStartViewCommand.mockWith(time: Date(), identity: .mockViewIdentifier())
