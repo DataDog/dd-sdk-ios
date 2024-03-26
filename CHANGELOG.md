@@ -1,5 +1,7 @@
 # Unreleased
 
+* [FEATURE] Support calling log event mapper for crashes.
+
 # 2.8.0 / 19-03-2024
 
 - [FEATURE] App Hangs are tracked as RUM errors. See [#1685][]
