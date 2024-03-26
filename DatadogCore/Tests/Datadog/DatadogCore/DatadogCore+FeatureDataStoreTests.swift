@@ -45,8 +45,8 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         try core.register(feature: FeatureBMock())
 
         // When
-        let scopeA = try XCTUnwrap(core.scope(for: FeatureAMock.name))
-        let scopeB = try XCTUnwrap(core.scope(for: FeatureBMock.name))
+        let scopeA = core.scope(for: FeatureAMock.self)
+        let scopeB = core.scope(for: FeatureBMock.self)
 
         let commonKey = "key"
         scopeA.dataStore.setValue("feature A data".utf8Data, forKey: commonKey)
@@ -104,8 +104,8 @@ class DatadogCore_FeatureDataStoreTests: XCTestCase {
         try core2.register(feature: FeatureAMock())
 
         // When
-        let scope1 = try XCTUnwrap(core1.scope(for: FeatureAMock.name))
-        let scope2 = try XCTUnwrap(core2.scope(for: FeatureAMock.name))
+        let scope1 = core1.scope(for: FeatureAMock.self)
+        let scope2 = core2.scope(for: FeatureAMock.self)
 
         let commonKey = "key"
         scope1.dataStore.setValue("feature data in core 1".utf8Data, forKey: commonKey)

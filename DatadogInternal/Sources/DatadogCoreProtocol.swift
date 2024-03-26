@@ -11,7 +11,7 @@ import Foundation
 ///
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
-public protocol DatadogCoreProtocol: AnyObject {
+public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
     /// Registers a Feature instance.
     ///
     /// Feature can interact with the core and other Feature through the message bus. Some specific Features
@@ -36,17 +36,34 @@ public protocol DatadogCoreProtocol: AnyObject {
     /// - Returns: The Feature if any.
     func get<T>(feature type: T.Type) -> T? where T: DatadogFeature
 
-    /// Retrieves a Feature Scope by its name.
+    /// Retrieves a Feature Scope for given feature type.
     ///
-    /// Feature Scope collects data to Datadog Product (e.g. Logs, RUM, ...). Upon registration, the Feature retrieves
-    /// its `FeatureScope` interface for writing events to the core. The core will store and upload events efficiently
-    /// according to the performance presets defined on initialization.
+    /// The scope manages the underlying core's reference in safe way, guaranteeing no reference leaks.
+    /// It is available right away even before the feature registration completes in the core, so some capabilities
+    /// might be not available before the feature is fully registered.
+    ///
+    /// If possible, feature implementation must to take dependency on `FeatureScope` rather than `DatadogCoreProtocol` itself.
     ///
     /// - Parameters:
-    ///   - feature: The Feature's name.
-    /// - Returns: The Feature scope if a Feature with given name was registered.
-    func scope(for feature: String) -> FeatureScope?
+    ///   - type: The Feature instance type.
+    /// - Returns: The scope for requested feature type.
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature
+}
 
+public protocol MessageSending {
+    /// Sends a message on the bus shared by features registered to the sam core.
+    ///
+    /// If the message could not be processed by any registered feature, the fallback closure
+    /// will be invoked. Do not make any assumption on which thread the fallback is called.
+    ///
+    /// - Parameters:
+    ///   - message: The message.
+    ///   - fallback: The fallback closure to call when the message could not be
+    ///               processed by any Features on the bus.
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
+}
+
+public protocol BaggageSharing {
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
     /// This method provides a passive communication chanel between Features of the Core.
@@ -77,28 +94,19 @@ public protocol DatadogCoreProtocol: AnyObject {
     ///   - baggage: The Feature's baggage to set.
     ///   - key: The baggage's key.
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String)
-
-    /// Sends a message on the bus shared by features registered in this core.
-    ///
-    /// If the message could not be processed by any registered feature, the fallback closure
-    /// will be invoked. Do not make any assumption on which thread the fallback is called.
-    ///
-    /// - Parameters:
-    ///   - message: The message.
-    ///   - fallback: The fallback closure to call when the message could not be
-    ///               processed by any Features on the bus.
-    func send(message: FeatureMessage, else fallback: @escaping () -> Void)
 }
 
-extension DatadogCoreProtocol {
-    /// Sends a message on the bus shared by features registered in this core.
+extension MessageSending {
+    /// Sends a message on the bus shared by features registered to the same core.
     ///
     /// - Parameters:
     ///   - message: The message.
     public func send(message: FeatureMessage) {
         send(message: message, else: {})
     }
+}
 
+extension BaggageSharing {
     /// Sets given baggage for a given Feature for sharing data through `DatadogContext`.
     ///
     /// This method provides a passive communication chanel between Features of the Core.
@@ -200,7 +208,7 @@ extension DatadogCoreProtocol {
 }
 
 /// Feature scope provides a context and a writer to build a record event.
-public protocol FeatureScope {
+public protocol FeatureScope: MessageSending, BaggageSharing {
     /// Retrieve the core context and event writer.
     ///
     /// The Feature scope provides the current Datadog context and event writer for building and recording events.
@@ -224,8 +232,15 @@ public protocol FeatureScope {
     /// - Parameter block: The block to execute; it is called on the context queue.
     func context(_ block: @escaping (DatadogContext) -> Void)
 
-    /// Data store configured for storing data for this feature.
+    /// Data store endpoint.
+    ///
+    /// Use this property to store data for this feature. Data will be persisted between app launches.
     var dataStore: DataStore { get }
+
+    /// Telemetry endpoint.
+    ///
+    /// Use this property to report any telemetry event to the core.
+    var telemetry: Telemetry { get }
 }
 
 /// Feature scope provides a context and a writer to build a record event.
@@ -273,9 +288,25 @@ public class NOPDatadogCore: DatadogCoreProtocol {
     /// no-op
     public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
     /// no-op
-    public func scope(for feature: String) -> FeatureScope? { nil }
+    public func scope<T>(for featureType: T.Type) -> FeatureScope { NOPFeatureScope() }
     /// no-op
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
     /// no-op
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+}
+
+public struct NOPFeatureScope: FeatureScope {
+    public init() { }
+    /// no-op
+    public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) { }
+    /// no-op
+    public func context(_ block: @escaping (DatadogContext) -> Void) { }
+    /// no-op
+    public var dataStore: DataStore { NOPDataStore() }
+    /// no-op
+    public var telemetry: Telemetry { NOPTelemetry() }
+    /// no-op
+    public func send(message: FeatureMessage, else fallback: @escaping () -> Void) { }
+    /// no-op
+    public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) { }
 }

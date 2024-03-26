@@ -33,6 +33,7 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     /// The SDK core managed by this proxy.
     private let core: DatadogCore
 
+    @ReadWriteLock
     private var featureScopeInterceptors: [String: FeatureScopeInterceptor] = [:]
 
     init(context: DatadogContext = .mockAny()) {
@@ -66,7 +67,6 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
     }
 
     func register<T>(feature: T) throws where T: DatadogFeature {
-        featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
         try core.register(feature: feature)
     }
 
@@ -74,10 +74,14 @@ internal class DatadogCoreProxy: DatadogCoreProtocol {
         return core.get(feature: type)
     }
 
-    func scope(for feature: String) -> FeatureScope? {
-        return core.scope(for: feature).map { scope in
-            FeatureScopeProxy(proxy: scope, interceptor: featureScopeInterceptors[feature]!)
+    func scope<T>(for featureType: T.Type) -> FeatureScope where T: DatadogFeature {
+        if featureScopeInterceptors[T.name] == nil {
+            featureScopeInterceptors[T.name] = FeatureScopeInterceptor()
         }
+        return FeatureScopeProxy(
+            proxy: core.scope(for: featureType),
+            interceptor: featureScopeInterceptors[T.name]!
+        )
     }
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
@@ -126,7 +130,16 @@ private struct FeatureScopeProxy: FeatureScope {
         }
     }
 
+    var telemetry: Telemetry { proxy.telemetry }
     var dataStore: DataStore { proxy.dataStore }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        proxy.send(message: message, else: fallback)
+    }
+
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        proxy.set(baggage: baggage, forKey: key)
+    }
 }
 
 private class FeatureScopeInterceptor {
@@ -177,7 +190,9 @@ extension DatadogCoreProxy {
     /// - Returns: A list of events.
     func waitAndReturnEvents<T>(ofFeature name: String, ofType type: T.Type, timeout: DispatchTime = .distantFuture) -> [T] where T: Encodable {
         flush()
-        let interceptor = self.featureScopeInterceptors[name]!
+        guard let interceptor = self.featureScopeInterceptors[name] else {
+            return [] // feature scope was not requested, so there's no interception
+        }
         return interceptor.waitAndReturnEvents(timeout: timeout).compactMap { $0.event as? T }
     }
 
@@ -187,7 +202,9 @@ extension DatadogCoreProxy {
     /// - Returns: A list of serialized events.
     func waitAndReturnEventsData(ofFeature name: String, timeout: DispatchTime = .distantFuture) -> [Data] {
         flush()
-        let interceptor = self.featureScopeInterceptors[name]!
+        guard let interceptor = self.featureScopeInterceptors[name] else {
+            return [] // feature scope was not requested, so there's no interception
+        }
         return interceptor.waitAndReturnEvents(timeout: timeout).map { $0.data }
     }
 }

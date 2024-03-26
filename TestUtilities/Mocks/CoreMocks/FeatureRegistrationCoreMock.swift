@@ -46,9 +46,8 @@ public class FeatureRegistrationCoreMock: DatadogCoreProtocol {
 
     // MARK: - Unsupported
 
-    public func scope(for feature: String) -> FeatureScope? {
-        // not supported - use different type of core mock if you need this
-        return nil
+    public func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+        return NOPFeatureScope()
     }
 
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {

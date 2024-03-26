@@ -55,7 +55,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+            core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
                 let builder = LogEventBuilder(
                     service: log.service ?? context.service,
                     loggerName: log.logger,
@@ -237,7 +237,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+        core.scope(for: LogsFeature.self).eventWriteContext(bypassConsent: true) { context, writer in
             let event = LogEvent(
                 date: date,
                 status: .emergency,
@@ -309,7 +309,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
         let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
-        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+        core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
             let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
 
             if let tags = event[tagsKey] as? String, !tags.isEmpty {

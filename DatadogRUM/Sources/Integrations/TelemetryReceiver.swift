@@ -222,14 +222,11 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     }
 
     private func record(event id: String?, in core: DatadogCoreProtocol, operation: @escaping (DatadogContext, Writer) -> Void) {
-        guard
-            let rum = core.scope(for: RUMFeature.name),
-            sampler.sample()
-        else {
+        guard sampler.sample() else {
             return
         }
 
-        rum.eventWriteContext { context, writer in
+        core.scope(for: RUMFeature.self).eventWriteContext { context, writer in
             // reset recorded events on session renewal
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 

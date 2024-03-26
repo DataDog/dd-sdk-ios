@@ -41,7 +41,7 @@ class RUMMonitorConfigurationTests: XCTestCase {
         let monitor = RUMMonitor.shared(in: core).dd
 
         let dependencies = monitor.scopes.dependencies
-        monitor.core?.scope(for: RUMFeature.name)?.eventWriteContext { context, _ in
+        monitor.core?.scope(for: RUMFeature.self).eventWriteContext { context, _ in
             DDAssertReflectionEqual(context.userInfo, self.userIno)
             XCTAssertEqual(context.networkConnectionInfo, self.networkConnectionInfo)
             XCTAssertEqual(context.carrierInfo, self.carrierInfo)
