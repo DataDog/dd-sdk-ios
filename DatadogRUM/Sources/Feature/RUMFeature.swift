@@ -108,6 +108,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 viewCache: dependencies.viewCache
             ),
             CrashReportReceiver(
+                featureScope: featureScope,
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
@@ -120,8 +121,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                     } else {
                         return nil
                     }
-                }(),
-                telemetry: core.telemetry
+                }()
             )
         )
 

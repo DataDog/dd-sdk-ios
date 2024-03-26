@@ -58,6 +58,7 @@ extension CrashReportReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -68,14 +69,14 @@ extension CrashReportReceiver: AnyMockable {
         telemetry: Telemetry = NOPTelemetry()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
-            syntheticsTest: syntheticsTest,
-            telemetry: telemetry
+            syntheticsTest: syntheticsTest
         )
     }
 }

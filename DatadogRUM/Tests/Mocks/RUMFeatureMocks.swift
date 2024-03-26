@@ -31,24 +31,24 @@ extension CrashReportReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
-        syntheticsTest: RUMSyntheticsTest? = nil,
-        telemetry: Telemetry = NOPTelemetry()
+        syntheticsTest: RUMSyntheticsTest? = nil
     ) -> Self {
         .init(
+            featureScope: featureScope,
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
-            syntheticsTest: syntheticsTest,
-            telemetry: telemetry
+            syntheticsTest: syntheticsTest
         )
     }
 }
