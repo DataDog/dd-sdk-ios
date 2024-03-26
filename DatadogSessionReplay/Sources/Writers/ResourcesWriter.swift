@@ -34,7 +34,7 @@ internal class ResourcesWriter: ResourcesWriting {
     init(
         core: DatadogCoreProtocol
     ) {
-        self.scope = core.scope(for: ResourcesFeature.name)
+        self.scope = core.scope(for: ResourcesFeature.self)
         self.telemetry = core.telemetry
 
         self.scope?.dataStore.value(forKey: Constants.processedResourcesKey) { [weak self] result in
