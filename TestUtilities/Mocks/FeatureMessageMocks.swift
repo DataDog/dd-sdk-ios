@@ -13,6 +13,11 @@ public extension Array where Element == FeatureMessage {
         return compactMap({ $0.asBaggage }).filter({ $0.key == key }).first?.baggage
     }
 
+    /// Unpacks the last "baggage message" with given key in this array.
+    func lastBaggage(withKey key: String) -> FeatureBaggage? {
+        return compactMap({ $0.asBaggage }).filter({ $0.key == key }).last?.baggage
+    }
+
     /// Unpacks the first "baggage message" with given key in this array.
     var firstWebViewMessage: WebViewMessage? {
         return lazy.compactMap { $0.asWebViewMessage }.first

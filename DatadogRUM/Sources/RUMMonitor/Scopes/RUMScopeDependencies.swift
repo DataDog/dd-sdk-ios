@@ -27,7 +27,8 @@ internal struct VitalsReaders {
 
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
-    weak var core: DatadogCoreProtocol?
+    /// The RUM feature scope to interact with core.
+    let scope: FeatureScope
     let rumApplicationID: String
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
@@ -42,9 +43,7 @@ internal struct RUMScopeDependencies {
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
 
-    var telemetry: Telemetry {
-        core?.telemetry ?? NOPTelemetry()
-    }
+    var telemetry: Telemetry { scope.telemetry }
 
     var sessionType: RUMSessionType {
         if ciTest != nil {

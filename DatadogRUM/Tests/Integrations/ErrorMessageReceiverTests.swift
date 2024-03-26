@@ -11,15 +11,13 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class ErrorMessageReceiverTests: XCTestCase {
-    var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+    private let featureScope = FeatureScopeMock()
+    private var receiver: ErrorMessageReceiver! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
-        super.setUp()
-
-        core = PassthroughCoreMock()
-        core.messageReceiver = ErrorMessageReceiver(
+        receiver = ErrorMessageReceiver(
             monitor: Monitor(
-                core: core,
+                featureScope: featureScope,
                 dependencies: .mockAny(),
                 dateProvider: SystemDateProvider()
             )
@@ -27,49 +25,42 @@ class ErrorMessageReceiverTests: XCTestCase {
     }
 
     override func tearDown() {
-        core = nil
-        super.tearDown()
+        receiver = nil
     }
 
     func testReceiveIncompleteError() throws {
-        let expectation = expectation(description: "Don't send error fallback")
-
         // When
-        core.send(
-            message: .baggage(key: "error", value: ["message": "message-test"]),
-            else: { expectation.fulfill() }
+        let message: FeatureMessage = .baggage(
+            key: ErrorMessageReceiver.ErrorMessage.key,
+            value: ["message": "message-test"]
         )
-
-        let errorEvents = core.events(ofType: RUMErrorEvent.self)
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertTrue(errorEvents.isEmpty)
+        XCTAssertFalse(result, "It must reject the message")
+        let events: [RUMErrorEvent] = featureScope.eventsWritten()
+        XCTAssertTrue(events.isEmpty, "It should not send error")
     }
 
     func testReceivePartialError() throws {
-        core.expectation = expectation(description: "Send Error")
-
         // When
-        core.send(
-            message: .baggage(key: "error", value: [
+        let message: FeatureMessage = .baggage(
+            key: ErrorMessageReceiver.ErrorMessage.key,
+            value: [
                 "message": "message-test",
                 "source": "custom"
-            ])
+            ]
         )
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let event: RUMErrorEvent = try XCTUnwrap(core.events().last, "It should send log")
+        XCTAssertTrue(result, "It must accept the message")
+        let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.source, .custom)
     }
 
     func testReceiveCompleteError() throws {
-        core.expectation = expectation(description: "Send Error")
-
-        // When
         let mockAttribute: String = .mockRandom()
         let baggage: [String: Any] = [
             "message": "message-test",
@@ -80,14 +71,14 @@ class ErrorMessageReceiverTests: XCTestCase {
                 "any-key": mockAttribute
             ]
         ]
-        core.send(
-            message: .baggage(key: "error", value: AnyEncodable(baggage))
-        )
+
+        // When
+        let message: FeatureMessage = .baggage(key: ErrorMessageReceiver.ErrorMessage.key, value: AnyEncodable(baggage))
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-
-        let event: RUMErrorEvent = try XCTUnwrap(core.events().last, "It should send log")
+        XCTAssertTrue(result, "It must accept the message")
+        let event: RUMErrorEvent = try XCTUnwrap(featureScope.eventsWritten().last, "It should send error")
         XCTAssertEqual(event.error.message, "message-test")
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")

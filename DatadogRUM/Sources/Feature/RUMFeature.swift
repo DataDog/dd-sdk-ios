@@ -26,8 +26,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
     ) throws {
         self.configuration = configuration
 
+        let featureScope = core.scope(for: RUMFeature.self)
         let dependencies = RUMScopeDependencies(
-            core: core,
+            scope: featureScope,
             rumApplicationID: configuration.applicationID,
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             trackBackgroundEvents: configuration.trackBackgroundEvents,
@@ -72,7 +73,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         self.monitor = Monitor(
-            core: core,
+            featureScope: featureScope,
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )

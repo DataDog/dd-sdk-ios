@@ -743,7 +743,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        core: DatadogCoreProtocol = NOPDatadogCore(),
+        scope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = .mockAny(),
@@ -758,7 +758,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: core,
+            scope: scope,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -790,7 +790,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: self.core,
+            scope: self.scope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,

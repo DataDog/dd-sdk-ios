@@ -12,6 +12,10 @@ import Foundation
 /// Any reference to `DatadogCoreProtocol` must be captured as `weak` within a Feature. This is to avoid
 /// retain cycle of core holding the Feature and vice-versa.
 public protocol DatadogCoreProtocol: AnyObject, MessageSending, BaggageSharing {
+    // TODO: RUM-3717 
+    // Remove `DatadogCoreProtocol` conformance to `MessageSending` and `BaggageSharing` once
+    // all features are migrated to depend on `FeatureScope` interface.
+
     /// Registers a Feature instance.
     ///
     /// Feature can interact with the core and other Feature through the message bus. Some specific Features

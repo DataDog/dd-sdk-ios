@@ -336,19 +336,10 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(scope.viewScopes.count, 0)
     }
 
-    // MARK: Integration with Crash Context
+    // MARK: - Sending Messages Over Message Bus
 
-    func testWhenSessionScopeIsCreated_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
-        var sessionState: RUMSessionState? = nil
-
-        let messageReciever = FeatureMessageReceiverMock { message in
-            sessionState = try? message.baggage(forKey: RUMBaggageKeys.sessionState)
-        }
-
-        let core = PassthroughCoreMock(
-            messageReceiver: messageReciever
-        )
-
+    func testWhenSessionScopeIsCreated_itSendsSessionStateMessage() throws {
+        let featureScope = FeatureScopeMock()
         let randomIsInitialSession: Bool = .mockRandom()
         let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
@@ -357,7 +348,7 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             dependencies: .mockWith(
-                core: core,
+                scope: featureScope,
                 sessionSampler: .mockRandom() // no matter if sampled or not
             ),
             hasReplay: randomIsReplayBeingRecorded
@@ -370,21 +361,13 @@ class RUMSessionScopeTests: XCTestCase {
             hasTrackedAnyView: false,
             didStartWithReplay: randomIsReplayBeingRecorded
         )
-        XCTAssertEqual(sessionState, expectedSessionState, "It must inject expected session state to crash context")
+        let baggageSent = try XCTUnwrap(featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.sessionState))
+        let sessionStateSent: RUMSessionState = try baggageSent.decode()
+        XCTAssertEqual(sessionStateSent, expectedSessionState, "It must send 'session state' message")
     }
 
-    func testWhenSessionScopeStartsAnyView_thenItUpdatesLastRUMSessionStateInCrashContext() throws {
-        var sessionState: RUMSessionState? = nil
-        let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .baggage(label, baggage) = message, label == RUMBaggageKeys.sessionState {
-                sessionState = try? baggage.decode()
-            }
-        }
-
-        let core = PassthroughCoreMock(
-            messageReceiver: messageReciever
-        )
-
+    func testWhenSessionScopeStartsAnyView_itSendsSessionStateMessage() throws {
+        let featureScope = FeatureScopeMock()
         let randomIsInitialSession: Bool = .mockRandom()
         let randomIsReplayBeingRecorded: Bool? = .mockRandom()
 
@@ -394,14 +377,12 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(core: core),
+            dependencies: .mockWith(scope: featureScope),
             hasReplay: randomIsReplayBeingRecorded
         )
 
         // When
-        core.eventWriteContext { context, writer in
-            _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
-        }
+        _ = scope.process(command: RUMStartViewCommand.mockWith(time: sessionStartTime), context: context, writer: writer)
 
         XCTAssertFalse(scope.viewScopes.isEmpty, "Session started some view")
 
@@ -412,45 +393,40 @@ class RUMSessionScopeTests: XCTestCase {
             hasTrackedAnyView: true,
             didStartWithReplay: randomIsReplayBeingRecorded
         )
-
-        XCTAssertEqual(sessionState, expectedSessionState, "It must inject expected session state to crash context")
+        let baggageSent = try XCTUnwrap(featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.sessionState))
+        let sessionStateSent: RUMSessionState = try baggageSent.decode()
+        XCTAssertEqual(sessionStateSent, expectedSessionState, "It must send 'session state' message")
     }
 
-    func testWhenSessionScopeHasNoActiveView_thenItUpdatesLastRUMViewEventInCrashContext() throws {
-        var viewEvent: RUMViewEvent? = nil
-        let messageReciever = FeatureMessageReceiverMock { message in
-            if let event: RUMViewEvent = try? message.baggage(forKey: RUMBaggageKeys.viewEvent) {
-                viewEvent = event
-            } else if let reset: Bool = try? message.baggage(forKey: RUMBaggageKeys.viewReset), reset {
-                viewEvent = nil
-            }
-        }
-
-        let core = PassthroughCoreMock(
-            context: context,
-            messageReceiver: messageReciever
-        )
+    func testWhenSessionScopeHasNoActiveView_itSendsViewEventMessages() throws {
+        let featureScope = FeatureScopeMock()
 
         // Given
         let sessionStartTime = Date()
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: sessionStartTime,
-            dependencies: .mockWith(core: core)
+            dependencies: .mockWith(scope: featureScope)
         )
 
         // When
-        let command = RUMStartViewCommand.mockWith(time: sessionStartTime, identity: .mockViewIdentifier())
+        let command = RUMStartViewCommand.mockWith(time: sessionStartTime, identity: .mockViewIdentifier(), name: "ActiveView")
         _ = scope.process(command: command, context: context, writer: writer)
 
         // Then
-        XCTAssertNotNil(viewEvent, "Crash context must be include rum view event, because there is an active view")
+        let viewEventBaggage: RUMViewEvent = try XCTUnwrap(
+            featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.viewEvent)?.decode()
+        )
+        XCTAssertEqual(viewEventBaggage.view.name, "ActiveView", "It must send 'view event' message")
 
         // When
         _ = scope.process(command: RUMStopViewCommand.mockWith(time: sessionStartTime.addingTimeInterval(1), identity: .mockViewIdentifier()), context: context, writer: writer)
 
         // Then
-        XCTAssertNil(viewEvent, "Crash context must not include rum view event, because there is no active view")
+        let viewResetBaggage: Bool = try XCTUnwrap(
+            featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.viewReset)?.decode()
+        )
+        XCTAssertTrue(viewResetBaggage, "It must send 'view reset' message")
     }
 
     // MARK: - Stopping Sessions
@@ -581,59 +557,43 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertFalse(result)
     }
 
-    func testWhenScopeEnded_itUpdatesContext() {
+    func testWhenScopeEnded_itSendsViewEventMessages() throws {
+        let featureScope = FeatureScopeMock()
+
         // Given
-        var viewEvent: RUMViewEvent? = nil
-        let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .baggage(label, baggage) = message, label == RUMBaggageKeys.viewEvent {
-                viewEvent = try? baggage.decode()
-            } else if case let .baggage(label, _) = message, label == RUMBaggageKeys.viewReset {
-                viewEvent = nil
-            }
-        }
-
-        let core = PassthroughCoreMock(
-            context: context,
-            messageReceiver: messageReciever
-        )
-
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date(),
-            dependencies: .mockWith(core: core)
+            dependencies: .mockWith(scope: featureScope)
         )
 
-        let command = RUMStartViewCommand.mockWith(time: Date(), identity: .mockViewIdentifier())
+        let command = RUMStartViewCommand.mockWith(time: Date(), identity: .mockViewIdentifier(), name: "ActiveView")
         // When
         _ = scope.process(command: command, context: context, writer: writer)
         // Then
-        XCTAssertNotNil(viewEvent)
+        let viewEventBaggage: RUMViewEvent = try XCTUnwrap(
+            featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.viewEvent)?.decode()
+        )
+        XCTAssertEqual(viewEventBaggage.view.name, "ActiveView", "It must send 'view event' message")
 
         // When
         _ = scope.process(command: RUMStopSessionCommand.mockWith(time: Date()), context: context, writer: writer)
 
         // Then
-        XCTAssertNil(viewEvent)
+        let viewResetBaggage: Bool = try XCTUnwrap(
+            featureScope.messagesSent().lastBaggage(withKey: RUMBaggageKeys.viewReset)?.decode()
+        )
+        XCTAssertTrue(viewResetBaggage, "It must send 'view reset' message")
     }
 
-    func testWhenScopeEnded_itDoesNotResetContextNextUpdate() {
+    func testWhenScopeEnded_itDoesNotSendViewResetMessage() {
+        let featureScope = FeatureScopeMock()
+
         // Given
-        var viewResetCallCount = 0
-        let messageReciever = FeatureMessageReceiverMock { message in
-            if case let .baggage(label, _) = message, label == RUMBaggageKeys.viewReset {
-                viewResetCallCount += 1
-            }
-        }
-
-        let core = PassthroughCoreMock(
-            context: context,
-            messageReceiver: messageReciever
-        )
-
         let scope: RUMSessionScope = .mockWith(
             parent: parent,
             startTime: Date(),
-            dependencies: .mockWith(core: core)
+            dependencies: .mockWith(scope: featureScope)
         )
 
         let startViewCommand = RUMStartViewCommand.mockWith(time: Date(), identity: .mockViewIdentifier())
@@ -647,7 +607,8 @@ class RUMSessionScopeTests: XCTestCase {
         _ = scope.process(command: stopResourceCommand, context: context, writer: writer)
 
         // Then
-        XCTAssertEqual(viewResetCallCount, 1)
+        let viewResetMessages = featureScope.messagesSent().filter { $0.asBaggage?.key == RUMBaggageKeys.viewReset }
+        XCTAssertEqual(viewResetMessages.count, 1, "It must send only one 'view reset' message")
     }
 
     // MARK: - Usage
