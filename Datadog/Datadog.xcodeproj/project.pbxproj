@@ -552,6 +552,8 @@
 		9E68FB55244707FD0013A8AA /* ObjcExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 9E68FB53244707FD0013A8AA /* ObjcExceptionHandler.m */; };
 		9E68FB56244707FD0013A8AA /* ObjcExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9EE5AD8226205B82001E699E /* DDNSURLSessionDelegateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */; };
+		A703694D2BB2E30100C66C36 /* DataStoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A703694C2BB2E30100C66C36 /* DataStoreMock.swift */; };
+		A703694E2BB2E30100C66C36 /* DataStoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = A703694C2BB2E30100C66C36 /* DataStoreMock.swift */; };
 		A70A82652A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70A82662A935F210072F5DC /* BackgroundTaskCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */; };
 		A70ADCD22B583B1300321BC9 /* UIImageResource.swift in Sources */ = {isa = PBXBuildFile; fileRef = A70ADCD12B583B1300321BC9 /* UIImageResource.swift */; };
@@ -2519,6 +2521,7 @@
 		9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReader.swift; sourceTree = "<group>"; };
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
 		9EE5AD8126205B82001E699E /* DDNSURLSessionDelegateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDNSURLSessionDelegateTests.swift; sourceTree = "<group>"; };
+		A703694C2BB2E30100C66C36 /* DataStoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataStoreMock.swift; sourceTree = "<group>"; };
 		A70A82642A935F210072F5DC /* BackgroundTaskCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCoordinator.swift; sourceTree = "<group>"; };
 		A70ADCD12B583B1300321BC9 /* UIImageResource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResource.swift; sourceTree = "<group>"; };
 		A71013D52B178FAD00101E60 /* ResourcesWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResourcesWriterTests.swift; sourceTree = "<group>"; };
@@ -5659,6 +5662,7 @@
 				61C3646F243B5C8300C4D4E6 /* ServerMock.swift */,
 				D2160CF629C0EE2B00FAA9A5 /* UploadMocks.swift */,
 				3C0D5DEE2A5442A900446CF9 /* EventMocks.swift */,
+				A703694C2BB2E30100C66C36 /* DataStoreMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -8399,6 +8403,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C713D32A3DFB4900FA735A /* FuzzyHelpers.swift in Sources */,
+				A703694D2BB2E30100C66C36 /* DataStoreMock.swift in Sources */,
 				D2160CF229C0ED3C00FAA9A5 /* ServerMock.swift in Sources */,
 				D257955B298ABB04008A1BE5 /* XCTestCase.swift in Sources */,
 				D2579556298ABB04008A1BE5 /* FoundationMocks.swift in Sources */,
@@ -8444,6 +8449,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				61C713D42A3DFB4900FA735A /* FuzzyHelpers.swift in Sources */,
+				A703694E2BB2E30100C66C36 /* DataStoreMock.swift in Sources */,
 				D2160CF329C0ED3C00FAA9A5 /* ServerMock.swift in Sources */,
 				D2579578298ABB83008A1BE5 /* XCTestCase.swift in Sources */,
 				D2579579298ABB83008A1BE5 /* FoundationMocks.swift in Sources */,

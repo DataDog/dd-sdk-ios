@@ -39,4 +39,36 @@ class ResourcesWriterTests: XCTestCase {
 
         XCTAssertEqual(core.events(ofType: EnrichedResource.self).count, 0)
     }
+
+    func testWhenFeatureScopeIsConnected_itWritesResourcesToCore_andRemovesDuplicates() throws {
+        // Given
+        let dataStore = DataStoreMock()
+        let core = PassthroughCoreMock(dataStore: dataStore)
+
+        // When
+        let writer = ResourcesWriter(core: core)
+
+        // Then
+        writer.write(resources: [.mockWith(identifier: "1")])
+        writer.write(resources: [.mockWith(identifier: "1")])
+
+        XCTAssertEqual(core.events(ofType: EnrichedResource.self).count, 1)
+        let data = try XCTUnwrap(dataStore.values["processed-resources"])
+        XCTAssertGreaterThan(data.count, 0)
+    }
+
+    func testWhenFeatureScopeIsConnected_itWritesResourcesToCore_andReadsKnownDuplicates() throws {
+        // Given
+        let dataStore = DataStoreMock()
+        dataStore.values["processed-resources"] = try JSONEncoder().encode(Set(["1"]))
+        let core = PassthroughCoreMock(dataStore: dataStore)
+
+        // When
+        let writer = ResourcesWriter(core: core)
+
+        // Then
+        writer.write(resources: [.mockWith(identifier: "1")])
+
+        XCTAssertEqual(core.events(ofType: EnrichedResource.self).count, 0)
+    }
 }
