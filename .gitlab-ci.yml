@@ -2,6 +2,7 @@ stages:
   - info
   - lint
   - test
+  - gate
 
 ENV info:
   stage: info
@@ -84,3 +85,13 @@ SDK integration tests (iOS):
     - ./tools/config/generate-http-server-mock-config.sh
     - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogIntegrationTests test | xcbeautify
     - xcodebuild -workspace "$TEST_WORKSPACE" -destination "$TEST_DESTINATION" -scheme "IntegrationScenarios" -testPlan DatadogCrashReportingIntegrationTests test | xcbeautify
+
+Gate:
+  stage: gate
+  allow_failure: true
+  script:
+    - curl -L --fail "https://github.com/DataDog/datadog-ci/releases/latest/download/datadog-ci_linux-x64" --output "/usr/local/bin/datadog-ci" && chmod +x /usr/local/bin/datadog-ci
+    - export DD_BETA_COMMANDS_ENABLED=true
+    - export DD_API_KEY=${DD_SDK_SWIFT_TESTING_APIKEY}
+    - export DD_APP_KEY=${DD_SDK_SWIFT_TESTING_APPLICATION_KEY}
+    - datadog-ci gate evaluate
