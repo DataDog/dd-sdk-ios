@@ -22,31 +22,42 @@ internal class ResourcesWriter: ResourcesWriting {
     @ReadWriteLock
     private var knownIdentifiers = Set<String>() {
         didSet {
-            if let knownIdentifiers = try? JSONEncoder().encode(knownIdentifiers) {
+            if let knownIdentifiers = knownIdentifiers.asData() {
                 scope?.dataStore.setValue(
                     knownIdentifiers,
-                    forKey: Constants.processedResourcesKey
+                    forKey: Constants.knownResourcesKey
                 )
             }
         }
     }
 
     init(
-        core: DatadogCoreProtocol
+        core: DatadogCoreProtocol,
+        dataStoreResetTime: TimeInterval = TimeInterval(30).days
     ) {
         self.scope = core.scope(for: ResourcesFeature.self)
         self.telemetry = core.telemetry
 
-        self.scope?.dataStore.value(forKey: Constants.processedResourcesKey) { [weak self] result in
-            switch result {
-            case .value(let data, _):
-                if let knownIdentifiers = try? JSONDecoder().decode(Set<String>.self, from: data) {
-                    self?.knownIdentifiers.formUnion(knownIdentifiers)
+        self.scope?.dataStore.value(forKey: Constants.storeCreationKey) { result in
+            if let storeCreation = result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
+                self.scope?.dataStore.value(forKey: Constants.knownResourcesKey) { [weak self] result in
+                    switch result {
+                    case .value(let data, _):
+                        if let knownIdentifiers = data.asKnownIdentifiers() {
+                            self?.knownIdentifiers.formUnion(knownIdentifiers)
+                        }
+                    case .error(let error):
+                        self?.telemetry.error("Failed to read processed resources from data store: \(error)")
+                    case .noValue:
+                        break
+                    }
                 }
-            case .error(let error):
-                self?.telemetry.error("Failed to read processed resources from data store: \(error)")
-            case .noValue:
-                break
+            } else { // Reset if store was created more than 30 days ago
+                self.scope?.dataStore.setValue(
+                    Date().timeIntervalSince1970.asData(),
+                    forKey: Constants.storeCreationKey
+                )
+                self.scope?.dataStore.removeValue(forKey: Constants.knownResourcesKey)
             }
         }
     }
@@ -57,14 +68,47 @@ internal class ResourcesWriter: ResourcesWriting {
         scope?.eventWriteContext { [weak self] _, recordWriter in
             let unknownResources = resources.filter { self?.knownIdentifiers.contains($0.identifier) == false }
             for resource in unknownResources {
+                print("👾 Resource ID: ", resource.identifier)
                 recordWriter.write(value: resource)
             }
             self?.knownIdentifiers.formUnion(Set(unknownResources.map { $0.identifier }))
         }
     }
 
-    private enum Constants {
-        static let processedResourcesKey = "processed-resources"
+    enum Constants {
+        static let knownResourcesKey = "known-resources"
+        static let storeCreationKey = "store-creation"
+    }
+}
+
+extension Data {
+    func asTimeInterval() -> TimeInterval? {
+        var value: TimeInterval = 0
+        guard count >= MemoryLayout.size(ofValue: value) else {
+            return nil
+        }
+        _ = Swift.withUnsafeMutableBytes(of: &value) {
+            copyBytes(to: $0)
+        }
+        return value
+    }
+
+    func asKnownIdentifiers() -> Set<String>? {
+        return try? JSONDecoder().decode(Set<String>.self, from: self)
+    }
+}
+
+extension TimeInterval {
+    func asData() -> Data {
+        return Swift.withUnsafeBytes(of: self) {
+            Data($0)
+        }
+    }
+}
+
+extension Set<String> {
+    func asData() -> Data? {
+        return try? JSONEncoder().encode(self)
     }
 }
 #endif
