@@ -68,7 +68,6 @@ internal class ResourcesWriter: ResourcesWriting {
         scope?.eventWriteContext { [weak self] _, recordWriter in
             let unknownResources = resources.filter { self?.knownIdentifiers.contains($0.identifier) == false }
             for resource in unknownResources {
-                print("👾 Resource ID: ", resource.identifier)
                 recordWriter.write(value: resource)
             }
             self?.knownIdentifiers.formUnion(Set(unknownResources.map { $0.identifier }))
