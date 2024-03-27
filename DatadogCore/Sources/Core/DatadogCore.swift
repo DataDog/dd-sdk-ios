@@ -290,15 +290,8 @@ extension DatadogCore: DatadogCoreProtocol {
         features[T.name] as? T
     }
 
-    func scope(for feature: String) -> FeatureScope? {
-        guard let storage = stores[feature]?.storage else {
-            return nil
-        }
-
-        return DatadogCoreFeatureScope(
-            contextProvider: contextProvider,
-            storage: storage
-        )
+    func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {
+        return CoreFeatureScope<Feature>(in: self)
     }
 
     func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
@@ -310,11 +303,38 @@ extension DatadogCore: DatadogCoreProtocol {
     }
 }
 
-internal struct DatadogCoreFeatureScope: FeatureScope {
-    let contextProvider: DatadogContextProvider
-    let storage: FeatureStorage
+internal class CoreFeatureScope<Feature>: FeatureScope where Feature: DatadogFeature {
+    private weak var core: DatadogCore?
+    private let store: FeatureDataStore
+
+    init(in core: DatadogCore) {
+        self.core = core
+        self.store = FeatureDataStore(
+            feature: Feature.name,
+            directory: core.directory,
+            queue: core.readWriteQueue,
+            telemetry: core.telemetry
+        )
+    }
 
     func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
+        guard let core = core else {
+            return  // core is deinitialized
+        }
+        // Capture the storage reference so it is available until async block completion. This is to ensure
+        // that we write events which were collected on the caller thread even if the core was released in the meantime.
+        guard let storage = core.stores[Feature.name]?.storage else {
+            if core.get(feature: Feature.self) != nil { // the feature is running, but has no storage
+                DD.logger.error(
+                    "Failed to obtain Event Write Context for '\(Feature.name)' because it is not a `DatadogRemoteFeature`."
+                )
+                #if DEBUG
+                assertionFailure("Obtaining Event Write Context for '\(Feature.name)' but it is not a `DatadogRemoteFeature`.")
+                #endif
+            }
+            return
+        }
+
         // (on user thread) request SDK context
         context { context in
             // (on context thread) call the block
@@ -325,10 +345,26 @@ internal struct DatadogCoreFeatureScope: FeatureScope {
 
     func context(_ block: @escaping (DatadogContext) -> Void) {
         // (on user thread) request SDK context
-        contextProvider.read { context in
+        core?.contextProvider.read { context in
             // (on context thread) call the block
             block(context)
         }
+    }
+
+    var dataStore: DataStore {
+        return (core != nil) ? store : NOPDataStore() // only available when the core exists
+    }
+
+    func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
+        core?.send(message: message, else: fallback)
+    }
+
+    func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
+        core?.set(baggage: baggage, forKey: key)
+    }
+
+    var telemetry: Telemetry {
+        return core?.telemetry ?? NOPTelemetry()
     }
 }
 

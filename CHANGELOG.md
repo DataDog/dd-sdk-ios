@@ -1,6 +1,7 @@
 # Unreleased
 
 * [FEATURE] Call RUM's `errorEventMapper` for crashes.
+* [FEATURE] Support calling log event mapper for crashes.
 
 # 2.8.0 / 19-03-2024
 

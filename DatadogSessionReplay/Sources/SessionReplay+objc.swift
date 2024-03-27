@@ -6,11 +6,9 @@
 
 import Foundation
 #if os(iOS)
-import DatadogSessionReplay
 
 /// An entry point to Datadog Session Replay feature.
 @objc
-@available(*, deprecated, message: "Obj-C API for Session Replay was moved to the DatadogSessionReplay package.")
 public final class DDSessionReplay: NSObject {
     override private init() { }
 

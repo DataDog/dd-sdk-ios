@@ -30,13 +30,13 @@ internal final class LazySpanWriteContext: SpanWriteContext {
         self.core = core
 
         // Capture the core context valid at the moment of initialization:
-        core.scope(for: TraceFeature.name)?.context { [weak self] context in
+        core.scope(for: TraceFeature.self).context { [weak self] context in
             self?.context = context
         }
     }
 
     func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
-        guard let scope = core?.scope(for: TraceFeature.name) else {
+        guard let scope = core?.scope(for: TraceFeature.self) else {
             return
         }
 

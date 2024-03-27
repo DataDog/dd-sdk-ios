@@ -1169,7 +1169,6 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let mappedViewName = String.mockRandom()
-            let errorFingerprint = String.mockRandom()
             let receiver: CrashReportReceiver = .mockWith(
                 applicationID: .mockRandom(),
                 dateProvider: RelativeDateProvider(using: crashDate),

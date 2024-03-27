@@ -217,7 +217,7 @@ class CrashLogReceiverTests: XCTestCase {
 
         // When
         let core = PassthroughCoreMock(
-            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
+            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil)
         )
 
         let sender = MessageBusSender(core: core)
@@ -240,7 +240,7 @@ class CrashLogReceiverTests: XCTestCase {
         // When
         let core = PassthroughCoreMock(
             context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
-            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
+            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil)
         )
 
         let sender = MessageBusSender(core: core)
@@ -262,7 +262,7 @@ class CrashLogReceiverTests: XCTestCase {
         let telemetry = TelemetryReceiverMock()
         let core = PassthroughCoreMock(
             messageReceiver: CombinedFeatureMessageReceiver([
-                CrashLogReceiver(dateProvider: SystemDateProvider()),
+                CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil),
                 telemetry
             ])
         )
@@ -287,7 +287,7 @@ class CrashLogReceiverTests: XCTestCase {
             ] as [String: Any]
         ))
         let core = PassthroughCoreMock(
-            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider())
+            messageReceiver: CrashLogReceiver(dateProvider: SystemDateProvider(), logEventMapper: nil)
         )
         let sender = MessageBusSender(core: core)
 
@@ -299,5 +299,29 @@ class CrashLogReceiverTests: XCTestCase {
 
         XCTAssertEqual((log.attributes.userAttributes["mock-string-attribute"] as? AnyCodable)?.value as? String, stringAttribute)
         XCTAssertEqual((log.attributes.userAttributes["mock-bool-attribute"] as? AnyCodable)?.value as? Bool, boolAttribute)
+    }
+
+    func testWhenSendingCrashWithLogMapper_itSendsModifiedCrash() throws {
+        // Given
+        let errorFingerprint: String = .mockRandom()
+        let core = PassthroughCoreMock(
+            messageReceiver: CrashLogReceiver(
+                dateProvider: SystemDateProvider(),
+                logEventMapper: SyncLogEventMapper({ event in
+                    var event = event
+                    event.error?.fingerprint = errorFingerprint
+                    return event
+                })
+            )
+        )
+        let sender = MessageBusSender(core: core)
+
+        // When
+        sender.send(report: crashReport, with: .mockAny())
+
+        // Then
+        let log = try XCTUnwrap(core.events(ofType: LogEvent.self).first)
+
+        XCTAssertEqual(log.error?.fingerprint, errorFingerprint)
     }
 }

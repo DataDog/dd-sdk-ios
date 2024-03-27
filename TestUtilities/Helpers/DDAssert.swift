@@ -208,3 +208,18 @@ public func DDAssertDictionariesNotEqual(_ expression1: @autoclosure () throws -
         throw DDAssertError.expectedFailure("Dictionaries are equal")
     }
 }
+
+public func DDAssertThrowsError<T, E: Error>(_ expression: @autoclosure () throws -> T, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line, _ errorHandler: (_ error: E) -> Void = { _ in }) {
+    _DDEvaluateAssertion(message: message(), file: file, line: line) {
+        do {
+             let result = try expression()
+             throw DDAssertError.expectedFailure("Did not throw an error (returned `\(result)` instead)")
+         } catch let error as E {
+             errorHandler(error) // expected
+         } catch let error as DDAssertError {
+             throw error
+         } catch {
+             throw DDAssertError.expectedFailure("Did throw an error but it is not of `\(E.self)` type (got `\(type(of: error))` instead)")
+         }
+    }
+}

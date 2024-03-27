@@ -33,4 +33,8 @@ extension File {
         let blocks = try BatchDataBlockReader(input: stream()).all()
         return blocks.map { $0.data }
     }
+
+    func read() throws -> Data {
+        try Data(contentsOf: url)
+    }
 }
