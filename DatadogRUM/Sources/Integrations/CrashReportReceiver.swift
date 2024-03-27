@@ -331,6 +331,9 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
             if let mappedError = self.eventsMapper.map(event: rumError) {
                 writer.write(value: mappedError)
+            } else {
+                DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
+                writer.write(value: rumError)
             }
             if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
                 writer.write(value: self.eventsMapper.map(event: mappedView))

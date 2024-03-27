@@ -1130,7 +1130,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
     }
 
-    func testGivenCrashDuringAppLaunchWithEventMappers_whenSending_itSendsWithMappedEvents() throws {
+    func testGivenCrashDuringAppLaunchWithEventMappers_whenMapperReturnsNil_itSendsOriginalEvents() throws {
         func test(
             launchInForeground: Bool,
             backgroundEventsTrackingEnabled: Bool,
@@ -1154,12 +1154,15 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let randomNetworkConnectionInfo = NetworkConnectionInfo.mockRandom()
+            let randomCarrierInfo = CarrierInfo.mockRandom()
+            let randomUserInfo = UserInfo.mockRandom()
             let crashContext: CrashContext = .mockWith(
                 serverTimeOffset: dateCorrectionOffset,
                 trackingConsent: .granted,
-                userInfo: .mockRandom(),
-                networkConnectionInfo: .mockRandom(),
-                carrierInfo: .mockRandom(),
+                userInfo: randomUserInfo,
+                networkConnectionInfo: randomNetworkConnectionInfo,
+                carrierInfo: randomCarrierInfo,
                 lastRUMViewEvent: nil, // means there was no RUM session (it crashed during app launch)
                 lastRUMSessionState: nil, // means there was no RUM session (it crashed during app launch)
                 lastIsAppInForeground: launchInForeground
@@ -1178,9 +1181,7 @@ class CrashReportReceiverTests: XCTestCase {
                         return event
                     },
                     errorEventMapper: { event in
-                        var event = event
-                        event.error.fingerprint = errorFingerprint
-                        return event
+                        return nil
                     }
                 )
             )
@@ -1197,8 +1198,31 @@ class CrashReportReceiverTests: XCTestCase {
             let sentRUMView = core.events(ofType: RUMViewEvent.self).last
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUM view event")
 
+            // Sent RUM Error should be unmapped
             let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
-            XCTAssertEqual(sentRUMError.model.error.fingerprint, errorFingerprint, "Must send mapped RUM Error event")
+            XCTAssertNil(sentRUMError.model.error.fingerprint)
+            DDAssertReflectionEqual(
+                sentRUMError.model.connectivity,
+                RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
+                "It must contain connectity info from the moment of crash"
+            )
+            DDAssertJSONEqual(
+                sentRUMError.usr,
+                RUMUser(userInfo: randomUserInfo),
+                "It must contain user info from the moment of crash"
+            )
+            XCTAssertTrue(sentRUMError.model.error.isCrash == true, "RUM error must be marked as crash.")
+            XCTAssertEqual(
+                sentRUMError.model.date,
+                crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
+                "RUM error must include crash date corrected by current correction offset."
+            )
+            XCTAssertEqual(sentRUMError.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.threads], "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.binaryImages], "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
+            XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
         }
 
         try test(

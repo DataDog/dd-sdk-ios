@@ -1,5 +1,7 @@
 # Unreleased
 
+* [FEATURE] Call RUM's `errorEventMapper` for crashes.
+
 # 2.8.0 / 19-03-2024
 
 - [FEATURE] App Hangs are tracked as RUM errors. See [#1685][]
