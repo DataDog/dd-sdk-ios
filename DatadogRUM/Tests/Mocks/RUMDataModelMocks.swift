@@ -445,19 +445,6 @@ extension RUMErrorEvent: RandomMockable {
     }
 }
 
-extension RUMCrashEvent: RandomMockable {
-    static func mockRandom(error: RUMErrorEvent) -> RUMCrashEvent {
-        return .init(
-            error: error,
-            additionalAttributes: mockRandomAttributes()
-        )
-    }
-
-    public static func mockRandom() -> RUMCrashEvent {
-        return mockRandom(error: .mockRandom())
-    }
-}
-
 extension RUMLongTaskEvent.DD.Configuration: RandomMockable {
     public static func mockRandom() -> RUMLongTaskEvent.DD.Configuration {
         return .init(sessionReplaySampleRate: .mockRandom(min: 0, max: 100), sessionSampleRate: .mockRandom(min: 0, max: 100))

@@ -36,8 +36,10 @@ internal struct FatalAppHang: Codable {
     let processID: UUID
     /// The actual hang that was recorded.
     let hang: AppHang
-    /// Interval between device and server time.
+    /// Interval between device and server time at the moment of hang's recording.
     let serverTimeOffset: TimeInterval
     /// The last RUM view at the moment of hang's recording.
     let lastRUMView: RUMViewEvent
+    /// The user's consent at the moment of hang's recording.
+    let trackingConsent: TrackingConsent
 }
