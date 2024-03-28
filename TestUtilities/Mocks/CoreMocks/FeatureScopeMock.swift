@@ -58,7 +58,7 @@ public class FeatureScopeMock: FeatureScope {
     }
 
     /// Retrieve data written in Data Store.
-    public let dataStoreMock: DataStore = NOPDataStore()
+    public let dataStoreMock = DataStoreMock()
 
     /// Retrieve telemetries sent to Telemetry endpoint.
     public let telemetryMock = TelemetryMock()

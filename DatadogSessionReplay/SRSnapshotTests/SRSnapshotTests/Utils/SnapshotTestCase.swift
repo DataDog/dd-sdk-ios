@@ -49,7 +49,7 @@ internal class SnapshotTestCase: XCTestCase {
         )
         let resourceProcessor = ResourceProcessor(
             queue: NoQueue(),
-            resourcesWriter: ResourcesWriter(core: PassthroughCoreMock())
+            resourcesWriter: ResourcesWriter(scope: FeatureScopeMock())
         )
         let recorder = try Recorder(
             snapshotProcessor: snapshotProcessor,

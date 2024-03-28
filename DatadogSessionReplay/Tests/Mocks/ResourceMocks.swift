@@ -17,6 +17,18 @@ extension EnrichedResource: RandomMockable, AnyMockable {
         )
     }
 
+    public static func mockWith(
+        identifier: String = .mockAny(),
+        data: Data = .mockAny(),
+        context: Context = .mockAny()
+    ) -> EnrichedResource {
+        return .init(
+            identifier: identifier,
+            data: data,
+            context: context
+        )
+    }
+
     public static func mockRandom() -> Self {
         return .init(
             identifier: .mockRandom(),

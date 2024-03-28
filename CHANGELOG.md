@@ -1,4 +1,5 @@
 # Unreleased
+- [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 
 * [FEATURE] Support calling log event mapper for crashes.
 
@@ -617,6 +618,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
 [#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
+[#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
