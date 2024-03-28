@@ -15,7 +15,6 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
 
         // When
         monitor = Monitor(
-            core: PassthroughCoreMock(),
             dependencies: .mockAny(),
             dateProvider: SystemDateProvider()
         )

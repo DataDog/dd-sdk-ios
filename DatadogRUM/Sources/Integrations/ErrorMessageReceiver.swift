@@ -25,6 +25,8 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
         let attributes: [String: AnyCodable]?
     }
 
+    /// RUM feature scope.
+    let featureScope: FeatureScope
     let monitor: Monitor
 
     /// Adds RUM Error with given message and stack to current RUM View.
@@ -46,7 +48,7 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
 
             return true
         } catch {
-            core.telemetry
+            featureScope.telemetry
                 .error("Fails to decode error message", error: error)
             return false
         }

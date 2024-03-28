@@ -49,7 +49,10 @@ public class FeatureScopeMock: FeatureScope {
 
     // MARK: - Side Effects Observation
 
-    /// Retrieve events written through Even Write Context API.
+    /// Retrieve anonymous events written through Even Write Context API.
+    public var eventsWritten: [Encodable] { events.map { $0.event } }
+
+    /// Retrieve typed events written through Even Write Context API.
     public func eventsWritten<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         return events.compactMap { $0.event as? T }
     }

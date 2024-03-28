@@ -110,6 +110,8 @@ internal enum RUMInternalErrorSource: String, Decodable {
 internal typealias RUMErrorCategory = RUMErrorEvent.Error.Category
 
 internal class Monitor: RUMCommandSubscriber {
+    /// RUM feature scope.
+    let featureScope: FeatureScope
     let scopes: RUMApplicationScope
     let dateProvider: DateProvider
     let queue = DispatchQueue(
@@ -117,24 +119,22 @@ internal class Monitor: RUMCommandSubscriber {
         target: .global(qos: .userInteractive)
     )
 
-    private(set) weak var core: DatadogCoreProtocol?
     private(set) var debugging: RUMDebugging? = nil
 
     private var attributes: [AttributeKey: AttributeValue] = [:]
 
     init(
-        core: DatadogCoreProtocol,
         dependencies: RUMScopeDependencies,
         dateProvider: DateProvider
     ) {
-        self.core = core
+        self.featureScope = dependencies.featureScope
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
     }
 
     func process(command: RUMCommand) {
         // process command in event context
-        core?.scope(for: RUMFeature.self).eventWriteContext { context, writer in
+        featureScope.eventWriteContext { context, writer in
             self.queue.sync {
                 let transformedCommand = self.transform(command: command)
 
@@ -147,7 +147,7 @@ internal class Monitor: RUMCommandSubscriber {
         }
 
         // update the core context with rum context
-        core?.set(
+        featureScope.set(
             baggage: {
                 self.queue.sync { () -> RUMCoreContext? in
                     let context = self.scopes.activeSession?.viewScopes.last?.context ??
@@ -218,7 +218,7 @@ extension Monitor: RUMMonitorProtocol {
         // Even though we're not writing anything, need to get the write context
         // to make sure we're returning the correct sessionId after all other
         // events have processed.
-        core?.scope(for: RUMFeature.self).eventWriteContext { _, _ in
+        featureScope.eventWriteContext { _, _ in
             self.queue.sync {
                 guard let sessionId = self.scopes.activeSession?.sessionUUID else {
                     completion(nil)
