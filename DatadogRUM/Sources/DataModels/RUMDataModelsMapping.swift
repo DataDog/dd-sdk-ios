@@ -91,6 +91,10 @@ internal extension DDThread {
     }
 }
 
+internal extension Array where Element == DDThread {
+    var toRUMDataFormat: [RUMErrorEvent.Error.Threads] { map { $0.toRUMDataFormat } }
+}
+
 internal extension BinaryImage {
     var toRUMDataFormat: RUMErrorEvent.Error.BinaryImages {
         return .init(
@@ -100,6 +104,24 @@ internal extension BinaryImage {
             maxAddress: maxAddress,
             name: libraryName,
             uuid: uuid
+        )
+    }
+}
+
+internal extension Array where Element == BinaryImage {
+    var toRUMDataFormat: [RUMErrorEvent.Error.BinaryImages] { map { $0.toRUMDataFormat } }
+}
+
+internal extension DDCrashReport.Meta {
+    var toRUMDataFormat: RUMErrorEvent.Error.Meta {
+        return .init(
+            codeType: codeType,
+            exceptionCodes: exceptionCodes,
+            exceptionType: exceptionType,
+            incidentIdentifier: incidentIdentifier,
+            parentProcess: parentProcess,
+            path: path,
+            process: process
         )
     }
 }

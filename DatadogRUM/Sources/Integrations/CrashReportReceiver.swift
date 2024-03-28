@@ -15,16 +15,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         static let crash = "crash"
     }
 
-    struct Constants {
-        /// Maximum time since the crash (in seconds) enabling us to send the RUM View event to associate it with the interrupted RUM Session:
-        /// * if the app is restarted earlier than crash time + this interval, then we send both the `RUMErrorEvent` and `RUMViewEvent`,
-        /// * if the app is restarted later than crash time + this interval, then we only send `RUMErrorEvent`.
-        ///
-        /// This condition originates from RUM backend constraints on processing `RUMViewEvents` in stale sessions. If the session does not
-        /// receive any updates for a long time, then sending some significantly later may lead to inconsistency.
-        static let viewEventAvailabilityThreshold: TimeInterval = 14_400 // 4 hours
-    }
-
     struct Crash: Decodable {
         /// The crash report.
         let report: CrashReport
@@ -193,7 +183,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
         using crashTimings: AdjustedCrashTimings
     ) {
-        if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
+        if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
             send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.

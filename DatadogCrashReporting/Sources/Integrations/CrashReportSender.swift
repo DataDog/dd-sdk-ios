@@ -47,6 +47,7 @@ internal struct MessageBusSender: CrashReportSender {
     ///   - context: The crash context
     func send(report: DDCrashReport, with context: CrashContext) {
         guard let core = core, context.trackingConsent == .granted else {
+            DD.logger.debug("Skipped sending Crash Report as it was recorded with \(context.trackingConsent) consent")
             return
         }
 

@@ -26,6 +26,7 @@ class AppHangsMonitorTests: XCTestCase {
     private let watchdogThread = WatchdogThreadMock()
     private let fatalErrorContext = FatalErrorContextNotifier(messageBus: NOPFeatureScope())
     private let currentProcessID = UUID()
+    private let dateProvider = DateProviderMock()
     private var dd: DDMock<CoreLoggerMock>! // swiftlint:disable:this implicitly_unwrapped_optional
     private var monitor: AppHangsMonitor! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -35,7 +36,8 @@ class AppHangsMonitorTests: XCTestCase {
             featureScope: featureScope,
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
-            processID: currentProcessID
+            processID: currentProcessID,
+            dateProvider: dateProvider
         )
     }
 
@@ -94,7 +96,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         XCTAssertNotNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
-        XCTAssertTrue(dd.logger.recordedLogs.isEmpty, "It must log no issues")
+        XCTAssertEqual(dd.logger.debugMessages, ["No pending App Hang found"])
     }
 
     func testGivenFatalErrorViewContextNotAvailable_whenAppHangStarts_itLogsDebug() throws {
@@ -110,8 +112,11 @@ class AppHangsMonitorTests: XCTestCase {
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
         XCTAssertEqual(
-            dd.logger.debugLog?.message,
-            "App Hang is being detected, but won't be considered fatal as there is no active RUM view"
+            dd.logger.debugMessages,
+            [
+                "No pending App Hang found",
+                "App Hang is being detected, but won't be considered fatal as there is no active RUM view"
+            ]
         )
     }
 
@@ -128,8 +133,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
-        XCTAssertTrue(dd.logger.recordedLogs.isEmpty)
-        XCTAssertTrue(dd.logger.recordedLogs.isEmpty, "It must log no issues")
+        XCTAssertEqual(dd.logger.debugLog?.message, "No pending App Hang found")
     }
 
     func testWhenAppHangEnds_itDeletesPendingAppHangInDataStore() throws {
@@ -146,7 +150,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
-        XCTAssertTrue(dd.logger.recordedLogs.isEmpty, "It must log no issues")
+        XCTAssertEqual(dd.logger.debugMessages, ["No pending App Hang found"])
     }
 
     func testGivenPendingHangSavedInOneProcess_whenStartedInDiffferentProcess_itSendsFatalHang() throws {
@@ -155,6 +159,7 @@ class AppHangsMonitorTests: XCTestCase {
         let hang: AppHang = .mockRandom()
 
         // Given
+        featureScope.contextMock.trackingConsent = .granted
         monitor.start()
         fatalErrorContext.sessionState = sessionState
         fatalErrorContext.view = view
@@ -162,17 +167,25 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.stop()
 
         // When
+        featureScope.contextMock.trackingConsent = .mockRandom() // no matter of the consent in restarted session
+
         let monitor = AppHangsMonitor(
             featureScope: featureScope,
             watchdogThread: watchdogThread,
             fatalErrorContext: fatalErrorContext,
-            processID: UUID() // different process
+            processID: UUID(), // different process
+            dateProvider: DateProviderMock()
         )
         monitor.start()
         defer { monitor.stop() }
 
         // Then
-        XCTAssertEqual(dd.logger.debugLog?.message, "Loaded fatal App Hang")
+        XCTAssertEqual(
+            dd.logger.debugMessages, 
+            [
+                "No pending App Hang found"
+            ]
+        )
 
         // TODO: RUM-3461
         // Assert on collected RUM error and RUM view update, similar to how we test it for crash reports
