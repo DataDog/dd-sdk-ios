@@ -47,10 +47,18 @@ final class CrashReportingCollectOrSendWithRUMScenario: CrashReportingBaseScenar
         }
     }
 
+    func rumErrorEventMapper(event: RUMErrorEvent) -> RUMErrorEvent? {
+        var event = event
+        event.error.fingerprint = "mapped fingerprint"
+        return event
+    }
+
     func configureFeatures() {
         var rumConfig = RUM.Configuration(applicationID: "rum-application-id")
         rumConfig.customEndpoint = Environment.serverMockConfiguration()?.rumEndpoint
         rumConfig.uiKitViewsPredicate = CustomPredicate()
+        rumConfig.errorEventMapper = rumErrorEventMapper
+
         RUM.enable(with: rumConfig)
 
         CrashReporting.enable()
