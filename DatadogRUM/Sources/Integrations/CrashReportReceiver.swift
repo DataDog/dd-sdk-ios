@@ -206,6 +206,9 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: context.nativeSourceOverride)
                 if let mappedError = self.eventsMapper.map(event: rumError) {
                     writer.write(value: mappedError)
+                } else {
+                    DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
+                    writer.write(value: rumError)
                 }
             }
         }
