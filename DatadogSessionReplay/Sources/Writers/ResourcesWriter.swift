@@ -15,15 +15,13 @@ internal protocol ResourcesWriting {
 }
 
 internal class ResourcesWriter: ResourcesWriting {
-    /// An instance of SDK core the SR feature is registered to.
-    private let scope: FeatureScope?
-    private let telemetry: Telemetry
+    private let scope: FeatureScope
 
     @ReadWriteLock
     private var knownIdentifiers = Set<String>() {
         didSet {
             if let knownIdentifiers = knownIdentifiers.asData() {
-                scope?.dataStore.setValue(
+                scope.dataStore.setValue(
                     knownIdentifiers,
                     forKey: Constants.knownResourcesKey
                 )
@@ -32,32 +30,37 @@ internal class ResourcesWriter: ResourcesWriting {
     }
 
     init(
-        core: DatadogCoreProtocol,
+        scope: FeatureScope,
         dataStoreResetTime: TimeInterval = TimeInterval(30).days
     ) {
-        self.scope = core.scope(for: ResourcesFeature.self)
-        self.telemetry = core.telemetry
+        self.scope = scope
 
-        self.scope?.dataStore.value(forKey: Constants.storeCreationKey) { result in
-            if let storeCreation = result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
-                self.scope?.dataStore.value(forKey: Constants.knownResourcesKey) { [weak self] result in
-                    switch result {
-                    case .value(let data, _):
-                        if let knownIdentifiers = data.asKnownIdentifiers() {
-                            self?.knownIdentifiers.formUnion(knownIdentifiers)
+        self.scope.dataStore.value(forKey: Constants.storeCreationKey) { [weak self]  result in
+            do {
+                if let storeCreation = try result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
+                    self?.scope.dataStore.value(forKey: Constants.knownResourcesKey) { result in
+                        switch result {
+                        case .value(let data, _):
+                            do {
+                                if let knownIdentifiers = try data.asKnownIdentifiers() {
+                                    self?.knownIdentifiers.formUnion(knownIdentifiers)
+                                }
+                            } catch let error {
+                                self?.scope.telemetry.error("Failed to decode known identifiers", error: error)
+                            }
+                        default:
+                            break
                         }
-                    case .error(let error):
-                        self?.telemetry.error("Failed to read processed resources from data store: \(error)")
-                    case .noValue:
-                        break
                     }
+                } else { // Reset if store was created more than 30 days ago
+                    self?.scope.dataStore.setValue(
+                        Date().timeIntervalSince1970.asData(),
+                        forKey: Constants.storeCreationKey
+                    )
+                    self?.scope.dataStore.removeValue(forKey: Constants.knownResourcesKey)
                 }
-            } else { // Reset if store was created more than 30 days ago
-                self.scope?.dataStore.setValue(
-                    Date().timeIntervalSince1970.asData(),
-                    forKey: Constants.storeCreationKey
-                )
-                self.scope?.dataStore.removeValue(forKey: Constants.knownResourcesKey)
+            } catch let error {
+                self?.scope.telemetry.error("Failed to decode store creation", error: error)
             }
         }
     }
@@ -65,7 +68,7 @@ internal class ResourcesWriter: ResourcesWriting {
     // MARK: - Writing
 
     func write(resources: [EnrichedResource]) {
-        scope?.eventWriteContext { [weak self] _, recordWriter in
+        scope.eventWriteContext { [weak self] _, recordWriter in
             let unknownResources = resources.filter { self?.knownIdentifiers.contains($0.identifier) == false }
             for resource in unknownResources {
                 recordWriter.write(value: resource)
@@ -81,10 +84,14 @@ internal class ResourcesWriter: ResourcesWriting {
 }
 
 extension Data {
-    func asTimeInterval() -> TimeInterval? {
+    enum SerializationError: Error {
+        case invalidData
+    }
+
+    func asTimeInterval() throws -> TimeInterval {
         var value: TimeInterval = 0
         guard count >= MemoryLayout.size(ofValue: value) else {
-            return nil
+            throw SerializationError.invalidData
         }
         _ = Swift.withUnsafeMutableBytes(of: &value) {
             copyBytes(to: $0)
@@ -92,8 +99,8 @@ extension Data {
         return value
     }
 
-    func asKnownIdentifiers() -> Set<String>? {
-        return try? JSONDecoder().decode(Set<String>.self, from: self)
+    func asKnownIdentifiers() throws -> Set<String>? {
+        return try JSONDecoder().decode(Set<String>.self, from: self)
     }
 }
 
@@ -107,7 +114,7 @@ extension TimeInterval {
 
 extension Set<String> {
     func asData() -> Data? {
-        return try? JSONEncoder().encode(self)
+        return try? JSONEncoder().encode(self) // Never fails
     }
 }
 #endif
