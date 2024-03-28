@@ -12,67 +12,48 @@ import DatadogInternal
 @testable import DatadogCore
 
 class CrashReportReceiverTests: XCTestCase {
-    private var core: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
-
-    override func setUp() {
-        super.setUp()
-        core = PassthroughCoreMock()
-    }
-
-    override func tearDown() {
-        core = nil
-        super.tearDown()
-    }
+    private let featureScope = FeatureScopeMock()
 
     func testReceiveCrashEvent() throws {
         // Given
-        let core = PassthroughCoreMock(
-            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
-            messageReceiver: CrashReportReceiver.mockAny()
-        )
+        let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope)
 
         // When
-        core.send(
-            message: .baggage(
-                key: CrashReportReceiver.MessageKeys.crash,
-                value: MessageBusSender.Crash(
-                    report: DDCrashReport.mockAny(),
-                    context: CrashContext.mockWith(lastRUMViewEvent: nil)
-                )
+        let message: FeatureMessage = .baggage(
+            key: CrashReportReceiver.MessageKeys.crash,
+            value: MessageBusSender.Crash(
+                report: DDCrashReport.mockAny(),
+                context: CrashContext.mockWith(lastRUMViewEvent: nil)
             )
         )
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1, "It should send error event")
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1, "It should send error event")
     }
 
     func testReceiveCrashAndViewEvent() throws {
         // Given
-        let core = PassthroughCoreMock(
-            bypassConsentExpectation: expectation(description: "Send Event Bypass Consent"),
-            messageReceiver: CrashReportReceiver.mockAny()
-        )
-
+        let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope)
         let lastRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // When
-        core.send(
-            message: .baggage(
-                key: CrashReportReceiver.MessageKeys.crash,
-                value: MessageBusSender.Crash(
-                    report: DDCrashReport.mockWith(date: Date()),
-                    context: CrashContext.mockWith(
-                        lastRUMViewEvent: AnyCodable(lastRUMViewEvent)
-                    )
+        let message: FeatureMessage = .baggage(
+            key: CrashReportReceiver.MessageKeys.crash,
+            value: MessageBusSender.Crash(
+                report: DDCrashReport.mockWith(date: Date()),
+                context: CrashContext.mockWith(
+                    lastRUMViewEvent: AnyCodable(lastRUMViewEvent)
                 )
             )
         )
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1, "It should send error event")
-        XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1, "It should send view event")
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1, "It should send error event")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1, "It should send view event")
     }
 
     // MARK: - Testing Conditional Uploads
@@ -92,6 +73,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom() // no matter BET
@@ -102,13 +84,13 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgoWithPreviousCrash_whenSending_itSendsNothing() throws {
@@ -126,6 +108,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom() // no matter BET
@@ -136,11 +119,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 0, "It must send no message")
+        XCTAssertEqual(featureScope.eventsWritten.count, 0, "It must send no message")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedMoreThan4HoursAgo_whenSending_itSendsOnlyRUMError() throws {
@@ -158,6 +141,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom() // no matter BET
@@ -168,12 +152,12 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 1, "It must send only RUM error")
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must send only RUM error")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1)
     }
 
     func testGivenCrashDuringBackgroundRUMSessionWithNoActiveView_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
@@ -191,6 +175,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: true // BET enabled
@@ -201,13 +186,13 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenCrashDuringApplicationLaunch_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
@@ -226,6 +211,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             trackBackgroundEvents: true // BET enabled
         )
@@ -235,13 +221,13 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 2, "It must send both RUM error and RUM view")
-        XCTAssertEqual(core.events(ofType: RUMCrashEvent.self).count, 1)
-        XCTAssertEqual(core.events(ofType: RUMViewEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten.count, 2, "It must send both RUM error and RUM view")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMCrashEvent.self).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1)
     }
 
     func testGivenCrashDuringAppLaunchAndNoSampling_whenSending_itIsDropped() throws {
@@ -258,6 +244,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: .mockRejectAll() // no sampling (no session should be sent)
         )
@@ -267,11 +254,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 0, "Crash must not be send as it is rejected by sampler")
+        XCTAssertEqual(featureScope.eventsWritten.count, 0, "Crash must not be send as it is rejected by sampler")
     }
 
     func testGivenCrashDuringAppLaunchInBackgroundAndBETDisabled_whenSending_itIsDropped() throws {
@@ -288,6 +275,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: crashDate),
             trackBackgroundEvents: false // BET disabled
         )
@@ -297,11 +285,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 0, "Crash must not be send as it happened in background and BET is disabled")
+        XCTAssertEqual(featureScope.eventsWritten.count, 0, "Crash must not be send as it happened in background and BET is disabled")
     }
 
     func testGivenCrashDuringSampledRUMSession_whenSending_itIsDropped() throws {
@@ -325,6 +313,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: currentDate),
             sessionSampler: .mockRandom(), // no matter current session sampling
             trackBackgroundEvents: .mockRandom()
@@ -335,11 +324,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        XCTAssertEqual(core.events.count, 0, "Crash must not be send as it the session was rejected by sampler")
+        XCTAssertEqual(featureScope.eventsWritten.count, 0, "Crash must not be send as it the session was rejected by sampler")
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With Active View
@@ -358,6 +347,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: crashDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom() // no matter BET
@@ -368,11 +358,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        let sendRUMViewEvent = core.events(ofType: RUMViewEvent.self)[0]
+        let sendRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
 
         XCTAssertTrue(
             sendRUMViewEvent.application.id == lastRUMViewEvent.application.id
@@ -455,6 +445,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(
                 using: crashDate.addingTimeInterval(
                     .mockRandom(min: 10, max: 2 * CrashReportReceiver.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
@@ -469,11 +460,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        let sendRUMErrorEvent = core.events(ofType: RUMCrashEvent.self)[0]
+        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
 
         XCTAssertTrue(
             sendRUMErrorEvent.model.application.id == lastRUMViewEvent.application.id
@@ -527,9 +518,7 @@ class CrashReportReceiverTests: XCTestCase {
     }
 
     func testGivenCrashDuringRUMSessionWithActiveViewAndOverridenSourceType_whenSendingRUMViewEvent_itSendsOverrideSourceType() throws {
-        core = PassthroughCoreMock(
-            context: .mockWith(nativeSourceOverride: "ios+il2cpp")
-        )
+        featureScope.contextMock = .mockWith(nativeSourceOverride: "ios+il2cpp")
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
         // Given
@@ -543,6 +532,7 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: crashDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom() // no matter BET
@@ -553,11 +543,11 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        let sendRUMErrorEvent = core.events(ofType: RUMCrashEvent.self)[0]
+        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
         XCTAssertEqual(sendRUMErrorEvent.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
     }
 
@@ -576,6 +566,7 @@ class CrashReportReceiverTests: XCTestCase {
         let modifiedViewName = String.mockRandom()
         let errorFingerprint = String.mockRandom()
         let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
             dateProvider: RelativeDateProvider(using: crashDate),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
             trackBackgroundEvents: .mockRandom(), // no matter BET
@@ -598,14 +589,14 @@ class CrashReportReceiverTests: XCTestCase {
             receiver.receive(message: .baggage(
                 key: MessageBusSender.MessageKeys.crash,
                 value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-            ), from: core)
+            ), from: NOPDatadogCore())
         )
 
         // Then
-        let sendRUMViewEvent = core.events(ofType: RUMViewEvent.self).last
+        let sendRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
         XCTAssertEqual(sendRUMViewEvent?.view.name, modifiedViewName, "Must send event mapper modified view event")
 
-        let sendRUMErrorEvent = core.events(ofType: RUMCrashEvent.self)[0]
+        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
         XCTAssertEqual(sendRUMErrorEvent.model.error.fingerprint, errorFingerprint, "Must send event mapper modified error event")
     }
 
@@ -629,14 +620,7 @@ class CrashReportReceiverTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let core = PassthroughCoreMock(
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: randomRUMAppID,
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -661,10 +645,12 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
                 applicationID: randomRUMAppID,
                 dateProvider: RelativeDateProvider(using: crashDate),
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                trackBackgroundEvents: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                uuidGenerator: DefaultRUMUUIDGenerator()
             )
 
             // When
@@ -672,12 +658,12 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMView = core.events(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
 
             // Assert RUM view properties
             XCTAssertTrue(
@@ -770,15 +756,8 @@ class CrashReportReceiverTests: XCTestCase {
             backgroundEventsTrackingEnabled: Bool
         ) throws {
             let mockApplicationId: String = .mockRandom(among: .alphanumerics)
-            let core = PassthroughCoreMock(
-                context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: mockApplicationId,
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
+            featureScope.contextMock = .mockWith(nativeSourceOverride: "ios+il2cpp")
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -803,10 +782,12 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let receiver: CrashReportReceiver = .mockWith(
-                applicationID: .mockRandom(among: .alphanumerics),
+                featureScope: featureScope,
+                applicationID: mockApplicationId,
                 dateProvider: RelativeDateProvider(using: crashDate),
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
-                trackBackgroundEvents: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                uuidGenerator: DefaultRUMUUIDGenerator()
             )
 
             // When
@@ -814,11 +795,11 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
             XCTAssertEqual(sentRUMError.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
         }
 
@@ -841,15 +822,7 @@ class CrashReportReceiverTests: XCTestCase {
             launchInForeground: Bool,
             backgroundEventsTrackingEnabled: Bool
         ) throws {
-            let mockApplicationId: String = .mockRandom(among: .alphanumerics)
-            let core = PassthroughCoreMock(
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: mockApplicationId,
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -876,6 +849,7 @@ class CrashReportReceiverTests: XCTestCase {
             let mappedViewName = String.mockRandom()
             let errorFingerprint = String.mockRandom()
             let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
                 applicationID: .mockRandom(among: .alphanumerics),
                 dateProvider: RelativeDateProvider(using: crashDate),
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
@@ -899,14 +873,14 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMView = core.events(ofType: RUMViewEvent.self).last
+            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUMView event")
 
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
             XCTAssertEqual(sentRUMError.model.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
         }
 
@@ -938,14 +912,7 @@ class CrashReportReceiverTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let core = PassthroughCoreMock(
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: randomRUMAppID,
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -967,9 +934,11 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
                 applicationID: randomRUMAppID,
                 dateProvider: RelativeDateProvider(using: crashDate),
-                trackBackgroundEvents: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                uuidGenerator: DefaultRUMUUIDGenerator()
             )
 
             // When
@@ -977,12 +946,12 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMView = core.events(ofType: RUMViewEvent.self)[0]
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
 
             // Assert RUM view properties
             XCTAssertTrue(
@@ -1066,15 +1035,8 @@ class CrashReportReceiverTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let core = PassthroughCoreMock(
-                context: .mockWith(nativeSourceOverride: "ios+il2cpp"),
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: .mockRandom(among: .alphanumerics),
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
+            featureScope.contextMock = .mockWith(nativeSourceOverride: "ios+il2cpp")
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -1096,9 +1058,11 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
                 applicationID: .mockRandom(),
                 dateProvider: RelativeDateProvider(using: crashDate),
-                trackBackgroundEvents: backgroundEventsTrackingEnabled
+                trackBackgroundEvents: backgroundEventsTrackingEnabled,
+                uuidGenerator: DefaultRUMUUIDGenerator()
             )
 
             // When
@@ -1106,11 +1070,11 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
 
             XCTAssertEqual(sentRUMError.model.error.sourceType, .iosIl2cpp, "Must send overridden sourceType")
         }
@@ -1137,14 +1101,7 @@ class CrashReportReceiverTests: XCTestCase {
             expectViewName expectedViewName: String,
             expectViewURL expectedViewURL: String
         ) throws {
-            let core = PassthroughCoreMock(
-                messageReceiver: CrashReportReceiver.mockWith(
-                    applicationID: .mockRandom(among: .alphanumerics),
-                    sessionSampler: .mockKeepAll(),
-                    trackBackgroundEvents: backgroundEventsTrackingEnabled,
-                    uuidGenerator: DefaultRUMUUIDGenerator()
-                )
-            )
+            let featureScope = FeatureScopeMock()
 
             // Given
             let crashDate: Date = .mockDecember15th2019At10AMUTC()
@@ -1170,6 +1127,7 @@ class CrashReportReceiverTests: XCTestCase {
 
             let mappedViewName = String.mockRandom()
             let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
                 applicationID: .mockRandom(),
                 dateProvider: RelativeDateProvider(using: crashDate),
                 trackBackgroundEvents: backgroundEventsTrackingEnabled,
@@ -1190,15 +1148,15 @@ class CrashReportReceiverTests: XCTestCase {
                 receiver.receive(message: .baggage(
                     key: MessageBusSender.MessageKeys.crash,
                     value: MessageBusSender.Crash(report: crashReport, context: crashContext)
-                ), from: core)
+                ), from: NOPDatadogCore())
             )
 
             // Then
-            let sentRUMView = core.events(ofType: RUMViewEvent.self).last
+            let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUM view event")
 
             // Sent RUM Error should be unmapped
-            let sentRUMError = core.events(ofType: RUMCrashEvent.self)[0]
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
             XCTAssertNil(sentRUMError.model.error.fingerprint)
             DDAssertReflectionEqual(
                 sentRUMError.model.connectivity,

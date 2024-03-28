@@ -100,6 +100,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let realDateNow: Date
     }
 
+    /// RUM feature scope.
+    let featureScope: FeatureScope
     let applicationID: String
     let dateProvider: DateProvider
     let sessionSampler: Sampler
@@ -109,13 +111,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let ciTest: RUMCITest?
     /// Integration with Synthetics tests. It contains the Synthetics test context when active.
     let syntheticsTest: RUMSyntheticsTest?
-    /// Telemetry interface.
-    let telemetry: Telemetry
     let eventsMapper: RUMEventsMapper
 
     // MARK: - Initialization
 
     init(
+        featureScope: FeatureScope,
         applicationID: String,
         dateProvider: DateProvider,
         sessionSampler: Sampler,
@@ -123,9 +124,9 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
-        telemetry: Telemetry,
         eventsMapper: RUMEventsMapper
     ) {
+        self.featureScope = featureScope
         self.applicationID = applicationID
         self.dateProvider = dateProvider
         self.sessionSampler = sessionSampler
@@ -133,7 +134,6 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
-        self.telemetry = telemetry
         self.eventsMapper = eventsMapper
     }
 
@@ -143,16 +143,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            return send(report: crash.report, with: crash.context, to: core)
+            return send(report: crash.report, with: crash.context)
         } catch {
-            core.telemetry
+            featureScope.telemetry
                 .error("Fails to decode crash from RUM", error: error)
         }
 
         return false
     }
 
-    private func send(report: CrashReport, with context: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: CrashReport, with context: CrashContext) -> Bool {
         // The `crashReport.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal (it's not the correction
         // from the moment of crash), but this is the best approximation we can get.
@@ -171,17 +171,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
                 sendCrashReportLinkedToLastViewInPreviousSession(
                     report,
                     lastRUMViewEventInPreviousSession: lastRUMViewEvent,
-                    using: adjustedCrashTimings,
-                    to: core
+                    using: adjustedCrashTimings
                 )
             } else {
                 DD.logger.debug("There was a crash in previous session, but it is ignored due to another crash already present in the last view.")
                 return false
             }
         } else if let lastRUMSessionState = context.lastRUMSessionState {
-            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings, to: core)
+            sendCrashReportToPreviousSession(report, crashContext: context, lastRUMSessionStateInPreviousSession: lastRUMSessionState, using: adjustedCrashTimings)
         } else if sessionSampler.sample() { // before producing a new RUM session, we must consider sampling
-            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings, to: core)
+            sendCrashReportToNewSession(report, crashContext: context, using: adjustedCrashTimings)
         } else {
             DD.logger.debug("There was a crash in previous session, but it is ignored due to sampling.")
             return false
@@ -195,16 +194,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     private func sendCrashReportLinkedToLastViewInPreviousSession(
         _ crashReport: CrashReport,
         lastRUMViewEventInPreviousSession lastRUMViewEvent: RUMViewEvent,
-        using crashTimings: AdjustedCrashTimings,
-        to core: DatadogCoreProtocol
+        using crashTimings: AdjustedCrashTimings
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < Constants.viewEventAvailabilityThreshold {
-            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
-            core.scope(for: RUMFeature.self).eventWriteContext(bypassConsent: true) { context, writer in
+            featureScope.eventWriteContext(bypassConsent: true) { context, writer in
                 let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: context.nativeSourceOverride)
                 if let mappedError = self.eventsMapper.map(event: rumError) {
                     writer.write(value: mappedError)
@@ -220,8 +218,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         _ crashReport: CrashReport,
         crashContext: CrashContext,
         lastRUMSessionStateInPreviousSession lastRUMSessionState: RUMSessionState,
-        using crashTimings: AdjustedCrashTimings,
-        to core: DatadogCoreProtocol
+        using crashTimings: AdjustedCrashTimings
     ) {
         let handlingRule = RUMOffViewEventsHandlingRule(
             sessionState: lastRUMSessionState,
@@ -261,7 +258,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
         }
     }
 
@@ -270,8 +267,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     private func sendCrashReportToNewSession(
         _ crashReport: CrashReport,
         crashContext: CrashContext,
-        using crashTimings: AdjustedCrashTimings,
-        to core: DatadogCoreProtocol
+        using crashTimings: AdjustedCrashTimings
     ) {
         // We can ignore `sessionState` for building the rule as we can assume there was no session sent - otherwise,
         // the `lastRUMSessionState` would have been set in `CrashContext` and we could be sending the crash to previous session
@@ -315,18 +311,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate, to: core)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
         }
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date, to core: DatadogCoreProtocol) {
+    private func send(crashReport: CrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
         DD.logger.debug("Updating RUM view with crash report.")
         let updatedRUMView = updateRUMViewWithNewError(rumView, crashDate: realCrashDate)
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: RUMFeature.self).eventWriteContext(bypassConsent: true) { context, writer in
+        featureScope.eventWriteContext(bypassConsent: true) { context, writer in
             let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: context.nativeSourceOverride)
 
             if let mappedError = self.eventsMapper.map(event: rumError) {
@@ -549,7 +545,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             container: nil,
             context: nil,
             date: startDate.timeIntervalSince1970.toInt64Milliseconds,
-            device: .init(device: context.device, telemetry: telemetry),
+            device: .init(device: context.device, telemetry: featureScope.telemetry),
             display: nil,
             // RUMM-2197: In very rare cases, the OS info computed below might not be exactly the one
             // that the app crashed on. This would correspond to a scenario when the device OS was upgraded

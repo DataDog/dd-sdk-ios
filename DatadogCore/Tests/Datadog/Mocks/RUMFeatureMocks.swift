@@ -38,11 +38,13 @@ extension WebViewEventReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
         viewCache: ViewCache = ViewCache()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             dateProvider: dateProvider,
             commandSubscriber: commandSubscriber,
             viewCache: viewCache
@@ -56,6 +58,7 @@ extension CrashReportReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -63,10 +66,10 @@ extension CrashReportReceiver: AnyMockable {
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
-        telemetry: Telemetry = NOPTelemetry(),
         eventsMapper: RUMEventsMapper = .mockNoOp()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
@@ -74,7 +77,6 @@ extension CrashReportReceiver: AnyMockable {
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
-            telemetry: telemetry,
             eventsMapper: eventsMapper
         )
     }
@@ -699,7 +701,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        core: DatadogCoreProtocol = NOPDatadogCore(),
+        featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = .mockAny(),
@@ -714,7 +716,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: core,
+            featureScope: featureScope,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -746,7 +748,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: self.core,
+            featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
