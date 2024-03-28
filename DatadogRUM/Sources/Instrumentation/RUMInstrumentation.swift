@@ -34,11 +34,12 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
     let longTasks: LongTaskObserver?
 
     /// Instruments App Hangs. It is `nil` if hangs monitoring is not enabled.
-    let appHangs: AppHangsObserver?
+    let appHangs: AppHangsMonitor?
 
     // MARK: - Initialization
 
     init(
+        featureScope: FeatureScope,
         uiKitRUMViewsPredicate: UIKitRUMViewsPredicate?,
         uiKitRUMActionsPredicate: UIKitRUMActionsPredicate?,
         longTaskThreshold: TimeInterval?,
@@ -46,7 +47,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         mainQueue: DispatchQueue,
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
-        telemetry: Telemetry
+        fatalErrorContext: FatalErrorContextNotifier,
+        processID: UUID
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)
         // and only swizzle `UIViewController` if UIKit instrumentation is configured:
@@ -59,7 +61,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
 
         // Create long tasks and app hang observers only if configured:
         var longTasks: LongTaskObserver? = nil
-        var appHangs: AppHangsObserver? = nil
+        var appHangs: AppHangsMonitor? = nil
 
         do {
             if uiKitRUMViewsPredicate != nil {
@@ -100,12 +102,14 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
                 DD.logger.warn("`RUM.Configuration.appHangThreshold` cannot be less than \(Constants.minAppHangThreshold)s. A value of \(Constants.minAppHangThreshold)s will be used.")
             }
 
-            appHangs = AppHangsObserver(
+            appHangs = AppHangsMonitor(
+                featureScope: featureScope,
                 appHangThreshold: appHangThreshold,
                 observedQueue: mainQueue,
                 backtraceReporter: backtraceReporter,
+                fatalErrorContext: fatalErrorContext,
                 dateProvider: dateProvider,
-                telemetry: telemetry
+                processID: processID
             )
         }
 
@@ -135,6 +139,6 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         viewsHandler.publish(to: subscriber)
         actionsHandler?.publish(to: subscriber)
         longTasks?.publish(to: subscriber)
-        appHangs?.publish(to: subscriber)
+        appHangs?.nonFatalHangsHandler.publish(to: subscriber)
     }
 }

@@ -11,7 +11,7 @@ import Foundation
 ///
 /// - Unlike `DDCrashReport`, the backtrace report can be generated on-demand without the actual crash being triggered.
 /// - Like in `DDCrashReport`, threads and stacks information in `BacktraceReport` follows the format compatible with Datadog symbolication.
-public struct BacktraceReport {
+public struct BacktraceReport: Codable {
     /// The stack trace of the thread for which the backtrace is generated.
     public let stack: String
     /// Represents all threads currently running in the process.

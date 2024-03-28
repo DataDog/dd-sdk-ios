@@ -15,6 +15,7 @@ class RUMInstrumentationTests: XCTestCase {
     func testWhenOnlyUIKitViewsPredicateIsConfigured_itInstrumentsUIViewController() throws {
         // When
         let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
             uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: nil,
@@ -22,7 +23,8 @@ class RUMInstrumentationTests: XCTestCase {
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
-            telemetry: NOPTelemetry()
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
         )
 
         // Then
@@ -38,6 +40,7 @@ class RUMInstrumentationTests: XCTestCase {
     func testWhenOnlyUIKitActionsPredicateIsConfigured_itInstrumentsUIApplication() throws {
         // When
         let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
             longTaskThreshold: nil,
@@ -45,7 +48,8 @@ class RUMInstrumentationTests: XCTestCase {
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
-            telemetry: NOPTelemetry()
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
         )
 
         // Then
@@ -58,6 +62,7 @@ class RUMInstrumentationTests: XCTestCase {
     func testWhenOnlyLongTasksThresholdIsConfigured_itInstrumentsRunLoop() throws {
         // When
         let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: 0.5,
@@ -65,7 +70,8 @@ class RUMInstrumentationTests: XCTestCase {
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
-            telemetry: NOPTelemetry()
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
         )
 
         // Then
@@ -81,6 +87,7 @@ class RUMInstrumentationTests: XCTestCase {
     func testWhenLongTasksThresholdIsLessOrEqualZero_itDoesNotInstrumentsRunLoop() {
         // When
         let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
             uiKitRUMViewsPredicate: nil,
             uiKitRUMActionsPredicate: nil,
             longTaskThreshold: .mockRandom(min: -100, max: 0),
@@ -88,7 +95,8 @@ class RUMInstrumentationTests: XCTestCase {
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
-            telemetry: NOPTelemetry()
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
         )
 
         // Then
@@ -97,17 +105,61 @@ class RUMInstrumentationTests: XCTestCase {
         }
     }
 
-    func testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers() throws {
-        // Given
+    func testWhenAppHangThresholdIsConfigured_itInstrumentsAppHangs() {
+        // When
         let instrumentation = RUMInstrumentation(
-            uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
-            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
-            longTaskThreshold: 0.5,
-            appHangThreshold: .mockAny(),
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: nil,
+            longTaskThreshold: .mockRandom(min: -100, max: 0),
+            appHangThreshold: 2,
             mainQueue: .main,
             dateProvider: SystemDateProvider(),
             backtraceReporter: BacktraceReporterMock(),
-            telemetry: NOPTelemetry()
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
+        )
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            XCTAssertNotNil(instrumentation.appHangs)
+        }
+    }
+
+    func testWhenAppHangThresholdIsNotConfigured_itDoesNotInstrumentsAppHangs() {
+        // When
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: nil,
+            uiKitRUMActionsPredicate: nil,
+            longTaskThreshold: .mockRandom(min: -100, max: 0),
+            appHangThreshold: nil,
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
+        )
+
+        // Then
+        withExtendedLifetime(instrumentation) {
+            XCTAssertNil(instrumentation.appHangs)
+        }
+    }
+
+    func testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers() throws {
+        // Given
+        let instrumentation = RUMInstrumentation(
+            featureScope: NOPFeatureScope(),
+            uiKitRUMViewsPredicate: UIKitRUMViewsPredicateMock(),
+            uiKitRUMActionsPredicate: UIKitRUMActionsPredicateMock(),
+            longTaskThreshold: 0.5,
+            appHangThreshold: 2,
+            mainQueue: .main,
+            dateProvider: SystemDateProvider(),
+            backtraceReporter: BacktraceReporterMock(),
+            fatalErrorContext: .mockAny(),
+            processID: .mockAny()
         )
         let subscriber = RUMCommandSubscriberMock()
 
@@ -119,6 +171,7 @@ class RUMInstrumentationTests: XCTestCase {
             XCTAssertIdentical(instrumentation.viewsHandler.subscriber, subscriber)
             XCTAssertIdentical((instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber, subscriber)
             XCTAssertIdentical(instrumentation.longTasks?.subscriber, subscriber)
+            XCTAssertIdentical(instrumentation.appHangs?.nonFatalHangsHandler.subscriber, subscriber)
         }
     }
 }

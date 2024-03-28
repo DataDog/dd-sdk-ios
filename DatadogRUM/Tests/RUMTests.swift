@@ -112,7 +112,7 @@ class RUMTests: XCTestCase {
         XCTAssertIdentical(monitor, rum.instrumentation.viewsHandler.subscriber)
         XCTAssertIdentical(monitor, (rum.instrumentation.actionsHandler as? UIKitRUMUserActionsHandler)?.subscriber)
         XCTAssertIdentical(monitor, rum.instrumentation.longTasks?.subscriber)
-        XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.subscriber)
+        XCTAssertIdentical(monitor, rum.instrumentation.appHangs?.nonFatalHangsHandler.subscriber)
     }
 
     func testWhenEnabledWithNoInstrumentations() throws {
@@ -437,7 +437,8 @@ class RUMTests: XCTestCase {
         waitForExpectations(timeout: 2.5)
     }
 
-    // MARK: RUM+Internal tests
+    // MARK: - RUM+Internal tests
+
     func testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows() {
         // Given
         let core = NOPDatadogCore()

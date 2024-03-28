@@ -739,6 +739,14 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
+extension FatalErrorContextNotifier: AnyMockable {
+    public static func mockAny() -> FatalErrorContextNotifier {
+        return FatalErrorContextNotifier(
+            messageBus: NOPFeatureScope()
+        )
+    }
+}
+
 extension RUMScopeDependencies {
     static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -836,6 +844,35 @@ extension RUMSessionScope {
             startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: hasReplay
+        )
+    }
+}
+
+extension RUMSessionState: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMSessionState {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> RUMSessionState {
+        return RUMSessionState(
+            sessionUUID: .mockRandom(),
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            didStartWithReplay: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        sessionUUID: UUID = .mockAny(),
+        isInitialSession: Bool = .mockAny(),
+        hasTrackedAnyView: Bool = .mockAny(),
+        didStartWithReplay: Bool? = .mockAny()
+    ) -> RUMSessionState {
+        return RUMSessionState(
+            sessionUUID: sessionUUID,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: hasTrackedAnyView,
+            didStartWithReplay: didStartWithReplay
         )
     }
 }
@@ -1081,5 +1118,44 @@ extension Dictionary where Key == String, Value == FeatureBaggage {
             SessionReplayDependency.hasReplay: .init(hasReplay),
             SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
         ]
+    }
+}
+
+// MARK: - App Hangs Monitoring
+
+extension AppHang: AnyMockable, RandomMockable {
+    public static func mockAny() -> AppHang {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> AppHang {
+        return AppHang(
+            startDate: .mockRandom(),
+            backtraceResult: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        startDate: Date = .mockAny(),
+        backtraceResult: BacktraceGenerationResult = .mockAny()
+    ) -> AppHang {
+        return AppHang(
+            startDate: startDate,
+            backtraceResult: backtraceResult
+        )
+    }
+}
+
+extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
+    public static func mockAny() -> AppHang.BacktraceGenerationResult {
+        return .succeeded(.mockAny())
+    }
+
+    public static func mockRandom() -> AppHang.BacktraceGenerationResult {
+        return [
+            .succeeded(.mockRandom()),
+            .failed,
+            .notAvailable
+        ].randomElement()!
     }
 }
