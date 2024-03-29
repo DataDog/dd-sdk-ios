@@ -2479,7 +2479,6 @@
 		9E68FB54244707FD0013A8AA /* ObjcExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ObjcExceptionHandler.h; sourceTree = "<group>"; };
 		9E986C2F2677B91400D62490 /* VitalRefreshRateReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReaderTests.swift; sourceTree = "<group>"; };
 		9E9973F0268DF69500D8059B /* VitalInfoSampler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoSampler.swift; sourceTree = "<group>"; };
-		9E9EB37624468CE90002C80B /* Datadog.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = Datadog.modulemap; sourceTree = "<group>"; };
 		9EA3CA6826775A3500B16871 /* VitalRefreshRateReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalRefreshRateReader.swift; sourceTree = "<group>"; };
 		9EC8B5D92668197B000F7529 /* VitalCPUReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReader.swift; sourceTree = "<group>"; };
 		9EC8B5ED2668E4DB000F7529 /* VitalCPUReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalCPUReaderTests.swift; sourceTree = "<group>"; };
@@ -3810,7 +3809,6 @@
 		61133B9C2423979B00786299 /* DatadogCore */ = {
 			isa = PBXGroup;
 			children = (
-				9E9EB37624468CE90002C80B /* Datadog.modulemap */,
 				D28FCC342B5EBAAF00CCC077 /* PrivacyInfo.xcprivacy */,
 				D286626D2A43487500852CE3 /* Datadog.swift */,
 				D2FB125C292FBB56005B13F8 /* Datadog+Internal.swift */,
