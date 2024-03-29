@@ -1,7 +1,7 @@
 # Unreleased
 
-* [FEATURE] Call RUM's `errorEventMapper` for crashes.
-* [FEATURE] Support calling log event mapper for crashes.
+* [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
+* [FEATURE] Support calling log event mapper for crashes. See [#1741][]
 
 # 2.8.0 / 19-03-2024
 
@@ -618,6 +618,8 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
 [#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
+[#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
+[#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
