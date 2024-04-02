@@ -69,7 +69,6 @@ extension DeviceInfo {
             architecture = String(utf8String: archInfo.name) ?? "unknown"
         }
 
-
         let build = try? Sysctl.osVersion()
 
         #if !targetEnvironment(simulator)
