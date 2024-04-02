@@ -5,13 +5,18 @@
 | **iOS**    |     ✅    |  `11+` |
 | **tvOS**   |     ✅    |  `11+` |
 | **iPadOS** |     ✅    |  `11+` |
-| **VisionOS** |   ⚠️    |  `1.1+` |
+| **visionOS** |   ⚠️    |  `1.0+` |
+| **macOS**  |     ⚠️    |  `10.15+` |
 | **watchOS**|     ❌    |  `n/a` |
-| **macOS**  |     ❌    |  `n/a` |
 | **Linux**  |     ❌    |  `n/a` |
 
-## VisionOS
-VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional.
+## visionOS
+
+The visionOS is not officially supported by Datadog SDK. Some features may not be fully functional.
+
+## macOS
+
+The macOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `RUM`, which heavily depends on `UIKit` does not build on macOS.
 
 ## Xcode
 
