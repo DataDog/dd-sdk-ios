@@ -7,6 +7,7 @@
 
 # 2.9.0 / 11-04-2024
 
+* [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 * [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
 * [FEATURE] Support calling log event mapper for crashes. See [#1741][]
 * [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
