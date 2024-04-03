@@ -7,19 +7,20 @@
 import Foundation
 import DatadogInternal
 
-internal protocol AppHangsObservingThread: AnyObject {
-    /// Starts the thread.
-    func start()
+internal protocol AppHangsObservingThread: Flushable {
+    /// Starts the thread with given delegate.
+    func start(with delegate: AppHangsObservingThreadDelegate)
     /// Stops the thread.
     func stop()
-    /// Closure to be notified when App Hang starts.
-    var onHangStarted: ((AppHang) -> Void)? { set get }
-    /// Closure to be notified when App Hang gets cancelled due to possible false-positive.
-    var onHangCancelled: ((AppHang) -> Void)? { set get }
-    /// Closure to be notified when App Hang ends. It passes the hang and its duration.
-    var onHangEnded: ((AppHang, TimeInterval) -> Void)? { set get }
-    /// A block called after the thread finished its pass and will become idle.
-    var onBeforeSleep: (() -> Void)? { set get }
+}
+
+internal protocol AppHangsObservingThreadDelegate: AnyObject {
+    /// Called when App Hang starts.
+    func hangStarted(_ hang: AppHang)
+    /// Called when App Hang gets cancelled due to possible false-positive.
+    func hangCancelled(_ hang: AppHang)
+    /// Called when App Hang ends. It passes the hang and its duration.
+    func hangEnded(_ hang: AppHang, duration: TimeInterval)
 }
 
 internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
@@ -65,21 +66,11 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
     private var mainThreadID: ThreadID? = nil
     /// Telemetry interface.
     private let telemetry: Telemetry
-    /// Closure to be notified when App Hang starts.
-    /// It is executed on the watchdog thread.
-    @ReadWriteLock
-    internal var onHangStarted: ((AppHang) -> Void)?
-    /// Closure to be notified when App Hang gets cancelled due to possible false-positive.
-    /// It is executed on the watchdog thread.
-    @ReadWriteLock
-    internal var onHangCancelled: ((AppHang) -> Void)?
-    /// Closure to be notified when App Hang ends. It passes the hang and its duration.
-    /// It is executed on the watchdog thread.
-    @ReadWriteLock
-    internal var onHangEnded: ((AppHang, TimeInterval) -> Void)?
+    /// Delegate to be notified on hang status.
+    private weak var delegate: AppHangsObservingThreadDelegate?
     /// A block called after this thread finished its pass and will become idle.
     @ReadWriteLock
-    internal var onBeforeSleep: (() -> Void)?
+    private var onBeforeSleep: (() -> Void)?
 
     /// Creates an instance of an App Hang watchdog thread.
     ///
@@ -88,6 +79,7 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
     /// - Parameters:
     ///   - appHangThreshold: Minimum duration of the `queue` hang to consider it an App Hang.
     ///   - queue: The queue to observe for hangs. (main queue)
+    ///   - delegate: Delegate to be notified on hang.
     ///   - dateProvider: Date provider.
     ///   - backtraceReporter: Backtrace reporter for hang's stack trace generation.
     ///   - telemetry: The handler to report issues through RUM Telemetry.
@@ -122,7 +114,14 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
         }
     }
 
-    func stop() { cancel() }
+    func start(with delegate: AppHangsObservingThreadDelegate) {
+        self.delegate = delegate
+        start()
+    }
+
+    func stop() {
+        cancel()
+    }
 
     override func main() {
         let mainThreadTask = self.mainThreadTask
@@ -181,7 +180,7 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
                 startDate: hangStart,
                 backtraceResult: backtraceResult
             )
-            onHangStarted?(hang)
+            delegate?.hangStarted(hang)
 
             // Previous wait timed out, so wait again for the task completion, this time infinitely until the hang ends.
             mainThreadTask.wait()
@@ -193,15 +192,23 @@ internal final class AppHangsWatchdogThread: Thread, AppHangsObservingThread {
                 // If the hang duration is irrealistically long (way more than assumed iOS watchdog termination limit: ~10s), send telemetry.
                 // This could be another false-positive caused by thread suspension between the two `wait()` calls.
                 telemetry.debug("Detected an App Hang with an unusually long duration >\(falsePositiveThreshold)s", attributes: ["hang_duration": hangDuration])
-                onHangCancelled?(hang) // cancel hang as possible false-positive
+                delegate?.hangCancelled(hang) // cancel hang as possible false-positive
                 continue
             }
 
-            onHangEnded?(hang, hangDuration)
+            delegate?.hangEnded(hang, duration: hangDuration)
         }
     }
 
     private func interval(from t1: DispatchTime, to t2: DispatchTime) -> TimeInterval {
         TimeInterval(t2.uptimeNanoseconds - t1.uptimeNanoseconds) / 1_000_000_000
+    }
+}
+
+extension AppHangsWatchdogThread {
+    func flush() {
+        let semaphore = DispatchSemaphore(value: 0)
+        onBeforeSleep = { semaphore.signal() }
+        semaphore.wait() // wait till the end of current loop
     }
 }

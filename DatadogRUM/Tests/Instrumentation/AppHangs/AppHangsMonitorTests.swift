@@ -11,14 +11,14 @@ import DatadogInternal
 
 private class WatchdogThreadMock: AppHangsObservingThread {
     var started: Bool?
+    weak var delegate: AppHangsObservingThreadDelegate?
 
-    func start() { started = true }
+    func start(with delegate: AppHangsObservingThreadDelegate) {
+        started = true
+        self.delegate = delegate
+    }
     func stop() { started = false }
-
-    var onHangStarted: ((AppHang) -> Void)?
-    var onHangCancelled: ((AppHang) -> Void)?
-    var onHangEnded: ((AppHang, TimeInterval) -> Void)?
-    var onBeforeSleep: (() -> Void)?
+    func flush() {}
 }
 
 class AppHangsMonitorTests: XCTestCase {
@@ -45,6 +45,9 @@ class AppHangsMonitorTests: XCTestCase {
     }
 
     func testStartAndStop() throws {
+        // Given
+        XCTAssertNil(watchdogThread.started)
+
         // When, Then
         monitor.start()
         XCTAssertEqual(watchdogThread.started, true)
@@ -66,7 +69,7 @@ class AppHangsMonitorTests: XCTestCase {
         // When
         let hang: AppHang = .mockRandom()
         let duration: TimeInterval = .mockRandom(min: 1, max: 4)
-        watchdogThread.onHangEnded?(hang, duration)
+        watchdogThread.delegate?.hangEnded(hang, duration: duration)
 
         // Then
         let command = try XCTUnwrap(subscriber.lastReceivedCommand as? RUMAddCurrentViewAppHangCommand)
@@ -90,7 +93,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // When
         let hang: AppHang = .mockRandom()
-        watchdogThread.onHangStarted?(hang)
+        watchdogThread.delegate?.hangStarted(hang)
 
         // Then
         XCTAssertNotNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
@@ -105,7 +108,7 @@ class AppHangsMonitorTests: XCTestCase {
 
         // When
         let hang: AppHang = .mockRandom()
-        watchdogThread.onHangStarted?(hang)
+        watchdogThread.delegate?.hangStarted(hang)
 
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
@@ -123,8 +126,8 @@ class AppHangsMonitorTests: XCTestCase {
 
         // When
         let hang: AppHang = .mockRandom()
-        watchdogThread.onHangStarted?(hang)
-        watchdogThread.onHangCancelled?(hang)
+        watchdogThread.delegate?.hangStarted(hang)
+        watchdogThread.delegate?.hangCancelled(hang)
 
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
@@ -141,8 +144,8 @@ class AppHangsMonitorTests: XCTestCase {
         // When
         let hang: AppHang = .mockRandom()
         let duration: TimeInterval = .mockAny()
-        watchdogThread.onHangStarted?(hang)
-        watchdogThread.onHangEnded?(hang, duration)
+        watchdogThread.delegate?.hangStarted(hang)
+        watchdogThread.delegate?.hangEnded(hang, duration: duration)
 
         // Then
         XCTAssertNil(featureScope.dataStoreMock.value(forKey: RUMDataStore.Key.fatalAppHangKey.rawValue))
@@ -158,7 +161,7 @@ class AppHangsMonitorTests: XCTestCase {
         monitor.start()
         fatalErrorContext.sessionState = sessionState
         fatalErrorContext.view = view
-        watchdogThread.onHangStarted?(hang)
+        watchdogThread.delegate?.hangStarted(hang)
         monitor.stop()
 
         // When

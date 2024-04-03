@@ -66,34 +66,32 @@ internal final class AppHangsMonitor {
 
     func start() {
         fatalHangsHandler.reportFatalAppHangIfFound()
-        watchdogThread.onHangStarted = { [weak self] hang in
-            self?.fatalHangsHandler.startHang(hang: hang)
-        }
-        watchdogThread.onHangCancelled = { [weak self] _ in
-            self?.fatalHangsHandler.cancelHang()
-        }
-        watchdogThread.onHangEnded = { [weak self] hang, duration in
-            self?.fatalHangsHandler.endHang()
-            self?.nonFatalHangsHandler.endHang(appHang: hang, duration: duration)
-        }
-        watchdogThread.start()
+        watchdogThread.start(with: self)
     }
 
     func stop() {
         watchdogThread.stop()
-        watchdogThread.onHangStarted = nil
-        watchdogThread.onHangCancelled = nil
-        watchdogThread.onHangEnded = nil
+    }
+}
+
+extension AppHangsMonitor: AppHangsObservingThreadDelegate {
+    func hangStarted(_ hang: AppHang) {
+        fatalHangsHandler.startHang(hang: hang)
+    }
+
+    func hangCancelled(_ hang: AppHang) {
+        fatalHangsHandler.cancelHang()
+    }
+
+    func hangEnded(_ hang: AppHang, duration: TimeInterval) {
+        fatalHangsHandler.endHang()
+        nonFatalHangsHandler.endHang(appHang: hang, duration: duration)
     }
 }
 
 extension AppHangsMonitor {
     /// Awaits the processing of pending app hang.
     ///
-    /// Note: This method is synchronous and will block the caller thread, in worst case up for `appHangThreshold`.
-    func flush() {
-        let semaphore = DispatchSemaphore(value: 0)
-        watchdogThread.onBeforeSleep = { semaphore.signal() }
-        semaphore.wait()
-    }
+    /// Note: This method is synchronous and will block the caller thread, in worst case up to `appHangThreshold`.
+    func flush() { watchdogThread.flush() }
 }
