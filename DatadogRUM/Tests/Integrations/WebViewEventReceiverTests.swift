@@ -123,6 +123,70 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertEqual(try json.value("_dd.session.plan"), 2)
     }
 
+    func testParsingTelemetryEvent() throws {
+        // Given
+        let data = """
+        {
+          "eventType": "internal_telemetry",
+          "event":
+            {
+              "type": "telemetry",
+              "date": 1712069357432,
+              "service": "browser-rum-sdk",
+              "version": "5.2.0-b93ed472a4f14fbf2bcd1bc2c9faacb4abbeed82",
+              "source": "browser",
+              "_dd": { "format_version": 2 },
+              "telemetry":
+                {
+                  "type": "configuration",
+                  "configuration":
+                    {
+                      "session_replay_sample_rate": 100,
+                      "use_allowed_tracing_urls": false,
+                      "selected_tracing_propagators": [],
+                      "default_privacy_level": "allow",
+                      "use_excluded_activity_urls": false,
+                      "use_worker_url": false,
+                      "track_user_interactions": true,
+                      "track_resources": true,
+                      "track_long_task": true,
+                      "session_sample_rate": 100,
+                      "telemetry_sample_rate": 100,
+                      "use_before_send": false,
+                      "use_proxy": false,
+                      "allow_fallback_to_local_storage": false,
+                      "store_contexts_across_pages": false,
+                      "allow_untrusted_events": false
+                    },
+                  "runtime_env": { "is_local_file": false, "is_worker": false }
+                },
+              "experimental_features": [],
+              "application": { "id": "00000000-aaaa-0000-aaaa-000000000000" },
+              "session": { "id": "00000000-aaaa-0000-aaaa-000000000000" },
+              "view": {},
+              "action": { "id": [] }
+            }
+        }
+        """.utf8Data
+
+        // When
+        let decoder = JSONDecoder()
+        let message = try decoder.decode(WebViewMessage.self, from: data)
+
+        guard case let .telemetry(event) = message else {
+            return XCTFail("not a telemetry message")
+        }
+
+        // Then
+        let json = JSONObjectMatcher(object: event) // only partial matching
+        XCTAssertEqual(try json.value("application.id"), "00000000-aaaa-0000-aaaa-000000000000")
+        XCTAssertEqual(try json.value("date"), 1_712_069_357_432)
+        XCTAssertEqual(try json.value("service"), "browser-rum-sdk")
+        XCTAssertEqual(try json.value("session.id"), "00000000-aaaa-0000-aaaa-000000000000")
+        XCTAssertEqual(try json.value("telemetry.type"), "configuration")
+        XCTAssertEqual(try json.value("_dd.format_version"), 2)
+    }
+
     func testWhenReceivingWebViewTrackingMessageWithValidEvent_itAcknowledgesTheMessageAndKeepsRUMSessionAlive() throws {
         let commandsSubscriberMock = RUMCommandSubscriberMock()
 
