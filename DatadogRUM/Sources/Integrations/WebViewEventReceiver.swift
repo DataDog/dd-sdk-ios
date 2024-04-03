@@ -49,9 +49,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         switch message {
         case let .webview(.rum(event)):
-            receive(rum: event, from: core)
+            receive(rum: event)
         case let .webview(.telemetry(event)):
-            receive(telemetry: event, from: core)
+            receive(telemetry: event)
         default:
             return false
         }
@@ -59,7 +59,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         return true
     }
 
-    private func receive(rum event: JSON, from core: DatadogCoreProtocol) {
+    private func receive(rum event: JSON) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -115,9 +115,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func receive(telemetry event: JSON, from core: DatadogCoreProtocol) {
+    private func receive(telemetry event: JSON) {
         // RUM-2866: Update with dedicated telemetry track
-        featureScope.eventWriteContext { [weak core] context, writer in
+        featureScope.eventWriteContext { [featureScope] context, writer in
             guard let rumBaggage = context.baggages[RUMFeature.name] else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
@@ -142,7 +142,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
                 writer.write(value: AnyEncodable(event))
             } catch {
-                core?.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
+                featureScope.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
             }
         }
     }
