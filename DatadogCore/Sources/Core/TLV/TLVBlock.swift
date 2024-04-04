@@ -8,10 +8,10 @@ import Foundation
 import DatadogInternal
 
 /// Block size binary type
-internal typealias BlockSize = UInt32
+internal typealias TLVBlockSize = UInt32
 
 /// Reported errors while manipulating data blocks.
-internal enum DataBlockError: Error {
+internal enum TLVBlockError: Error {
     case readOperationFailed(streamStatus: Stream.Status, streamError: Error?)
     case invalidDataType(got: Any)
     case invalidByteSequence(expected: Int, got: Int)
@@ -19,17 +19,10 @@ internal enum DataBlockError: Error {
     case dataAllocationFailure
     case endOfStream
 }
-
-internal protocol TLVBlockType {
-    associatedtype RawValue = UInt16
-    init?(rawValue: RawValue)
-    var rawValue: RawValue { get }
-}
-
 /// A data block in defined by its type and a byte sequence.
 ///
 /// A block can be serialized in data stream by following TLV format.
-internal struct TLVBlock<BlockType: TLVBlockType> {
+internal struct TLVBlock<BlockType> where BlockType: RawRepresentable, BlockType.RawValue == UInt16 {
     /// Type describing the data block.
     let type: BlockType
 
@@ -50,8 +43,8 @@ internal struct TLVBlock<BlockType: TLVBlockType> {
         // T
         withUnsafeBytes(of: type.rawValue) { buffer.append(contentsOf: $0) }
         // L
-        guard let length = BlockSize(exactly: data.count), length <= maxLength else {
-            throw DataBlockError.bytesLengthExceedsLimit(limit: maxLength)
+        guard let length = TLVBlockSize(exactly: data.count), length <= maxLength else {
+            throw TLVBlockError.bytesLengthExceedsLimit(limit: maxLength)
         }
         withUnsafeBytes(of: length) { buffer.append(contentsOf: $0) }
         // V

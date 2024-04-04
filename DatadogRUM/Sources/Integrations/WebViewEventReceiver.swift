@@ -11,6 +11,8 @@ internal typealias JSON = [String: Any]
 
 /// Receiver to consume a RUM event coming from Browser SDK.
 internal final class WebViewEventReceiver: FeatureMessageReceiver {
+    /// RUM feature scope.
+    let featureScope: FeatureScope
     /// Subscriber that can process a `RUMKeepSessionAliveCommand`.
     let commandSubscriber: RUMCommandSubscriber
 
@@ -26,22 +28,15 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     init(
+        featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
         viewCache: ViewCache
     ) {
+        self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
-    }
-
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case let .webview(.rum(event)) = message else {
-            return false
-        }
-
-        write(event: event, to: core)
-        return true
     }
 
     /// Writes a Browser RUM event to the core.
@@ -49,9 +44,22 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The receiver will inject current RUM context and apply server-time offset to the event.
     ///
     /// - Parameters:
-    ///   - event: The Browser RUM event.
+    ///   - message: The message containing the Browser RUM event.
     ///   - core: The core to write the event.
-    private func write(event: JSON, to core: DatadogCoreProtocol) {
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        switch message {
+        case let .webview(.rum(event)):
+            receive(rum: event)
+        case let .webview(.telemetry(event)):
+            receive(telemetry: event)
+        default:
+            return false
+        }
+
+        return true
+    }
+
+    private func receive(rum event: JSON) {
         commandSubscriber.process(
             command: RUMKeepSessionAliveCommand(
                 time: dateProvider.now,
@@ -59,7 +67,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
             )
         )
 
-        core.scope(for: RUMFeature.name)?.eventWriteContext { [weak core] context, writer in
+        featureScope.eventWriteContext { [featureScope] context, writer in
             guard let rumBaggage = context.baggages[RUMFeature.name] else {
                 return // Drop event if RUM is not enabled or RUM session is not sampled
             }
@@ -102,7 +110,39 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
                 writer.write(value: AnyEncodable(event))
             } catch {
-                core?.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
+                featureScope.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
+            }
+        }
+    }
+
+    private func receive(telemetry event: JSON) {
+        // RUM-2866: Update with dedicated telemetry track
+        featureScope.eventWriteContext { [featureScope] context, writer in
+            guard let rumBaggage = context.baggages[RUMFeature.name] else {
+                return // Drop event if RUM is not enabled or RUM session is not sampled
+            }
+
+            do {
+                let rum: RUMCoreContext = try rumBaggage.decode()
+                var event = event
+
+                if let date = event["date"] as? Int {
+                    event["date"] = Int64(date) + context.serverTimeOffset.toInt64Milliseconds
+                }
+
+                if var application = event["application"] as? JSON {
+                    application["id"] = rum.applicationID
+                    event["application"] = application
+                }
+
+                if var session = event["session"] as? JSON {
+                    session["id"] = rum.sessionID
+                    event["session"] = session
+                }
+
+                writer.write(value: AnyEncodable(event))
+            } catch {
+                featureScope.telemetry.error("Failed to decode `RUMCoreContext`", error: error)
             }
         }
     }

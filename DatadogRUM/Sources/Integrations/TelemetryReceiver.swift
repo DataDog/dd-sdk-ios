@@ -11,6 +11,8 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// Maximum number of telemetry events allowed per RUM  sessions.
     static let maxEventsPerSessions: Int = 100
 
+    /// RUM feature scope.
+    let featureScope: FeatureScope
     let dateProvider: DateProvider
 
     let sampler: Sampler
@@ -33,16 +35,19 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// Creates a RUM Telemetry instance.
     ///
     /// - Parameters:
+    ///   - featureScope: RUM feature scope.
     ///   - dateProvider: Current device time provider.
     ///   - sampler: Telemetry events sampler.
     ///   - configurationExtraSampler: Extra sampler for configuration events (applied on top of `sampler`).
     ///   - metricsExtraSampler: Extra sampler for metric events (applied on top of `sampler`).
     init(
+        featureScope: FeatureScope,
         dateProvider: DateProvider,
         sampler: Sampler,
         configurationExtraSampler: Sampler,
         metricsExtraSampler: Sampler
     ) {
+        self.featureScope = featureScope
         self.dateProvider = dateProvider
         self.sampler = sampler
         self.configurationExtraSampler = configurationExtraSampler
@@ -62,23 +67,23 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
             return false
         }
 
-        return receive(telemetry: telemetry, from: core)
+        return receive(telemetry: telemetry)
     }
 
     /// Receives a Telemetry message from the bus.
     ///
     /// - Parameter telemetry: The telemetry message to consume.
     /// - Returns: Always `true`.
-    func receive(telemetry: TelemetryMessage, from core: DatadogCoreProtocol) -> Bool {
+    private func receive(telemetry: TelemetryMessage) -> Bool {
         switch telemetry {
         case let .debug(id, message, attributes):
-            debug(id: id, message: message, attributes: attributes, in: core)
+            debug(id: id, message: message, attributes: attributes)
         case let .error(id, message, kind, stack):
-            error(id: id, message: message, kind: kind, stack: stack, in: core)
+            error(id: id, message: message, kind: kind, stack: stack)
         case .configuration(let configuration):
-            send(configuration: configuration, in: core)
+            send(configuration: configuration)
         case let .metric(name, attributes):
-            metric(name: name, attributes: attributes, in: core)
+            metric(name: name, attributes: attributes)
         }
 
         return true
@@ -94,10 +99,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - id: Identity of the debug log, this can be used to prevent duplicates.
     ///   - message: The debug message.
     ///   - attributes: Custom attributes attached to the log (optional).
-    private func debug(id: String, message: String, attributes: [String: Encodable]?, in core: DatadogCoreProtocol) {
+    private func debug(id: String, message: String, attributes: [String: Encodable]?) {
         let date = dateProvider.now
 
-        record(event: id, in: core) { context, writer in
+        record(event: id) { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryDebugEvent(
@@ -132,10 +137,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - message: Body of the log
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
-    private func error(id: String, message: String, kind: String?, stack: String?, in core: DatadogCoreProtocol) {
+    private func error(id: String, message: String, kind: String?, stack: String?) {
         let date = dateProvider.now
 
-        record(event: id, in: core) { context, writer in
+        record(event: id) { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryErrorEvent(
@@ -162,14 +167,14 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     /// configuration for lazy initialization of the SDK.
     ///
     /// - Parameter configuration: The SDK configuration.
-    private func send(configuration: DatadogInternal.ConfigurationTelemetry, in core: DatadogCoreProtocol) {
+    private func send(configuration: DatadogInternal.ConfigurationTelemetry) {
         guard configurationExtraSampler.sample() else {
             return
         }
 
         let date = dateProvider.now
 
-        self.record(event: "_dd.configuration", in: core) { context, writer in
+        self.record(event: "_dd.configuration") { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryConfigurationEvent(
@@ -190,14 +195,14 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func metric(name: String, attributes: [String: Encodable], in core: DatadogCoreProtocol) {
+    private func metric(name: String, attributes: [String: Encodable]) {
         guard metricsExtraSampler.sample() else {
             return
         }
 
         let date = dateProvider.now
 
-        record(event: nil, in: core) { context, writer in
+        record(event: nil) { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
             let event = TelemetryDebugEvent(
@@ -221,15 +226,12 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         }
     }
 
-    private func record(event id: String?, in core: DatadogCoreProtocol, operation: @escaping (DatadogContext, Writer) -> Void) {
-        guard
-            let rum = core.scope(for: RUMFeature.name),
-            sampler.sample()
-        else {
+    private func record(event id: String?, operation: @escaping (DatadogContext, Writer) -> Void) {
+        guard sampler.sample() else {
             return
         }
 
-        rum.eventWriteContext { context, writer in
+        featureScope.eventWriteContext { context, writer in
             // reset recorded events on session renewal
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
