@@ -195,7 +195,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
@@ -220,7 +220,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
@@ -245,7 +245,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, nil)
     }
 
@@ -270,7 +270,7 @@ final class OTelSpanTests: XCTestCase {
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
         XCTAssertEqual(child.traceID, parent.traceID)
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
