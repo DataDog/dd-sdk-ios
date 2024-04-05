@@ -143,7 +143,7 @@ extension RUMViewEvent: RandomMockable {
                 pageStates: nil,
                 replayStats: nil,
                 session: .init(
-                    plan: [.plan1, .plan2].randomElement()!,
+                    plan: .plan1,
                     sessionPrecondition: .mockRandom()
                 )
             ),

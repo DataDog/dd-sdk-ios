@@ -90,10 +90,13 @@ internal final class FatalAppHangsHandler {
             // There is an oportunity for covering these cases through massive code reuse between fatal hangs and crashes through `FatalErrorBuilder`.
             // TODO: RUM-3840 Track fatal App Hangs if there is no active RUM view
 
+            let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
+            let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+
             let builder = FatalErrorBuilder(
                 context: context,
                 error: .hang,
-                errorDate: fatalHang.hang.startDate,
+                errorDate: realErrorDate,
                 errorType: AppHangsMonitor.Constants.appHangErrorType,
                 errorMessage: AppHangsMonitor.Constants.appHangErrorMessage,
                 errorStack: fatalHang.hang.backtraceResult.stack,
@@ -104,8 +107,6 @@ internal final class FatalAppHangsHandler {
             )
             let error = builder.createRUMError(with: fatalHang.lastRUMView)
             let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)
-            let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
-            let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
 
             if realDateNow.timeIntervalSince(realErrorDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
                 DD.logger.debug("Sending fatal App hang as RUM error with issuing RUM view update")
