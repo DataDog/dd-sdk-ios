@@ -173,7 +173,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             featureScope.eventWriteContext(bypassConsent: true) { context, writer in
                 let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate)
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
-                
+
                 if let mappedError = self.eventsMapper.map(event: rumError) {
                     writer.write(value: mappedError)
                 } else {
