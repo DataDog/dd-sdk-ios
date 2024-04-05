@@ -201,7 +201,7 @@ public struct DefaultTraceIDGenerator: TraceIDGenerator {
     ///
     /// * Lower: starts with `1` as `0` is reserved for historical reason: 0 == "unset", ref: dd-trace-java:DDId.java.
     /// * Upper: equals to `2 ^ 63 - 1` as some tracers can't handle the `2 ^ 64 -1` range, ref: dd-trace-java:DDId.java.
-    public static let defaultGenerationRange = (1...UInt64.max >> 1)
+    public static let defaultGenerationRange = (1...UInt64.max)
 
     /// The generator's range.
     let range: ClosedRange<UInt64>
@@ -216,13 +216,16 @@ public struct DefaultTraceIDGenerator: TraceIDGenerator {
     /// Generates a new and unique `TraceID`.
     ///
     /// The Trace ID will be generated within the range.
+    /// <32-bit unix seconds> <32 bits of zero> <64 random bits>
     ///
     /// - Returns: The generated `TraceID`
     public func generate() -> TraceID {
         var idHi: UInt64
         var idLo: UInt64
         repeat {
-            idHi = UInt64.random(in: range)
+            // 32-bit unix seconds + 32 bits of zero in decimal
+            let seconds = UInt32(Date().timeIntervalSince1970)
+            idHi = UInt64("\(seconds)00000000") ?? TraceID.invalidId
             idLo = UInt64.random(in: range)
         } while idHi == TraceID.invalidId && idLo == TraceID.invalidId
         return TraceID(idHi: idHi, idLo: idLo)
