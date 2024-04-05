@@ -8,9 +8,9 @@ import Foundation
 import DatadogInternal
 
 /// An intermediate representation of an App Hang.
-internal struct AppHang {
+internal struct AppHang: Codable {
     /// The result of generating backtrace for this hang.
-    enum BacktraceGenerationResult {
+    enum BacktraceGenerationResult: Codable {
         /// Indicates that backtrace generation succeeded.
         /// The associated `BacktraceReport` includes the snapshot of all running threads during the hang.
         case succeeded(BacktraceReport)
@@ -21,10 +21,23 @@ internal struct AppHang {
         case notAvailable
     }
 
-    /// The date of hang end.
-    let date: Date
-    /// The duration of the hang.
-    let duration: TimeInterval
+    /// The date of hang start.
+    /// It is defined as device time, without considering NTP offset.
+    let startDate: Date
     /// The result of generating backtrace for the hang.
     let backtraceResult: BacktraceGenerationResult
+}
+
+/// Persisted information on App Hang that may likely become fatal.
+///
+/// It encodes all information necessary to report error on app restart.
+internal struct FatalAppHang: Codable {
+    /// An identifier of the process that the hang was recorded in.
+    let processID: UUID
+    /// The actual hang that was recorded.
+    let hang: AppHang
+    /// Interval between device and server time.
+    let serverTimeOffset: TimeInterval
+    /// The last RUM view at the moment of hang's recording.
+    let lastRUMView: RUMViewEvent
 }

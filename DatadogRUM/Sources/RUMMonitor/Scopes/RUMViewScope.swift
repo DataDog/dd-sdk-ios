@@ -540,14 +540,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
             writer.write(value: event, metadata: event.metadata())
 
-            // Update `CrashContext` with recent RUM view (no matter sampling - we want to always
-            // have recent information if process is interrupted by crash):
-            dependencies.featureScope.send(
-                message: .baggage(
-                    key: RUMBaggageKeys.viewEvent,
-                    value: event
-                )
-            )
+            // Update fatal error context with recent RUM view:
+            dependencies.fatalErrorContext.view = event
         } else { // if event was dropped by mapper
             version -= 1
         }
