@@ -7,6 +7,7 @@
 import UIKit
 import DatadogCore
 import DatadogTrace
+import OpenTelemetryApi
 
 class DebugOTelTracingViewController: UIViewController {
     @IBOutlet weak var serviceNameTextField: UITextField!
@@ -82,12 +83,12 @@ class DebugOTelTracingViewController: UIViewController {
 
             let rootSpan = otelTracer
                 .spanBuilder(spanName: spanName)
+                .setActive(true)
                 .startSpan()
             wait(seconds: 0.5)
 
             self.queue2.sync {
                 let child1 = otelTracer.spanBuilder(spanName: "otel child operation 1")
-                    .setParent(rootSpan)
                     .startSpan()
                 wait(seconds: 0.5)
                 child1.end()
@@ -108,6 +109,12 @@ class DebugOTelTracingViewController: UIViewController {
                     wait(seconds: 1)
                     grandChild.end()
                 }
+
+                OpenTelemetry.instance.contextProvider.setActiveSpan(child2)
+                let child2Child = otelTracer.spanBuilder(spanName: "otel child2 child")
+                    .startSpan()
+                wait(seconds: 0.5)
+                child2Child.end()
 
                 child2.end()
             }
