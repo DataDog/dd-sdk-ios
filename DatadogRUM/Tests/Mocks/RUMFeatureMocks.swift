@@ -38,7 +38,8 @@ extension CrashReportReceiver: AnyMockable {
         trackBackgroundEvents: Bool = true,
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
-        syntheticsTest: RUMSyntheticsTest? = nil
+        syntheticsTest: RUMSyntheticsTest? = nil,
+        eventsMapper: RUMEventsMapper = .mockNoOp()
     ) -> Self {
         .init(
             featureScope: featureScope,
@@ -48,7 +49,8 @@ extension CrashReportReceiver: AnyMockable {
             trackBackgroundEvents: trackBackgroundEvents,
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
-            syntheticsTest: syntheticsTest
+            syntheticsTest: syntheticsTest,
+            eventsMapper: eventsMapper
         )
     }
 }

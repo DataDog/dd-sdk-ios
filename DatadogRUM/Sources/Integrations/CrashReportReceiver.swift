@@ -111,6 +111,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     let ciTest: RUMCITest?
     /// Integration with Synthetics tests. It contains the Synthetics test context when active.
     let syntheticsTest: RUMSyntheticsTest?
+    let eventsMapper: RUMEventsMapper
 
     // MARK: - Initialization
 
@@ -122,7 +123,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         trackBackgroundEvents: Bool,
         uuidGenerator: RUMUUIDGenerator,
         ciTest: RUMCITest?,
-        syntheticsTest: RUMSyntheticsTest?
+        syntheticsTest: RUMSyntheticsTest?,
+        eventsMapper: RUMEventsMapper
     ) {
         self.featureScope = featureScope
         self.applicationID = applicationID
@@ -132,6 +134,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         self.uuidGenerator = uuidGenerator
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
+        self.eventsMapper = eventsMapper
     }
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
@@ -201,7 +204,12 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             DD.logger.debug("Sending crash as RUM error.")
             featureScope.eventWriteContext(bypassConsent: true) { context, writer in
                 let rumError = createRUMError(from: crashReport, and: lastRUMViewEvent, crashDate: crashTimings.realCrashDate, sourceType: context.nativeSourceOverride)
-                writer.write(value: rumError)
+                if let mappedError = self.eventsMapper.map(event: rumError) {
+                    writer.write(value: mappedError)
+                } else {
+                    DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
+                    writer.write(value: rumError)
+                }
             }
         }
     }
@@ -320,8 +328,15 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         featureScope.eventWriteContext(bypassConsent: true) { context, writer in
             let rumError = createRUMError(from: crashReport, and: updatedRUMView, crashDate: realCrashDate, sourceType: context.nativeSourceOverride)
 
-            writer.write(value: rumError)
-            writer.write(value: updatedRUMView)
+            if let mappedError = self.eventsMapper.map(event: rumError) {
+                writer.write(value: mappedError)
+            } else {
+                DD.logger.warn("errorEventMapper returned 'nil' for a crash. Discarding crashes is not supported. The unmodified event will be sent.")
+                writer.write(value: rumError)
+            }
+            if let mappedView = self.eventsMapper.map(event: updatedRUMView) {
+                writer.write(value: self.eventsMapper.map(event: mappedView))
+            }
         }
     }
 
