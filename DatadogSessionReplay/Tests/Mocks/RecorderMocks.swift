@@ -35,7 +35,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
             resources: .mockRandom(count: .random(in: (5..<50))),
-            webviews: .mockRandom()
+            webviews: .mockRandom(count: .random(in: (5..<50)))
         )
     }
 
@@ -300,7 +300,7 @@ extension UIImageResource: RandomMockable {
     }
 }
 
-extension Sequence where Element == Resource {
+extension Array where Element == Resource {
     static func mockAny() -> [Resource] {
         return [MockResource].mockAny()
     }
@@ -313,33 +313,24 @@ extension Sequence where Element == Resource {
 struct WebViewSlotMock: WebViewSlot, AnyMockable, RandomMockable {
     let id: Int
     let shouldPurge: Bool
-    let hiddenWireframe: SRWireframe
 
-    init(id: Int, shouldPurge: Bool = false, hiddenWireframe: SRWireframe = .mockAny()) {
+    init(id: Int, shouldPurge: Bool = false) {
         self.id = id
         self.shouldPurge = shouldPurge
-        self.hiddenWireframe = hiddenWireframe
     }
 
     func purge() -> WebViewSlot? { shouldPurge ? nil : self }
-
-    func hiddenWireframes(with builder: DatadogSessionReplay.SessionReplayWireframesBuilder) -> [SRWireframe] {
-        [hiddenWireframe]
-    }
 
     static func mockAny() -> WebViewSlotMock {
         .mockWith()
     }
 
     static func mockWith(id: Int = .mockAny()) -> WebViewSlotMock {
-        WebViewSlotMock(
-            id: id,
-            hiddenWireframe: .mockRandomWith(id: Int64(id))
-        )
+        WebViewSlotMock(id: id)
     }
 
     static func mockRandom() -> WebViewSlotMock {
-        WebViewSlotMock(id: .mockRandom(), hiddenWireframe: .mockRandom())
+        WebViewSlotMock(id: .mockRandom())
     }
 }
 
@@ -348,8 +339,8 @@ extension Dictionary where Key == Int, Value == WebViewSlot {
         return [Int: WebViewSlotMock].mockAny()
     }
 
-    static func mockRandom() -> [Int: WebViewSlot] {
-        return [Int: WebViewSlotMock].mockRandom()
+    public static func mockRandom(count: Int = 1) -> Dictionary {
+        return (0..<count).reduce(into: [:]) { dict, _ in dict[.mockRandom()] = WebViewSlotMock.mockRandom() }
     }
 }
 

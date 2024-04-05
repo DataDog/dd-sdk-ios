@@ -16,6 +16,7 @@ internal class WKWebViewRecorder: NodeRecorder {
             return nil
         }
 
+        // Record all webviews regardless of their visibility
         let slot = WKWebViewSlot(webview: webview)
         // Add or update the webview slot in cache
         context.webviewCache.update(slot)
@@ -45,17 +46,6 @@ internal struct WKWebViewSlot: WebViewSlot {
     func purge() -> WebViewSlot? {
         webview.map(WKWebViewSlot.init(webview:))
     }
-
-    func hiddenWireframes(with builder: SessionReplayWireframesBuilder) -> [SRWireframe] {
-        return [
-            builder.createWebViewWireframe(
-                id: Int64(id),
-                frame: .zero,
-                slotId: String(id),
-                isVisible: false
-            )
-        ]
-    }
 }
 
 internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
@@ -69,23 +59,19 @@ internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
         guard attributes.isVisible else {
             // ignore hidden webview, the wireframes will be built
-            // by the slot itself
+            // for hidden slot
             return []
         }
 
-        /// Remove the slot from the builder because it has an associated node
-        builder.removeWebView(withSlotID: slot.id)
         return [
-            builder.createWebViewWireframe(
-                id: Int64(slot.id),
+            builder.visibleWebViewWireframe(
+                id: slot.id,
                 frame: attributes.frame,
-                slotId: String(slot.id),
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,
                 backgroundColor: attributes.backgroundColor,
                 cornerRadius: attributes.layerCornerRadius,
-                opacity: attributes.alpha,
-                isVisible: true
+                opacity: attributes.alpha
             )
         ]
     }

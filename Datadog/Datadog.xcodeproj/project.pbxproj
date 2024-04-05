@@ -541,6 +541,7 @@
 		A7EA11622AB0CE6C00C73970 /* DDUIKitRUMActionsPredicateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7DA18062AB0CA4700F76337 /* DDUIKitRUMActionsPredicateTests.swift */; };
 		A7EA88562B17639A00FE2580 /* ResourcesWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7EA88552B17639A00FE2580 /* ResourcesWriter.swift */; };
 		A7F651302B7655DE004B0EDB /* UIImageResourceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7F6512F2B7655DE004B0EDB /* UIImageResourceTests.swift */; };
+		D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */; };
 		D20605A3287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A4287464F40047275C /* ContextValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A2287464F40047275C /* ContextValuePublisher.swift */; };
 		D20605A6287476230047275C /* ServerOffsetPublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20605A5287476230047275C /* ServerOffsetPublisher.swift */; };
@@ -2493,6 +2494,7 @@
 		B3BBBCBB265E71D100943419 /* VitalMemoryReaderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalMemoryReaderTests.swift; sourceTree = "<group>"; };
 		B3FC3C0626526EFF00DEED9E /* VitalInfo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VitalInfo.swift; sourceTree = "<group>"; };
 		B3FC3C3B2653A97700DEED9E /* VitalInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VitalInfoTests.swift; sourceTree = "<group>"; };
+		D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframesBuilderTests.swift; sourceTree = "<group>"; };
 		D20605A2287464F40047275C /* ContextValuePublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextValuePublisher.swift; sourceTree = "<group>"; };
 		D20605A5287476230047275C /* ServerOffsetPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerOffsetPublisher.swift; sourceTree = "<group>"; };
 		D20605A82874C1CD0047275C /* NetworkConnectionInfoPublisher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkConnectionInfoPublisher.swift; sourceTree = "<group>"; };
@@ -3486,6 +3488,7 @@
 			isa = PBXGroup;
 			children = (
 				61054F552A6EE1BA00AAA894 /* RecordsBuilderTests.swift */,
+				D2056C202BBFE05A0085BC76 /* WireframesBuilderTests.swift */,
 			);
 			path = Builders;
 			sourceTree = "<group>";
@@ -7887,6 +7890,7 @@
 				61054FA52A6EE1BA00AAA894 /* RecordsBuilderTests.swift in Sources */,
 				61054FD02A6EE1BA00AAA894 /* SRContextPublisherTests.swift in Sources */,
 				61054F9B2A6EE1BA00AAA894 /* QueueTests.swift in Sources */,
+				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
 				61054FBF2A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift in Sources */,
 				D23BFFEE2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift in Sources */,

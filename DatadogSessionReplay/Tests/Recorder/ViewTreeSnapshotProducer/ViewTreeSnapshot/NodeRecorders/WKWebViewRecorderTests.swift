@@ -56,30 +56,6 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertFalse(wireframes.isEmpty)
     }
 
-    func testHiddenWebViewSlot() throws {
-        // Given
-        let slot = WKWebViewSlot(webview: webView)
-
-        // When
-        let wireframes = slot.hiddenWireframes(with: WireframesBuilder())
-
-        // Then
-        XCTAssertEqual(wireframes.count, 1)
-
-        guard case let .webviewWireframe(wireframe) = wireframes.first else {
-            return XCTFail("First wireframe needs to be webviewWireframe case")
-        }
-
-        XCTAssertEqual(wireframe.id, Int64(webView.hash))
-        XCTAssertEqual(wireframe.slotId, String(webView.hash))
-        XCTAssertNil(wireframe.clip)
-        XCTAssertEqual(wireframe.x, 0)
-        XCTAssertEqual(wireframe.y, 0)
-        XCTAssertEqual(wireframe.width, 0)
-        XCTAssertEqual(wireframe.height, 0)
-        XCTAssertFalse(wireframe.isVisible ?? true)
-    }
-
     func testVisibleWebViewSlot() throws {
         // Given
         let attributes: ViewAttributes = .mock(fixture: .visible())
@@ -106,7 +82,7 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(wireframe.width, Int64(withNoOverflow: attributes.frame.width))
         XCTAssertEqual(wireframe.height, Int64(withNoOverflow: attributes.frame.height))
         XCTAssertTrue(wireframe.isVisible ?? false)
-        XCTAssertNil(builder.webviews[slot.id], "webview slot should be removed from builder")
+        XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
     }
 
 // This test should pass but it doesn't because `WKWebView` apparently leaks.

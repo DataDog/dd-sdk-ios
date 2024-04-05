@@ -82,15 +82,6 @@ internal protocol WebViewSlot {
     ///
     /// - Returns: The remaining slot or `nil` if deallocated.
     func purge() -> WebViewSlot?
-
-    /// Creates hidden wireframes for this slot.
-    ///
-    /// This build method will be called as a fallback if the slot was not recorded
-    /// as a ``SessionReplayNode``.
-    ///
-    /// - Parameter builder: the generic builder for constructing SR data models.
-    /// - Returns: one wireframe that describe a webview slot in SR.
-    func hiddenWireframes(with builder: WireframesBuilder) -> [SRWireframe]
 }
 
 /// Attributes of the `UIView` that the node was created for.

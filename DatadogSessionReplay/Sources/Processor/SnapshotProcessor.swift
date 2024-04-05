@@ -84,10 +84,8 @@ internal class SnapshotProcessor: SnapshotProcessing {
             node.wireframesBuilder.buildWireframes(with: builder)
         }
 
-        // build hidden webview wireframe and place them at the beginning
-        wireframes = builder.webviews.values.flatMap { webview in
-            webview.hiddenWireframes(with: builder)
-        } + wireframes
+        // build hidden webview wireframes and place them at the beginning
+        wireframes = builder.hiddenWebViewWireframes() + wireframes
 
         interceptWireframes?(wireframes)
 
