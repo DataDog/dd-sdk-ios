@@ -596,8 +596,8 @@ class CrashReportReceiverTests: XCTestCase {
         let sendRUMViewEvent = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
         XCTAssertEqual(sendRUMViewEvent?.view.name, modifiedViewName, "Must send event mapper modified view event")
 
-        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
-        XCTAssertEqual(sendRUMErrorEvent.model.error.fingerprint, errorFingerprint, "Must send event mapper modified error event")
+        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+        XCTAssertEqual(sendRUMErrorEvent.error.fingerprint, errorFingerprint, "Must send event mapper modified error event")
     }
 
     func testGivenCrashDuringRUMSessionWithActiveView_whenErrorMapperReturnsNull_itSendOriginalError() throws {
@@ -646,7 +646,7 @@ class CrashReportReceiverTests: XCTestCase {
             featureScope: featureScope,
             dateProvider: RelativeDateProvider(
                 using: crashDate.addingTimeInterval(
-                    .mockRandom(min: 10, max: 2 * CrashReportReceiver.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
+                    .mockRandom(min: 10, max: 2 * FatalErrorBuilder.Constants.viewEventAvailabilityThreshold) // simulate restarting app from 10s to 8h later
                 )
             ),
             sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
@@ -667,18 +667,18 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // Then
-        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
+        let sendRUMErrorEvent = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
 
         XCTAssertTrue(
-            sendRUMErrorEvent.model.application.id == lastRUMViewEvent.application.id
-            && sendRUMErrorEvent.model.session.id == lastRUMViewEvent.session.id
-            && sendRUMErrorEvent.model.view.id == lastRUMViewEvent.view.id,
+            sendRUMErrorEvent.application.id == lastRUMViewEvent.application.id
+            && sendRUMErrorEvent.session.id == lastRUMViewEvent.session.id
+            && sendRUMErrorEvent.view.id == lastRUMViewEvent.view.id,
             "The `RUMErrorEvent` sent must be linked to the same RUM Session as the last `RUMViewEvent`."
         )
 
-        XCTAssertEqual(sendRUMErrorEvent.model.view.name, lastRUMViewEvent.view.name, "It must include view attributes")
-        XCTAssertEqual(sendRUMErrorEvent.model.view.referrer, lastRUMViewEvent.view.referrer, "It must include view attributes")
-        XCTAssertEqual(sendRUMErrorEvent.model.view.url, lastRUMViewEvent.view.url, "It must include view attributes")
+        XCTAssertEqual(sendRUMErrorEvent.view.name, lastRUMViewEvent.view.name, "It must include view attributes")
+        XCTAssertEqual(sendRUMErrorEvent.view.referrer, lastRUMViewEvent.view.referrer, "It must include view attributes")
+        XCTAssertEqual(sendRUMErrorEvent.view.url, lastRUMViewEvent.view.url, "It must include view attributes")
 
         XCTAssertNotNil(sendRUMErrorEvent.context, "It must contain context details")
         XCTAssertNotNil(lastRUMViewEvent.context, "It must contain context details")
@@ -690,34 +690,34 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         XCTAssertTrue(
-            sendRUMErrorEvent.model.error.isCrash == true, "The `RUMErrorEvent` sent must be marked as crash."
+            sendRUMErrorEvent.error.isCrash == true, "The `RUMErrorEvent` sent must be marked as crash."
         )
         XCTAssertEqual(
-            sendRUMErrorEvent.model.date,
+            sendRUMErrorEvent.date,
             crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
             "The `RUMErrorEvent` sent must include crash date corrected by current correction offset."
         )
         XCTAssertEqual(
-            sendRUMErrorEvent.model.error.type,
+            sendRUMErrorEvent.error.type,
             "SIG_CODE (SIG_NAME)"
         )
         XCTAssertEqual(
-            sendRUMErrorEvent.model.error.message,
+            sendRUMErrorEvent.error.message,
             "Signal details"
         )
         XCTAssertEqual(
-            sendRUMErrorEvent.model.error.stack,
+            sendRUMErrorEvent.error.stack,
             """
             0: stack-trace line 0
             1: stack-trace line 1
             2: stack-trace line 2
             """
         )
-        XCTAssertEqual(sendRUMErrorEvent.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.threads]), crashReport.threads)
-        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.binaryImages]), crashReport.binaryImages)
-        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.meta]), crashReport.meta)
-        DDAssertJSONEqual(AnyEncodable(sendRUMErrorEvent.additionalAttributes?[DDError.wasTruncated]), crashReport.wasTruncated)
+        XCTAssertEqual(sendRUMErrorEvent.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+        DDAssertJSONEqual(sendRUMErrorEvent.error.threads, crashReport.threads)
+        DDAssertJSONEqual(sendRUMErrorEvent.error.binaryImages, crashReport.binaryImages)
+        DDAssertJSONEqual(sendRUMErrorEvent.error.meta, crashReport.meta)
+        DDAssertJSONEqual(sendRUMErrorEvent.error.wasTruncated, crashReport.wasTruncated)
     }
 
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
@@ -1000,8 +1000,8 @@ class CrashReportReceiverTests: XCTestCase {
             let sentRUMView = featureScope.eventsWritten(ofType: RUMViewEvent.self).last
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUMView event")
 
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
-            XCTAssertEqual(sentRUMError.model.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            XCTAssertEqual(sentRUMError.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
         }
 
         try test(
@@ -1276,10 +1276,10 @@ class CrashReportReceiverTests: XCTestCase {
             XCTAssertEqual(sentRUMView?.view.name, mappedViewName, "Must send mapped RUM view event")
 
             // Sent RUM Error should be unmapped
-            let sentRUMError = featureScope.eventsWritten(ofType: RUMCrashEvent.self)[0]
-            XCTAssertNil(sentRUMError.model.error.fingerprint)
+            let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
+            XCTAssertNil(sentRUMError.error.fingerprint)
             DDAssertReflectionEqual(
-                sentRUMError.model.connectivity,
+                sentRUMError.connectivity,
                 RUMConnectivity(networkInfo: randomNetworkConnectionInfo, carrierInfo: randomCarrierInfo),
                 "It must contain connectity info from the moment of crash"
             )
@@ -1288,18 +1288,18 @@ class CrashReportReceiverTests: XCTestCase {
                 RUMUser(userInfo: randomUserInfo),
                 "It must contain user info from the moment of crash"
             )
-            XCTAssertTrue(sentRUMError.model.error.isCrash == true, "RUM error must be marked as crash.")
+            XCTAssertTrue(sentRUMError.error.isCrash == true, "RUM error must be marked as crash.")
             XCTAssertEqual(
-                sentRUMError.model.date,
+                sentRUMError.date,
                 crashDate.addingTimeInterval(dateCorrectionOffset).timeIntervalSince1970.toInt64Milliseconds,
                 "RUM error must include crash date corrected by current correction offset."
             )
-            XCTAssertEqual(sentRUMError.model.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
-            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.threads], "It must contain crash details")
-            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.binaryImages], "It must contain crash details")
-            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.meta], "It must contain crash details")
-            XCTAssertNotNil(sentRUMError.additionalAttributes?[DDError.wasTruncated], "It must contain crash details")
-            XCTAssertEqual(sentRUMError.model.error.sourceType, .ios, "Must send .ios as the sourceType")
+            XCTAssertEqual(sentRUMError.dd.session?.plan, .plan1, "All RUM events should use RUM Lite plan")
+            XCTAssertNotNil(sentRUMError.error.threads, "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.error.binaryImages, "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.error.meta, "It must contain crash details")
+            XCTAssertNotNil(sentRUMError.error.wasTruncated, "It must contain crash details")
+            XCTAssertEqual(sentRUMError.error.sourceType, .ios, "Must send .ios as the sourceType")
         }
 
         try test(
