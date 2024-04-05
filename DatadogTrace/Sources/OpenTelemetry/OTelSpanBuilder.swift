@@ -138,6 +138,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
 
         if active {
             OpenTelemetry.instance.contextProvider.setActiveSpan(createdSpan)
+            createdSpan.ddSpan.setActive()
         }
 
         return createdSpan
