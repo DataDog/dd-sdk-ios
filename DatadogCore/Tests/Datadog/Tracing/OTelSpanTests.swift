@@ -58,6 +58,47 @@ final class OTelSpanTests: XCTestCase {
         ]
         DDAssertJSONEqual(AnyEncodable(expectedAttributes), AnyEncodable(logs[0].attributes.userAttributes))
     }
+
+    func testContextProviderSetActive_givenParentSpan() throws {
+        let core = DatadogCoreProxy()
+        defer { core.flushAndTearDown() }
+
+        Trace.enable(in: core)
+
+        // Given
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider(in: core)
+        )
+
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+
+        let parentSpan = tracer
+            .spanBuilder(spanName: "ParentSpan")
+            .startSpan()
+
+        // When
+        OpenTelemetry.instance.contextProvider.setActiveSpan(parentSpan)
+
+        let childSpan = tracer
+            .spanBuilder(spanName: "ChildSpan")
+            .startSpan()
+
+        childSpan.end()
+        parentSpan.end()
+
+        // Then
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spans.count, 2)
+
+        let childSpanMatcher = spans[0]
+        let parentSpanMatcher = spans[1]
+
+        XCTAssertEqual(try parentSpanMatcher.traceID(), try childSpanMatcher.traceID())
+        XCTAssertEqual(try parentSpanMatcher.spanID(), try childSpanMatcher.parentSpanID())
+    }
 }
 
 extension Dictionary where Key == String, Value == OpenTelemetryApi.AttributeValue {
