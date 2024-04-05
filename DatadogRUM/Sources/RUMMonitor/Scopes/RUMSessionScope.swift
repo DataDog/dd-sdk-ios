@@ -104,7 +104,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         if let viewScope = resumingViewScope {
             startView(
-                isInitialView: false,
                 dependencies: dependencies,
                 identity: viewScope.identity,
                 path: viewScope.viewPath,
@@ -145,7 +144,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
         self.viewScopes = expiredSession.viewScopes.map { expiredView in
             return RUMViewScope(
-                isInitialView: false,
                 parent: self,
                 dependencies: dependencies,
                 identity: expiredView.identity,
@@ -233,9 +231,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMCommands Processing
 
     private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
-        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
         startView(
-            isInitialView: isStartingInitialView,
             dependencies: dependencies,
             identity: command.identity,
             path: command.path,
@@ -249,7 +245,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func startView(
-        isInitialView: Bool,
         dependencies: RUMScopeDependencies,
         identity: ViewIdentifier,
         path: String,
@@ -261,7 +256,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         hasReplay: Bool?
     ) {
         let scope = RUMViewScope(
-            isInitialView: isInitialView,
             parent: self,
             dependencies: dependencies,
             identity: identity,
@@ -297,7 +291,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         startView(
-            isInitialView: true,
             dependencies: dependencies,
             identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL),
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
@@ -335,10 +328,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     }
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {
-        let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
-
         startView(
-            isInitialView: isStartingInitialView,
             dependencies: dependencies,
             identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
             path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,

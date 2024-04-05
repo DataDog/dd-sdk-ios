@@ -881,7 +881,6 @@ extension RUMViewScope {
     }
 
     static func mockWith(
-        isInitialView: Bool = false,
         parent: RUMContextProvider = RUMContextProviderMock(),
         dependencies: RUMScopeDependencies = .mockAny(),
         identity: ViewIdentifier = .mockViewIdentifier(),
@@ -893,7 +892,6 @@ extension RUMViewScope {
         serverTimeOffset: TimeInterval = .zero
     ) -> RUMViewScope {
         return RUMViewScope(
-            isInitialView: isInitialView,
             parent: parent,
             dependencies: dependencies,
             identity: identity,

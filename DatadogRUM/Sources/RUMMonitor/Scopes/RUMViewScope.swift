@@ -26,8 +26,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
     private unowned let parent: RUMContextProvider
     private let dependencies: RUMScopeDependencies
-    /// If this is the very first view created in the current app process.
-    private let isInitialView: Bool
 
     /// The value holding stable identity of this RUM View.
     let identity: ViewIdentifier
@@ -93,7 +91,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     private var viewPerformanceMetrics: [PerformanceMetric: VitalInfo] = [:]
 
     init(
-        isInitialView: Bool,
         parent: RUMContextProvider,
         dependencies: RUMScopeDependencies,
         identity: ViewIdentifier,
@@ -106,7 +103,6 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     ) {
         self.parent = parent
         self.dependencies = dependencies
-        self.isInitialView = isInitialView
         self.identity = identity
         self.attributes = attributes
         self.customTimings = customTimings
@@ -147,7 +143,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         userActionScope = userActionScope?.scope(byPropagating: command, context: context, writer: writer)
 
         let hasSentNoViewUpdatesYet = version == 0
-        if isInitialView, hasSentNoViewUpdatesYet {
+        if hasSentNoViewUpdatesYet {
             needsViewUpdate = true
         }
 
@@ -156,7 +152,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // Application Launch
         case let command as RUMApplicationStartCommand:
             sendApplicationStartAction(on: command, context: context, writer: writer)
-            if !isInitialView || viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
+            if viewPath != RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL {
                 dependencies.telemetry.error(
                     "A RUMApplicationStartCommand got sent to a View other than the ApplicationLaunch view."
                 )
