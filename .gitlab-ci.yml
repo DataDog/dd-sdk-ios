@@ -3,25 +3,27 @@ stages:
   - lint
   - test
 
-ENV info:
+# In this configuration:
+# - "high" refers to the macOS version bringing the latest Xcode tooling
+# - "low" refers to the macOS version bringing the oldest supported Xcode tooling
+
+ENV info (high):
   stage: info
   tags:
-    - mac-ventura-preview
+    - macos:ventura
+    - specific:true
   allow_failure: true # do not block GH PRs
   script:
-    - system_profiler SPSoftwareDataType # system info
-    - xcodebuild -version
-    - xcode-select -p # default Xcode
-    - ls /Applications/ | grep Xcode # other Xcodes
-    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore iOS" -showdestinations -quiet # installed iOS destinations
-    - xcodebuild -workspace "Datadog.xcworkspace" -scheme "DatadogCore tvOS" -showdestinations -quiet # installed tvOS destinations
-    - xcbeautify --version
-    - swiftlint --version
-    - carthage version
-    - gh --version
-    - brew -v
-    - bundler --version
-    - python3 -V
+    - ./tools/gitlab/env_info.sh
+
+ENV info (low):
+  stage: info
+  tags:
+    - macos:sonoma
+    - specific:true
+  allow_failure: true # do not block GH PRs
+  script:
+    - ./tools/gitlab/env_info.sh
 
 Lint:
   stage: lint
