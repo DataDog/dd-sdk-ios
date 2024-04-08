@@ -81,7 +81,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 attributes: [:],
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
-                kind: RUMResourceType(request: interception.request),
+                kind: RUMResourceType(request: interception.request.unsafeOriginal),
                 spanContext: distributedTracing?.trace(from: interception)
             )
         )
@@ -99,7 +99,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Get RUM Resource attributes from the user.
         let userAttributes = rumAttributesProvider?(
-            interception.request,
+            interception.request.unsafeOriginal,
             interception.completion?.httpResponse,
             interception.data,
             interception.completion?.error

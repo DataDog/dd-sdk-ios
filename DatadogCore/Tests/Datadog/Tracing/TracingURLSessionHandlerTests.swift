@@ -51,7 +51,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(metrics: .mockAny())
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
@@ -74,12 +74,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(
-            url: "http://www.example.com",
-            queryParams: [
-                URLQueryItem(name: "foo", value: "42"),
-                URLQueryItem(name: "lang", value: "en")
-            ],
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "http://www.example.com")!,
             httpMethod: "GET"
         )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
@@ -149,7 +145,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "GET")
+        let request: ImmutableRequest = .mockWith(httpMethod: "GET")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
         interception.register(

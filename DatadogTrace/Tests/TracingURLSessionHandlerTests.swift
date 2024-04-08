@@ -225,7 +225,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
@@ -275,7 +275,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
 
         // When
@@ -364,8 +364,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        var request: URLRequest = .mockAny()
-        request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+        let request: ImmutableRequest = .mockWith(
+            allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
+        )
         let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
         interception.register(response: .mockAny(), error: nil)
 

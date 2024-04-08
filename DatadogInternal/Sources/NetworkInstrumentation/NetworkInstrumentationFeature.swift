@@ -153,11 +153,16 @@ extension NetworkInstrumentationFeature {
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
+        guard let currentRequest = task.currentRequest else {
+            return
+        }
+
         // Get the current trace context from all handlers.
         let traceContexts = handlers.compactMap { $0.traceContext() }
+        let request = ImmutableRequest(request: currentRequest)
 
         queue.async { [weak self] in
-            guard let self = self, let request = task.currentRequest else {
+            guard let self = self else {
                 return
             }
 
@@ -187,7 +192,7 @@ extension NetworkInstrumentationFeature {
                 ))
             }
 
-            if let origin = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField) {
+            if let origin = request.allHTTPHeaderFields?[TracingHTTPHeaders.originField] {
                 interception.register(origin: origin)
             }
 
@@ -259,7 +264,7 @@ extension NetworkInstrumentationFeature {
         interceptions[task] = nil
     }
 
-    private func extractTrace(firstPartyHosts: FirstPartyHosts, request: URLRequest) -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
+    private func extractTrace(firstPartyHosts: FirstPartyHosts, request: ImmutableRequest) -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
         guard let headers = request.allHTTPHeaderFields else {
             return nil
         }

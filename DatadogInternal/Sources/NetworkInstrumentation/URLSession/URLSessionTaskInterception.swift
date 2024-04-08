@@ -11,7 +11,7 @@ public class URLSessionTaskInterception {
     public let identifier: UUID
     /// The initial request send during this interception. It is, the request send from `URLSession`, not the one
     /// given by the user (as the request could have been modified in `URLSessionSwizzler`).
-    public private(set) var request: URLRequest
+    public private(set) var request: ImmutableRequest
     /// Tells if the `request` is send to a 1st party host.
     public let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
@@ -28,7 +28,7 @@ public class URLSessionTaskInterception {
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
 
-    init(request: URLRequest, isFirstParty: Bool) {
+    init(request: ImmutableRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
@@ -46,7 +46,7 @@ public class URLSessionTaskInterception {
         }
     }
 
-    func register(request: URLRequest) {
+    func register(request: ImmutableRequest) {
         self.request = request
     }
 
@@ -94,6 +94,20 @@ public struct ResourceCompletion {
     public init(response: URLResponse?, error: Error?) {
         self.httpResponse = response as? HTTPURLResponse
         self.error = error
+    }
+}
+
+public struct ImmutableRequest {
+    public let url: URL?
+    public let httpMethod: String?
+    public let allHTTPHeaderFields: [String: String]?
+    public let unsafeOriginal: URLRequest
+
+    public init(request: URLRequest) {
+        self.url = request.url
+        self.httpMethod = request.httpMethod
+        self.allHTTPHeaderFields = request.allHTTPHeaderFields
+        self.unsafeOriginal = request
     }
 }
 

@@ -65,7 +65,7 @@ public final class URLSessionHandlerMock: DatadogURLSessionHandler {
     }
 
     public func interception(for request: URLRequest) -> URLSessionTaskInterception? {
-        interceptions.values.first { $0.request == request }
+        interceptions.values.first { $0.request.unsafeOriginal == request }
     }
 
     public func interception(for url: URL) -> URLSessionTaskInterception? {
@@ -102,6 +102,22 @@ extension ResourceCompletion: AnyMockable {
         error: Error? = nil
     ) -> Self {
         return ResourceCompletion(response: response, error: error)
+    }
+}
+
+extension ImmutableRequest: AnyMockable {
+    public static func mockAny() -> ImmutableRequest {
+        return .mockWith()
+    }
+    public static func mockWith(
+        url: URL = .mockAny(),
+        httpMethod: String = "GET",
+        allHTTPHeaderFields: [String: String] = .mockAny()
+    ) -> ImmutableRequest {
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod
+        request.allHTTPHeaderFields = allHTTPHeaderFields
+        return ImmutableRequest(request: request)
     }
 }
 
