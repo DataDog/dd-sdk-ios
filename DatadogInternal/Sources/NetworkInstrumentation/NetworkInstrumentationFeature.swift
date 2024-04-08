@@ -153,13 +153,16 @@ extension NetworkInstrumentationFeature {
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
+        // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
+        // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
+        // object from multiple threads:
         guard let currentRequest = task.currentRequest else {
             return
         }
+        let request = ImmutableRequest(request: currentRequest)
 
         // Get the current trace context from all handlers.
         let traceContexts = handlers.compactMap { $0.traceContext() }
-        let request = ImmutableRequest(request: currentRequest)
 
         queue.async { [weak self] in
             guard let self = self else {
