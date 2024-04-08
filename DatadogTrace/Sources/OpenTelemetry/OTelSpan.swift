@@ -215,6 +215,7 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         }
 
         ddSpan.finish(at: time)
+        OpenTelemetry.instance.contextProvider.removeContextForSpan(self)
     }
 
     var description: String {

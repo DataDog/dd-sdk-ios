@@ -2,7 +2,7 @@ all: dependencies templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
 DD_SDK_SWIFT_TESTING_VERSION = 2.3.2
-DD_DISABLE_TEST_INSTRUMENTING = true
+DD_DISABLE_TEST_INSTRUMENTING = false
 
 define DD_SDK_TESTING_XCCONFIG_CI
 DD_SDK_TESTING_PATH=$$(DD_SDK_TESTING_OVERRIDE_PATH:default=$$(SRCROOT)/../instrumented-tests/)\n

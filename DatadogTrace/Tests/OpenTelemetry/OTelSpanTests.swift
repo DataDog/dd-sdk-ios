@@ -195,7 +195,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
@@ -220,7 +220,7 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
@@ -245,8 +245,59 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
-        XCTAssertEqual(parent.parentID, nil)
+        XCTAssertNil(parent.parentID)
         XCTAssertEqual(child.parentID, nil)
+    }
+
+    func testSetActive_givenParentSpan() {
+        let writeSpanExpectation = expectation(description: "write span event")
+         writeSpanExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let parentSpan = tracer.spanBuilder(spanName: "Parent").setActive(true).startSpan()
+        let childSpan = tracer.spanBuilder(spanName: "Child").startSpan()
+
+        // When
+        childSpan.end()
+        parentSpan.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let child = recordedSpans.first!
+        let parent = recordedSpans.last!
+        XCTAssertEqual(child.traceID, parent.traceID)
+        XCTAssertNil(parent.parentID)
+        XCTAssertEqual(child.parentID, parent.spanID)
+    }
+
+    func testParentIds_givenDisjointSpans() {
+        let writeSpanExpectation = expectation(description: "write span event")
+        writeSpanExpectation.expectedFulfillmentCount = 2
+        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+
+        // Given
+        let tracer: DatadogTracer = .mockWith(core: core)
+        let span1 = tracer.spanBuilder(spanName: "Span1").startSpan()
+        let span2 = tracer.spanBuilder(spanName: "Span2").startSpan()
+
+        // When
+        span2.end()
+        span1.end()
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        let recordedSpans = core.spans()
+        XCTAssertEqual(recordedSpans.count, 2)
+        let span1Recorded = recordedSpans.first!
+        let span2Recorded = recordedSpans.last!
+
+        XCTAssertEqual(span1Recorded.parentID, nil)
+        XCTAssertEqual(span2Recorded.parentID, nil)
+        XCTAssertNotEqual(span1Recorded.traceID, span2Recorded.traceID)
     }
 
     func testSetAttribute() {
