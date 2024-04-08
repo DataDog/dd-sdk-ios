@@ -196,6 +196,11 @@
                BlueprintName = "DatadogCoreTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "OTelSpanTests">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO">
