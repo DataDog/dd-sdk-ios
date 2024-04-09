@@ -143,19 +143,8 @@ public enum WebViewTracking {
         let privacyLevel = sessionReplayConfiguration?.privacyLevel ?? .mask
 
         // Share native capabilities with Browser SDK
-        let capabilities: String = {
-            var capabilities: [String] = []
-
-            // Add 'records' capability when session-replay
-            // is configured.
-            if sessionReplayConfiguration != nil {
-                capabilities.append("records")
-            }
-
-            return capabilities
-                .map { return "\"\($0)\"" }
-                .joined(separator: ",")
-        }()
+        // Share native capabilities with Browser SDK
+        let capabilities = sessionReplayConfiguration != nil ? "\"records\"" : ""
 
         let js = """
         \(Self.jsCodePrefix)
