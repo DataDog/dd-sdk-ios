@@ -12,36 +12,80 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogWebViewTracking
 
-final class DDUserContentController: WKUserContentController {
-    typealias NameHandlerPair = (name: String, handler: WKScriptMessageHandler)
-    private(set) var messageHandlers = [NameHandlerPair]()
-
-    override func add(_ scriptMessageHandler: WKScriptMessageHandler, name: String) {
-        messageHandlers.append((name: name, handler: scriptMessageHandler))
-    }
-
-    override func removeScriptMessageHandler(forName name: String) {
-        messageHandlers = messageHandlers.filter {
-            return $0.name != name
-        }
-    }
-}
-
-final class MockMessageHandler: NSObject, WKScriptMessageHandler {
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) { }
-}
-
-final class MockScriptMessage: WKScriptMessage {
-    let mockBody: Any
-
-    init(body: Any) {
-        self.mockBody = body
-    }
-
-    override var body: Any { return mockBody }
-}
-
 class WebViewTrackingTests: XCTestCase {
+    func testItAddsUserScript() throws {
+        let mockSanitizer = HostsSanitizerMock()
+        let controller = DDUserContentController()
+
+        let host: String = .mockRandom()
+
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: [host],
+            hostsSanitizer: mockSanitizer,
+            logsSampleRate: 30,
+            sessionReplayConfiguration: nil,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertEqual(script.source, """
+        /* DatadogEventBridge */
+        window.DatadogEventBridge = {
+            send(msg) {
+                window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg)
+            },
+            getAllowedWebViewHosts() {
+                return '["\(host)"]'
+            },
+            getCapabilities() {
+                return '[]'
+            },
+            getPrivacyLevel() {
+                return 'mask'
+            }
+        }
+        """)
+    }
+
+    func testItAddsUserScriptWithSessionReplay() throws {
+        let mockSanitizer = HostsSanitizerMock()
+        let controller = DDUserContentController()
+
+        let host: String = .mockRandom()
+        let sessionReplayConfiguration = WebViewTracking.SessionReplayConfiguration(
+            privacyLevel: .mockRandom()
+        )
+
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: [host],
+            hostsSanitizer: mockSanitizer,
+            logsSampleRate: 30,
+            sessionReplayConfiguration: sessionReplayConfiguration,
+            in: PassthroughCoreMock()
+        )
+
+        let script = try XCTUnwrap(controller.userScripts.last)
+        XCTAssertEqual(script.source, """
+        /* DatadogEventBridge */
+        window.DatadogEventBridge = {
+            send(msg) {
+                window.webkit.messageHandlers.DatadogEventBridge.postMessage(msg)
+            },
+            getAllowedWebViewHosts() {
+                return '["\(host)"]'
+            },
+            getCapabilities() {
+                return '["records"]'
+            },
+            getPrivacyLevel() {
+                return '\(sessionReplayConfiguration.privacyLevel.rawValue)'
+            }
+        }
+        """)
+    }
+
     func testItAddsUserScriptAndMessageHandler() throws {
         let mockSanitizer = HostsSanitizerMock()
         let controller = DDUserContentController()
@@ -53,6 +97,7 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: mockSanitizer,
             logsSampleRate: 30,
+            sessionReplayConfiguration: nil,
             in: PassthroughCoreMock()
         )
 
@@ -84,6 +129,7 @@ class WebViewTrackingTests: XCTestCase {
                 hosts: ["datadoghq.com"],
                 hostsSanitizer: mockSanitizer,
                 logsSampleRate: 100,
+                sessionReplayConfiguration: nil,
                 in: PassthroughCoreMock()
             )
         }
@@ -162,6 +208,7 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
+            sessionReplayConfiguration: nil,
             in: core
         )
 
@@ -214,6 +261,7 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
+            sessionReplayConfiguration: nil,
             in: core
         )
 
@@ -305,6 +353,7 @@ class WebViewTrackingTests: XCTestCase {
             hosts: ["datadoghq.com"],
             hostsSanitizer: HostsSanitizerMock(),
             logsSampleRate: 100,
+            sessionReplayConfiguration: nil,
             in: core
         )
 
