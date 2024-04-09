@@ -33,6 +33,8 @@ internal struct LogEventBuilder {
     ///   - level: the severity level of the log
     ///   - message: the message of the log
     ///   - error: eventual error to associate with log
+    ///   - errorFingerprint: the custom fingerprint for this log
+    ///   - binaryImages: binary images needed to symbolicate the error
     ///   - attributes: attributes to associate with log (user and internal attributes, separate)
     ///   - tags: tags to associate with log
     ///   - context: SDK context from the moment of creating log
@@ -46,6 +48,7 @@ internal struct LogEventBuilder {
         message: String,
         error: DDError?,
         errorFingerprint: String?,
+        binaryImages: [BinaryImage]?,
         attributes: LogEvent.Attributes,
         tags: Set<String>,
         context: DatadogContext,

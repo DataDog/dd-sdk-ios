@@ -151,6 +151,13 @@ internal final class RemoteLogger: LoggerProtocol {
                 }
             }
 
+            // When binary images are requested, add them
+            var binaryImages: [BinaryImage]?
+            if let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) {
+                // Don't try to get binary images if we already have them.
+                binaryImages = try? self.core?.backtraceReporter.generateBacktrace()?.binaryImages
+            }
+
             let builder = LogEventBuilder(
                 service: self.configuration.service ?? context.service,
                 loggerName: self.configuration.name,
@@ -164,6 +171,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 message: message,
                 error: error,
                 errorFingerprint: errorFingerprint,
+                binaryImages: binaryImages,
                 attributes: .init(
                     userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes

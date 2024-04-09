@@ -75,6 +75,8 @@ public struct LogEvent: Encodable {
         public var sourceType: String = "ios"
         /// The custom fingerprint supplied for this error, if any
         public var fingerprint: String?
+        /// Binary images needed to decode the provided stack (if any)
+        public var binaryImages: [BinaryImage]?
     }
 
     /// Device information.
@@ -174,6 +176,7 @@ internal struct LogEventEncoder {
         case errorStack = "error.stack"
         case errorSourceType = "error.source_type"
         case errorFingerprint = "error.fingerprint"
+        case errorBinaryImages = "error.binary_images"
 
         // MARK: - Application info
 
@@ -237,6 +240,9 @@ internal struct LogEventEncoder {
             try container.encode(someError.stack, forKey: .errorStack)
             try container.encode(someError.sourceType, forKey: .errorSourceType)
             try container.encode(someError.fingerprint, forKey: .errorFingerprint)
+            if let binaryImages = someError.binaryImages {
+                try container.encode(someError.binaryImages, forKey: .errorBinaryImages)
+            }
         }
 
         // Encode logger info
