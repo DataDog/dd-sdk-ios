@@ -45,6 +45,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func tearDown() {
         core = nil
+        tracer = nil
+        handler = nil
         super.tearDown()
     }
 
