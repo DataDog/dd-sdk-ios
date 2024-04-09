@@ -55,9 +55,9 @@ public class RelativeTracingUUIDGenerator: TraceIDGenerator {
 }
 
 public class RelativeSpanIDGenerator: SpanIDGenerator {
+    @ReadWriteLock
     private(set) var uuid: SpanID
     internal let count: UInt64
-    private let queue = DispatchQueue(label: "queue-RelativeTracingUUIDGenerator-\(UUID().uuidString)")
 
     public init(startingFrom uuid: SpanID, advancingByCount count: UInt64 = 1) {
         self.uuid = uuid
@@ -65,10 +65,8 @@ public class RelativeSpanIDGenerator: SpanIDGenerator {
     }
 
     public func generate() -> SpanID {
-        return queue.sync {
-            defer { uuid = uuid + count }
-            return uuid
-        }
+        defer { uuid = uuid + count }
+        return uuid
     }
 }
 
