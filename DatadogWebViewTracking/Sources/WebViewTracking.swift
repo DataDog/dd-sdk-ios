@@ -25,9 +25,9 @@ import WebKit
 /// - Support users that have difficulty loading web pages on mobile devices
 public enum WebViewTracking {
 #if !os(tvOS)
-    /// The Session Replay Configuration to capture records coming from the web-view.
+    /// The Session Replay configuration to capture records coming from the web view.
     ///
-    /// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting records from
+    /// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting replay data from
     /// the Datadog Browser SDK installed in the web page. Datadog will then be able to combine the native
     /// and web recordings in a single replay.
     public struct SessionReplayConfiguration {
@@ -43,7 +43,7 @@ public enum WebViewTracking {
             case maskUserInput = "mask_user_input"
         }
 
-        /// The privacy level to use for the web-view replay recording.
+        /// The privacy level to use for the web view replay recording.
         public var privacyLevel: PrivacyLevel
 
         /// Creates Webview Session Replay configuration.
@@ -65,7 +65,7 @@ public enum WebViewTracking {
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
-    ///   - sessionReplayConfiguration: Session Replay Configuration to enable linking Web and Native replays.
+    ///   - sessionReplayConfiguration: Session Replay configuration to enable linking Web and Native replays.
     ///   - core: Datadog SDK core to use for tracking.
     public static func enable(
         webView: WKWebView,
