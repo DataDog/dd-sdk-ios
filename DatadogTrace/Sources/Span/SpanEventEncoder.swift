@@ -126,6 +126,8 @@ internal struct SpanEventEncoder {
 
         case origin = "meta._dd.origin"
 
+        case ptid = "meta._dd.p.tid"
+
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
@@ -233,6 +235,8 @@ internal struct SpanEventEncoder {
             try container.encode(carrierInfo.radioAccessTechnology, forKey: .mobileNetworkCarrierRadioTechnology)
             try container.encode(carrierInfo.carrierAllowsVOIP ? "1" : "0", forKey: .mobileNetworkCarrierAllowsVoIP)
         }
+
+        try container.encode(span.traceID.idHiHex, forKey: .ptid)
     }
 
     /// Encodes `meta.*` attributes coming from user
@@ -247,8 +251,5 @@ internal struct SpanEventEncoder {
             let metaKey = "meta.\($0.key)"
             try container.encode($0.value, forKey: DynamicCodingKey(metaKey))
         }
-
-        let metaDdPTid = "meta._dd.p.tid"
-        try container.encode(span.traceID.idHiHex, forKey: DynamicCodingKey(metaDdPTid))
     }
 }
