@@ -349,7 +349,7 @@ class RUMSessionScopeTests: XCTestCase {
             parent: parent,
             dependencies: .mockWith(
                 featureScope: featureScope,
-                sessionSampler: .mockRandom() // no matter if sampled or not
+                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll() // no matter if sampled or not
             ),
             hasReplay: randomIsReplayBeingRecorded
         )
