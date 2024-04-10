@@ -66,4 +66,31 @@ class SpanIDTests: XCTestCase {
         XCTAssertEqual(String(SpanID("123456")!, representation: .hexadecimal), "1e240")
         XCTAssertEqual(String(SpanID("\(UInt64.max)")!, representation: .hexadecimal), "ffffffffffffffff")
     }
+
+    func testEncodableFromDecimal() {
+        let json = "1234"
+        let decoder = JSONDecoder()
+        let spanID = try! decoder.decode(SpanID.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(spanID, SpanID(rawValue: 1_234))
+    }
+
+    func testEncodableFromString() {
+        let json = "\"1234\""
+        let decoder = JSONDecoder()
+        let spanID = try! decoder.decode(SpanID.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(spanID, SpanID(rawValue: 1_234))
+    }
+
+    func testEncodableFromUnknownFormat() {
+        let json = "1f"
+        let decoder = JSONDecoder()
+        XCTAssertThrowsError(try decoder.decode(SpanID.self, from: json.data(using: .utf8)!) as SpanID)
+    }
+
+    func testDecodable() {
+        let spanID = SpanID(rawValue: 1_234)
+        let encoder = JSONEncoder()
+        let json = try! encoder.encode(spanID)
+        XCTAssertEqual(String(data: json, encoding: .utf8), "1234")
+    }
 }

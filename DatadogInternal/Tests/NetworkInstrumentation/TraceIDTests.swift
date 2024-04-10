@@ -96,4 +96,38 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(String(TraceID("123456")!, representation: .hexadecimal), "1e240")
         XCTAssertEqual(String(TraceID("\(UInt64.max)")!, representation: .hexadecimal), "ffffffffffffffff")
     }
+
+    func testDecodableFromHexadecimal() {
+        let json = "\"1e240\""
+        let decoder = JSONDecoder()
+        let traceID = try! decoder.decode(TraceID.self, from: json.data(using: .utf8)!)
+        XCTAssertEqual(traceID, TraceID(rawValue: (0, 123_456)))
+    }
+
+    func testEncodableToHexadecimal() {
+        let traceID = TraceID(rawValue: (0, 123_456))
+        let encoder = JSONEncoder()
+        let json = try! encoder.encode(traceID)
+        XCTAssertEqual(String(data: json, encoding: .utf8), "\"1e240\"")
+    }
+
+    func testIdHiHex() {
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).idHiHex, "0")
+        XCTAssertEqual(TraceID(rawValue: (1, 0)).idHiHex, "1")
+        XCTAssertEqual(TraceID(rawValue: (15, 0)).idHiHex, "f")
+        XCTAssertEqual(TraceID(rawValue: (16, 0)).idHiHex, "10")
+        XCTAssertEqual(TraceID(rawValue: (123, 0)).idHiHex, "7b")
+        XCTAssertEqual(TraceID(rawValue: (123_456, 0)).idHiHex, "1e240")
+        XCTAssertEqual(TraceID(rawValue: (.max, 0)).idHiHex, "ffffffffffffffff")
+    }
+
+    func testIdLoHex() {
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).idLoHex, "0")
+        XCTAssertEqual(TraceID(rawValue: (0, 1)).idLoHex, "1")
+        XCTAssertEqual(TraceID(rawValue: (0, 15)).idLoHex, "f")
+        XCTAssertEqual(TraceID(rawValue: (0, 16)).idLoHex, "10")
+        XCTAssertEqual(TraceID(rawValue: (0, 123)).idLoHex, "7b")
+        XCTAssertEqual(TraceID(rawValue: (0, 123_456)).idLoHex, "1e240")
+        XCTAssertEqual(TraceID(rawValue: (0, .max)).idLoHex, "ffffffffffffffff")
+    }
 }
