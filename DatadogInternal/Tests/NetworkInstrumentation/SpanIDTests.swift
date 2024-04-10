@@ -37,6 +37,7 @@ class SpanIDTests: XCTestCase {
         XCTAssertEqual(String(SpanID(rawValue: 123_456), representation: .hexadecimal32Chars), "0000000000000000000000000001e240")
         XCTAssertEqual(String(SpanID(rawValue: .max), representation: .hexadecimal32Chars), "0000000000000000ffffffffffffffff")
     }
+
     func testToDecimalStringConversion() {
         XCTAssertEqual(String(SpanID(rawValue: 0)), "0")
         XCTAssertEqual(String(SpanID(rawValue: 1)), "1")
