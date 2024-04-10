@@ -20,7 +20,7 @@ internal final class AppHangsMonitor {
     }
 
     /// Watchdog thread that monitors the main queue for App Hangs.
-    private let watchdogThread: AppHangsObservingThread
+    private var watchdogThread: AppHangsObservingThread
     /// Handles non-fatal App Hangs.
     internal let nonFatalHangsHandler: NonFatalAppHangsHandler
     /// Handles non-fatal App Hangs.
@@ -45,7 +45,8 @@ internal final class AppHangsMonitor {
                 telemetry: featureScope.telemetry
             ),
             fatalErrorContext: fatalErrorContext,
-            processID: processID
+            processID: processID,
+            dateProvider: dateProvider
         )
     }
 
@@ -53,14 +54,16 @@ internal final class AppHangsMonitor {
         featureScope: FeatureScope,
         watchdogThread: AppHangsObservingThread,
         fatalErrorContext: FatalErrorContextNotifier,
-        processID: UUID
+        processID: UUID,
+        dateProvider: DateProvider
     ) {
         self.watchdogThread = watchdogThread
         self.nonFatalHangsHandler = NonFatalAppHangsHandler()
         self.fatalHangsHandler = FatalAppHangsHandler(
             featureScope: featureScope,
             fatalErrorContext: fatalErrorContext,
-            processID: processID
+            processID: processID,
+            dateProvider: dateProvider
         )
     }
 

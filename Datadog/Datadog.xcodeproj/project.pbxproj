@@ -491,6 +491,8 @@
 		61D3E0E7277B3D92008BE766 /* KronosTimeStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */; };
 		61D3E0EA277E0C58008BE766 /* KronosE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D3E0E9277E0C58008BE766 /* KronosE2ETests.swift */; };
 		61DA20F026C40121004AFE6D /* DataUploadStatusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA20EF26C40121004AFE6D /* DataUploadStatusTests.swift */; };
+		61DA6F6C2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA6F6B2BB57E32009537E5 /* FatalErrorBuilder.swift */; };
+		61DA6F6D2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA6F6B2BB57E32009537E5 /* FatalErrorBuilder.swift */; };
 		61DA8CA928609C5B0074A606 /* Directories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CA828609C5B0074A606 /* Directories.swift */; };
 		61DA8CAA28609C5B0074A606 /* Directories.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CA828609C5B0074A606 /* Directories.swift */; };
 		61DA8CAC2861C3720074A606 /* DirectoriesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */; };
@@ -2428,6 +2430,7 @@
 		61D3E0E2277B3D92008BE766 /* KronosTimeStorageTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosTimeStorageTests.swift; sourceTree = "<group>"; };
 		61D3E0E9277E0C58008BE766 /* KronosE2ETests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KronosE2ETests.swift; sourceTree = "<group>"; };
 		61DA20EF26C40121004AFE6D /* DataUploadStatusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataUploadStatusTests.swift; sourceTree = "<group>"; };
+		61DA6F6B2BB57E32009537E5 /* FatalErrorBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FatalErrorBuilder.swift; sourceTree = "<group>"; };
 		61DA8CA828609C5B0074A606 /* Directories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Directories.swift; sourceTree = "<group>"; };
 		61DA8CAB2861C3720074A606 /* DirectoriesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoriesTests.swift; sourceTree = "<group>"; };
 		61DA8CAE28620C760074A606 /* Cryptography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cryptography.swift; sourceTree = "<group>"; };
@@ -5772,6 +5775,7 @@
 				61C713A12A3B78F900FA735A /* RUMMonitorProtocol+Internal.swift */,
 				61E5333524B84B43003D6C4E /* RUMMonitor.swift */,
 				D25FF2EA29CC6D6F0063802D /* RUMConfiguration.swift */,
+				61DA6F6B2BB57E32009537E5 /* FatalErrorBuilder.swift */,
 				D25FF2E629CC6B320063802D /* Feature */,
 				B3FC3C0426526EE900DEED9E /* RUMVitals */,
 				61E5333224B7A504003D6C4E /* DataModels */,
@@ -8269,6 +8273,7 @@
 				D23F8E6929DDCD28001CFAE8 /* RUMContextAttributes.swift in Sources */,
 				D23F8E6B29DDCD28001CFAE8 /* RUMMonitor.swift in Sources */,
 				D23F8E6C29DDCD28001CFAE8 /* RUMContextProvider.swift in Sources */,
+				61DA6F6D2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */,
 				D23F8E6D29DDCD28001CFAE8 /* ViewIdentifier.swift in Sources */,
 				49D8C0B82AC5D2160075E427 /* RUM+Internal.swift in Sources */,
 				D23F8E6E29DDCD28001CFAE8 /* RUMViewsHandler.swift in Sources */,
@@ -8557,6 +8562,7 @@
 				D29A9F6829DD85BB005C54A4 /* RUMContextAttributes.swift in Sources */,
 				D29A9F6329DD85BB005C54A4 /* RUMMonitor.swift in Sources */,
 				D29A9F7029DD85BB005C54A4 /* RUMContextProvider.swift in Sources */,
+				61DA6F6C2BB57E32009537E5 /* FatalErrorBuilder.swift in Sources */,
 				D29A9F6029DD85BB005C54A4 /* ViewIdentifier.swift in Sources */,
 				49D8C0B72AC5D2160075E427 /* RUM+Internal.swift in Sources */,
 				D29A9F7629DD85BB005C54A4 /* RUMViewsHandler.swift in Sources */,

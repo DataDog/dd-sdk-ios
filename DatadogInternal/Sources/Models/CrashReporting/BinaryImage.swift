@@ -7,7 +7,7 @@
 import Foundation
 
 /// Binary Image referenced in frames from `DDThread`.
-public struct BinaryImage: Codable {
+public struct BinaryImage: Codable, PassthroughAnyCodable {
     public let libraryName: String
     public let uuid: String
     public let architecture: String

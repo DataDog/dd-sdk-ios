@@ -40,6 +40,11 @@ public class CoreLoggerMock: CoreLogger {
     public var errorLogs: [RecordedLog] { recordedLogs(ofLevel: .error) }
     public var criticalLogs: [RecordedLog] { recordedLogs(ofLevel: .critical) }
 
+    public var debugMessages: [String] { debugLogs.map { $0.message } }
+    public var warnMessages: [String] { warnLogs.map { $0.message } }
+    public var errorMessages: [String] { errorLogs.map { $0.message } }
+    public var criticalMessages: [String] { criticalLogs.map { $0.message } }
+
     public var debugLog: RecordedLog? { debugLogs.last }
     public var warnLog: RecordedLog? { warnLogs.last }
     public var errorLog: RecordedLog? { errorLogs.last }
