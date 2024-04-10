@@ -1,10 +1,14 @@
 # Unreleased
 
+# 2.9.0 / 11-04-2024
+
 * [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
 * [FEATURE] Support calling log event mapper for crashes. See [#1741][]
 * [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
+* [FIX] Remove modulemap. See [#1746][]
+* [FIX] Expose objc interfaces in Session Replay module. See [#1697][]
 
-# 2.8.0 / 19-03-2024
+# 2.8.1 / 20-03-2024
 
 - [FEATURE] App Hangs are tracked as RUM errors. See [#1685][]
 - [FIX] Propagate parent span in distributing tracing. See [#1627][]
@@ -576,7 +580,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
 [#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
-[#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
 [#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
@@ -617,11 +620,14 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
 [#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
 [#1696]: https://github.com/DataDog/dd-sdk-ios/pull/1696
+[#1697]: https://github.com/DataDog/dd-sdk-ios/pull/1697
 [#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
 [#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
 [#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
 [#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
+[#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
+[#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
