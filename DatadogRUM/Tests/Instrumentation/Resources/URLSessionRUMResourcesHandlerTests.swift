@@ -246,8 +246,10 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
 
         // Given
-        var request = URLRequest(url: .mockRandom())
-        request.httpMethod = ["GET", "POST", "PUT", "DELETE"].randomElement()!
+        let request: ImmutableRequest = .mockWith(
+            url: .mockRandom(),
+            httpMethod: ["GET", "POST", "PUT", "DELETE"].randomElement()!
+        )
         let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random())
         XCTAssertNil(taskInterception.trace)
 
@@ -391,13 +393,13 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let mockRequest: URLRequest = .mockAny()
+        let mockRequest: ImmutableRequest = .mockAny()
         let mockResponse: URLResponse = .mockAny()
         let mockData: Data = .mockRandom()
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
 
         let handler = createHandler { request, response, data, error in
-            XCTAssertEqual(request, mockRequest)
+            XCTAssertEqual(request, mockRequest.unsafeOriginal)
             XCTAssertEqual(response, mockResponse)
             XCTAssertEqual(data, mockData)
             XCTAssertNil(error)
@@ -428,12 +430,12 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         }
 
         // Given
-        let mockRequest: URLRequest = .mockAny()
+        let mockRequest: ImmutableRequest = .mockAny()
         let mockError = ErrorMock()
         let mockAttributes: [AttributeKey: AttributeValue] = mockRandomAttributes()
 
         let handler = createHandler { request, response, data, error in
-            XCTAssertEqual(request, mockRequest)
+            XCTAssertEqual(request, mockRequest.unsafeOriginal)
             XCTAssertNil(response)
             XCTAssertNil(data)
             XCTAssertTrue(error is ErrorMock)

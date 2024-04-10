@@ -2,6 +2,7 @@
 
 * [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
 * [FEATURE] Support calling log event mapper for crashes. See [#1741][]
+* [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
 
 # 2.8.0 / 19-03-2024
 
@@ -575,6 +576,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1315]: https://github.com/DataDog/dd-sdk-ios/pull/1315
 [#1331]: https://github.com/DataDog/dd-sdk-ios/pull/1331
 [#1328]: https://github.com/DataDog/dd-sdk-ios/pull/1328
+[#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1355]: https://github.com/DataDog/dd-sdk-ios/pull/1355
 [#1410]: https://github.com/DataDog/dd-sdk-ios/pull/1410
 [#1412]: https://github.com/DataDog/dd-sdk-ios/pull/1412
