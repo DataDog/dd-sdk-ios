@@ -414,9 +414,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         defer { CoreRegistry.unregisterDefault() }
 
         // Then
-        XCTAssertNotNil(delegate1.interceptor)
-        XCTAssertNotNil(delegate2.interceptor)
-        XCTAssertNotNil(delegate3.interceptor)
+        XCTAssertNotNil(delegate1.feature)
+        XCTAssertNotNil(delegate2.feature)
+        XCTAssertNotNil(delegate3.feature)
     }
 
     @available(*, deprecated)
@@ -431,9 +431,9 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let delegate3 = DatadogURLSessionDelegate(additionalFirstPartyHostsWithHeaderTypes: [:])
 
         // Then
-        XCTAssertNotNil(delegate1.interceptor)
-        XCTAssertNotNil(delegate2.interceptor)
-        XCTAssertNotNil(delegate3.interceptor)
+        XCTAssertNotNil(delegate1.feature)
+        XCTAssertNotNil(delegate2.feature)
+        XCTAssertNotNil(delegate3.feature)
     }
 
     @available(*, deprecated)
@@ -441,12 +441,12 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // Given
         let delegate = DatadogURLSessionDelegate(in: core)
         // Then
-        XCTAssertNotNil(delegate.interceptor)
+        XCTAssertNotNil(delegate.feature)
 
         // When (deinitialize core)
         core = nil
         // Then
-        XCTAssertNil(delegate.interceptor)
+        XCTAssertNil(delegate.feature)
     }
 
     func testWhenEnableInstrumentationOnTheSameDelegate_thenItPrintsAWarning() {

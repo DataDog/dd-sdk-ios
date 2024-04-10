@@ -25,7 +25,8 @@ internal class DatadogTracer: OTTracer {
 
     let activeSpansPool = ActiveSpansPool()
 
-    let sampler: Sampler
+    /// Local trace sampler. Used for spans created with Tracer API.
+    let localTraceSampler: Sampler
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
 
@@ -33,7 +34,7 @@ internal class DatadogTracer: OTTracer {
 
     convenience init(
         core: DatadogCoreProtocol,
-        sampler: Sampler,
+        localTraceSampler: Sampler,
         tags: [String: Encodable],
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
@@ -43,7 +44,7 @@ internal class DatadogTracer: OTTracer {
     ) {
         self.init(
             featureScope: core.scope(for: TraceFeature.self),
-            sampler: sampler,
+            localTraceSampler: localTraceSampler,
             tags: tags,
             tracingUUIDGenerator: tracingUUIDGenerator,
             dateProvider: dateProvider,
@@ -54,7 +55,7 @@ internal class DatadogTracer: OTTracer {
 
     init(
         featureScope: FeatureScope,
-        sampler: Sampler,
+        localTraceSampler: Sampler,
         tags: [String: Encodable],
         tracingUUIDGenerator: TraceIDGenerator,
         dateProvider: DateProvider,
@@ -67,7 +68,7 @@ internal class DatadogTracer: OTTracer {
         self.spanIDGenerator = spanIDGenerator
         self.dateProvider = dateProvider
         self.loggingIntegration = loggingIntegration
-        self.sampler = sampler
+        self.localTraceSampler = localTraceSampler
         self.spanEventBuilder = spanEventBuilder
     }
 

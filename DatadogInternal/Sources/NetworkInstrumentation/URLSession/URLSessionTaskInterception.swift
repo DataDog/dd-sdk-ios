@@ -20,8 +20,8 @@ public class URLSessionTaskInterception {
     public private(set) var data: Data?
     /// Task completion collected during this interception.
     public private(set) var completion: ResourceCompletion?
-    /// Trace information propagated with the task. Not available when Tracing is disabled
-    /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
+    /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
+    /// request was not possible in `URLSession` swizzling on certain OS version.
     public private(set) var trace: TraceContext?
     /// The Datadog origin of the Trace.
     ///

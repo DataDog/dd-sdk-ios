@@ -524,6 +524,10 @@
 		61F2727425C9509D00D54BF8 /* ThirdPartyCrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */; };
 		61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */; };
 		61F272B125C95ED800D54BF8 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2729A25C95EB200D54BF8 /* Mocks.swift */; };
+		61F3E3632BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */; };
+		61F3E3642BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */; };
+		61F3E3662BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */; };
+		61F3E3672BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */; };
 		61F74AF426F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */; };
 		61F930BE2BA1ACAC005F0EE2 /* Storage+TLV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F930BD2BA1ACAC005F0EE2 /* Storage+TLV.swift */; };
 		61F930BF2BA1ACAC005F0EE2 /* Storage+TLV.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F930BD2BA1ACAC005F0EE2 /* Storage+TLV.swift */; };
@@ -2477,6 +2481,8 @@
 		61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerSwizzler.swift; sourceTree = "<group>"; };
 		61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicate.swift; sourceTree = "<group>"; };
 		61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerSwizzlerTests.swift; sourceTree = "<group>"; };
+		61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogTracerTests+Sampling.swift"; sourceTree = "<group>"; };
+		61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugCrashReportingWithRUMViewController.swift; sourceTree = "<group>"; };
 		61F930BD2BA1ACAC005F0EE2 /* Storage+TLV.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Storage+TLV.swift"; sourceTree = "<group>"; };
 		61F930C12BA1C41A005F0EE2 /* TLVBlockReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TLVBlockReader.swift; sourceTree = "<group>"; };
@@ -5713,6 +5719,7 @@
 			children = (
 				619CE75D2A458CE1005588CB /* TraceConfigurationTests.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
+				61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */,
 				61C5A89824509C1100DA608C /* DDSpanTests.swift */,
 				61F1A620249A45E400075390 /* DDSpanContextTests.swift */,
 				D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */,
@@ -6025,6 +6032,7 @@
 				3CCECDB12BC68A0A0013C125 /* SpanIDTests.swift */,
 				61B558D32469CDD8001460D3 /* TraceIDGeneratorTests.swift */,
 				3CCECDAE2BC688120013C125 /* SpanIDGeneratorTests.swift */,
+				61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */,
 				A79B0F5A292B7C06008742B3 /* B3HTTPHeadersWriterTests.swift */,
 				A79B0F60292BB071008742B3 /* B3HTTPHeadersReaderTests.swift */,
 				A728ADA22934DB5000397996 /* W3CHTTPHeadersWriterTests.swift */,
@@ -8532,6 +8540,7 @@
 				D2C1A51D29C4C75700946C31 /* SpanEventBuilderTests.swift in Sources */,
 				618C0FC02B482F6800266B38 /* SpanWriteContextTests.swift in Sources */,
 				D2C1A52229C4C75700946C31 /* DDNoopTracerTests.swift in Sources */,
+				61F3E3632BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */,
 				D2C1A51C29C4C75700946C31 /* ContextMessageReceiverTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
@@ -8734,6 +8743,7 @@
 				D2C1A56229C4F2E800946C31 /* SpanEventBuilderTests.swift in Sources */,
 				618C0FC12B482F6800266B38 /* SpanWriteContextTests.swift in Sources */,
 				D2C1A56329C4F2E800946C31 /* DDNoopTracerTests.swift in Sources */,
+				61F3E3642BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */,
 				D2C1A56529C4F2E800946C31 /* ContextMessageReceiverTests.swift in Sources */,
 				619CE7622A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A56629C4F2E800946C31 /* DDSpanTests.swift in Sources */,
@@ -9138,6 +9148,7 @@
 			files = (
 				D2BEEDAF2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift in Sources */,
 				D26416B62A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
+				61F3E3662BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */,
 				D2EBEE3C29BA163E00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
 				D21AE6BC29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */,
 				D2DA23A3298D58F400C6C7E6 /* AnyEncodableTests.swift in Sources */,
@@ -9183,6 +9194,7 @@
 			files = (
 				D2BEEDB02B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift in Sources */,
 				D26416B72A30E84F00BCD9F7 /* CoreRegistryTest.swift in Sources */,
+				61F3E3672BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */,
 				D2EBEE4029BA163F00B15732 /* B3HTTPHeadersWriterTests.swift in Sources */,
 				D21AE6BD29E5EDAF0064BF29 /* TelemetryTests.swift in Sources */,
 				D2DA23B1298D59DC00C6C7E6 /* AnyEncodableTests.swift in Sources */,
