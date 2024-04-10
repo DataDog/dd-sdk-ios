@@ -82,7 +82,7 @@ class SpanIDTests: XCTestCase {
         XCTAssertEqual(spanID, SpanID(rawValue: 1_234))
     }
 
-    func testEncodableFromUnknownFormat() {
+    func testDecodableUnknownFormat() {
         let json = "1f"
         let decoder = JSONDecoder()
         XCTAssertThrowsError(try decoder.decode(SpanID.self, from: json.data(using: .utf8)!) as SpanID)

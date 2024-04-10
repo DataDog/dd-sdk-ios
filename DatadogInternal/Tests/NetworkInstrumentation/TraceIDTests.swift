@@ -104,6 +104,12 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(traceID, TraceID(rawValue: (0, 123_456)))
     }
 
+    func testDecodableUnknownFormat() {
+        let json = "1234"
+        let decoder = JSONDecoder()
+        XCTAssertThrowsError(try decoder.decode(TraceID.self, from: json.data(using: .utf8)!) as TraceID)
+    }
+
     func testEncodableToHexadecimal() {
         let traceID = TraceID(rawValue: (0, 123_456))
         let encoder = JSONEncoder()
