@@ -57,6 +57,7 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(String(TraceID(rawValue: (123_456, 123_456)), representation: .hexadecimal32Chars), "000000000001e240000000000001e240")
         XCTAssertEqual(String(TraceID(rawValue: (.max, .max)), representation: .hexadecimal32Chars), "ffffffffffffffffffffffffffffffff")
     }
+
     func testToDecimalStringConversion() {
         XCTAssertEqual(String(TraceID(rawValue: (0, 0)), representation: .decimal), "0")
         XCTAssertEqual(String(TraceID(rawValue: (0, 1)), representation: .decimal), "1")
@@ -85,6 +86,13 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(TraceID("7b000000000000007b", representation: .hexadecimal), TraceID(rawValue: (123, 123)))
         XCTAssertEqual(TraceID("1e240000000000001e240", representation: .hexadecimal), TraceID(rawValue: (123_456, 123_456)))
         XCTAssertEqual(TraceID("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", representation: .hexadecimal), TraceID(rawValue: (.max, .max)))
+
+        // invalid
+        XCTAssertNil(TraceID("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFG", representation: .hexadecimal))
+        XCTAssertNil(TraceID("-1", representation: .hexadecimal))
+        XCTAssertNil(TraceID("FFFFFFFFFFFFFFFFG", representation: .hexadecimal))
+        XCTAssertNil(TraceID("1FFFFFFFFFFFFFFFF", representation: .hexadecimal16Chars))
+        XCTAssertNil(TraceID("1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", representation: .hexadecimal32Chars))
     }
 
     func testInitializationFromDecimal() {
@@ -95,6 +103,10 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(String(TraceID("123")!, representation: .hexadecimal), "7b")
         XCTAssertEqual(String(TraceID("123456")!, representation: .hexadecimal), "1e240")
         XCTAssertEqual(String(TraceID("\(UInt64.max)")!, representation: .hexadecimal), "ffffffffffffffff")
+
+        // invalid
+        XCTAssertNil(TraceID("-1"))
+        XCTAssertNil(TraceID("\(UInt64.max)0"))
     }
 
     func testDecodableFromHexadecimal() {
