@@ -26,17 +26,14 @@ class TraceIDGeneratorTests: XCTestCase {
             XCTAssertLessThanOrEqual(id.idLo, 15)
 
             let idHiStr = String(id.idHi, radix: 10)
+            let idHi = UInt64(idHiStr) ?? 0
 
-            // take 8 characters from the right
-            let idHiRight = idHiStr.suffix(8)
-            let zeros = UInt32(idHiRight, radix: 10)
-            XCTAssertEqual(zeros, 0)
-
-            // take 8 characters from right after the first 8
-            let idHiLeft = idHiStr.prefix(idHiStr.count - 8)
-            let seconds = UInt32(idHiLeft, radix: 10)!
+            let seconds = UInt32(idHi >> 32)
             XCTAssertGreaterThanOrEqual(seconds, lowerBound)
             XCTAssertLessThanOrEqual(seconds, upperBound)
+
+            let zeros = UInt32(idHi & 0xFFFFFFFF)
+            XCTAssertEqual(zeros, 0)
         }
     }
 }

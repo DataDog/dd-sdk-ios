@@ -225,7 +225,7 @@ public struct DefaultTraceIDGenerator: TraceIDGenerator {
         repeat {
             // 32-bit unix seconds + 32 bits of zero in decimal
             let seconds = UInt32(Date().timeIntervalSince1970)
-            idHi = UInt64("\(seconds)00000000") ?? TraceID.invalidId
+            idHi = UInt64(seconds) << 32
             idLo = UInt64.random(in: range)
         } while idHi == TraceID.invalidId && idLo == TraceID.invalidId
         return TraceID(idHi: idHi, idLo: idLo)
