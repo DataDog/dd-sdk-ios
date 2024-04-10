@@ -93,4 +93,46 @@ class SpanIDTests: XCTestCase {
         let json = try! encoder.encode(spanID)
         XCTAssertEqual(String(data: json, encoding: .utf8), "1234")
     }
+
+    func testToString() {
+        // hexadecimal
+        XCTAssertEqual(SpanID(rawValue: 0).toString(representation: .hexadecimal), "0")
+        XCTAssertEqual(SpanID(rawValue: 1).toString(representation: .hexadecimal), "1")
+        XCTAssertEqual(SpanID(rawValue: 15).toString(representation: .hexadecimal), "f")
+        XCTAssertEqual(SpanID(rawValue: 16).toString(representation: .hexadecimal), "10")
+        XCTAssertEqual(SpanID(rawValue: 123).toString(representation: .hexadecimal), "7b")
+        XCTAssertEqual(SpanID(rawValue: 123_456).toString(representation: .hexadecimal), "1e240")
+        XCTAssertEqual(SpanID(rawValue: .max).toString(representation: .hexadecimal), "ffffffffffffffff")
+
+        // hexadecimal16Chars
+        XCTAssertEqual(SpanID(rawValue: 0).toString(representation: .hexadecimal16Chars), "0000000000000000")
+        XCTAssertEqual(SpanID(rawValue: 1).toString(representation: .hexadecimal16Chars), "0000000000000001")
+        XCTAssertEqual(SpanID(rawValue: 15).toString(representation: .hexadecimal16Chars), "000000000000000f")
+        XCTAssertEqual(SpanID(rawValue: 16).toString(representation: .hexadecimal16Chars), "0000000000000010")
+        XCTAssertEqual(SpanID(rawValue: 123).toString(representation: .hexadecimal16Chars), "000000000000007b")
+        XCTAssertEqual(SpanID(rawValue: 123_456).toString(representation: .hexadecimal16Chars), "000000000001e240")
+        XCTAssertEqual(SpanID(rawValue: .max).toString(representation: .hexadecimal16Chars), "ffffffffffffffff")
+
+        // hexadecimal32Chars
+        XCTAssertEqual(SpanID(rawValue: 0).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000000")
+        XCTAssertEqual(SpanID(rawValue: 1).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000001")
+        XCTAssertEqual(SpanID(rawValue: 15).toString(representation: .hexadecimal32Chars), "0000000000000000000000000000000f")
+        XCTAssertEqual(SpanID(rawValue: 16).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000010")
+        XCTAssertEqual(SpanID(rawValue: 123).toString(representation: .hexadecimal32Chars), "0000000000000000000000000000007b")
+        XCTAssertEqual(SpanID(rawValue: 123_456).toString(representation: .hexadecimal32Chars), "0000000000000000000000000001e240")
+        XCTAssertEqual(SpanID(rawValue: .max).toString(representation: .hexadecimal32Chars), "0000000000000000ffffffffffffffff")
+
+        // decimal
+        XCTAssertEqual(SpanID(rawValue: 0).toString(representation: .decimal), "0")
+        XCTAssertEqual(SpanID(rawValue: 1).toString(representation: .decimal), "1")
+        XCTAssertEqual(SpanID(rawValue: 15).toString(representation: .decimal), "15")
+        XCTAssertEqual(SpanID(rawValue: 16).toString(representation: .decimal), "16")
+        XCTAssertEqual(SpanID(rawValue: 123).toString(representation: .decimal), "123")
+        XCTAssertEqual(SpanID(rawValue: 123_456).toString(representation: .decimal), "123456")
+        XCTAssertEqual(SpanID(rawValue: .max).toString(representation: .decimal), "\(UInt64.max)")
+    }
+
+    func testDefaultInit() {
+        XCTAssertEqual(SpanID(), 0)
+    }
 }

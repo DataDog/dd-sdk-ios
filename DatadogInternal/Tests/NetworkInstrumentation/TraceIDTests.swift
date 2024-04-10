@@ -130,4 +130,54 @@ class TraceIDTests: XCTestCase {
         XCTAssertEqual(TraceID(rawValue: (0, 123_456)).idLoHex, "1e240")
         XCTAssertEqual(TraceID(rawValue: (0, .max)).idLoHex, "ffffffffffffffff")
     }
+
+    func testToString() {
+        // hexadecimal
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).toString(representation: .hexadecimal), "0")
+        XCTAssertEqual(TraceID(rawValue: (0, 1)).toString(representation: .hexadecimal), "1")
+        XCTAssertEqual(TraceID(rawValue: (0, 15)).toString(representation: .hexadecimal), "f")
+        XCTAssertEqual(TraceID(rawValue: (0, 16)).toString(representation: .hexadecimal), "10")
+        XCTAssertEqual(TraceID(rawValue: (0, 123)).toString(representation: .hexadecimal), "7b")
+        XCTAssertEqual(TraceID(rawValue: (0, 123_456)).toString(representation: .hexadecimal), "1e240")
+        XCTAssertEqual(TraceID(rawValue: (0, .max)).toString(representation: .hexadecimal), "ffffffffffffffff")
+        XCTAssertEqual(TraceID(rawValue: (1, .max)).toString(representation: .hexadecimal), "1ffffffffffffffff")
+        XCTAssertEqual(TraceID(rawValue: (.max, .max)).toString(representation: .hexadecimal), "ffffffffffffffffffffffffffffffff")
+
+        // hexadecimal16Chars
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).toString(representation: .hexadecimal16Chars), "0000000000000000")
+        XCTAssertEqual(TraceID(rawValue: (0, 1)).toString(representation: .hexadecimal16Chars), "0000000000000001")
+        XCTAssertEqual(TraceID(rawValue: (0, 15)).toString(representation: .hexadecimal16Chars), "000000000000000f")
+        XCTAssertEqual(TraceID(rawValue: (0, 16)).toString(representation: .hexadecimal16Chars), "0000000000000010")
+        XCTAssertEqual(TraceID(rawValue: (0, 123)).toString(representation: .hexadecimal16Chars), "000000000000007b")
+        XCTAssertEqual(TraceID(rawValue: (0, 123_456)).toString(representation: .hexadecimal16Chars), "000000000001e240")
+        XCTAssertEqual(TraceID(rawValue: (0, .max)).toString(representation: .hexadecimal16Chars), "ffffffffffffffff")
+        XCTAssertEqual(TraceID(rawValue: (1, .max)).toString(representation: .hexadecimal16Chars), "ffffffffffffffff")
+        XCTAssertEqual(TraceID(rawValue: (.max, .max)).toString(representation: .hexadecimal16Chars), "ffffffffffffffff")
+
+        // hexadecimal32Chars
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000000")
+        XCTAssertEqual(TraceID(rawValue: (0, 1)).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000001")
+        XCTAssertEqual(TraceID(rawValue: (0, 15)).toString(representation: .hexadecimal32Chars), "0000000000000000000000000000000f")
+        XCTAssertEqual(TraceID(rawValue: (0, 16)).toString(representation: .hexadecimal32Chars), "00000000000000000000000000000010")
+        XCTAssertEqual(TraceID(rawValue: (0, 123)).toString(representation: .hexadecimal32Chars), "0000000000000000000000000000007b")
+        XCTAssertEqual(TraceID(rawValue: (0, 123_456)).toString(representation: .hexadecimal32Chars), "0000000000000000000000000001e240")
+        XCTAssertEqual(TraceID(rawValue: (0, .max)).toString(representation: .hexadecimal32Chars), "0000000000000000ffffffffffffffff")
+        XCTAssertEqual(TraceID(rawValue: (1, .max)).toString(representation: .hexadecimal32Chars), "0000000000000001ffffffffffffffff")
+
+        // decimal
+        XCTAssertEqual(TraceID(rawValue: (0, 0)).toString(representation: .decimal), "0")
+        XCTAssertEqual(TraceID(rawValue: (0, 1)).toString(representation: .decimal), "1")
+        XCTAssertEqual(TraceID(rawValue: (0, 15)).toString(representation: .decimal), "15")
+        XCTAssertEqual(TraceID(rawValue: (0, 16)).toString(representation: .decimal), "16")
+        XCTAssertEqual(TraceID(rawValue: (0, 123)).toString(representation: .decimal), "123")
+        XCTAssertEqual(TraceID(rawValue: (0, 123_456)).toString(representation: .decimal), "123456")
+        XCTAssertEqual(TraceID(rawValue: (0, .max)).toString(representation: .decimal), "\(UInt64.max)")
+        XCTAssertEqual(TraceID(rawValue: (1, .max)).toString(representation: .decimal), "\(UInt64.max)")
+        XCTAssertEqual(TraceID(rawValue: (.max, .max)).toString(representation: .decimal), "\(UInt64.max)")
+    }
+
+    func testDefaultInit() {
+        XCTAssertEqual(TraceID().rawValue.0, 0)
+        XCTAssertEqual(TraceID().rawValue.1, 0)
+    }
 }
