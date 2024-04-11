@@ -39,7 +39,7 @@
             </BuildableReference>
             <SkippedTests>
                <Test
-                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampled()">
+                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
                </Test>
             </SkippedTests>
          </TestableReference>
