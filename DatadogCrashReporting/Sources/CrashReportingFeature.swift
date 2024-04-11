@@ -58,7 +58,7 @@ internal final class CrashReportingFeature: DatadogFeature {
         queue.async {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
                 guard let self = self, let availableCrashReport = crashReport else {
-                    DD.logger.debug("No pending crash available")
+                    DD.logger.debug("No pending Crash found")
                     return false
                 }
 

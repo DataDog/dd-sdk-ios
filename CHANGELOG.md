@@ -1,5 +1,7 @@
 # Unreleased
 
+* [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
+
 # 2.9.0 / 11-04-2024
 
 * [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
@@ -627,6 +629,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
 [#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
 [#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
+[#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

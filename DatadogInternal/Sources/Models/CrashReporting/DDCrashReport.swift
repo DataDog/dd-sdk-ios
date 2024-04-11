@@ -7,10 +7,10 @@
 import Foundation
 
 /// Crash Report format supported by Datadog SDK.
-public struct DDCrashReport: Codable {
+public struct DDCrashReport: Codable, PassthroughAnyCodable {
     /// Meta information about the process.
     /// Ref.: https://developer.apple.com/documentation/xcode/examining-the-fields-in-a-crash-report
-    public struct Meta: Codable {
+    public struct Meta: Codable, PassthroughAnyCodable {
         /// A client-generated 16-byte UUID of the incident.
         public let incidentIdentifier: String?
         /// The name of the crashed process.
