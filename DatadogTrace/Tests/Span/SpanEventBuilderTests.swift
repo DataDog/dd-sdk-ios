@@ -17,8 +17,8 @@ class SpanEventBuilderTests: XCTestCase {
 
         let span = builder.createSpanEvent(
             context: context,
-            traceID: 1,
-            spanID: 2,
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 200,
             parentSpanID: 1,
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),
@@ -33,8 +33,8 @@ class SpanEventBuilderTests: XCTestCase {
             logFields: []
         )
 
-        XCTAssertEqual(span.traceID, 1)
-        XCTAssertEqual(span.spanID, 2)
+        XCTAssertEqual(span.traceID, .init(idHi: 10, idLo: 100))
+        XCTAssertEqual(span.spanID, .init(rawValue: 200))
         XCTAssertEqual(span.parentID, 1)
         XCTAssertEqual(span.operationName, "operation-name")
         XCTAssertEqual(span.serviceName, "test-service-name")

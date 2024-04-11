@@ -381,15 +381,15 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMSpanContext {
         return RUMSpanContext(
-            traceID: .mockRandom(),
-            spanID: .mockRandom(),
+            traceID: .mock(.mockRandom(), .mockRandom()),
+            spanID: .mock(.mockRandom()),
             samplingRate: .mockRandom()
         )
     }
 
     static func mockWith(
-        traceID: String = .mockAny(),
-        spanID: String = .mockAny(),
+        traceID: TraceID = .mockAny(),
+        spanID: SpanID = .mockAny(),
         samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
@@ -412,7 +412,11 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             httpMethod: .mockRandom(),
             kind: .mockAny(),
             isFirstPartyRequest: .mockRandom(),
-            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom(), samplingRate: .mockAny())
+            spanContext: .init(
+                traceID: .mock(.mockRandom(), .mockRandom()),
+                spanID: .mock(.mockRandom()),
+                samplingRate: .mockAny()
+            )
         )
     }
 

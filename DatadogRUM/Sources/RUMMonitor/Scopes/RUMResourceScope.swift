@@ -117,8 +117,20 @@ internal class RUMResourceScope: RUMScope {
         let size: Int64?
 
         // Check trace attributes
-        let traceId = (attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String) ?? spanContext?.traceID
-        let spanId = (attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String) ?? spanContext?.spanID
+        var traceId: TraceID? = nil
+        if let tid = attributes.removeValue(forKey: CrossPlatformAttributes.traceID) as? String {
+            traceId = .init(tid, representation: .hexadecimal)
+        } else {
+            traceId = spanContext?.traceID
+        }
+
+        var spanId: SpanID? = nil
+        if let sid = attributes.removeValue(forKey: CrossPlatformAttributes.spanID) as? String {
+            spanId = .init(sid, representation: .decimal)
+        } else {
+            spanId = spanContext?.spanID
+        }
+
         let traceSamplingRate = (attributes.removeValue(forKey: CrossPlatformAttributes.rulePSR) as? Double) ?? spanContext?.samplingRate
 
         // Check GraphQL attributes
@@ -162,8 +174,8 @@ internal class RUMResourceScope: RUMScope {
                     plan: .plan1,
                     sessionPrecondition: self.context.sessionPrecondition
                 ),
-                spanId: spanId,
-                traceId: traceId
+                spanId: spanId?.toString(representation: .decimal),
+                traceId: traceId?.toString(representation: .hexadecimal)
             ),
             action: self.context.activeUserActionID.map { rumUUID in
                 .init(id: .string(value: rumUUID.toRUMDataFormat))
