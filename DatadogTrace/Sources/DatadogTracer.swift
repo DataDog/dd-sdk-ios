@@ -46,7 +46,8 @@ internal class DatadogTracer: OTTracer {
             featureScope: core.scope(for: TraceFeature.self),
             localTraceSampler: localTraceSampler,
             tags: tags,
-            tracingUUIDGenerator: tracingUUIDGenerator,
+            traceIDGenerator: traceIDGenerator,
+            spanIDGenerator: spanIDGenerator,
             dateProvider: dateProvider,
             loggingIntegration: loggingIntegration,
             spanEventBuilder: spanEventBuilder
@@ -57,7 +58,8 @@ internal class DatadogTracer: OTTracer {
         featureScope: FeatureScope,
         localTraceSampler: Sampler,
         tags: [String: Encodable],
-        tracingUUIDGenerator: TraceIDGenerator,
+        traceIDGenerator: TraceIDGenerator,
+        spanIDGenerator: SpanIDGenerator,
         dateProvider: DateProvider,
         loggingIntegration: TracingWithLoggingIntegration,
         spanEventBuilder: SpanEventBuilder

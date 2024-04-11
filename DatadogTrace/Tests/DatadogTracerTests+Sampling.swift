@@ -17,7 +17,8 @@ class DatadogTracer_SamplingTests: XCTestCase {
             featureScope: featureScope,
             localTraceSampler: Sampler(samplingRate: sampleRate),
             tags: [:],
-            tracingUUIDGenerator: DefaultTraceIDGenerator(),
+            traceIDGenerator: DefaultTraceIDGenerator(),
+            spanIDGenerator: DefaultSpanIDGenerator(),
             dateProvider: DateProviderMock(),
             loggingIntegration: .mockAny(),
             spanEventBuilder: .mockAny()
