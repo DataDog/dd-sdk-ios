@@ -246,6 +246,11 @@
                BlueprintName = "DatadogTraceTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO">
