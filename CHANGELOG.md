@@ -2,6 +2,7 @@
 
 * [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 * [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
+* [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
 
 # 2.9.0 / 11-04-2024
 
@@ -630,6 +631,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
 [#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
 [#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
+[#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
