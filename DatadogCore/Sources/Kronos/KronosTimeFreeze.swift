@@ -24,20 +24,20 @@ internal struct KronosTimeFreeze {
     }
 
     /// The stable timestamp (calculated based on the uptime); note that this doesn't have sub-seconds
-    /// precision. See `systemUptime()` for more information.
+    /// precision. See `getSystemUptime()` for more information.
     var stableTimestamp: TimeInterval {
-        return (KronosTimeFreeze.systemUptime() - self.uptime) + self.timestamp
+        return (KronosTimeFreeze.getSystemUptime() - self.uptime) + self.timestamp
     }
 
     /// Time interval between now and the time the NTP response represented by this TimeFreeze was received.
     var timeSinceLastNtpSync: TimeInterval {
-        return KronosTimeFreeze.systemUptime() - uptime
+        return KronosTimeFreeze.getSystemUptime() - uptime
     }
 
     init(offset: TimeInterval) {
         self.offset = offset
         self.timestamp = kronosCurrentTime()
-        self.uptime = KronosTimeFreeze.systemUptime()
+        self.uptime = KronosTimeFreeze.getSystemUptime()
     }
 
     init?(from dictionary: [String: TimeInterval]) {
@@ -47,7 +47,7 @@ internal struct KronosTimeFreeze {
             return nil
         }
 
-        let currentUptime = KronosTimeFreeze.systemUptime()
+        let currentUptime = KronosTimeFreeze.getSystemUptime()
         let currentTimestamp = kronosCurrentTime()
         let currentBoot = currentUptime - currentTimestamp
         let previousBoot = uptime - timestamp
@@ -79,7 +79,7 @@ internal struct KronosTimeFreeze {
     /// see: https://github.com/darwin-on-arm/xnu/blob/master/osfmk/kern/clock.c#L522.
     ///
     /// - returns: An Int measurement of system uptime in microseconds.
-    static func systemUptime() -> TimeInterval {
+    private static func getSystemUptime() -> TimeInterval {
         var mib = [CTL_KERN, KERN_BOOTTIME]
         var size = MemoryLayout<timeval>.stride
         var bootTime = timeval()
