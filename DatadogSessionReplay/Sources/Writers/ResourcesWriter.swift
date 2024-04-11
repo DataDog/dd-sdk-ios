@@ -27,7 +27,7 @@ internal class ResourcesWriter: ResourcesWriting {
     // MARK: - Writing
 
     func write(resources: [EnrichedResource]) {
-        guard let scope = core?.scope(for: ResourcesFeature.name) else {
+        guard let scope = core?.scope(for: ResourcesFeature.self) else {
             return
         }
         scope.eventWriteContext { _, recordWriter in

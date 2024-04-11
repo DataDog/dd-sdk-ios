@@ -10,7 +10,6 @@ import XCTest
 import TestUtilities
 import DatadogInternal
 
-@testable import DatadogObjc
 @testable import DatadogSessionReplay
 
 class DDSessionReplayTests: XCTestCase {

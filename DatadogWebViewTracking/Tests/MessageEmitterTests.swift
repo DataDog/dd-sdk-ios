@@ -70,7 +70,7 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertNil(receiverMock.messages.firstWebViewMessage)
     }
 
-    func testWhenReceivingEventOtherThanLog_itForwardsToRUM() throws {
+    func testWhenReceivingRUMEvent_itForwardsToRUM() throws {
         // Given
         let receiverMock = FeatureMessageReceiverMock()
         let core = PassthroughCoreMock(messageReceiver: receiverMock)
@@ -91,7 +91,37 @@ class MessageEmitterTests: XCTestCase {
         // Then
         let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
         guard case let .rum(event) = message else {
-            return XCTFail("not a log message")
+            return XCTFail("not a rum message")
+        }
+
+        let json = JSONObjectMatcher(object: event)
+        XCTAssertEqual(try json.value("attribute1"), 123)
+        XCTAssertEqual(try json.value("attribute2"), "foo")
+        XCTAssertEqual(try json.array("attribute3").values(), ["foo", "bar", "bizz"])
+    }
+
+    func testWhenReceivingTelemetryEvent_itForwardsToTelemetry() throws {
+        // Given
+        let receiverMock = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiverMock)
+        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+
+        // When
+        emitter.send(body: """
+        {
+          "eventType": "internal_telemetry",
+          "event": {
+            "attribute1": 123,
+            "attribute2": "foo",
+            "attribute3": ["foo", "bar", "bizz"]
+          }
+        }
+        """)
+
+        // Then
+        let message = try XCTUnwrap(receiverMock.messages.firstWebViewMessage)
+        guard case let .telemetry(event) = message else {
+            return XCTFail("not a telemetry message")
         }
 
         let json = JSONObjectMatcher(object: event)

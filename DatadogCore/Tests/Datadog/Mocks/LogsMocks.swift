@@ -60,7 +60,8 @@ extension CrashLogReceiver: AnyMockable {
         dateProvider: DateProvider = SystemDateProvider()
     ) -> Self {
         .init(
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            logEventMapper: nil
         )
     }
 }

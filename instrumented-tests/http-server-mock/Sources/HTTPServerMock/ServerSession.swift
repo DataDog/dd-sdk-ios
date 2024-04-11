@@ -30,7 +30,12 @@ public class ServerSession {
 
     /// Actively fetches requests recorded by the server in this session until given `condition` evaluated to `true`.
     /// Throws an exception if given `timeout` is exceeded.
-    public func pullRecordedRequests(timeout: TimeInterval, until condition: ([Request]) throws -> Bool) throws -> [Request] {
+    public func pullRecordedRequests(
+        timeout: TimeInterval,
+        file: StaticString = #fileID,
+        line: UInt = #line,
+        until condition: ([Request]) throws -> Bool
+    ) throws -> [Request] {
         let timeoutTimer = DispatchSource.makeTimerSource(queue: DispatchQueue.global())
         timeoutTimer.setEventHandler { timeoutTimer.cancel() }
         timeoutTimer.schedule(deadline: .now() + timeout, leeway: .nanoseconds(0))
@@ -48,7 +53,11 @@ public class ServerSession {
 
         if timeoutTimer.isCancelled {
             throw Exception(
-                description: "Exceeded \(timeout)s timeout with pulling \(pulledRequests.count) requests and not meeting the `condition()`."
+                description: """
+                Exceeded \(timeout)s timeout with pulling \(pulledRequests.count) requests and not meeting the `condition()`.
+                - pulled endpoint: \(recordingURL.absoluteString)
+                - caller: \(file):\(line)
+                """
             )
         } else {
             timeoutTimer.cancel()

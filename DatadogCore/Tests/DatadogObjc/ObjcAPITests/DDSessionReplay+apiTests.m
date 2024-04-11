@@ -6,9 +6,7 @@
 
 #import <XCTest/XCTest.h>
 
-#if TARGET_OS_IOS
-
-@import DatadogObjc;
+@import DatadogSessionReplay;
 
 @interface DDSessionReplay_apiTests : XCTestCase
 @end
@@ -24,5 +22,3 @@
 }
 
 @end
-
-#endif

@@ -25,9 +25,18 @@ internal final class RUMFeature: DatadogRemoteFeature {
         configuration: RUM.Configuration
     ) throws {
         self.configuration = configuration
+        let eventsMapper = RUMEventsMapper(
+            viewEventMapper: configuration.viewEventMapper,
+            errorEventMapper: configuration.errorEventMapper,
+            resourceEventMapper: configuration.resourceEventMapper,
+            actionEventMapper: configuration.actionEventMapper,
+            longTaskEventMapper: configuration.longTaskEventMapper,
+            telemetry: core.telemetry
+        )
 
+        let featureScope = core.scope(for: RUMFeature.self)
         let dependencies = RUMScopeDependencies(
-            core: core,
+            featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
             sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
             trackBackgroundEvents: configuration.trackBackgroundEvents,
@@ -43,14 +52,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 }
             }(),
             eventBuilder: RUMEventBuilder(
-                eventsMapper: RUMEventsMapper(
-                    viewEventMapper: configuration.viewEventMapper,
-                    errorEventMapper: configuration.errorEventMapper,
-                    resourceEventMapper: configuration.resourceEventMapper,
-                    actionEventMapper: configuration.actionEventMapper,
-                    longTaskEventMapper: configuration.longTaskEventMapper,
-                    telemetry: core.telemetry
-                )
+                eventsMapper: eventsMapper
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
@@ -72,7 +74,6 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         self.monitor = Monitor(
-            core: core,
             dependencies: dependencies,
             dateProvider: configuration.dateProvider
         )
@@ -94,18 +95,24 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
         self.messageReceiver = CombinedFeatureMessageReceiver(
             TelemetryReceiver(
+                featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 sampler: Sampler(samplingRate: configuration.telemetrySampleRate),
                 configurationExtraSampler: Sampler(samplingRate: configuration.configurationTelemetrySampleRate),
                 metricsExtraSampler: Sampler(samplingRate: configuration.metricsTelemetrySampleRate)
             ),
-            ErrorMessageReceiver(monitor: monitor),
+            ErrorMessageReceiver(
+                featureScope: featureScope,
+                monitor: monitor
+            ),
             WebViewEventReceiver(
+                featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
                 viewCache: dependencies.viewCache
             ),
             CrashReportReceiver(
+                featureScope: featureScope,
                 applicationID: configuration.applicationID,
                 dateProvider: configuration.dateProvider,
                 sessionSampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.sessionSampleRate),
@@ -119,7 +126,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                         return nil
                     }
                 }(),
-                telemetry: core.telemetry
+                eventsMapper: eventsMapper
             )
         )
 

@@ -21,6 +21,7 @@ public enum WebViewMessage {
         case error
         case longTask = "long_task"
         case record
+        case telemetry = "internal_telemetry"
     }
 
     /// Raw event dictionary.
@@ -34,6 +35,8 @@ public enum WebViewMessage {
     case log(Event)
     /// A browser rum event.
     case rum(Event)
+    /// A browser telemetry event.
+    case telemetry(Event)
     /// A browser session-replay record.
     case record(Event, View)
 }
@@ -65,6 +68,8 @@ extension WebViewMessage: Decodable {
             self = .log(event)
         case .rum, .view, .action, .resource, .error, .longTask:
             self = .rum(event)
+        case .telemetry:
+            self = .telemetry(event)
         case .record:
             let view = try container.decode(View.self, forKey: .view)
             self = .record(event, view)
