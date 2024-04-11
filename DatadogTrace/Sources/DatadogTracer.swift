@@ -25,7 +25,7 @@ internal class DatadogTracer: OTTracer {
 
     let activeSpansPool = ActiveSpansPool()
 
-    /// Local trace sampler. Used for spans created with Tracer API.
+    /// Local trace sampler. Used for spans created with tracer API.
     let localTraceSampler: Sampler
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder

@@ -31,7 +31,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ])
@@ -48,7 +48,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init()
         )
 
@@ -80,7 +80,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init()
         )
 
@@ -122,7 +122,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            tracingSampler: .mockRejectAll(),
+            distributedTraceSampler: .mockRejectAll(),
             firstPartyHosts: .init()
         )
 
@@ -153,7 +153,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init()
         )
 
@@ -417,7 +417,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let handler = TracingURLSessionHandler(
             tracer: .mockWith(core: core),
             contextReceiver: receiver,
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init()
         )
 
