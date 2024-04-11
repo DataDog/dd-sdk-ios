@@ -524,8 +524,8 @@
 		61F2727425C9509D00D54BF8 /* ThirdPartyCrashReporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2727325C9509D00D54BF8 /* ThirdPartyCrashReporter.swift */; };
 		61F2728B25C9561A00D54BF8 /* PLCrashReporterIntegration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2728A25C9561A00D54BF8 /* PLCrashReporterIntegration.swift */; };
 		61F272B125C95ED800D54BF8 /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F2729A25C95EB200D54BF8 /* Mocks.swift */; };
-		61F3E3632BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */; };
-		61F3E3642BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */; };
+		61F3E3632BC5556D00C7881E /* DatadogTracer+SamplingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracer+SamplingTests.swift */; };
+		61F3E3642BC5556D00C7881E /* DatadogTracer+SamplingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3622BC5556D00C7881E /* DatadogTracer+SamplingTests.swift */; };
 		61F3E3662BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */; };
 		61F3E3672BC595F600C7881E /* HTTPHeadersReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */; };
 		61F3E36D2BC7D66700C7881E /* HeadBasedSamplingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3E36C2BC7D66700C7881E /* HeadBasedSamplingTests.swift */; };
@@ -2483,7 +2483,7 @@
 		61F3CDA42511190E00C816E5 /* UIViewControllerSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerSwizzler.swift; sourceTree = "<group>"; };
 		61F3CDA62512144600C816E5 /* UIKitRUMViewsPredicate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitRUMViewsPredicate.swift; sourceTree = "<group>"; };
 		61F3CDAA25121FB500C816E5 /* UIViewControllerSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewControllerSwizzlerTests.swift; sourceTree = "<group>"; };
-		61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogTracerTests+Sampling.swift"; sourceTree = "<group>"; };
+		61F3E3622BC5556D00C7881E /* DatadogTracer+SamplingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DatadogTracer+SamplingTests.swift"; sourceTree = "<group>"; };
 		61F3E3652BC595F600C7881E /* HTTPHeadersReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPHeadersReaderTests.swift; sourceTree = "<group>"; };
 		61F3E36C2BC7D66700C7881E /* HeadBasedSamplingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadBasedSamplingTests.swift; sourceTree = "<group>"; };
 		61F74AF326F20E4600E5F5ED /* DebugCrashReportingWithRUMViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugCrashReportingWithRUMViewController.swift; sourceTree = "<group>"; };
@@ -5731,7 +5731,7 @@
 			children = (
 				619CE75D2A458CE1005588CB /* TraceConfigurationTests.swift */,
 				61AD4E172451C7FF006E34EA /* TracingFeatureMocks.swift */,
-				61F3E3622BC5556D00C7881E /* DatadogTracerTests+Sampling.swift */,
+				61F3E3622BC5556D00C7881E /* DatadogTracer+SamplingTests.swift */,
 				61C5A89824509C1100DA608C /* DDSpanTests.swift */,
 				61F1A620249A45E400075390 /* DDSpanContextTests.swift */,
 				D2F1B81426D8E5FF009F3293 /* DDNoopTracerTests.swift */,
@@ -8553,7 +8553,7 @@
 				D2C1A51D29C4C75700946C31 /* SpanEventBuilderTests.swift in Sources */,
 				618C0FC02B482F6800266B38 /* SpanWriteContextTests.swift in Sources */,
 				D2C1A52229C4C75700946C31 /* DDNoopTracerTests.swift in Sources */,
-				61F3E3632BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */,
+				61F3E3632BC5556D00C7881E /* DatadogTracer+SamplingTests.swift in Sources */,
 				D2C1A51C29C4C75700946C31 /* ContextMessageReceiverTests.swift in Sources */,
 				619CE7612A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A52029C4C75700946C31 /* DDSpanTests.swift in Sources */,
@@ -8756,7 +8756,7 @@
 				D2C1A56229C4F2E800946C31 /* SpanEventBuilderTests.swift in Sources */,
 				618C0FC12B482F6800266B38 /* SpanWriteContextTests.swift in Sources */,
 				D2C1A56329C4F2E800946C31 /* DDNoopTracerTests.swift in Sources */,
-				61F3E3642BC5556D00C7881E /* DatadogTracerTests+Sampling.swift in Sources */,
+				61F3E3642BC5556D00C7881E /* DatadogTracer+SamplingTests.swift in Sources */,
 				D2C1A56529C4F2E800946C31 /* ContextMessageReceiverTests.swift in Sources */,
 				619CE7622A458D66005588CB /* TraceTests.swift in Sources */,
 				D2C1A56629C4F2E800946C31 /* DDSpanTests.swift in Sources */,
