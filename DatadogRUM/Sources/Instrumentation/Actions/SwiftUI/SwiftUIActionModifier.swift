@@ -15,7 +15,7 @@ import DatadogInternal
 @available(iOS 13, *)
 internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     /// The SDK core instance.
-    let core: DatadogCoreProtocol
+    weak var core: DatadogCoreProtocol?
 
     /// The required number of taps to complete the tap action.
     let count: Int
@@ -29,6 +29,9 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     func body(content: Content) -> some View {
         content.simultaneousGesture(
             TapGesture(count: count).onEnded { _ in
+                guard let core = core else {
+                    return // core was deallocated
+                }
                 RUMMonitor.shared(in: core)
                     .addAction(type: .tap, name: name, attributes: attributes)
             }

@@ -35,6 +35,7 @@ class GeneratingBacktraceTests: XCTestCase {
         // Then
         XCTAssertGreaterThan(backtrace.threads.count, 0, "Some thread(s) should be recorded")
         XCTAssertGreaterThan(backtrace.binaryImages.count, 0, "Some binary image(s) should be recorded")
+        XCTAssertFalse(backtrace.threads.contains(where: { $0.crashed }), "No thread should be marked as crashed")
 
         XCTAssertTrue(
             backtrace.stack.contains("DatadogCoreTests"),

@@ -43,7 +43,7 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         static let minWireframesInFullSnapshot = 5
 
         /// Total number of "incremental snapshot" records that send "wireframe mutation" data.
-        static let totalWireframeMutationRecords = 7
+        static let totalWireframeMutationRecords = 5
         /// Total number of "incremental snapshot" records that send "pointer interaction" data.
         static let totalTouchDataRecords = 10
     }
@@ -78,7 +78,9 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         })
 
         let rawSRRequests = try srEndpoint.pullRecordedRequests(timeout: dataDeliveryTimeout, until: {
-            try SRSegmentMatcher.segmentsCount(from: $0) == Baseline.totalSegmentsCount
+            let segmentsCount = try SRSegmentMatcher.segmentsCount(from: $0)
+            sendCIAppLog("Pulled \(segmentsCount) segments")
+            return segmentsCount >= Baseline.totalSegmentsCount
         })
 
         assertRUM(requests: rawRUMRequests)

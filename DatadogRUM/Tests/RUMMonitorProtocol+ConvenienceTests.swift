@@ -17,7 +17,6 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
     func testCallingExtensionMethodsIsSafe() {
         // Given
         let monitor = Monitor(
-            core: PassthroughCoreMock(),
             dependencies: .mockAny(),
             dateProvider: SystemDateProvider()
         )

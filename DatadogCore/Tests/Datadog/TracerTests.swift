@@ -44,7 +44,8 @@ class TracerTests: XCTestCase {
             applicationBundleIdentifier: "com.datadoghq.ios-sdk"
         )
         config.dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
-        config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: 1)
+        config.traceIDGenerator = RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100))
+        config.spanIDGenerator = RelativeSpanIDGenerator(startingFrom: 100)
 
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
@@ -58,8 +59,8 @@ class TracerTests: XCTestCase {
           "spans": [
             {
               "_dd.agent_psr": 1,
-              "trace_id": "1",
-              "span_id": "2",
+              "trace_id": "64",
+              "span_id": "64",
               "parent_id": "0",
               "name": "operation",
               "service": "default-service-name",
@@ -72,7 +73,8 @@ class TracerTests: XCTestCase {
               "meta.version": "1.0.0",
               "meta._dd.source": "abc",
               "metrics._top_level": 1,
-              "metrics._sampling_priority_v1": 1
+              "metrics._sampling_priority_v1": 1,
+              "meta._dd.p.tid": "a"
             }
           ],
           "env": "custom"
@@ -201,8 +203,8 @@ class TracerTests: XCTestCase {
         // Assert child-parent relationship
 
         XCTAssertEqual(try grandchildMatcher.operationName(), "grandchild operation")
-        XCTAssertEqual(try grandchildMatcher.traceID(), String(rootSpan.context.dd.traceID, representation: .hexadecimal))
-        XCTAssertEqual(try grandchildMatcher.parentSpanID(), String(childSpan.context.dd.spanID, representation: .hexadecimal))
+        XCTAssertEqual(try grandchildMatcher.traceID(), rootSpan.context.dd.traceID)
+        XCTAssertEqual(try grandchildMatcher.parentSpanID(), childSpan.context.dd.spanID)
         XCTAssertNil(try? grandchildMatcher.metrics.isRootSpan())
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
@@ -211,15 +213,15 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try grandchildMatcher.meta.custom(keyPath: "meta.overwritten"), "b", "Tags should have higher priority than baggage items")
 
         XCTAssertEqual(try childMatcher.operationName(), "child operation")
-        XCTAssertEqual(try childMatcher.traceID(), String(rootSpan.context.dd.traceID, representation: .hexadecimal))
-        XCTAssertEqual(try childMatcher.parentSpanID(), String(rootSpan.context.dd.spanID, representation: .hexadecimal))
+        XCTAssertEqual(try childMatcher.traceID(), rootSpan.context.dd.traceID)
+        XCTAssertEqual(try childMatcher.parentSpanID(), rootSpan.context.dd.spanID)
         XCTAssertNil(try? childMatcher.metrics.isRootSpan())
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertEqual(try childMatcher.meta.custom(keyPath: "meta.child-item"), "bar")
         XCTAssertNil(try? childMatcher.meta.custom(keyPath: "meta.grandchild-item"))
 
         XCTAssertEqual(try rootMatcher.operationName(), "root operation")
-        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try rootMatcher.parentSpanID(), .invalid)
         XCTAssertEqual(try rootMatcher.metrics.isRootSpan(), 1)
         XCTAssertEqual(try rootMatcher.meta.custom(keyPath: "meta.root-item"), "foo")
         XCTAssertNil(try? rootMatcher.meta.custom(keyPath: "meta.child-item"))
@@ -259,7 +261,7 @@ class TracerTests: XCTestCase {
         let child1Matcher = spanMatchers[1]
         let child2Matcher = spanMatchers[0]
 
-        XCTAssertEqual(try rootMatcher.parentSpanID(), "0")
+        XCTAssertEqual(try rootMatcher.parentSpanID(), .invalid)
         XCTAssertEqual(try child1Matcher.parentSpanID(), try rootMatcher.spanID())
         XCTAssertEqual(try child2Matcher.parentSpanID(), try rootMatcher.spanID())
     }
@@ -292,8 +294,8 @@ class TracerTests: XCTestCase {
 
         waitForExpectations(timeout: 5)
         let spanMatchers = try core.waitAndReturnSpanMatchers()
-        XCTAssertEqual(try spanMatchers[0].parentSpanID(), "0")
-        XCTAssertEqual(try spanMatchers[1].parentSpanID(), "0")
+        XCTAssertEqual(try spanMatchers[0].parentSpanID(), .invalid)
+        XCTAssertEqual(try spanMatchers[1].parentSpanID(), .invalid)
     }
 
     func testStartingRootActiveSpanInAsynchronousJobs() throws {
@@ -325,9 +327,9 @@ class TracerTests: XCTestCase {
         let request2Matcher = spanMatchers[3]
 
         XCTAssertEqual(try response1Matcher.parentSpanID(), try request1Matcher.spanID())
-        XCTAssertEqual(try request1Matcher.parentSpanID(), "0")
+        XCTAssertEqual(try request1Matcher.parentSpanID(), .invalid)
         XCTAssertEqual(try response2Matcher.parentSpanID(), try request2Matcher.spanID())
-        XCTAssertEqual(try request2Matcher.parentSpanID(), "0")
+        XCTAssertEqual(try request2Matcher.parentSpanID(), .invalid)
     }
 
     // MARK: - Sending user info
@@ -559,8 +561,8 @@ class TracerTests: XCTestCase {
 
         regularLogMatcher.assertStatus(equals: "info")
         regularLogMatcher.assertMessage(equals: "hello")
-        regularLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID))
-        regularLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID))
+        regularLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID, representation: .hexadecimal))
+        regularLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID, representation: .hexadecimal))
         regularLogMatcher.assertValue(forKey: "custom.field", equals: "value")
 
         errorLogMatcher.assertStatus(equals: "error")
@@ -568,8 +570,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID))
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID))
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID, representation: .hexadecimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID, representation: .hexadecimal))
     }
 
     func testSendingSpanLogsWithErrorFromArguments() throws {
@@ -593,8 +595,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Swift error")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID))
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID))
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID, representation: .hexadecimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID, representation: .hexadecimal))
     }
 
     func testSendingSpanLogsWithErrorFromNSError() throws {
@@ -624,8 +626,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "Tracer - 1")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID))
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID))
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID, representation: .hexadecimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID, representation: .hexadecimal))
     }
 
     func testSendingSpanLogsWithErrorFromSwiftError() throws {
@@ -650,8 +652,8 @@ class TracerTests: XCTestCase {
         errorLogMatcher.assertValue(forKey: "error.kind", equals: "ErrorMock")
         errorLogMatcher.assertValue(forKey: "error.message", equals: "Ops!")
         errorLogMatcher.assertMessage(equals: "Ops!")
-        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID))
-        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID))
+        errorLogMatcher.assertValue(forKey: "dd.trace_id", equals: String(span.context.dd.traceID, representation: .hexadecimal))
+        errorLogMatcher.assertValue(forKey: "dd.span_id", equals: String(span.context.dd.spanID, representation: .hexadecimal))
     }
 
     // MARK: - Integration With RUM Feature
@@ -747,7 +749,7 @@ class TracerTests: XCTestCase {
     func testItInjectsSpanContextWithHTTPHeadersWriter() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
@@ -758,9 +760,10 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "x-datadog-trace-id": "1",
-            "x-datadog-parent-id": "2",
+            "x-datadog-trace-id": "64",
+            "x-datadog-parent-id": "c8",
             "x-datadog-sampling-priority": "1",
+            "x-datadog-tags": "_dd.p.tid=a"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
@@ -772,6 +775,7 @@ class TracerTests: XCTestCase {
             "x-datadog-trace-id": "3",
             "x-datadog-parent-id": "4",
             "x-datadog-sampling-priority": "1",
+            "x-datadog-tags": "_dd.p.tid=0"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
     }
@@ -779,7 +783,7 @@ class TracerTests: XCTestCase {
     func testItInjectsSpanContextWithB3HTTPHeadersWriter_usingMultipleHeaders() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
@@ -791,8 +795,8 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "X-B3-TraceId": "00000000000000000000000000000001",
-            "X-B3-SpanId": "0000000000000002",
+            "X-B3-TraceId": "000000000000000a0000000000000064",
+            "X-B3-SpanId": "00000000000000c8",
             "X-B3-Sampled": "1",
             "X-B3-ParentSpanId": "0000000000000003"
         ]
@@ -825,7 +829,7 @@ class TracerTests: XCTestCase {
     func testItInjectsSpanContextWithB3HTTPHeadersWriter_usingSingleHeader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
@@ -837,7 +841,7 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "b3": "00000000000000000000000000000001-0000000000000002-1-0000000000000003"
+            "b3": "000000000000000a0000000000000064-00000000000000c8-1-0000000000000003"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
@@ -863,7 +867,7 @@ class TracerTests: XCTestCase {
     func testItInjectsRejectedSpanContextWithB3HTTPHeadersWriter_usingSingleHeader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockRejectAll())
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
@@ -881,7 +885,7 @@ class TracerTests: XCTestCase {
     func testItInjectsRejectedSpanContextWithB3HTTPHeadersWriter_usingMultipleHeader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockRejectAll(), injectEncoding: .multiple)
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
@@ -899,7 +903,7 @@ class TracerTests: XCTestCase {
     func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
         let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
         let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
 
@@ -916,8 +920,8 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "tracestate": "dd=o:rum;p:0000000000000002;s:1",
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-01"
+            "tracestate": "dd=o:rum;p:00000000000000c8;s:1",
+            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-01"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
 
@@ -945,7 +949,7 @@ class TracerTests: XCTestCase {
     func testItInjectsRejectedSpanContextWithW3CHTTPHeadersWriter() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(
             sampler: .mockRejectAll(),
@@ -960,8 +964,8 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders = [
-            "tracestate": "dd=o:rum;p:0000000000000002;s:0",
-            "traceparent": "00-00000000000000000000000000000001-0000000000000002-00"
+            "tracestate": "dd=o:rum;p:00000000000000c8;s:0",
+            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-00"
         ]
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
     }
@@ -969,7 +973,7 @@ class TracerTests: XCTestCase {
     func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
         XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
@@ -987,7 +991,7 @@ class TracerTests: XCTestCase {
     func testItExtractsSpanContextWithHTTPHeadersReader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: .mockAny(), baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
 
         let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
@@ -1005,7 +1009,7 @@ class TracerTests: XCTestCase {
     func testItExtractsSpanContextWithB3HTTPHeadersReader_forMultipleHeaders() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
@@ -1023,7 +1027,7 @@ class TracerTests: XCTestCase {
     func testItExtractsSpanContextWithB3HTTPHeadersReader_forSingleHeader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
         tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
@@ -1041,7 +1045,7 @@ class TracerTests: XCTestCase {
     func testItExtractsSpanContextWithW3CHTTPHeadersReader() {
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: 1, spanID: 2, parentSpanID: 3, baggageItems: .mockAny())
+        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
 
         let httpHeadersWriter = W3CHTTPHeadersWriter(
             sampler: .mockKeepAll(),

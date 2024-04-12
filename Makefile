@@ -2,7 +2,6 @@ all: dependencies templates
 
 # The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
 DD_SDK_SWIFT_TESTING_VERSION = 2.3.2
-DD_DISABLE_TEST_INSTRUMENTING = false
 
 define DD_SDK_TESTING_XCCONFIG_CI
 DD_SDK_TESTING_PATH=$$(DD_SDK_TESTING_OVERRIDE_PATH:default=$$(SRCROOT)/../instrumented-tests/)\n
@@ -43,7 +42,7 @@ define DD_SDK_BASE_XCCONFIG_CI
 SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
 \n
 // If running on CI. This value is injected to some targets through their `Info.plist`:\n
-IS_CI = true\n
+IS_CI = true\n 
 \n
 // Use iOS 11 deployment target on CI as long as we use Xcode 14.x for integration\n
 IPHONEOS_DEPLOYMENT_TARGET=11.0\n
@@ -71,7 +70,7 @@ ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
+		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;	
 		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
 		@rm -rf instrumented-tests/DatadogSDKTesting.zip
 		@rm -rf instrumented-tests/LICENSE
@@ -79,7 +78,7 @@ ifndef DD_DISABLE_TEST_INSTRUMENTING
 		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
 		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
 endif
-
+		
 endif
 
 # Prepare project on GitLab CI (this will replace `make dependencies` once we're fully on GitLab).

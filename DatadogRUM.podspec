@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogRUM"
-  s.version      = "2.7.1"
+  s.version      = "2.9.0"
   s.summary      = "Datadog Real User Monitoring Module."
   
   s.homepage     = "https://www.datadoghq.com"
@@ -21,6 +21,10 @@ Pod::Spec.new do |s|
   s.source = { :git => "https://github.com/DataDog/dd-sdk-ios.git", :tag => s.version.to_s }
   
   s.source_files = ["DatadogRUM/Sources/**/*.swift"]
+
+  s.resource_bundle = {
+    "DatadogRUM" => "DatadogRUM/Resources/PrivacyInfo.xcprivacy"
+  }
 
   s.dependency 'DatadogInternal', s.version.to_s
 

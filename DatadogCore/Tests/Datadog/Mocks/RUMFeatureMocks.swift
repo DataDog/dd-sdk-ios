@@ -38,12 +38,16 @@ extension WebViewEventReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
-        commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock()
+        commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
+        viewCache: ViewCache = ViewCache()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             dateProvider: dateProvider,
-            commandSubscriber: commandSubscriber
+            commandSubscriber: commandSubscriber,
+            viewCache: viewCache
         )
     }
 }
@@ -54,6 +58,7 @@ extension CrashReportReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -61,9 +66,10 @@ extension CrashReportReceiver: AnyMockable {
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
-        telemetry: Telemetry = NOPTelemetry()
+        eventsMapper: RUMEventsMapper = .mockNoOp()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
@@ -71,7 +77,7 @@ extension CrashReportReceiver: AnyMockable {
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
-            telemetry: telemetry
+            eventsMapper: eventsMapper
         )
     }
 }
@@ -313,15 +319,15 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMSpanContext {
         return RUMSpanContext(
-            traceID: .mockRandom(),
-            spanID: .mockRandom(),
+            traceID: .mock(.mockRandom(), .mockRandom()),
+            spanID: .mock(.mockRandom()),
             samplingRate: .mockRandom()
         )
     }
 
     static func mockWith(
-        traceID: String = .mockAny(),
-        spanID: String = .mockAny(),
+        traceID: TraceID = .mockAny(),
+        spanID: SpanID = .mockAny(),
         samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
@@ -344,7 +350,11 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             httpMethod: .mockRandom(),
             kind: .mockAny(),
             isFirstPartyRequest: .mockRandom(),
-            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom(), samplingRate: .mockAny())
+            spanContext: .init(
+                traceID: .mock(.mockRandom(), .mockRandom()),
+                spanID: .mock(.mockRandom()),
+                samplingRate: .mockAny()
+            )
         )
     }
 
@@ -695,7 +705,7 @@ extension RUMScopeDependencies {
     }
 
     static func mockWith(
-        core: DatadogCoreProtocol = NOPDatadogCore(),
+        featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = .mockAny(),
@@ -706,10 +716,11 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener()
+        onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
+        viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: core,
+            featureScope: featureScope,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -720,7 +731,8 @@ extension RUMScopeDependencies {
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
-            onSessionStart: onSessionStart
+            onSessionStart: onSessionStart,
+            viewCache: viewCache
         )
     }
 
@@ -736,10 +748,11 @@ extension RUMScopeDependencies {
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
-        onSessionStart: RUM.SessionListener? = nil
+        onSessionStart: RUM.SessionListener? = nil,
+        viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: self.core,
+            featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
@@ -750,7 +763,8 @@ extension RUMScopeDependencies {
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
-            onSessionStart: onSessionStart ?? self.onSessionStart
+            onSessionStart: onSessionStart ?? self.onSessionStart,
+            viewCache: viewCache ?? self.viewCache
         )
     }
 }

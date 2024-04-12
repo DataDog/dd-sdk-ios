@@ -33,7 +33,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         integration.writeLog(
-            withSpanContext: .mockWith(traceID: 1, spanID: 2),
+            withSpanContext: .mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200),
             fields: [
                 OTLogFields.message: "hello",
                 "custom field": 123,
@@ -56,8 +56,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                "dd.trace_id": "1",
-                "dd.span_id": "2"
+                "dd.trace_id": "a0000000000000064",
+                "dd.span_id": "c8"
             ])
         )
     }
@@ -110,7 +110,7 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
 
         // When
         integration.writeLog(
-            withSpanContext: .mockWith(traceID: 1, spanID: 2),
+            withSpanContext: .mockWith(traceID: .init(idHi: 10, idLo: 100), spanID: 200),
             fields: ["custom field": 123],
             date: .mockDecember15th2019At10AMUTC(),
             else: {}
@@ -130,8 +130,8 @@ class TracingWithLoggingIntegrationTests: XCTestCase {
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes),
             AnyEncodable([
-                "dd.trace_id": "1",
-                "dd.span_id": "2"
+                "dd.trace_id": "a0000000000000064",
+                "dd.span_id": "c8"
             ])
         )
     }

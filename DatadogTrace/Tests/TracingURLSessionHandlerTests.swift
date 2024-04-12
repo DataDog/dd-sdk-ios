@@ -24,7 +24,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         tracer = .mockWith(
             core: core,
-            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 1)
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1)
         )
 
         handler = TracingURLSessionHandler(
@@ -62,15 +63,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
             ]
         )
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "2")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "64")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "64")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000002")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000002-1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000002-01")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -143,7 +145,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "0")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000002-00")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
     }
 
     func testGivenFirstPartyInterception_withActiveSpan_itInjectParentSpanID() throws {
@@ -171,15 +173,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         span.finish()
 
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "3")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "64")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "65")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000003")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000002")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000065")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField), "0000000000000064")
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000003-1-0000000000000002")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000003-01")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000065-1-0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000065-01")
     }
 
     func testGivenFirstPartyInterceptionWithSpanContext_whenInterceptionCompletes_itUsesInjectedSpanContext() throws {
@@ -214,8 +217,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
 
-        XCTAssertEqual(String(span.traceID), "100")
-        XCTAssertEqual(String(span.spanID), "200")
+        XCTAssertEqual(String(span.traceID, representation: .decimal), "100")
+        XCTAssertEqual(String(span.spanID, representation: .decimal), "200")
         XCTAssertEqual(span.operationName, "urlsession.request")
         XCTAssertFalse(span.isError)
         XCTAssertEqual(span.duration, 1)
@@ -225,7 +228,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
         interception.register(
@@ -261,8 +264,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setActive()
         // Then
         let context = handler.traceContext()
-        XCTAssertEqual(context?.traceID, TraceID(rawValue: 1))
-        XCTAssertEqual(context?.spanID, SpanID(rawValue: 2))
+        XCTAssertEqual(context?.traceID, TraceID(idHi: 10, idLo: 100))
+        XCTAssertEqual(context?.spanID, SpanID(100))
 
         // When
         span.finish()
@@ -275,7 +278,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
 
         // When
@@ -283,12 +286,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
         span.setActive()
         interception.register(trace: TraceContext(
             traceID: span.context.dd.traceID,
-            spanID: SpanID(rawValue: 3),
+            spanID: SpanID(300),
             parentSpanID: span.context.dd.spanID
         ))
         handler.interceptionDidStart(interception: interception)
         // Then
-        XCTAssertEqual(interception.trace?.parentSpanID?.rawValue, 2)
+        XCTAssertEqual(interception.trace?.parentSpanID?.rawValue, 100)
 
         // When
         span.finish()
@@ -309,14 +312,14 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let envelopes: [SpanEventsEnvelope] = core.events()
         let event1 = try XCTUnwrap(envelopes.first?.spans.first)
         XCTAssertEqual(event1.operationName, "root")
-        XCTAssertEqual(event1.traceID, TraceID(rawValue: 1))
-        XCTAssertEqual(event1.spanID, SpanID(rawValue: 2))
+        XCTAssertEqual(event1.traceID, TraceID(idHi: 10, idLo: 100))
+        XCTAssertEqual(event1.spanID, SpanID(100))
         XCTAssertNil(event1.parentID)
         let event2 = try XCTUnwrap(envelopes.last?.spans.first)
         XCTAssertEqual(event2.operationName, "urlsession.request")
-        XCTAssertEqual(event2.traceID, TraceID(rawValue: 1))
-        XCTAssertEqual(event2.parentID, SpanID(rawValue: 2))
-        XCTAssertEqual(event2.spanID, SpanID(rawValue: 3))
+        XCTAssertEqual(event2.traceID, TraceID(idHi: 10, idLo: 100))
+        XCTAssertEqual(event2.parentID, SpanID(100))
+        XCTAssertEqual(event2.spanID, SpanID(300))
     }
 
     func testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan() throws {
@@ -364,8 +367,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.isInverted = true
 
         // Given
-        var request: URLRequest = .mockAny()
-        request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
+        let request: ImmutableRequest = .mockWith(
+            allHTTPHeaderFields: [TracingHTTPHeaders.originField: "rum"]
+        )
         let interception = URLSessionTaskInterception(request: request, isFirstParty: false)
         interception.register(response: .mockAny(), error: nil)
 

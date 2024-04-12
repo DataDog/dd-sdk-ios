@@ -138,7 +138,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertNotEqual(telemetry.configuration, initialConfiguration)
     }
 
-    func testWhenSendingTelemetryMessage_itForwardsToCore() {
+    func testWhenSendingTelemetryMessage_itForwardsToCore() throws {
         // Given
         class Receiver: FeatureMessageReceiver {
             var telemetry: TelemetryMessage?
@@ -182,6 +182,26 @@ class TelemetryTests: XCTestCase {
             return XCTFail("An error should be send to core.")
         }
         XCTAssertEqual(configuration.batchSize, 0)
+
+        // When
+        let operationName = String.mockRandom()
+        let callerClass = String.mockRandom()
+        let isSuccessful = Bool.random()
+        core.telemetry.stopMethodCalled(
+            core.telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, samplingRate: 100),
+            isSuccessful: isSuccessful
+        )
+
+        // Then
+        guard case .metric(let name, let attributes) = receiver.telemetry else {
+            return XCTFail("A debug should be send to core.")
+        }
+        XCTAssertEqual(name, MethodCalledMetric.name)
+        XCTAssertGreaterThan(try XCTUnwrap(attributes[MethodCalledMetric.executionTime] as? Int64), 0)
+        XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.operationName] as? String), operationName)
+        XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.callerClass] as? String), callerClass)
+        XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)
+        XCTAssertEqual(try XCTUnwrap(attributes[BasicMetric.typeKey] as? String), MethodCalledMetric.typeValue)
     }
 }
 
@@ -239,6 +259,7 @@ class TelemetryTest: Telemetry {
             trackSessionAcrossSubdomains: configuration.trackSessionAcrossSubdomains,
             trackUserInteractions: configuration.trackUserInteractions,
             trackViewsManually: configuration.trackViewsManually,
+            unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: configuration.useAllowedTracingOrigins,
             useAllowedTracingUrls: configuration.useAllowedTracingUrls,
             useBeforeSend: configuration.useBeforeSend,

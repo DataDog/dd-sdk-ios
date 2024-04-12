@@ -45,13 +45,13 @@ internal final class MessageEmitter: InternalExtension<WebViewTracking>.Abstract
             }
 
             let decoder = JSONDecoder()
-            let event = try decoder.decode(WebViewMessage.self, from: data)
+            let message = try decoder.decode(WebViewMessage.self, from: data)
 
-            switch event {
+            switch message {
             case .log:
-                send(log: event, in: core)
-            case .rum:
-                send(rum: event, in: core)
+                send(log: message, in: core)
+            case .rum, .telemetry:
+                send(rum: message, in: core)
             case let .record(event, view):
                 send(record: event, view: view, slotId: slotId, in: core)
             }

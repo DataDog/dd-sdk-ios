@@ -52,6 +52,7 @@ extension ConfigurationTelemetry {
             trackSessionAcrossSubdomains: .mockRandom(),
             trackUserInteractions: .mockRandom(),
             trackViewsManually: .mockRandom(),
+            unityVersion: .mockRandom(),
             useAllowedTracingOrigins: .mockRandom(),
             useAllowedTracingUrls: .mockRandom(),
             useBeforeSend: .mockRandom(),

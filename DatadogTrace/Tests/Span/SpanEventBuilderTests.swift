@@ -18,8 +18,8 @@ class SpanEventBuilderTests: XCTestCase {
 
         let span = builder.createSpanEvent(
             context: context,
-            traceID: 1,
-            spanID: 2,
+            traceID: .init(idHi: 10, idLo: 100),
+            spanID: 200,
             parentSpanID: 1,
             operationName: "operation-name",
             startTime: .mockDecember15th2019At10AMUTC(),
@@ -34,8 +34,8 @@ class SpanEventBuilderTests: XCTestCase {
             logFields: []
         )
 
-        XCTAssertEqual(span.traceID, 1)
-        XCTAssertEqual(span.spanID, 2)
+        XCTAssertEqual(span.traceID, .init(idHi: 10, idLo: 100))
+        XCTAssertEqual(span.spanID, .init(rawValue: 200))
         XCTAssertEqual(span.parentID, 1)
         XCTAssertEqual(span.operationName, "operation-name")
         XCTAssertEqual(span.serviceName, "test-service-name")
@@ -605,10 +605,10 @@ class SpanEventBuilderTests: XCTestCase {
 
         // Then
         XCTAssertEqual(span.tags.count, 1)
-        let expectedTags = "[{\"trace_id\":\"00000000000000000000000000000065\",\"span_id\":\"0000000000000067\",\"tracestate\":\"foo=bar,bar=baz\",\"flags\":1,\"attributes\":{\"foo\":\"bar\"}}]"
+        let expectedTags = "[{\"attributes\":{\"foo\":\"bar\"},\"flags\":1,\"span_id\":\"0000000000000067\",\"trace_id\":\"00000000000000650000000000000066\",\"tracestate\":\"foo=bar,bar=baz\"}]"
         let actualTags = span.tags["_dd.span_links"]
 
-        DDAssertJSONStringEqual(expectedTags, actualTags!)
+        DDAssertJSONEqual(expectedTags, actualTags!)
     }
 
     // MARK: - RUM context enrichment

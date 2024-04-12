@@ -22,7 +22,7 @@ public class W3CHTTPHeadersReader: TracePropagationHeadersReader {
               let spanIDValue = values?[safe: 2],
               values?[safe: 3] != W3CHTTPHeaders.Constants.unsampledValue,
               let traceID = TraceID(traceIDValue, representation: .hexadecimal),
-              let spanID = TraceID(spanIDValue, representation: .hexadecimal)
+              let spanID = SpanID(spanIDValue, representation: .hexadecimal)
         else {
             return nil
         }

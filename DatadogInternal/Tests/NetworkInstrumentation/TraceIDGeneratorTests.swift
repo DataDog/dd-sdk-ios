@@ -11,17 +11,29 @@ class TraceIDGeneratorTests: XCTestCase {
     func testDefaultGenerationBoundaries() {
         let generator = DefaultTraceIDGenerator()
         XCTAssertEqual(generator.range.lowerBound, 1)
-        XCTAssertEqual(generator.range.upperBound, 9_223_372_036_854_775_807) // 2 ^ 63 -1
+        XCTAssertEqual(generator.range.upperBound, 18_446_744_073_709_551_615)
     }
 
     func testItGeneratesUUIDsFromGivenBoundaries() {
         let generator = DefaultTraceIDGenerator(range: 10...15)
-        var generatedUUIDs: Set<TraceID> = []
 
+        let lowerBound = UInt32(Date().timeIntervalSince1970)
         (0..<1_000).forEach { _ in
-            generatedUUIDs.insert(generator.generate())
-        }
+            let id = generator.generate()
+            let upperBound = UInt32(Date().timeIntervalSince1970)
 
-        XCTAssertEqual(generatedUUIDs, [10, 11, 12, 13, 14, 15])
+            XCTAssertGreaterThanOrEqual(id.idLo, 10)
+            XCTAssertLessThanOrEqual(id.idLo, 15)
+
+            let idHiStr = String(id.idHi, radix: 10)
+            let idHi = UInt64(idHiStr) ?? 0
+
+            let seconds = UInt32(idHi >> 32)
+            XCTAssertGreaterThanOrEqual(seconds, lowerBound)
+            XCTAssertLessThanOrEqual(seconds, upperBound)
+
+            let zeros = UInt32(idHi & 0xFFFFFFFF)
+            XCTAssertEqual(zeros, 0)
+        }
     }
 }

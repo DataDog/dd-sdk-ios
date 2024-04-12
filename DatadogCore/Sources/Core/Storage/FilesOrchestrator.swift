@@ -229,7 +229,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         telemetry.metric(
             name: BatchDeletedMetric.name,
             attributes: [
-                BatchMetric.typeKey: BatchDeletedMetric.typeValue,
+                BasicMetric.typeKey: BatchDeletedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
                 BatchDeletedMetric.uploaderDelayKey: [
                     BatchDeletedMetric.uploaderDelayMinKey: metricsData.uploaderPerformance.minUploadDelay.toMilliseconds,
@@ -257,7 +257,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         telemetry.metric(
             name: BatchClosedMetric.name,
             attributes: [
-                BatchMetric.typeKey: BatchClosedMetric.typeValue,
+                BasicMetric.typeKey: BatchClosedMetric.typeValue,
                 BatchMetric.trackKey: metricsData.trackName,
                 BatchMetric.consentKey: metricsData.consentLabel,
                 BatchClosedMetric.uploaderWindowKey: performance.uploaderWindow.toMilliseconds,

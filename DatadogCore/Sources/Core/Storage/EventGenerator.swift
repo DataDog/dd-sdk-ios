@@ -9,10 +9,10 @@ import DatadogInternal
 
 /// Event generator that generates events from the given data blocks.
 internal struct EventGenerator: Sequence, IteratorProtocol {
-    private let dataBlocks: [DataBlock]
+    private let dataBlocks: [BatchDataBlock]
     private var index: Int
 
-    init(dataBlocks: [DataBlock], index: Int = 0) {
+    init(dataBlocks: [BatchDataBlock], index: Int = 0) {
         self.dataBlocks = dataBlocks
         self.index = index
     }
@@ -33,7 +33,7 @@ internal struct EventGenerator: Sequence, IteratorProtocol {
             return nil
         }
 
-        var metadata: DataBlock? = nil
+        var metadata: BatchDataBlock? = nil
         // If the next block is an event metadata, read it.
         if dataBlocks[index].type == .eventMetadata {
             metadata = dataBlocks[index]

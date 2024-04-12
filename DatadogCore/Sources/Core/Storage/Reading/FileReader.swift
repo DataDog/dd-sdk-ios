@@ -52,8 +52,8 @@ internal final class FileReader: Reader {
     ///
     /// - Parameter stream: The InputStream that provides data to decode.
     /// - Returns: The decoded and formatted data.
-    private func decode(stream: InputStream) throws -> [DataBlock] {
-        let reader = DataBlockReader(
+    private func decode(stream: InputStream) throws -> [BatchDataBlock] {
+        let reader = BatchDataBlockReader(
             input: stream,
             maxBlockLength: orchestrator.performance.maxObjectSize
         )
@@ -74,9 +74,9 @@ internal final class FileReader: Reader {
             }
     }
 
-    private func decrypt(dataBlock: DataBlock) throws -> DataBlock {
+    private func decrypt(dataBlock: BatchDataBlock) throws -> BatchDataBlock {
         let decrypted = try decrypt(data: dataBlock.data)
-        return DataBlock(type: dataBlock.type, data: decrypted)
+        return BatchDataBlock(type: dataBlock.type, data: decrypted)
     }
 
     /// Decrypts data if encryption is available.
