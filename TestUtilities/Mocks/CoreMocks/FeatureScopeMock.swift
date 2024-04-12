@@ -8,18 +8,19 @@ import Foundation
 import DatadogInternal
 
 public class FeatureScopeMock: FeatureScope {
-    struct EventWriterMock: Writer {
+    private struct EventWriterMock: Writer {
         weak var scope: FeatureScopeMock?
+        let bypassConsent: Bool
 
         func write<T, M>(value: T, metadata: M?) where T : Encodable, M : Encodable {
-            scope?.events.append((value, metadata))
+            scope?.events.append((value, metadata, bypassConsent))
         }
     }
 
     @ReadWriteLock
     public var contextMock: DatadogContext
     @ReadWriteLock
-    private var events: [(event: Encodable, metadata: Encodable?)] = []
+    private var events: [(event: Encodable, metadata: Encodable?, bypassConsent: Bool)] = []
     @ReadWriteLock
     private var messages: [FeatureMessage] = []
 
@@ -28,9 +29,9 @@ public class FeatureScopeMock: FeatureScope {
     }
 
     public func eventWriteContext(bypassConsent: Bool, _ block: @escaping (DatadogContext, Writer) -> Void) {
-        block(contextMock, EventWriterMock(scope: self))
+        block(contextMock, EventWriterMock(scope: self, bypassConsent: bypassConsent))
     }
-    
+
     public func context(_ block: @escaping (DatadogContext) -> Void) {
         block(contextMock)
     }
@@ -42,7 +43,7 @@ public class FeatureScopeMock: FeatureScope {
     public func send(message: FeatureMessage, else fallback: @escaping () -> Void) {
         messages.append(message)
     }
-    
+
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         contextMock.baggages[key] = baggage()
     }
@@ -55,6 +56,11 @@ public class FeatureScopeMock: FeatureScope {
     /// Retrieve typed events written through Even Write Context API.
     public func eventsWritten<T>(ofType type: T.Type = T.self) -> [T] where T: Encodable {
         return events.compactMap { $0.event as? T }
+    }
+
+    /// Retrieve typed events written through Even Write Context API with given `bypassConsent` flag.
+    public func eventsWritten<T>(ofType type: T.Type = T.self, withBypassConsent bypassConsent: Bool) -> [T] where T: Encodable {
+        return events.filter { $0.bypassConsent == bypassConsent }.compactMap { $0.event as? T }
     }
 
     /// Retrieve data written in Data Store.

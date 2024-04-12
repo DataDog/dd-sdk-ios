@@ -56,7 +56,7 @@ public enum Trace {
             let urlSessionHandler = TracingURLSessionHandler(
                 tracer: trace.tracer,
                 contextReceiver: trace.contextReceiver,
-                tracingSampler: distributedTraceSampler,
+                distributedTraceSampler: distributedTraceSampler,
                 firstPartyHosts: firstPartyHosts
             )
 

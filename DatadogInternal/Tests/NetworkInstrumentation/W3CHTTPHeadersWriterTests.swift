@@ -8,7 +8,7 @@ import XCTest
 @testable import DatadogInternal
 
 class W3CHTTPHeadersWriterTests: XCTestCase {
-    func testW3CHTTPHeadersWriterwritesSingleHeader() {
+    func testW3CHTTPHeadersWriterWritesSingleHeader() {
         let sampler: Sampler = .mockKeepAll()
         let w3cHTTPHeadersWriter = W3CHTTPHeadersWriter(
             sampler: sampler,
@@ -23,7 +23,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:1")
     }
 
-    func testW3CHTTPHeadersWriterwritesSingleHeaderWithSampling() {
+    func testW3CHTTPHeadersWriterWritesSingleHeaderWithSampling() {
         let sampler: Sampler = .mockRejectAll()
         let w3cHTTPHeadersWriter = W3CHTTPHeadersWriter(
             sampler: sampler,

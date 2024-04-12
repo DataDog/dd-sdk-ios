@@ -8,7 +8,8 @@ import Foundation
 import DatadogInternal
 
 internal class DatadogTracer: OTTracer {
-    internal weak var core: DatadogCoreProtocol?
+    /// Trace feature scope.
+    private let featureScope: FeatureScope
 
     /// Global tags configured for Trace feature.
     let tags: [String: Encodable]
@@ -24,15 +25,16 @@ internal class DatadogTracer: OTTracer {
 
     let activeSpansPool = ActiveSpansPool()
 
-    let sampler: Sampler
+    /// Local trace sampler. Used for spans created with tracer API.
+    let localTraceSampler: Sampler
     /// Creates span events.
     let spanEventBuilder: SpanEventBuilder
 
     // MARK: - Initialization
 
-    init(
+    convenience init(
         core: DatadogCoreProtocol,
-        sampler: Sampler,
+        localTraceSampler: Sampler,
         tags: [String: Encodable],
         traceIDGenerator: TraceIDGenerator,
         spanIDGenerator: SpanIDGenerator,
@@ -40,13 +42,35 @@ internal class DatadogTracer: OTTracer {
         loggingIntegration: TracingWithLoggingIntegration,
         spanEventBuilder: SpanEventBuilder
     ) {
-        self.core = core
+        self.init(
+            featureScope: core.scope(for: TraceFeature.self),
+            localTraceSampler: localTraceSampler,
+            tags: tags,
+            traceIDGenerator: traceIDGenerator,
+            spanIDGenerator: spanIDGenerator,
+            dateProvider: dateProvider,
+            loggingIntegration: loggingIntegration,
+            spanEventBuilder: spanEventBuilder
+        )
+    }
+
+    init(
+        featureScope: FeatureScope,
+        localTraceSampler: Sampler,
+        tags: [String: Encodable],
+        traceIDGenerator: TraceIDGenerator,
+        spanIDGenerator: SpanIDGenerator,
+        dateProvider: DateProvider,
+        loggingIntegration: TracingWithLoggingIntegration,
+        spanEventBuilder: SpanEventBuilder
+    ) {
+        self.featureScope = featureScope
         self.tags = tags
         self.traceIDGenerator = traceIDGenerator
         self.spanIDGenerator = spanIDGenerator
         self.dateProvider = dateProvider
         self.loggingIntegration = loggingIntegration
-        self.sampler = sampler
+        self.localTraceSampler = localTraceSampler
         self.spanEventBuilder = spanEventBuilder
     }
 
@@ -96,10 +120,6 @@ internal class DatadogTracer: OTTracer {
     }
 
     internal func startSpan(spanContext: DDSpanContext, operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
-        guard let core = core else {
-            return DDNoopGlobals.span
-        }
-
         var combinedTags = self.tags
         if let userTags = tags {
             combinedTags.merge(userTags) { $1 }
@@ -108,7 +128,7 @@ internal class DatadogTracer: OTTracer {
         // Initialize `LazySpanWriteContext` here in `startSpan()` so it captures the `DatadogContext` valid
         // for this moment of time. Added in RUM-699 to ensure spans are correctly linked with RUM information
         // available on the caller thread.
-        let writer = LazySpanWriteContext(core: core)
+        let writer = LazySpanWriteContext(featureScope: featureScope)
         let span = DDSpan(
             tracer: self,
             context: spanContext,
@@ -134,7 +154,7 @@ internal class DatadogTracer: OTTracer {
     private func updateCoreAttributes() {
         let context = activeSpan?.context as? DDSpanContext
 
-        core?.set(
+        featureScope.set(
             baggage: context.map {
                 SpanCoreContext(
                     traceID: String($0.traceID, representation: .hexadecimal),

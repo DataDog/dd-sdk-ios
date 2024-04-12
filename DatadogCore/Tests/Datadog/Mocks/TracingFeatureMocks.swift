@@ -112,7 +112,7 @@ extension DatadogTracer {
 
     static func mockWith(
         core: DatadogCoreProtocol,
-        sampler: Sampler = .mockKeepAll(),
+        localTraceSampler: Sampler = .mockKeepAll(),
         tags: [String: Encodable] = [:],
         traceIDGenerator: TraceIDGenerator = DefaultTraceIDGenerator(),
         spanIDGenerator: SpanIDGenerator = DefaultSpanIDGenerator(),
@@ -122,7 +122,7 @@ extension DatadogTracer {
     ) -> DatadogTracer {
         return DatadogTracer(
             core: core,
-            sampler: sampler,
+            localTraceSampler: localTraceSampler,
             tags: tags,
             traceIDGenerator: traceIDGenerator,
             spanIDGenerator: spanIDGenerator,

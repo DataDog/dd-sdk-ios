@@ -36,7 +36,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ])
@@ -45,6 +45,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func tearDown() {
         core = nil
+        tracer = nil
+        handler = nil
         super.tearDown()
     }
 

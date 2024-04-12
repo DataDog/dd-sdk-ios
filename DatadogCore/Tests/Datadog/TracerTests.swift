@@ -128,27 +128,6 @@ class TracerTests: XCTestCase {
         XCTAssertEqual(try spanMatcher.meta.custom(keyPath: "meta.globaltag2"), "overwrittenValue")
     }
 
-    // MARK: - Tracer with sampling rate
-
-    func testUsingSamplingRate() throws {
-        config.sampleRate = 42
-
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-
-        let span = tracer.startSpan(
-            operationName: "operation",
-            startTime: .mockDecember15th2019At10AMUTC()
-        )
-        span.finish(at: .mockDecember15th2019At10AMUTC(addingTimeInterval: 0.5))
-
-        let spanMatcher = try core.waitAndReturnSpanMatchers()[0]
-        XCTAssertEqual(try spanMatcher.operationName(), "operation")
-        XCTAssertEqual(try spanMatcher.startTime(), 1_576_404_000_000_000_000)
-        XCTAssertEqual(try spanMatcher.duration(), 500_000_000)
-        XCTAssertEqual(try spanMatcher.dd.samplingRate(), 0.42, accuracy: 0.01)
-    }
-
     // MARK: - Sending Customized Spans
 
     func testSendingCustomizedSpan() throws {

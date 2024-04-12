@@ -56,7 +56,7 @@ public struct SpanEvent: Encodable {
     internal let source: String
     /// The origin for the Span, it is used to label the spans used created under testing
     internal let origin: String?
-    /// The sampling rate for the span (between 0 and 100)
+    /// The sampling rate for the span (between 0 and 1)
     internal let samplingRate: Float
     /// If the span is kept according to sampling rules
     internal let isKept: Bool
