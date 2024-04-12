@@ -5,8 +5,10 @@
  */
 
 import Foundation
-import UIKit
 import XCTest
+import UIKit
+import WebKit
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -35,7 +37,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
             resources: .mockRandom(count: .random(in: (5..<50))),
-            webviews: .mockRandom(count: .random(in: (5..<50)))
+            webViewSlotIDs: .mockRandom()
         )
     }
 
@@ -45,7 +47,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny(),
         resources: [Resource] = .mockAny(),
-        webviews: [Int: WebViewSlot] = .mockAny()
+        webViewSlotIDs: Set<Int> = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
@@ -53,7 +55,7 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             viewportSize: viewportSize,
             nodes: nodes,
             resources: resources,
-            webviews: webviews
+            webViewSlotIDs: webViewSlotIDs
         )
     }
 }
@@ -310,40 +312,6 @@ extension Array where Element == Resource {
     }
 }
 
-struct WebViewSlotMock: WebViewSlot, AnyMockable, RandomMockable {
-    let id: Int
-    let shouldPurge: Bool
-
-    init(id: Int, shouldPurge: Bool = false) {
-        self.id = id
-        self.shouldPurge = shouldPurge
-    }
-
-    func purge() -> WebViewSlot? { shouldPurge ? nil : self }
-
-    static func mockAny() -> WebViewSlotMock {
-        .mockWith()
-    }
-
-    static func mockWith(id: Int = .mockAny()) -> WebViewSlotMock {
-        WebViewSlotMock(id: id)
-    }
-
-    static func mockRandom() -> WebViewSlotMock {
-        WebViewSlotMock(id: .mockRandom())
-    }
-}
-
-extension Dictionary where Key == Int, Value == WebViewSlot {
-    static func mockAny() -> [Int: WebViewSlot] {
-        return [Int: WebViewSlotMock].mockAny()
-    }
-
-    public static func mockRandom(count: Int = 1) -> Dictionary {
-        return (0..<count).reduce(into: [:]) { dict, _ in dict[.mockRandom()] = WebViewSlotMock.mockRandom() }
-    }
-}
-
 extension SpecificElement {
     static func mockAny() -> SpecificElement {
         SpecificElement(subtreeStrategy: .mockRandom(), nodes: [])
@@ -382,7 +350,7 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
             ids: NodeIDGenerator(),
-            webviewCache: WebViewSlotCache()
+            webViewCache: .weakObjects()
         )
     }
 
@@ -390,13 +358,13 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
         ids: NodeIDGenerator = NodeIDGenerator(),
-        webviewCache: WebViewSlotCache = WebViewSlotCache()
+        webViewCache: NSHashTable<WKWebView> = .weakObjects()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
             ids: ids,
-            webviewCache: webviewCache
+            webViewCache: webViewCache
         )
     }
 }

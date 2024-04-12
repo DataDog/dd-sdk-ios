@@ -737,7 +737,6 @@
 		D23354FD2A42E32000AFCAE2 /* InternalExtended.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */; };
 		D234613128B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
 		D234613228B7713000055D4C /* FeatureContextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D234613028B7712F00055D4C /* FeatureContextTests.swift */; };
-		D23BFFEE2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D23BFFED2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift */; };
 		D23F8E5229DDCD28001CFAE8 /* UIViewControllerHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F3CDA2251118FB00C816E5 /* UIViewControllerHandler.swift */; };
 		D23F8E5329DDCD28001CFAE8 /* RUMCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */; };
 		D23F8E5429DDCD28001CFAE8 /* ValuePublisher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611529A425E3DD51004F740E /* ValuePublisher.swift */; };
@@ -949,7 +948,6 @@
 		D270CDE12B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */; };
 		D2777D9D29F6A75800FFBB40 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2777D9C29F6A75800FFBB40 /* TelemetryReceiverTests.swift */; };
 		D2777D9E29F6A75800FFBB40 /* TelemetryReceiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2777D9C29F6A75800FFBB40 /* TelemetryReceiverTests.swift */; };
-		D27B8A402BB171BA0031D37E /* WebViewSlotCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27B8A3F2BB171BA0031D37E /* WebViewSlotCache.swift */; };
 		D27CBD9A2BB5DBBB00C766AA /* Mocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = D27CBD992BB5DBBB00C766AA /* Mocks.swift */; };
 		D27D81C12A5D415200281CC2 /* CrashReporter.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 614ED36B260352DC00C8C519 /* CrashReporter.xcframework */; };
 		D27D81C22A5D415200281CC2 /* DatadogCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61B7885425C180CB002675B5 /* DatadogCrashReporting.framework */; };
@@ -2591,7 +2589,6 @@
 		D23354FB2A42E32000AFCAE2 /* InternalExtended.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InternalExtended.swift; sourceTree = "<group>"; };
 		D234613028B7712F00055D4C /* FeatureContextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureContextTests.swift; sourceTree = "<group>"; };
 		D236BE2729520FED00676E67 /* CrashReportReceiver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrashReportReceiver.swift; sourceTree = "<group>"; };
-		D23BFFED2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSlotCacheTests.swift; sourceTree = "<group>"; };
 		D23F8E9929DDCD28001CFAE8 /* DatadogRUM.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DatadogRUM.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D23F8ECD29DDCD38001CFAE8 /* DatadogRUMTests tvOS.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "DatadogRUMTests tvOS.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D240684D27CE6C9E00C04F44 /* Example tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Example tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2656,7 +2653,6 @@
 		D270CDDC2B46E3DB0002EACD /* URLSessionDataDelegateSwizzler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzler.swift; sourceTree = "<group>"; };
 		D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = URLSessionDataDelegateSwizzlerTests.swift; sourceTree = "<group>"; };
 		D2777D9C29F6A75800FFBB40 /* TelemetryReceiverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryReceiverTests.swift; sourceTree = "<group>"; };
-		D27B8A3F2BB171BA0031D37E /* WebViewSlotCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSlotCache.swift; sourceTree = "<group>"; };
 		D27CBD992BB5DBBB00C766AA /* Mocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Mocks.swift; sourceTree = "<group>"; };
 		D286626D2A43487500852CE3 /* Datadog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Datadog.swift; sourceTree = "<group>"; };
 		D28F836729C9E71C00EF8EA2 /* DDSpanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDSpanTests.swift; sourceTree = "<group>"; };
@@ -3281,7 +3277,6 @@
 				61054E372A6EE10A00AAA894 /* ViewAttributes+Copy.swift */,
 				61054E382A6EE10A00AAA894 /* ViewTreeRecordingContext.swift */,
 				61054E392A6EE10A00AAA894 /* NodeIDGenerator.swift */,
-				D27B8A3F2BB171BA0031D37E /* WebViewSlotCache.swift */,
 				61054E272A6EE10A00AAA894 /* NodeRecorders */,
 			);
 			path = ViewTreeSnapshot;
@@ -3554,7 +3549,6 @@
 				61054F662A6EE1BA00AAA894 /* ViewTreeRecordingContextTests.swift */,
 				61054F672A6EE1BA00AAA894 /* ViewTreeSnapshotBuilderTests.swift */,
 				61054F682A6EE1BA00AAA894 /* NodeIDGeneratorTests.swift */,
-				D23BFFED2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift */,
 				61054F692A6EE1BA00AAA894 /* NodeRecorders */,
 				61054F792A6EE1BA00AAA894 /* ViewTreeRecorderTests.swift */,
 				61054F7A2A6EE1BA00AAA894 /* ViewTreeSnapshotTests.swift */,
@@ -7770,7 +7764,6 @@
 				61054E962A6EE10A00AAA894 /* Diff+SRWireframes.swift in Sources */,
 				D22C5BD02A98A6660024CC1F /* Baggages.swift in Sources */,
 				61054E902A6EE10A00AAA894 /* SegmentJSON.swift in Sources */,
-				D27B8A402BB171BA0031D37E /* WebViewSlotCache.swift in Sources */,
 				61054E672A6EE10A00AAA894 /* Recorder.swift in Sources */,
 				61054E6B2A6EE10A00AAA894 /* CFType+Safety.swift in Sources */,
 				61054E852A6EE10A00AAA894 /* UISegmentRecorder.swift in Sources */,
@@ -7893,7 +7886,6 @@
 				D2056C212BBFE05A0085BC76 /* WireframesBuilderTests.swift in Sources */,
 				61054F992A6EE1BA00AAA894 /* ColorsTests.swift in Sources */,
 				61054FBF2A6EE1BA00AAA894 /* UIPickerViewRecorderTests.swift in Sources */,
-				D23BFFEE2BBECA1C00ED6DD6 /* WebViewSlotCacheTests.swift in Sources */,
 				61054FAE2A6EE1BA00AAA894 /* TouchIdentifierGeneratorTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

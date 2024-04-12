@@ -27,8 +27,8 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
     /// An array of resource references recorded for this snapshot - sequenced in DFS order.
     let resources: [Resource]
-    /// An array of webview nodes recorded for this and past snapshots.
-    let webviews: [Int: WebViewSlot]
+    /// A set of webview slot IDs recorded for this and past snapshots.
+    let webViewSlotIDs: Set<Int>
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes
@@ -68,21 +68,6 @@ public protocol SessionReplayResource {
 
 /// This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias Resource = SessionReplayResource
-
-/// An individual webview slots in `ViewTreeSnapshot`. A `WebViewSlot` describes a single webview
-/// identified by a slot id.
-internal protocol WebViewSlot {
-    /// The slot id.
-    var id: Int { get }
-
-    /// Purge the webview slot.
-    ///
-    /// The slot will be purged before recording a snapshot, the implementation
-    /// must return `nil` if the webview was deallocated.
-    ///
-    /// - Returns: The remaining slot or `nil` if deallocated.
-    func purge() -> WebViewSlot?
-}
 
 /// Attributes of the `UIView` that the node was created for.
 ///

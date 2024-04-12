@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import UIKit
+import WebKit
 
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
@@ -16,8 +17,8 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
-    /// The webview slots caching.
-    let webviewCache = WebViewSlotCache()
+    /// The webviews cache.
+    let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -27,15 +28,11 @@ internal struct ViewTreeSnapshotBuilder {
     /// are computed relatively to the `rootView` (e.g. the `x` and `y` position of all descendant nodes  is given
     /// as its position in the root, no matter of nesting level).
     func createSnapshot(of rootView: UIView, with recorderContext: Recorder.Context) -> ViewTreeSnapshot {
-        // Purge the webviews cache before taking snapshot.
-        // It will remove deallocated webview slots
-        webviewCache.purge()
-
         let context = ViewTreeRecordingContext(
             recorder: recorderContext,
             coordinateSpace: rootView,
             ids: idsGenerator,
-            webviewCache: webviewCache
+            webViewCache: webViewCache
         )
         let recording = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
@@ -44,7 +41,7 @@ internal struct ViewTreeSnapshotBuilder {
             viewportSize: rootView.bounds.size,
             nodes: recording.nodes,
             resources: recording.resources,
-            webviews: webviewCache.slots
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
         return snapshot
     }

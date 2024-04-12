@@ -12,10 +12,10 @@ import TestUtilities
 
 class WireframesBuilderTests: XCTestCase {
     func testBuildingVisibleWebVieWireframes_ItRemovesSlotFromCache() {
-        let slots: [Int: WebViewSlot] = .mockRandom(count: 10)
-        let builder = WireframesBuilder(webviews: slots)
+        let slots: Set<Int> = .mockRandom(count: 10)
+        let builder = WireframesBuilder(webViewSlotIDs: slots)
 
-        slots.keys.forEach { id in
+        slots.forEach { id in
             let frame: CGRect = .mockRandom()
             let wireframe = builder.visibleWebViewWireframe(id: id, frame: frame)
             guard case let .webviewWireframe(wireframe) = wireframe else {
@@ -38,8 +38,8 @@ class WireframesBuilderTests: XCTestCase {
     }
 
     func testBuildingHiddenWebVieWireframes_ItRemovesSlotFromCache() {
-        let slots: [Int: WebViewSlot] = .mockRandom(count: 10)
-        let builder = WireframesBuilder(webviews: slots)
+        let slots: Set<Int> = .mockRandom(count: 10)
+        let builder = WireframesBuilder(webViewSlotIDs: slots)
 
         builder.hiddenWebViewWireframes().forEach { wireframe in
             guard case let .webviewWireframe(wireframe) = wireframe else {

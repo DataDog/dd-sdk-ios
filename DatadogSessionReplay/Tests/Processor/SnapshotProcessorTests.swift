@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import WebKit
 import DatadogInternal
 import TestUtilities
 
@@ -201,7 +202,6 @@ class SnapshotProcessorTests: XCTestCase {
         // Given
         let core = PassthroughCoreMock()
         let srContextPublisher = SRContextPublisher(core: core)
-        let webviewCache = WebViewSlotCache()
         let processor = SnapshotProcessor(
             queue: NoQueue(),
             recordWriter: recordWriter,
@@ -209,22 +209,19 @@ class SnapshotProcessorTests: XCTestCase {
             telemetry: TelemetryMock()
         )
 
-        let hiddenSlot = WebViewSlotMock.mockWith(id: .mockRandom())
-        let visibleSlot = WebViewSlotMock.mockWith(id: .mockRandom())
-        let builder = WKWebViewWireframesBuilder(slot: visibleSlot, attributes: .mockAny())
+        let hiddenSlot: Int = .mockRandom()
+        let visibleSlot: Int = .mockRandom(otherThan: [hiddenSlot])
+        let builder = WKWebViewWireframesBuilder(slotID: visibleSlot, attributes: .mockAny())
         let node = Node(viewAttributes: .mockAny(), wireframesBuilder: builder)
 
         // When
-        webviewCache.update(hiddenSlot)
-        webviewCache.update(visibleSlot)
-
         let snapshot = ViewTreeSnapshot(
             date: time,
             context: .init(privacy: .allow, rumContext: rum, date: time),
             viewportSize: .mockRandom(minWidth: 1_000, minHeight: 1_000),
             nodes: [node],
             resources: [],
-            webviews: webviewCache.slots
+            webViewSlotIDs: Set([hiddenSlot, visibleSlot])
         )
 
         processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
@@ -242,8 +239,8 @@ class SnapshotProcessorTests: XCTestCase {
         let fullSnapshotRecord = try XCTUnwrap(enrichedRecord.records[2].fullSnapshot)
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.count, 2)
 
-        XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(hiddenSlot.id), "The hidden webview wireframe should be first")
-        XCTAssertEqual(fullSnapshotRecord.data.wireframes.last?.id, Int64(visibleSlot.id), "The visible webview wireframe should be last")
+        XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(hiddenSlot), "The hidden webview wireframe should be first")
+        XCTAssertEqual(fullSnapshotRecord.data.wireframes.last?.id, Int64(visibleSlot), "The visible webview wireframe should be last")
     }
 
     func testWhenProcessingViewTreeSnapshot_itIncludeWebViewSlotFromCache() throws {
@@ -260,11 +257,11 @@ class SnapshotProcessorTests: XCTestCase {
             telemetry: TelemetryMock()
         )
 
-        let webviewSlot = WebViewSlotMock(id: .mockAny())
+        let webview = WKWebView()
         let viewTree = generateSimpleViewTree()
 
         // When
-        snapshotBuilder.webviewCache.update(webviewSlot)
+        snapshotBuilder.webViewCache.add(webview)
         let snapshot = generateViewTreeSnapshot(for: viewTree, date: time, rumContext: rum)
         processor.process(viewTreeSnapshot: snapshot, touchSnapshot: nil)
 
@@ -280,7 +277,7 @@ class SnapshotProcessorTests: XCTestCase {
         XCTAssertTrue(enrichedRecord.records[2].isFullSnapshotRecord)
         let fullSnapshotRecord = try XCTUnwrap(enrichedRecord.records[2].fullSnapshot)
         XCTAssertEqual(fullSnapshotRecord.data.wireframes.count, 3)
-        XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(webviewSlot.id), "The hidden webview wireframe should be first")
+        XCTAssertEqual(fullSnapshotRecord.data.wireframes.first?.id, Int64(webview.hash), "The hidden webview wireframe should be first")
     }
 
     // MARK: - Processing `TouchSnapshots`

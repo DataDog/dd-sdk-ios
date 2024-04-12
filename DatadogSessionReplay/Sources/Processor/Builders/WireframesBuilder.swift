@@ -20,18 +20,18 @@ public typealias WireframeID = NodeID
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
 @_spi(Internal)
 public class SessionReplayWireframesBuilder {
-    /// The cache of webview slots in memory during snapshot.
-    private var webviews: [Int: WebViewSlot]
+    /// The cache of webview slot IDs in memory during snapshot.
+    private var webViewSlotIDs: Set<Int>
 
     /// Creates a builder for builder wireframes in snapshot processing.
     ///
-    /// The builder takes optional webview slots in cache that can be updated
+    /// The builder takes optional webview slot IDs in cache that can be updated
     /// while traversing the node. The cache will be used to create wireframes
     /// that are not visible be still need to be kept by the player.
     ///
-    /// - Parameter webviews: The webview slot cache.
-    init(webviews: [Int: WebViewSlot] = [:]) {
-        self.webviews = webviews
+    /// - Parameter webviewSlotIDs: The webview slot IDs in memory during snapshot.
+    init(webViewSlotIDs: Set<Int> = []) {
+        self.webViewSlotIDs = webViewSlotIDs
     }
 }
 
@@ -219,21 +219,21 @@ extension SessionReplayWireframesBuilder {
 
         /// Remove the slot from the builder because a wireframe
         /// has been created.
-        webviews.removeValue(forKey: id)
+        webViewSlotIDs.remove(id)
         return .webviewWireframe(value: wireframe)
     }
 
     internal func hiddenWebViewWireframes() -> [SRWireframe] {
-        defer { webviews.removeAll() }
-        return webviews.values.map { slot in
+        defer { webViewSlotIDs.removeAll() }
+        return webViewSlotIDs.map { id in
             let wireframe = SRWebviewWireframe(
                 border: nil,
                 clip: nil,
                 height: 0,
-                id: Int64(slot.id),
+                id: Int64(id),
                 isVisible: false,
                 shapeStyle: nil,
-                slotId: String(slot.id),
+                slotId: String(id),
                 width: 0,
                 x: 0,
                 y: 0

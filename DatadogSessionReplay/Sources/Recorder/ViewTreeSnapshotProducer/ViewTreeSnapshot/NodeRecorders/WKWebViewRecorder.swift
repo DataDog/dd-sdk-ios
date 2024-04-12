@@ -12,45 +12,22 @@ internal class WKWebViewRecorder: NodeRecorder {
     let identifier = UUID()
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard let webview = view as? WKWebView else {
+        guard let webView = view as? WKWebView else {
             return nil
         }
 
-        // Record all webviews regardless of their visibility
-        let slot = WKWebViewSlot(webview: webview)
-        // Add or update the webview slot in cache
-        context.webviewCache.update(slot)
+        // Add the webview to cache
+        context.webViewCache.add(webView)
 
-        let builder = WKWebViewWireframesBuilder(slot: slot, attributes: attributes)
+        let builder = WKWebViewWireframesBuilder(slotID: webView.hash, attributes: attributes)
         let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
         return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
-/// The slot recorded for a `WKWebView`.
-internal struct WKWebViewSlot: WebViewSlot {
-    /// Weak reference to the web view represented by this slot.
-    ///
-    /// If the webview become `nil`, the slot will diseappear at the
-    /// next recording cycle during `reset`
-    weak var webview: WKWebView?
-
-    /// The slot id.
-    let id: Int
-
-    init(webview: WKWebView) {
-        self.webview = webview
-        self.id = webview.hash
-    }
-
-    func purge() -> WebViewSlot? {
-        webview.map(WKWebViewSlot.init(webview:))
-    }
-}
-
 internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
-    /// The webview slot.
-    let slot: WebViewSlot
+    /// The webview slot ID.
+    let slotID: Int
 
     let attributes: ViewAttributes
 
@@ -65,7 +42,7 @@ internal struct WKWebViewWireframesBuilder: NodeWireframesBuilder {
 
         return [
             builder.visibleWebViewWireframe(
-                id: slot.id,
+                id: slotID,
                 frame: attributes.frame,
                 borderColor: attributes.layerBorderColor,
                 borderWidth: attributes.layerBorderWidth,

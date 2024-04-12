@@ -174,6 +174,10 @@ extension Set: RandomMockable where Element: RandomMockable {
     public static func mockRandom() -> Set<Element> {
         return Set([Element].mockRandom())
     }
+
+    public static func mockRandom(count: Int) -> Set<Element> {
+        return Set([Element].mockRandom(count: count))
+    }
 }
 
 extension Date: AnyMockable, RandomMockable {

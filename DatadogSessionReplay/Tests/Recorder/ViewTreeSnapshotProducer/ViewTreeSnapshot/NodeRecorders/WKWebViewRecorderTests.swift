@@ -59,12 +59,12 @@ class WKWebViewRecorderTests: XCTestCase {
     func testVisibleWebViewSlot() throws {
         // Given
         let attributes: ViewAttributes = .mock(fixture: .visible())
-        let slot = WKWebViewSlot(webview: webView)
+        let slotID = webView.hash
 
-        let builder = WireframesBuilder(webviews: [slot.id: slot])
+        let builder = WireframesBuilder(webViewSlotIDs: [slotID])
 
         // When
-        let wireframes = WKWebViewWireframesBuilder(slot: slot, attributes: attributes)
+        let wireframes = WKWebViewWireframesBuilder(slotID: webView.hash, attributes: attributes)
             .buildWireframes(with: builder)
 
         // Then
@@ -84,20 +84,4 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertTrue(wireframe.isVisible ?? false)
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
     }
-
-// This test should pass but it doesn't because `WKWebView` apparently leaks.
-//
-//    func testDeallocatedWebViewSlot() throws {
-//        var slot: WebViewSlot? = WKWebViewSlot(webview: webView)
-//        slot = slot?.reset()
-//        XCTAssertNotNil(slot)
-//
-//        autoreleasepool {
-//            let webView = WKWebView()
-//            slot = WKWebViewSlot(webview: webView)
-//        }
-//
-//        slot = slot?.reset()
-//        XCTAssertNil(slot)
-//    }
 }
