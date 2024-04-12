@@ -13,9 +13,9 @@ import OpenTelemetryApi
 
 class OTelTraceIdDatadogTests: XCTestCase {
     func testToDatadog() {
-        let otelId = TraceId.random()
+        let otelId = TraceId(idHi: 1, idLo: 2)
         let ddId = otelId.toDatadog()
-        XCTAssertEqual(otelId.idLo, ddId.idLo)
-        XCTAssertEqual(otelId.idHi, ddId.idHi)
+        XCTAssertEqual(1, ddId.idHi)
+        XCTAssertEqual(2, ddId.idLo)
     }
 }

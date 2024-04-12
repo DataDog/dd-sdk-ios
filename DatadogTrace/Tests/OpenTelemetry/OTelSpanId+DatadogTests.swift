@@ -13,8 +13,8 @@ import OpenTelemetryApi
 
 class OTelSpanIdDatadogTests: XCTestCase {
     func testToDatadog() {
-        let otelId = SpanId.random()
+        let otelId = SpanId(id: 1)
         let ddId = otelId.toDatadog()
-        XCTAssertEqual(otelId.rawValue, ddId.rawValue)
+        XCTAssertEqual(1, ddId.rawValue)
     }
 }
