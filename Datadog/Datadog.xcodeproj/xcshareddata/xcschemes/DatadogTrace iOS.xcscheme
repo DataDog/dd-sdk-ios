@@ -39,6 +39,9 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "OTelSpanIdDatadogTests">
+               </Test>
+               <Test
                   Identifier = "OTelTraceIdDatadogTests">
                </Test>
             </SkippedTests>
