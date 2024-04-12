@@ -241,7 +241,7 @@ internal struct LogEventEncoder {
             try container.encode(someError.sourceType, forKey: .errorSourceType)
             try container.encode(someError.fingerprint, forKey: .errorFingerprint)
             if let binaryImages = someError.binaryImages {
-                try container.encode(someError.binaryImages, forKey: .errorBinaryImages)
+                try container.encode(binaryImages, forKey: .errorBinaryImages)
             }
         }
 

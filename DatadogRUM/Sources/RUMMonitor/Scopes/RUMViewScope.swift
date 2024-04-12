@@ -554,10 +554,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
-        if let addBinaryImages = commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) {
+        if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) != nil {
             // Don't try to get binary images if we already have them.
             if binaryImages == nil {
-                // TODO: RUM-000 Replace full backtrace reporter with simpler binary image fetcher
+                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
                 binaryImages = try? dependencies.backtraceReporter?.generateBacktrace()?.binaryImages.compactMap { $0.toRUMDataFormat }
             }
         }

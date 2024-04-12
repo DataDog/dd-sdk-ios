@@ -260,6 +260,38 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
     }
 
+    func testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent() throws {
+        let stubBacktrace: BacktraceReport = .mockRandom()
+        let logsFeature = LogsFeature.mockWith(
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
+        )
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertNil(log.attributes.userAttributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertNotNil(log.error?.binaryImages)
+        XCTAssertEqual(log.error?.binaryImages, stubBacktrace.binaryImages)
+    }
+
     // MARK: - RUM Integration
 
     func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {

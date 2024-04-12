@@ -67,7 +67,8 @@ internal struct LogEventBuilder {
                     message: $0.message,
                     stack: $0.stack,
                     sourceType: $0.sourceType,
-                    fingerprint: errorFingerprint
+                    fingerprint: errorFingerprint,
+                    binaryImages: binaryImages
                 )
             },
             serviceName: service,

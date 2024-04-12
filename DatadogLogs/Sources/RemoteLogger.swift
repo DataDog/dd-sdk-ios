@@ -100,7 +100,9 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        let globalAttributes = self.core?.get(feature: LogsFeature.self)?.getAttributes()
+        let logsFeature = self.core?.get(feature: LogsFeature.self)
+
+        let globalAttributes = logsFeature?.getAttributes()
 
         // on user thread:
         let date = dateProvider.now
@@ -111,6 +113,7 @@ internal final class RemoteLogger: LoggerProtocol {
         var logAttributes = attributes
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
         let errorFingerprint = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint) as? String
+        let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) as? Bool ?? false
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
         let combinedAttributes: [String: any Encodable]
@@ -153,9 +156,9 @@ internal final class RemoteLogger: LoggerProtocol {
 
             // When binary images are requested, add them
             var binaryImages: [BinaryImage]?
-            if let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) {
-                // Don't try to get binary images if we already have them.
-                binaryImages = try? self.core?.backtraceReporter.generateBacktrace()?.binaryImages
+            if addBinaryImages {
+                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
+                binaryImages = try? logsFeature?.backtraceReporter?.generateBacktrace()?.binaryImages
             }
 
             let builder = LogEventBuilder(
@@ -186,6 +189,13 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
+                // Bit of a hack - add the `includeBinaryImages` attribute back in if it was in the original log
+                // TODO: RUM-4072 This double generates a backtrace - this should be optimized to use cached binary images instead
+                var rumAttributes: [String: Encodable] = combinedAttributes
+                if addBinaryImages {
+                    rumAttributes[CrossPlatformAttributes.includeBinaryImages] = true
+                }
+
                 self.core?.send(
                     message: .baggage(
                         key: ErrorMessage.key,
@@ -193,7 +203,7 @@ internal final class RemoteLogger: LoggerProtocol {
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(combinedAttributes)
+                            attributes: .init(rumAttributes)
                         )
                     )
                 )
