@@ -196,6 +196,7 @@ extension SRWebviewWireframe: MutableWireframe {
                 clip: use(clip, ifDifferentThan: other.clip),
                 height: use(height, ifDifferentThan: other.height),
                 id: id,
+                isVisible: use(isVisible, ifDifferentThan: other.isVisible),
                 shapeStyle: use(shapeStyle, ifDifferentThan: other.shapeStyle),
                 slotId: slotId,
                 width: use(width, ifDifferentThan: other.width),
