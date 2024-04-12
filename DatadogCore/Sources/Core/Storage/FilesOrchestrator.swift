@@ -137,9 +137,9 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     func getReadableFiles(excludingFilesNamed excludedFileNames: Set<String> = [], limit: Int = .max) -> [ReadableFile] {
         do {
             let filesFromOldest = try directory.files()
-                .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
-                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.creationDate) }
-                .sorted(by: { $0.creationDate < $1.creationDate })
+                .map { (file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
+                .compactMap { try deleteFileIfItsObsolete(file: $0.file, fileCreationDate: $0.fileCreationDate) }
+                .sorted(by: { $0.fileCreationDate < $1.fileCreationDate })
 
             if ignoreFilesAgeWhenReading {
                 return filesFromOldest
@@ -149,7 +149,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
 
             let filtered = filesFromOldest
                 .filter {
-                    let fileAge = dateProvider.now.timeIntervalSince($0.creationDate)
+                    let fileAge = dateProvider.now.timeIntervalSince($0.fileCreationDate)
                     return excludedFileNames.contains($0.file.name) == false && fileAge >= performance.minFileAgeForRead
                 }
             return filtered
@@ -178,8 +178,8 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Removes oldest files from the directory if it becomes too big.
     private func purgeFilesDirectoryIfNeeded() throws {
         let filesSortedByCreationDate = try directory.files()
-            .map { (file: $0, creationDate: fileCreationDateFrom(fileName: $0.name)) }
-            .sorted { $0.creationDate < $1.creationDate }
+            .map { (file: $0, fileCreationDate: fileCreationDateFrom(fileName: $0.name)) }
+            .sorted { $0.fileCreationDate < $1.fileCreationDate }
 
         var filesWithSizeSortedByCreationDate = try filesSortedByCreationDate
             .map { (file: $0.file, size: try $0.file.size()) }
@@ -199,7 +199,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         }
     }
 
-    private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date) throws -> (file: File, creationDate: Date)? {
+    private func deleteFileIfItsObsolete(file: File, fileCreationDate: Date) throws -> (file: File, fileCreationDate: Date)? {
         let fileAge = dateProvider.now.timeIntervalSince(fileCreationDate)
 
         if fileAge > performance.maxFileAgeForRead {
@@ -207,7 +207,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
             sendBatchDeletedMetric(batchFile: file, deletionReason: .obsolete)
             return nil
         } else {
-            return (file: file, creationDate: fileCreationDate)
+            return (file: file, fileCreationDate: fileCreationDate)
         }
     }
 
