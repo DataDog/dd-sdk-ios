@@ -16,11 +16,13 @@ internal protocol ResourcesWriting {
 
 internal class ResourcesWriter: ResourcesWriting {
     private let scope: FeatureScope
+    private let encoder: JSONEncoder
+    private let decoder: JSONDecoder
 
     @ReadWriteLock
     private var knownIdentifiers = Set<String>() {
         didSet {
-            if let knownIdentifiers = knownIdentifiers.asData() {
+            if let knownIdentifiers = knownIdentifiers.asData(encoder) {
                 scope.dataStore.setValue(
                     knownIdentifiers,
                     forKey: Constants.knownResourcesKey
@@ -31,10 +33,13 @@ internal class ResourcesWriter: ResourcesWriting {
 
     init(
         scope: FeatureScope,
-        dataStoreResetTime: TimeInterval = TimeInterval(30).days
+        dataStoreResetTime: TimeInterval = TimeInterval(30).days,
+        encoder: JSONEncoder = JSONEncoder(),
+        decoder: JSONDecoder = JSONDecoder()
     ) {
         self.scope = scope
-
+        self.encoder = encoder
+        self.decoder = decoder
         self.scope.dataStore.value(forKey: Constants.storeCreationKey) { [weak self]  result in
             do {
                 if let storeCreation = try result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
@@ -42,7 +47,7 @@ internal class ResourcesWriter: ResourcesWriting {
                         switch result {
                         case .value(let data, _):
                             do {
-                                if let knownIdentifiers = try data.asKnownIdentifiers() {
+                                if let knownIdentifiers = try data.asKnownIdentifiers(decoder) {
                                     self?.knownIdentifiers.formUnion(knownIdentifiers)
                                 }
                             } catch let error {
@@ -99,8 +104,8 @@ extension Data {
         return value
     }
 
-    func asKnownIdentifiers() throws -> Set<String>? {
-        return try JSONDecoder().decode(Set<String>.self, from: self)
+    func asKnownIdentifiers(_ decoder: JSONDecoder) throws -> Set<String>? {
+        return try decoder.decode(Set<String>.self, from: self)
     }
 }
 
@@ -113,8 +118,8 @@ extension TimeInterval {
 }
 
 extension Set<String> {
-    func asData() -> Data? {
-        return try? JSONEncoder().encode(self) // Never fails
+    func asData(_ encoder: JSONEncoder) -> Data? {
+        return try? encoder.encode(self) // Never fails
     }
 }
 #endif

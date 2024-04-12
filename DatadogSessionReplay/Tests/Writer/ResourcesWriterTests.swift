@@ -25,8 +25,8 @@ class ResourcesWriterTests: XCTestCase {
     }
 
     func testWhenInitialized_itSetsUpDataStore() {
-        XCTAssertNotNil(scopeMock.dataStoreMock.values[ResourcesWriter.Constants.storeCreationKey])
-        XCTAssertNil(scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey])
+        XCTAssertNotNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.storeCreationKey))
+        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey))
         XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
     }
 
@@ -43,7 +43,7 @@ class ResourcesWriterTests: XCTestCase {
 
     func test_whenWritesSameResourcesToCore_itRemovesDuplicates() throws {
         // Given
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.storeCreationKey] = Date().timeIntervalSince1970.asData()
+        scopeMock.dataStoreMock.setValue(Date().timeIntervalSince1970.asData(), forKey: ResourcesWriter.Constants.storeCreationKey)
 
         // When
         writer.write(resources: [.mockWith(identifier: "1")])
@@ -52,14 +52,15 @@ class ResourcesWriterTests: XCTestCase {
         // Then
         XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 1)
         XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
-        let data = try XCTUnwrap(scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey])
+        let data = try XCTUnwrap(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey)?.data())
         XCTAssertGreaterThan(data.count, 0)
     }
 
     func test_whenReadsKnownDuplicates_itDoesNotWriteRecordsToScope() throws {
         // Given
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey] = Set(["1"]).asData()
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.storeCreationKey] = Date().timeIntervalSince1970.asData()
+        let knownIdentifiersData = Set(["1"]).asData(JSONEncoder())!
+        scopeMock.dataStoreMock.setValue(knownIdentifiersData, forKey: ResourcesWriter.Constants.knownResourcesKey)
+        scopeMock.dataStoreMock.setValue(Date().timeIntervalSince1970.asData(), forKey: ResourcesWriter.Constants.storeCreationKey)
         let writer = ResourcesWriter(scope: scopeMock)
 
         // When
@@ -72,23 +73,32 @@ class ResourcesWriterTests: XCTestCase {
 
     func test_whenDataStoreIsOlderThan30Days_itClearsKnownDuplicates() throws {
         // Given
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey] = Set(["2", "1"]).asData()
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.storeCreationKey] = (Date().timeIntervalSince1970 - 31.days).asData()
+        let knownIdentifiersData = Set(["2", "1"]).asData(JSONEncoder())!
+        scopeMock.dataStoreMock.setValue(knownIdentifiersData, forKey: ResourcesWriter.Constants.knownResourcesKey)
+        scopeMock.dataStoreMock.setValue(
+            (Date().timeIntervalSince1970 - 31.days).asData(),
+            forKey: ResourcesWriter.Constants.storeCreationKey
+        )
+
         let writer = ResourcesWriter(scope: scopeMock)
 
         // When
-        XCTAssertNil(scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey])
+        XCTAssertNil(scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey))
         writer.write(resources: [.mockWith(identifier: "1")])
 
         // Then
         XCTAssertEqual(scopeMock.eventsWritten(ofType: EnrichedResource.self).count, 1)
-        XCTAssertEqual(scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey], Set(["1"]).asData())
+        XCTAssertEqual(
+            scopeMock.dataStoreMock.value(forKey: ResourcesWriter.Constants.knownResourcesKey)?.data(),
+            Set(["1"]).asData(JSONEncoder())
+        )
         XCTAssertTrue(scopeMock.telemetryMock.messages.isEmpty)
     }
 
     func test_whenKnownResourcesAreBroken_itLogsTelemetry() {
         // Given
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.knownResourcesKey] = "broken".data(using: .utf8)
+        let brokenData = "broken".data(using: .utf8)!
+        scopeMock.dataStoreMock.setValue(brokenData, forKey: ResourcesWriter.Constants.knownResourcesKey)
 
         // When
         _ = ResourcesWriter(scope: scopeMock)
@@ -99,7 +109,8 @@ class ResourcesWriterTests: XCTestCase {
 
     func test_whenDataStoreCreationIsBroken_itLogsTelemetry() {
         // Given
-        scopeMock.dataStoreMock.values[ResourcesWriter.Constants.storeCreationKey] = "broken".data(using: .utf8)
+        let brokenData = "broken".data(using: .utf8)!
+        scopeMock.dataStoreMock.setValue(brokenData, forKey: ResourcesWriter.Constants.storeCreationKey)
 
         // When
         _ = ResourcesWriter(scope: scopeMock)
