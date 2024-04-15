@@ -80,6 +80,8 @@
 		3CCCA5C52ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C32ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift */; };
 		3CCCA5C72ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */; };
 		3CCCA5C82ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCCA5C62ABAF5230029D7BD /* DDURLSessionInstrumentationConfigurationTests.swift */; };
+		3CDA3F7E2BCD866D005D2C13 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3CDA3F7D2BCD866D005D2C13 /* DatadogSDKTesting */; };
+		3CDA3F802BCD8687005D2C13 /* DatadogSDKTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 3CDA3F7F2BCD8687005D2C13 /* DatadogSDKTesting */; };
 		3CE11A1129F7BE0900202522 /* DatadogWebViewTracking.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; };
 		3CE11A1229F7BE0900202522 /* DatadogWebViewTracking.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 3CE119FE29F7BE0100202522 /* DatadogWebViewTracking.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3CF673362B4807490016CE17 /* OTelSpanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CF673352B4807490016CE17 /* OTelSpanTests.swift */; };
@@ -3004,6 +3006,7 @@
 			files = (
 				D26F741129ACBDA100D25622 /* DatadogInternal.framework in Frameworks */,
 				D2579592298ABCED008A1BE5 /* XCTest.framework in Frameworks */,
+				3CDA3F7E2BCD866D005D2C13 /* DatadogSDKTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3013,6 +3016,7 @@
 			files = (
 				D26F741229ACBDAD00D25622 /* DatadogInternal.framework in Frameworks */,
 				D230399E298D50F1001A1FA3 /* XCTest.framework in Frameworks */,
+				3CDA3F802BCD8687005D2C13 /* DatadogSDKTesting in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6560,6 +6564,9 @@
 				3C41694229FBF6100042B9D2 /* PBXTargetDependency */,
 			);
 			name = "TestUtilities iOS";
+			packageProductDependencies = (
+				3CDA3F7D2BCD866D005D2C13 /* DatadogSDKTesting */,
+			);
 			productName = TestUtilities;
 			productReference = D257953E298ABA65008A1BE5 /* TestUtilities.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6579,6 +6586,9 @@
 				D26F741529ACBDAD00D25622 /* PBXTargetDependency */,
 			);
 			name = "TestUtilities tvOS";
+			packageProductDependencies = (
+				3CDA3F7F2BCD8687005D2C13 /* DatadogSDKTesting */,
+			);
 			productName = TestUtilities;
 			productReference = D257958B298ABB83008A1BE5 /* TestUtilities.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6598,6 +6608,8 @@
 				D2C1A51129C4C4EF00946C31 /* PBXTargetDependency */,
 			);
 			name = "DatadogTrace iOS";
+			packageProductDependencies = (
+			);
 			productName = DatadogTrace;
 			productReference = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */;
 			productType = "com.apple.product-type.framework";
@@ -6616,6 +6628,8 @@
 				D25EE93E29C4C3C300CE3839 /* PBXTargetDependency */,
 			);
 			name = "DatadogTraceTests iOS";
+			packageProductDependencies = (
+			);
 			productName = DatadogTraceTests;
 			productReference = D25EE93B29C4C3C300CE3839 /* DatadogTraceTests iOS.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -6966,6 +6980,9 @@
 				Base,
 			);
 			mainGroup = 61133B78242393DE00786299;
+			packageReferences = (
+				3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */,
+			);
 			productRefGroup = 61133B83242393DE00786299 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -13140,6 +13157,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/DataDog/dd-sdk-swift-testing.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3CDA3F7D2BCD866D005D2C13 /* DatadogSDKTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
+			productName = DatadogSDKTesting;
+		};
+		3CDA3F7F2BCD8687005D2C13 /* DatadogSDKTesting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3CDA3F6C2BCD8429005D2C13 /* XCRemoteSwiftPackageReference "dd-sdk-swift-testing" */;
+			productName = DatadogSDKTesting;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 61133B79242393DE00786299 /* Project object */;
 }
