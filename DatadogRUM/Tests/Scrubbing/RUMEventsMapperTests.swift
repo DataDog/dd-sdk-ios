@@ -17,8 +17,6 @@ class RUMEventsMapperTests: XCTestCase {
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let modifiedErrorEvent: RUMErrorEvent = .mockRandom()
 
-        let originalCrashEvent: RUMCrashEvent = .mockRandom(error: originalErrorEvent)
-
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let modifiedResourceEvent: RUMResourceEvent = .mockRandom()
 
@@ -55,7 +53,6 @@ class RUMEventsMapperTests: XCTestCase {
         // When
         let mappedViewEvent = mapper.map(event: originalViewEvent)
         let mappedErrorEvent = mapper.map(event: originalErrorEvent)
-        let mappedCrashEvent = mapper.map(event: originalCrashEvent)
         let mappedResourceEvent = mapper.map(event: originalResourceEvent)
         let mappedActionEvent = mapper.map(event: originalActionEvent)
         let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
@@ -66,13 +63,6 @@ class RUMEventsMapperTests: XCTestCase {
         DDAssertReflectionEqual(try XCTUnwrap(mappedResourceEvent), modifiedResourceEvent, "Mapper should return modified event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedActionEvent), modifiedActionEvent, "Mapper should return modified event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedLongTaskEvent), modifiedLongTaskEvent, "Mapper should return modified event.")
-
-        DDAssertReflectionEqual(try XCTUnwrap(mappedCrashEvent?.model), modifiedErrorEvent, "Mapper should return modified event.")
-        DDAssertDictionariesEqual(
-            try XCTUnwrap(mappedCrashEvent?.additionalAttributes),
-            originalCrashEvent.additionalAttributes ?? [:],
-            "Mapper should return unmodified event attributes."
-        )
     }
 
     func testGivenMappersEnabled_whenDroppingEvents_itReturnsNil() {
@@ -116,7 +106,6 @@ class RUMEventsMapperTests: XCTestCase {
 
     func testGivenMappersDisabled_whenMappingEvents_itReturnsTheirOriginalRepresentation() throws {
         let originalViewEvent: RUMViewEvent = .mockRandom()
-        let originalCrashEvent: RUMCrashEvent = .mockRandom()
         let originalErrorEvent: RUMErrorEvent = .mockRandom()
         let originalResourceEvent: RUMResourceEvent = .mockRandom()
         let originalActionEvent: RUMActionEvent = .mockRandom()
@@ -128,7 +117,6 @@ class RUMEventsMapperTests: XCTestCase {
         // When
         let mappedViewEvent = mapper.map(event: originalViewEvent)
         let mappedErrorEvent = mapper.map(event: originalErrorEvent)
-        let mappedCrashEvent = mapper.map(event: originalCrashEvent)
         let mappedResourceEvent = mapper.map(event: originalResourceEvent)
         let mappedActionEvent = mapper.map(event: originalActionEvent)
         let mappedLongTaskEvent = mapper.map(event: originalLongTaskEvent)
@@ -136,7 +124,6 @@ class RUMEventsMapperTests: XCTestCase {
         // Then
         DDAssertReflectionEqual(try XCTUnwrap(mappedViewEvent), originalViewEvent, "Mapper should return the original event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedErrorEvent), originalErrorEvent, "Mapper should return the original event.")
-        DDAssertReflectionEqual(try XCTUnwrap(mappedCrashEvent), originalCrashEvent, "Mapper should return the original event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedResourceEvent), originalResourceEvent, "Mapper should return the original event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedActionEvent), originalActionEvent, "Mapper should return the original event.")
         DDAssertReflectionEqual(try XCTUnwrap(mappedLongTaskEvent), originalLongTaskEvent, "Mapper should return the original event.")

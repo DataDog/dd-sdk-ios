@@ -55,7 +55,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+            core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
                 let builder = LogEventBuilder(
                     service: log.service ?? context.service,
                     loggerName: log.logger,
@@ -68,6 +68,7 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
                     level: log.level,
                     message: log.message,
                     error: log.error,
+                    errorFingerprint: nil,
                     attributes: .init(
                         userAttributes: log.userAttributes ?? [:],
                         internalAttributes: log.internalAttributes
@@ -93,31 +94,9 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
 internal struct CrashLogReceiver: FeatureMessageReceiver {
     private struct Crash: Decodable {
         /// The crash report.
-        let report: CrashReport
+        let report: DDCrashReport
         /// The crash context
         let context: CrashContext
-    }
-
-    private struct CrashReport: Decodable {
-        /// The date of the crash occurrence.
-        let date: Date?
-        /// Crash report type - used to group similar crash reports.
-        /// In Datadog Error Tracking this corresponds to `error.type`.
-        let type: String
-        /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
-        /// In Datadog Error Tracking this corresponds to `error.message`.
-        let message: String
-        /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
-        /// In Datadog Error Tracking this corresponds to `error.stack`.
-        let stack: String
-        /// All threads running in the process.
-        let threads: AnyCodable
-        /// List of binary images referenced from all stack traces.
-        let binaryImages: AnyCodable
-        /// Meta information about the crash and process.
-        let meta: AnyCodable
-        /// If any stack trace information was truncated due to crash report minimization.
-        let wasTruncated: Bool
     }
 
     private struct CrashContext: Decodable {
@@ -190,6 +169,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
     /// Time provider.
     let dateProvider: DateProvider
+    let logEventMapper: LogEventMapper?
 
     /// Process messages receives from the bus.
     ///
@@ -210,7 +190,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         return false
     }
 
-    private func send(report: CrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: DDCrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.
@@ -236,7 +216,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
-        core.scope(for: LogsFeature.name)?.eventWriteContext(bypassConsent: true) { context, writer in
+        core.scope(for: LogsFeature.self).eventWriteContext(bypassConsent: true) { context, writer in
             let event = LogEvent(
                 date: date,
                 status: .emergency,
@@ -284,7 +264,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
                 tags: nil
             )
 
-            writer.write(value: event)
+            logEventMapper?.map(event: event, callback: writer.write) ?? writer.write(value: event)
         }
 
         return true
@@ -308,7 +288,7 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
         let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
 
-        core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+        core.scope(for: LogsFeature.self).eventWriteContext { context, writer in
             let ddTags = "\(versionKey):\(context.version),\(envKey):\(context.env)"
 
             if let tags = event[tagsKey] as? String, !tags.isEmpty {

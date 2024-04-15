@@ -31,6 +31,7 @@ extension CrashReportReceiver: AnyMockable {
     }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         applicationID: String = .mockAny(),
         dateProvider: DateProvider = SystemDateProvider(),
         sessionSampler: Sampler = .mockKeepAll(),
@@ -38,9 +39,10 @@ extension CrashReportReceiver: AnyMockable {
         uuidGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
-        telemetry: Telemetry = NOPTelemetry()
+        eventsMapper: RUMEventsMapper = .mockNoOp()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             applicationID: applicationID,
             dateProvider: dateProvider,
             sessionSampler: sessionSampler,
@@ -48,7 +50,7 @@ extension CrashReportReceiver: AnyMockable {
             uuidGenerator: uuidGenerator,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
-            telemetry: telemetry
+            eventsMapper: eventsMapper
         )
     }
 }
@@ -59,12 +61,14 @@ extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
 
     static func mockWith(
+        featureScope: FeatureScope = NOPFeatureScope(),
         dateProvider: DateProvider = SystemDateProvider(),
         sampler: Sampler = .mockKeepAll(),
         configurationExtraSampler: Sampler = .mockKeepAll(),
         metricsExtraSampler: Sampler = .mockKeepAll()
     ) -> Self {
         .init(
+            featureScope: featureScope,
             dateProvider: dateProvider,
             sampler: sampler,
             configurationExtraSampler: configurationExtraSampler,
@@ -377,15 +381,15 @@ extension RUMSpanContext: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> RUMSpanContext {
         return RUMSpanContext(
-            traceID: .mockRandom(),
-            spanID: .mockRandom(),
+            traceID: .mock(.mockRandom(), .mockRandom()),
+            spanID: .mock(.mockRandom()),
             samplingRate: .mockRandom()
         )
     }
 
     static func mockWith(
-        traceID: String = .mockAny(),
-        spanID: String = .mockAny(),
+        traceID: TraceID = .mockAny(),
+        spanID: SpanID = .mockAny(),
         samplingRate: Double = .mockAny()
     ) -> RUMSpanContext {
         return RUMSpanContext(
@@ -408,7 +412,11 @@ extension RUMStartResourceCommand: AnyMockable, RandomMockable {
             httpMethod: .mockRandom(),
             kind: .mockAny(),
             isFirstPartyRequest: .mockRandom(),
-            spanContext: .init(traceID: .mockRandom(), spanID: .mockRandom(), samplingRate: .mockAny())
+            spanContext: .init(
+                traceID: .mock(.mockRandom(), .mockRandom()),
+                spanID: .mock(.mockRandom()),
+                samplingRate: .mockAny()
+            )
         )
     }
 
@@ -737,13 +745,21 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
+extension FatalErrorContextNotifier: AnyMockable {
+    public static func mockAny() -> FatalErrorContextNotifier {
+        return FatalErrorContextNotifier(
+            messageBus: NOPFeatureScope()
+        )
+    }
+}
+
 extension RUMScopeDependencies {
     static func mockAny() -> RUMScopeDependencies {
         return mockWith()
     }
 
     static func mockWith(
-        core: DatadogCoreProtocol = NOPDatadogCore(),
+        featureScope: FeatureScope = NOPFeatureScope(),
         rumApplicationID: String = .mockAny(),
         sessionSampler: Sampler = .mockKeepAll(),
         trackBackgroundEvents: Bool = .mockAny(),
@@ -758,7 +774,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache = ViewCache()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: core,
+            featureScope: featureScope,
             rumApplicationID: rumApplicationID,
             sessionSampler: sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents,
@@ -790,7 +806,7 @@ extension RUMScopeDependencies {
         viewCache: ViewCache? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
-            core: self.core,
+            featureScope: self.featureScope,
             rumApplicationID: rumApplicationID ?? self.rumApplicationID,
             sessionSampler: sessionSampler ?? self.sessionSampler,
             trackBackgroundEvents: trackBackgroundEvents ?? self.trackBackgroundEvents,
@@ -834,6 +850,35 @@ extension RUMSessionScope {
             startPrecondition: startPrecondition,
             dependencies: dependencies,
             hasReplay: hasReplay
+        )
+    }
+}
+
+extension RUMSessionState: AnyMockable, RandomMockable {
+    public static func mockAny() -> RUMSessionState {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> RUMSessionState {
+        return RUMSessionState(
+            sessionUUID: .mockRandom(),
+            isInitialSession: .mockRandom(),
+            hasTrackedAnyView: .mockRandom(),
+            didStartWithReplay: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        sessionUUID: UUID = .mockAny(),
+        isInitialSession: Bool = .mockAny(),
+        hasTrackedAnyView: Bool = .mockAny(),
+        didStartWithReplay: Bool? = .mockAny()
+    ) -> RUMSessionState {
+        return RUMSessionState(
+            sessionUUID: sessionUUID,
+            isInitialSession: isInitialSession,
+            hasTrackedAnyView: hasTrackedAnyView,
+            didStartWithReplay: didStartWithReplay
         )
     }
 }
@@ -1079,5 +1124,44 @@ extension Dictionary where Key == String, Value == FeatureBaggage {
             SessionReplayDependency.hasReplay: .init(hasReplay),
             SessionReplayDependency.recordsCountByViewID: .init(recordsCountByViewID)
         ]
+    }
+}
+
+// MARK: - App Hangs Monitoring
+
+extension AppHang: AnyMockable, RandomMockable {
+    public static func mockAny() -> AppHang {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> AppHang {
+        return AppHang(
+            startDate: .mockRandom(),
+            backtraceResult: .mockRandom()
+        )
+    }
+
+    static func mockWith(
+        startDate: Date = .mockAny(),
+        backtraceResult: BacktraceGenerationResult = .mockAny()
+    ) -> AppHang {
+        return AppHang(
+            startDate: startDate,
+            backtraceResult: backtraceResult
+        )
+    }
+}
+
+extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
+    public static func mockAny() -> AppHang.BacktraceGenerationResult {
+        return .succeeded(.mockAny())
+    }
+
+    public static func mockRandom() -> AppHang.BacktraceGenerationResult {
+        return [
+            .succeeded(.mockRandom()),
+            .failed,
+            .notAvailable
+        ].randomElement()!
     }
 }

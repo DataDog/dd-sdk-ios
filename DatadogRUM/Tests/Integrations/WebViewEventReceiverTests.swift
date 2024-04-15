@@ -10,6 +10,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class WebViewEventReceiverTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
     /// Creates random RUM Browser event.
     /// Both mobile and browser events conform to the same schema, so we can consider mobile events browser-compatible.
     private func randomWebEvent() -> JSON { try! randomRUMEvent().toJSONObject() }
@@ -122,12 +123,76 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertEqual(try json.value("_dd.session.plan"), 2)
     }
 
+    func testParsingTelemetryEvent() throws {
+        // Given
+        let data = """
+        {
+          "eventType": "internal_telemetry",
+          "event":
+            {
+              "type": "telemetry",
+              "date": 1712069357432,
+              "service": "browser-rum-sdk",
+              "version": "5.2.0-b93ed472a4f14fbf2bcd1bc2c9faacb4abbeed82",
+              "source": "browser",
+              "_dd": { "format_version": 2 },
+              "telemetry":
+                {
+                  "type": "configuration",
+                  "configuration":
+                    {
+                      "session_replay_sample_rate": 100,
+                      "use_allowed_tracing_urls": false,
+                      "selected_tracing_propagators": [],
+                      "default_privacy_level": "allow",
+                      "use_excluded_activity_urls": false,
+                      "use_worker_url": false,
+                      "track_user_interactions": true,
+                      "track_resources": true,
+                      "track_long_task": true,
+                      "session_sample_rate": 100,
+                      "telemetry_sample_rate": 100,
+                      "use_before_send": false,
+                      "use_proxy": false,
+                      "allow_fallback_to_local_storage": false,
+                      "store_contexts_across_pages": false,
+                      "allow_untrusted_events": false
+                    },
+                  "runtime_env": { "is_local_file": false, "is_worker": false }
+                },
+              "experimental_features": [],
+              "application": { "id": "00000000-aaaa-0000-aaaa-000000000000" },
+              "session": { "id": "00000000-aaaa-0000-aaaa-000000000000" },
+              "view": {},
+              "action": { "id": [] }
+            }
+        }
+        """.utf8Data
+
+        // When
+        let decoder = JSONDecoder()
+        let message = try decoder.decode(WebViewMessage.self, from: data)
+
+        guard case let .telemetry(event) = message else {
+            return XCTFail("not a telemetry message")
+        }
+
+        // Then
+        let json = JSONObjectMatcher(object: event) // only partial matching
+        XCTAssertEqual(try json.value("application.id"), "00000000-aaaa-0000-aaaa-000000000000")
+        XCTAssertEqual(try json.value("date"), 1_712_069_357_432)
+        XCTAssertEqual(try json.value("service"), "browser-rum-sdk")
+        XCTAssertEqual(try json.value("session.id"), "00000000-aaaa-0000-aaaa-000000000000")
+        XCTAssertEqual(try json.value("telemetry.type"), "configuration")
+        XCTAssertEqual(try json.value("_dd.format_version"), 2)
+    }
+
     func testWhenReceivingWebViewTrackingMessageWithValidEvent_itAcknowledgesTheMessageAndKeepsRUMSessionAlive() throws {
-        let core = PassthroughCoreMock()
         let commandsSubscriberMock = RUMCommandSubscriberMock()
 
         // Given
         let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
             dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
             commandSubscriber: commandsSubscriberMock,
             viewCache: ViewCache()
@@ -135,7 +200,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         let message = webViewTrackingMessage(with: randomWebEvent())
-        let result = receiver.receive(message: message, from: core)
+        let result = receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
         XCTAssertTrue(result, "It must acknowledge the message")
@@ -144,10 +209,9 @@ class WebViewEventReceiverTests: XCTestCase {
     }
 
     func testWhenReceivingOtherMessage_itRejectsIt() throws {
-        let core = PassthroughCoreMock()
-
         // Given
         let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
             viewCache: ViewCache()
@@ -155,7 +219,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
         let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: core)
+        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
@@ -164,16 +228,18 @@ class WebViewEventReceiverTests: XCTestCase {
     // MARK: - Modifying Web Events
 
     func testGivenRUMContextAvailable_whenReceivingWebEvent_itGetsEnrichedWithOtherMobileContextAndWritten() throws {
-        let core = PassthroughCoreMock(
-            context: .mockWith(source: "react-native")
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "react-native",
+            baggages: [
+                RUMFeature.name: FeatureBaggage(rumContext)
+            ]
         )
 
-        // Given
-        let rumContext: RUMCoreContext = .mockRandom()
-        core.set(baggage: rumContext, forKey: RUMFeature.name)
-        let dateProvider = RelativeDateProvider()
-
         let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
             viewCache: ViewCache(dateProvider: dateProvider)
@@ -200,7 +266,7 @@ class WebViewEventReceiverTests: XCTestCase {
 
         // When
 
-        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: core)
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
 
         // Then
         let expectedWebEventWritten: JSON = [
@@ -216,58 +282,59 @@ class WebViewEventReceiverTests: XCTestCase {
             "application": ["id": rumContext.applicationID],
             "session": ["id": rumContext.sessionID],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
-            "date": date + core.context.serverTimeOffset.toInt64Milliseconds,
+            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
 
         XCTAssertTrue(result, "It must accept the message")
-        XCTAssertEqual(core.events.count, 1, "It must write web event to core")
-        let actualWebEventWritten = try XCTUnwrap(core.events.first)
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 
     func testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped() throws {
-        let core = PassthroughCoreMock()
-
         // Given
-        XCTAssertNil(core.context.baggages[RUMFeature.name])
+        XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
 
         let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
             viewCache: ViewCache()
         )
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: core)
+        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
 
         // Then
         XCTAssertTrue(result, "It must accept the message")
-        XCTAssertTrue(core.events.isEmpty, "The event must be dropped")
+        XCTAssertTrue(featureScope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
     func testGivenInvalidRUMContext_whenReceivingEvent_itSendsErrorTelemetry() throws {
         struct InvalidRUMContext: Codable {
             var foo = "bar"
         }
-        let telemetryReceiver = TelemetryReceiverMock()
-        let core = PassthroughCoreMock(messageReceiver: telemetryReceiver)
 
         // Given
-        core.set(baggage: InvalidRUMContext(), forKey: RUMFeature.name)
-        XCTAssertNotNil(core.context.baggages[RUMFeature.name])
+        featureScope.contextMock = .mockWith(
+            baggages: [
+                RUMFeature.name: FeatureBaggage(InvalidRUMContext())
+            ]
+        )
 
         let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
             dateProvider: DateProviderMock(),
             commandSubscriber: RUMCommandSubscriberMock(),
             viewCache: ViewCache()
         )
 
         // When
-        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: core)
+        let result = receiver.receive(message: webViewTrackingMessage(with: randomWebEvent()), from: NOPDatadogCore())
 
         // Then
         XCTAssertTrue(result, "It should accept the message")
-        let errorTelemetry = try XCTUnwrap(telemetryReceiver.messages.firstError(), "It must send error telemetry")
+        let errorTelemetry = try XCTUnwrap(featureScope.telemetryMock.messages.firstError(), "It must send error telemetry")
         XCTAssertTrue(errorTelemetry.message.hasPrefix("Failed to decode `RUMCoreContext`"))
     }
 }

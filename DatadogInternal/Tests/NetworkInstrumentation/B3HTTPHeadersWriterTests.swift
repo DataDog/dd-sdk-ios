@@ -16,13 +16,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         writer.write(
-            traceID: 1_234,
+            traceID: .init(idHi: 1_234, idLo: 1_234),
             spanID: 2_345,
             parentSpanID: 5_678
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1-000000000000162e")
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-1-000000000000162e")
     }
 
     func testItWritesSingleHeaderWithSampling() {
@@ -33,7 +33,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
         )
 
         writer.write(
-            traceID: 1_234,
+            traceID: .init(idHi: 1_234, idLo: 1_234),
             spanID: 2_345,
             parentSpanID: 5_678
         )
@@ -48,10 +48,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             sampler: sampler,
             injectEncoding: .single
         )
-        writer.write(traceID: 1_234, spanID: 2_345)
+        writer.write(
+            traceID: .init(idHi: 1_234, idLo: 1_234),
+            spanID: 2_345
+        )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "000000000000000000000000000004d2-0000000000000929-1")
+        XCTAssertEqual(headers[B3HTTPHeaders.Single.b3Field], "00000000000004d200000000000004d2-0000000000000929-1")
     }
 
     func testItWritesMultipleHeader() {
@@ -61,13 +64,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             injectEncoding: .multiple
         )
         writer.write(
-            traceID: 1_234,
+            traceID: .init(idHi: 1_234, idLo: 1_234),
             spanID: 2_345,
             parentSpanID: 5_678
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.parentSpanIDField], "000000000000162e")
@@ -80,7 +83,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             injectEncoding: .multiple
         )
         writer.write(
-            traceID: 1_234,
+            traceID: .init(idHi: 1_234, idLo: 1_234),
             spanID: 2_345,
             parentSpanID: 5_678
         )
@@ -98,10 +101,13 @@ class B3HTTPHeadersWriterTests: XCTestCase {
             sampler: sampler,
             injectEncoding: .multiple
         )
-        writer.write(traceID: 1_234, spanID: 2_345)
+        writer.write(
+            traceID: .init(idHi: 1_234, idLo: 1_234),
+            spanID: 2_345
+        )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "000000000000000000000000000004d2")
+        XCTAssertEqual(headers[B3HTTPHeaders.Multiple.traceIDField], "00000000000004d200000000000004d2")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.spanIDField], "0000000000000929")
         XCTAssertEqual(headers[B3HTTPHeaders.Multiple.sampledField], "1")
         XCTAssertNil(headers[B3HTTPHeaders.Multiple.parentSpanIDField])

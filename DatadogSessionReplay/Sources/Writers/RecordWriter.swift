@@ -25,7 +25,7 @@ internal class RecordWriter: RecordWriting {
     // MARK: - Writing
 
     func write(nextRecord: EnrichedRecord) {
-        core?.scope(for: SessionReplayFeature.name)?.eventWriteContext { _, recordWriter in
+        core?.scope(for: SessionReplayFeature.self).eventWriteContext { _, recordWriter in
             recordWriter.write(value: nextRecord)
         }
     }

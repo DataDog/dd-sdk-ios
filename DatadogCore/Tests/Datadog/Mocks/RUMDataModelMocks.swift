@@ -130,7 +130,7 @@ extension RUMViewEvent: RandomMockable {
                 pageStates: nil,
                 replayStats: nil,
                 session: .init(
-                    plan: [.plan1, .plan2].randomElement()!,
+                    plan: .plan1,
                     sessionPrecondition: .mockRandom()
                 )
             ),
@@ -429,19 +429,6 @@ extension RUMErrorEvent: RandomMockable {
                 url: .mockRandom()
             )
         )
-    }
-}
-
-extension RUMCrashEvent: RandomMockable {
-    static func mockRandom(error: RUMErrorEvent) -> RUMCrashEvent {
-        return .init(
-            error: error,
-            additionalAttributes: mockRandomAttributes()
-        )
-    }
-
-    public static func mockRandom() -> RUMCrashEvent {
-        return mockRandom(error: .mockRandom())
     }
 }
 

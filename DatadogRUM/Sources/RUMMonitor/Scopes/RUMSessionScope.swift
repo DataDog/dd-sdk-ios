@@ -46,7 +46,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
-            dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: state))
+            dependencies.fatalErrorContext.sessionState = state
         }
     }
 
@@ -117,8 +117,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             )
         }
 
-        // Update `CrashContext` with recent RUM session state:
-        dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: state))
+        // Update fatal error context with recent RUM session state:
+        dependencies.fatalErrorContext.sessionState = state
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
@@ -214,12 +214,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
 
         if (isActive || deactivating) && !hasActiveView {
-            // If this session is active and there is no active view, update `CrashContext` accordingly, so eventual crash
-            // won't be associated to an inactive view and instead we will consider starting background view to track it.
+            // If this session is active and there is no active view, update fatal error context accordingly, so eventual
+            // error won't be associated to an inactive view and instead we will consider starting background view to track it.
             // We also want to send this as a session is being stopped.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
-            dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
+            dependencies.fatalErrorContext.view = nil
         }
 
         return isActive || !viewScopes.isEmpty

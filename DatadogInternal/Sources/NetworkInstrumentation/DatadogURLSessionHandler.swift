@@ -33,19 +33,6 @@ public protocol DatadogURLSessionHandler {
     func interceptionDidComplete(interception: URLSessionTaskInterception)
 }
 
-internal struct NOPDatadogURLSessionInterceptor: DatadogURLSessionHandler {
-    /// no-op
-    var firstPartyHosts: FirstPartyHosts { .init() }
-    /// no-op
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest { request }
-    /// no-op
-    func traceContext() -> TraceContext? { nil }
-    /// no-op
-    func interceptionDidStart(interception: URLSessionTaskInterception) { }
-    /// no-op
-    func interceptionDidComplete(interception: URLSessionTaskInterception) { }
-}
-
 extension DatadogCoreProtocol {
     /// Core extension for registering `URLSession` handlers.
     ///

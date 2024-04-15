@@ -17,6 +17,7 @@ class LogEventBuilderTests: XCTestCase {
         let randomLevel: LogLevel = .mockRandom()
         let randomMessage: String = .mockRandom()
         let randomError: DDError = .mockRandom()
+        let randomErrorFingerprint: String? = .mockRandom()
         let randomAttributes: LogEvent.Attributes = .mockRandom()
         let randomTags: Set<String> = .mockRandom()
         let randomService: String = .mockRandom()
@@ -43,6 +44,7 @@ class LogEventBuilderTests: XCTestCase {
             level: randomLevel,
             message: randomMessage,
             error: randomError,
+            errorFingerprint: randomErrorFingerprint,
             attributes: randomAttributes,
             tags: randomTags,
             context: .mockWith(
@@ -66,6 +68,7 @@ class LogEventBuilderTests: XCTestCase {
             XCTAssertEqual(log.error?.message, randomError.message)
             XCTAssertEqual(log.error?.stack, randomError.stack)
             XCTAssertEqual(log.error?.sourceType, "ios")
+            XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
             XCTAssertEqual(log.attributes, randomAttributes)
             XCTAssertEqual(log.tags.map { Set($0) }, randomTags)
             XCTAssertEqual(log.serviceName, randomService)
@@ -133,6 +136,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: randomSDKContext,
@@ -182,6 +186,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: randomSDKContext,
@@ -208,6 +213,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockWith(
@@ -248,6 +254,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: "original message",
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockAny(),
@@ -281,6 +288,7 @@ class LogEventBuilderTests: XCTestCase {
             level: .mockAny(),
             message: .mockAny(),
             error: .mockAny(),
+            errorFingerprint: .mockAny(),
             attributes: .mockAny(),
             tags: .mockAny(),
             context: .mockAny(),

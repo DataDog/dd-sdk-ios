@@ -7,7 +7,7 @@
 import Foundation
 
 /// Lightweight representation of current RUM session state, used to compute `RUMOffViewEventsHandlingRule`.
-/// It gets serialized into `CrashContext` for computing the rule upon app process restart after crash.
+/// It gets serialized into fatal error context for computing the rule upon app process restart.
 internal struct RUMSessionState: Equatable, Codable {
     /// The session ID. Can be `.nullUUID` if the session was rejected by sampler.
     let sessionUUID: UUID

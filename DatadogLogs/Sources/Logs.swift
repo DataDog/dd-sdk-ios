@@ -112,6 +112,15 @@ public enum Logs {
     }
 }
 
+extension Logs {
+    /// Attributes that can be added to logs that have special properies in Datadog.
+    public struct Attributes {
+        /// Add a custom fingerprint to the error in this log. Requires that the log is supplied with an Error.
+        /// The value of this attribute must be a `String`.
+        public static let errorFingerprint = "_dd.error.fingerprint"
+    }
+}
+
 extension Logs.Configuration: InternalExtended { }
 extension InternalExtension where ExtendedType == Logs.Configuration {
     /// Sets the custom mapper for `LogEvent`. This can be used to modify logs before they are sent to Datadog.

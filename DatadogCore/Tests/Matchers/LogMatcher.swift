@@ -56,6 +56,7 @@ internal class LogMatcher: JSONDataMatcher {
         static let errorKind = "error.kind"
         static let errorMessage = "error.message"
         static let errorStack = "error.stack"
+        static let errorFingerprint = "error.fingerprint"
 
         // MARK: - Dd info
         static let dd = "_dd"
@@ -135,6 +136,10 @@ internal class LogMatcher: JSONDataMatcher {
 
     func assertMessage(equals message: String, file: StaticString = #file, line: UInt = #line) {
         assertValue(forKey: JSONKey.message, equals: message, file: file, line: line)
+    }
+
+    func assertErrorFingerprint(equals fingerprint: String) {
+        assertValue(forKey: JSONKey.errorFingerprint, equals: fingerprint)
     }
 
     func assertUserInfo(equals userInfo: (id: String?, name: String?, email: String?)?, file: StaticString = #file, line: UInt = #line) {

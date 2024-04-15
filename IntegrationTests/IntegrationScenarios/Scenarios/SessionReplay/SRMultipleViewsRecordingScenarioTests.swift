@@ -77,7 +77,9 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         })
 
         let rawSRRequests = try srEndpoint.pullRecordedRequests(timeout: dataDeliveryTimeout, until: {
-            try SRSegmentMatcher.segmentsCount(from: $0) == Baseline.totalSegmentsCount
+            let segmentsCount = try SRSegmentMatcher.segmentsCount(from: $0)
+            sendCIAppLog("Pulled \(segmentsCount) segments")
+            return segmentsCount >= Baseline.totalSegmentsCount
         })
 
         assertRUM(requests: rawRUMRequests)

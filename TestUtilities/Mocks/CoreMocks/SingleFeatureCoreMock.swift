@@ -89,10 +89,10 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
         feature as? T
     }
 
-    public override func scope(for feature: String) -> FeatureScope? {
-        guard feature == Feature.name else {
-            return nil
+    public override func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+        guard T.name == Feature.name else {
+            return NOPFeatureScope()
         }
-        return super.scope(for: feature)
+        return super.scope(for: featureType)
     }
 }
