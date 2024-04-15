@@ -7,7 +7,7 @@
 import Foundation
 import DatadogInternal
 
-internal final class WebViewRecordReceiver: FeatureMessageReceiver {
+internal struct WebViewRecordReceiver: FeatureMessageReceiver {
     internal struct WebRecord: Encodable {
         /// The RUM application ID of all records.
         let applicationID: String
@@ -19,12 +19,15 @@ internal final class WebViewRecordReceiver: FeatureMessageReceiver {
         let records: [AnyEncodable]
     }
 
+    /// Session Replay feature scope.
+    let scope: FeatureScope
+
     func receive(message: DatadogInternal.FeatureMessage, from core: DatadogInternal.DatadogCoreProtocol) -> Bool {
         guard case let .webview(.record(event, view)) = message else {
             return false
         }
 
-        core.scope(for: SessionReplayFeature.name)?.eventWriteContext { context, writer in
+        scope.eventWriteContext { context, writer in
             do {
                 // Extract the `RUMContext` or `nil` if RUM session is not sampled:
                 guard let rumContext = try context.baggages[RUMContext.key]?.decode(type: RUMContext.self) else {

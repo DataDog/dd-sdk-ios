@@ -18,7 +18,7 @@ class WebViewRecordReceiverTests: XCTestCase {
             serverTimeOffset: serverTimeOffset
         )
 
-        let core = PassthroughCoreMock(
+        let scope = FeatureScopeMock(
             context: .mockWith(
                 source: "react-native",
                 baggages: ["rum": FeatureBaggage(rumContext)]
@@ -26,7 +26,9 @@ class WebViewRecordReceiverTests: XCTestCase {
         )
 
         // Given
-        let receiver = WebViewRecordReceiver()
+        let receiver = WebViewRecordReceiver(
+            scope: scope
+        )
 
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
         let webRecordMock: [String: Any] = [
@@ -39,7 +41,7 @@ class WebViewRecordReceiverTests: XCTestCase {
         // When
 
         let message = WebViewMessage.record(webRecordMock, WebViewMessage.View(id: browserViewID))
-        let result = receiver.receive(message: .webview(message), from: core)
+        let result = receiver.receive(message: .webview(message), from: NOPDatadogCore())
 
         // Then
         let expectedWebSegmentWritten: [String: Any] = [
@@ -55,37 +57,37 @@ class WebViewRecordReceiverTests: XCTestCase {
         ]
 
         XCTAssertTrue(result, "It must accept the message")
-        XCTAssertEqual(core.events.count, 1, "It must write web segment to core")
-        let actualWebEventWritten = try XCTUnwrap(core.events.first)
+        XCTAssertEqual(scope.eventsWritten.count, 1, "It must write web segment to core")
+        let actualWebEventWritten = try XCTUnwrap(scope.eventsWritten.first)
         DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebSegmentWritten))
     }
 
     func testGivenRUMContextNotAvailable_whenReceivingWebRecord_itIsDropped() throws {
-        let core = PassthroughCoreMock()
+        let scope = FeatureScopeMock()
 
         // Given
-        XCTAssertNil(core.context.baggages["rum"])
+        XCTAssertNil(scope.contextMock.baggages["rum"])
 
-        let receiver = WebViewRecordReceiver()
+        let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
         let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))
-        let result = receiver.receive(message: .webview(record), from: core)
+        let result = receiver.receive(message: .webview(record), from: NOPDatadogCore())
 
         // Then
         XCTAssertTrue(result, "It must accept the message")
-        XCTAssertTrue(core.events.isEmpty, "The event must be dropped")
+        XCTAssertTrue(scope.eventsWritten.isEmpty, "The event must be dropped")
     }
 
     func testWhenReceivingOtherMessage_itRejectsIt() throws {
-        let core = PassthroughCoreMock()
+        let scope = FeatureScopeMock()
 
         // Given
-        let receiver = WebViewRecordReceiver()
+        let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
         let otherMessage: FeatureMessage = .baggage(key: "message to other receiver", value: String.mockRandom())
-        let result = receiver.receive(message: otherMessage, from: core)
+        let result = receiver.receive(message: otherMessage, from: NOPDatadogCore())
 
         // Then
         XCTAssertFalse(result, "It must reject messages addressed to other receivers")
@@ -94,12 +96,14 @@ class WebViewRecordReceiverTests: XCTestCase {
     func testWhenReceivingInvalidBaggage_itSendsTelemetryError() throws {
         // Given
         let telemetry = TelemetryReceiverMock()
+        let scope = FeatureScopeMock(
+            context: .mockWith(baggages: ["rum": FeatureBaggage(123)])
+        )
         let core = PassthroughCoreMock(
-            context: .mockWith(baggages: ["rum": FeatureBaggage(123)]),
             messageReceiver: telemetry
         )
 
-        let receiver = WebViewRecordReceiver()
+        let receiver = WebViewRecordReceiver(scope: scope)
 
         // When
         let record = WebViewMessage.record(mockRandomAttributes(), WebViewMessage.View(id: .mockRandom()))

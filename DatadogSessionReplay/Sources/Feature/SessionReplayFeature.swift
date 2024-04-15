@@ -48,7 +48,9 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
 
         self.messageReceiver = CombinedFeatureMessageReceiver([
             contextReceiver,
-            WebViewRecordReceiver()
+            WebViewRecordReceiver(
+                scope: core.scope(for: SessionReplayFeature.self)
+            )
         ])
 
         self.recordingCoordinator = RecordingCoordinator(
