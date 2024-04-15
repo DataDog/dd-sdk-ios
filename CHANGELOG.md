@@ -1,16 +1,17 @@
 # Unreleased
 
-* [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
-* [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
-* [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
+- [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
+- [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
+- [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
+- [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
 
 # 2.9.0 / 11-04-2024
 
-* [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
-* [FEATURE] Support calling log event mapper for crashes. See [#1741][]
-* [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
-* [FIX] Remove modulemap. See [#1746][]
-* [FIX] Expose objc interfaces in Session Replay module. See [#1697][]
+- [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
+- [FEATURE] Support calling log event mapper for crashes. See [#1741][]
+- [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
+- [FIX] Remove modulemap. See [#1746][]
+- [FIX] Expose objc interfaces in Session Replay module. See [#1697][]
 
 # 2.8.1 / 20-03-2024
 
@@ -635,6 +636,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
+[#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
