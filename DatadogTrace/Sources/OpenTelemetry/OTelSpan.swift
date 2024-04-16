@@ -137,19 +137,19 @@ internal class OTelSpan: OpenTelemetryApi.Span {
     }
 
     func addEvent(name: String) {
-        // not supported
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
     func addEvent(name: String, timestamp: Date) {
-        // not supported
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue]) {
-        // not supported
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
-        // not supported
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
     func end() {
