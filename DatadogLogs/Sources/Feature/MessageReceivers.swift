@@ -94,31 +94,9 @@ internal struct LogMessageReceiver: FeatureMessageReceiver {
 internal struct CrashLogReceiver: FeatureMessageReceiver {
     private struct Crash: Decodable {
         /// The crash report.
-        let report: CrashReport
+        let report: DDCrashReport
         /// The crash context
         let context: CrashContext
-    }
-
-    private struct CrashReport: Decodable {
-        /// The date of the crash occurrence.
-        let date: Date?
-        /// Crash report type - used to group similar crash reports.
-        /// In Datadog Error Tracking this corresponds to `error.type`.
-        let type: String
-        /// Crash report message - if possible, it should provide additional troubleshooting information in addition to the crash type.
-        /// In Datadog Error Tracking this corresponds to `error.message`.
-        let message: String
-        /// Unsymbolicated stack trace related to the crash (this can be either uncaugh exception backtrace or stack trace of the halted thread).
-        /// In Datadog Error Tracking this corresponds to `error.stack`.
-        let stack: String
-        /// All threads running in the process.
-        let threads: AnyCodable
-        /// List of binary images referenced from all stack traces.
-        let binaryImages: AnyCodable
-        /// Meta information about the crash and process.
-        let meta: AnyCodable
-        /// If any stack trace information was truncated due to crash report minimization.
-        let wasTruncated: Bool
     }
 
     private struct CrashContext: Decodable {
@@ -212,7 +190,7 @@ internal struct CrashLogReceiver: FeatureMessageReceiver {
         return false
     }
 
-    private func send(report: CrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
+    private func send(report: DDCrashReport, with crashContext: CrashContext, to core: DatadogCoreProtocol) -> Bool {
         // The `report.crashDate` uses system `Date` collected at the moment of crash, so we need to adjust it
         // to the server time before processing. Following use of the current correction is not ideal, but this is the best
         // approximation we can get.

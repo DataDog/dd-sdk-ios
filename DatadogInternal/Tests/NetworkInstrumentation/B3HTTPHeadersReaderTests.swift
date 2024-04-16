@@ -77,4 +77,22 @@ class B3HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(ids?.spanID, 2_345)
         XCTAssertNil(ids?.parentSpanID)
     }
+
+    func testReadingSampledTraceContext() {
+        let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
+        let writer = B3HTTPHeadersWriter(sampleRate: 100, injectEncoding: encoding)
+        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+
+        let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
+    }
+
+    func testReadingNotSampledTraceContext() {
+        let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
+        let writer = B3HTTPHeadersWriter(sampleRate: 0, injectEncoding: encoding)
+        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+
+        let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+    }
 }

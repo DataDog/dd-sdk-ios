@@ -58,8 +58,8 @@ internal struct SpanContext: Decodable {
         case spanID = "dd.span_id"
     }
 
-    let traceID: String?
-    let spanID: String?
+    let traceID: TraceID?
+    let spanID: SpanID?
 }
 
 /// The RUM context received from `DatadogCore`.
