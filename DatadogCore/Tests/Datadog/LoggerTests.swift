@@ -7,6 +7,7 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
+import OpenTelemetryApi
 
 @testable import DatadogLogs
 @testable import DatadogTrace
@@ -870,6 +871,45 @@ class LoggerTests: XCTestCase {
         logMatchers[0].assertValue(
             forKeyPath: "dd.span_id",
             equals: String(span.context.dd.spanID)
+        )
+        logMatchers[1].assertNoValue(forKey: "dd.trace_id")
+        logMatchers[1].assertNoValue(forKey: "dd.span_id")
+    }
+
+    func testGivenBundlingWithTraceEnabledAndOpenTelemetryTracerRegistered_whenSendingLog_itContainsActiveSpanAttributes() throws {
+        core.context = .mockAny()
+
+        Logs.enable(in: core)
+        Trace.enable(in: core)
+
+        // given
+        let logger = Logger.create(in: core)
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider(in: core)
+        )
+
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+
+        // when
+        let span = tracer.spanBuilder(spanName: "span")
+            .setActive(true)
+            .startSpan()
+        logger.info("info message 1")
+        span.end()
+        logger.info("info message 2")
+
+        // then
+        let logMatchers = try core.waitAndReturnLogMatchers()
+        logMatchers[0].assertValue(
+            forKeyPath: "dd.trace_id",
+            equals: String(span.context.traceId.toDatadog())
+        )
+        logMatchers[0].assertValue(
+            forKeyPath: "dd.span_id",
+            equals: String(span.context.spanId.toDatadog())
         )
         logMatchers[1].assertNoValue(forKey: "dd.trace_id")
         logMatchers[1].assertNoValue(forKey: "dd.span_id")

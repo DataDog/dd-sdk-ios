@@ -136,42 +136,20 @@ internal class OTelSpan: OpenTelemetryApi.Span {
         )
     }
 
-    /// Sends a span event which is akin to a log in Datadog
-    /// - Parameter name: name of the event
     func addEvent(name: String) {
-        addEvent(name: name, timestamp: .init())
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
-    /// Sends a span event which is akin to a log in Datadog
-    /// - Parameters:
-    ///   - name: name of the event
-    ///   - timestamp: timestamp of the event
     func addEvent(name: String, timestamp: Date) {
-        addEvent(name: name, attributes: .init(), timestamp: timestamp)
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
-    /// Sends a span event which is akin to a log in Datadog
-    /// - Parameters:
-    ///   - name: name of the event
-    ///   - attributes: attributes of the event
-    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue]) {
-        addEvent(name: name, attributes: attributes, timestamp: .init())
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
-    /// Sends a span event which is akin to a log in Datadog
-    /// - Parameters:
-    ///   - name: name of the event
-    ///   - attributes: attributes of the event
-    ///   - timestamp: timestamp of the event
     func addEvent(name: String, attributes: [String: OpenTelemetryApi.AttributeValue], timestamp: Date) {
-        guard isRecording else {
-            return
-        }
-
-        // There is no need to lock here, because `DDSpan` is thread-safe
-
-        ddSpan.log(message: name, fields: attributes.tags, timestamp: timestamp)
+        DD.logger.warn("\(#function) is not yet supported in `DatadogTrace`")
     }
 
     func end() {
