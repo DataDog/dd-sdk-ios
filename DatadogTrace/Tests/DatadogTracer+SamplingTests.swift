@@ -81,7 +81,6 @@ class DatadogTracer_SamplingTests: XCTestCase {
         XCTAssertEqual(events.filter({ $0.samplingRate == 0.42 }).count, 3, "All spans must encode the same sample rate")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported
     func testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay() throws {
         // When
         let tracer = createTracer(sampleRate: 50)

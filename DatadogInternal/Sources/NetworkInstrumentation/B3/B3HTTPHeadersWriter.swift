@@ -61,7 +61,7 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// The sample rate determines the `X-B3-Sampled` header field value
     /// and whether `X-B3-TraceId`, `X-B3-SpanId`, and `X-B3-ParentSpanId` are propagated.
-    private let sampler: Sampler
+    private let sampler: Sampling
 
     /// The telemetry header encoding used by the writer.
     private let injectEncoding: InjectEncoding
@@ -97,7 +97,7 @@ public class B3HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter sampler: The sampler used for headers injection.
     /// - Parameter injectEncoding: The B3 header encoding type, with `.single` as the default.
     public init(
-        sampler: Sampler,
+        sampler: Sampling,
         injectEncoding: InjectEncoding = .single
     ) {
         self.sampler = sampler

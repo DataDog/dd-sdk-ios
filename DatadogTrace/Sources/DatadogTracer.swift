@@ -79,7 +79,7 @@ internal class DatadogTracer: OTTracer {
     func startSpan(operationName: String, references: [OTReference]? = nil, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         let parentSpanContext = references?.compactMap { $0.context.dd }.last ?? activeSpan?.context as? DDSpanContext
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: parentSpanContext),
+            spanContext: createSpanContext(parentSpanContext: parentSpanContext, using: localTraceSampler),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -88,7 +88,7 @@ internal class DatadogTracer: OTTracer {
 
     func startRootSpan(operationName: String, tags: [String: Encodable]? = nil, startTime: Date? = nil) -> OTSpan {
         return startSpan(
-            spanContext: createSpanContext(parentSpanContext: nil),
+            spanContext: createSpanContext(parentSpanContext: nil, using: localTraceSampler),
             operationName: operationName,
             tags: tags,
             startTime: startTime
@@ -101,7 +101,9 @@ internal class DatadogTracer: OTTracer {
 
     func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
-        reader.extract()
+        var reader = reader as? TracePropagationHeadersReader
+        reader?.tracerSampleRate = localTraceSampler.samplingRate
+        return (reader as? OTFormatReader)?.extract()
     }
 
     var activeSpan: OTSpan? {
@@ -110,12 +112,14 @@ internal class DatadogTracer: OTTracer {
 
     // MARK: - Internal
 
-    internal func createSpanContext(parentSpanContext: DDSpanContext? = nil) -> DDSpanContext {
+    internal func createSpanContext(parentSpanContext: DDSpanContext?, using sampler: Sampler) -> DDSpanContext {
         return DDSpanContext(
             traceID: parentSpanContext?.traceID ?? traceIDGenerator.generate(),
             spanID: spanIDGenerator.generate(),
             parentSpanID: parentSpanContext?.spanID,
-            baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems)
+            baggageItems: BaggageItems(parent: parentSpanContext?.baggageItems),
+            sampleRate: parentSpanContext?.sampleRate ?? sampler.samplingRate,
+            isKept: parentSpanContext?.isKept ?? sampler.sample()
         )
     }
 

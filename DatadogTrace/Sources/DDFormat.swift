@@ -38,7 +38,9 @@ extension TracePropagationHeadersReader where Self: OTFormatReader {
             traceID: ids.traceID,
             spanID: ids.spanID,
             parentSpanID: ids.parentSpanID,
-            baggageItems: BaggageItems()
+            baggageItems: BaggageItems(),
+            sampleRate: tracerSampleRate ?? 0, // unreachable default: sample rate is set by the tracer during extraction
+            isKept: sampled ?? false // unreachable default: we got trace ID, so this request must have been instrumented
         )
     }
 }

@@ -16,6 +16,12 @@ internal struct DDSpanContext: OTSpanContext {
     let parentSpanID: SpanID?
     /// The baggage items of this span.
     let baggageItems: BaggageItems
+    /// The sample rate used for sampling this span.
+    ///
+    /// It is a value between `0.0` (drop) and `100.0` (keep), determined by the local or distributed trace sampler.
+    let sampleRate: Float
+    /// Whether this span was sampled or rejected by the sampler.
+    let isKept: Bool
 
     // MARK: - Open Tracing interface
 

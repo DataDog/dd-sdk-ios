@@ -9,6 +9,9 @@ import Foundation
 public class HTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
+    @ReadWriteLock
+    public var tracerSampleRate: Float? = nil
+
     public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
@@ -42,5 +45,12 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
             spanID: spanID,
             parentSpanID: nil
         )
+    }
+
+    public var sampled: Bool? {
+        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField] {
+            return sampling == "1"
+        }
+        return nil
     }
 }

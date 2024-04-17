@@ -12,6 +12,9 @@ public typealias OTelHTTPHeadersReader = B3HTTPHeadersReader
 public class B3HTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
+    @ReadWriteLock
+    public var tracerSampleRate: Float? = nil
+
     public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
@@ -41,6 +44,16 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
                 spanID: spanID,
                 parentSpanID: b3Value?[safe: 3].flatMap({ SpanID($0, representation: .hexadecimal) })
             )
+        }
+
+        return nil
+    }
+
+    public var sampled: Bool? {
+        if let single = httpHeaderFields[B3HTTPHeaders.Single.b3Field] {
+            return single != B3HTTPHeaders.Constants.unsampledValue
+        } else if let multiple = httpHeaderFields[B3HTTPHeaders.Multiple.sampledField] {
+            return multiple == B3HTTPHeaders.Constants.sampledValue
         }
 
         return nil

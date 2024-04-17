@@ -38,7 +38,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// This value will decide of the `x-datadog-sampling-priority` header field value
     /// and if `x-datadog-trace-id` and `x-datadog-parent-id` are propagated.
-    private let sampler: Sampler
+    private let sampler: Sampling
 
     /// Initializes the headers writer.
     ///
@@ -58,7 +58,7 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
     /// Initializes the headers writer.
     ///
     /// - Parameter sampler: The sampler used for headers injection.
-    public init(sampler: Sampler) {
+    public init(sampler: Sampling) {
         self.sampler = sampler
     }
 

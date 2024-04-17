@@ -9,6 +9,9 @@ import Foundation
 public class W3CHTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
+    @ReadWriteLock
+    public var tracerSampleRate: Float? = nil
+
     public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
@@ -32,5 +35,16 @@ public class W3CHTTPHeadersReader: TracePropagationHeadersReader {
             spanID: spanID,
             parentSpanID: nil
         )
+    }
+
+    public var sampled: Bool? {
+        if let traceparent = httpHeaderFields[W3CHTTPHeaders.traceparent] {
+            guard let sampled = traceparent.components(separatedBy: W3CHTTPHeaders.Constants.separator).last else {
+                return nil
+            }
+            return sampled == W3CHTTPHeaders.Constants.sampledValue
+        }
+
+        return nil
     }
 }
