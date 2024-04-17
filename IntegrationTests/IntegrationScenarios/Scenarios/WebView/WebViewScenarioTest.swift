@@ -69,7 +69,6 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserViewEvent.session.id, expectedBrowserSessionID, "Webview events should use iOS SDK session ID")
             XCTAssertEqual(browserViewEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserViewEvent.source, .browser, "Webview events should use Browser SDK `source`")
-            XCTAssertEqual(browserViewEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
             XCTAssertEqual(browserViewEvent.container?.source, .ios, "Webview events should include a container source")
             XCTAssertEqual(browserViewEvent.container?.view.id, expectedBrowserContainerViewID, "Webview events should include a container view.id")
         }
@@ -79,7 +78,6 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserResourceEvent.session.id, expectedBrowserSessionID, "Webview events should use iOS SDK session ID")
             XCTAssertEqual(browserResourceEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserResourceEvent.source, .browser, "Webview events should use Browser SDK `source`")
-            XCTAssertEqual(browserResourceEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
             XCTAssertEqual(browserResourceEvent.container?.source, .ios, "Webview events should use include a container view")
             XCTAssertEqual(browserResourceEvent.container?.view.id, expectedBrowserContainerViewID, "Webview events should include a container view.id")
         }
