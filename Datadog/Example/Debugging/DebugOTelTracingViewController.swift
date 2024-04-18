@@ -17,6 +17,7 @@ class DebugOTelTracingViewController: UIViewController {
     @IBOutlet weak var sendSingleSpanButton: UIButton!
     @IBOutlet weak var complexSpanOperationNameTextField: UITextField!
     @IBOutlet weak var sendComplexSpanButton: UIButton!
+    @IBOutlet weak var sendSpanLinksButton: UIButton!
     @IBOutlet weak var consoleTextView: UITextView!
 
     private let queue1 = DispatchQueue(label: "com.datadoghq.debug-tracing1")
@@ -121,6 +122,25 @@ class DebugOTelTracingViewController: UIViewController {
 
             wait(seconds: 0.5)
             rootSpan.end()
+        }
+    }
+
+    // MARK: - Sending span links
+
+    @IBAction func didTabSendSpanLinks(_ sender: Any) {
+        sendSpanLinksButton.disableFor(seconds: 1)
+        queue1.async {
+            let span1 = otelTracer.spanBuilder(spanName: "span 1")
+                .startSpan()
+            wait(seconds: 0.5)
+            
+            let span2 = otelTracer.spanBuilder(spanName: "span 2")
+                .addLink(spanContext: span1.context)
+                .startSpan()
+            wait(seconds: 0.5)
+            span2.end()
+        
+            span1.end()
         }
     }
 }
