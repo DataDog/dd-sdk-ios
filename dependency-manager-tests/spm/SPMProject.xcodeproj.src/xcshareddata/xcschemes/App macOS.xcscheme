@@ -35,7 +35,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "A71398C22BD12E1D0050A54E"
+               BlueprintIdentifier = "A7FF7BF42BD135AF009BEB50"
                BuildableName = "App macOSTests.xctest"
                BlueprintName = "App macOSTests"
                ReferencedContainer = "container:SPMProject.xcodeproj">
