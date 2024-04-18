@@ -314,7 +314,9 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackErrors: configuration.trackErrors,
             trackFlutterPerformance: configuration.trackFlutterPerformance,
             trackFrustrations: configuration.trackFrustrations,
-            trackInteractions: configuration.trackInteractions,
+            // `track_interactions` is deprecated in favor of `track_user_interactions`.
+            // We still send it for backward compatibility
+            trackInteractions: configuration.trackUserInteractions,
             trackLongTask: configuration.trackLongTask,
             trackNativeErrors: nil,
             trackNativeLongTasks: configuration.trackNativeLongTasks,
@@ -322,6 +324,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackNetworkRequests: configuration.trackNetworkRequests,
             trackResources: nil,
             trackSessionAcrossSubdomains: nil,
+            trackUserInteractions: configuration.trackUserInteractions,
             trackViewsManually: configuration.trackViewsManually,
             unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: nil,
