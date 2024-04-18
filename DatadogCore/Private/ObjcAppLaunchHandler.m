@@ -9,7 +9,7 @@
 
 #import "ObjcAppLaunchHandler.h"
 
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS || TARGET_OS_TV
 #import <UIKit/UIKit.h>
 #endif
 
@@ -42,7 +42,7 @@ static __dd_private_AppLaunchHandler *_shared;
     // This is called at the `DatadogPrivate` load time, keep the work minimal
     _shared = [[self alloc] initWithProcessInfo:NSProcessInfo.processInfo
                                        loadTime:CFAbsoluteTimeGetCurrent()];
-#if TARGET_OS_IPHONE
+#if TARGET_OS_IOS || TARGET_OS_TV
     NSNotificationCenter * __weak center = NSNotificationCenter.defaultCenter;
     id __block __unused token = [center addObserverForName:UIApplicationDidBecomeActiveNotification
                                                     object:nil

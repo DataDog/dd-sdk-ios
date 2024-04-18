@@ -365,8 +365,12 @@ public enum Datadog {
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
+        #if os(macOS)
+        consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        #endif
+
         #if swift(>=5.9) && os(visionOS)
-        consolePrint("⚠️ VisionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        consolePrint("⚠️ visionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
         do {
