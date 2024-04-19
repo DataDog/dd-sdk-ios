@@ -61,7 +61,7 @@ class WebEventIntegrationTests: XCTestCase {
             "session": {
               "id": "0110cab4-7471-480e-aa4e-7ce039ced355",
               "type": "user",
-                            "has_replay": true
+              "has_replay": true
             },
             "type": "view",
             "view": {

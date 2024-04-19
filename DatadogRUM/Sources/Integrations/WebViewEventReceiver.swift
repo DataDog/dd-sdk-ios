@@ -100,7 +100,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
                 if var session = event["session"] as? JSON {
                     session["id"] = rum.sessionID
-                    // RUM-4086: unset `has_replay` if native replay is disabled
+                    // Unset `has_replay` if native replay is disabled
                     if context.hasReplay != true {
                         session["has_replay"] = context.hasReplay
                     }
@@ -109,7 +109,7 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 }
 
                 if var dd = event["_dd"] as? JSON, context.hasReplay != true {
-                    // RUM-4086: remove stats if native replay is disabled
+                    // Remove stats if native replay is disabled
                     dd["replay_stats"] = nil
                     event["_dd"] = dd
                 }
