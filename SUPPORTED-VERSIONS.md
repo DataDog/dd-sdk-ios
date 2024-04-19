@@ -6,17 +6,17 @@
 | **tvOS**   |     ✅    |  `11+` |
 | **iPadOS** |     ✅    |  `11+` |
 | **visionOS** |   ⚠️    |  `1.0+` |
-| **macOS**  |     ⚠️    |  `10.15+` |
+| **macOS**  |     ⚠️    |  `12+` |
 | **watchOS**|     ❌    |  `n/a` |
 | **Linux**  |     ❌    |  `n/a` |
 
 ## VisionOS
 
-VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `CrashReporting` is not supported on VisionOS, due to lack of support on the [PLCrashReporter side](https://github.com/microsoft/plcrashreporter/issues/288).
+VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `DatadogCrashReporting` is not supported on VisionOS, due to lack of support on the [PLCrashReporter side](https://github.com/microsoft/plcrashreporter/issues/288).
 
 ## MacOS
 
-MacOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `RUM`, which heavily depends on `UIKit` does not build on macOS.
+MacOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `DatadogRUM`, `DatadogSessionReplay` and `DatadogObjc` which heavily depend on `UIKit` do not build on macOS.
 
 ## Xcode
 

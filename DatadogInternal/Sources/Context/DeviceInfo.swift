@@ -101,7 +101,6 @@ extension DeviceInfo {
 ///
 /// - Parameters:
 ///   - processInfo: The current process information.
-///   - device: The `Host` description.
 extension DeviceInfo {
     public init(
         processInfo: ProcessInfo = .processInfo
