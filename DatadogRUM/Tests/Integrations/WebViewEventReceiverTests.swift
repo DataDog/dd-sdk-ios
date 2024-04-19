@@ -227,12 +227,11 @@ class WebViewEventReceiverTests: XCTestCase {
 
     // MARK: - Modifying Web Events
 
-    func testGivenRUMContextAvailable_whenReceivingWebEvent_itGetsEnrichedWithOtherMobileContextAndWritten() throws {
+    func testGivenRUMContextAvailable_whenReceivingWebEvent_itInjectRUMInfo() throws {
         // Given
         let dateProvider = RelativeDateProvider()
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock = .mockWith(
-            source: "react-native",
             baggages: [
                 RUMFeature.name: FeatureBaggage(rumContext)
             ]
@@ -245,13 +244,6 @@ class WebViewEventReceiverTests: XCTestCase {
             viewCache: ViewCache(dateProvider: dateProvider)
         )
 
-        let containerViewID: String = .mockRandom()
-        receiver.viewCache.insert(
-            id: containerViewID,
-            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
-            hasReplay: true
-        )
-
         dateProvider.advance(bySeconds: 1)
         let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
         let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
@@ -259,7 +251,9 @@ class WebViewEventReceiverTests: XCTestCase {
             // Known properties:
             "_dd": ["browser_sdk_version": "5.2.0"],
             "application": ["id": String.mockRandom()],
-            "session": ["id": String.mockRandom()],
+            "session": [
+                "id": String.mockRandom(),
+            ],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": Int(date),
         ].merging(random, uniquingKeysWith: { old, _ in old })
@@ -272,15 +266,12 @@ class WebViewEventReceiverTests: XCTestCase {
         let expectedWebEventWritten: JSON = [
             // Known properties:
             "_dd": [
-                "session": ["plan": 1],
                 "browser_sdk_version": "5.2.0"
             ] as [String: Any],
-            "container": [
-                "source": "react-native",
-                "view": [ "id": containerViewID ]
-            ] as [String: Any],
             "application": ["id": rumContext.applicationID],
-            "session": ["id": rumContext.sessionID],
+            "session": [
+                "id": rumContext.sessionID,
+            ],
             "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
             "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
         ].merging(random, uniquingKeysWith: { old, _ in old })
@@ -336,5 +327,163 @@ class WebViewEventReceiverTests: XCTestCase {
         XCTAssertTrue(result, "It should accept the message")
         let errorTelemetry = try XCTUnwrap(featureScope.telemetryMock.messages.firstError(), "It must send error telemetry")
         XCTAssertTrue(errorTelemetry.message.hasPrefix("Failed to decode `RUMCoreContext`"))
+    }
+
+    func testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "react-native",
+            baggages: [
+                RUMFeature.name: FeatureBaggage(rumContext),
+                SessionReplayDependency.hasReplay: FeatureBaggage(true)
+            ]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        let containerViewID: String = .mockRandom()
+        receiver.viewCache.insert(
+            id: containerViewID,
+            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            hasReplay: true
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
+        let webHasReplay: Bool = .mockRandom()
+        let webEventMock: JSON = [
+            // Known properties:
+            "_dd": [
+                "browser_sdk_version": "5.2.0",
+                "replay_stats": RUMViewEvent.DD.ReplayStats(
+                    recordsCount: 10,
+                    segmentsCount: 1,
+                    segmentsTotalRawSize: 10
+                )
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": [
+                "id": String.mockRandom(),
+                "has_replay": webHasReplay
+            ] as [String: Any],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ].merging(random, uniquingKeysWith: { old, _ in old })
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        let expectedWebEventWritten: JSON = [
+            // Known properties:
+            "_dd": [
+                "browser_sdk_version": "5.2.0",
+                "replay_stats": [
+                    "records_count": 10,
+                    "segments_count": 1,
+                    "segments_total_raw_size": 10
+                ]
+            ] as [String: Any],
+            "container": [
+                "source": "react-native",
+                "view": [ "id": containerViewID ]
+            ] as [String: Any],
+            "application": ["id": rumContext.applicationID],
+            "session": [
+                "id": rumContext.sessionID,
+                "has_replay": webHasReplay
+            ] as [String: Any],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+        ].merging(random, uniquingKeysWith: { old, _ in old })
+
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
+    }
+
+    func testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo() throws {
+        // Given
+        let dateProvider = RelativeDateProvider()
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock = .mockWith(
+            source: "react-native",
+            baggages: [
+                RUMFeature.name: FeatureBaggage(rumContext),
+                SessionReplayDependency.hasReplay: FeatureBaggage(false)
+            ]
+        )
+
+        let receiver = WebViewEventReceiver(
+            featureScope: featureScope,
+            dateProvider: DateProviderMock(),
+            commandSubscriber: RUMCommandSubscriberMock(),
+            viewCache: ViewCache(dateProvider: dateProvider)
+        )
+
+        let containerViewID: String = .mockRandom()
+        receiver.viewCache.insert(
+            id: containerViewID,
+            timestamp: dateProvider.now.timeIntervalSince1970.toInt64Milliseconds,
+            hasReplay: true
+        )
+
+        dateProvider.advance(bySeconds: 1)
+        let date = dateProvider.now.timeIntervalSince1970.toInt64Milliseconds
+        let random = mockRandomAttributes() // because below we only mock partial web event, we use this random to make the test fuzzy
+        let webEventMock: JSON = [
+            // Known properties:
+            "_dd": [
+                "browser_sdk_version": "5.2.0",
+                "replay_stats": RUMViewEvent.DD.ReplayStats(
+                    recordsCount: .mockRandom(),
+                    segmentsCount: .mockRandom(),
+                    segmentsTotalRawSize: .mockRandom()
+                )
+            ] as [String: Any],
+            "application": ["id": String.mockRandom()],
+            "session": [
+                "id": String.mockRandom(),
+                "has_replay": true
+            ] as [String: Any],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": Int(date),
+        ].merging(random, uniquingKeysWith: { old, _ in old })
+
+        // When
+        let result = receiver.receive(message: webViewTrackingMessage(with: webEventMock), from: NOPDatadogCore())
+
+        // Then
+        let expectedWebEventWritten: JSON = [
+            // Known properties:
+            "_dd": [
+                "browser_sdk_version": "5.2.0"
+            ] as [String: Any],
+            "container": [
+                "source": "react-native",
+                "view": [ "id": containerViewID ]
+            ] as [String: Any],
+            "application": ["id": rumContext.applicationID],
+            "session": [
+                "id": rumContext.sessionID,
+                "has_replay": false
+            ] as [String: Any],
+            "view": ["id": "00000000-aaaa-0000-aaaa-000000000000"],
+            "date": date + featureScope.contextMock.serverTimeOffset.toInt64Milliseconds,
+        ].merging(random, uniquingKeysWith: { old, _ in old })
+
+        XCTAssertTrue(result, "It must accept the message")
+        XCTAssertEqual(featureScope.eventsWritten.count, 1, "It must write web event to core")
+        let actualWebEventWritten = try XCTUnwrap(featureScope.eventsWritten.first)
+        DDAssertJSONEqual(AnyCodable(actualWebEventWritten), AnyCodable(expectedWebEventWritten))
     }
 }
