@@ -16,7 +16,4 @@ public protocol TracePropagationHeadersReader {
 
     /// Indicates whether the trace was sampled based on the provided headers.
     var sampled: Bool? { get }
-
-    /// The sample rate used to sample this trace.
-    var tracerSampleRate: Float? { set get }
 }

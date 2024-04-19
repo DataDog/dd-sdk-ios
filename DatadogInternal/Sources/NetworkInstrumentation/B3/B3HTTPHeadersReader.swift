@@ -12,9 +12,6 @@ public typealias OTelHTTPHeadersReader = B3HTTPHeadersReader
 public class B3HTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
-    @ReadWriteLock
-    public var tracerSampleRate: Float? = nil
-
     public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }

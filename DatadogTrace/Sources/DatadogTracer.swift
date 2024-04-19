@@ -101,9 +101,18 @@ internal class DatadogTracer: OTTracer {
 
     func extract(reader: OTFormatReader) -> OTSpanContext? {
         // TODO: RUMM-385 - make `HTTPHeadersReader` available in public API
-        var reader = reader as? TracePropagationHeadersReader
-        reader?.tracerSampleRate = localTraceSampler.samplingRate
-        return (reader as? OTFormatReader)?.extract()
+        guard let context = reader.extract() as? DDSpanContext else {
+            return nil
+        }
+
+        return DDSpanContext(
+            traceID: context.traceID,
+            spanID: context.spanID,
+            parentSpanID: context.parentSpanID,
+            baggageItems: context.baggageItems,
+            sampleRate: localTraceSampler.samplingRate,
+            isKept: context.isKept
+        )
     }
 
     var activeSpan: OTSpan? {

@@ -39,8 +39,12 @@ extension TracePropagationHeadersReader where Self: OTFormatReader {
             spanID: ids.spanID,
             parentSpanID: ids.parentSpanID,
             baggageItems: BaggageItems(),
-            sampleRate: tracerSampleRate ?? 0, // unreachable default: sample rate is set by the tracer during extraction
-            isKept: sampled ?? false // unreachable default: we got trace ID, so this request must have been instrumented
+            // RUM-3470: The `0` sample rate set here is only a placeholder value. It is overwritten with
+            // the actual value in the caller: `Tracer.extract(reader)`.
+            sampleRate: 0,
+            // RUM-3470: The `false` default will be never reached. As we got trace and span ID,
+            // it means that the request has been instrumented, so sampling decision was read as well.
+            isKept: sampled ?? false
         )
     }
 }

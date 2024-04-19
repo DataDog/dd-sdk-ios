@@ -9,9 +9,6 @@ import Foundation
 public class W3CHTTPHeadersReader: TracePropagationHeadersReader {
     private let httpHeaderFields: [String: String]
 
-    @ReadWriteLock
-    public var tracerSampleRate: Float? = nil
-
     public init(httpHeaderFields: [String: String]) {
         self.httpHeaderFields = httpHeaderFields
     }
