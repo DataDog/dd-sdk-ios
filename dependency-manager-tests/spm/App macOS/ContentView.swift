@@ -15,8 +15,4 @@ struct ContentView: View {
         }
         .padding()
     }
-
-    init() {
-        DatadogSetup.initialize()
-    }
 }

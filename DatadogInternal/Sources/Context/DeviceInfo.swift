@@ -96,7 +96,7 @@ extension DeviceInfo {
         #endif
     }
 }
-#else
+#elseif os(macOS)
 /// Creates device info based on Host description.
 ///
 /// - Parameters:

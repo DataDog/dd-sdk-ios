@@ -217,6 +217,7 @@
 			isa = PBXGroup;
 			children = (
 				61CE5FD42461D3C2005EA621 /* xcconfigs */,
+				A787CA7D2BD277190053CEBE /* Shared */,
 				61C363D824374D5F00C4D4E6 /* App */,
 				61C363EF24374D6100C4D4E6 /* AppTests */,
 				61C363FA24374D6100C4D4E6 /* AppUITests */,
@@ -250,7 +251,6 @@
 				61C363DD24374D5F00C4D4E6 /* ViewController.swift */,
 				61C363E724374D6000C4D4E6 /* Info.plist */,
 				D22919302B76589B00C38A18 /* PrivacyInfo.xcprivacy */,
-				A71398B12BD12B6D0050A54E /* DatadogSetup.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -306,6 +306,14 @@
 				A71398A42BD1277A0050A54E /* App_macOSUITests.swift */,
 			);
 			path = "App macOSUITests";
+			sourceTree = "<group>";
+		};
+		A787CA7D2BD277190053CEBE /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				A71398B12BD12B6D0050A54E /* DatadogSetup.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

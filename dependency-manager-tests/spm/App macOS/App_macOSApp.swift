@@ -13,4 +13,8 @@ struct App_macOSApp: App {
             ContentView()
         }
     }
+
+    init() {
+        DatadogSetup.initialize()
+    }
 }
