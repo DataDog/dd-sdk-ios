@@ -59,7 +59,7 @@ public enum WebViewTracking {
     /// 
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
     /// `hosts`, web events will be correlated with the RUM session from native SDK.
-    /// 
+    ///
     /// - Parameters:
     ///   - webView: The web-view to track.
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
@@ -114,7 +114,7 @@ public enum WebViewTracking {
         guard !isTracking else {
             DD.logger.warn("`startTrackingDatadogEvents(core:hosts:)` was called more than once for the same WebView. Second call will be ignored. Make sure you call it only once.")
             return
-        }
+       }
 
         let bridgeName = DDScriptMessageHandler.name
 
@@ -142,7 +142,6 @@ public enum WebViewTracking {
 
         let privacyLevel = sessionReplayConfiguration?.privacyLevel ?? .mask
 
-        // Share native capabilities with Browser SDK
         // Share native capabilities with Browser SDK
         let capabilities = sessionReplayConfiguration != nil ? "\"records\"" : ""
 
