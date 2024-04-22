@@ -1,5 +1,5 @@
 # Unreleased
-
+- [FIX] Fix crash when extension targets. See [#1789][]
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
@@ -637,6 +637,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
+[#1789]: https://github.com/DataDog/dd-sdk-ios/pull/1789
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
