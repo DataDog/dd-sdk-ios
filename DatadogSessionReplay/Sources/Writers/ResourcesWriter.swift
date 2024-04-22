@@ -43,7 +43,8 @@ internal class ResourcesWriter: ResourcesWriting {
         self.decoder = decoder
         self.scope.dataStore.value(forKey: Constants.storeCreationKey) { [weak self]  result in
             do {
-                if let storeCreation = try result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
+                if let storeCreation = try result.data(expectedVersion: Constants.currentStoreVersion)?.asTimeInterval(),
+                   Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
                     self?.scope.dataStore.value(forKey: Constants.knownResourcesKey) { result in
                         switch result {
                         case .value(let data, let version) where version == Constants.currentStoreVersion:
