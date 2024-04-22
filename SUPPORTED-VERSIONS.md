@@ -5,8 +5,10 @@
 | **iOS**    |     ✅    |  `11+` |
 | **tvOS**   |     ✅    |  `11+` |
 | **iPadOS** |     ✅    |  `11+` |
-| **visionOS** |   ⚠️    |  `1.0+` |
+| **macOS (Designed for iPad)**  |     ✅    |  `11+` |
+| **macOS (Catalyst)**  |     ⚠️    |  `12+` |
 | **macOS**  |     ⚠️    |  `12+` |
+| **visionOS** |   ⚠️    |  `1.0+` |
 | **watchOS**|     ❌    |  `n/a` |
 | **Linux**  |     ❌    |  `n/a` |
 
@@ -17,6 +19,10 @@ VisionOS is not officially supported by Datadog SDK. Some features may not be fu
 ## MacOS
 
 MacOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `DatadogRUM`, `DatadogSessionReplay` and `DatadogObjc` which heavily depend on `UIKit` do not build on macOS.
+
+## Catalyst
+
+We support Catalyst in build mode only, which means that macOS target will build, but functionalities for the SDK might not work for this target.
 
 ## Xcode
 
@@ -51,9 +57,6 @@ We currently support integration of the SDK using following dependency managers.
 |  **SwiftNIO**   |       ❌     |   ❌    |
 
 *Note: Third party networking libraries can be instrumented by implementing custom `DDURLSessionDelegate`.*
-
-## Catalyst
-We support Catalyst in build mode only, which means that macOS target will build, but functionalities for the SDK won't work for this target.
 
 ## Dependencies
 The Datadog SDK depends on the following third-party library:
