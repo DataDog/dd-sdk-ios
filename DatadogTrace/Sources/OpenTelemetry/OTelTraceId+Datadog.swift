@@ -12,9 +12,6 @@ extension OpenTelemetryApi.TraceId {
     /// Converts OpenTelemetry `TraceId` to Datadog `TraceID`.
     /// - Returns: Datadog `TraceID` with only higher order bits considered.
     func toDatadog() -> TraceID {
-        var data = Data(count: 16)
-        self.copyBytesTo(dest: &data, destOffset: 0)
-        let integerLiteral = UInt64(bigEndian: data.withUnsafeBytes { $0.load(as: UInt64.self) })
-        return .init(integerLiteral: integerLiteral)
+        return .init(idHi: self.idHi, idLo: self.idLo)
     }
 }

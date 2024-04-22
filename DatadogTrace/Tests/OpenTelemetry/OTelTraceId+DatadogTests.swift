@@ -15,6 +15,7 @@ class OTelTraceIdDatadogTests: XCTestCase {
     func testToDatadog_onlyHigherOrderBitsAreConsidered() {
         let otelId = TraceId.random()
         let ddId = otelId.toDatadog()
-        XCTAssertEqual(otelId.rawHigherLong, ddId.rawValue)
+        XCTAssertEqual(otelId.idLo, ddId.idLo)
+        XCTAssertEqual(otelId.idHi, ddId.idHi)
     }
 }

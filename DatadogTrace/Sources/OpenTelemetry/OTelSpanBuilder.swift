@@ -116,11 +116,7 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
             traceState: traceState
         )
 
-        guard let core = tracer.core else {
-            return NOPOTelSpan()
-        }
-
-        let writer = LazySpanWriteContext(core: core)
+        let writer = LazySpanWriteContext(featureScope: tracer.featureScope)
 
         let createdSpan = OTelSpan(
             attributes: attributes,
