@@ -30,9 +30,15 @@ class HeadBasedSamplingTests: XCTestCase {
 
     // MARK: - Local Tracing
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported
     func testSamplingLocalTrace() throws {
-        let localTraceSampling: Float = 50
+        /*
+         This is the basic situation of local trace with 3 spans:
+
+         client-ios-app:     [-------- parent -----------]   |
+         client-ios-app:        [----- child --------]       | all 3: keep or drop
+         client-ios-app:           [-- grandchild --]        |
+         */
+        let localTraceSampling: Float = 50 // keep or drop
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -54,9 +60,14 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertTrue(allKept || allDropped, "All spans must be either kept or dropped")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported
     func testSamplingLocalTraceWithImplicitParent() throws {
-        let localTraceSampling: Float = 50
+        /*
+         This is the situation of local trace with active span as a parent:
+
+         client-ios-app:     [-------- active.span -----]   |
+         client-ios-app:       [- child1 -][- child2 -]     | all 3: keep or drop
+         */
+        let localTraceSampling: Float = 50 // keep or drop
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -65,8 +76,8 @@ class HeadBasedSamplingTests: XCTestCase {
         // When
         let parent = Tracer.shared(in: core).startSpan(operationName: "parent").setActive()
         let child1 = Tracer.shared(in: core).startSpan(operationName: "child 1")
-        let child2 = Tracer.shared(in: core).startSpan(operationName: "child 2")
         child1.finish()
+        let child2 = Tracer.shared(in: core).startSpan(operationName: "child 2")
         child2.finish()
         parent.finish()
 
@@ -78,10 +89,9 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertTrue(allKept || allDropped, "All spans must be either kept or dropped")
     }
 
-    // MARK: - Distributed Tracing
+    // MARK: - Distributed Tracing (through network instrumentation API)
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported
-    func testSendingSampledDistributedTraceWithNoParent() throws {
+    func testSendingSampledDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with DatadogTrace network
          instrumentation (with no parent):
@@ -111,15 +121,17 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertTrue(span.isKept, "Span must be sampled")
 
         // Then
-        let expectedTraceIDField = String(span.traceID, representation: .decimal)
-        let expectedSpanIDField = String(span.spanID, representation: .decimal)
+        let expectedTraceIDField = span.traceID.idLoHex
+        let expectedSpanIDField = String(span.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(span.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
     // TODO: RUM-3535 Enable this test when trace context injection control is implemented
-    func testSendingDroppedDistributedTraceWithNoParent() throws {
+    func testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with DatadogTrace network
          instrumentation (with no parent):
@@ -149,15 +161,16 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertFalse(span.isKept, "Span must be dropped")
 
         // Then
-        let expectedTraceIDField = String(span.traceID, representation: .decimal)
-        let expectedSpanIDField = String(span.spanID, representation: .decimal)
+        let expectedTraceIDField = span.traceID.idLoHex
+        let expectedSpanIDField = String(span.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(span.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported
-    func testSendingSampledDistributedTraceWithParent() throws {
+    func testSendingSampledDistributedTraceWithParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
          created with DatadogTrace network instrumentation:
@@ -196,15 +209,17 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(urlsessionSpan.parentID, activeSpan.spanID)
 
         // Then
-        let expectedTraceIDField = String(activeSpan.traceID, representation: .decimal)
-        let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .decimal)
+        let expectedTraceIDField = activeSpan.traceID.idLoHex
+        let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
     // TODO: RUM-3535 Enable this test when trace context injection control is implemented
-    func testSendingDroppedDistributedTraceWithParent() throws {
+    func testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
          created with DatadogTrace network instrumentation:
@@ -243,11 +258,195 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(urlsessionSpan.parentID, activeSpan.spanID)
 
         // Then
-        let expectedTraceIDField = String(activeSpan.traceID, representation: .decimal)
-        let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .decimal)
+        let expectedTraceIDField = activeSpan.traceID.idLoHex
+        let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+    }
+
+    // MARK: - Distributed Tracing (through Tracer API)
+
+    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    func testSendingSampledDistributedTraceWithNoParent_throughTracerAPI() throws {
+        /*
+         This is the situation where distributed trace starts with the span created with Datadog tracer:
+
+         client-ios-app:     [------ network.span ------]   keep
+         client backend:        [--- backend span ---]      keep
+         */
+
+        let localTraceSampling: Float = 100 // keep all
+        let distributedTraceSampling: Float = 0 // drop all
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        var request: URLRequest = .mockAny()
+        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
+        Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
+        writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
+        span.finish()
+
+        // Then
+        let networkSpan = try XCTUnwrap(core.waitAndReturnSpanEvents().first, "It should send span event")
+        XCTAssertEqual(networkSpan.operationName, "network.span")
+        XCTAssertEqual(networkSpan.samplingRate, 1, "Span must use local trace sample rate")
+        XCTAssertTrue(networkSpan.isKept, "Span must be sampled")
+
+        // Then
+        let expectedTraceIDField = networkSpan.traceID.idLoHex
+        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(networkSpan.traceID.idHiHex)"
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+    }
+
+    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    func testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI() throws {
+        /*
+         This is the situation where distributed trace starts with the span created with Datadog tracer:
+
+         client-ios-app:     [------ network.span ------]   drop
+         client backend:        [--- backend span ---]      drop
+         */
+
+        let localTraceSampling: Float = 0 // drop all
+        let distributedTraceSampling: Float = 100 // keep all
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        var request: URLRequest = .mockAny()
+        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
+        Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
+        writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
+        span.finish()
+
+        // Then
+        let networkSpan = try XCTUnwrap(core.waitAndReturnSpanEvents().first, "It should send span event")
+        XCTAssertEqual(networkSpan.operationName, "network.span")
+        XCTAssertEqual(networkSpan.samplingRate, 0, "Span must use local trace sample rate")
+        XCTAssertFalse(networkSpan.isKept, "Span must be dropped")
+
+        // Then
+        let expectedTraceIDField = networkSpan.traceID.idLoHex
+        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(networkSpan.traceID.idHiHex)"
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+    }
+
+    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    func testSendingSampledDistributedTraceWithParent_throughTracerAPI() throws {
+        /*
+         This is the situation where distributed trace starts with an active local span and is continued with the span
+         created with Datadog tracer:
+
+         client-ios-app:     [-------- active.span -----------]   keep
+         client-ios-app:         [------ network.span ------]     keep
+         client backend:            [--- backend span ---]        keep
+         */
+
+        let localTraceSampling: Float = 100 // keep all
+        let distributedTraceSampling: Float = 0 // drop all
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        var request: URLRequest = .mockAny()
+        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
+        let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
+        Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
+        writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
+        span.finish()
+        parentSpan.finish()
+
+        // Then
+        let spanEvents = core.waitAndReturnSpanEvents()
+        let activeSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "active.span" }))
+        let networkSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "network.span" }))
+
+        XCTAssertEqual(activeSpan.samplingRate, 1, "Span must use local trace sample rate")
+        XCTAssertTrue(activeSpan.isKept, "Span must be sampled")
+        XCTAssertEqual(networkSpan.samplingRate, 1, "Span must use local trace sample rate")
+        XCTAssertTrue(networkSpan.isKept, "Span must be sampled")
+        XCTAssertEqual(networkSpan.traceID, activeSpan.traceID)
+        XCTAssertEqual(networkSpan.parentID, activeSpan.spanID)
+
+        // Then
+        let expectedTraceIDField = activeSpan.traceID.idLoHex
+        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
+    }
+
+    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    func testSendingDroppedDistributedTraceWithParent_throughTracerAPI() throws {
+        /*
+         This is the situation where distributed trace starts with an active local span and is continued with the span
+         created with Datadog tracer:
+
+         client-ios-app:     [-------- active.span -----------]   drop
+         client-ios-app:         [------ network.span ------]     drop
+         client backend:            [--- backend span ---]        drop
+         */
+
+        let localTraceSampling: Float = 0 // drop all
+        let distributedTraceSampling: Float = 100 // keep all
+
+        // Given
+        traceConfig.sampleRate = localTraceSampling
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        var request: URLRequest = .mockAny()
+        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
+        let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
+        Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
+        writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
+        span.finish()
+        parentSpan.finish()
+
+        // Then
+        let spanEvents = core.waitAndReturnSpanEvents()
+        let activeSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "active.span" }))
+        let networkSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "network.span" }))
+
+        XCTAssertEqual(activeSpan.samplingRate, 0, "Span must use local trace sample rate")
+        XCTAssertFalse(activeSpan.isKept, "Span must be dropped")
+        XCTAssertEqual(networkSpan.samplingRate, 0, "Span must use local trace sample rate")
+        XCTAssertFalse(networkSpan.isKept, "Span must be dropped")
+        XCTAssertEqual(networkSpan.traceID, activeSpan.traceID)
+        XCTAssertEqual(networkSpan.parentID, activeSpan.spanID)
+
+        // Then
+        let expectedTraceIDField = activeSpan.traceID.idLoHex
+        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
     }
 
     // MARK: - Helpers

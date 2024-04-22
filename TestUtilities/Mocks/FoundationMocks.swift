@@ -620,7 +620,7 @@ extension URLSessionTask {
         return URLSessionDataTaskMock(request: .mockAny(), response: .mockAny())
     }
 
-    public static func mockWith(request: URLRequest, response: HTTPURLResponse) -> URLSessionDataTask {
+    public static func mockWith(request: URLRequest = .mockAny(), response: HTTPURLResponse = .mockAny()) -> URLSessionDataTask {
         return URLSessionDataTaskMock(request: request, response: response)
     }
 }

@@ -42,7 +42,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// This value will decide of the `FLAG_SAMPLED` header field value
     /// and if `trace-id`, `span-id` are propagated.
-    private let sampler: Sampler
+    private let sampler: Sampling
 
     /// Initializes the headers writer.
     ///
@@ -65,7 +65,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// - Parameter sampler: The sampler used for headers injection.
     /// - Parameter tracestate: The tracestate to be injected.
-    public init(sampler: Sampler, tracestate: [String: String]) {
+    public init(sampler: Sampling, tracestate: [String: String]) {
         self.sampler = sampler
         self.tracestate = tracestate
     }

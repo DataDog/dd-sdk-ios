@@ -14,6 +14,7 @@ class HTTPHeadersReaderTests: XCTestCase {
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext() {
@@ -22,5 +23,6 @@ class HTTPHeadersReaderTests: XCTestCase {
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        XCTAssertEqual(reader.sampled, false)
     }
 }

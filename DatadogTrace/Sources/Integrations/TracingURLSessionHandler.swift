@@ -29,63 +29,61 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         self.firstPartyHosts = firstPartyHosts
     }
 
-    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> URLRequest {
+    func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> (URLRequest, TraceContext?) {
         guard let tracer = tracer else {
-            return request
+            return (request, nil)
         }
 
         // Use the current active span as parent if the propagation
         // headers support it.
         let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
-        let spanContext = tracer.createSpanContext(parentSpanContext: parentSpanContext)
+        let spanContext = tracer.createSpanContext(parentSpanContext: parentSpanContext, using: distributedTraceSampler)
+        let injectedSpanContext = TraceContext(
+            traceID: spanContext.traceID,
+            spanID: spanContext.spanID,
+            parentSpanID: spanContext.parentSpanID,
+            sampleRate: spanContext.sampleRate,
+            isKept: spanContext.isKept
+        )
 
+        let sampler = DeterministicSampler(shouldSample: spanContext.isKept, samplingRate: spanContext.sampleRate)
         var request = request
+        var hasSetAnyHeader = false
         headerTypes.forEach {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(sampler: distributedTraceSampler)
+                writer = HTTPHeadersWriter(sampler: sampler)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    sampler: distributedTraceSampler,
+                    sampler: sampler,
                     injectEncoding: .single
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    sampler: distributedTraceSampler,
+                    sampler: sampler,
                     injectEncoding: .multiple
                 )
             case .tracecontext:
-                writer = W3CHTTPHeadersWriter(sampler: distributedTraceSampler, tracestate: [:])
+                writer = W3CHTTPHeadersWriter(sampler: sampler, tracestate: [:])
             }
 
             writer.write(
-                traceID: spanContext.traceID,
-                spanID: spanContext.spanID,
-                parentSpanID: spanContext.parentSpanID
+                traceID: injectedSpanContext.traceID,
+                spanID: injectedSpanContext.spanID,
+                parentSpanID: injectedSpanContext.parentSpanID
             )
 
             writer.traceHeaderFields.forEach { field, value in
                 // do not overwrite existing header
                 if request.value(forHTTPHeaderField: field) == nil {
+                    hasSetAnyHeader = true
                     request.setValue(value, forHTTPHeaderField: field)
                 }
             }
         }
 
-        return request
-    }
-
-    func traceContext() -> DatadogInternal.TraceContext? {
-        guard let context = tracer?.activeSpan?.context as? DDSpanContext else {
-            return nil
-        }
-
-        return TraceContext(
-            traceID: context.traceID,
-            spanID: context.spanID,
-            parentSpanID: context.parentSpanID
-        )
+        return (request, (hasSetAnyHeader && injectedSpanContext.isKept) ? injectedSpanContext : nil)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {
@@ -110,7 +108,9 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
                 traceID: trace.traceID,
                 spanID: trace.spanID,
                 parentSpanID: trace.parentSpanID,
-                baggageItems: .init()
+                baggageItems: .init(),
+                sampleRate: trace.sampleRate,
+                isKept: trace.isKept
             )
 
             span = tracer.startSpan(
