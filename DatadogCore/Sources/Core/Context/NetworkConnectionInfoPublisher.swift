@@ -158,7 +158,7 @@ extension NetworkConnectionInfo.Interface {
         }
         self = .cellular
         #else
-        self = nil
+        self = .other
         #endif
     }
 }
