@@ -20,7 +20,7 @@ final class UIImageResourceTests: XCTestCase {
         let image = createSinglePixelImage()
         let imageResource = UIImageResource(image: image, tintColor: nil)
 
-        XCTAssertEqual(imageResource.calculateIdentifier().count, 32)
+        XCTAssertEqual(imageResource.calculateIdentifier(), "eab6bf754eb6a790cc1240262c1c3a29")
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
@@ -29,8 +29,7 @@ final class UIImageResourceTests: XCTestCase {
         let tintColor = UIColor.red
         let imageResource = UIImageResource(image: image, tintColor: tintColor)
 
-        XCTAssertEqual(imageResource.calculateIdentifier().count, 40)
-        XCTAssertTrue(imageResource.calculateIdentifier().contains("FF0000FF"))
+        XCTAssertEqual(imageResource.calculateIdentifier(), "eab6bf754eb6a790cc1240262c1c3a29FF0000FF")
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
@@ -39,7 +38,7 @@ final class UIImageResourceTests: XCTestCase {
         let image = UIImage(systemName: "circle.fill")!
         let imageResource = UIImageResource(image: image, tintColor: nil)
 
-        XCTAssertEqual(imageResource.calculateIdentifier().count, 32)
+        XCTAssertEqual(imageResource.calculateIdentifier(), "d918588dd612a9e8a13d9eedb5b57f78")
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
@@ -49,8 +48,7 @@ final class UIImageResourceTests: XCTestCase {
         let tintColor = UIColor.red
         let imageResource = UIImageResource(image: image, tintColor: tintColor)
 
-        XCTAssertEqual(imageResource.calculateIdentifier().count, 40)
-        XCTAssertTrue(imageResource.calculateIdentifier().contains("FF0000FF"))
+        XCTAssertEqual(imageResource.calculateIdentifier(), "d918588dd612a9e8a13d9eedb5b57f78FF0000FF")
         XCTAssertGreaterThan(imageResource.calculateData().count, 0)
     }
 
