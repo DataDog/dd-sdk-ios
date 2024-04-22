@@ -37,7 +37,15 @@ extension DatadogExtension where ExtendedType: UIImage {
 
 extension UIColor {
     var srIdentifier: String {
-        return "\(hash)"
+        var r: CGFloat = 0
+        var g: CGFloat = 0
+        var b: CGFloat = 0
+        var a: CGFloat = 0
+        getRed(&r, green: &g, blue: &b, alpha: &a)
+        return String(
+            format: "%02X%02X%02X%02X",
+            Int(round(r * 255)), Int(round(g * 255)), Int(round(b * 255)), Int(round(a * 255))
+        )
     }
 }
 #endif
