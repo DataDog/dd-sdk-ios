@@ -72,6 +72,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 return
             }
             let context = contextProvider.read()
+            guard !context.isExtension else {
+                // Prevent uploading from app extensions
+                return
+            }
             let blockersForUpload = uploadConditions.blockersForUpload(with: context)
             let isSystemReady = blockersForUpload.isEmpty
             let files = isSystemReady ? fileReader.readFiles(limit: maxBatchesPerUpload) : nil

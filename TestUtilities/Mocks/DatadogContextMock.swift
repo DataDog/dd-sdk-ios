@@ -36,6 +36,7 @@ extension DatadogContext: AnyMockable {
         carrierInfo: CarrierInfo? = .mockAny(),
         batteryStatus: BatteryStatus? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
+        isExtension: Bool = false,
         baggages: [String: FeatureBaggage] = [:]
     ) -> DatadogContext {
         .init(
@@ -63,7 +64,8 @@ extension DatadogContext: AnyMockable {
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
-            isLowPowerModeEnabled: isLowPowerModeEnabled,
+            isLowPowerModeEnabled: isLowPowerModeEnabled, 
+            isExtension: isExtension,
             baggages: baggages
         )
     }
@@ -94,6 +96,7 @@ extension DatadogContext: AnyMockable {
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
             isLowPowerModeEnabled: .mockRandom(),
+            isExtension: .mockRandom(),
             baggages: .mockRandom()
         )
     }

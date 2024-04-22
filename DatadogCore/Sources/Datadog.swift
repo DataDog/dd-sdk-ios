@@ -449,6 +449,7 @@ public enum Datadog {
                 applicationBundleIdentifier: bundleIdentifier,
                 applicationVersion: applicationVersion,
                 sdkInitDate: configuration.dateProvider.now,
+                isExtension: bundleType == .iOSAppExtension,
                 device: DeviceInfo(),
                 dateProvider: configuration.dateProvider,
                 serverDateProvider: configuration.serverDateProvider

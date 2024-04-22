@@ -684,6 +684,42 @@ class DataUploadWorkerTests: XCTestCase {
             wait(for: [expectTaskEnded], timeout: 0.5)
         }
     }
+
+    func testItDoesNotUpload_whenRunFromExtension() throws {
+        let dataUploader = DataUploaderMock(
+            uploadStatus: .mockRandom(),
+            onUpload: {
+                XCTFail("Extension should not upload")
+            }
+        )
+        let performance = UploadPerformanceMock.veryQuick
+        let worker = DataUploadWorker(
+            queue: uploaderQueue,
+            fileReader: reader,
+            dataUploader: dataUploader,
+            contextProvider: .mockWith(context: .mockWith(isExtension: true)),
+            uploadConditions: .alwaysUpload(),
+            delay: DataUploadDelay(performance: performance),
+            featureName: .mockAny(),
+            telemetry: NOPTelemetry(),
+            maxBatchesPerUpload: .mockRandom(min: 1, max: 100)
+        )
+        writer.write(value: ["k1": "v1"])
+
+        // Then
+        let timeInSeconds = performance.initialUploadDelay
+        let expectation = XCTestExpectation(description: "Await for potential upload trigger")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + timeInSeconds) {
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: timeInSeconds + 1.0)
+        try withExtendedLifetime(worker) {
+            XCTAssertEqual(try orchestrator.directory.files().count, 1)
+            XCTAssertEqual(dataUploader.uploadedEvents.count, 0)
+        }
+    }
 }
 
 private extension DataUploadConditions {

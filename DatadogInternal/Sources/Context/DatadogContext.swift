@@ -106,6 +106,9 @@ public struct DatadogContext {
     /// `true` if the Low Power Mode is enabled.
     public var isLowPowerModeEnabled = false
 
+    /// Flag that determines if SDK is run from the iOS extension.
+    public var isExtension: Bool
+
     /// Type-less context baggages.
     public var baggages: [String: FeatureBaggage] = [:]
 
@@ -136,6 +139,7 @@ public struct DatadogContext {
         carrierInfo: CarrierInfo? = nil,
         batteryStatus: BatteryStatus? = nil,
         isLowPowerModeEnabled: Bool = false,
+        isExtension: Bool,
         baggages: [String: FeatureBaggage] = [:]
     ) {
         self.site = site
@@ -163,6 +167,7 @@ public struct DatadogContext {
         self.carrierInfo = carrierInfo
         self.batteryStatus = batteryStatus
         self.isLowPowerModeEnabled = isLowPowerModeEnabled
+        self.isExtension = isExtension
         self.baggages = baggages
     }
     // swiftlint:enable function_default_parameter_at_end

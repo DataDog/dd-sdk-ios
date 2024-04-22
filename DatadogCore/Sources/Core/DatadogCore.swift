@@ -387,6 +387,7 @@ extension DatadogContextProvider {
         applicationBundleIdentifier: String,
         applicationVersion: String,
         sdkInitDate: Date,
+        isExtension: Bool,
         device: DeviceInfo,
         dateProvider: DateProvider,
         serverDateProvider: ServerDateProvider
@@ -411,7 +412,8 @@ extension DatadogContextProvider {
             // this is a placeholder waiting for the `ApplicationStatePublisher`
             // to be initialized on the main thread, this value will be overrided
             // as soon as the subscription is made.
-            applicationStateHistory: .active(since: dateProvider.now)
+            applicationStateHistory: .active(since: dateProvider.now),
+            isExtension: isExtension
         )
 
         self.init(context: context)
