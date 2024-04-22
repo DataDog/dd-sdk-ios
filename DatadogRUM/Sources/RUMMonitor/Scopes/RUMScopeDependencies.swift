@@ -27,7 +27,8 @@ internal struct VitalsReaders {
 
 /// Dependency container for injecting components to `RUMScopes` hierarchy.
 internal struct RUMScopeDependencies {
-    weak var core: DatadogCoreProtocol?
+    /// The RUM feature scope to interact with core.
+    let featureScope: FeatureScope
     let rumApplicationID: String
     let sessionSampler: Sampler
     let trackBackgroundEvents: Bool
@@ -40,18 +41,50 @@ internal struct RUMScopeDependencies {
     let syntheticsTest: RUMSyntheticsTest?
     let vitalsReaders: VitalsReaders?
     let onSessionStart: RUM.SessionListener?
+    let viewCache: ViewCache
+    /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
+    let fatalErrorContext: FatalErrorContextNotifier
+    /// Telemetry endpoint.
+    let telemetry: Telemetry
+    let sessionType: RUMSessionType
 
-    var telemetry: Telemetry {
-        core?.telemetry ?? NOPTelemetry()
-    }
+    init(
+        featureScope: FeatureScope,
+        rumApplicationID: String,
+        sessionSampler: Sampler,
+        trackBackgroundEvents: Bool,
+        trackFrustrations: Bool,
+        firstPartyHosts: FirstPartyHosts?,
+        eventBuilder: RUMEventBuilder,
+        rumUUIDGenerator: RUMUUIDGenerator,
+        ciTest: RUMCITest?,
+        syntheticsTest: RUMSyntheticsTest?,
+        vitalsReaders: VitalsReaders?,
+        onSessionStart: RUM.SessionListener?,
+        viewCache: ViewCache
+    ) {
+        self.featureScope = featureScope
+        self.rumApplicationID = rumApplicationID
+        self.sessionSampler = sessionSampler
+        self.trackBackgroundEvents = trackBackgroundEvents
+        self.trackFrustrations = trackFrustrations
+        self.firstPartyHosts = firstPartyHosts
+        self.eventBuilder = eventBuilder
+        self.rumUUIDGenerator = rumUUIDGenerator
+        self.ciTest = ciTest
+        self.syntheticsTest = syntheticsTest
+        self.vitalsReaders = vitalsReaders
+        self.onSessionStart = onSessionStart
+        self.viewCache = viewCache
+        self.fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        self.telemetry = featureScope.telemetry
 
-    var sessionType: RUMSessionType {
         if ciTest != nil {
-            return .ciTest
+            self.sessionType = .ciTest
         } else if syntheticsTest != nil {
-            return .synthetics
+            self.sessionType = .synthetics
         } else {
-            return .user
+            self.sessionType = .user
         }
     }
 }

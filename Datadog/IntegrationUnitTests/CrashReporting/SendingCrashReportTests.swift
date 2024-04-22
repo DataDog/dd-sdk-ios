@@ -72,14 +72,14 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.wasTruncated])
 
         // Then (RUMError is sent)
-        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMCrashEvent.self).first)
-        XCTAssertEqual(rumEvent.model.error.message, crashReport.message)
-        XCTAssertEqual(rumEvent.model.error.type, crashReport.type)
-        XCTAssertEqual(rumEvent.model.error.stack, crashReport.stack)
-        XCTAssertNotNil(rumEvent.additionalAttributes?[DDError.threads])
-        XCTAssertNotNil(rumEvent.additionalAttributes?[DDError.binaryImages])
-        XCTAssertNotNil(rumEvent.additionalAttributes?[DDError.meta])
-        XCTAssertNotNil(rumEvent.additionalAttributes?[DDError.wasTruncated])
+        let rumEvent = try XCTUnwrap(core.waitAndReturnEvents(ofFeature: RUMFeature.name, ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(rumEvent.error.message, crashReport.message)
+        XCTAssertEqual(rumEvent.error.type, crashReport.type)
+        XCTAssertEqual(rumEvent.error.stack, crashReport.stack)
+        XCTAssertNotNil(rumEvent.error.threads)
+        XCTAssertNotNil(rumEvent.error.binaryImages)
+        XCTAssertNotNil(rumEvent.error.meta)
+        XCTAssertNotNil(rumEvent.error.wasTruncated)
     }
 
     func testWhenSendingCrashReportAsLog_itIsLinkedToTheRUMSessionThatHasCrashed() throws {

@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -19,6 +19,10 @@
 		A0DBB7E71DD4888837ED81B5 /* Pods_Common_App_Dynamic_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8CCD75AF46655F78F7A3D7A /* Pods_Common_App_Dynamic_iOS.framework */; };
 		B162FE141838120027D821F9 /* libPods-Common-App Static iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C285D46A1E0E371443F0F77 /* libPods-Common-App Static iOS.a */; };
 		CCA17085193225EE98A8B997 /* Pods_Common_App_Dynamic_tvOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6F08D599966036C2B51829AB /* Pods_Common_App_Dynamic_tvOS.framework */; };
+		D229192C2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192D2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192E2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
+		D229192F2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */; };
 		D235937A27C8EB0500BF32D7 /* CPProjectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C31D26E0E27A006EDF53 /* CPProjectTests.swift */; };
 		D235938927C8ECD800BF32D7 /* CPProjectUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C32826E0E27A006EDF53 /* CPProjectUITests.swift */; };
 		D245424627C8D3200039E0A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61B8C30626E0E278006EDF53 /* AppDelegate.swift */; };
@@ -144,6 +148,7 @@
 		BC677EB73CB7FE4A474BB0D5 /* Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig"; path = "Target Support Files/Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests/Pods-Common-CPProjectNoUseFrameworks-CPProjectNoUseFrameworksUITests.release.xcconfig"; sourceTree = "<group>"; };
 		BFCEA18578B6134001291BD5 /* Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig"; path = "Target Support Files/Pods-Common-CPProjectNoUseFrameworks tvOS/Pods-Common-CPProjectNoUseFrameworks tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		CA325D6A1605874914378E3E /* libPods-App Static tvOS Tests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-App Static tvOS Tests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		D235938127C8EB0500BF32D7 /* App Static tvOS Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App Static tvOS Tests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D235938F27C8ECD800BF32D7 /* App Static tvOS UITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "App Static tvOS UITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D245425127C8D3200039E0A6 /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -293,6 +298,7 @@
 				61B8C30826E0E278006EDF53 /* SceneDelegate.swift */,
 				D245425627C8DE3D0039E0A6 /* ViewController.swift */,
 				61B8C31426E0E27A006EDF53 /* Info.plist */,
+				D229192B2B76580600C38A18 /* PrivacyInfo.xcprivacy */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -442,6 +448,7 @@
 				61B8C30026E0E278006EDF53 /* Frameworks */,
 				61B8C30126E0E278006EDF53 /* Resources */,
 				31384BB2056A865F3ED23F38 /* [CP] Embed Pods Frameworks */,
+				A242A29C234C1DB8379AA6B1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -534,6 +541,7 @@
 				D245424827C8D3200039E0A6 /* Frameworks */,
 				D245424A27C8D3200039E0A6 /* Resources */,
 				D245424D27C8D3200039E0A6 /* [CP] Embed Pods Frameworks */,
+				3BA7B0D961097BC82E5E9018 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -679,6 +687,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192D2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -700,6 +709,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192C2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -735,6 +745,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192E2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -756,6 +767,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D229192F2B76580600C38A18 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -777,6 +789,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic iOS/Pods-Common-App Dynamic iOS-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		3BA7B0D961097BC82E5E9018 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic tvOS/Pods-Common-App Dynamic tvOS-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic tvOS/Pods-Common-App Dynamic tvOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic tvOS/Pods-Common-App Dynamic tvOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		5645FD027BB938478818FE88 /* [CP] Check Pods Manifest.lock */ = {

@@ -230,6 +230,36 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(error.attributes[attributeKey]?.value as? String, attributeValue)
     }
 
+    func testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent() throws {
+        // Given
+        let logsFeature = LogsFeature.mockAny()
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        let randomErrorFingerprint = String.mockRandom()
+        logger.error("Information message", error: ErrorMock(), attributes: [Logs.Attributes.errorFingerprint: randomErrorFingerprint])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertNil(log.attributes.userAttributes[Logs.Attributes.errorFingerprint])
+        XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
+    }
+
     // MARK: - RUM Integration
 
     func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {
@@ -365,14 +395,14 @@ class RemoteLoggerTests: XCTestCase {
             activeSpanIntegration: true
         )
 
-        let traceID: String = .mockRandom()
-        let spanID: String = .mockRandom()
+        let traceID: TraceID = .mock(.mockRandom(), .mockRandom())
+        let spanID: SpanID = .mock(.mockRandom())
 
         // When
         core.set(
             baggage: [
-                "dd.trace_id": traceID,
-                "dd.span_id": spanID
+                "dd.trace_id": traceID.toString(representation: .hexadecimal),
+                "dd.span_id": spanID.toString(representation: .decimal)
             ],
             forKey: "span_context"
         )
@@ -386,8 +416,8 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(logs.count, 1)
 
         let log = try XCTUnwrap(logs.first)
-        XCTAssertEqual(log.attributes.internalAttributes?["dd.trace_id"] as? String, traceID)
-        XCTAssertEqual(log.attributes.internalAttributes?["dd.span_id"] as? String, spanID)
+        XCTAssertEqual(log.attributes.internalAttributes?["dd.trace_id"] as? String, traceID.toString(representation: .hexadecimal))
+        XCTAssertEqual(log.attributes.internalAttributes?["dd.span_id"] as? String, spanID.toString(representation: .decimal))
     }
 
     func testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError() throws {

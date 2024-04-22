@@ -31,7 +31,7 @@ internal enum KronosTimeStoragePolicy {
 
 /// Handles saving and retrieving instances of `KronosTimeFreeze` for quick retrieval
 internal struct KronosTimeStorage {
-    private var userDefaults: UserDefaults
+    private var userDefaults: UserDefaults // swiftlint:disable:this required_reason_api_name
     private let kDefaultsKey = "KronosStableTime"
 
     /// The most recent stored `TimeFreeze`. Getting retrieves from the UserDefaults defined by the storage
@@ -63,7 +63,7 @@ internal struct KronosTimeStorage {
         case .standard:
             self.userDefaults = .standard
         case .appGroup(let groupName):
-            let sharedDefaults = UserDefaults(suiteName: groupName)
+            let sharedDefaults = UserDefaults(suiteName: groupName) // swiftlint:disable:this required_reason_api_name
             assert(sharedDefaults != nil, "Could not create UserDefaults for group: '\(groupName)'")
             self.userDefaults = sharedDefaults ?? .standard
         }

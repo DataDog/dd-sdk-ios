@@ -20,10 +20,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let forwardErrorsToLogs: Bool?
     public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
-    public let premiumSampleRate: Int64?
     public let reactNativeVersion: String?
     public let reactVersion: String?
-    public let replaySampleRate: Int64?
     public let sessionReplaySampleRate: Int64?
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
@@ -38,7 +36,6 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackErrors: Bool?
     public let trackFlutterPerformance: Bool?
     public let trackFrustrations: Bool?
-    public let trackInteractions: Bool?
     public let trackLongTask: Bool?
     public let trackNativeErrors: Bool?
     public let trackNativeLongTasks: Bool?
@@ -48,10 +45,9 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackSessionAcrossSubdomains: Bool?
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
-    public let useAllowedTracingOrigins: Bool?
+    public let unityVersion: String?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
-    public let useCrossSiteSessionCookie: Bool?
     public let useExcludedActivityUrls: Bool?
     public let useFirstPartyHosts: Bool?
     public let useLocalEncryption: Bool?
@@ -75,6 +71,67 @@ public protocol Telemetry {
     ///
     /// - Parameter telemetry: The telemtry message
     func send(telemetry: TelemetryMessage)
+}
+
+public extension Telemetry {
+    /// Starts a method call.
+    ///
+    /// - Parameters:
+    ///   - operationName: Platform agnostic name of the operation.
+    ///   - callerClass: The name of the class that calls the method.
+    ///   - samplingRate: The sampling rate of the method call. Value between `0.0` and `100.0`, where `0.0` means NO event will be processed and `100.0` means ALL events will be processed. Note that this value is multiplicated by telemetry sampling (by default 20%) and metric events sampling (hardcoded to 15%). Making it effectively 3% sampling rate for sending events, when this value is set to `100`.
+    ///
+    /// - Returns: A `MethodCalledTrace` instance to be used to stop the method call and measure it's execution time. It can be `nil` if the method call is not sampled.
+    func startMethodCalled(
+        operationName: String,
+        callerClass: String,
+        samplingRate: Float = 100.0
+    ) -> MethodCalledTrace? {
+        if Sampler(samplingRate: samplingRate).sample() {
+            return MethodCalledTrace(
+                operationName: operationName,
+                callerClass: callerClass
+            )
+        } else {
+            return nil
+        }
+    }
+
+    /// Stops a method call, transforms method call metric to telemetry message,
+    /// and transmits on the message-bus of the core.
+    ///
+    /// - Parameters
+    ///   - metric: The `MethodCalledTrace` instance.
+    ///   - isSuccessful: A flag indicating if the method call was successful.
+    func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool = true) {
+        if let metric = metric {
+            send(telemetry: metric.asTelemetryMetric(isSuccessful: isSuccessful))
+        }
+    }
+}
+
+/// A metric to measure the time of a method call.
+public struct MethodCalledTrace {
+    let operationName: String
+    let callerClass: String
+    let startTime = Date()
+
+    var exectutionTime: Int64 {
+        return -startTime.timeIntervalSinceNow.toInt64Nanoseconds
+    }
+
+    func asTelemetryMetric(isSuccessful: Bool) -> TelemetryMessage {
+        return .metric(
+            name: MethodCalledMetric.name,
+            attributes: [
+                MethodCalledMetric.executionTime: exectutionTime,
+                MethodCalledMetric.operationName: operationName,
+                MethodCalledMetric.callerClass: callerClass,
+                MethodCalledMetric.isSuccessful: isSuccessful,
+                BasicMetric.typeKey: MethodCalledMetric.typeValue
+            ]
+        )
+    }
 }
 
 extension Telemetry {
@@ -193,10 +250,8 @@ extension Telemetry {
         forwardErrorsToLogs: Bool? = nil,
         initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
-        premiumSampleRate: Int64? = nil,
         reactNativeVersion: String? = nil,
         reactVersion: String? = nil,
-        replaySampleRate: Int64? = nil,
         sessionReplaySampleRate: Int64? = nil,
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
@@ -211,7 +266,6 @@ extension Telemetry {
         trackErrors: Bool? = nil,
         trackFlutterPerformance: Bool? = nil,
         trackFrustrations: Bool? = nil,
-        trackInteractions: Bool? = nil,
         trackLongTask: Bool? = nil,
         trackNativeErrors: Bool? = nil,
         trackNativeLongTasks: Bool? = nil,
@@ -221,10 +275,9 @@ extension Telemetry {
         trackSessionAcrossSubdomains: Bool? = nil,
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
-        useAllowedTracingOrigins: Bool? = nil,
+        unityVersion: String? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
-        useCrossSiteSessionCookie: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
         useFirstPartyHosts: Bool? = nil,
         useLocalEncryption: Bool? = nil,
@@ -247,10 +300,8 @@ extension Telemetry {
             forwardErrorsToLogs: forwardErrorsToLogs,
             initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
-            premiumSampleRate: premiumSampleRate,
             reactNativeVersion: reactNativeVersion,
             reactVersion: reactVersion,
-            replaySampleRate: replaySampleRate,
             sessionReplaySampleRate: sessionReplaySampleRate,
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
@@ -265,7 +316,6 @@ extension Telemetry {
             trackErrors: trackErrors,
             trackFlutterPerformance: trackFlutterPerformance,
             trackFrustrations: trackFrustrations,
-            trackInteractions: trackInteractions,
             trackLongTask: trackLongTask,
             trackNativeErrors: trackNativeErrors,
             trackNativeLongTasks: trackNativeLongTasks,
@@ -275,10 +325,9 @@ extension Telemetry {
             trackSessionAcrossSubdomains: trackSessionAcrossSubdomains,
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
-            useAllowedTracingOrigins: useAllowedTracingOrigins,
+            unityVersion: unityVersion,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
-            useCrossSiteSessionCookie: useCrossSiteSessionCookie,
             useExcludedActivityUrls: useExcludedActivityUrls,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
@@ -306,6 +355,8 @@ public struct NOPTelemetry: Telemetry {
     public init() { }
     /// no-op
     public func send(telemetry: TelemetryMessage) { }
+    public func startMethodCalled(operationName: String, callerClass: String, samplingRate: Float) -> MethodCalledTrace? { return nil }
+    public func stopMethodCalled(_ metric: MethodCalledTrace?, isSuccessful: Bool) { }
 }
 
 internal struct CoreTelemetry: Telemetry {
@@ -356,10 +407,8 @@ extension ConfigurationTelemetry {
             forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
             initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
-            premiumSampleRate: other.premiumSampleRate ?? premiumSampleRate,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
             reactVersion: other.reactVersion ?? reactVersion,
-            replaySampleRate: other.replaySampleRate ?? replaySampleRate,
             sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
@@ -374,7 +423,6 @@ extension ConfigurationTelemetry {
             trackErrors: other.trackErrors ?? trackErrors,
             trackFlutterPerformance: other.trackFlutterPerformance ?? trackFlutterPerformance,
             trackFrustrations: other.trackFrustrations ?? trackFrustrations,
-            trackInteractions: other.trackInteractions ?? trackInteractions,
             trackLongTask: other.trackLongTask ?? trackLongTask,
             trackNativeErrors: other.trackNativeErrors ?? trackNativeErrors,
             trackNativeLongTasks: other.trackNativeLongTasks ?? trackNativeLongTasks,
@@ -384,10 +432,9 @@ extension ConfigurationTelemetry {
             trackSessionAcrossSubdomains: other.trackSessionAcrossSubdomains ?? trackSessionAcrossSubdomains,
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
-            useAllowedTracingOrigins: other.useAllowedTracingOrigins ?? useAllowedTracingOrigins,
+            unityVersion: other.unityVersion ?? unityVersion,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
-            useCrossSiteSessionCookie: other.useCrossSiteSessionCookie ?? useCrossSiteSessionCookie,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
             useFirstPartyHosts: other.useFirstPartyHosts ?? useFirstPartyHosts,
             useLocalEncryption: other.useLocalEncryption ?? useLocalEncryption,

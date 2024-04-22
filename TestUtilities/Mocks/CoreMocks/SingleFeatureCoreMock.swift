@@ -42,6 +42,7 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
     ///                  is invoked with `bypassConsent` parameter set to `true`.
     public required init(
         context: DatadogContext = .mockAny(),
+        dataStore: DataStore = NOPDataStore(),
         feature: Feature? = nil,
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
@@ -51,6 +52,7 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
 
         super.init(
             context: context,
+            dataStore: dataStore,
             expectation: expectation,
             bypassConsentExpectation: bypassConsentExpectation,
             messageReceiver: messageReceiver
@@ -67,6 +69,7 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
     ///                  is invoked with `bypassConsent` parameter set to `true`.
     public required init(
         context: DatadogContext = .mockAny(),
+        dataStore: DataStore = NOPDataStore(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
@@ -75,6 +78,7 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
 
         super.init(
             context: context,
+            dataStore: dataStore,
             expectation: expectation,
             bypassConsentExpectation: bypassConsentExpectation,
             messageReceiver: messageReceiver
@@ -89,10 +93,10 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
         feature as? T
     }
 
-    public override func scope(for feature: String) -> FeatureScope? {
-        guard feature == Feature.name else {
-            return nil
+    public override func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
+        guard T.name == Feature.name else {
+            return NOPFeatureScope()
         }
-        return super.scope(for: feature)
+        return super.scope(for: featureType)
     }
 }

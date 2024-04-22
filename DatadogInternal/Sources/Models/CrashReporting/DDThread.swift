@@ -7,13 +7,13 @@
 import Foundation
 
 /// Unsymbolicated stack trace of a running thread.
-public struct DDThread: Codable {
+public struct DDThread: Codable, PassthroughAnyCodable {
     /// The name of the thread, e.g. `"Thread 0"`
     public let name: String
     /// Unsymbolicated stack trace of the crash.
     public let stack: String
     /// If the thread was halted.
-    public let crashed: Bool
+    public var crashed: Bool
     /// Thread state (CPU registers dump), only available for halted thread.
     public let state: String?
 

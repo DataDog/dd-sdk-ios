@@ -70,7 +70,13 @@ internal final class PLCrashReporterIntegration: ThirdPartyCrashReporter {
         let crashReport = try builder.createDDCrashReport(from: liveReport)
         return BacktraceReport(
             stack: crashReport.stack,
-            threads: crashReport.threads,
+            threads: crashReport.threads.map { thread in
+                var thread = thread
+                // PLCR sets `crashed` flag for the primary thread in `liveReport`. Because we're not dealing with the crash situation
+                // we reset this flag accordingly.
+                thread.crashed = false
+                return thread
+            },
             binaryImages: crashReport.binaryImages,
             wasTruncated: crashReport.wasTruncated
         )

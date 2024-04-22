@@ -10,18 +10,20 @@ import DatadogInternal
 @testable import DatadogTrace
 
 class SpanWriteContextTests: XCTestCase {
+    private let featureScope = FeatureScopeMock()
+
     func testWhenRequestingSpanWriteContext_itProvidesInitialCoreContext() {
         let retrieveContext = expectation(description: "provide core context")
-        let writeEvent = expectation(description: "write event to core")
 
         let initialContext: DatadogContext = .mockRandom()
+        featureScope.contextMock = initialContext
 
         // Given
-        let core = PassthroughCoreMock(context: initialContext, expectation: writeEvent)
-        let writer = LazySpanWriteContext(core: core)
+        let writer = LazySpanWriteContext(featureScope: featureScope)
 
         // When
-        core.context = .mockRandom()
+        featureScope.contextMock = .mockRandom()
+
         writer.spanWriteContext { providedContext, _ in
             // Then
             DDAssertReflectionEqual(providedContext, initialContext)
@@ -31,20 +33,17 @@ class SpanWriteContextTests: XCTestCase {
         waitForExpectations(timeout: 0.5)
     }
 
-    func testWhenWritingEvent_itRespectsCoreConsentAndBatching() {
-        let core = PassthroughCoreMock(
-            expectation: expectation(description: "write event to core"),
-            bypassConsentExpectation: invertedExpectation(description: "do not bypass consent")
-        )
-
+    func testWhenWritingEvent_itDoesNotBypassConsent() {
         // Given
-        let writer = LazySpanWriteContext(core: core)
+        let writer = LazySpanWriteContext(featureScope: featureScope)
 
         // When
         writer.spanWriteContext { _, writer in
             writer.write(value: SpanEvent.mockAny())
         }
 
-        waitForExpectations(timeout: 0.5)
+        // Then
+        XCTAssertEqual(featureScope.eventsWritten(ofType: SpanEvent.self, withBypassConsent: false).count, 1)
+        XCTAssertEqual(featureScope.eventsWritten(ofType: SpanEvent.self, withBypassConsent: true).count, 0)
     }
 }

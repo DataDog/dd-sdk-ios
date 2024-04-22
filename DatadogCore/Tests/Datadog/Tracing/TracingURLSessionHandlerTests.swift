@@ -28,14 +28,15 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         tracer = .mockWith(
             core: core,
-            tracingUUIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0),
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
             loggingIntegration: TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
         )
 
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
-            tracingSampler: .mockKeepAll(),
+            distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
             ])
@@ -44,6 +45,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     override func tearDown() {
         core = nil
+        tracer = nil
+        handler = nil
         super.tearDown()
     }
 
@@ -51,7 +54,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation = expectation(description: "Send span")
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "POST")
+        let request: ImmutableRequest = .mockWith(httpMethod: "POST")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(metrics: .mockAny())
         interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
@@ -74,12 +77,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(
-            url: "http://www.example.com",
-            queryParams: [
-                URLQueryItem(name: "foo", value: "42"),
-                URLQueryItem(name: "lang", value: "en")
-            ],
+        let request: ImmutableRequest = .mockWith(
+            url: URL(string: "http://www.example.com")!,
             httpMethod: "GET"
         )
         let error = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
@@ -121,15 +120,15 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "network error")
         XCTAssertEqual(
             log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID))
+            AnyCodable(String(span.traceID, representation: .hexadecimal))
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?["dd.trace_id"] as? AnyCodable,
-            AnyCodable(String(span.traceID))
+            AnyCodable(String(span.traceID, representation: .hexadecimal))
         )
         XCTAssertEqual(
             log.attributes.internalAttributes?["dd.span_id"] as? AnyCodable,
-            AnyCodable(String(span.spanID))
+            AnyCodable(String(span.spanID, representation: .hexadecimal))
         )
         XCTAssertEqual(log.error?.kind, "domain - 123")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -149,7 +148,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core.expectation?.expectedFulfillmentCount = 2
 
         // Given
-        let request: URLRequest = .mockWith(httpMethod: "GET")
+        let request: ImmutableRequest = .mockWith(httpMethod: "GET")
         let interception = URLSessionTaskInterception(request: request, isFirstParty: true)
         interception.register(response: .mockResponseWith(statusCode: 404), error: nil)
         interception.register(
@@ -189,11 +188,11 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(log.message, "404 not found")
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes?["dd.trace_id"]),
-            String(span.traceID)
+            String(span.traceID, representation: .hexadecimal)
         )
         DDAssertJSONEqual(
             AnyEncodable(log.attributes.internalAttributes?["dd.span_id"]),
-            String(span.spanID)
+            String(span.spanID, representation: .hexadecimal)
         )
         XCTAssertEqual(log.error?.kind, "HTTPURLResponse - 404")
         XCTAssertEqual(log.attributes.internalAttributes?.count, 2)
@@ -215,14 +214,15 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(
             modifiedRequest.allHTTPHeaderFields,
             [
-                "traceparent": "00-00000000000000000000000000000001-0000000000000001-01",
-                "X-B3-SpanId": "0000000000000001",
+                "traceparent": "00-000000000000000a0000000000000064-0000000000000064-01",
+                "X-B3-SpanId": "0000000000000064",
                 "X-B3-Sampled": "1",
-                "X-B3-TraceId": "00000000000000000000000000000001",
-                "b3": "00000000000000000000000000000001-0000000000000001-1",
-                "x-datadog-trace-id": "1",
-                "tracestate": "dd=p:0000000000000001;s:1",
-                "x-datadog-parent-id": "1",
+                "X-B3-TraceId": "000000000000000a0000000000000064",
+                "b3": "000000000000000a0000000000000064-0000000000000064-1",
+                "x-datadog-trace-id": "64",
+                "x-datadog-tags": "_dd.p.tid=a",
+                "tracestate": "dd=p:0000000000000064;s:1",
+                "x-datadog-parent-id": "64",
                 "x-datadog-sampling-priority": "1"
             ]
         )

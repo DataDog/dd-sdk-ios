@@ -106,8 +106,8 @@ internal struct TracingWithLoggingIntegration {
                     networkInfoEnabled: networkInfoEnabled,
                     userAttributes: AnyEncodable(userAttributes),
                     internalAttributes: SpanCoreContext(
-                        traceID: String(spanContext.traceID),
-                        spanID: String(spanContext.spanID)
+                        traceID: String(spanContext.traceID, representation: .hexadecimal),
+                        spanID: String(spanContext.spanID, representation: .hexadecimal)
                     )
                 )
             ),

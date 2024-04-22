@@ -2,10 +2,29 @@
 
 - [FIX] Propagate parent span in distributing tracing. See [#1627][]
 - [FIX] Privacy Report missing properties. See [#1656][]
+- [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
+- [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
+- [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
+- [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
+
+# 2.9.0 / 11-04-2024
+
+- [FEATURE] Call RUM's `errorEventMapper` for crashes. See [#1742][]
+- [FEATURE] Support calling log event mapper for crashes. See [#1741][]
+- [FIX] Fix crash in `NetworkInstrumentationFeature`. See [#1767][]
+- [FIX] Remove modulemap. See [#1746][]
+- [FIX] Expose objc interfaces in Session Replay module. See [#1697][]
+
+# 2.8.1 / 20-03-2024
+
 - [FEATURE] App Hangs are tracked as RUM errors. See [#1685][]
 - [FIX] Propagate parent span in distributing tracing. See [#1627][]
 - [IMPROVEMENT] Add Device's Brand, Name, and Model in LogEvent. See [#1672][] (Thanks [@aldoKelvianto][])
 - [FEATURE] Improved image recording in Session Replay. See [#1592][]
+- [FEATURE] Allow custom error fingerprinting on logs with a special attribute. See [#1722][]
+- [FEATURE] Add global log attributes. See [#1707][]
+- [FEATURE] Privacy Manifest data usage description. See [#1724][]
+- [FIX] Pass through data when network request completes. See [#1696][]
 
 # 2.7.1 / 12-02-2024
 
@@ -608,6 +627,22 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1685]: https://github.com/DataDog/dd-sdk-ios/pull/1685
 [#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
 [#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
+[#1685]: https://github.com/DataDog/dd-sdk-ios/pull/1685
+[#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
+[#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
+[#1696]: https://github.com/DataDog/dd-sdk-ios/pull/1696
+[#1697]: https://github.com/DataDog/dd-sdk-ios/pull/1697
+[#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
+[#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
+[#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
+[#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
+[#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
+[#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
+[#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
+[#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
+[#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
+[#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
+[#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

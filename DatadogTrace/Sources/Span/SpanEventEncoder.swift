@@ -56,7 +56,7 @@ public struct SpanEvent: Encodable {
     internal let source: String
     /// The origin for the Span, it is used to label the spans used created under testing
     internal let origin: String?
-    /// The sampling rate for the span (between 0 and 100)
+    /// The sampling rate for the span (between 0 and 1)
     internal let samplingRate: Float
     /// If the span is kept according to sampling rules
     internal let isKept: Bool
@@ -126,6 +126,8 @@ internal struct SpanEventEncoder {
 
         case origin = "meta._dd.origin"
 
+        case ptid = "meta._dd.p.tid"
+
         case userId = "meta.usr.id"
         case userName = "meta.usr.name"
         case userEmail = "meta.usr.email"
@@ -154,10 +156,10 @@ internal struct SpanEventEncoder {
 
     func encode(_ span: SpanEvent, to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: StaticCodingKeys.self)
-        try container.encode(String(span.traceID, representation: .hexadecimal), forKey: .traceID)
+        try container.encode(span.traceID.idLoHex, forKey: .traceID)
         try container.encode(String(span.spanID, representation: .hexadecimal), forKey: .spanID)
 
-        let parentSpanID = span.parentID ?? TraceID(rawValue: 0) // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
+        let parentSpanID = span.parentID ?? SpanID.invalid // 0 is a reserved ID for a root span (ref: DDTracer.java#L600)
         try container.encode(String(parentSpanID, representation: .hexadecimal), forKey: .parentID)
 
         try container.encode(span.operationName, forKey: .operationName)
@@ -233,6 +235,8 @@ internal struct SpanEventEncoder {
             try container.encode(carrierInfo.radioAccessTechnology, forKey: .mobileNetworkCarrierRadioTechnology)
             try container.encode(carrierInfo.carrierAllowsVOIP ? "1" : "0", forKey: .mobileNetworkCarrierAllowsVoIP)
         }
+
+        try container.encode(span.traceID.idHiHex, forKey: .ptid)
     }
 
     /// Encodes `meta.*` attributes coming from user

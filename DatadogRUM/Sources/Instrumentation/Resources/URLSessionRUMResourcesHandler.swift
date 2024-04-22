@@ -12,16 +12,19 @@ internal struct DistributedTracing {
     let sampler: Sampler
     /// The distributed tracing ID generator.
     let traceIDGenerator: TraceIDGenerator
+    let spanIDGenerator: SpanIDGenerator
     /// First party hosts defined by the user.
     let firstPartyHosts: FirstPartyHosts
 
     init(
         sampler: Sampler,
         firstPartyHosts: FirstPartyHosts,
-        traceIDGenerator: TraceIDGenerator
+        traceIDGenerator: TraceIDGenerator,
+        spanIDGenerator: SpanIDGenerator
     ) {
         self.sampler = sampler
         self.traceIDGenerator = traceIDGenerator
+        self.spanIDGenerator = spanIDGenerator
         self.firstPartyHosts = firstPartyHosts
     }
 }
@@ -81,7 +84,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
                 attributes: [:],
                 url: url,
                 httpMethod: RUMMethod(httpMethod: interception.request.httpMethod),
-                kind: RUMResourceType(request: interception.request),
+                kind: RUMResourceType(request: interception.request.unsafeOriginal),
                 spanContext: distributedTracing?.trace(from: interception)
             )
         )
@@ -99,7 +102,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 
         // Get RUM Resource attributes from the user.
         let userAttributes = rumAttributesProvider?(
-            interception.request,
+            interception.request.unsafeOriginal,
             interception.completion?.httpResponse,
             interception.data,
             interception.completion?.error
@@ -147,7 +150,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandler, RU
 extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> URLRequest {
         let traceID = traceIDGenerator.generate()
-        let spanID = traceIDGenerator.generate()
+        let spanID = spanIDGenerator.generate()
 
         var request = request
         headerTypes.forEach {
@@ -195,11 +198,11 @@ extension DistributedTracing {
 
     func trace(from interception: DatadogInternal.URLSessionTaskInterception) -> RUMSpanContext? {
         return interception.trace.map {
-           .init(
-               traceID: String($0.traceID),
-               spanID: String($0.spanID),
-               samplingRate: Double(sampler.samplingRate) / 100.0
-           )
+            .init(
+                traceID: $0.traceID,
+                spanID: $0.spanID,
+                samplingRate: Double(sampler.samplingRate) / 100.0
+            )
         }
     }
 }

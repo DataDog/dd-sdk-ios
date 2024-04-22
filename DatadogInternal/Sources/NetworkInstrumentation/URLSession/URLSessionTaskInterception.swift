@@ -11,7 +11,7 @@ public class URLSessionTaskInterception {
     public let identifier: UUID
     /// The initial request send during this interception. It is, the request send from `URLSession`, not the one
     /// given by the user (as the request could have been modified in `URLSessionSwizzler`).
-    public private(set) var request: URLRequest
+    public private(set) var request: ImmutableRequest
     /// Tells if the `request` is send to a 1st party host.
     public let isFirstPartyRequest: Bool
     /// Task metrics collected during this interception.
@@ -20,15 +20,15 @@ public class URLSessionTaskInterception {
     public private(set) var data: Data?
     /// Task completion collected during this interception.
     public private(set) var completion: ResourceCompletion?
-    /// Trace information propagated with the task. Not available when Tracing is disabled
-    /// or when the task was created through `URLSession.dataTask(with:url)` on some iOS13+.
+    /// Trace context injected to request headers. Can be `nil` if the trace was not sampled or if modifying
+    /// request was not possible in `URLSession` swizzling on certain OS version.
     public private(set) var trace: TraceContext?
     /// The Datadog origin of the Trace.
     ///
     /// Setting the value to 'rum' will indicate that the span is reported as a RUM Resource.
     public private(set) var origin: String?
 
-    init(request: URLRequest, isFirstParty: Bool) {
+    init(request: ImmutableRequest, isFirstParty: Bool) {
         self.identifier = UUID()
         self.request = request
         self.isFirstPartyRequest = isFirstParty
@@ -46,7 +46,7 @@ public class URLSessionTaskInterception {
         }
     }
 
-    func register(request: URLRequest) {
+    func register(request: ImmutableRequest) {
         self.request = request
     }
 
@@ -94,6 +94,30 @@ public struct ResourceCompletion {
     public init(response: URLResponse?, error: Error?) {
         self.httpResponse = response as? HTTPURLResponse
         self.error = error
+    }
+}
+
+/// An immutable version of `URLRequest`.
+///
+/// Introduced in response to concerns raised in https://github.com/DataDog/dd-sdk-ios/issues/1638 
+/// it makes a copy of request attributes, safeguarding against potential thread safety issues arising from concurrent 
+/// mutations (see more context in https://github.com/DataDog/dd-sdk-ios/pull/1767 ).
+public struct ImmutableRequest {
+    /// The URL of the request.
+    public let url: URL?
+    /// The HTTP method of the request.
+    public let httpMethod: String?
+    /// The HTTP header fields of the request.
+    public let allHTTPHeaderFields: [String: String]?
+    /// A reference to the original `URLRequest` object provided during initialization. Direct use is discouraged
+    /// due to thread safety concerns. Instead, necessary attributes should be accessed through `ImmutableRequest` fields.
+    public let unsafeOriginal: URLRequest
+
+    public init(request: URLRequest) {
+        self.url = request.url
+        self.httpMethod = request.httpMethod
+        self.allHTTPHeaderFields = request.allHTTPHeaderFields
+        self.unsafeOriginal = request
     }
 }
 

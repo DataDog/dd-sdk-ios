@@ -46,7 +46,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Information about this session state, shared with `CrashContext`.
     private var state: RUMSessionState {
         didSet {
-            dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: state))
+            dependencies.fatalErrorContext.sessionState = state
         }
     }
 
@@ -103,28 +103,26 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
 
         if let viewScope = resumingViewScope {
-            viewScopes.append(
-                RUMViewScope(
-                    isInitialView: false,
-                    parent: self,
-                    dependencies: dependencies,
-                    identity: viewScope.identity,
-                    path: viewScope.viewPath,
-                    name: viewScope.viewName,
-                    attributes: viewScope.attributes,
-                    customTimings: [:],
-                    startTime: startTime,
-                    serverTimeOffset: viewScope.serverTimeOffset
-                )
+            startView(
+                isInitialView: false,
+                dependencies: dependencies,
+                identity: viewScope.identity,
+                path: viewScope.viewPath,
+                name: viewScope.viewName,
+                attributes: viewScope.attributes,
+                customTimings: [:],
+                startTime: startTime,
+                serverTimeOffset: viewScope.serverTimeOffset,
+                hasReplay: hasReplay
             )
         }
 
-        // Update `CrashContext` with recent RUM session state:
-        dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.sessionState, value: state))
+        // Update fatal error context with recent RUM session state:
+        dependencies.fatalErrorContext.sessionState = state
 
         // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && self.sessionUUID != .nullUUID {
-            print("_dd.session.id=" + self.sessionUUID.toRUMDataFormat)
+        if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
+            print("_dd.session.id=" + sessionUUID.toRUMDataFormat)
         }
     }
 
@@ -145,7 +143,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:
-        self.viewScopes = expiredSession.viewScopes.compactMap { expiredView in
+        self.viewScopes = expiredSession.viewScopes.map { expiredView in
             return RUMViewScope(
                 isInitialView: false,
                 parent: self,
@@ -216,12 +214,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         viewScopes = viewScopes.scopes(byPropagating: command, context: context, writer: writer)
 
         if (isActive || deactivating) && !hasActiveView {
-            // If this session is active and there is no active view, update `CrashContext` accordingly, so eventual crash
-            // won't be associated to an inactive view and instead we will consider starting background view to track it.
+            // If this session is active and there is no active view, update fatal error context accordingly, so eventual
+            // error won't be associated to an inactive view and instead we will consider starting background view to track it.
             // We also want to send this as a session is being stopped.
             // It means that with Background Events Tracking disabled, eventual off-view crashes will be dropped
             // similar to how we drop other events.
-            dependencies.core?.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
+            dependencies.fatalErrorContext.view = nil
         }
 
         return isActive || !viewScopes.isEmpty
@@ -236,20 +234,60 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func startView(on command: RUMStartViewCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
-        viewScopes.append(
-            RUMViewScope(
-                isInitialView: isStartingInitialView,
-                parent: self,
-                dependencies: dependencies,
-                identity: command.identity,
-                path: command.path,
-                name: command.name,
-                attributes: command.attributes,
-                customTimings: [:],
-                startTime: command.time,
-                serverTimeOffset: context.serverTimeOffset
-            )
+        startView(
+            isInitialView: isStartingInitialView,
+            dependencies: dependencies,
+            identity: command.identity,
+            path: command.path,
+            name: command.name,
+            attributes: command.attributes,
+            customTimings: [:],
+            startTime: command.time,
+            serverTimeOffset: context.serverTimeOffset,
+            hasReplay: context.hasReplay
         )
+    }
+
+    private func startView(
+        isInitialView: Bool,
+        dependencies: RUMScopeDependencies,
+        identity: ViewIdentifier,
+        path: String,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        customTimings: [String: Int64],
+        startTime: Date,
+        serverTimeOffset: TimeInterval,
+        hasReplay: Bool?
+    ) {
+        let scope = RUMViewScope(
+            isInitialView: isInitialView,
+            parent: self,
+            dependencies: dependencies,
+            identity: identity,
+            path: path,
+            name: name,
+            attributes: attributes,
+            customTimings: customTimings,
+            startTime: startTime,
+            serverTimeOffset: serverTimeOffset
+        )
+
+        viewScopes.append(scope)
+
+        let id = scope.viewUUID.toRUMDataFormat
+
+        // Cache the view id at each view start
+        dependencies.viewCache.insert(
+            id: id,
+            timestamp: startTime.timeIntervalSince1970.toInt64Milliseconds,
+            hasReplay: hasReplay
+        )
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
+            print("_dd.view.id=" + id)
+        }
     }
 
     private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {
@@ -258,9 +296,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             startTime = processStartTime
         }
 
-        let scope = RUMViewScope(
+        startView(
             isInitialView: true,
-            parent: self,
             dependencies: dependencies,
             identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL),
             path: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL,
@@ -268,11 +305,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             attributes: command.attributes,
             customTimings: [:],
             startTime: startTime,
-            serverTimeOffset: context.serverTimeOffset
-        )
-
-        viewScopes.append(
-            scope
+            serverTimeOffset: context.serverTimeOffset,
+            hasReplay: context.hasReplay
         )
     }
 
@@ -302,19 +336,18 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func startBackgroundView(on command: RUMCommand, context: DatadogContext) {
         let isStartingInitialView = isInitialSession && !state.hasTrackedAnyView
-        viewScopes.append(
-            RUMViewScope(
-                isInitialView: isStartingInitialView,
-                parent: self,
-                dependencies: dependencies,
-                identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
-                path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
-                name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
-                attributes: command.attributes,
-                customTimings: [:],
-                startTime: command.time,
-                serverTimeOffset: context.serverTimeOffset
-            )
+
+        startView(
+            isInitialView: isStartingInitialView,
+            dependencies: dependencies,
+            identity: ViewIdentifier(RUMOffViewEventsHandlingRule.Constants.backgroundViewURL),
+            path: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL,
+            name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+            attributes: command.attributes,
+            customTimings: [:],
+            startTime: command.time,
+            serverTimeOffset: context.serverTimeOffset,
+            hasReplay: context.hasReplay
         )
     }
 

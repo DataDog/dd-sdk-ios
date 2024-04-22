@@ -82,6 +82,12 @@ internal struct File: WritableFile, ReadableFile {
         #endif
     }
 
+    func write(data: Data) throws {
+        // The `.atomic` option writes data to an auxiliary file first and then replace the original
+        // file with the auxiliary file when the write completes
+        try data.write(to: url, options: .atomic)
+    }
+
     private func legacyAppend(_ data: Data, to fileHandle: FileHandle) throws {
         defer {
             try? objcExceptionHandler.rethrowToSwift {

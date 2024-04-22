@@ -277,8 +277,8 @@ extension String: AnyMockable, RandomMockable {
         return mockRandom(length: 10)
     }
 
-    public static func mockRandom(length: Int) -> String {
-        return mockRandom(among: .alphanumericsAndWhitespace, length: length)
+    public static func mockRandom<Length: BinaryInteger>(length: Length) -> String {
+        return mockRandom(among: .alphanumericsAndWhitespace, length: Int(length))
     }
 
     public static func mockRandom(among characters: RandomStringCharacterSet, length: Int = 10) -> String {

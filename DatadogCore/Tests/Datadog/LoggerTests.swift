@@ -866,11 +866,11 @@ class LoggerTests: XCTestCase {
         let logMatchers = try core.waitAndReturnLogMatchers()
         logMatchers[0].assertValue(
             forKeyPath: "dd.trace_id",
-            equals: String(span.context.dd.traceID)
+            equals: span.context.dd.traceID.toString(representation: .hexadecimal)
         )
         logMatchers[0].assertValue(
             forKeyPath: "dd.span_id",
-            equals: String(span.context.dd.spanID)
+            equals: span.context.dd.spanID.toString(representation: .decimal)
         )
         logMatchers[1].assertNoValue(forKey: "dd.trace_id")
         logMatchers[1].assertNoValue(forKey: "dd.span_id")

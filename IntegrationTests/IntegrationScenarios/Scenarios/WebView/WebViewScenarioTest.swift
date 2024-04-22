@@ -16,13 +16,16 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         let rumServerSession = server.obtainUniqueRecordingSession()
         // Server session recording Logs send to `HTTPServerMock`.
         let loggingServerSession = server.obtainUniqueRecordingSession()
+        // Server session recording Replays send to `HTTPServerMock`.
+        let srServerSession = server.obtainUniqueRecordingSession()
 
         let app = ExampleApplication()
         app.launchWith(
             testScenarioClassName: "WebViewTrackingScenario",
             serverConfiguration: HTTPServerMockConfiguration(
                 logsEndpoint: loggingServerSession.recordingURL,
-                rumEndpoint: rumServerSession.recordingURL
+                rumEndpoint: rumServerSession.recordingURL,
+                srEndpoint: srServerSession.recordingURL
             )
         )
 
@@ -55,6 +58,7 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
         let expectedBrowserServiceName = "shopist-web-ui"
         let expectedBrowserRUMApplicationID = nativeView.viewEvents[0].application.id
         let expectedBrowserSessionID = nativeView.viewEvents[0].session.id
+        let expectedBrowserContainerViewID = nativeView.viewEvents[0].view.id
 
         let browserView = session.views[2]
         XCTAssertNil(browserView.name, "Browser views should have no `name`")
@@ -66,6 +70,8 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserViewEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserViewEvent.source, .browser, "Webview events should use Browser SDK `source`")
             XCTAssertEqual(browserViewEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
+            XCTAssertEqual(browserViewEvent.container?.source, .ios, "Webview events should include a container source")
+            XCTAssertEqual(browserViewEvent.container?.view.id, expectedBrowserContainerViewID, "Webview events should include a container view.id")
         }
         XCTAssertGreaterThan(browserView.resourceEvents.count, 0, "It should track some Webview resources")
         browserView.resourceEvents.forEach { browserResourceEvent in
@@ -74,6 +80,8 @@ class WebViewScenarioTest: IntegrationTests, RUMCommonAsserts {
             XCTAssertEqual(browserResourceEvent.service, expectedBrowserServiceName, "Webview events should use Browser SDK `service`")
             XCTAssertEqual(browserResourceEvent.source, .browser, "Webview events should use Browser SDK `source`")
             XCTAssertEqual(browserResourceEvent.dd.session?.plan, .plan1, "Webview events should use iOS SDK plan 1")
+            XCTAssertEqual(browserResourceEvent.container?.source, .ios, "Webview events should use include a container view")
+            XCTAssertEqual(browserResourceEvent.container?.view.id, expectedBrowserContainerViewID, "Webview events should include a container view.id")
         }
 
         // Get `LogMatchers`

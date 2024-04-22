@@ -9,10 +9,24 @@ import TestUtilities
 import DatadogInternal
 @testable import DatadogRUM
 
+private class WatchdogThreadDelegate: AppHangsObservingThreadDelegate {
+    var onHangStarted: ((AppHang) -> Void)?
+    var onHangCancelled: ((AppHang) -> Void)?
+    var onHangEnded: ((AppHang, TimeInterval) -> Void)?
+
+    func hangStarted(_ hang: AppHang) { onHangStarted?(hang) }
+    func hangCancelled(_ hang: AppHang) { onHangCancelled?(hang) }
+    func hangEnded(_ hang: AppHang, duration: TimeInterval) { onHangEnded?(hang, duration) }
+}
+
 class AppHangsWatchdogThreadTests: XCTestCase {
-    func testWhenQueueHangsAboveThreshold_itReportsAppHangs() {
-        let trackHangs = expectation(description: "track 3 App Hangs")
-        trackHangs.expectedFulfillmentCount = 3
+    private let delegate = WatchdogThreadDelegate()
+
+    func testWhenQueueHangsAboveThreshold_itReportsAppHangStartAndEnd() {
+        let trackHangStarts = expectation(description: "track start of 3 App Hangs")
+        trackHangStarts.expectedFulfillmentCount = 3
+        let trackHangEnds = expectation(description: "track end of 3 App Hangs")
+        trackHangEnds.expectedFulfillmentCount = 3
 
         // Given
         let appHangThreshold: TimeInterval = 0.1
@@ -26,10 +40,10 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             telemetry: TelemetryMock()
         )
-        watchdogThread.onHangEnded = { _ in
-            trackHangs.fulfill()
-        }
-        watchdogThread.start()
+        delegate.onHangStarted = { _ in trackHangStarts.fulfill() }
+        delegate.onHangEnded = { _, _ in trackHangEnds.fulfill() }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
 
         // When (multiple hangs above threshold)
         queue.async {
@@ -62,10 +76,10 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(),
             telemetry: TelemetryMock()
         )
-        watchdogThread.onHangEnded = { _ in
-            doNotTrackHangs.fulfill()
-        }
-        watchdogThread.start()
+        delegate.onHangStarted = { _ in doNotTrackHangs.fulfill() }
+        delegate.onHangEnded = { _, _ in doNotTrackHangs.fulfill() }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
 
         // When (multiple hangs below threshold)
         queue.async {
@@ -84,7 +98,8 @@ class AppHangsWatchdogThreadTests: XCTestCase {
     }
 
     func testItTracksHangDateStackAndDuration() {
-        let trackHang = expectation(description: "track App Hang")
+        let trackHangStart = expectation(description: "track start of App Hang")
+        let trackHangEnd = expectation(description: "track end of App Hang")
 
         // Given
         let appHangThreshold: TimeInterval = 0.5
@@ -98,14 +113,134 @@ class AppHangsWatchdogThreadTests: XCTestCase {
             backtraceReporter: BacktraceReporterMock(backtrace: .mockWith(stack: "Main thread stack")),
             telemetry: TelemetryMock()
         )
-        watchdogThread.onHangEnded = { hang in
-            XCTAssertEqual(hang.date, .mockDecember15th2019At10AMUTC())
-            XCTAssertEqual(hang.backtrace?.stack, "Main thread stack")
-            XCTAssertGreaterThanOrEqual(hang.duration, hangDuration * (1 - AppHangsWatchdogThread.Constants.tolerance))
-            XCTAssertLessThanOrEqual(hang.duration, hangDuration * (1 + AppHangsWatchdogThread.Constants.tolerance))
-            trackHang.fulfill()
+        delegate.onHangStarted = { hang in
+            XCTAssertEqual(hang.startDate, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
+            trackHangStart.fulfill()
         }
-        watchdogThread.start()
+        delegate.onHangEnded = { hang, duration in
+            XCTAssertEqual(hang.startDate, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
+            XCTAssertGreaterThanOrEqual(duration, hangDuration * (1 - AppHangsWatchdogThread.Constants.tolerance))
+            XCTAssertLessThanOrEqual(duration, hangDuration * (1 + AppHangsWatchdogThread.Constants.tolerance))
+            trackHangEnd.fulfill()
+        }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
+
+        // When
+        queue.async {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        waitForExpectations(timeout: hangDuration * 10)
+        watchdogThread.cancel()
+    }
+
+    func testWhenBacktraceGenerationIsNotSupported_itTracksAppHangWithErrorMessage() {
+        let trackHangStart = expectation(description: "track start of App Hang")
+        let trackHangEnd = expectation(description: "track end of App Hang")
+
+        // Given
+        let appHangThreshold: TimeInterval = 0.25
+        let hangDuration: TimeInterval = appHangThreshold * 2
+        let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
+
+        let watchdogThread = AppHangsWatchdogThread(
+            appHangThreshold: appHangThreshold,
+            queue: queue,
+            dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: BacktraceReporterMock(backtrace: nil), // backtrace generation not supported
+            telemetry: TelemetryMock()
+        )
+        delegate.onHangStarted = { hang in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage)
+            trackHangStart.fulfill()
+        }
+        delegate.onHangEnded = { hang, _ in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackNotAvailableErrorMessage)
+            trackHangEnd.fulfill()
+        }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
+
+        // When
+        queue.async {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        waitForExpectations(timeout: hangDuration * 10)
+        watchdogThread.cancel()
+    }
+
+    func testWhenBacktraceGenerationThrows_itTracksAppHangWithErrorMessage() {
+        let trackHangStart = expectation(description: "track start of App Hang")
+        let trackHangEnd = expectation(description: "track end of App Hang")
+
+        // Given
+        let appHangThreshold: TimeInterval = 0.25
+        let hangDuration: TimeInterval = appHangThreshold * 2
+        let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
+
+        let watchdogThread = AppHangsWatchdogThread(
+            appHangThreshold: appHangThreshold,
+            queue: queue,
+            dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: BacktraceReporterMock(backtraceGenerationError: NSError.mockRandom()), // backtrace generation error
+            telemetry: TelemetryMock()
+        )
+        delegate.onHangStarted = { hang in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackGenerationFailedErrorMessage)
+            trackHangStart.fulfill()
+        }
+        delegate.onHangEnded = { hang, _ in
+            XCTAssertEqual(hang.backtraceResult.stack, AppHangsMonitor.Constants.appHangStackGenerationFailedErrorMessage)
+            trackHangEnd.fulfill()
+        }
+        delegate.onHangCancelled = { _ in XCTFail("It should not cancel the hang") }
+        watchdogThread.start(with: delegate)
+
+        // When
+        queue.async {
+            Thread.sleep(forTimeInterval: hangDuration)
+        }
+
+        // Then
+        waitForExpectations(timeout: hangDuration * 10)
+        watchdogThread.cancel()
+    }
+
+    func testWhenHangDurationExceedsFalsePositiveThreshold_itReportsHangCancellation() {
+        let trackHangStart = expectation(description: "track start of App Hang")
+        let trackHangCancel = expectation(description: "track cancellation of App Hang")
+
+        // Given
+        let appHangThreshold: TimeInterval = 0.5
+        let hangDuration: TimeInterval = appHangThreshold * 2
+        let queue = DispatchQueue(label: "main-queue", qos: .userInteractive)
+
+        let watchdogThread = AppHangsWatchdogThread(
+            appHangThreshold: appHangThreshold,
+            queue: queue,
+            dateProvider: DateProviderMock(now: .mockDecember15th2019At10AMUTC()),
+            backtraceReporter: BacktraceReporterMock(backtrace: .mockWith(stack: "Main thread stack")),
+            telemetry: TelemetryMock(),
+            falsePositiveThreshold: hangDuration * 0.75
+        )
+        delegate.onHangStarted = { hang in
+            XCTAssertEqual(hang.startDate, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
+            trackHangStart.fulfill()
+        }
+        delegate.onHangEnded = { _, _ in XCTFail("It should not end the hang") }
+        delegate.onHangCancelled = { hang in
+            XCTAssertEqual(hang.startDate, .mockDecember15th2019At10AMUTC())
+            XCTAssertEqual(hang.backtraceResult.stack, "Main thread stack")
+            trackHangCancel.fulfill()
+        }
+        watchdogThread.start(with: delegate)
 
         // When
         queue.async {

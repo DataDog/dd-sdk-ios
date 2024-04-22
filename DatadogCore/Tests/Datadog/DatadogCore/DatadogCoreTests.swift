@@ -49,7 +49,7 @@ class DatadogCoreTests: XCTestCase {
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+        let scope = core.scope(for: FeatureMock.self)
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -95,7 +95,7 @@ class DatadogCoreTests: XCTestCase {
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+        let scope = core.scope(for: FeatureMock.self)
 
         // When
         core.set(trackingConsent: .notGranted)
@@ -149,7 +149,7 @@ class DatadogCoreTests: XCTestCase {
 
         let feature = FeatureMock()
         try core.register(feature: feature)
-        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+        let scope = core.scope(for: FeatureMock.self)
 
         // When
         let key = "key"
@@ -256,7 +256,7 @@ class DatadogCoreTests: XCTestCase {
 
         let requestBuilderSpy = FeatureRequestBuilderSpy()
         try core.register(feature: FeatureMock(requestBuilder: requestBuilderSpy))
-        let scope = try XCTUnwrap(core.scope(for: FeatureMock.name))
+        let scope = core.scope(for: FeatureMock.self)
 
         // When
         core.stop()
@@ -266,7 +266,7 @@ class DatadogCoreTests: XCTestCase {
         }
 
         // Then
-        XCTAssertNil(core.scope(for: FeatureMock.name))
+        XCTAssertNil(core.get(feature: FeatureMock.self))
         core.flush()
         XCTAssertEqual(requestBuilderSpy.requestParameters.count, 0, "It should not send any request")
     }

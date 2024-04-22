@@ -62,11 +62,13 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
 
     public required init(
         context: DatadogContext = .mockAny(),
+        dataStore: DataStore = NOPDataStore(),
         expectation: XCTestExpectation? = nil,
         bypassConsentExpectation: XCTestExpectation? = nil,
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver()
     ) {
         self.context = context
+        self.dataStore = dataStore
         self.expectation = expectation
         self.bypassConsentExpectation = bypassConsentExpectation
         self.messageReceiver = messageReceiver
@@ -86,10 +88,9 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public func get<T>(feature type: T.Type) -> T? where T: DatadogFeature { nil }
 
     /// Always returns a feature-scope.
-    public func scope(for feature: String) -> FeatureScope? {
+    public func scope<T>(for featureType: T.Type) -> FeatureScope where T : DatadogFeature {
         self
     }
-
 
     public func set(baggage: @escaping () -> FeatureBaggage?, forKey key: String) {
         context.baggages[key] = baggage()
@@ -116,6 +117,8 @@ open class PassthroughCoreMock: DatadogCoreProtocol, FeatureScope {
     public func context(_ block: @escaping (DatadogContext) -> Void) {
         block(context)
     }
+
+    public var dataStore: DataStore
 
     /// Recorded events from feature scopes.
     ///

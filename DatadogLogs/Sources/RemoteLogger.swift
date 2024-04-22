@@ -26,7 +26,7 @@ internal final class RemoteLogger: LoggerProtocol {
     }
 
     /// `DatadogCore` instance managing this logger.
-    internal let core: DatadogCoreProtocol
+    internal weak var core: DatadogCoreProtocol?
     /// Configuration specific to this logger.
     internal let configuration: Configuration
     /// Date provider for logs.
@@ -100,7 +100,7 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        let globalAttributes = self.core.get(feature: LogsFeature.self)?.getAttributes()
+        let globalAttributes = self.core?.get(feature: LogsFeature.self)?.getAttributes()
 
         // on user thread:
         let date = dateProvider.now
@@ -110,6 +110,7 @@ internal final class RemoteLogger: LoggerProtocol {
         let tags = self.tags
         var logAttributes = attributes
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
+        let errorFingerprint = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint) as? String
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
         let combinedAttributes: [String: any Encodable]
@@ -121,7 +122,7 @@ internal final class RemoteLogger: LoggerProtocol {
 
         // SDK context must be requested on the user thread to ensure that it provides values
         // that are up-to-date for the caller.
-        self.core.scope(for: LogsFeature.name)?.eventWriteContext { context, writer in
+        core?.scope(for: LogsFeature.self).eventWriteContext { context, writer in
             var internalAttributes: [String: Encodable] = [:]
 
             // When bundle with RUM is enabled, link RUM context (if available):
@@ -133,19 +134,19 @@ internal final class RemoteLogger: LoggerProtocol {
                     internalAttributes[LogEvent.Attributes.RUM.viewID] = rum.viewID
                     internalAttributes[LogEvent.Attributes.RUM.actionID] = rum.userActionID
                 } catch {
-                    self.core.telemetry
+                    self.core?.telemetry
                         .error("Fails to decode RUM context from Logs", error: error)
                 }
             }
 
             // When bundle with Trace is enabled, link RUM context (if available):
-            if self.activeSpanIntegration, let span = context.baggages[SpanContext.key] {
+            if self.activeSpanIntegration, let spanContext = context.baggages[SpanContext.key] {
                 do {
-                    let trace = try span.decode(type: SpanContext.self)
-                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID
-                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID
+                    let trace = try spanContext.decode(type: SpanContext.self)
+                    internalAttributes[LogEvent.Attributes.Trace.traceID] = trace.traceID?.toString(representation: .hexadecimal)
+                    internalAttributes[LogEvent.Attributes.Trace.spanID] = trace.spanID?.toString(representation: .decimal)
                 } catch {
-                    self.core.telemetry
+                    self.core?.telemetry
                         .error("Fails to decode Span context from Logs", error: error)
                 }
             }
@@ -162,6 +163,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 level: level,
                 message: message,
                 error: error,
+                errorFingerprint: errorFingerprint,
                 attributes: .init(
                     userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes
@@ -176,7 +178,7 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
-                self.core.send(
+                self.core?.send(
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(

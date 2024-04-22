@@ -42,12 +42,16 @@ public enum SessionReplay {
         guard configuration.replaySampleRate > 0 else {
             return
         }
+        let resources = ResourcesFeature(core: core, configuration: configuration)
+        try core.register(feature: resources)
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
         try core.register(feature: sessionReplay)
 
-        let resources = ResourcesFeature(core: core, configuration: configuration)
-        try core.register(feature: resources)
+        core.telemetry.configuration(
+            defaultPrivacyLevel: configuration.defaultPrivacyLevel.rawValue,
+            sessionReplaySampleRate: Int64(withNoOverflow: configuration.replaySampleRate)
+        )
     }
 }
 #endif

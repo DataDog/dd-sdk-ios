@@ -124,9 +124,10 @@ final class HTTPServerMockTests: XCTestCase {
         XCTAssertThrowsError(
             try session.pullRecordedRequests(timeout: 1) { $0.count == 1 }
         ) { error in
-            XCTAssertEqual(
-                (error as? Exception)?.description,
-                "Exceeded 1.0s timeout with pulling 0 requests and not meeting the `condition()`."
+            let description = (error as? Exception)?.description ?? ""
+            XCTAssertTrue(
+                description.hasPrefix("Exceeded 1.0s timeout with pulling 0 requests and not meeting the `condition()`."),
+                "It must include expected description, got '\(description)' instead"
             )
         }
     }

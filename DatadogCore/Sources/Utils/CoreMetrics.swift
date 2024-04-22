@@ -8,8 +8,6 @@ import Foundation
 
 /// Common definitions for batch telemetries.
 internal enum BatchMetric {
-    /// Metric type key.
-    static let typeKey = "metric_type"
     /// Track name key
     static let trackKey = "track"
     /// Track name value.

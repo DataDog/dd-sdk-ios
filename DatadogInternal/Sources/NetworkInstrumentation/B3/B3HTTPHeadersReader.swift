@@ -20,12 +20,12 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
         if let traceIDValue = httpHeaderFields[B3HTTPHeaders.Multiple.traceIDField],
            let spanIDValue = httpHeaderFields[B3HTTPHeaders.Multiple.spanIDField],
            let traceID = TraceID(traceIDValue, representation: .hexadecimal),
-           let spanID = TraceID(spanIDValue, representation: .hexadecimal) {
+           let spanID = SpanID(spanIDValue, representation: .hexadecimal) {
             return (
                 traceID: traceID,
                 spanID: spanID,
                 parentSpanID: httpHeaderFields[B3HTTPHeaders.Multiple.parentSpanIDField]
-                    .flatMap { TraceID($0, representation: .hexadecimal) }
+                    .flatMap { SpanID($0, representation: .hexadecimal) }
             )
         }
 
@@ -35,11 +35,11 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
         if let traceIDValue = b3Value?[safe: 0],
            let spanIDValue = b3Value?[safe: 1],
            let traceID = TraceID(traceIDValue, representation: .hexadecimal),
-           let spanID = TraceID(spanIDValue, representation: .hexadecimal) {
+           let spanID = SpanID(spanIDValue, representation: .hexadecimal) {
             return (
                 traceID: traceID,
                 spanID: spanID,
-                parentSpanID: b3Value?[safe: 3].flatMap({ TraceID($0, representation: .hexadecimal) })
+                parentSpanID: b3Value?[safe: 3].flatMap({ SpanID($0, representation: .hexadecimal) })
             )
         }
 
