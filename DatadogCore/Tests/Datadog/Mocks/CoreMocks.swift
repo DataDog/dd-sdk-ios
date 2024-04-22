@@ -200,11 +200,11 @@ extension BundleType: AnyMockable, RandomMockable {
 
 extension PerformancePreset: AnyMockable, RandomMockable {
     public static func mockAny() -> Self {
-        PerformancePreset(batchSize: .medium, uploadFrequency: .average, bundleType: .iOSApp)
+        PerformancePreset(batchSize: .medium, uploadFrequency: .average)
     }
 
     public static func mockRandom() -> Self {
-        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
+        PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom())
     }
 
     static func combining(storagePerformance storage: StoragePerformanceMock, uploadPerformance upload: UploadPerformanceMock) -> Self {

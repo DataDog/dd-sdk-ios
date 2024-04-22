@@ -416,8 +416,7 @@ public enum Datadog {
 
         let performance = PerformancePreset(
             batchSize: debug ? .small : configuration.batchSize,
-            uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
-            bundleType: bundleType
+            uploadFrequency: debug ? .frequent : configuration.uploadFrequency
         )
 
         // Set default `DatadogCore`:

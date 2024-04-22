@@ -11,84 +11,43 @@ import DatadogInternal
 
 class PerformancePresetTests: XCTestCase {
     func testIOSAppPresets() {
-        let smallBatchAnyFrequency = PerformancePreset(batchSize: .small, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
+        let smallBatchAnyFrequency = PerformancePreset(batchSize: .small, uploadFrequency: .mockRandom())
         XCTAssertEqual(smallBatchAnyFrequency.maxFileAgeForWrite, 2.85, accuracy: 0.01)
         XCTAssertEqual(smallBatchAnyFrequency.minFileAgeForRead, 3.15, accuracy: 0.01)
         XCTAssertEqual(smallBatchAnyFrequency.uploaderWindow, 3.0)
         assertPresetCommonValues(in: smallBatchAnyFrequency)
 
-        let mediumBatchAnyFrequency = PerformancePreset(batchSize: .medium, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
+        let mediumBatchAnyFrequency = PerformancePreset(batchSize: .medium, uploadFrequency: .mockRandom())
         XCTAssertEqual(mediumBatchAnyFrequency.maxFileAgeForWrite, 9.5)
         XCTAssertEqual(mediumBatchAnyFrequency.minFileAgeForRead, 10.5)
         XCTAssertEqual(mediumBatchAnyFrequency.uploaderWindow, 10.0)
         assertPresetCommonValues(in: mediumBatchAnyFrequency)
 
-        let largeBatchAnyFrequency = PerformancePreset(batchSize: .large, uploadFrequency: .mockRandom(), bundleType: .iOSApp)
+        let largeBatchAnyFrequency = PerformancePreset(batchSize: .large, uploadFrequency: .mockRandom())
         XCTAssertEqual(largeBatchAnyFrequency.maxFileAgeForWrite, 33.25)
         XCTAssertEqual(largeBatchAnyFrequency.minFileAgeForRead, 36.75)
         XCTAssertEqual(largeBatchAnyFrequency.uploaderWindow, 35)
         assertPresetCommonValues(in: largeBatchAnyFrequency)
 
-        let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSApp)
+        let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent)
         XCTAssertEqual(frequentUploadAnyBatch.initialUploadDelay, 2.5)
         XCTAssertEqual(frequentUploadAnyBatch.minUploadDelay, 0.5)
         XCTAssertEqual(frequentUploadAnyBatch.maxUploadDelay, 5.0)
         XCTAssertEqual(frequentUploadAnyBatch.uploadDelayChangeRate, 0.1)
         assertPresetCommonValues(in: frequentUploadAnyBatch)
 
-        let averageUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .average, bundleType: .iOSApp)
+        let averageUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .average)
         XCTAssertEqual(averageUploadAnyBatch.initialUploadDelay, 10.0)
         XCTAssertEqual(averageUploadAnyBatch.minUploadDelay, 2.0)
         XCTAssertEqual(averageUploadAnyBatch.maxUploadDelay, 20.0)
         XCTAssertEqual(averageUploadAnyBatch.uploadDelayChangeRate, 0.1)
         assertPresetCommonValues(in: averageUploadAnyBatch)
 
-        let rareUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .rare, bundleType: .iOSApp)
+        let rareUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .rare)
         XCTAssertEqual(rareUploadAnyBatch.initialUploadDelay, 25.0)
         XCTAssertEqual(rareUploadAnyBatch.minUploadDelay, 5.0)
         XCTAssertEqual(rareUploadAnyBatch.maxUploadDelay, 50.0)
         XCTAssertEqual(rareUploadAnyBatch.uploadDelayChangeRate, 0.1)
-        assertPresetCommonValues(in: rareUploadAnyBatch)
-    }
-
-    func testIOSAppExtensionPresets() {
-        let smallBatchAnyFrequency = PerformancePreset(batchSize: .small, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
-        XCTAssertEqual(smallBatchAnyFrequency.maxFileAgeForWrite, 0.95)
-        XCTAssertEqual(smallBatchAnyFrequency.minFileAgeForRead, 1.05)
-        XCTAssertEqual(smallBatchAnyFrequency.uploaderWindow, 1)
-        assertPresetCommonValues(in: smallBatchAnyFrequency)
-
-        let mediumBatchAnyFrequency = PerformancePreset(batchSize: .medium, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
-        XCTAssertEqual(mediumBatchAnyFrequency.maxFileAgeForWrite, 0.95, accuracy: 0.01)
-        XCTAssertEqual(mediumBatchAnyFrequency.minFileAgeForRead, 1.05, accuracy: 0.01)
-        XCTAssertEqual(mediumBatchAnyFrequency.uploaderWindow, 1)
-        assertPresetCommonValues(in: mediumBatchAnyFrequency)
-
-        let largeBatchAnyFrequency = PerformancePreset(batchSize: .large, uploadFrequency: .mockRandom(), bundleType: .iOSAppExtension)
-        XCTAssertEqual(largeBatchAnyFrequency.maxFileAgeForWrite, 0.95, accuracy: 0.01)
-        XCTAssertEqual(largeBatchAnyFrequency.minFileAgeForRead, 1.05, accuracy: 0.01)
-        XCTAssertEqual(largeBatchAnyFrequency.uploaderWindow, 1)
-        assertPresetCommonValues(in: largeBatchAnyFrequency)
-
-        let frequentUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .frequent, bundleType: .iOSAppExtension)
-        XCTAssertEqual(frequentUploadAnyBatch.initialUploadDelay, 0.25)
-        XCTAssertEqual(frequentUploadAnyBatch.minUploadDelay, 0.5)
-        XCTAssertEqual(frequentUploadAnyBatch.maxUploadDelay, 2.5)
-        XCTAssertEqual(frequentUploadAnyBatch.uploadDelayChangeRate, 0.5)
-        assertPresetCommonValues(in: frequentUploadAnyBatch)
-
-        let averageUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .average, bundleType: .iOSAppExtension)
-        XCTAssertEqual(averageUploadAnyBatch.initialUploadDelay, 0.25)
-        XCTAssertEqual(averageUploadAnyBatch.minUploadDelay, 0.5)
-        XCTAssertEqual(averageUploadAnyBatch.maxUploadDelay, 2.5)
-        XCTAssertEqual(averageUploadAnyBatch.uploadDelayChangeRate, 0.5)
-        assertPresetCommonValues(in: averageUploadAnyBatch)
-
-        let rareUploadAnyBatch = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .rare, bundleType: .iOSAppExtension)
-        XCTAssertEqual(rareUploadAnyBatch.initialUploadDelay, 0.25)
-        XCTAssertEqual(rareUploadAnyBatch.minUploadDelay, 0.5)
-        XCTAssertEqual(rareUploadAnyBatch.maxUploadDelay, 2.5)
-        XCTAssertEqual(rareUploadAnyBatch.uploadDelayChangeRate, 0.5)
         assertPresetCommonValues(in: rareUploadAnyBatch)
     }
 
@@ -103,8 +62,7 @@ class PerformancePresetTests: XCTestCase {
     func testPresetsConsistency() {
         let allPossiblePresets: [PerformancePreset] = BatchSize.allCases
             .combined(with: UploadFrequency.allCases)
-            .combined(with: BundleType.allCases)
-            .map { PerformancePreset(batchSize: $0.0, uploadFrequency: $0.1, bundleType: $1) }
+            .map { PerformancePreset(batchSize: $0.0, uploadFrequency: $0.1) }
 
         allPossiblePresets.forEach { preset in
             XCTAssertLessThan(
@@ -157,7 +115,7 @@ class PerformancePresetTests: XCTestCase {
         )
 
         // When
-        let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom(), bundleType: .mockRandom())
+        let preset = PerformancePreset(batchSize: .mockRandom(), uploadFrequency: .mockRandom())
         let updatedPreset = preset.updated(
             with: PerformancePresetOverride(
                 maxFileSize: maxFileSizeOverride,

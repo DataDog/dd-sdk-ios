@@ -70,44 +70,31 @@ internal struct PerformancePreset: Equatable, StoragePerformancePreset, UploadPe
 internal extension PerformancePreset {
     init(
         batchSize: Datadog.Configuration.BatchSize,
-        uploadFrequency: Datadog.Configuration.UploadFrequency,
-        bundleType: BundleType
+        uploadFrequency: Datadog.Configuration.UploadFrequency
     ) {
         let meanFileAgeInSeconds: TimeInterval = {
-            switch (bundleType, batchSize) {
-            case (.iOSApp, .small): return 3
-            case (.iOSApp, .medium): return 10
-            case (.iOSApp, .large): return 35
-            case (.iOSAppExtension, _): return 1
+            switch batchSize {
+            case .small: return 3
+            case .medium: return 10
+            case .large: return 35
             }
         }()
 
         let minUploadDelayInSeconds: TimeInterval = {
-            switch (bundleType, uploadFrequency) {
-            case (.iOSApp, .frequent): return 0.5
-            case (.iOSApp, .average): return 2
-            case (.iOSApp, .rare): return 5
-            case (.iOSAppExtension, _): return 0.5
+            switch uploadFrequency {
+            case .frequent: return 0.5
+            case .average: return 2
+            case .rare: return 5
             }
         }()
 
         let uploadDelayFactors: (initial: Double, min: Double, max: Double, changeRate: Double) = {
-            switch bundleType {
-            case .iOSApp:
-                return (
-                    initial: 5,
-                    min: 1,
-                    max: 10,
-                    changeRate: 0.1
-                )
-            case .iOSAppExtension:
-                return (
-                    initial: 0.5, // ensures the the first upload is checked quickly after starting the short-lived app extension
-                    min: 1,
-                    max: 5,
-                    changeRate: 0.5 // if batches are found, reduces interval significantly for more uploads in short-lived app extension
-                )
-            }
+            return (
+                initial: 5,
+                min: 1,
+                max: 10,
+                changeRate: 0.1
+            )
         }()
 
         self.init(
