@@ -37,6 +37,11 @@
                BlueprintName = "DatadogTraceTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

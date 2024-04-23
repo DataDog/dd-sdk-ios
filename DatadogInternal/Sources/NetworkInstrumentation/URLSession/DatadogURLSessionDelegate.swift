@@ -30,9 +30,9 @@ public protocol __URLSessionDelegateProviding: URLSessionDelegate {
 @objc
 @available(*, deprecated, message: "Use `URLSessionInstrumentation.enable(with:)` instead.")
 open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
-    var interceptor: URLSessionInterceptor? {
+    var feature: NetworkInstrumentationFeature? {
         let core = self.core ?? CoreRegistry.default
-        return URLSessionInterceptor.shared(in: core)
+        return core.get(feature: NetworkInstrumentationFeature.self)
     }
 
     let swizzler = NetworkInstrumentationSwizzler()
@@ -97,22 +97,22 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
-        interceptor?.task(task, didFinishCollecting: metrics)
+        feature?.task(task, didFinishCollecting: metrics)
         if #available(iOS 15, tvOS 15, *) {
             // iOS 15 and above, didCompleteWithError is not called hence we use task state to detect task completion
             // while prior to iOS 15, task state doesn't change to completed hence we use didCompleteWithError to detect task completion
-            interceptor?.task(task, didCompleteWithError: task.error)
+            feature?.task(task, didCompleteWithError: task.error)
         }
     }
 
     open func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-        interceptor?.task(dataTask, didReceive: data)
+        feature?.task(dataTask, didReceive: data)
     }
 
     open func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         // NOTE: This delegate method is only called for `URLSessionTasks` created without the completion handler.
-        interceptor?.task(task, didCompleteWithError: error)
+        feature?.task(task, didCompleteWithError: error)
     }
 
     private func swizzle(firstPartyHosts: FirstPartyHosts) {
@@ -120,7 +120,7 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
             try swizzler.swizzle(
                 interceptResume: { [weak self] task in
                     guard
-                        let interceptor = self?.interceptor,
+                        let feature = self?.feature,
                         let provider = task.dd.delegate as? __URLSessionDelegateProviding,
                         provider.ddURLSessionDelegate === self // intercept task with self as delegate
                     else {
@@ -128,17 +128,17 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
                     }
 
                     if let currentRequest = task.currentRequest {
-                        let request = interceptor.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                        let request = feature.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
                         task.dd.override(currentRequest: request)
                     }
 
-                    interceptor.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                    feature.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
                 }
             )
 
             try swizzler.swizzle(
                 interceptCompletionHandler: { [weak self] task, _, error in
-                    self?.interceptor?.task(task, didCompleteWithError: error)
+                    self?.feature?.task(task, didCompleteWithError: error)
                 }, didReceive: { _, _ in
                 }
             )

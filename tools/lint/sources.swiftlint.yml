@@ -89,6 +89,61 @@ custom_rules:
       - doccomment
     message: "`UIApplication.shared` is unavailable in some environments. Check `UIApplication.managedShared`."
     severity: error
+  required_reason_api_name: # prevents from declaring symbols that may conflict with Apple's Required Reason APIs
+    included: Sources
+    name: "Required Reason API Conflict"
+    # The list of Required Reason APIs:
+    # https://developer.apple.com/documentation/bundleresources/privacy_manifest_files/describing_use_of_required_reason_api
+    regex: >
+      (\.creationDate)|
+      (\.creationDateKey)|
+      (\.modificationDate)|
+      (\.fileModificationDate)|
+      (\.contentModificationDateKey)|
+      (\.creationDateKey)|
+      (getattrlist\()|
+      (getattrlistbulk\()|
+      (fgetattrlist\()|
+      (stat\.st_)|
+      (fstat\()|
+      (fstatat\()|
+      (lstat\()|
+      (getattrlistat\()|
+      (systemUptime)|
+      (mach_absolute_time\(\))|
+      (volumeAvailableCapacityKey)|
+      (volumeAvailableCapacityForImportantUsageKey)|
+      (volumeAvailableCapacityForOpportunisticUsageKey)|
+      (volumeTotalCapacityKey)|
+      (systemFreeSize)|
+      (systemSize)|
+      (statfs\()|
+      (statvfs\()|
+      (fstatfs\()|
+      (fstatvfs\()|
+      (getattrlist\()|
+      (fgetattrlist\()|
+      (getattrlistat\()|
+      (activeInputModes)|
+      (UserDefaults)|
+      (NSUserDefaults)|
+      (NSFileCreationDate)|
+      (NSFileModificationDate)|
+      (NSFileSystemFreeSize)|
+      (NSFileSystemSize)|
+      (NSURLContentModificationDateKey)|
+      (NSURLCreationDateKey)|
+      (NSURLVolumeAvailableCapacityForImportantUsageKey)|
+      (NSURLVolumeAvailableCapacityForOpportunisticUsageKey)|
+      (NSURLVolumeAvailableCapacityKey)|
+      (NSURLVolumeTotalCapacityKey)|
+      (AppStorage)
+    excluded_match_kinds: 
+      - comment
+      - doccomment
+      - string
+    message: "Symbol name conflicts with one of Apple's Required Reason APIs. Use different name."
+    severity: error
 
 included:
   - ../../DatadogInternal/Sources

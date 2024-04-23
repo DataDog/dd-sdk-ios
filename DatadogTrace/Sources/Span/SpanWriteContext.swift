@@ -20,28 +20,25 @@ internal protocol SpanWriteContext {
 /// instead of completion (_finish span_). This enables the proper linking of attributes from other products, like
 /// associating started span with the current RUM information.
 internal final class LazySpanWriteContext: SpanWriteContext {
-    private weak var core: DatadogCoreProtocol?
+    /// Trace feature scope.
+    let featureScope: FeatureScope
 
     /// The core context valid at the moment of creating `LazySpanWriteContext`.
     /// It doesn't require synchronization as it is accessed only from the core context queue.
     private var context: DatadogContext?
 
-    init(core: DatadogCoreProtocol) {
-        self.core = core
+    init(featureScope: FeatureScope) {
+        self.featureScope = featureScope
 
         // Capture the core context valid at the moment of initialization:
-        core.scope(for: TraceFeature.self).context { [weak self] context in
+        featureScope.context { [weak self] context in
             self?.context = context
         }
     }
 
     func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
-        guard let scope = core?.scope(for: TraceFeature.self) else {
-            return
-        }
-
         // Ignore the current context and use the one captured at initialization:
-        scope.eventWriteContext { _, writer in
+        featureScope.eventWriteContext { _, writer in
             guard let context = self.context else {
                 return // unexpected
             }

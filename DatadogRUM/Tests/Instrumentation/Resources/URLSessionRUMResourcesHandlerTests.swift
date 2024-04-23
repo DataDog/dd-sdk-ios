@@ -34,7 +34,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -45,8 +46,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "1")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "64")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "64")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
@@ -56,7 +58,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -67,7 +70,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "00000000000000000000000000000001-0000000000000001-1")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders() throws {
@@ -76,7 +79,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -87,8 +91,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "00000000000000000000000000000001")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000001")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField), "000000000000000a0000000000000064")
+        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField), "0000000000000064")
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "1")
     }
@@ -99,7 +103,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -110,7 +115,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-01")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
     }
 
     func testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders() throws {
@@ -119,7 +124,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -141,7 +147,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -161,7 +168,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -184,7 +192,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -195,7 +204,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-00000000000000000000000000000001-0000000000000001-00")
+        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
     }
 
     func testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders() throws {
@@ -204,7 +213,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
 
@@ -279,14 +289,15 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: Sampler(samplingRate: Float(traceSamplingRate)),
                 firstPartyHosts: .init(),
-                traceIDGenerator: DefaultTraceIDGenerator()
+                traceIDGenerator: DefaultTraceIDGenerator(),
+                spanIDGenerator: DefaultSpanIDGenerator()
             )
         )
 
         let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random())
         taskInterception.register(trace: TraceContext(
-            traceID: 1,
-            spanID: 2,
+            traceID: 100,
+            spanID: 200,
             parentSpanID: nil
         ))
         XCTAssertNotNil(taskInterception.trace)
@@ -299,8 +310,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
 
         let resourceStartCommand = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMStartResourceCommand)
         let spanContext = try XCTUnwrap(resourceStartCommand.spanContext)
-        XCTAssertEqual(spanContext.traceID, "1")
-        XCTAssertEqual(spanContext.spanID, "2")
+        XCTAssertEqual(spanContext.traceID, .init(idLo: 100))
+        XCTAssertEqual(spanContext.spanID, .init(rawValue: 200))
         XCTAssertEqual(spanContext.samplingRate, traceSamplingRate / 100, accuracy: 0.01)
     }
 
@@ -459,7 +470,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             distributedTracing: .init(
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
-                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: 1, advancingByCount: 0)
+                traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -468,16 +480,17 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(
             modifiedRequest.allHTTPHeaderFields,
             [
-                "tracestate": "dd=o:rum;p:0000000000000001;s:1",
-                "traceparent": "00-00000000000000000000000000000001-0000000000000001-01",
-                "X-B3-SpanId": "0000000000000001",
+                "tracestate": "dd=o:rum;p:0000000000000064;s:1",
+                "traceparent": "00-000000000000000a0000000000000064-0000000000000064-01",
+                "X-B3-SpanId": "0000000000000064",
                 "X-B3-Sampled": "1",
-                "X-B3-TraceId": "00000000000000000000000000000001",
-                "b3": "00000000000000000000000000000001-0000000000000001-1",
-                "x-datadog-trace-id": "1",
-                "x-datadog-parent-id": "1",
+                "X-B3-TraceId": "000000000000000a0000000000000064",
+                "b3": "000000000000000a0000000000000064-0000000000000064-1",
+                "x-datadog-trace-id": "64",
+                "x-datadog-parent-id": "64",
                 "x-datadog-sampling-priority": "1",
-                "x-datadog-origin": "rum"
+                "x-datadog-origin": "rum",
+                "x-datadog-tags": "_dd.p.tid=a"
             ]
         )
     }

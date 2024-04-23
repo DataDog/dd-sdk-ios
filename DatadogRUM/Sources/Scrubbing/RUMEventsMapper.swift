@@ -27,11 +27,6 @@ internal struct RUMEventsMapper {
             return map(event: event, using: viewEventMapper) as? T
         case let event as RUMErrorEvent:
             return map(event: event, using: errorEventMapper) as? T
-        case let event as RUMCrashEvent:
-            guard let model = map(event: event.model, using: errorEventMapper) else {
-                return nil
-            }
-            return RUMCrashEvent(error: model, additionalAttributes: event.additionalAttributes) as? T
         case let event as RUMResourceEvent:
             return map(event: event, using: resourceEventMapper) as? T
         case let event as RUMActionEvent:

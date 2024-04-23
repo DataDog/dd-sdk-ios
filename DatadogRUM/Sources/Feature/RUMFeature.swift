@@ -79,6 +79,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         self.instrumentation = RUMInstrumentation(
+            featureScope: featureScope,
             uiKitRUMViewsPredicate: configuration.uiKitViewsPredicate,
             uiKitRUMActionsPredicate: configuration.uiKitActionsPredicate,
             longTaskThreshold: configuration.longTaskThreshold,
@@ -86,7 +87,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             mainQueue: configuration.mainQueue,
             dateProvider: configuration.dateProvider,
             backtraceReporter: core.backtraceReporter,
-            telemetry: core.telemetry
+            fatalErrorContext: dependencies.fatalErrorContext,
+            processID: configuration.processID
         )
         self.requestBuilder = RequestBuilder(
             customIntakeURL: configuration.customEndpoint,
@@ -142,11 +144,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
-            trackInteractions: configuration.uiKitActionsPredicate != nil,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
             trackNativeViews: configuration.uiKitViewsPredicate != nil,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
+            trackUserInteractions: configuration.uiKitActionsPredicate != nil,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
     }
