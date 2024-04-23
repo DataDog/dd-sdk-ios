@@ -32,6 +32,7 @@ enum DatadogSetup {
         Trace.enable()
 
         logger?.info("It works")
-        _ = Tracer.shared().startSpan(operationName: "this too")
+        let span = Tracer.shared().startSpan(operationName: "this too")
+        span.finish()
     }
 }
