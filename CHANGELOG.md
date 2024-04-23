@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.10.0 / 23-04-2024
+
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
