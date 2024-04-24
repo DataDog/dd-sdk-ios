@@ -1,7 +1,7 @@
 # Unreleased
 
-- [FIX] Propagate parent span in distributing tracing. See [#1627][]
-- [FIX] Privacy Report missing properties. See [#1656][]
+# 2.10.0 / 23-04-2024
+
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
@@ -623,10 +623,6 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1597]: https://github.com/DataDog/dd-sdk-ios/pull/1597
 [#1627]: https://github.com/DataDog/dd-sdk-ios/pull/1627
 [#1644]: https://github.com/DataDog/dd-sdk-ios/pull/1644
-[#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
-[#1685]: https://github.com/DataDog/dd-sdk-ios/pull/1685
-[#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
-[#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
 [#1685]: https://github.com/DataDog/dd-sdk-ios/pull/1685
 [#1656]: https://github.com/DataDog/dd-sdk-ios/pull/1656
 [#1666]: https://github.com/DataDog/dd-sdk-ios/pull/1666
