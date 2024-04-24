@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if !os(macOS)
 import Foundation
 import DatadogInternal
 
@@ -42,3 +43,4 @@ internal struct LaunchTimePublisher: ContextValuePublisher {
         AppLaunchHandler.shared.setApplicationDidBecomeActiveCallback { _ in }
     }
 }
+#endif

@@ -417,7 +417,10 @@ extension DatadogContextProvider {
         self.init(context: context)
 
         subscribe(\.serverTimeOffset, to: ServerOffsetPublisher(provider: serverDateProvider))
+
+        #if !os(macOS)
         subscribe(\.launchTime, to: LaunchTimePublisher())
+        #endif
 
         if #available(iOS 12, tvOS 12, *) {
             subscribe(\.networkConnectionInfo, to: NWPathMonitorPublisher())
