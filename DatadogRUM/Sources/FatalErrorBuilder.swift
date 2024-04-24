@@ -76,6 +76,7 @@ internal struct FatalErrorBuilder {
                     case .hang: return .appHang
                     }
                 }(),
+                csp: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: nil,

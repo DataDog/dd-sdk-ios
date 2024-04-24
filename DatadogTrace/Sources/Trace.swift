@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import OpenTelemetryApi
 
 /// An entry point to Datadog Trace feature.
 public enum Trace {

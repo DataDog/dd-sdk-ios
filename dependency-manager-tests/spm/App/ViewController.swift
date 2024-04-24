@@ -12,6 +12,7 @@ import DatadogRUM
 import DatadogCrashReporting
 import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
 import DatadogObjc
+import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -41,9 +42,21 @@ internal class ViewController: UIViewController {
 
         // Trace APIs must be visible:
         Trace.enable()
+        OpenTelemetry.registerTracerProvider(
+            tracerProvider: OTelTracerProvider()
+        )
 
         logger.info("It works")
-        _ = Tracer.shared().startSpan(operationName: "this too")
+        let otSpan = Tracer.shared().startSpan(operationName: "OT Span")
+        otSpan.finish()
+        
+        // otel tracer
+        let tracer = OpenTelemetry
+            .instance
+            .tracerProvider
+            .get(instrumentationName: "", instrumentationVersion: nil)
+        let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
+        otelSpan.end()
 
         #if os(iOS)
         // Session Replay API must be visible:
