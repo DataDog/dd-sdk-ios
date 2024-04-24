@@ -37,7 +37,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         // Use the current active span as parent if the propagation
         // headers support it.
         let parentSpanContext = tracer.activeSpan?.context as? DDSpanContext
-        let spanContext = tracer.createSpanContext(parentSpanContext: parentSpanContext, using: distributedTraceSampler)
+        let spanContext = tracer.createSpanContext(
+            parentSpanContext: parentSpanContext,
+            using: distributedTraceSampler
+        )
         let injectedSpanContext = TraceContext(
             traceID: spanContext.traceID,
             spanID: spanContext.spanID,
@@ -46,33 +49,31 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             isKept: spanContext.isKept
         )
 
-        let sampler = DeterministicSampler(shouldSample: spanContext.isKept, samplingRate: spanContext.sampleRate)
         var request = request
         var hasSetAnyHeader = false
         headerTypes.forEach {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(sampler: sampler)
+                writer = HTTPHeadersWriter(samplingStrategy: .auto)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    sampler: sampler,
+                    samplingStrategy: .auto,
                     injectEncoding: .single
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    sampler: sampler,
+                    samplingStrategy: .auto,
                     injectEncoding: .multiple
                 )
             case .tracecontext:
-                writer = W3CHTTPHeadersWriter(sampler: sampler, tracestate: [:])
+                writer = W3CHTTPHeadersWriter(
+                    samplingStrategy: .auto,
+                    tracestate: [:]
+                )
             }
 
-            writer.write(
-                traceID: injectedSpanContext.traceID,
-                spanID: injectedSpanContext.spanID,
-                parentSpanID: injectedSpanContext.parentSpanID
-            )
+            writer.write(traceContext: injectedSpanContext)
 
             writer.traceHeaderFields.forEach { field, value in
                 // do not overwrite existing header

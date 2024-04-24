@@ -6,18 +6,33 @@
 
 import Foundation
 
+/// Available strategies for sampling trace propagation headers.
+public enum TraceSamplingStrategy {
+    /// Trace propagation headers will be sampled same as propagated span.
+    ///
+    /// Use this option to leverage head-based sampling, where the decision to keep or drop the trace
+    /// is determined from the first span of the trace, the head, when the trace is created. With `.auto`
+    /// strategy, this decision is propagated through the request context to downstream services.
+    case auto
+    /// Trace propagation headers will be sampled independently from sampling decision in propagated span.
+    ///
+    /// Use this option to apply the provided `sampleRate` for determining the decision to keep or drop the trace
+    /// in downstream services independently of sampling their parent span.
+    case custom(sampleRate: Float)
+
+    internal func sampler(for traceContext: TraceContext) -> Sampling {
+        switch self {
+        case .auto:
+            return DeterministicSampler(shouldSample: traceContext.isKept, samplingRate: traceContext.sampleRate)
+        case .custom(let sampleRate):
+            return Sampler(samplingRate: sampleRate)
+        }
+    }
+}
+
 /// Write interface for a custom carrier
 public protocol TracePropagationHeadersWriter {
     var traceHeaderFields: [String: String] { get }
 
-    /// Inject a span context into the custom carrier
-    ///
-    /// - parameter spanContext: context to inject into the custom carrier
-    func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)
-}
-
-extension TracePropagationHeadersWriter {
-    public func write(traceID: TraceID, spanID: SpanID) {
-        write(traceID: traceID, spanID: spanID, parentSpanID: nil)
-    }
+    func write(traceContext: TraceContext)
 }

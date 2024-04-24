@@ -51,7 +51,7 @@ public class DDB3HTTPHeadersWriter: NSObject {
         injectEncoding: DDInjectEncoding = .single
     ) {
         swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
-            sampleRate: sampleRate,
+            samplingStrategy: .custom(sampleRate: sampleRate),
             injectEncoding: .init(injectEncoding)
         )
     }

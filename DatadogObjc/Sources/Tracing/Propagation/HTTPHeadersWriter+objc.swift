@@ -23,6 +23,8 @@ public class DDHTTPHeadersWriter: NSObject {
 
     @objc
     public init(sampleRate: Float = 20) {
-        swiftHTTPHeadersWriter = HTTPHeadersWriter(sampleRate: sampleRate)
+        swiftHTTPHeadersWriter = HTTPHeadersWriter(
+            samplingStrategy: .custom(sampleRate: sampleRate)
+        )
     }
 }

@@ -269,7 +269,6 @@ class HeadBasedSamplingTests: XCTestCase {
 
     // MARK: - Distributed Tracing (through Tracer API)
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
     func testSendingSampledDistributedTraceWithNoParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with Datadog tracer:
@@ -279,7 +278,6 @@ class HeadBasedSamplingTests: XCTestCase {
          */
 
         let localTraceSampling: Float = 100 // keep all
-        let distributedTraceSampling: Float = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -287,7 +285,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -309,7 +307,7 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with Datadog tracer:
@@ -319,7 +317,6 @@ class HeadBasedSamplingTests: XCTestCase {
          */
 
         let localTraceSampling: Float = 0 // drop all
-        let distributedTraceSampling: Float = 100 // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -327,7 +324,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -349,7 +346,6 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
     func testSendingSampledDistributedTraceWithParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
@@ -361,7 +357,6 @@ class HeadBasedSamplingTests: XCTestCase {
          */
 
         let localTraceSampling: Float = 100 // keep all
-        let distributedTraceSampling: Float = 0 // drop all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -369,7 +364,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
@@ -399,7 +394,7 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
-    // TODO: RUM-3470 Enable this test when head-based sampling is supported for distributed tracing through Tracer API
+    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
@@ -411,7 +406,6 @@ class HeadBasedSamplingTests: XCTestCase {
          */
 
         let localTraceSampling: Float = 0 // drop all
-        let distributedTraceSampling: Float = 100 // keep all
 
         // Given
         traceConfig.sampleRate = localTraceSampling
@@ -419,7 +413,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(sampleRate: distributedTraceSampling)
+        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)

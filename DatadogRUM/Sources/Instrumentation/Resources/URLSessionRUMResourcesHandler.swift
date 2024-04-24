@@ -147,13 +147,12 @@ extension DistributedTracing {
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> (URLRequest, TraceContext?) {
         let traceID = traceIDGenerator.generate()
         let spanID = spanIDGenerator.generate()
-        let deterministicSampler = DeterministicSampler(sampler: sampler)
         let injectedSpanContext = TraceContext(
             traceID: traceID,
             spanID: spanID,
             parentSpanID: nil,
-            sampleRate: deterministicSampler.samplingRate,
-            isKept: deterministicSampler.sample()
+            sampleRate: sampler.samplingRate,
+            isKept: sampler.sample()
         )
 
         var request = request
@@ -162,33 +161,29 @@ extension DistributedTracing {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(sampler: deterministicSampler)
+                writer = HTTPHeadersWriter(samplingStrategy: .auto)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
                 request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    sampler: deterministicSampler,
+                    samplingStrategy: .auto,
                     injectEncoding: .single
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    sampler: deterministicSampler,
+                    samplingStrategy: .auto,
                     injectEncoding: .multiple
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
-                    sampler: deterministicSampler,
+                    samplingStrategy: .auto,
                     tracestate: [
                         W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
                     ]
                 )
             }
 
-            writer.write(
-                traceID: injectedSpanContext.traceID,
-                spanID: injectedSpanContext.spanID,
-                parentSpanID: injectedSpanContext.parentSpanID
-            )
+            writer.write(traceContext: injectedSpanContext)
 
             writer.traceHeaderFields.forEach { field, value in
                 // do not overwrite existing header

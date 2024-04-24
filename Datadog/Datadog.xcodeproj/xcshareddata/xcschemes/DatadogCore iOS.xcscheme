@@ -209,12 +209,6 @@
                <Test
                   Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI()">
                </Test>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithNoParent_throughTracerAPI()">
-               </Test>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithParent_throughTracerAPI()">
-               </Test>
             </SkippedTests>
          </TestableReference>
          <TestableReference
