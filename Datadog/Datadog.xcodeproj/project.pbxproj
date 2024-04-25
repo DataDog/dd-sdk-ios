@@ -356,6 +356,8 @@
 		6167E72A2B84C11900C3CA2D /* DDCrashReportMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */; };
 		6167E72C2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */; };
 		6167E72D2B84C72B00C3CA2D /* UIKitHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */; };
+		616AAA6D2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616AAA6C2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift */; };
+		616AAA6E2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616AAA6C2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift */; };
 		616B668E259CC28E00968EE8 /* DDRUMMonitorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */; };
 		616F8C272BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F8C262BB1CD990061EA53 /* ProcessIdentifier.swift */; };
 		616F8C282BB1CD990061EA53 /* ProcessIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 616F8C262BB1CD990061EA53 /* ProcessIdentifier.swift */; };
@@ -2294,6 +2296,7 @@
 		6167E7222B837FF100C3CA2D /* BinaryImageMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BinaryImageMocks.swift; sourceTree = "<group>"; };
 		6167E7282B84C11900C3CA2D /* DDCrashReportMocks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDCrashReportMocks.swift; sourceTree = "<group>"; };
 		6167E72B2B84C72B00C3CA2D /* UIKitHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitHelpers.swift; sourceTree = "<group>"; };
+		616AAA6C2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TraceSamplingStrategy+objc.swift"; sourceTree = "<group>"; };
 		616B668D259CC28E00968EE8 /* DDRUMMonitorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DDRUMMonitorTests.swift; sourceTree = "<group>"; };
 		616C0A9D28573DFF00C13264 /* RUMOperatingSystemInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperatingSystemInfo.swift; sourceTree = "<group>"; };
 		616C0AA028573F6300C13264 /* RUMOperatingSystemInfoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMOperatingSystemInfoTests.swift; sourceTree = "<group>"; };
@@ -4258,6 +4261,7 @@
 		6132BF4A24A49C7200D7BD17 /* Propagation */ = {
 			isa = PBXGroup;
 			children = (
+				616AAA6C2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift */,
 				6132BF4B24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift */,
 				A79B0F5E292BA435008742B3 /* B3HTTPHeadersWriter+objc.swift */,
 				A728ADAA2934EA2100397996 /* W3CHTTPHeadersWriter+objc.swift */,
@@ -7864,6 +7868,7 @@
 				6132BF4C24A49C8F00D7BD17 /* HTTPHeadersWriter+objc.swift in Sources */,
 				6132BF4724A498D800D7BD17 /* DDSpan+objc.swift in Sources */,
 				615A4A8B24A3568900233986 /* OTSpan+objc.swift in Sources */,
+				616AAA6D2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
 				611720D52524D9FB00634D9E /* DDURLSessionDelegate+objc.swift in Sources */,
 				9E55407C25812D1C00F6E3AD /* RUM+objc.swift in Sources */,
 				D2A434AA2A8E40A20028E329 /* SessionReplay+objc.swift in Sources */,
@@ -9029,6 +9034,7 @@
 				3CCCA5C52ABAF0F80029D7BD /* DDURLSessionInstrumentation+objc.swift in Sources */,
 				D2CB6FA027C5217A00A62B57 /* Trace+objc.swift in Sources */,
 				D2CB6FA127C5217A00A62B57 /* HTTPHeadersWriter+objc.swift in Sources */,
+				616AAA6E2BDA674C00AB9DAD /* TraceSamplingStrategy+objc.swift in Sources */,
 				D2CB6FA227C5217A00A62B57 /* DDSpan+objc.swift in Sources */,
 				D2CB6FA327C5217A00A62B57 /* OTSpan+objc.swift in Sources */,
 				D2CB6FA427C5217A00A62B57 /* DDURLSessionDelegate+objc.swift in Sources */,
