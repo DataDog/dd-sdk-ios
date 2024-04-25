@@ -285,7 +285,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -324,7 +324,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -364,7 +364,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
@@ -413,7 +413,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)

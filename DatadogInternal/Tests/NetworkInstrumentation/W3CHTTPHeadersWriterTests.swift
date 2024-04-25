@@ -11,7 +11,7 @@ import DatadogInternal
 class W3CHTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withAutoSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ]
@@ -32,7 +32,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
             ]

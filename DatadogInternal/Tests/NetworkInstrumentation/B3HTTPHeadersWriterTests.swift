@@ -11,7 +11,7 @@ import DatadogInternal
 class B3HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .single
         )
 
@@ -30,7 +30,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withSingleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .single
         )
 
@@ -87,7 +87,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesSingleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .single
         )
 
@@ -105,7 +105,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingSampledTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .multiple
         )
 
@@ -127,7 +127,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testWritingDroppedTraceContext_withMultipleEncoding_andAutoSamplingStrategy() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .multiple
         )
 
@@ -193,7 +193,7 @@ class B3HTTPHeadersWriterTests: XCTestCase {
 
     func testItWritesMultipleHeaderWithoutOptionalValues() {
         let writer = B3HTTPHeadersWriter(
-            samplingStrategy: .auto,
+            samplingStrategy: .headBased,
             injectEncoding: .multiple
         )
 

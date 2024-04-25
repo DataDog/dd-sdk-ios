@@ -161,22 +161,22 @@ extension DistributedTracing {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(samplingStrategy: .auto)
+                writer = HTTPHeadersWriter(samplingStrategy: .headBased)
                 // To make sure the generated traces from RUM don’t affect APM Index Spans counts.
                 request.setValue("rum", forHTTPHeaderField: TracingHTTPHeaders.originField)
             case .b3:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .auto,
+                    samplingStrategy: .headBased,
                     injectEncoding: .single
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
-                    samplingStrategy: .auto,
+                    samplingStrategy: .headBased,
                     injectEncoding: .multiple
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
-                    samplingStrategy: .auto,
+                    samplingStrategy: .headBased,
                     tracestate: [
                         W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
                     ]

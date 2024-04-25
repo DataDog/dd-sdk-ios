@@ -13,7 +13,7 @@ public enum TraceSamplingStrategy {
     /// Use this option to leverage head-based sampling, where the decision to keep or drop the trace
     /// is determined from the first span of the trace, the head, when the trace is created. With `.auto`
     /// strategy, this decision is propagated through the request context to downstream services.
-    case auto
+    case headBased
     /// Trace propagation headers will be sampled independently from sampling decision in propagated span.
     ///
     /// Use this option to apply the provided `sampleRate` for determining the decision to keep or drop the trace
@@ -22,7 +22,7 @@ public enum TraceSamplingStrategy {
 
     internal func sampler(for traceContext: TraceContext) -> Sampling {
         switch self {
-        case .auto:
+        case .headBased:
             return DeterministicSampler(shouldSample: traceContext.isKept, samplingRate: traceContext.sampleRate)
         case .custom(let sampleRate):
             return Sampler(samplingRate: sampleRate)

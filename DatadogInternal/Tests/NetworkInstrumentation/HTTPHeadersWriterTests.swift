@@ -10,7 +10,7 @@ import DatadogInternal
 
 class HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withAutoSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
 
         writer.write(
             traceContext: .mockWith(
@@ -28,7 +28,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .auto)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
 
         writer.write(
             traceContext: .mockWith(
