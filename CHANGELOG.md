@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Start sending data immediately after SDK is initialized. See [#1798][]
+
 # 2.10.0 / 23-04-2024
 
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
@@ -639,6 +641,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
+[#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
 [@00fa9a]: https://github.com/00FA9A
