@@ -144,11 +144,11 @@ internal final class RUMFeature: DatadogRemoteFeature {
             traceSampleRate: configuration.urlSessionTracking?.firstPartyHostsTracing.map { Int64(withNoOverflow: $0.sampleRate) },
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackFrustrations: configuration.trackFrustrations,
-            trackInteractions: configuration.uiKitActionsPredicate != nil,
             trackLongTask: configuration.longTaskThreshold != nil,
             trackNativeLongTasks: configuration.longTaskThreshold != nil,
             trackNativeViews: configuration.uiKitViewsPredicate != nil,
             trackNetworkRequests: configuration.urlSessionTracking != nil,
+            trackUserInteractions: configuration.uiKitActionsPredicate != nil,
             useFirstPartyHosts: configuration.urlSessionTracking?.firstPartyHostsTracing != nil
         )
     }

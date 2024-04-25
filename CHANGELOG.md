@@ -1,10 +1,14 @@
 # Unreleased
 
+- [FEATURE] Support WebView recording in Session Replay. See [#1776][]
+
+# 2.10.0 / 23-04-2024
+
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
 - [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
-- [FEATURE] Support WebView recording in Session Replay. See [#1776][]
+- [IMPROVEMENT] Make the SDK compile on macOS 12+. See [#1711][]
 
 # 2.9.0 / 11-04-2024
 
@@ -628,6 +632,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1696]: https://github.com/DataDog/dd-sdk-ios/pull/1696
 [#1697]: https://github.com/DataDog/dd-sdk-ios/pull/1697
 [#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
+[#1711]: https://github.com/DataDog/dd-sdk-ios/pull/1711
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
