@@ -143,6 +143,7 @@ workflows:
       - run_linter
       - run_unit_tests
       - run_integration_tests
+      - run_e2e_s8s_upload
       - run_smoke_tests
       - run_tools_tests
 
@@ -634,3 +635,33 @@ workflows:
 
             cd tools/distribution && make
             venv/bin/python3 release.py "$GIT_TAG" --only-cocoapods
+
+  run_e2e_s8s_upload:
+    description: |-
+        Upload E2E application to Synthetics.
+    steps:
+    - script:
+        title: Upload E2E application to Synthetics.
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+
+            # prepare certificate
+            P12_PATH=e2e_cert.p12
+            P12_PASSWORD=$E2E_CERTIFICATE_P12_PASSWORD
+            echo $E2E_CERTIFICATE_P12_BASE64 | base64 --decode -o $P12_PATH
+
+            # prepare provisioning profile
+            PP_PATH=e2e.mobileprovision
+            echo $E2E_PROVISIONING_PROFILE_BASE64 | base64 --decode -o $PP_PATH
+
+            # prepare xcconfig
+            echo $E2E_XCCONFIG_BASE64 | base64 --decode -o E2ETests/xcconfigs/E2E.local.xcconfig
+
+            # prepare for synthetics upload
+            export DATADOG_API_KEY=$E2E_S8S_API_KEY
+            export DATADOG_APP_KEY=$E2E_S8S_APPLICATION_KEY
+            export S8S_APPLICATION_ID=$E2E_S8S_APPLICATION_ID
+
+            source ./tools/code-sign.sh -- make -C E2ETests

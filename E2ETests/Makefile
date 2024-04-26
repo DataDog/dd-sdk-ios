@@ -1,13 +1,11 @@
-all: archive upload
+all: dependencies archive upload
 
 dependencies:
 	@echo "⚙️  Installing datadog-ci..."
 	@npm install -g @datadog/datadog-ci
-	@echo "⚙️  Installing xcbeautify..."
-	@brew install xcbeautify
 
 archive:
-	xcrun agvtool new-version "$(git rev-parse --short HEAD)"
+	xcrun agvtool new-version "$(shell git rev-parse --short HEAD)"
 	
 	set -o pipefail && xcodebuild \
 		-project E2ETests.xcodeproj \

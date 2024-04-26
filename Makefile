@@ -194,6 +194,3 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
-
-e2e-upload:
-		./tools/code-sign.sh -- $(MAKE) -C E2ETests
