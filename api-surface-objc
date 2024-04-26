@@ -27,6 +27,8 @@ public class DDDatadog: NSObject
     public static func setUserInfo(id: String? = nil, name: String? = nil, email: String? = nil, extraInfo: [String: Any] = [:])
     public static func addUserExtraInfo(_ extraInfo: [String: Any])
     public static func setTrackingConsent(consent: DDTrackingConsent)
+    public static func isInitialized() -> Bool
+    public static func stopInstance()
     public static func clearAllData()
 public class DDSite: NSObject
     public static func us1() -> DDSite

@@ -24,7 +24,7 @@ class DDDatadogTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Initializing with configuration
+    // MARK: - SDK initialization / stop lifecycle
 
     func testItForwardsInitializationToSwift() throws {
         let config = DDConfiguration(
@@ -46,6 +46,49 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(context.env, "tests")
 
         Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
+    }
+
+    func testItReflectsInitializationStatus() throws {
+        let config = DDConfiguration(
+            clientToken: "abcefghi",
+            env: "tests"
+        )
+
+        config.bundle = .mockWith(CFBundleExecutable: "app-name")
+        XCTAssertFalse(DDDatadog.isInitialized())
+
+        DDDatadog.initialize(
+            configuration: config,
+            trackingConsent: randomConsent().objc
+        )
+
+        XCTAssertTrue(DDDatadog.isInitialized())
+
+        Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
+    }
+
+    func testItForwardsStopInstanceToSwift() throws {
+        let config = DDConfiguration(
+            clientToken: "abcefghi",
+            env: "tests"
+        )
+
+        config.bundle = .mockWith(CFBundleExecutable: "app-name")
+
+        DDDatadog.initialize(
+            configuration: config,
+            trackingConsent: randomConsent().objc
+        )
+
+        XCTAssertTrue(Datadog.isInitialized())
+
+        DDDatadog.stopInstance()
+
+        XCTAssertFalse(Datadog.isInitialized())
 
         XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
     }
