@@ -35,7 +35,7 @@ internal class RUMContextReceiver: FeatureMessageReceiver, RUMContextObserver {
 
         do {
             // Extract the `RUMContext` or `nil` if RUM session is not sampled:
-            new = try context.baggages[RUMContext.key].map { try $0.decode() }
+            new = try context.baggages[RUMContext.key]?.decode()
         } catch {
             core.telemetry
                 .error("Fails to decode RUM context from Session Replay", error: error)

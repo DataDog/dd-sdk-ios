@@ -60,7 +60,8 @@ class WebEventIntegrationTests: XCTestCase {
             "service": "super",
             "session": {
               "id": "0110cab4-7471-480e-aa4e-7ce039ced355",
-              "type": "user"
+              "type": "user",
+              "has_replay": true
             },
             "type": "view",
             "view": {
@@ -90,14 +91,16 @@ class WebEventIntegrationTests: XCTestCase {
                 "count": 3
               },
               "time_spent": 3120000000,
-              "url": "http://localhost:8080/test.html"
+              "url": "http://localhost:8080/test.html",
             },
             "_dd": {
               "document_version": 2,
               "drift": 0,
               "format_version": 2,
-              "session": {
-                "plan": 2
+              "replay_stats": {
+                  "records_count": 10,
+                  "segments_count": 1,
+                  "segments_total_raw_size": 10
               }
             }
           },
@@ -159,10 +162,7 @@ class WebEventIntegrationTests: XCTestCase {
             "_dd": {
               "document_version": 2,
               "drift": 0,
-              "format_version": 2,
-              "session": {
-                "plan": 1
-              }
+              "format_version": 2
             }
         }
         """

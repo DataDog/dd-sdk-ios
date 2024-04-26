@@ -16,7 +16,7 @@ internal typealias JSONObject = [String: Any]
 /// Can be considered a temporary solution until we find a way to decode `[SRRecords]` unambiguously
 /// through `Codable` interface.
 internal struct SegmentJSON {
-    private enum Constants {
+    enum Constants {
         /// The `timestamp` is common to all records.
         /// see. https://github.com/DataDog/rum-events-format/blob/master/schemas/session-replay/common/_common-record-schema.json#L9
         static let timestampKey = "timestamp"

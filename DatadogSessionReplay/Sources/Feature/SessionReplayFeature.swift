@@ -44,13 +44,19 @@ internal class SessionReplayFeature: DatadogRemoteFeature {
             additionalNodeRecorders: configuration._additionalNodeRecorders
         )
         let scheduler = MainThreadScheduler(interval: 0.1)
-        let messageReceiver = RUMContextReceiver()
+        let contextReceiver = RUMContextReceiver()
 
-        self.messageReceiver = messageReceiver
+        self.messageReceiver = CombinedFeatureMessageReceiver([
+            contextReceiver,
+            WebViewRecordReceiver(
+                scope: core.scope(for: SessionReplayFeature.self)
+            )
+        ])
+
         self.recordingCoordinator = RecordingCoordinator(
             scheduler: scheduler,
             privacy: configuration.defaultPrivacyLevel,
-            rumContextObserver: messageReceiver,
+            rumContextObserver: contextReceiver,
             srContextPublisher: SRContextPublisher(core: core),
             recorder: recorder,
             sampler: Sampler(samplingRate: configuration.debugSDK ? 100 : configuration.replaySampleRate)

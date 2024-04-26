@@ -76,14 +76,16 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if let date = event["date"] as? Int {
-                    let viewID = (event["view"] as? JSON)?["id"] as? String
-                    let serverTimeOffsetInMs = self.getOffsetInMs(viewID: viewID, context: context)
-                    let correctedDate = Int64(date) + serverTimeOffsetInMs
+                if
+                    let date = event["date"] as? Int,
+                    let view = event["view"] as? JSON,
+                    let id = view["id"] as? String
+                {
+                    let correctedDate = Int64(date) + self.offset(forView: id, context: context)
                     event["date"] = correctedDate
 
                     // Inject the container source and view id
-                    if let viewID = self.viewCache.lastView(before: date, hasReplay: true) {
+                    if let viewID = self.viewCache.lastView(before: correctedDate, hasReplay: true) {
                         event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                             source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,
                             view: RUMViewEvent.Container.View(id: viewID)
@@ -98,13 +100,17 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
                 if var session = event["session"] as? JSON {
                     session["id"] = rum.sessionID
+                    // Unset `has_replay` if native replay is disabled
+                    if context.hasReplay != true {
+                        session["has_replay"] = context.hasReplay
+                    }
+
                     event["session"] = session
                 }
 
-                if var dd = event["_dd"] as? JSON {
-                    var session = dd["session"] as? [String: Any] ?? [:]
-                    session["plan"] = 1
-                    dd["session"] = session
+                if var dd = event["_dd"] as? JSON, context.hasReplay != true {
+                    // Remove stats if native replay is disabled
+                    dd["replay_stats"] = nil
                     event["_dd"] = dd
                 }
 
@@ -149,28 +155,18 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
 
     // MARK: - Time offsets
 
-    private typealias Offset = Int64
-    private typealias ViewIDOffsetPair = (viewID: String, offset: Offset)
-    private var viewIDOffsetPairs = [ViewIDOffsetPair]()
+    private var offsets: [(id: String, value: Int64)] = []
 
-    private func getOffsetInMs(viewID: String?, context: DatadogContext) -> Offset {
-        guard let viewID = viewID else {
-            return 0
+    private func offset(forView id: String, context: DatadogContext) -> Int64 {
+        if let found = offsets.first(where: { $0.id == id }) {
+            return found.value
         }
 
-        purgeOffsets()
-        let found = viewIDOffsetPairs.first { $0.viewID == viewID }
-        if let found = found {
-            return found.offset
-        }
         let offset = context.serverTimeOffset.toInt64Milliseconds
-        viewIDOffsetPairs.insert((viewID: viewID, offset: offset), at: 0)
-        return offset
-    }
+        offsets.insert((id, offset), at: 0)
+        // only retain 3 offsets
+        offsets = Array(offsets.prefix(3))
 
-    private func purgeOffsets() {
-        while viewIDOffsetPairs.count > 3 {
-            _ = viewIDOffsetPairs.popLast()
-        }
+        return offset
     }
 }
