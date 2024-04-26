@@ -28,7 +28,7 @@ internal protocol UIKitAppBackgroundTaskCoordinator {
 
 extension UIApplication: UIKitAppBackgroundTaskCoordinator {}
 
-internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
     private let app: UIKitAppBackgroundTaskCoordinator?
 
     @ReadWriteLock
@@ -58,6 +58,32 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
             app?.endBackgroundTask(currentTaskId)
         }
         self.currentTaskId = nil
+    }
+}
+
+internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+    private let processInfo: ProcessInfo
+
+    @ReadWriteLock
+    private var currentActivity: NSObjectProtocol?
+
+    internal init(
+        processInfo: ProcessInfo = .init()
+    ) {
+        self.processInfo = processInfo
+    }
+
+    internal func beginBackgroundTask() {
+        endBackgroundTask()
+        currentActivity = processInfo.beginActivity(options: [.background], reason: "Datadog background upload")
+    }
+
+    internal func endBackgroundTask() {
+        guard let currentActivity = currentActivity else {
+            return
+        }
+        ProcessInfo().endActivity(currentActivity)
+        self.currentActivity = nil
     }
 }
 #endif

@@ -44,8 +44,8 @@ internal extension CoreDirectory {
     ///   - osDirectory: the root OS directory (`/Library/Caches`) to create core directory inside.
     ///   - instancenName: The core instance name.
     ///   - site: The cor instance site.
-    init(in osDirectory: Directory, instancenName: String, site: DatadogSite) throws {
-        let sdkInstanceUUID = sha256("\(instancenName)\(site)")
+    init(in osDirectory: Directory, instanceName: String, site: DatadogSite) throws {
+        let sdkInstanceUUID = sha256("\(instanceName)\(site)")
         let path = "com.datadoghq/v2/\(sdkInstanceUUID)"
 
         self.init(

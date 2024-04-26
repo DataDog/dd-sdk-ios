@@ -68,6 +68,9 @@ internal final class DatadogCore {
     /// Flag defining if background tasks are enabled.
     internal let backgroundTasksEnabled: Bool
 
+    /// Flag defining if the SDK is run from an extension.
+    internal let isRunFromExtension: Bool
+
     /// Maximum number of batches per upload.
     internal let maxBatchesPerUpload: Int
 
@@ -92,7 +95,8 @@ internal final class DatadogCore {
         contextProvider: DatadogContextProvider,
         applicationVersion: String,
         maxBatchesPerUpload: Int,
-        backgroundTasksEnabled: Bool
+        backgroundTasksEnabled: Bool,
+        isRunFromExtension: Bool
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
@@ -102,6 +106,7 @@ internal final class DatadogCore {
         self.contextProvider = contextProvider
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.backgroundTasksEnabled = backgroundTasksEnabled
+        self.isRunFromExtension = isRunFromExtension
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
 
@@ -258,6 +263,7 @@ extension DatadogCore: DatadogCoreProtocol {
                 performance: performancePreset,
                 backgroundTasksEnabled: backgroundTasksEnabled,
                 maxBatchesPerUpload: maxBatchesPerUpload,
+                isRunFromExtension: isRunFromExtension,
                 telemetry: telemetry
             )
 
