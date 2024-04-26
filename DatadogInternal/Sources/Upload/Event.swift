@@ -22,3 +22,9 @@ public struct Event: Equatable {
         self.metadata = metadata
     }
 }
+
+extension Event: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        return .init(data: data, encoding: .utf8) ?? "<Not a string>"
+    }
+}
