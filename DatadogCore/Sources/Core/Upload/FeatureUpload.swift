@@ -38,7 +38,7 @@ internal struct FeatureUpload {
             ? UIKitBackgroundTaskCoordinator()
             : nil
         #else
-        let backgroundTaskCoordinator = nil
+        let backgroundTaskCoordinator: BackgroundTaskCoordinator? = nil
         #endif
 
         self.init(

@@ -29,7 +29,7 @@ public extension Array where Element == FeatureMessage {
     }
 
     /// Unpacks the first "telemetry message" in this array.
-    func firstContext() -> TelemetryMessage? {
+    func firstTelemetry() -> TelemetryMessage? {
         return compactMap({ $0.asTelemetry }).first
     }
 }

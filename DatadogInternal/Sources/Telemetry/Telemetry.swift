@@ -20,10 +20,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let forwardErrorsToLogs: Bool?
     public let initializationType: String?
     public let mobileVitalsUpdatePeriod: Int64?
-    public let premiumSampleRate: Int64?
     public let reactNativeVersion: String?
     public let reactVersion: String?
-    public let replaySampleRate: Int64?
     public let sessionReplaySampleRate: Int64?
     public let sessionSampleRate: Int64?
     public let silentMultipleInit: Bool?
@@ -36,7 +34,6 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackErrors: Bool?
     public let trackFlutterPerformance: Bool?
     public let trackFrustrations: Bool?
-    public let trackInteractions: Bool?
     public let trackLongTask: Bool?
     public let trackNativeErrors: Bool?
     public let trackNativeLongTasks: Bool?
@@ -47,10 +44,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let trackUserInteractions: Bool?
     public let trackViewsManually: Bool?
     public let unityVersion: String?
-    public let useAllowedTracingOrigins: Bool?
     public let useAllowedTracingUrls: Bool?
     public let useBeforeSend: Bool?
-    public let useCrossSiteSessionCookie: Bool?
     public let useExcludedActivityUrls: Bool?
     public let useFirstPartyHosts: Bool?
     public let useLocalEncryption: Bool?
@@ -253,10 +248,8 @@ extension Telemetry {
         forwardErrorsToLogs: Bool? = nil,
         initializationType: String? = nil,
         mobileVitalsUpdatePeriod: Int64? = nil,
-        premiumSampleRate: Int64? = nil,
         reactNativeVersion: String? = nil,
         reactVersion: String? = nil,
-        replaySampleRate: Int64? = nil,
         sessionReplaySampleRate: Int64? = nil,
         sessionSampleRate: Int64? = nil,
         silentMultipleInit: Bool? = nil,
@@ -269,7 +262,6 @@ extension Telemetry {
         trackErrors: Bool? = nil,
         trackFlutterPerformance: Bool? = nil,
         trackFrustrations: Bool? = nil,
-        trackInteractions: Bool? = nil,
         trackLongTask: Bool? = nil,
         trackNativeErrors: Bool? = nil,
         trackNativeLongTasks: Bool? = nil,
@@ -280,10 +272,8 @@ extension Telemetry {
         trackUserInteractions: Bool? = nil,
         trackViewsManually: Bool? = nil,
         unityVersion: String? = nil,
-        useAllowedTracingOrigins: Bool? = nil,
         useAllowedTracingUrls: Bool? = nil,
         useBeforeSend: Bool? = nil,
-        useCrossSiteSessionCookie: Bool? = nil,
         useExcludedActivityUrls: Bool? = nil,
         useFirstPartyHosts: Bool? = nil,
         useLocalEncryption: Bool? = nil,
@@ -306,10 +296,8 @@ extension Telemetry {
             forwardErrorsToLogs: forwardErrorsToLogs,
             initializationType: initializationType,
             mobileVitalsUpdatePeriod: mobileVitalsUpdatePeriod,
-            premiumSampleRate: premiumSampleRate,
             reactNativeVersion: reactNativeVersion,
             reactVersion: reactVersion,
-            replaySampleRate: replaySampleRate,
             sessionReplaySampleRate: sessionReplaySampleRate,
             sessionSampleRate: sessionSampleRate,
             silentMultipleInit: silentMultipleInit,
@@ -322,7 +310,6 @@ extension Telemetry {
             trackErrors: trackErrors,
             trackFlutterPerformance: trackFlutterPerformance,
             trackFrustrations: trackFrustrations,
-            trackInteractions: trackInteractions,
             trackLongTask: trackLongTask,
             trackNativeErrors: trackNativeErrors,
             trackNativeLongTasks: trackNativeLongTasks,
@@ -333,10 +320,8 @@ extension Telemetry {
             trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
             unityVersion: unityVersion,
-            useAllowedTracingOrigins: useAllowedTracingOrigins,
             useAllowedTracingUrls: useAllowedTracingUrls,
             useBeforeSend: useBeforeSend,
-            useCrossSiteSessionCookie: useCrossSiteSessionCookie,
             useExcludedActivityUrls: useExcludedActivityUrls,
             useFirstPartyHosts: useFirstPartyHosts,
             useLocalEncryption: useLocalEncryption,
@@ -416,10 +401,8 @@ extension ConfigurationTelemetry {
             forwardErrorsToLogs: other.forwardErrorsToLogs ?? forwardErrorsToLogs,
             initializationType: other.initializationType ?? initializationType,
             mobileVitalsUpdatePeriod: other.mobileVitalsUpdatePeriod ?? mobileVitalsUpdatePeriod,
-            premiumSampleRate: other.premiumSampleRate ?? premiumSampleRate,
             reactNativeVersion: other.reactNativeVersion ?? reactNativeVersion,
             reactVersion: other.reactVersion ?? reactVersion,
-            replaySampleRate: other.replaySampleRate ?? replaySampleRate,
             sessionReplaySampleRate: other.sessionReplaySampleRate ?? sessionReplaySampleRate,
             sessionSampleRate: other.sessionSampleRate ?? sessionSampleRate,
             silentMultipleInit: other.silentMultipleInit ?? silentMultipleInit,
@@ -432,7 +415,6 @@ extension ConfigurationTelemetry {
             trackErrors: other.trackErrors ?? trackErrors,
             trackFlutterPerformance: other.trackFlutterPerformance ?? trackFlutterPerformance,
             trackFrustrations: other.trackFrustrations ?? trackFrustrations,
-            trackInteractions: other.trackInteractions ?? trackInteractions,
             trackLongTask: other.trackLongTask ?? trackLongTask,
             trackNativeErrors: other.trackNativeErrors ?? trackNativeErrors,
             trackNativeLongTasks: other.trackNativeLongTasks ?? trackNativeLongTasks,
@@ -443,10 +425,8 @@ extension ConfigurationTelemetry {
             trackUserInteractions: other.trackUserInteractions ?? trackUserInteractions,
             trackViewsManually: other.trackViewsManually ?? trackViewsManually,
             unityVersion: other.unityVersion ?? unityVersion,
-            useAllowedTracingOrigins: other.useAllowedTracingOrigins ?? useAllowedTracingOrigins,
             useAllowedTracingUrls: other.useAllowedTracingUrls ?? useAllowedTracingUrls,
             useBeforeSend: other.useBeforeSend ?? useBeforeSend,
-            useCrossSiteSessionCookie: other.useCrossSiteSessionCookie ?? useCrossSiteSessionCookie,
             useExcludedActivityUrls: other.useExcludedActivityUrls ?? useExcludedActivityUrls,
             useFirstPartyHosts: other.useFirstPartyHosts ?? useFirstPartyHosts,
             useLocalEncryption: other.useLocalEncryption ?? useLocalEncryption,

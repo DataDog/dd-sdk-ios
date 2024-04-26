@@ -158,6 +158,10 @@ extension Dictionary: RandomMockable where Key: RandomMockable, Value: RandomMoc
     public static func mockRandom() -> Dictionary {
         return [Key.mockRandom(): Value.mockRandom()]
     }
+
+    public static func mockRandom(count: Int) -> Dictionary {
+        return (0..<count).reduce(into: [:]) { dict, _ in dict[.mockRandom()] = .mockRandom() }
+    }
 }
 
 extension Set: AnyMockable where Element: AnyMockable {
@@ -169,6 +173,10 @@ extension Set: AnyMockable where Element: AnyMockable {
 extension Set: RandomMockable where Element: RandomMockable {
     public static func mockRandom() -> Set<Element> {
         return Set([Element].mockRandom())
+    }
+
+    public static func mockRandom(count: Int) -> Set<Element> {
+        return Set([Element].mockRandom(count: count))
     }
 }
 

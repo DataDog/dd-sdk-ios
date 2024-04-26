@@ -271,11 +271,6 @@ internal class RUMSessionMatcher {
 private func validate(rumViewEvents: [RUMViewEvent]) throws {
     // All view events must use `session.plan` "lite"
     try rumViewEvents.forEach { viewEvent in
-        if viewEvent.dd.session?.plan != .plan1 {
-            throw RUMSessionConsistencyException(
-                description: "All RUM events must use session plan `1` (RUM Lite). Bad view event: \(viewEvent)"
-            )
-        }
         if viewEvent.source == .ios { // validete only mobile events
             try validate(device: viewEvent.device)
             try validate(os: viewEvent.os)
@@ -286,11 +281,6 @@ private func validate(rumViewEvents: [RUMViewEvent]) throws {
 private func validate(rumActionEvents: [RUMActionEvent]) throws {
     // All action events must use `session.plan` "lite"
     try rumActionEvents.forEach { actionEvent in
-        if actionEvent.dd.session?.plan != .plan1 {
-            throw RUMSessionConsistencyException(
-                description: "All RUM events must use session plan `1` (RUM Lite). Bad action event: \(actionEvent)"
-            )
-        }
         if actionEvent.source == .ios { // validete only mobile events
             try validate(device: actionEvent.device)
             try validate(os: actionEvent.os)
@@ -309,11 +299,6 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 
     // All resource events must use `session.plan` "lite"
     try rumResourceEvents.forEach { resourceEvent in
-        if resourceEvent.dd.session?.plan != .plan1 {
-            throw RUMSessionConsistencyException(
-                description: "All RUM events must use session plan `1` (RUM Lite). Bad resource event: \(resourceEvent)"
-            )
-        }
         if resourceEvent.source == .ios { // validete only mobile events
             try validate(device: resourceEvent.device)
             try validate(os: resourceEvent.os)
@@ -324,11 +309,6 @@ private func validate(rumResourceEvents: [RUMResourceEvent]) throws {
 private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumErrorEvents.forEach { errorEvent in
-        if errorEvent.dd.session?.plan != .plan1 {
-            throw RUMSessionConsistencyException(
-                description: "All RUM events must use session plan `1` (RUM Lite). Bad error event: \(errorEvent)"
-            )
-        }
         if errorEvent.source == .ios { // validete only mobile events
             try validate(device: errorEvent.device)
             try validate(os: errorEvent.os)
@@ -339,11 +319,6 @@ private func validate(rumErrorEvents: [RUMErrorEvent]) throws {
 private func validate(rumLongTaskEvents: [RUMLongTaskEvent]) throws {
     // All error events must use `session.plan` "lite"
     try rumLongTaskEvents.forEach { longTaskEvent in
-        if longTaskEvent.dd.session?.plan != .plan1 {
-            throw RUMSessionConsistencyException(
-                description: "All RUM events must use session plan `1` (RUM Lite). Bad long task event: \(longTaskEvent)"
-            )
-        }
         if longTaskEvent.source == .ios { // validete only mobile events
             try validate(device: longTaskEvent.device)
             try validate(os: longTaskEvent.os)
