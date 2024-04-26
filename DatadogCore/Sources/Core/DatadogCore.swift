@@ -96,7 +96,7 @@ internal final class DatadogCore {
         applicationVersion: String,
         maxBatchesPerUpload: Int,
         backgroundTasksEnabled: Bool,
-        isRunFromExtension: Bool
+        isRunFromExtension: Bool = false
     ) {
         self.directory = directory
         self.dateProvider = dateProvider
