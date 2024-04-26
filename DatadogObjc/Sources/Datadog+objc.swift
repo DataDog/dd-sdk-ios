@@ -71,6 +71,11 @@ public class DDDatadog: NSObject {
     }
 
     @objc
+    public static func addUserExtraInfo(_ extraInfo: [String: Any]) {
+        Datadog.addUserExtraInfo(castAttributesToSwift(extraInfo))
+    }
+
+    @objc
     public static func setTrackingConsent(consent: DDTrackingConsent) {
         Datadog.set(trackingConsent: consent.sdkConsent)
     }
