@@ -1,5 +1,6 @@
 # Unreleased
 
+- [FEATURE] `DatadogTrace` now supports head-based sampling. See [#1794][]
 - [FEATURE] Support WebView recording in Session Replay. See [#1776][]
 
 # 2.10.0 / 23-04-2024
@@ -640,6 +641,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
 [#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
 [#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
+[#1794]: https://github.com/DataDog/dd-sdk-ios/pull/1794
 [#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767

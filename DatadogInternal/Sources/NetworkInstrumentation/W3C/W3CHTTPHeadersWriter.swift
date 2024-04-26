@@ -38,17 +38,13 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// This value will be merged with the tracestate from the trace context.
     private let tracestate: [String: String]
 
-    /// The tracing sampler.
-    ///
-    /// This value will decide of the `FLAG_SAMPLED` header field value
-    /// and if `trace-id`, `span-id` are propagated.
-    private let sampler: Sampler
+    private let samplingStrategy: TraceSamplingStrategy
 
     /// Initializes the headers writer.
     ///
     /// - Parameter samplingRate: The sampling rate applied for headers injection.
     /// - Parameter tracestate: The tracestate to be injected.
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:)` instead.")
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(samplingRate: Float) {
         self.init(sampleRate: samplingRate, tracestate: [:])
     }
@@ -57,16 +53,17 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     ///
     /// - Parameter sampleRate: The sampling rate applied for headers injection, with 20% as the default.
     /// - Parameter tracestate: The tracestate to be injected.
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
-        self.init(sampler: Sampler(samplingRate: sampleRate), tracestate: tracestate)
+        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate)
     }
 
     /// Initializes the headers writer.
     ///
-    /// - Parameter sampler: The sampler used for headers injection.
+    /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter tracestate: The tracestate to be injected.
-    public init(sampler: Sampler, tracestate: [String: String]) {
-        self.sampler = sampler
+    public init(samplingStrategy: TraceSamplingStrategy, tracestate: [String: String] = [:]) {
+        self.samplingStrategy = samplingStrategy
         self.tracestate = tracestate
     }
 
@@ -75,15 +72,16 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter traceID: The trace ID.
     /// - Parameter spanID: The span ID.
     /// - Parameter parentSpanID: The parent span ID, if applicable.
-    public func write(traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?) {
+    public func write(traceContext: TraceContext) {
         typealias Constants = W3CHTTPHeaders.Constants
 
+        let sampler = samplingStrategy.sampler(for: traceContext)
         let sampled = sampler.sample()
 
         traceHeaderFields[W3CHTTPHeaders.traceparent] = [
             Constants.version,
-            String(traceID, representation: .hexadecimal32Chars),
-            String(spanID, representation: .hexadecimal16Chars),
+            String(traceContext.traceID, representation: .hexadecimal32Chars),
+            String(traceContext.spanID, representation: .hexadecimal16Chars),
             sampled ? Constants.sampledValue : Constants.unsampledValue
         ]
         .joined(separator: Constants.separator)
@@ -92,7 +90,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         // over the ones from the trace context
         let tracestate: [String: String] = [
             Constants.sampling: "\(sampled ? 1 : 0)",
-            Constants.parentId: String(spanID, representation: .hexadecimal16Chars)
+            Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
         ].merging(tracestate) { old, new in
             return new
         }
