@@ -7,9 +7,13 @@
 import Foundation
 import DatadogInternal
 
-extension SpanID {
+extension SpanID: AnyMockable, RandomMockable {
     public static func mockAny() -> SpanID {
         return SpanID(rawValue: .mockAny())
+    }
+
+    public static func mockRandom() -> SpanID {
+        return SpanID(rawValue: .mockRandom())
     }
 
     public static func mock(_ rawValue: UInt64) -> SpanID {
@@ -18,9 +22,13 @@ extension SpanID {
 }
 
 
-extension TraceID {
+extension TraceID: AnyMockable, RandomMockable {
     public static func mockAny() -> TraceID {
         return TraceID(rawValue: (.mockAny(), .mockAny()))
+    }
+
+    public static func mockRandom() -> TraceID {
+        return TraceID(idHi: .mockRandom(), idLo: .mockRandom())
     }
 
     public static func mock(_ rawValue: (UInt64, UInt64)) -> TraceID {
@@ -33,6 +41,38 @@ extension TraceID {
 
     public static func mock(_ idLo: UInt64) -> TraceID {
         return TraceID(idLo: idLo)
+    }
+}
+
+extension TraceContext: AnyMockable, RandomMockable {
+    public static func mockAny() -> TraceContext {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> TraceContext {
+        return .mockWith(
+            traceID: .mockRandom(),
+            spanID: .mockRandom(),
+            parentSpanID: .mockRandom(),
+            sampleRate: .mockRandom(min: 0, max: 100),
+            isKept: .random()
+        )
+    }
+
+    public static func mockWith(
+        traceID: TraceID = .mockAny(),
+        spanID: SpanID = .mockAny(),
+        parentSpanID: SpanID? = nil,
+        sampleRate: Float = .mockAny(),
+        isKept: Bool = .mockAny()
+    ) -> TraceContext {
+        return TraceContext(
+            traceID: traceID,
+            spanID: spanID,
+            parentSpanID: parentSpanID,
+            sampleRate: sampleRate,
+            isKept: isKept
+        )
     }
 }
 

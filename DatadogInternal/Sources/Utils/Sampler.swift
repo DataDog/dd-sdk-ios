@@ -32,23 +32,16 @@ public struct Sampler: Sampling {
 }
 
 /// A sampler that determines sampling decisions deterministically (the same each time).
-public struct DeterministicSampler: Sampling {
+internal struct DeterministicSampler: Sampling {
     /// Value between `0.0` and `100.0`, where `0.0` means NO event will be sent and `100.0` means ALL events will be sent.
-    public let samplingRate: Float
+    let samplingRate: Float
     /// Persisted sampling decision.
     private let shouldSample: Bool
 
-    public init(sampler: Sampler) {
-        self.init(
-            shouldSample: sampler.sample(),
-            samplingRate: sampler.samplingRate
-        )
-    }
-
-    public init(shouldSample: Bool, samplingRate: Float) {
+    init(shouldSample: Bool, samplingRate: Float) {
         self.samplingRate = samplingRate
         self.shouldSample = shouldSample
     }
 
-    public func sample() -> Bool { shouldSample }
+    func sample() -> Bool { shouldSample }
 }

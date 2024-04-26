@@ -20,7 +20,7 @@ class DDNoopTracerTests: XCTestCase {
 
         // When
         let context = DDSpanContext.mockAny()
-        noop.inject(spanContext: context, writer: HTTPHeadersWriter())
+        noop.inject(spanContext: context, writer: HTTPHeadersWriter(samplingStrategy: .headBased))
         _ = noop.extract(reader: HTTPHeadersReader(httpHeaderFields: [:]))
         let root = noop.startRootSpan(operationName: "root operation").setActive()
         let child = noop.startSpan(operationName: "child operation")

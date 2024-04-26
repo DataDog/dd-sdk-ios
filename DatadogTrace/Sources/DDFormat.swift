@@ -20,11 +20,14 @@ extension TracePropagationHeadersWriter where Self: OTFormatWriter {
         guard let spanContext = spanContext.dd else {
             return
         }
-
         write(
-            traceID: spanContext.traceID,
-            spanID: spanContext.spanID,
-            parentSpanID: spanContext.parentSpanID
+            traceContext: TraceContext(
+                traceID: spanContext.traceID,
+                spanID: spanContext.spanID,
+                parentSpanID: spanContext.parentSpanID,
+                sampleRate: spanContext.sampleRate,
+                isKept: spanContext.isKept
+            )
         )
     }
 }
