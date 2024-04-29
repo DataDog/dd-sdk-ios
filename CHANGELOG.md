@@ -2,6 +2,7 @@
 
 - [FEATURE] `DatadogTrace` now supports head-based sampling. See [#1794][]
 - [FEATURE] Support WebView recording in Session Replay. See [#1776][]
+- [IMPROVEMENT] Add `addUserExtraInfo` method to ObjC API. See [#1799][]
 
 # 2.10.0 / 23-04-2024
 
