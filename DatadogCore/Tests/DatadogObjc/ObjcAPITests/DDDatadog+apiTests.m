@@ -29,6 +29,8 @@
 
     [DDDatadog initializeWithConfiguration:configuration trackingConsent:[DDTrackingConsent notGranted]];
 
+    [DDDatadog isInitialized];
+
     DDSDKVerbosityLevel verbosity = [DDDatadog verbosityLevel];
     [DDDatadog setVerbosityLevel:verbosity];
 
@@ -37,7 +39,7 @@
     [DDDatadog setTrackingConsentWithConsent:[DDTrackingConsent notGranted]];
 
     [DDDatadog clearAllData];
-    [DDDatadog flushAndDeinitialize];
+    [DDDatadog stopInstance];
 }
 
 #pragma clang diagnostic pop
