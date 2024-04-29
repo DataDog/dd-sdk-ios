@@ -1573,3 +1573,390 @@ public enum WebViewTracking
     public class AbstractMessageEmitter
         public func send(body: Any, slotId: String? = nil)
     public static func messageEmitter(in core: DatadogCoreProtocol,logsSampleRate: Float = 100) -> AbstractMessageEmitter
+
+
+# ----------------------------------
+# API surface for DatadogSessionReplay:
+# ----------------------------------
+
+[?] extension SRTextPosition.Alignment
+    public init(systemTextAlignment: NSTextAlignment,vertical: SRTextPosition.Alignment.Vertical = .center)
+public struct SRSegment: SRDataModel
+    public let application: Application
+    public let end: Int64
+    public let hasFullSnapshot: Bool?
+    public let indexInView: Int64?
+    public let records: [SRRecord]
+    public let recordsCount: Int64
+    public let session: Session
+    public let source: Source
+    public let start: Int64
+    public let view: View
+    public struct Application: Codable
+        public let id: String
+    public struct Session: Codable
+        public let id: String
+    public enum Source: String, Codable
+        case android = "android"
+        case ios = "ios"
+        case flutter = "flutter"
+        case reactNative = "react-native"
+    public struct View: Codable
+        public let id: String
+public struct SRShapeBorder: Codable, Hashable
+    public let color: String
+    public let width: Int64
+public struct SRContentClip: Codable, Hashable
+    public let bottom: Int64?
+    public let left: Int64?
+    public let right: Int64?
+    public let top: Int64?
+public struct SRShapeStyle: Codable, Hashable
+    public let backgroundColor: String?
+    public let cornerRadius: Double?
+    public let opacity: Double?
+public struct SRShapeWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let shapeStyle: SRShapeStyle?
+    public let type: String = "shape"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+public struct SRTextPosition: Codable, Hashable
+    public let alignment: Alignment?
+    public let padding: Padding?
+    public struct Alignment: Codable, Hashable
+        public let horizontal: Horizontal?
+        public let vertical: Vertical?
+        public enum Horizontal: String, Codable
+            case left = "left"
+            case right = "right"
+            case center = "center"
+        public enum Vertical: String, Codable
+            case top = "top"
+            case bottom = "bottom"
+            case center = "center"
+    public struct Padding: Codable, Hashable
+        public let bottom: Int64?
+        public let left: Int64?
+        public let right: Int64?
+        public let top: Int64?
+public struct SRTextStyle: Codable, Hashable
+    public let color: String
+    public let family: String
+    public let size: Int64
+public struct SRTextWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let shapeStyle: SRShapeStyle?
+    public var text: String
+    public let textPosition: SRTextPosition?
+    public let textStyle: SRTextStyle
+    public let type: String = "text"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+public struct SRImageWireframe: Codable, Hashable
+    public var base64: String?
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public var isEmpty: Bool?
+    public var mimeType: String?
+    public var resourceId: String?
+    public let shapeStyle: SRShapeStyle?
+    public let type: String = "image"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+public struct SRPlaceholderWireframe: Codable, Hashable
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public var label: String?
+    public let type: String = "placeholder"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+public struct SRWebviewWireframe: Codable, Hashable
+    public let border: SRShapeBorder?
+    public let clip: SRContentClip?
+    public let height: Int64
+    public let id: Int64
+    public let shapeStyle: SRShapeStyle?
+    public let slotId: String
+    public let type: String = "webview"
+    public let width: Int64
+    public let x: Int64
+    public let y: Int64
+public enum SRWireframe: Codable
+    case shapeWireframe(value: SRShapeWireframe)
+    case textWireframe(value: SRTextWireframe)
+    case imageWireframe(value: SRImageWireframe)
+    case placeholderWireframe(value: SRPlaceholderWireframe)
+    case webviewWireframe(value: SRWebviewWireframe)
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+public struct SRFullSnapshotRecord: Codable
+    public let data: Data
+    public let timestamp: Int64
+    public let type: Int64 = 10
+    public struct Data: Codable
+        public let wireframes: [SRWireframe]
+public struct SRIncrementalSnapshotRecord: Codable
+    public let data: Data
+    public let timestamp: Int64
+    public let type: Int64 = 11
+    public enum Data: Codable
+        case mutationData(value: MutationData)
+        case touchData(value: TouchData)
+        case viewportResizeData(value: ViewportResizeData)
+        case pointerInteractionData(value: PointerInteractionData)
+        public func encode(to encoder: Encoder) throws
+        public init(from decoder: Decoder) throws
+        public struct MutationData: Codable
+            public let adds: [Adds]
+            public let removes: [Removes]
+            public let source: Int64 = 0
+            public let updates: [Updates]
+            public struct Adds: Codable
+                public let previousId: Int64?
+                public let wireframe: SRWireframe
+            public struct Removes: Codable
+                public let id: Int64
+            public enum Updates: Codable
+                case textWireframeUpdate(value: TextWireframeUpdate)
+                case shapeWireframeUpdate(value: ShapeWireframeUpdate)
+                case imageWireframeUpdate(value: ImageWireframeUpdate)
+                case placeholderWireframeUpdate(value: PlaceholderWireframeUpdate)
+                case webviewWireframeUpdate(value: WebviewWireframeUpdate)
+                public func encode(to encoder: Encoder) throws
+                public init(from decoder: Decoder) throws
+                public struct TextWireframeUpdate: Codable
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public let shapeStyle: SRShapeStyle?
+                    public var text: String?
+                    public let textPosition: SRTextPosition?
+                    public let textStyle: SRTextStyle?
+                    public let type: String = "text"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                public struct ShapeWireframeUpdate: Codable
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public let shapeStyle: SRShapeStyle?
+                    public let type: String = "shape"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                public struct ImageWireframeUpdate: Codable
+                    public var base64: String?
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public var isEmpty: Bool?
+                    public var mimeType: String?
+                    public var resourceId: String?
+                    public let shapeStyle: SRShapeStyle?
+                    public let type: String = "image"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                public struct PlaceholderWireframeUpdate: Codable
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public var label: String?
+                    public let type: String = "placeholder"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+                public struct WebviewWireframeUpdate: Codable
+                    public let border: SRShapeBorder?
+                    public let clip: SRContentClip?
+                    public let height: Int64?
+                    public let id: Int64
+                    public let shapeStyle: SRShapeStyle?
+                    public let slotId: String
+                    public let type: String = "webview"
+                    public let width: Int64?
+                    public let x: Int64?
+                    public let y: Int64?
+        public struct TouchData: Codable
+            public let positions: [Positions]?
+            public let source: Int64 = 2
+            public struct Positions: Codable
+                public let id: Int64
+                public let timestamp: Int64
+                public let x: Int64
+                public let y: Int64
+        public struct ViewportResizeData: Codable
+            public let height: Int64
+            public let source: Int64 = 4
+            public let width: Int64
+        public struct PointerInteractionData: Codable
+            public let pointerEventType: PointerEventType
+            public let pointerId: Int64
+            public let pointerType: PointerType
+            public let source: Int64 = 9
+            public let x: Double
+            public let y: Double
+            public enum PointerEventType: String, Codable
+                case down = "down"
+                case up = "up"
+                case move = "move"
+            public enum PointerType: String, Codable
+                case mouse = "mouse"
+                case touch = "touch"
+                case pen = "pen"
+public struct SRMetaRecord: Codable
+    public let data: Data
+    public let slotId: String?
+    public let timestamp: Int64
+    public let type: Int64 = 4
+    public struct Data: Codable
+        public let height: Int64
+        public let href: String?
+        public let width: Int64
+public struct SRFocusRecord: Codable
+    public let data: Data
+    public let slotId: String?
+    public let timestamp: Int64
+    public let type: Int64 = 6
+    public struct Data: Codable
+        public let hasFocus: Bool
+public struct SRViewEndRecord: Codable
+    public let slotId: String?
+    public let timestamp: Int64
+    public let type: Int64 = 7
+public struct SRVisualViewportRecord: Codable
+    public let data: Data
+    public let slotId: String?
+    public let timestamp: Int64
+    public let type: Int64 = 8
+    public struct Data: Codable
+        public let height: Double
+        public let offsetLeft: Double
+        public let offsetTop: Double
+        public let pageLeft: Double
+        public let pageTop: Double
+        public let scale: Double
+        public let width: Double
+public enum SRRecord: Codable
+    case fullSnapshotRecord(value: SRFullSnapshotRecord)
+    case incrementalSnapshotRecord(value: SRIncrementalSnapshotRecord)
+    case metaRecord(value: SRMetaRecord)
+    case focusRecord(value: SRFocusRecord)
+    case viewEndRecord(value: SRViewEndRecord)
+    case visualViewportRecord(value: SRVisualViewportRecord)
+    public func encode(to encoder: Encoder) throws
+    public init(from decoder: Decoder) throws
+[?] extension SRImageWireframe
+    public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool
+    public func hash(into hasher: inout Hasher)
+public protocol SessionReplayTextObfuscating
+    func mask(text: String) -> String
+public typealias WireframeID = NodeID
+public class SessionReplayWireframesBuilder
+    public struct FontOverride
+        public init(size: CGFloat?)
+    public func createShapeWireframe(id: WireframeID,frame: CGRect,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createImageWireframe(resourceId: String,id: WireframeID,frame: CGRect,mimeType: String = "png",clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createTextWireframe(id: WireframeID,frame: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,clip: SRContentClip? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func createPlaceholderWireframe(id: Int64,frame: CGRect,label: String,clip: SRContentClip? = nil) -> SRWireframe
+    public func createWebViewWireframe(id: Int64,frame: CGRect,slotId: String,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+[?] extension SRContentClip
+    public static func create(bottom: Int64?,left: Int64?,right: Int64?,top: Int64?) -> SRContentClip
+public typealias SessionReplayPrivacyLevel = SessionReplay.Configuration.PrivacyLevel
+public extension SessionReplay.Configuration.PrivacyLevel
+    var sensitiveTextObfuscator: SessionReplayTextObfuscating
+    var inputAndOptionTextObfuscator: SessionReplayTextObfuscating
+    var staticTextObfuscator: SessionReplayTextObfuscating
+    var hintTextObfuscator: SessionReplayTextObfuscating
+public class Recorder: Recording
+    public struct Context: Equatable
+        public let privacy: SessionReplayPrivacyLevel
+    deinit
+public typealias NodeID = Int64
+public final class NodeIDGenerator
+    public func nodeID(view: UIView, nodeRecorder: SessionReplayNodeRecorder) -> NodeID
+public protocol SessionReplayNodeRecorder
+    func semantics(of view: UIView, with attributes: SessionReplayViewAttributes, in context: SessionReplayViewTreeRecordingContext) -> SessionReplayNodeSemantics?
+    var identifier: UUID
+public protocol SessionReplayNodeWireframesBuilder
+    var wireframeRect: CGRect
+    func buildWireframes(with builder: SessionReplayWireframesBuilder) -> [SRWireframe]
+public struct SessionReplayViewTreeRecordingContext
+    public let recorder: Recorder.Context
+    public let ids: NodeIDGenerator
+public struct SessionReplayNode
+    public let viewAttributes: SessionReplayViewAttributes
+    public let wireframesBuilder: SessionReplayNodeWireframesBuilder
+    public init(viewAttributes: SessionReplayViewAttributes, wireframesBuilder: SessionReplayNodeWireframesBuilder)
+public protocol SessionReplayResource
+    func calculateIdentifier() -> String
+    func calculateData() -> Data
+public struct SessionReplayViewAttributes: Equatable
+    public let frame: CGRect
+    public let backgroundColor: CGColor?
+    public let layerBorderColor: CGColor?
+    public let layerBorderWidth: CGFloat
+    public let layerCornerRadius: CGFloat
+    public let alpha: CGFloat
+public protocol SessionReplayNodeSemantics
+    static var importance: Int
+    var subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    var nodes: [SessionReplayNode]
+    var resources: [SessionReplayResource]
+public enum SessionReplayNodeSubtreeStrategy
+    case record
+    case ignore
+public struct SessionReplayInvisibleElement: SessionReplayNodeSemantics
+    public static let importance: Int = 0
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode] = []
+    public let resources: [SessionReplayResource] = []
+    public static let constant = SessionReplayInvisibleElement()
+public struct SessionReplaySpecificElement: SessionReplayNodeSemantics
+    public static let importance: Int = .max
+    public let subtreeStrategy: SessionReplayNodeSubtreeStrategy
+    public let nodes: [SessionReplayNode]
+    public let resources: [SessionReplayResource]
+    public init(subtreeStrategy: SessionReplayNodeSubtreeStrategy,nodes: [SessionReplayNode],resources: [SessionReplayResource] = [])
+public final class DDSessionReplay: NSObject
+    public static func enable(with configuration: DDSessionReplayConfiguration)
+public final class DDSessionReplayConfiguration: NSObject
+    @objc public var replaySampleRate: Float
+    @objc public var defaultPrivacyLevel: DDSessionReplayConfigurationPrivacyLevel
+    @objc public var customEndpoint: URL?
+    public required init(replaySampleRate: Float)
+public enum DDSessionReplayConfigurationPrivacyLevel: Int
+    case allow
+    case mask
+    case maskUserInput
+public enum SessionReplay
+    public static func enable(with configuration: SessionReplay.Configuration, in core: DatadogCoreProtocol = CoreRegistry.default)
+[?] extension SessionReplay
+    public struct Configuration
+        public var replaySampleRate: Float
+        public var defaultPrivacyLevel: PrivacyLevel
+        public enum PrivacyLevel: String
+            case allow
+            case mask
+            case maskUserInput = "mask_user_input"
+        public var customEndpoint: URL?
+        public init(replaySampleRate: Float,defaultPrivacyLevel: PrivacyLevel = .mask,customEndpoint: URL? = nil)
+        public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder])
