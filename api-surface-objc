@@ -71,6 +71,7 @@ public class DDConfiguration: NSObject
     public func setEncryption(_ encryption: DDDataEncryption)
     public func setServerDateProvider(_ serverDateProvider: DDServerDateProvider)
     @objc public var bundle: Bundle
+    @objc public var additionalConfiguration: [String: Any]
     public init(clientToken: String, env: String)
 public enum DDSDKVerbosityLevel: Int
     case none
@@ -1760,14 +1761,20 @@ public class DDB3HTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float,injectEncoding: DDInjectEncoding = .single)
     public init(sampleRate: Float = 20,injectEncoding: DDInjectEncoding = .single)
+    public init(samplingStrategy: DDTraceSamplingStrategy,injectEncoding: DDInjectEncoding = .single)
 public class DDHTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float)
     public init(sampleRate: Float = 20)
+    public init(samplingStrategy: DDTraceSamplingStrategy)
+public class DDTraceSamplingStrategy: NSObject
+    public static func headBased() -> DDTraceSamplingStrategy
+    public static func custom(sampleRate: Float) -> DDTraceSamplingStrategy
 public class DDW3CHTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float)
     public init(sampleRate: Float = 20)
+    public init(samplingStrategy: DDTraceSamplingStrategy)
 public class DDTraceConfiguration: NSObject
     override public init()
     @objc public var sampleRate: Float
