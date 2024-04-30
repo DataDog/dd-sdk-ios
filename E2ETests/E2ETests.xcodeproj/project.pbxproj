@@ -8,25 +8,36 @@
 
 /* Begin PBXBuildFile section */
 		D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */; };
-		D292E3BD2BD7BCDF0083453D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292E3BC2BD7BCDF0083453D /* SceneDelegate.swift */; };
 		D292E3BF2BD7BCDF0083453D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292E3BE2BD7BCDF0083453D /* ViewController.swift */; };
-		D292E3C22BD7BCDF0083453D /* Base in Resources */ = {isa = PBXBuildFile; fileRef = D292E3C12BD7BCDF0083453D /* Base */; };
 		D292E3C42BD7BCE00083453D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D292E3C32BD7BCE00083453D /* Assets.xcassets */; };
 		D292E3C72BD7BCE00083453D /* Base in Resources */ = {isa = PBXBuildFile; fileRef = D292E3C62BD7BCE00083453D /* Base */; };
+		D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109A2BE11A74000AA6AB /* DatadogCore */; };
+		D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */; };
+		D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109E2BE11A74000AA6AB /* DatadogLogs */; };
+		D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A02BE11A74000AA6AB /* DatadogObjc */; };
+		D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A22BE11A74000AA6AB /* DatadogRUM */; };
+		D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */; };
+		D2A610A72BE11A74000AA6AB /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A62BE11A74000AA6AB /* DatadogTrace */; };
+		D2A610A92BE11A74000AA6AB /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */; };
+		D2A610AD2BE125F0000AA6AB /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */; };
+		D2A610B02BE12739000AA6AB /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610AF2BE12739000AA6AB /* Scenario.swift */; };
+		D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D20B99882BE101690074F98E /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
 		D2720E2B2BD8FE2F008ADF5D /* E2E.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2E.local.xcconfig; sourceTree = "<group>"; };
 		D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Runner.xcconfig; sourceTree = "<group>"; };
 		D2720E2E2BD8FE2F008ADF5D /* Synthetics.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Synthetics.xcconfig; sourceTree = "<group>"; };
 		D292E3B82BD7BCDF0083453D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		D292E3BC2BD7BCDF0083453D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		D292E3BE2BD7BCDF0083453D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		D292E3C12BD7BCDF0083453D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		D292E3C32BD7BCE00083453D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D292E3C62BD7BCE00083453D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D292E3C82BD7BCE00083453D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		D2A610AF2BE12739000AA6AB /* Scenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
+		D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultScenario.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,12 +45,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */,
+				D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */,
+				D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */,
+				D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */,
+				D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */,
+				D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */,
+				D2A610A92BE11A74000AA6AB /* DatadogWebViewTracking in Frameworks */,
+				D2A610A72BE11A74000AA6AB /* DatadogTrace in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		D20B99872BE101690074F98E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D20B99882BE101690074F98E /* dd-sdk-ios */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		D2720E2F2BD8FE2F008ADF5D /* xcconfigs */ = {
 			isa = PBXGroup;
 			children = (
@@ -56,6 +83,7 @@
 				D2720E2F2BD8FE2F008ADF5D /* xcconfigs */,
 				D292E3B92BD7BCDF0083453D /* Runner */,
 				D292E3822BD7BA830083453D /* Products */,
+				D20B99872BE101690074F98E /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -71,14 +99,23 @@
 			isa = PBXGroup;
 			children = (
 				D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */,
-				D292E3BC2BD7BCDF0083453D /* SceneDelegate.swift */,
+				D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */,
 				D292E3BE2BD7BCDF0083453D /* ViewController.swift */,
-				D292E3C02BD7BCDF0083453D /* Main.storyboard */,
+				D2A610AE2BE12724000AA6AB /* Scenarios */,
 				D292E3C32BD7BCE00083453D /* Assets.xcassets */,
 				D292E3C52BD7BCE00083453D /* LaunchScreen.storyboard */,
 				D292E3C82BD7BCE00083453D /* Info.plist */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		D2A610AE2BE12724000AA6AB /* Scenarios */ = {
+			isa = PBXGroup;
+			children = (
+				D2A610AF2BE12739000AA6AB /* Scenario.swift */,
+				D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */,
+			);
+			path = Scenarios;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -97,6 +134,16 @@
 			dependencies = (
 			);
 			name = Runner;
+			packageProductDependencies = (
+				D2A6109A2BE11A74000AA6AB /* DatadogCore */,
+				D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */,
+				D2A6109E2BE11A74000AA6AB /* DatadogLogs */,
+				D2A610A02BE11A74000AA6AB /* DatadogObjc */,
+				D2A610A22BE11A74000AA6AB /* DatadogRUM */,
+				D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */,
+				D2A610A62BE11A74000AA6AB /* DatadogTrace */,
+				D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */,
+			);
 			productName = Runner;
 			productReference = D292E3B82BD7BCDF0083453D /* Runner.app */;
 			productType = "com.apple.product-type.application";
@@ -141,7 +188,6 @@
 			files = (
 				D292E3C42BD7BCE00083453D /* Assets.xcassets in Resources */,
 				D292E3C72BD7BCE00083453D /* Base in Resources */,
-				D292E3C22BD7BCDF0083453D /* Base in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,21 +200,15 @@
 			files = (
 				D292E3BF2BD7BCDF0083453D /* ViewController.swift in Sources */,
 				D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */,
-				D292E3BD2BD7BCDF0083453D /* SceneDelegate.swift in Sources */,
+				D2A610AD2BE125F0000AA6AB /* AppConfiguration.swift in Sources */,
+				D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */,
+				D2A610B02BE12739000AA6AB /* Scenario.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		D292E3C02BD7BCDF0083453D /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				D292E3C12BD7BCDF0083453D /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
 		D292E3C52BD7BCE00083453D /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -249,7 +289,6 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -401,7 +440,6 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -434,7 +472,6 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -476,6 +513,41 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D2A6109A2BE11A74000AA6AB /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCore;
+		};
+		D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCrashReporting;
+		};
+		D2A6109E2BE11A74000AA6AB /* DatadogLogs */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogLogs;
+		};
+		D2A610A02BE11A74000AA6AB /* DatadogObjc */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogObjc;
+		};
+		D2A610A22BE11A74000AA6AB /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogRUM;
+		};
+		D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
+		};
+		D2A610A62BE11A74000AA6AB /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogTrace;
+		};
+		D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogWebViewTracking;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = D292E3792BD7BA830083453D /* Project object */;
 }

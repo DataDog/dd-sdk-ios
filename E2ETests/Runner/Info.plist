@@ -2,23 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIApplicationSceneManifest</key>
+	<key>DatadogConfiguration</key>
 	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-		<key>UISceneConfigurations</key>
+		<key>MobileIntegration</key>
 		<dict>
-			<key>UIWindowSceneSessionRoleApplication</key>
-			<array>
-				<dict>
-					<key>UISceneConfigurationName</key>
-					<string>Default Configuration</string>
-					<key>UISceneDelegateClassName</key>
-					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
-					<key>UISceneStoryboardFile</key>
-					<string>Main</string>
-				</dict>
-			</array>
+			<key>ClientToken</key>
+			<string>$(MI_CLIENT_TOKEN)</string>
+			<key>ApplicationID</key>
+			<string>$(MI_RUM_APPLICATION_ID)</string>
+		</dict>
+		<key>SessionReplayIntegration</key>
+		<dict>
+			<key>ClientToken</key>
+			<string>$(SR_CLIENT_TOKEN)</string>
+			<key>ApplicationID</key>
+			<string>$(SR_RUM_APPLICATION_ID)</string>
 		</dict>
 	</dict>
 </dict>
