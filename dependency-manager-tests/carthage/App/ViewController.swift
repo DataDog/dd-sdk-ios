@@ -14,7 +14,7 @@ import DatadogCrashReporting
 #if os(iOS)
 import DatadogSessionReplay
 #endif
-import OpenTelemetryApi
+//import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
@@ -45,10 +45,10 @@ internal class ViewController: UIViewController {
         // Trace APIs must be visible:
         Trace.enable()
 
-        // Register tracer provider
-        OpenTelemetry.registerTracerProvider(
-            tracerProvider: OTelTracerProvider()
-        )
+//        // Register tracer provider
+//        OpenTelemetry.registerTracerProvider(
+//            tracerProvider: OTelTracerProvider()
+//        )
 
         logger.info("It works")
 
@@ -56,12 +56,12 @@ internal class ViewController: UIViewController {
         otSpan.finish()
 
         // otel tracer
-        let tracer = OpenTelemetry
-           .instance
-           .tracerProvider
-           .get(instrumentationName: "", instrumentationVersion: nil)
-        let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
-        otelSpan.end()
+//        let tracer = OpenTelemetry
+//           .instance
+//           .tracerProvider
+//           .get(instrumentationName: "", instrumentationVersion: nil)
+//        let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
+//        otelSpan.end()
 
 
         #if os(iOS)
