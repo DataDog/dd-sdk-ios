@@ -46,9 +46,9 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         )
 
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "64")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), "100")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), "_dd.p.tid=a")
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "64")
+        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), "100")
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
@@ -530,8 +530,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 "X-B3-Sampled": "1",
                 "X-B3-TraceId": "000000000000000a0000000000000064",
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
-                "x-datadog-trace-id": "64",
-                "x-datadog-parent-id": "64",
+                "x-datadog-trace-id": "100",
+                "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1",
                 "x-datadog-origin": "rum",
                 "x-datadog-tags": "_dd.p.tid=a"

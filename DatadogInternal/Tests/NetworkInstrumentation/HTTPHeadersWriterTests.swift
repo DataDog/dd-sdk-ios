@@ -22,8 +22,8 @@ class HTTPHeadersWriterTests: XCTestCase {
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
-        XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "4d2")
-        XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "929")
+        XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
+        XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
         XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
     }
 
@@ -58,8 +58,8 @@ class HTTPHeadersWriterTests: XCTestCase {
 
         let headers = writer.traceHeaderFields
         XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "1")
-        XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "4d2")
-        XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "929")
+        XCTAssertEqual(headers[TracingHTTPHeaders.traceIDField], "1234")
+        XCTAssertEqual(headers[TracingHTTPHeaders.parentSpanIDField], "2345")
         XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
     }
 
