@@ -8,6 +8,9 @@ import Foundation
 import UIKit
 import SwiftUI
 
+/// The default scenario will present the list of Synthetic scenarios to run in development mode.
+/// To skip this screen, you can set the `E2E_SCENARIO` environment variable with the name
+/// the desired scenario.
 struct DefaultScenario: Scenario {
     func start(info: TestInfo) -> UIViewController {
         UIHostingController(rootView: ContentView(info: info))
@@ -18,7 +21,7 @@ struct DefaultScenario: Scenario {
 
         var body: some View {
             NavigationView {
-                List(Scenarios.allCases, id: \.rawValue) { scenario in
+                List(SyntheticScenario.allCases, id: \.rawValue) { scenario in
                     NavigationLink {
                         ScenarioView(info: info, scenario: scenario)
                     } label: {
@@ -42,19 +45,10 @@ struct DefaultScenario: Scenario {
     }
 }
 
-#Preview {
-    DefaultScenario.ContentView(info: TestInfo(
-        mobileIntegrationOrg: OrgInfo(
-            clientToken: "",
-            applicationID: "",
-            site: nil,
-            env: nil
-        ),
-        sessionReplayOrg: OrgInfo(
-            clientToken: "",
-            applicationID: "",
-            site: nil,
-            env: nil
-        )
-    ))
+#if DEBUG
+struct DefaultScenario_Previews: PreviewProvider {
+    static var previews: some View {
+        DefaultScenario.ContentView(info: .empty)
+    }
 }
+#endif

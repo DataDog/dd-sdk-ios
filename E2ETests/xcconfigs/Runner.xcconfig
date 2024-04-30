@@ -1,3 +1,3 @@
-RUM_APPLICATION_ID= // the RUM Application ID obtained on datadoghq.com
-DATADOG_CLIENT_TOKEN= // the Client Token, generated for RUM_APPLICATION_ID
+CLIENT_TOKEN=// the Client Token on Mobile Integration Org
+RUM_APPLICATION_ID=// the RUM Application ID on Mobile Integration Org
 #include? "E2E.local.xcconfig"

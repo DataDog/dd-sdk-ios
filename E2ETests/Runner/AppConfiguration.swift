@@ -8,25 +8,20 @@ import Foundation
 import DatadogInternal
 import DatadogCore
 
+/// Test info reads configuration from `Info.plist`.
+///
+/// The expected format is as follow:
+///
+///     <dict>
+///         <key>DatadogConfiguration</key>
+///         <dict>
+///             <key>ClientToken</key>
+///             <string>$(CLIENT_TOKEN)</string>
+///             <key>ApplicationID</key>
+///             <string>$(RUM_APPLICATION_ID)</string>
+///         </dict>
+///     </dict>
 struct TestInfo: Decodable {
-    let mobileIntegrationOrg: OrgInfo
-    let sessionReplayOrg: OrgInfo
-
-    enum CodingKeys: String, CodingKey {
-        case mobileIntegrationOrg = "MobileIntegration"
-        case sessionReplayOrg = "SessionReplayIntegration"
-    }
-}
-
-extension TestInfo {
-    init(bundle: Bundle = .main) throws {
-        let decoder = AnyDecoder()
-        let obj = bundle.object(forInfoDictionaryKey: "DatadogConfiguration")
-        self = try decoder.decode(from: obj)
-    }
-}
-
-struct OrgInfo: Decodable {
     let clientToken: String
     let applicationID: String
     let site: DatadogSite?
@@ -40,14 +35,33 @@ struct OrgInfo: Decodable {
     }
 }
 
+extension TestInfo {
+    init(bundle: Bundle = .main) throws {
+        let decoder = AnyDecoder()
+        let obj = bundle.object(forInfoDictionaryKey: "DatadogConfiguration")
+        self = try decoder.decode(from: obj)
+    }
+}
+
+extension TestInfo {
+    static var empty: Self {
+        .init(
+            clientToken: "",
+            applicationID: "",
+            site: nil,
+            env: nil
+        )
+    }
+}
+
 extension DatadogSite: Decodable {}
 
 extension Datadog.Configuration {
-    static func e2e(org: OrgInfo) -> Self {
+    static func e2e(info: TestInfo) -> Self {
         .init(
-            clientToken: org.clientToken,
-            env: org.env ?? "e2e",
-            site: org.site ?? .us1
+            clientToken: info.clientToken,
+            env: info.env ?? "e2e",
+            site: info.site ?? .us1
         )
     }
 }

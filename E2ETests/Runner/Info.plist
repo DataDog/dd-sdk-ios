@@ -4,20 +4,10 @@
 <dict>
 	<key>DatadogConfiguration</key>
 	<dict>
-		<key>MobileIntegration</key>
-		<dict>
-			<key>ClientToken</key>
-			<string>$(MI_CLIENT_TOKEN)</string>
-			<key>ApplicationID</key>
-			<string>$(MI_RUM_APPLICATION_ID)</string>
-		</dict>
-		<key>SessionReplayIntegration</key>
-		<dict>
-			<key>ClientToken</key>
-			<string>$(SR_CLIENT_TOKEN)</string>
-			<key>ApplicationID</key>
-			<string>$(SR_RUM_APPLICATION_ID)</string>
-		</dict>
+        <key>ClientToken</key>
+        <string>$(CLIENT_TOKEN)</string>
+        <key>ApplicationID</key>
+        <string>$(RUM_APPLICATION_ID)</string>
 	</dict>
 </dict>
 </plist>
