@@ -648,12 +648,12 @@ workflows:
             set -e
 
             # prepare certificate
-            P12_PATH=e2e_cert.p12
-            P12_PASSWORD=$E2E_CERTIFICATE_P12_PASSWORD
+            export P12_PATH=e2e_cert.p12
+            export P12_PASSWORD=$E2E_CERTIFICATE_P12_PASSWORD
             echo $E2E_CERTIFICATE_P12_BASE64 | base64 --decode -o $P12_PATH
 
             # prepare provisioning profile
-            PP_PATH=e2e.mobileprovision
+            export PP_PATH=e2e.mobileprovision
             echo $E2E_PROVISIONING_PROFILE_BASE64 | base64 --decode -o $PP_PATH
 
             # prepare xcconfig
@@ -664,4 +664,4 @@ workflows:
             export DATADOG_APP_KEY=$E2E_S8S_APPLICATION_KEY
             export S8S_APPLICATION_ID=$E2E_S8S_APPLICATION_ID
 
-            source ./tools/code-sign.sh -- make -C E2ETests
+            make e2e-upload

@@ -46,15 +46,19 @@ done
 if [ -z "$P12_PATH" ] || [ -z "$P12_PASSWORD" ] || [ -z "$PP_PATH" ] || [ -z "$CMD" ]; then usage; fi
 
 # Ensure we do not leak any secrets
-set +x
+set +x -e
 
 KEYCHAIN=datadog.keychain
 KEYCHAIN_PASSWORD="$(openssl rand -base64 32)"
 PROFILE=datadog.mobileprovision
 
-# apply provisioning profile
-mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE
+cleanup() {
+  rm -f ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE
+  security delete-keychain $KEYCHAIN
+}
+
+# clean up keychain and provisioning profile on exit
+trap cleanup EXIT
 
 # create temporary keychain
 security delete-keychain $KEYCHAIN || :
@@ -67,9 +71,9 @@ security import $P12_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN
 security list-keychain -d user -s $KEYCHAIN "login.keychain" "System.keychain"
 security set-key-partition-list -S apple-tool:,apple: -s -k $KEYCHAIN_PASSWORD $KEYCHAIN >/dev/null 2>&1
 
+# apply provisioning profile
+mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE
+
 # run command with certificate and provisioning profile available
 exec $CMD
-
-# clean up keychain and provisioning profile
-security delete-keychain $KEYCHAIN
-rm ~/Library/MobileDevice/Provisioning\ Profiles/$PROFILE
