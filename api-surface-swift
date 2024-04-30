@@ -1567,7 +1567,14 @@ public static func enable()
 # ----------------------------------
 
 public enum WebViewTracking
-    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: Float = 100,in core: DatadogCoreProtocol = CoreRegistry.default)
+    public struct SessionReplayConfiguration
+        public enum PrivacyLevel: String
+            case allow
+            case mask
+            case maskUserInput = "mask_user_input"
+        public var privacyLevel: PrivacyLevel
+        public init(privacyLevel: PrivacyLevel = .mask)
+    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: Float = 100,sessionReplayConfiguration: SessionReplayConfiguration? = nil,in core: DatadogCoreProtocol = CoreRegistry.default)
     public static func disable(webView: WKWebView)
 [?] extension InternalExtension where ExtendedType == WebViewTracking
     public class AbstractMessageEmitter
@@ -1689,6 +1696,7 @@ public struct SRWebviewWireframe: Codable, Hashable
     public let clip: SRContentClip?
     public let height: Int64
     public let id: Int64
+    public let isVisible: Bool?
     public let shapeStyle: SRShapeStyle?
     public let slotId: String
     public let type: String = "webview"
@@ -1789,6 +1797,7 @@ public struct SRIncrementalSnapshotRecord: Codable
                     public let clip: SRContentClip?
                     public let height: Int64?
                     public let id: Int64
+                    public let isVisible: Bool?
                     public let shapeStyle: SRShapeStyle?
                     public let slotId: String
                     public let type: String = "webview"
@@ -1864,11 +1873,6 @@ public enum SRRecord: Codable
     case visualViewportRecord(value: SRVisualViewportRecord)
     public func encode(to encoder: Encoder) throws
     public init(from decoder: Decoder) throws
-[?] extension SRImageWireframe
-    public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool
-    public func hash(into hasher: inout Hasher)
-public protocol SessionReplayTextObfuscating
-    func mask(text: String) -> String
 public typealias WireframeID = NodeID
 public class SessionReplayWireframesBuilder
     public struct FontOverride
@@ -1877,9 +1881,14 @@ public class SessionReplayWireframesBuilder
     public func createImageWireframe(resourceId: String,id: WireframeID,frame: CGRect,mimeType: String = "png",clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createTextWireframe(id: WireframeID,frame: CGRect,text: String,textFrame: CGRect? = nil,textAlignment: SRTextPosition.Alignment? = nil,clip: SRContentClip? = nil,textColor: CGColor? = nil,font: UIFont? = nil,fontOverride: FontOverride? = nil,fontScalingEnabled: Bool = false,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
     public func createPlaceholderWireframe(id: Int64,frame: CGRect,label: String,clip: SRContentClip? = nil) -> SRWireframe
-    public func createWebViewWireframe(id: Int64,frame: CGRect,slotId: String,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
+    public func visibleWebViewWireframe(id: Int,frame: CGRect,clip: SRContentClip? = nil,borderColor: CGColor? = nil,borderWidth: CGFloat? = nil,backgroundColor: CGColor? = nil,cornerRadius: CGFloat? = nil,opacity: CGFloat? = nil) -> SRWireframe
 [?] extension SRContentClip
     public static func create(bottom: Int64?,left: Int64?,right: Int64?,top: Int64?) -> SRContentClip
+[?] extension SRImageWireframe
+    public static func == (lhs: SRImageWireframe, rhs: SRImageWireframe) -> Bool
+    public func hash(into hasher: inout Hasher)
+public protocol SessionReplayTextObfuscating
+    func mask(text: String) -> String
 public typealias SessionReplayPrivacyLevel = SessionReplay.Configuration.PrivacyLevel
 public extension SessionReplay.Configuration.PrivacyLevel
     var sensitiveTextObfuscator: SessionReplayTextObfuscating
