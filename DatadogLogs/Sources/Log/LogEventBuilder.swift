@@ -68,7 +68,7 @@ internal struct LogEventBuilder {
                     stack: $0.stack,
                     sourceType: $0.sourceType,
                     fingerprint: errorFingerprint,
-                    binaryImages: binaryImages
+                    binaryImages: binaryImages?.toLogDataFormat
                 )
             },
             serviceName: service,
@@ -120,4 +120,21 @@ internal extension LogLevel {
         case .critical: return .critical
         }
     }
+}
+
+internal extension BinaryImage {
+    var toLogDataFormat: LogEvent.Error.BinaryImage {
+        return .init(
+            arch: architecture,
+            isSystem: isSystemLibrary,
+            loadAddress: loadAddress,
+            maxAddress: maxAddress,
+            name: libraryName,
+            uuid: uuid
+        )
+    }
+}
+
+internal extension Array where Element == BinaryImage {
+    var toLogDataFormat: [LogEvent.Error.BinaryImage] { map { $0.toLogDataFormat } }
 }

@@ -189,21 +189,16 @@ internal final class RemoteLogger: LoggerProtocol {
                     return
                 }
 
-                // Bit of a hack - add the `includeBinaryImages` attribute back in if it was in the original log
-                // TODO: RUM-4072 This double generates a backtrace - this should be optimized to use cached binary images instead
-                var rumAttributes: [String: Encodable] = combinedAttributes
-                if addBinaryImages {
-                    rumAttributes[CrossPlatformAttributes.includeBinaryImages] = true
-                }
-
                 self.core?.send(
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(
+                            time: date,
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(rumAttributes)
+                            attributes: .init(combinedAttributes),
+                            binaryImages: binaryImages
                         )
                     )
                 )

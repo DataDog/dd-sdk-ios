@@ -289,7 +289,17 @@ class RemoteLoggerTests: XCTestCase {
         let log = try XCTUnwrap(logs.first)
         XCTAssertNil(log.attributes.userAttributes[CrossPlatformAttributes.includeBinaryImages])
         XCTAssertNotNil(log.error?.binaryImages)
-        XCTAssertEqual(log.error?.binaryImages, stubBacktrace.binaryImages)
+        XCTAssertEqual(log.error?.binaryImages?.count, stubBacktrace.binaryImages.count)
+        for i in 0..<stubBacktrace.binaryImages.count {
+            let logBacktrace = log.error!.binaryImages![i]
+            let errorBacktrace = stubBacktrace.binaryImages[i]
+            XCTAssertEqual(logBacktrace.name, errorBacktrace.libraryName)
+            XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
+            XCTAssertEqual(logBacktrace.arch, errorBacktrace.architecture)
+            XCTAssertEqual(logBacktrace.isSystem, errorBacktrace.isSystemLibrary)
+            XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
+            XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
+        }
     }
 
     // MARK: - RUM Integration
