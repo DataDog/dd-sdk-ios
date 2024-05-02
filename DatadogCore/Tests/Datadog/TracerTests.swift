@@ -739,8 +739,8 @@ class TracerTests: XCTestCase {
 
         // Then
         let expectedHTTPHeaders1 = [
-            "x-datadog-trace-id": "64",
-            "x-datadog-parent-id": "c8",
+            "x-datadog-trace-id": "100",
+            "x-datadog-parent-id": "200",
             "x-datadog-sampling-priority": "1",
             "x-datadog-tags": "_dd.p.tid=a"
         ]
