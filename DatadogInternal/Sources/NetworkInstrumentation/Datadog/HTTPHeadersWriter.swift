@@ -75,8 +75,8 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         ]
 
         if samplingPriority {
-            traceHeaderFields[TracingHTTPHeaders.traceIDField] = traceID.idLoHex
-            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(spanID, representation: .hexadecimal)
+            traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceID.idLo)
+            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(spanID, representation: .decimal)
             traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceID.idHiHex)"
         }
     }
