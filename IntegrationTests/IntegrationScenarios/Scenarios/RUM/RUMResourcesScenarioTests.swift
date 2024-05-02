@@ -409,14 +409,14 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts {
         
         return .init(
             idHi: UInt64(traceIDHiValue, radix: 16) ?? 0,
-            idLo: UInt64(traceIDLoValue, radix: 16) ?? 0
+            idLo: UInt64(traceIDLoValue, radix: 10) ?? 0
         )
     }
     private func getSpanID(from request: Request) -> SpanID? {
         guard let spanId = request.httpHeaders["x-datadog-parent-id"] else {
             return nil
         }
-        return .init(spanId, representation: .hexadecimal)
+        return .init(spanId, representation: .decimal)
     }
     private func isValid(sampleRate: Double) -> Bool { sampleRate >= 0 && sampleRate <= 1 }
 }

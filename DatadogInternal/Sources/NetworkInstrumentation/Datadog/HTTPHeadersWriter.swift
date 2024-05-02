@@ -73,8 +73,8 @@ public class HTTPHeadersWriter: TracePropagationHeadersWriter {
         ]
 
         if sampled {
-            traceHeaderFields[TracingHTTPHeaders.traceIDField] = traceContext.traceID.idLoHex
-            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .hexadecimal)
+            traceHeaderFields[TracingHTTPHeaders.traceIDField] = String(traceContext.traceID.idLo)
+            traceHeaderFields[TracingHTTPHeaders.parentSpanIDField] = String(traceContext.spanID, representation: .decimal)
             traceHeaderFields[TracingHTTPHeaders.tagsField] = "_dd.p.tid=\(traceContext.traceID.idHiHex)"
         }
     }
