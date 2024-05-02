@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.11.0 / 02-05-2024
+
 - [FEATURE] `DatadogTrace` now supports head-based sampling. See [#1794][]
 - [FEATURE] Support WebView recording in Session Replay. See [#1776][]
 - [IMPROVEMENT] Add `isInitialized` and `stopInstance` methods to ObjC API. See [#1800][]
