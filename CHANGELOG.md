@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Use trace and span id as decimal. See [#1807][]
+
 # 2.10.0 / 23-04-2024
 
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
@@ -639,6 +641,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
+[#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
