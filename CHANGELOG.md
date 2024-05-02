@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.10.1 / 02-05-2024
+
 - [FIX] Use trace and span id as decimal. See [#1807][]
 
 # 2.10.0 / 23-04-2024
