@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import TestUtilities
 @_spi(Internal)
@@ -86,3 +87,4 @@ class UILabelRecorderTests: XCTestCase {
     }
 }
 // swiftlint:enable opening_brace
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -1262,3 +1263,4 @@ private extension Double {
         return Double(integer)
     }
 }
+#endif

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+#if !os(tvOS)
 import WebKit
 import TestUtilities
 
@@ -51,3 +52,5 @@ extension WebViewTracking.SessionReplayConfiguration.PrivacyLevel: AnyMockable, 
         [.allow, .mask, .maskUserInput].randomElement()!
     }
 }
+
+#endif

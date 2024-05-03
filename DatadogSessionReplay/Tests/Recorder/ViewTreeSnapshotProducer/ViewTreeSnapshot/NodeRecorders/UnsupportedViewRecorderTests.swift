@@ -5,6 +5,7 @@
  */
 
 import XCTest
+#if !os(tvOS)
 import WebKit
 import SwiftUI
 import SafariServices
@@ -69,3 +70,5 @@ class UnsupportedViewRecorderTests: XCTestCase {
         XCTAssertNotNil(wireframeBuilder.unsupportedClassName)
     }
 }
+
+#endif

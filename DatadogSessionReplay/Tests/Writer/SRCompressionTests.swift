@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import zlib
 import XCTest
 import Compression
@@ -73,3 +74,4 @@ class SRCompressionTests: XCTestCase {
         XCTAssertEqual(compressed5, expected5)
     }
 }
+#endif

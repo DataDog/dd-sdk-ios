@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import XCTest
 import UIKit
@@ -463,35 +464,6 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
 
 // MARK: - Recorder Mocks
 
-extension RUMContext: AnyMockable, RandomMockable {
-    public static func mockAny() -> RUMContext {
-        return .mockWith()
-    }
-
-    public static func mockRandom() -> RUMContext {
-        return RUMContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            viewID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
-        )
-    }
-
-    static func mockWith(
-        applicationID: String = .mockAny(),
-        sessionID: String = .mockAny(),
-        viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny()
-    ) -> RUMContext {
-        return RUMContext(
-            applicationID: applicationID,
-            sessionID: sessionID,
-            viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
-        )
-    }
-}
-
 extension Recorder.Context: AnyMockable, RandomMockable {
     public static func mockAny() -> Recorder.Context {
         return .mockWith()
@@ -609,3 +581,4 @@ internal extension Optional where Wrapped == NodeSemantics {
         return try XCTUnwrap(builders.first, file: file, line: line)
     }
 }
+#endif

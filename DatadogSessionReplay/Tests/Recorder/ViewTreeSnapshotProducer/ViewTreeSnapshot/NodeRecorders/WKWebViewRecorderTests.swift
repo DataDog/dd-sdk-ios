@@ -5,6 +5,7 @@
  */
 
 import XCTest
+#if !os(tvOS)
 import WebKit
 import TestUtilities
 
@@ -85,3 +86,5 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
     }
 }
+
+#endif
