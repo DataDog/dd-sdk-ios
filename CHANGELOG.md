@@ -9,6 +9,7 @@
 # 2.10.1 / 02-05-2024
 
 - [FIX] Use trace and span id as decimal. See [#1807][]
+- [FIX] Add background upload capability to extensions in order to mitigate `0xdead10cc` crash. See [#1803][]
 
 # 2.10.0 / 23-04-2024
 
@@ -655,6 +656,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
 [#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
+[#1803]: https://github.com/DataDog/dd-sdk-ios/pull/1803
 [#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
