@@ -31,10 +31,14 @@ class WKWebViewRecorderTests: XCTestCase {
         let viewAttributes: ViewAttributes = .mock(fixture: .invisible)
 
         // When
-        let semantics = try XCTUnwrap(recorder.semantics(of: webView, with: viewAttributes, in: .mockAny()))
+        let semantics = try XCTUnwrap(recorder.semantics(of: webView, with: viewAttributes, in: .mockAny()) as? SpecificElement)
 
         // Then
-        XCTAssertTrue(semantics is InvisibleElement)
+        XCTAssertEqual(semantics.subtreeStrategy, .ignore, "WebView's subtree should not be recorded")
+
+        let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? WKWebViewWireframesBuilder)
+        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        XCTAssert(wireframes.isEmpty)
     }
 
     func testWhenWebViewIsVisible() throws {
@@ -48,23 +52,20 @@ class WKWebViewRecorderTests: XCTestCase {
         XCTAssertEqual(semantics.subtreeStrategy, .ignore, "WebView's subtree should not be recorded")
 
         let builder = try XCTUnwrap(semantics.nodes.first?.wireframesBuilder as? WKWebViewWireframesBuilder)
-        XCTAssertEqual(builder.attributes, viewAttributes)
+        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        XCTAssertFalse(wireframes.isEmpty)
     }
 
-    func testWebViewWireframeBuilder() throws {
+    func testVisibleWebViewSlot() throws {
         // Given
-        let id: WireframeID = .mockRandom()
-        let slotId: Int = .mockRandom()
         let attributes: ViewAttributes = .mock(fixture: .visible())
+        let slotID = webView.hash
 
-        let builder = WKWebViewWireframesBuilder(
-            wireframeID: id,
-            slotID: slotId,
-            attributes: attributes
-        )
+        let builder = WireframesBuilder(webViewSlotIDs: [slotID])
 
         // When
-        let wireframes = builder.buildWireframes(with: WireframesBuilder())
+        let wireframes = WKWebViewWireframesBuilder(slotID: webView.hash, attributes: attributes)
+            .buildWireframes(with: builder)
 
         // Then
         XCTAssertEqual(wireframes.count, 1)
@@ -73,12 +74,14 @@ class WKWebViewRecorderTests: XCTestCase {
             return XCTFail("First wireframe needs to be webviewWireframe case")
         }
 
-        XCTAssertEqual(wireframe.id, id)
-        XCTAssertEqual(wireframe.slotId, String(slotId))
+        XCTAssertEqual(wireframe.id, Int64(webView.hash))
+        XCTAssertEqual(wireframe.slotId, String(webView.hash))
         XCTAssertNil(wireframe.clip)
         XCTAssertEqual(wireframe.x, Int64(withNoOverflow: attributes.frame.minX))
         XCTAssertEqual(wireframe.y, Int64(withNoOverflow: attributes.frame.minY))
         XCTAssertEqual(wireframe.width, Int64(withNoOverflow: attributes.frame.width))
         XCTAssertEqual(wireframe.height, Int64(withNoOverflow: attributes.frame.height))
+        XCTAssertTrue(wireframe.isVisible ?? false)
+        XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty, "webview slot should be removed from builder")
     }
 }

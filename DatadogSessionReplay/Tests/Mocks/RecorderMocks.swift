@@ -5,8 +5,10 @@
  */
 
 import Foundation
-import UIKit
 import XCTest
+import UIKit
+import WebKit
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -34,7 +36,8 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
-            resources: .mockRandom(count: .random(in: (5..<50)))
+            resources: .mockRandom(count: .random(in: (5..<50))),
+            webViewSlotIDs: .mockRandom()
         )
     }
 
@@ -43,14 +46,16 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny(),
-        resources: [Resource] = .mockAny()
+        resources: [Resource] = .mockAny(),
+        webViewSlotIDs: Set<Int> = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
             context: context,
             viewportSize: viewportSize,
             nodes: nodes,
-            resources: resources
+            resources: resources,
+            webViewSlotIDs: webViewSlotIDs
         )
     }
 }
@@ -297,7 +302,7 @@ extension UIImageResource: RandomMockable {
     }
 }
 
-extension Collection where Element == Resource {
+extension Array where Element == Resource {
     static func mockAny() -> [Resource] {
         return [MockResource].mockAny()
     }
@@ -344,19 +349,22 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         return .init(
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
-            ids: NodeIDGenerator()
+            ids: NodeIDGenerator(),
+            webViewCache: .weakObjects()
         )
     }
 
     static func mockWith(
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
-        ids: NodeIDGenerator = NodeIDGenerator()
+        ids: NodeIDGenerator = NodeIDGenerator(),
+        webViewCache: NSHashTable<WKWebView> = .weakObjects()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
-            ids: ids
+            ids: ids,
+            webViewCache: webViewCache
         )
     }
 }

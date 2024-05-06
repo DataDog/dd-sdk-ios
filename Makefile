@@ -180,6 +180,7 @@ api-surface:
 			--library-name DatadogRUM \
 			--library-name DatadogCrashReporting \
 			--library-name DatadogWebViewTracking \
+			--library-name DatadogSessionReplay \
 			> ../../api-surface-swift && \
 			cd -
 

@@ -256,6 +256,13 @@ public class DDConfiguration: NSObject {
         set { sdkConfiguration.bundle = newValue }
     }
 
+    /// Sets additional configuration attributes.
+    /// This can be used to tweak internal features of the SDK and shouldn't be considered as a part of public API.
+    @objc public var additionalConfiguration: [String: Any] {
+        get { sdkConfiguration._internal.additionalConfiguration }
+        set { sdkConfiguration._internal_mutation { $0.additionalConfiguration = newValue } }
+    }
+
     /// Creates a Datadog SDK Configuration object.
     ///
     /// - Parameters:

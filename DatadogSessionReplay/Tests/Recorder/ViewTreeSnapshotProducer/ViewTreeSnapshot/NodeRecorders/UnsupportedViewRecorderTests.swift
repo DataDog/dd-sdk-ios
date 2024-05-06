@@ -16,12 +16,12 @@ class UnsupportedViewRecorderTests: XCTestCase {
     private let recorder = UnsupportedViewRecorder()
 
     private let unsupportedViews: [UIView] = [
-        UIProgressView(), UIActivityIndicatorView(), WKWebView()
+        UIProgressView(), UIActivityIndicatorView()
     ].compactMap { $0 }
     private let expectedUnsupportedViewsClassNames = [
         "UIProgressView", "UIActivityIndicatorView", "WKWebView"
     ]
-    private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView()]
+    private let otherViews = [UILabel(), UIView(), UIImageView(), UIScrollView(), WKWebView()]
 
     /// `ViewAttributes` simulating common attributes of the view.
     private var viewAttributes: ViewAttributes = .mockAny()

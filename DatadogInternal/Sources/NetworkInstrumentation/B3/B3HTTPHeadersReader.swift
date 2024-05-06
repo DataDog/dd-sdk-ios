@@ -45,4 +45,14 @@ public class B3HTTPHeadersReader: TracePropagationHeadersReader {
 
         return nil
     }
+
+    public var sampled: Bool? {
+        if let single = httpHeaderFields[B3HTTPHeaders.Single.b3Field] {
+            return single != B3HTTPHeaders.Constants.unsampledValue
+        } else if let multiple = httpHeaderFields[B3HTTPHeaders.Multiple.sampledField] {
+            return multiple == B3HTTPHeaders.Constants.sampledValue
+        }
+
+        return nil
+    }
 }

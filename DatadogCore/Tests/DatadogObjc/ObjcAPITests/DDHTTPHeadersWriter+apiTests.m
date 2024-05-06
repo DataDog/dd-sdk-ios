@@ -19,7 +19,8 @@
 #pragma clang diagnostic ignored "-Wunused-value"
 
 - (void)testInitWithSamplingRate {
-    [[DDHTTPHeadersWriter alloc] initWithSampleRate:50];
+    [[DDHTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased]];
+    [[DDHTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy customWithSampleRate:50]];
 }
 
 #pragma clang diagnostic pop

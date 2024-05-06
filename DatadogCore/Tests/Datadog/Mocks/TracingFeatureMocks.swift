@@ -86,13 +86,17 @@ extension DDSpanContext {
         traceID: TraceID = .mockAny(),
         spanID: SpanID = .mockAny(),
         parentSpanID: SpanID? = .mockAny(),
-        baggageItems: BaggageItems = .mockAny()
+        baggageItems: BaggageItems = .mockAny(),
+        sampleRate: Float = .mockAny(),
+        isKept: Bool = .mockAny()
     ) -> DDSpanContext {
         return DDSpanContext(
             traceID: traceID,
             spanID: spanID,
             parentSpanID: parentSpanID,
-            baggageItems: baggageItems
+            baggageItems: baggageItems,
+            sampleRate: sampleRate,
+            isKept: isKept
         )
     }
 }
