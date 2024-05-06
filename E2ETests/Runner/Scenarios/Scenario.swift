@@ -30,8 +30,9 @@ protocol Scenario {
 ///
 /// see. https://docs.datadoghq.com/mobile_app_testing/mobile_app_tests/#variables
 enum SyntheticScenario: String, CaseIterable {
+    /// The `Session Replay WebView` Synthetics Test. id: `ks5-ba9-ck5`
     case sessionReplayWebView
-    
+
     /// Creates the scenario defined by the`E2E_SCENARIO` environment variable.
     ///
     /// - Parameter processInfo: The process info holding the environment variables.
