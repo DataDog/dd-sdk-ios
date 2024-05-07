@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -54,3 +55,4 @@ class UISegmentRecorderTests: XCTestCase {
         XCTAssertNil(recorder.semantics(of: view, with: viewAttributes, in: .mockAny()))
     }
 }
+#endif

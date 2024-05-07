@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import UIKit
 @testable import DatadogSessionReplay
@@ -191,3 +192,4 @@ class CGRectContentFrameTests: XCTestCase {
         )
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import TestUtilities
 
@@ -60,3 +61,4 @@ class WireframesBuilderTests: XCTestCase {
         XCTAssertTrue(builder.hiddenWebViewWireframes().isEmpty)
     }
 }
+#endif

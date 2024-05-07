@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -66,3 +67,4 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder, randomRecorderContext)
     }
 }
+#endif

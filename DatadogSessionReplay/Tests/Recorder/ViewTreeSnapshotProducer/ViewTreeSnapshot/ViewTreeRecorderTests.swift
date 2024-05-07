@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import SafariServices
 
@@ -322,3 +323,4 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
     }
 }
+#endif

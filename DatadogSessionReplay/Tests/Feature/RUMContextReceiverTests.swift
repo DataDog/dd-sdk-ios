@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import TestUtilities
 import DatadogInternal
@@ -242,3 +243,4 @@ class RUMContextReceiverTests: XCTestCase {
         waitForExpectations(timeout: 0.1)
     }
 }
+#endif
