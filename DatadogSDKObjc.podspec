@@ -3,12 +3,12 @@ Pod::Spec.new do |s|
   s.module_name  = "DatadogObjc"
   s.version      = "2.11.0"
   s.summary      = "Official Datadog Objective-C SDK for iOS."
-  
+
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
 
   s.license            = { :type => "Apache", :file => 'LICENSE' }
-  s.authors            = { 
+  s.authors            = {
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
     "Maciej Burda" => "maciej.burda@datadoghq.com",
     "Maxime Epain" => "maxime.epain@datadoghq.com",

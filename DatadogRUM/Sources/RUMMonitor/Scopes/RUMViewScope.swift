@@ -124,6 +124,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
+            print("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
+        }
     }
 
     // MARK: - RUMContextProvider
@@ -579,6 +584,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
                 category: command.category,
                 causes: nil,
+                csp: nil,
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
