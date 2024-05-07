@@ -608,6 +608,11 @@ class DataUploadWorkerTests: XCTestCase {
                 expectTaskEnded.fulfill()
             }
         )
+
+        // Given
+        writer.write(value: ["k1": "v1"])
+
+        // When
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -620,7 +625,6 @@ class DataUploadWorkerTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
-        writer.write(value: ["k1": "v1"])
 
         // Then
         withExtendedLifetime(worker) {
@@ -638,6 +642,11 @@ class DataUploadWorkerTests: XCTestCase {
                 expectTaskEnded.fulfill()
             }
         )
+
+        // Given
+        writer.write(value: ["k1": "v1"])
+
+        // When
         let worker = DataUploadWorker(
             queue: uploaderQueue,
             fileReader: reader,
@@ -650,7 +659,6 @@ class DataUploadWorkerTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTaskCoordinator: backgroundTaskCoordinator
         )
-        writer.write(value: ["k1": "v1"])
 
         // Then
         withExtendedLifetime(worker) {
