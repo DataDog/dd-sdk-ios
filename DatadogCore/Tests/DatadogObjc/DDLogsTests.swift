@@ -40,13 +40,11 @@ class DDLogsTests: XCTestCase {
 
     func testConfigurationOverrides() throws {
         // Given
-        let sampleRate: Float = .random(in: 0...100)
         let customEndpoint: URL = .mockRandom()
 
         // When
         DDLogs.enable(
             with: DDLogsConfiguration(
-                sampleRate: sampleRate,
                 customEndpoint: customEndpoint
             )
         )

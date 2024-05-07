@@ -62,11 +62,9 @@ public class DDLogsConfiguration: NSObject {
     /// Creates a Logs configuration object.
     ///
     /// - Parameters:
-    ///   - sampleRate: The sampling rate for logging.
     ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
     @objc
     public init(
-        sampleRate: Float = 100,
         customEndpoint: URL? = nil
     ) {
         configuration = .init(

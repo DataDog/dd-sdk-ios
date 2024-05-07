@@ -88,7 +88,7 @@ public enum DDLogLevel: Int
     case critical
 public class DDLogsConfiguration: NSObject
     @objc public var customEndpoint: URL?
-    public init(sampleRate: Float = 100,customEndpoint: URL? = nil)
+    public init(customEndpoint: URL? = nil)
 public class DDLogs: NSObject
     public static func enable(with configuration: DDLogsConfiguration = .init())
 public class DDLoggerConfiguration: NSObject
