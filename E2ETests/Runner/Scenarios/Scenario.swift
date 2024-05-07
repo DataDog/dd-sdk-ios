@@ -9,13 +9,13 @@ import UIKit
 
 /// A `Scenario` is the entry-point of the E2E runner application.
 ///
-/// The compliant objects are responsible for initialization the SDK, enabling
-/// Feature, and create the root view-controller.
+/// The compliant objects are responsible for initializing the SDK, enabling
+/// Features, and create the root view-controller.
 protocol Scenario {
     /// Starts the scenario.
     /// 
     /// Starting the scenario should intialize the SDK and enable Features based on
-    /// the provided ``TestInfo`` and scenarios needs.
+    /// the provided ``TestInfo`` and scenario's needs.
     ///
     /// The returned view-controller will be used as the root view controller of the
     /// application window.
@@ -25,10 +25,8 @@ protocol Scenario {
     func start(info: TestInfo) -> UIViewController
 }
 
-/// A Synthetic scenario can be initialized by defining a Synthetic Test Variable
+/// A Synthetic scenario can be initialized by defining a Synthetic Test Process Argument
 /// named `E2E_SCENARIO`.
-///
-/// see. https://docs.datadoghq.com/mobile_app_testing/mobile_app_tests/#variables
 enum SyntheticScenario: String, CaseIterable {
     /// The `Session Replay WebView` Synthetics Test. id: `ks5-ba9-ck5`
     case sessionReplayWebView
