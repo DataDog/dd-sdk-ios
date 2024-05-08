@@ -1,13 +1,13 @@
 # Unreleased
 
-- [IMPROVEMENT] Start sending data immediately after SDK is initialized. See [#1798][]
-# 2.11.0 / 02-05-2024
+# 2.11.0 / 08-05-2024
 
 - [FEATURE] `DatadogTrace` now supports head-based sampling. See [#1794][]
 - [FEATURE] Support WebView recording in Session Replay. See [#1776][]
 - [IMPROVEMENT] Add `isInitialized` and `stopInstance` methods to ObjC API. See [#1800][]
 - [IMPROVEMENT] Add `addUserExtraInfo` method to ObjC API. See [#1799][]
-- [FIX] Add background upload capability to extensions in order to mitigate `0xdead10cc` crash. See [#1803][]
+- [FIX] Add background upload capability to extensions. See [#1803][]
+- [IMPROVEMENT] Start sending data immediately after SDK is initialized. See [#1798][]
 
 # 2.10.1 / 02-05-2024
 
