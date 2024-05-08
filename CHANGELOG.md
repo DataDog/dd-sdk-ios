@@ -5,11 +5,11 @@
 - [FEATURE] Support WebView recording in Session Replay. See [#1776][]
 - [IMPROVEMENT] Add `isInitialized` and `stopInstance` methods to ObjC API. See [#1800][]
 - [IMPROVEMENT] Add `addUserExtraInfo` method to ObjC API. See [#1799][]
+- [FIX] Add background upload capability to extensions in order to mitigate `0xdead10cc` crash. See [#1803][]
 
 # 2.10.1 / 02-05-2024
 
 - [FIX] Use trace and span id as decimal. See [#1807][]
-- [FIX] Add background upload capability to extensions in order to mitigate `0xdead10cc` crash. See [#1803][]
 
 # 2.10.0 / 23-04-2024
 
