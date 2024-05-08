@@ -81,6 +81,16 @@ public class DDLogs: NSObject {
     ) {
         Logs.enable(with: configuration.configuration)
     }
+
+    @objc
+    public static func addAttribute(forKey key: String, value: Any) {
+        Logs.addAttribute(forKey: key, value: AnyEncodable(value))
+    }
+
+    @objc
+    public static func removeAttribute(forKey key: String) {
+        Logs.removeAttribute(forKey: key)
+    }
 }
 
 @objc
