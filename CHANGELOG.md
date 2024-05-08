@@ -8,6 +8,7 @@
 - [IMPROVEMENT] Add `addUserExtraInfo` method to ObjC API. See [#1799][]
 - [FIX] Add background upload capability to extensions. See [#1803][]
 - [IMPROVEMENT] Start sending data immediately after SDK is initialized. See [#1798][]
+- [IMPROVEMENT] Make the SDK compile on macOS 12+. See [#1711][]
 
 # 2.10.1 / 02-05-2024
 
@@ -19,7 +20,6 @@
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
 - [FIX] Avoid name collision with Required Reason APIs. See [#1774][]
-- [IMPROVEMENT] Make the SDK compile on macOS 12+. See [#1711][]
 
 # 2.9.0 / 11-04-2024
 
