@@ -606,6 +606,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 sourceType: command.errorSourceType,
                 stack: command.stack,
                 threads: command.threads?.compactMap { $0.toRUMDataFormat },
+                timeSinceAppStart: nil,
                 type: command.type,
                 wasTruncated: command.isStackTraceTruncated
             ),

@@ -93,6 +93,7 @@ internal struct FatalErrorBuilder {
                 sourceType: context.nativeSourceOverride.map { RUMErrorSourceType(rawValue: $0) } ?? .ios,
                 stack: errorStack,
                 threads: errorThreads,
+                timeSinceAppStart: nil,
                 type: errorType,
                 wasTruncated: errorWasTruncated
             ),
