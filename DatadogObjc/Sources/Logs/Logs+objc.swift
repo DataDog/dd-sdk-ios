@@ -62,11 +62,9 @@ public class DDLogsConfiguration: NSObject {
     /// Creates a Logs configuration object.
     ///
     /// - Parameters:
-    ///   - sampleRate: The sampling rate for logging.
     ///   - customEndpoint: Overrides the custom server endpoint where Logs are sent.
     @objc
     public init(
-        sampleRate: Float = 100,
         customEndpoint: URL? = nil
     ) {
         configuration = .init(
@@ -82,6 +80,16 @@ public class DDLogs: NSObject {
         with configuration: DDLogsConfiguration = .init()
     ) {
         Logs.enable(with: configuration.configuration)
+    }
+
+    @objc
+    public static func addAttribute(forKey key: String, value: Any) {
+        Logs.addAttribute(forKey: key, value: AnyEncodable(value))
+    }
+
+    @objc
+    public static func removeAttribute(forKey key: String) {
+        Logs.removeAttribute(forKey: key)
     }
 }
 
