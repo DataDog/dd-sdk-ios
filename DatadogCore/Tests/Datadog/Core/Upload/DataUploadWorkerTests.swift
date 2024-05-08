@@ -564,7 +564,7 @@ class DataUploadWorkerTests: XCTestCase {
         uploadExpectation.expectedFulfillmentCount = 3
 
         let dataUploader = DataUploaderMock(
-            uploadStatus: .mockRandom(),
+            uploadStatus: .mockWith(needsRetry: false),
             onUpload: uploadExpectation.fulfill
         )
         let worker = DataUploadWorker(
