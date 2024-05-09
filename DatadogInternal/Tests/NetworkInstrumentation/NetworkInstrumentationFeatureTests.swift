@@ -19,6 +19,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         core = SingleFeatureCoreMock()
         handler = URLSessionHandlerMock()
+
         try core.register(urlSessionHandler: handler)
     }
 

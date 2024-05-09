@@ -146,6 +146,7 @@ class DatadogCoreTests: XCTestCase {
             maxBatchesPerUpload: .mockRandom(min: 1, max: 100),
             backgroundTasksEnabled: .mockAny()
         )
+        defer { core.flushAndTearDown() }
 
         let feature = FeatureMock()
         try core.register(feature: feature)

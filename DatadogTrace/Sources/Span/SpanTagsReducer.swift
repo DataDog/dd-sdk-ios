@@ -26,10 +26,6 @@ internal struct SpanTagsReducer {
     let extractedIsError: Bool?
     /// Resource name requiring a special encoding in `Span` JSON.
     let extractedResourceName: String?
-    /// Extracted operation name from operation tag.
-    let extractedOperationName: String?
-    /// Extracted service name from service tag.
-    let extractedServiceName: String?
 
     // MARK: - Initialization
 
@@ -38,8 +34,6 @@ internal struct SpanTagsReducer {
 
         var extractedIsError: Bool? = nil
         var extractedResourceName: String? = nil
-        var extractedOperationName: String? = nil
-        var extractedServiceName: String? = nil
 
         // extract error from `logFields`
         for fields in logFields {
@@ -65,18 +59,8 @@ internal struct SpanTagsReducer {
             extractedResourceName = resourceName
         }
 
-        if let operationName = mutableSpanTags.removeValue(forKey: SpanTags.operation) as? String {
-            extractedOperationName = operationName
-        }
-
-        if let serviceName = mutableSpanTags.removeValue(forKey: SpanTags.service) as? String {
-            extractedServiceName = serviceName
-        }
-
         self.reducedSpanTags = mutableSpanTags
         self.extractedIsError = extractedIsError
         self.extractedResourceName = extractedResourceName
-        self.extractedOperationName = extractedOperationName
-        self.extractedServiceName = extractedServiceName
     }
 }
