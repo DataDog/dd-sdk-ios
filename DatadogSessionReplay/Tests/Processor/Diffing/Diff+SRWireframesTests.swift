@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import TestUtilities
 @_spi(Internal)
@@ -222,3 +223,4 @@ extension SRWireframe {
         )
     }
 }
+#endif

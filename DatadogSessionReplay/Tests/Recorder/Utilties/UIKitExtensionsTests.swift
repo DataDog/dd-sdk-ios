@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import UIKit
 import TestUtilities
@@ -62,3 +63,4 @@ class UIKitExtensionsTests: XCTestCase {
     }
     // swiftlint:enable opening_brace
 }
+#endif

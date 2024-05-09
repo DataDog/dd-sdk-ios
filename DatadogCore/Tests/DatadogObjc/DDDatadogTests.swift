@@ -24,7 +24,7 @@ class DDDatadogTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - Initializing with configuration
+    // MARK: - SDK initialization / stop lifecycle
 
     func testItForwardsInitializationToSwift() throws {
         let config = DDConfiguration(
@@ -46,6 +46,49 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(context.env, "tests")
 
         Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
+    }
+
+    func testItReflectsInitializationStatus() throws {
+        let config = DDConfiguration(
+            clientToken: "abcefghi",
+            env: "tests"
+        )
+
+        config.bundle = .mockWith(CFBundleExecutable: "app-name")
+        XCTAssertFalse(DDDatadog.isInitialized())
+
+        DDDatadog.initialize(
+            configuration: config,
+            trackingConsent: randomConsent().objc
+        )
+
+        XCTAssertTrue(DDDatadog.isInitialized())
+
+        Datadog.flushAndDeinitialize()
+
+        XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
+    }
+
+    func testItForwardsStopInstanceToSwift() throws {
+        let config = DDConfiguration(
+            clientToken: "abcefghi",
+            env: "tests"
+        )
+
+        config.bundle = .mockWith(CFBundleExecutable: "app-name")
+
+        DDDatadog.initialize(
+            configuration: config,
+            trackingConsent: randomConsent().objc
+        )
+
+        XCTAssertTrue(Datadog.isInitialized())
+
+        DDDatadog.stopInstance()
+
+        XCTAssertFalse(Datadog.isInitialized())
 
         XCTAssertNil(CoreRegistry.default.get(feature: LogsFeature.self))
     }
@@ -92,6 +135,7 @@ class DDDatadogTests: XCTestCase {
                 "attribute-string": "string value"
             ]
         )
+        DDDatadog.addUserExtraInfo(["foo": "bar"])
         XCTAssertEqual(userInfo.current.id, "id")
         XCTAssertEqual(userInfo.current.name, "name")
         XCTAssertEqual(userInfo.current.email, "email")
@@ -99,6 +143,7 @@ class DDDatadogTests: XCTestCase {
         XCTAssertEqual(extraInfo["attribute-int"]?.value as? Int, 42)
         XCTAssertEqual(extraInfo["attribute-double"]?.value as? Double, 42.5)
         XCTAssertEqual(extraInfo["attribute-string"]?.value as? String, "string value")
+        XCTAssertEqual(extraInfo["foo"]?.value as? String, "bar")
 
         DDDatadog.setUserInfo(id: nil, name: nil, email: nil, extraInfo: [:])
         XCTAssertNil(userInfo.current.id)

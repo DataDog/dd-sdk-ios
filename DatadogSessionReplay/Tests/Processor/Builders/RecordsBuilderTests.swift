@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import TestUtilities
 @_spi(Internal)
@@ -101,3 +102,4 @@ class RecordsBuilderTests: XCTestCase {
         )
     }
 }
+#endif

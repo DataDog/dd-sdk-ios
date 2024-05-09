@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import DatadogInternal
 @_spi(Internal)
@@ -136,3 +137,4 @@ final class RecordingMock: Recording {
         captureNextRecordClosure?(recorderContext)
     }
 }
+#endif

@@ -4,9 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
-import UIKit
 import XCTest
+import UIKit
+import WebKit
+
 @_spi(Internal)
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -34,7 +37,8 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
             context: .mockRandom(),
             viewportSize: .mockRandom(),
             nodes: .mockRandom(count: .random(in: (5..<50))),
-            resources: .mockRandom(count: .random(in: (5..<50)))
+            resources: .mockRandom(count: .random(in: (5..<50))),
+            webViewSlotIDs: .mockRandom()
         )
     }
 
@@ -43,14 +47,16 @@ extension ViewTreeSnapshot: AnyMockable, RandomMockable {
         context: Recorder.Context = .mockAny(),
         viewportSize: CGSize = .mockAny(),
         nodes: [Node] = .mockAny(),
-        resources: [Resource] = .mockAny()
+        resources: [Resource] = .mockAny(),
+        webViewSlotIDs: Set<Int> = .mockAny()
     ) -> ViewTreeSnapshot {
         return ViewTreeSnapshot(
             date: date,
             context: context,
             viewportSize: viewportSize,
             nodes: nodes,
-            resources: resources
+            resources: resources,
+            webViewSlotIDs: webViewSlotIDs
         )
     }
 }
@@ -297,7 +303,7 @@ extension UIImageResource: RandomMockable {
     }
 }
 
-extension Collection where Element == Resource {
+extension Array where Element == Resource {
     static func mockAny() -> [Resource] {
         return [MockResource].mockAny()
     }
@@ -344,19 +350,22 @@ extension ViewTreeRecordingContext: AnyMockable, RandomMockable {
         return .init(
             recorder: .mockRandom(),
             coordinateSpace: UIView.mockRandom(),
-            ids: NodeIDGenerator()
+            ids: NodeIDGenerator(),
+            webViewCache: .weakObjects()
         )
     }
 
     static func mockWith(
         recorder: Recorder.Context = .mockAny(),
         coordinateSpace: UICoordinateSpace = UIView.mockAny(),
-        ids: NodeIDGenerator = NodeIDGenerator()
+        ids: NodeIDGenerator = NodeIDGenerator(),
+        webViewCache: NSHashTable<WKWebView> = .weakObjects()
     ) -> ViewTreeRecordingContext {
         return .init(
             recorder: recorder,
             coordinateSpace: coordinateSpace,
-            ids: ids
+            ids: ids,
+            webViewCache: webViewCache
         )
     }
 }
@@ -454,35 +463,6 @@ extension TouchSnapshot.Touch: AnyMockable, RandomMockable {
 }
 
 // MARK: - Recorder Mocks
-
-extension RUMContext: AnyMockable, RandomMockable {
-    public static func mockAny() -> RUMContext {
-        return .mockWith()
-    }
-
-    public static func mockRandom() -> RUMContext {
-        return RUMContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            viewID: .mockRandom(),
-            viewServerTimeOffset: .mockRandom()
-        )
-    }
-
-    static func mockWith(
-        applicationID: String = .mockAny(),
-        sessionID: String = .mockAny(),
-        viewID: String? = .mockAny(),
-        serverTimeOffset: TimeInterval = .mockAny()
-    ) -> RUMContext {
-        return RUMContext(
-            applicationID: applicationID,
-            sessionID: sessionID,
-            viewID: viewID,
-            viewServerTimeOffset: serverTimeOffset
-        )
-    }
-}
 
 extension Recorder.Context: AnyMockable, RandomMockable {
     public static func mockAny() -> Recorder.Context {
@@ -601,3 +581,4 @@ internal extension Optional where Wrapped == NodeSemantics {
         return try XCTUnwrap(builders.first, file: file, line: line)
     }
 }
+#endif

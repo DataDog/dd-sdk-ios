@@ -13,4 +13,7 @@ public protocol TracePropagationHeadersReader {
         spanID: SpanID,
         parentSpanID: SpanID?
     )?
+
+    /// Indicates whether the trace was sampled based on the provided headers.
+    var sampled: Bool? { get }
 }

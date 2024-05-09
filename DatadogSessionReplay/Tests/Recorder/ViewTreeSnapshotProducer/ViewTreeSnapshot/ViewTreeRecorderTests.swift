@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import SafariServices
 
@@ -250,24 +251,39 @@ class ViewTreeRecorderTests: XCTestCase {
     }
 
     func testItOverridesViewControllerContext() throws {
-        if #available(iOS 17, *) {
-            throw XCTSkip("TODO: RUM-3134 Fix `ViewTreeRecorderTests` on iOS 17.0+")
-        }
         let nodeRecorder = NodeRecorderMock(resultForView: { _ in nil })
         let recorder = ViewTreeRecorder(nodeRecorders: [nodeRecorder])
-        let views = [
-            UIAlertController(title: "", message: "", preferredStyle: .alert).view,
-            UIView(),
-            UIViewController().view,
-            UIView(),
-            SFSafariViewController(url: .mockRandom()).view,
-            UIView(),
-            UIActivityViewController(activityItems: [], applicationActivities: nil).view,
-            UIView()
-        ].compactMap { $0 }
 
-        zip(views, views.dropFirst()).forEach {
-            $0.0.addSubview($0.1)
+        // swiftlint:disable opening_brace
+        let nodes: [(UIWindow) -> UIView] = [
+            { window in
+                let vc = UIViewController()
+                window.rootViewController = vc
+                return vc.view
+            },
+            { _ in UIView() },
+            { _ in UIAlertController(title: "", message: "", preferredStyle: .alert).view },
+            { _ in UIView() },
+            { window in
+                let safari = SFSafariViewController(url: .mockRandom())
+                window.rootViewController = safari
+                return safari.view
+            },
+            { _ in UIView() },
+            { _ in UIActivityViewController(activityItems: [], applicationActivities: nil).view },
+            { _ in UIView() }
+        ]
+        // swiftlint:enable opening_brace
+
+        // Build the tree in the window
+        let window = UIWindow()
+        var parent: UIView? = nil
+
+        let views = nodes.map { node in
+            let view = node(window)
+            parent?.addSubview(view)
+            parent = view
+            return view
         }
 
         // When
@@ -276,19 +292,19 @@ class ViewTreeRecorderTests: XCTestCase {
         // Then
         var context = nodeRecorder.queryContextsByView[views[0]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
-        XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .other)
 
         context = nodeRecorder.queryContextsByView[views[1]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
-        XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .other)
 
         context = nodeRecorder.queryContextsByView[views[2]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
-        XCTAssertEqual(context?.viewControllerContext.parentType, .other)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
 
         context = nodeRecorder.queryContextsByView[views[3]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, false)
-        XCTAssertEqual(context?.viewControllerContext.parentType, .other)
+        XCTAssertEqual(context?.viewControllerContext.parentType, .alert)
 
         context = nodeRecorder.queryContextsByView[views[4]]
         XCTAssertEqual(context?.viewControllerContext.isRootView, true)
@@ -307,3 +323,4 @@ class ViewTreeRecorderTests: XCTestCase {
         XCTAssertEqual(context?.viewControllerContext.parentType, .activity)
     }
 }
+#endif

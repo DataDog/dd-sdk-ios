@@ -92,11 +92,11 @@ extension UITextContentType: RandomMockable {
             .username, .password
         ]
 
-        if #available(iOS 15.0, *) {
+        if #available(iOS 15.0, tvOS 15.0, *) {
             all.formUnion([.shipmentTrackingNumber, .flightNumber, .dateTime])
         }
 
-        if #available(iOS 12.0, *) {
+        if #available(iOS 12.0, tvOS 12.0, *) {
             all.formUnion([.newPassword, .oneTimeCode])
         }
 

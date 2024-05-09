@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @testable import DatadogSessionReplay
 
@@ -53,3 +54,4 @@ internal class TestScheduler: Scheduler {
         isRunning = false
     }
 }
+#endif

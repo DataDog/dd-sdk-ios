@@ -22,9 +22,9 @@ final class WKUserContentControllerMock: WKUserContentController {
         handlers[name] = nil
     }
 
-    func send(body: Any) {
+    func send(body: Any, from webView: WKWebView? = nil) {
         let handler = handlers[DDScriptMessageHandler.name]
-        let message = WKScriptMessageMock(body: body, name: DDScriptMessageHandler.name)
+        let message = WKScriptMessageMock(body: body, name: DDScriptMessageHandler.name, webView: webView)
         handler?.userContentController(self, didReceive: message)
     }
 
@@ -41,14 +41,17 @@ final class WKUserContentControllerMock: WKUserContentController {
 private final class WKScriptMessageMock: WKScriptMessage {
     private let _body: Any
     private let _name: String
+    private weak var _webView: WKWebView?
 
-    init(body: Any, name: String) {
+    init(body: Any, name: String, webView: WKWebView? = nil) {
         _body = body
         _name = name
+        _webView = webView
     }
 
     override var body: Any { _body }
     override var name: String { _name }
+    override weak var webView: WKWebView? { _webView }
 }
 
 #endif

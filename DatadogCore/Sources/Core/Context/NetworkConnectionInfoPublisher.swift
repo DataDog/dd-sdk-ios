@@ -152,9 +152,13 @@ extension NetworkConnectionInfo.Reachability {
 extension NetworkConnectionInfo.Interface {
     @available(iOS 2.0, macCatalyst 13.0, *)
     init?(_ flags: SCNetworkReachabilityFlags?) {
+        #if os(iOS) || os(tvOS)
         guard let flags = flags, flags.contains(.isWWAN) else {
             return nil
         }
         self = .cellular
+        #else
+        self = .other
+        #endif
     }
 }

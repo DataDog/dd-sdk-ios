@@ -48,7 +48,6 @@ class SRMultipleViewsRecordingScenarioTests: IntegrationTests, RUMCommonAsserts,
         static let totalTouchDataRecords = 10
     }
 
-
     func testSRMultipleViewsRecordingScenario() throws {
         // RUM endpoint in `HTTPServerMock`
         let rumEndpoint = server.obtainUniqueRecordingSession()

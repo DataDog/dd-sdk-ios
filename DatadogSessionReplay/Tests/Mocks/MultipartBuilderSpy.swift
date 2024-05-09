@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @testable import DatadogSessionReplay
 
@@ -22,3 +23,4 @@ class MultipartBuilderSpy: MultipartFormDataBuilder {
 
     func build() -> Data { returnedData }
 }
+#endif

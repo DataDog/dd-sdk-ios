@@ -184,22 +184,22 @@
             </BuildableReference>
             <SkippedTests>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSamplingLocalTrace()">
+                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI()">
                </Test>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSamplingLocalTraceWithImplicitParent()">
+                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI()">
                </Test>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent()">
+                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent_throughTracerAPI()">
                </Test>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent()">
+                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI()">
                </Test>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithNoParent()">
+                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithNoParent_throughTracerAPI()">
                </Test>
                <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithParent()">
+                  Identifier = "HeadBasedSamplingTests/testSendingSampledDistributedTraceWithParent_throughTracerAPI()">
                </Test>
             </SkippedTests>
          </TestableReference>
@@ -232,11 +232,6 @@
                BlueprintName = "DatadogTraceTests tvOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
-               </Test>
-            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO">

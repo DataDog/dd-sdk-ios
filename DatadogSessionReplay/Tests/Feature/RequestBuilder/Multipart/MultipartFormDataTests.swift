@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 
@@ -62,3 +63,4 @@ class MultipartFormDataTests: XCTestCase {
         XCTAssertEqual(expectedDataString, actualDataString)
     }
 }
+#endif

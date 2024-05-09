@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -66,3 +67,4 @@ internal class TouchSnapshotProducerMock: TouchSnapshotProducer {
         return succeedingSnapshots.isEmpty ? nil : succeedingSnapshots.removeFirst()
     }
 }
+#endif

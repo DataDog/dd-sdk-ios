@@ -360,6 +360,18 @@ workflows:
                 -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
                 -destination "platform=macOS,variant=Mac Catalyst" \
                 | xcpretty
+    - script:
+        title: Check macOS compatibility (build SPMProject for macOS)
+        run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euxo pipefail
+
+            xcodebuild build -scheme "App macOS" \
+                -project "$BITRISE_SOURCE_DIR/dependency-manager-tests/spm/SPMProject.xcodeproj" \
+                -destination "platform=macOS" \
+                | xcpretty
     - xcode-test:
         title: Run SPMProject iOS tests
         run_if: '{{enveq "DD_RUN_SMOKE_TESTS" "1"}}'

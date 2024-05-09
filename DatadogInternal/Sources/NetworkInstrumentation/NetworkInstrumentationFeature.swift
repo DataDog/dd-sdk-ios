@@ -78,12 +78,15 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
+                var injectedTraceContexts: [TraceContext]?
+
                 if let currentRequest = task.currentRequest {
-                    let request = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                    let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
                     task.dd.override(currentRequest: request)
+                    injectedTraceContexts = traceContexts
                 }
 
-                self.intercept(task: task, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                self.intercept(task: task, with: injectedTraceContexts ?? [], additionalFirstPartyHosts: configuredFirstPartyHosts)
             }
         )
 
@@ -128,31 +131,43 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
-    /// Tells the interceptors to modify a URL request.
+    /// Intercepts the provided request by injecting trace headers based on first-party hosts configuration.
+    ///
+    /// Only requests with URLs that match the list of first-party hosts have tracing headers injected.
     ///
     /// - Parameters:
     ///   - request: The request to intercept.
-    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception
-    /// - Returns: The modified request.
-    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> URLRequest {
+    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
+    /// - Returns: A tuple containing the modified request and the list of injected TraceContexts, one or none for each handler. If no trace is injected (e.g., due to sampling),
+    ///            the list will be empty.
+    func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [TraceContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
 
         guard !headerTypes.isEmpty else {
-            return request
+            return (request, [])
         }
 
-        return handlers.reduce(request) {
-            $1.modify(request: $0, headerTypes: headerTypes)
+        var request = request
+        var traceContexts: [TraceContext] = [] // each handler can inject distinct trace context
+        for handler in handlers {
+            let (nextRequest, nextTraceContext) = handler.modify(request: request, headerTypes: headerTypes)
+            request = nextRequest
+            if let nextTraceContext = nextTraceContext {
+                traceContexts.append(nextTraceContext)
+            }
         }
+
+        return (request, traceContexts)
     }
 
-    /// Tells the interceptors that a task was created.
+    /// Intercepts the provided URLSession task by creating an interception object and notifying all handlers that the interception has started.
     ///
     /// - Parameters:
-    ///   - task: The created task.
-    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
-    func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts?) {
+    ///   - task: The URLSession task to intercept.
+    ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
+    ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
+    func intercept(task: URLSessionTask, with injectedTraceContexts: [TraceContext], additionalFirstPartyHosts: FirstPartyHosts?) {
         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
         // object from multiple threads:
@@ -160,9 +175,6 @@ extension NetworkInstrumentationFeature {
             return
         }
         let request = ImmutableRequest(request: currentRequest)
-
-        // Get the current trace context from all handlers.
-        let traceContexts = handlers.compactMap { $0.traceContext() }
 
         queue.async { [weak self] in
             guard let self = self else {
@@ -179,20 +191,10 @@ extension NetworkInstrumentationFeature {
 
             interception.register(request: request)
 
-            if let trace = self.extractTrace(firstPartyHosts: firstPartyHosts, request: request) {
-                // The parent span id is extracted from the headers unless
-                // the propagation headers does not support it (only B3 does).
-                // In that case, we register the current trace context as parent
-                // if the trace ID matches.
-                let parentSpanID = trace.parentSpanID ??
-                    traceContexts.first(where: { $0.traceID == trace.traceID })?.spanID
-
-                // Register the trace with parent
-                interception.register(trace: TraceContext(
-                    traceID: trace.traceID,
-                    spanID: trace.spanID,
-                    parentSpanID: parentSpanID
-                ))
+            if let traceContext = injectedTraceContexts.first {
+                // ^ If multiple trace contexts were injected (one per each handler) take the first one. This mimics the implicit
+                // behaviour from before RUM-3470.
+                interception.register(trace: traceContext)
             }
 
             if let origin = request.allHTTPHeaderFields?[TracingHTTPHeaders.originField] {
@@ -265,24 +267,6 @@ extension NetworkInstrumentationFeature {
     private func finish(task: URLSessionTask, interception: URLSessionTaskInterception) {
         handlers.forEach { $0.interceptionDidComplete(interception: interception) }
         interceptions[task] = nil
-    }
-
-    private func extractTrace(firstPartyHosts: FirstPartyHosts, request: ImmutableRequest) -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
-        guard let headers = request.allHTTPHeaderFields else {
-            return nil
-        }
-
-        let tracingHeaderTypes = firstPartyHosts.tracingHeaderTypes(for: request.url)
-
-        let reader: TracePropagationHeadersReader
-        if tracingHeaderTypes.contains(.datadog) {
-            reader = HTTPHeadersReader(httpHeaderFields: headers)
-        } else if tracingHeaderTypes.contains(.b3) || tracingHeaderTypes.contains(.b3multi) {
-            reader = B3HTTPHeadersReader(httpHeaderFields: headers)
-        } else {
-            reader = W3CHTTPHeadersReader(httpHeaderFields: headers)
-        }
-        return reader.read()
     }
 }
 

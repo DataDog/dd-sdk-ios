@@ -1,5 +1,21 @@
 # Unreleased
 
+# 2.11.0 / 08-05-2024
+
+- [FEATURE] `DatadogTrace` now supports head-based sampling. See [#1794][]
+- [FEATURE] Support WebView recording in Session Replay. See [#1776][]
+- [IMPROVEMENT] Add `isInitialized` and `stopInstance` methods to ObjC API. See [#1800][]
+- [IMPROVEMENT] Add `addUserExtraInfo` method to ObjC API. See [#1799][]
+- [FIX] Add background upload capability to extensions. See [#1803][]
+- [IMPROVEMENT] Start sending data immediately after SDK is initialized. See [#1798][]
+- [IMPROVEMENT] Make the SDK compile on macOS 12+. See [#1711][]
+
+# 2.10.1 / 02-05-2024
+
+- [FIX] Use trace and span id as decimal. See [#1807][]
+
+# 2.10.0 / 23-04-2024
+
 - [IMPROVEMENT] Add image duplicate detection between sessions. See [#1747][]
 - [FEATURE] Add support for 128 bit trace IDs. See [#1721][]
 - [FEATURE] Fatal App Hangs are tracked in RUM. See [#1763][]
@@ -629,16 +645,23 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1696]: https://github.com/DataDog/dd-sdk-ios/pull/1696
 [#1697]: https://github.com/DataDog/dd-sdk-ios/pull/1697
 [#1707]: https://github.com/DataDog/dd-sdk-ios/pull/1707
+[#1711]: https://github.com/DataDog/dd-sdk-ios/pull/1711
+[#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1722]: https://github.com/DataDog/dd-sdk-ios/pull/1722
 [#1724]: https://github.com/DataDog/dd-sdk-ios/pull/1724
 [#1741]: https://github.com/DataDog/dd-sdk-ios/pull/1741
 [#1742]: https://github.com/DataDog/dd-sdk-ios/pull/1742
 [#1746]: https://github.com/DataDog/dd-sdk-ios/pull/1746
+[#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
+[#1794]: https://github.com/DataDog/dd-sdk-ios/pull/1794
 [#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
+[#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
+[#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
-[#1747]: https://github.com/DataDog/dd-sdk-ios/pull/1747
+[#1803]: https://github.com/DataDog/dd-sdk-ios/pull/1803
+[#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu
