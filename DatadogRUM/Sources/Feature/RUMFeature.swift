@@ -159,7 +159,7 @@ extension RUMFeature: Flushable {
     ///
     /// **blocks the caller thread**
     func flush() {
-        monitor.flush()
+        instrumentation.appHangs?.flush()
     }
 }
 
