@@ -448,7 +448,7 @@
 				61B8C30026E0E278006EDF53 /* Frameworks */,
 				61B8C30126E0E278006EDF53 /* Resources */,
 				31384BB2056A865F3ED23F38 /* [CP] Embed Pods Frameworks */,
-				CE173FAE86F3C55AD4217B8F /* [CP] Copy Pods Resources */,
+				A242A29C234C1DB8379AA6B1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -918,23 +918,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		CE173FAE86F3C55AD4217B8F /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic iOS/Pods-Common-App Dynamic iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic iOS/Pods-Common-App Dynamic iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic iOS/Pods-Common-App Dynamic iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D235937827C8EB0500BF32D7 /* [CP] Check Pods Manifest.lock */ = {

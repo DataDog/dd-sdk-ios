@@ -1,2 +1,2 @@
-binary "https://raw.githubusercontent.com/DataDog/opentelemetry-swift-packages/main/OpenTelemetryApi.json" "1.6.0"
+binary "https://raw.githubusercontent.com/DataDog/opentelemetry-swift-packages/main/OpenTelemetryApi.json" "1.9.1"
 github "microsoft/plcrashreporter" "1.11.1"
