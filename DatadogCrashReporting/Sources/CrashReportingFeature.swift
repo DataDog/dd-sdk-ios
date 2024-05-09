@@ -113,6 +113,22 @@ internal final class CrashReportingFeature: DatadogFeature {
 
     private func decode(crashContextData: Data) -> CrashContext? {
         do {
+            crashContextDecoder.dateDecodingStrategy = .custom { decoder in
+                let container = try decoder.singleValueContainer()
+                let dateString = try container.decode(String.self)
+                let dateFormatter = ISO8601DateFormatter()
+                dateFormatter.formatOptions = [
+                    .withFullDate,
+                    .withFullTime,
+                    .withDashSeparatorInDate,
+                    .withFractionalSeconds
+                ]
+
+                guard let date = dateFormatter.date(from: dateString) else {
+                    throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid date format: Requires ISO8601.")
+                }
+                return date
+            }
             return try crashContextDecoder.decode(CrashContext.self, from: crashContextData)
         } catch {
             DD.logger.error(

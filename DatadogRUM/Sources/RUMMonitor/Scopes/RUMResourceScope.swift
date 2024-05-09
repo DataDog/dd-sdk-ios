@@ -270,6 +270,10 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorFingerprint = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+        var timeSinceAppStart: Int64? = nil
+        if let startTime = context.launchTime?.launchDate {
+            timeSinceAppStart = Int64(command.time.timeIntervalSince(startTime) * 1_000)
+        }
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -314,7 +318,7 @@ internal class RUMResourceScope: RUMScope {
                 sourceType: command.errorSourceType,
                 stack: command.stack,
                 threads: nil,
-                timeSinceAppStart: nil,
+                timeSinceAppStart: timeSinceAppStart,
                 type: command.errorType,
                 wasTruncated: nil
             ),

@@ -13,6 +13,9 @@ import DatadogInternal
 /// Note: as it gets saved along with the crash report during process interruption, it's good
 /// to keep this data well-packed and as small as possible.
 internal struct CrashContext: Codable, Equatable {
+    /// The Application Launch Date
+    var appLaunchDate: Date?
+
     /// Interval between device and server time.
     ///
     /// The value can change as the device continue to sync with the server.
@@ -90,7 +93,8 @@ internal struct CrashContext: Codable, Equatable {
         lastRUMViewEvent: AnyCodable?,
         lastRUMSessionState: AnyCodable?,
         lastIsAppInForeground: Bool,
-        lastLogAttributes: AnyCodable?
+        lastLogAttributes: AnyCodable?,
+        appLaunchDate: Date?
     ) {
         self.serverTimeOffset = serverTimeOffset
         self.service = service
@@ -108,6 +112,7 @@ internal struct CrashContext: Codable, Equatable {
         self.lastRUMSessionState = lastRUMSessionState
         self.lastIsAppInForeground = lastIsAppInForeground
         self.lastLogAttributes = lastLogAttributes
+        self.appLaunchDate = appLaunchDate
     }
 
     init(
@@ -133,6 +138,8 @@ internal struct CrashContext: Codable, Equatable {
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
         self.lastLogAttributes = lastLogAttributes
+
+        self.appLaunchDate = context.launchTime?.launchDate
     }
 
     static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
@@ -148,6 +155,7 @@ internal struct CrashContext: Codable, Equatable {
             lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
             lhs.userInfo?.id == rhs.userInfo?.id &&
             lhs.userInfo?.name == rhs.userInfo?.name &&
-            lhs.userInfo?.email == rhs.userInfo?.email
+            lhs.userInfo?.email == rhs.userInfo?.email &&
+            lhs.appLaunchDate == rhs.appLaunchDate
     }
 }

@@ -23,6 +23,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     struct CrashContext: Decodable {
+        /// The Application Launch time since epich
+        let appLaunchDate: Date?
         /// Interval between device and server time.
         let serverTimeOffset: TimeInterval
         /// The name of the service that data is generated from.
@@ -66,6 +68,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let realCrashDate: Date
         /// Current time, adjusted with NTP correction.
         let realDateNow: Date
+        /// Time between crash and application launch
+        let timeSinceAppStart: TimeInterval?
     }
 
     /// RUM feature scope.
@@ -127,10 +131,16 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let currentTimeCorrection = context.serverTimeOffset
 
         let crashDate = report.date ?? dateProvider.now
+        var timeSinceAppStart: TimeInterval? = nil
+        if let startDate = context.appLaunchDate {
+            timeSinceAppStart = crashDate.timeIntervalSince(startDate) * 1_000
+        }
+
         let adjustedCrashTimings = AdjustedCrashTimings(
             crashDate: crashDate,
             realCrashDate: crashDate.addingTimeInterval(currentTimeCorrection),
-            realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection)
+            realDateNow: dateProvider.now.addingTimeInterval(currentTimeCorrection),
+            timeSinceAppStart: timeSinceAppStart
         )
 
         // RUMM-2516 if a cross-platform crash was reported, do not send its native version
@@ -165,13 +175,13 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         using crashTimings: AdjustedCrashTimings
     ) {
         if crashTimings.realDateNow.timeIntervalSince(crashTimings.realCrashDate) < FatalErrorBuilder.Constants.viewEventAvailabilityThreshold {
-            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: lastRUMViewEvent, using: crashTimings)
         } else {
             // We know it is too late for sending RUM view to previous RUM session as it is now stale on backend.
             // To avoid inconsistency, we only send the RUM error.
             DD.logger.debug("Sending crash as RUM error.")
             featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-                let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate)
+                let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
                 let rumError = builder.createRUMError(with: lastRUMViewEvent)
 
                 if let mappedError = self.eventsMapper.map(event: rumError) {
@@ -231,7 +241,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings)
         }
     }
 
@@ -284,18 +294,18 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         }
 
         if let newRUMView = newRUMView {
-            send(crashReport: crashReport, to: newRUMView, using: crashTimings.realCrashDate)
+            send(crashReport: crashReport, to: newRUMView, using: crashTimings)
         }
     }
 
     /// Sends given `CrashReport` by linking it to given `rumView` and updating view counts accordingly.
-    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using realCrashDate: Date) {
+    private func send(crashReport: DDCrashReport, to rumView: RUMViewEvent, using crashTimings: AdjustedCrashTimings) {
         DD.logger.debug("Updating RUM view with crash report.")
 
         // crash reporting is considering the user consent from previous session, if an event reached
         // the message bus it means that consent was granted and we can safely bypass current consent.
         featureScope.eventWriteContext(bypassConsent: true) { context, writer in
-            let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: realCrashDate)
+            let builder = createFatalErrorBuilder(context: context, crash: crashReport, crashDate: crashTimings.realCrashDate, timeSinceAppStart: crashTimings.timeSinceAppStart)
             let updatedRUMView = builder.updateRUMViewWithError(rumView)
             let rumError = builder.createRUMError(with: updatedRUMView)
 
@@ -313,7 +323,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
 
     // MARK: - Building RUM events
 
-    private func createFatalErrorBuilder(context: DatadogContext, crash: DDCrashReport, crashDate: Date) -> FatalErrorBuilder {
+    private func createFatalErrorBuilder(context: DatadogContext, crash: DDCrashReport, crashDate: Date, timeSinceAppStart: TimeInterval?) -> FatalErrorBuilder {
         return FatalErrorBuilder(
             context: context,
             error: .crash,
@@ -324,7 +334,8 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
             errorThreads: crash.threads.toRUMDataFormat,
             errorBinaryImages: crash.binaryImages.toRUMDataFormat,
             errorWasTruncated: crash.wasTruncated,
-            errorMeta: crash.meta.toRUMDataFormat
+            errorMeta: crash.meta.toRUMDataFormat,
+            timeSinceAppStart: timeSinceAppStart
         )
     }
 

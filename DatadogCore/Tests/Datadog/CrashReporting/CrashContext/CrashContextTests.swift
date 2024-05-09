@@ -126,4 +126,17 @@ class CrashContextTests: XCTestCase {
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         XCTAssertEqual(deserializedContext.lastIsAppInForeground, randomIsAppInForeground)
     }
+
+    func testGivenContextWithAppLaunchDate_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomDate: Date = .mockRandom()
+        // Given
+        let context: CrashContext = .mockWith(appLaunchDate: randomDate)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(deserializedContext.appLaunchDate, randomDate)
+    }
 }

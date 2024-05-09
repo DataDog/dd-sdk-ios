@@ -40,9 +40,17 @@ internal struct FatalErrorBuilder {
     let errorBinaryImages: [RUMErrorEvent.Error.BinaryImages]?
     let errorWasTruncated: Bool?
     let errorMeta: RUMErrorEvent.Error.Meta?
+    var timeSinceAppStart: TimeInterval?
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
+        var timeSinceAppStart: TimeInterval? = nil
+        if let appStartTiming = timeSinceAppStart {
+            //Bind timing to 0..max int64
+            let timeInterval = min(max(0, appStartTiming), Double(Int64.max))
+            timeSinceAppStart = timeInterval > 0 ? timeInterval : nil
+        }
+
         let event = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -93,7 +101,7 @@ internal struct FatalErrorBuilder {
                 sourceType: context.nativeSourceOverride.map { RUMErrorSourceType(rawValue: $0) } ?? .ios,
                 stack: errorStack,
                 threads: errorThreads,
-                timeSinceAppStart: nil,
+                timeSinceAppStart: timeSinceAppStart.map { Int64($0) },
                 type: errorType,
                 wasTruncated: errorWasTruncated
             ),

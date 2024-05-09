@@ -92,6 +92,10 @@ internal final class FatalAppHangsHandler {
 
             let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
             let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+            var timeSinceAppStart: TimeInterval? = nil
+            if let startTime = context.launchTime?.launchDate {
+                timeSinceAppStart = realErrorDate.timeIntervalSince(startTime) * 1_000
+            }
 
             let builder = FatalErrorBuilder(
                 context: context,
@@ -103,7 +107,8 @@ internal final class FatalAppHangsHandler {
                 errorThreads: fatalHang.hang.backtraceResult.threads?.toRUMDataFormat,
                 errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
                 errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
-                errorMeta: nil
+                errorMeta: nil,
+                timeSinceAppStart: timeSinceAppStart
             )
             let error = builder.createRUMError(with: fatalHang.lastRUMView)
             let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)

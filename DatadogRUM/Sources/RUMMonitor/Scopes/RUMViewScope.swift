@@ -557,6 +557,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         var commandAttributes = command.attributes
         let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+        var timeSinceAppStart: Int64? = nil
+        if let startTime = context.launchTime?.launchDate {
+            timeSinceAppStart = Int64(command.time.timeIntervalSince(startTime) * 1_000)
+        }
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
         if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) != nil {
@@ -606,7 +610,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 sourceType: command.errorSourceType,
                 stack: command.stack,
                 threads: command.threads?.compactMap { $0.toRUMDataFormat },
-                timeSinceAppStart: nil,
+                timeSinceAppStart: timeSinceAppStart,
                 type: command.type,
                 wasTruncated: command.isStackTraceTruncated
             ),

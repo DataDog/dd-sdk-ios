@@ -1174,6 +1174,43 @@ class RUMResourceScopeTests: XCTestCase {
         XCTAssertEqual(event.error.sourceType, .reactNative)
     }
 
+    func testGivenStartedResource_whenResourceLoadingEndsWithError_itSendsErrorEventWithTimeSinceAppStart() throws {
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        // Given
+        let appLauchTimeDiff = Int64.random(in: 10..<1_000_000)
+        let customContext: DatadogContext = .mockWith(launchTime: .mockWith(
+            launchTime: .mockAny(),
+            launchDate: currentTime,
+            isActivePrewarm: .mockAny()
+        ) )
+
+        let scope = RUMResourceScope.mockWith(
+            context: rumContext,
+            dependencies: dependencies,
+            resourceKey: "/resource/1",
+            startTime: currentTime,
+            url: "https://foo.com/resource/1",
+            httpMethod: .post
+        )
+
+        // When
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                    resourceKey: "/resource/1",
+                    time: currentTime.addingTimeInterval(Double(appLauchTimeDiff))
+                ),
+                context: customContext,
+                writer: writer
+            )
+        )
+
+        // Then
+        let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(event.error.timeSinceAppStart, appLauchTimeDiff * 1_000)
+    }
+
     // MARK: - Events sending callbacks
 
     func testGivenResourceScopeWithDefaultEventsMapper_whenSendingEvents_thenEventSentCallbacksAreCalled() throws {
