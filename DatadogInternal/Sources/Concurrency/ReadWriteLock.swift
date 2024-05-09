@@ -13,7 +13,7 @@ import Foundation
 /// An additional method `mutate` allow to safely mutate the value in-place (to read it
 /// and write it while obtaining the lock only once).
 @propertyWrapper
-public final class ReadWriteLock<Value>: @unchecked Sendable {
+public final class ReadWriteLock<Value> {
     /// The wrapped value.
     private var value: Value
 

@@ -27,7 +27,7 @@ extension SessionReplay {
         public var defaultPrivacyLevel: PrivacyLevel
 
         /// Available privacy levels for content masking.
-        public enum PrivacyLevel: String {
+        public enum PrivacyLevel {
             /// Record all content.
             case allow
 
@@ -35,7 +35,7 @@ extension SessionReplay {
             case mask
 
             /// Mask input elements, but record all other content.
-            case maskUserInput = "mask_user_input"
+            case maskUserInput
         }
 
         /// Custom server url for sending replay data.
@@ -65,7 +65,7 @@ extension SessionReplay {
         }
 
         @_spi(Internal)
-        public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
+public mutating func setAdditionalNodeRecorders(_ additionalNodeRecorders: [SessionReplayNodeRecorder]) {
             self._additionalNodeRecorders = additionalNodeRecorders
         }
     }

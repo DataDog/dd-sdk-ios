@@ -25,8 +25,7 @@ internal class ResourcesWriter: ResourcesWriting {
             if let knownIdentifiers = knownIdentifiers.asData(encoder) {
                 scope.dataStore.setValue(
                     knownIdentifiers,
-                    forKey: Constants.knownResourcesKey,
-                    version: Constants.currentStoreVersion
+                    forKey: Constants.knownResourcesKey
                 )
             }
         }
@@ -43,11 +42,10 @@ internal class ResourcesWriter: ResourcesWriting {
         self.decoder = decoder
         self.scope.dataStore.value(forKey: Constants.storeCreationKey) { [weak self]  result in
             do {
-                if let storeCreation = try result.data(expectedVersion: Constants.currentStoreVersion)?.asTimeInterval(),
-                   Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
+                if let storeCreation = try result.data()?.asTimeInterval(), Date().timeIntervalSince1970 - storeCreation < dataStoreResetTime {
                     self?.scope.dataStore.value(forKey: Constants.knownResourcesKey) { result in
                         switch result {
-                        case .value(let data, let version) where version == Constants.currentStoreVersion:
+                        case .value(let data, _):
                             do {
                                 if let knownIdentifiers = try data.asKnownIdentifiers(decoder) {
                                     self?.knownIdentifiers.formUnion(knownIdentifiers)
@@ -62,8 +60,7 @@ internal class ResourcesWriter: ResourcesWriting {
                 } else { // Reset if store was created more than 30 days ago
                     self?.scope.dataStore.setValue(
                         Date().timeIntervalSince1970.asData(),
-                        forKey: Constants.storeCreationKey,
-                        version: Constants.currentStoreVersion
+                        forKey: Constants.storeCreationKey
                     )
                     self?.scope.dataStore.removeValue(forKey: Constants.knownResourcesKey)
                 }
@@ -88,7 +85,6 @@ internal class ResourcesWriter: ResourcesWriting {
     enum Constants {
         static let knownResourcesKey = "known-resources"
         static let storeCreationKey = "store-creation"
-        static let currentStoreVersion = UInt16(1)
     }
 }
 

@@ -390,8 +390,7 @@
 				61373B2526E0E78300E0F46E /* Sources */,
 				61373B2626E0E78300E0F46E /* Frameworks */,
 				61373B2726E0E78300E0F46E /* Resources */,
-				9AB54E91F6CF9F39B153DDCF /* [CP] Copy Pods Resources */,
-				8A0FC3D9BCDA15BFE1388572 /* [CP] Embed Pods Frameworks */,
+				CC86EE069424642723D0C2E2 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -448,7 +447,7 @@
 				61B8C30026E0E278006EDF53 /* Frameworks */,
 				61B8C30126E0E278006EDF53 /* Resources */,
 				31384BB2056A865F3ED23F38 /* [CP] Embed Pods Frameworks */,
-				CE173FAE86F3C55AD4217B8F /* [CP] Copy Pods Resources */,
+				A242A29C234C1DB8379AA6B1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -596,8 +595,7 @@
 				D245427827C8E93D0039E0A6 /* Sources */,
 				D245427C27C8E93D0039E0A6 /* Frameworks */,
 				D245427E27C8E93D0039E0A6 /* Resources */,
-				902D6AE45E60E1B9A2AD5BD5 /* [CP] Copy Pods Resources */,
-				CBDFC631D4E69499312261B3 /* [CP] Embed Pods Frameworks */,
+				5B109A73B29580A024EBCD59 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -830,21 +828,21 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		8A0FC3D9BCDA15BFE1388572 /* [CP] Embed Pods Frameworks */ = {
+		5B109A73B29580A024EBCD59 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		8D0504D0CD7CAFBBB5B63F13 /* [CP] Check Pods Manifest.lock */ = {
@@ -869,58 +867,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		902D6AE45E60E1B9A2AD5BD5 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		9AB54E91F6CF9F39B153DDCF /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		CBDFC631D4E69499312261B3 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static tvOS/Pods-Common-App Static tvOS-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		CE173FAE86F3C55AD4217B8F /* [CP] Copy Pods Resources */ = {
+		A242A29C234C1DB8379AA6B1 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -935,6 +882,23 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Dynamic iOS/Pods-Common-App Dynamic iOS-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CC86EE069424642723D0C2E2 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Common-App Static iOS/Pods-Common-App Static iOS-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		D235937827C8EB0500BF32D7 /* [CP] Check Pods Manifest.lock */ = {

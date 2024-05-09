@@ -292,7 +292,6 @@ internal class RUMResourceScope: RUMScope {
             error: .init(
                 binaryImages: nil,
                 category: .exception, // resource errors are categorised as "Exception"
-                csp: nil,
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
