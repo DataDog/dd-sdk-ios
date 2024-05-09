@@ -5,22 +5,25 @@
  */
 
 import XCTest
+import TestUtilities
 @testable import DatadogInternal
 
 class HTTPHeadersReaderTests: XCTestCase {
     func testReadingSampledTraceContext() {
-        let writer = HTTPHeadersWriter(sampleRate: 100)
-        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100))
+        writer.write(traceContext: .mockRandom())
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext() {
-        let writer = HTTPHeadersWriter(sampleRate: 0)
-        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0))
+        writer.write(traceContext: .mockRandom())
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        XCTAssertEqual(reader.sampled, false)
     }
 }

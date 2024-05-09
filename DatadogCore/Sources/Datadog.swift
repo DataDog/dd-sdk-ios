@@ -231,7 +231,14 @@ public enum Datadog {
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
-    public static var verbosityLevel: CoreLoggerLevel? = nil
+    public static var verbosityLevel: CoreLoggerLevel? {
+        get { _verbosityLevel.wrappedValue }
+        set { _verbosityLevel.wrappedValue = newValue }
+    }
+
+    /// The backing storage for `verbosityLevel`, ensuring efficient synchronized
+    /// read/write access to the shared value.
+    private static let _verbosityLevel = ReadWriteLock<CoreLoggerLevel?>(wrappedValue: nil)
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     ///
@@ -365,8 +372,12 @@ public enum Datadog {
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
+        #if os(macOS)
+        consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        #endif
+
         #if swift(>=5.9) && os(visionOS)
-        consolePrint("⚠️ VisionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        consolePrint("⚠️ visionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
         do {
@@ -419,12 +430,13 @@ public enum Datadog {
             uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
             bundleType: bundleType
         )
+        let isRunFromExtension = bundleType == .iOSAppExtension
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(
                 in: configuration.systemDirectory(),
-                instancenName: instanceName,
+                instanceName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
@@ -455,7 +467,8 @@ public enum Datadog {
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            isRunFromExtension: isRunFromExtension
         )
 
         core.telemetry.configuration(

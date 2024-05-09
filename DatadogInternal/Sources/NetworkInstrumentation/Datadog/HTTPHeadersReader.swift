@@ -43,4 +43,11 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
             parentSpanID: nil
         )
     }
+
+    public var sampled: Bool? {
+        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField] {
+            return sampling == "1"
+        }
+        return nil
+    }
 }

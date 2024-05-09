@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -79,3 +80,4 @@ class ColorsTests: XCTestCase {
         XCTAssertNil(hexString(from: color))
     }
 }
+#endif

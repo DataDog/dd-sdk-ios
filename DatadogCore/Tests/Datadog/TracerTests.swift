@@ -725,323 +725,88 @@ class TracerTests: XCTestCase {
 
     // MARK: - Injecting span context into carrier
 
-    func testItInjectsSpanContextWithHTTPHeadersWriter() {
+    func testInjectingAndExtractingSpanContextUsingDatadogCarrier() {
+        // Given
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-        let spanContext2 = DDSpanContext(traceID: 3, spanID: 4, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
+        let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        tracer.inject(spanContext: injectedContext, writer: writer)
+
+        let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        let extractedContext = tracer.extract(reader: reader)!
 
         // Then
-        let expectedHTTPHeaders1 = [
-            "x-datadog-trace-id": "100",
-            "x-datadog-parent-id": "200",
-            "x-datadog-sampling-priority": "1",
-            "x-datadog-tags": "_dd.p.tid=a"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
-
-        // When
-        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders2 = [
-            "x-datadog-trace-id": "3",
-            "x-datadog-parent-id": "4",
-            "x-datadog-sampling-priority": "1",
-            "x-datadog-tags": "_dd.p.tid=0"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
+        XCTAssertEqual(injectedContext.dd.traceID, extractedContext.dd.traceID)
+        XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
+        XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
+        XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
+        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
     }
 
-    func testItInjectsSpanContextWithB3HTTPHeadersWriter_usingMultipleHeaders() {
+    func testInjectingAndExtractingSpanContextUsingB3SingleCarrier() {
+        // Given
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-        let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
-        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
+        let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .single)
+        tracer.inject(spanContext: injectedContext, writer: writer)
+
+        let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        let extractedContext = tracer.extract(reader: reader)!
 
         // Then
-        let expectedHTTPHeaders1 = [
-            "X-B3-TraceId": "000000000000000a0000000000000064",
-            "X-B3-SpanId": "00000000000000c8",
-            "X-B3-Sampled": "1",
-            "X-B3-ParentSpanId": "0000000000000003"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
-
-        // When
-        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders2 = [
-            "X-B3-TraceId": "00000000000000000000000000000004",
-            "X-B3-SpanId": "0000000000000005",
-            "X-B3-Sampled": "1",
-            "X-B3-ParentSpanId": "0000000000000006"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
-
-        // When
-        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders3 = [
-            "X-B3-TraceId": "0000000000000000000000000000004d",
-            "X-B3-SpanId": "0000000000000058",
-            "X-B3-Sampled": "1"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
+        XCTAssertEqual(injectedContext.dd.traceID, extractedContext.dd.traceID)
+        XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
+        XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
+        XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
+        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
     }
 
-    func testItInjectsSpanContextWithB3HTTPHeadersWriter_usingSingleHeader() {
+    func testInjectingAndExtractingSpanContextUsingB3MultipleCarrier() {
+        // Given
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-        let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
-        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
+        let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .headBased, injectEncoding: .multiple)
+        tracer.inject(spanContext: injectedContext, writer: writer)
+
+        let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        let extractedContext = tracer.extract(reader: reader)!
 
         // Then
-        let expectedHTTPHeaders1 = [
-            "b3": "000000000000000a0000000000000064-00000000000000c8-1-0000000000000003"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
-
-        // When
-        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders2 = [
-            "b3": "00000000000000000000000000000004-0000000000000005-1-0000000000000006"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
-
-        // When
-        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders3 = [
-            "b3": "0000000000000000000000000000004d-0000000000000058-1"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
+        XCTAssertEqual(injectedContext.dd.traceID, extractedContext.dd.traceID)
+        XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
+        XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
+        XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
+        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
     }
 
-    func testItInjectsRejectedSpanContextWithB3HTTPHeadersWriter_usingSingleHeader() {
+    func testInjectingAndExtractingSpanContextUsingW3CCarrier() {
+        // Given
         Trace.enable(with: config, in: core)
         let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockRejectAll())
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
+        let injectedContext = tracer.startSpan(operationName: .mockAny()).context
 
         // When
-        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
+        let writer = W3CHTTPHeadersWriter(samplingStrategy: .headBased)
+        tracer.inject(spanContext: injectedContext, writer: writer)
+
+        let reader = W3CHTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        let extractedContext = tracer.extract(reader: reader)!
 
         // Then
-        let expectedHTTPHeaders = [
-            "b3": "0"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
-    }
-
-    func testItInjectsRejectedSpanContextWithB3HTTPHeadersWriter_usingMultipleHeader() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockRejectAll(), injectEncoding: .multiple)
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
-
-        // When
-        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders = [
-            "X-B3-Sampled": "0"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
-    }
-
-    func testItInjectsSpanContextWithW3CHTTPHeadersWriter() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let spanContext1 = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-        let spanContext2 = DDSpanContext(traceID: 4, spanID: 5, parentSpanID: 6, baggageItems: .mockAny())
-        let spanContext3 = DDSpanContext(traceID: 77, spanID: 88, parentSpanID: nil, baggageItems: .mockAny())
-
-        let httpHeadersWriter = W3CHTTPHeadersWriter(
-            sampler: .mockKeepAll(),
-            tracestate: [
-                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
-        )
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
-
-        // When
-        tracer.inject(spanContext: spanContext1, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders1 = [
-            "tracestate": "dd=o:rum;p:00000000000000c8;s:1",
-            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-01"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders1)
-
-        // When
-        tracer.inject(spanContext: spanContext2, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders2 = [
-            "tracestate": "dd=o:rum;p:0000000000000005;s:1",
-            "traceparent": "00-00000000000000000000000000000004-0000000000000005-01"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders2)
-
-        // When
-        tracer.inject(spanContext: spanContext3, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders3 = [
-            "tracestate": "dd=o:rum;p:0000000000000058;s:1",
-            "traceparent": "00-0000000000000000000000000000004d-0000000000000058-01"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders3)
-    }
-
-    func testItInjectsRejectedSpanContextWithW3CHTTPHeadersWriter() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = W3CHTTPHeadersWriter(
-            sampler: .mockRejectAll(),
-            tracestate: [
-                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
-        )
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
-
-        // When
-        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders = [
-            "tracestate": "dd=o:rum;p:00000000000000c8;s:0",
-            "traceparent": "00-000000000000000a0000000000000064-00000000000000c8-00"
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
-    }
-
-    func testItInjectsRejectedSpanContextWithHTTPHeadersWriter() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let spanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockRejectAll())
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, [:])
-
-        // When
-        tracer.inject(spanContext: spanContext, writer: httpHeadersWriter)
-
-        // Then
-        let expectedHTTPHeaders = [
-            "x-datadog-sampling-priority": "0",
-        ]
-        XCTAssertEqual(httpHeadersWriter.traceHeaderFields, expectedHTTPHeaders)
-    }
-
-    func testItExtractsSpanContextWithHTTPHeadersReader() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: .mockAny(), baggageItems: .mockAny())
-
-        let httpHeadersWriter = HTTPHeadersWriter(sampler: .mockKeepAll())
-        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
-
-        let httpHeadersReader = HTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.traceHeaderFields
-        )
-        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
-
-        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
-        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
-        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
-    }
-
-    func testItExtractsSpanContextWithB3HTTPHeadersReader_forMultipleHeaders() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
-        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
-
-        let httpHeadersReader = B3HTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.traceHeaderFields
-        )
-        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
-
-        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
-        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
-        XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
-    }
-
-    func testItExtractsSpanContextWithB3HTTPHeadersReader_forSingleHeader() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-
-        let httpHeadersWriter = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
-        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
-
-        let httpHeadersReader = B3HTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.traceHeaderFields
-        )
-        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
-
-        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
-        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
-        XCTAssertEqual(extractedSpanContext?.dd.parentSpanID, injectedSpanContext.dd.parentSpanID)
-    }
-
-    func testItExtractsSpanContextWithW3CHTTPHeadersReader() {
-        Trace.enable(with: config, in: core)
-        let tracer = Tracer.shared(in: core)
-        let injectedSpanContext = DDSpanContext(traceID: .init(idHi: 10, idLo: 100), spanID: 200, parentSpanID: 3, baggageItems: .mockAny())
-
-        let httpHeadersWriter = W3CHTTPHeadersWriter(
-            sampler: .mockKeepAll(),
-            tracestate: [
-                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
-        )
-        tracer.inject(spanContext: injectedSpanContext, writer: httpHeadersWriter)
-
-        let httpHeadersReader = W3CHTTPHeadersReader(
-            httpHeaderFields: httpHeadersWriter.traceHeaderFields
-        )
-        let extractedSpanContext = tracer.extract(reader: httpHeadersReader)
-
-        XCTAssertEqual(extractedSpanContext?.dd.traceID, injectedSpanContext.dd.traceID)
-        XCTAssertEqual(extractedSpanContext?.dd.spanID, injectedSpanContext.dd.spanID)
-        XCTAssertNil(extractedSpanContext?.dd.parentSpanID)
+        XCTAssertEqual(injectedContext.dd.traceID, extractedContext.dd.traceID)
+        XCTAssertEqual(injectedContext.dd.spanID, extractedContext.dd.spanID)
+        XCTAssertEqual(injectedContext.dd.parentSpanID, extractedContext.dd.parentSpanID)
+        XCTAssertEqual(injectedContext.dd.sampleRate, extractedContext.dd.sampleRate)
+        XCTAssertEqual(injectedContext.dd.isKept, extractedContext.dd.isKept)
     }
 
     // MARK: - Span Dates Correction

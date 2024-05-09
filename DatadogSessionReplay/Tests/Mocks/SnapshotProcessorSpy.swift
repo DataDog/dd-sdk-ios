@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @testable import DatadogSessionReplay
 
@@ -16,3 +17,4 @@ internal class SnapshotProcessorSpy: SnapshotProcessing {
         processedSnapshots.append((viewTreeSnapshot, touchSnapshot))
     }
 }
+#endif

@@ -71,22 +71,6 @@ public class URLSessionTaskInterception {
     }
 }
 
-public struct TraceContext {
-    public let traceID: TraceID
-    public let spanID: SpanID
-    public let parentSpanID: SpanID?
-
-    public init(
-        traceID: TraceID,
-        spanID: SpanID,
-        parentSpanID: SpanID? = nil
-    ) {
-        self.traceID = traceID
-        self.spanID = spanID
-        self.parentSpanID = parentSpanID
-    }
-}
-
 public struct ResourceCompletion {
     public let httpResponse: HTTPURLResponse?
     public let error: Error?

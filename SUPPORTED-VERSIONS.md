@@ -5,13 +5,24 @@
 | **iOS**    |     ✅    |  `11+` |
 | **tvOS**   |     ✅    |  `11+` |
 | **iPadOS** |     ✅    |  `11+` |
-| **VisionOS** |   ⚠️    |  `1.1+` |
+| **macOS (Designed for iPad)**  |     ✅    |  `11+` |
+| **macOS (Catalyst)**  |     ⚠️    |  `12+` |
+| **macOS**  |     ⚠️    |  `12+` |
+| **visionOS** |   ⚠️    |  `1.0+` |
 | **watchOS**|     ❌    |  `n/a` |
-| **macOS**  |     ❌    |  `n/a` |
 | **Linux**  |     ❌    |  `n/a` |
 
 ## VisionOS
-VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional.
+
+VisionOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `DatadogCrashReporting` is not supported on VisionOS, due to lack of support on the [PLCrashReporter side](https://github.com/microsoft/plcrashreporter/issues/288).
+
+## MacOS
+
+MacOS is not officially supported by Datadog SDK. Some features may not be fully functional. Note that `DatadogRUM`, `DatadogSessionReplay` and `DatadogObjc` which heavily depend on `UIKit` do not build on macOS.
+
+## Catalyst
+
+We support Catalyst in build mode only, which means that macOS target will build, but functionalities for the SDK might not work for this target.
 
 ## Xcode
 
@@ -46,9 +57,6 @@ We currently support integration of the SDK using following dependency managers.
 |  **SwiftNIO**   |       ❌     |   ❌    |
 
 *Note: Third party networking libraries can be instrumented by implementing custom `DDURLSessionDelegate`.*
-
-## Catalyst
-We support Catalyst in build mode only, which means that macOS target will build, but functionalities for the SDK won't work for this target.
 
 ## Dependencies
 The Datadog SDK depends on the following third-party library:

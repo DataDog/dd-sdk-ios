@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -217,3 +218,4 @@ class NodeSemanticsTests: XCTestCase {
         )
     }
 }
+#endif

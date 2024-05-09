@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 
@@ -115,3 +116,4 @@ class MainThreadSchedulerTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(belowIntervalCount, p25, "At least 25% of repeats should be below \(interval)s")
     }
 }
+#endif

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -96,3 +97,4 @@ class UITextViewRecorderTests: XCTestCase {
     }
 }
 // swiftlint:enable opening_brace
+#endif

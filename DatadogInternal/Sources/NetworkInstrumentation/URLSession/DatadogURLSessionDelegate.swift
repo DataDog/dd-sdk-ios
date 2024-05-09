@@ -127,12 +127,15 @@ open class DatadogURLSessionDelegate: NSObject, URLSessionDataDelegate {
                         return
                     }
 
+                    var injectedTraceContexts: [TraceContext]?
+
                     if let currentRequest = task.currentRequest {
-                        let request = feature.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
+                        let (request, traceContexts) = feature.intercept(request: currentRequest, additionalFirstPartyHosts: firstPartyHosts)
                         task.dd.override(currentRequest: request)
+                        injectedTraceContexts = traceContexts
                     }
 
-                    feature.intercept(task: task, additionalFirstPartyHosts: firstPartyHosts)
+                    feature.intercept(task: task, with: injectedTraceContexts ?? [], additionalFirstPartyHosts: firstPartyHosts)
                 }
             )
 

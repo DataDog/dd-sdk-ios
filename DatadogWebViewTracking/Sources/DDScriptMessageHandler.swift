@@ -28,11 +28,11 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
-        let hash = userContentController.hash
+        let hash = message.webView.map { String($0.hash) }
         // message.body must be called within UI thread
         let body = message.body
         queue.async {
-            self.emitter.send(body: body, slotId: String(hash))
+            self.emitter.send(body: body, slotId: hash)
         }
     }
 }
