@@ -126,7 +126,9 @@ internal class OTelSpan: OpenTelemetryApi.Span {
                 traceID: context.traceId.toDatadog(),
                 spanID: context.spanId.toDatadog(),
                 parentSpanID: parentSpanID?.toDatadog(),
-                baggageItems: .init()
+                baggageItems: .init(),
+                sampleRate: tracer.localTraceSampler.samplingRate,
+                isKept: tracer.localTraceSampler.sample()
             ),
             operationName: name,
             startTime: startTime,
