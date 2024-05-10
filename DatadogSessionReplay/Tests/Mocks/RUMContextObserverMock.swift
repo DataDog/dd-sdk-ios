@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 @testable import DatadogSessionReplay
 
@@ -20,3 +21,4 @@ class RUMContextObserverMock: RUMContextObserver {
         queue?.run { self.onNew?(rumContext) }
     }
 }
+#endif

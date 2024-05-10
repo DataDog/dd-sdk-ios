@@ -8,35 +8,33 @@ import Foundation
 
 /// An interface for processing `URLSession` task interceptions.
 public protocol DatadogURLSessionHandler {
-    /// The interceptor's first party hosts
+    /// The first party hosts configured for this handler.
     var firstPartyHosts: FirstPartyHosts { get }
 
-    /// Tells the interceptor to modify a URL request.
+    /// Modifies the provided request by injecting trace headers.
     ///
     /// - Parameters:
-    ///   - request: The request to intercept.
-    ///   - additionalFirstPartyHosts: Additional 1st-party hosts.
-    /// - Returns: The modified request.
-    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> URLRequest
+    ///   - request: The request to be modified.
+    ///   - headerTypes: The types of tracing headers to inject into the request.
+    /// - Returns: A tuple containing the modified request and the injected TraceContext. If no trace is injected (e.g., due to sampling),
+    ///            the returned request remains unmodified, and the trace context will be nil.
+    func modify(request: URLRequest, headerTypes: Set<TracingHeaderType>) -> (URLRequest, TraceContext?)
 
-    /// Returns the trace of the current execution context.
-    func traceContext() -> TraceContext?
-
-    /// Tells the interceptor that the session did start.
+    /// Notifies the handler that the interception has started.
     ///
-    /// - Parameter interception: The URLSession interception.
+    /// - Parameter interception: The URLSession task interception.
     func interceptionDidStart(interception: URLSessionTaskInterception)
 
-    /// Tells the interceptor that the session did complete.
+    /// Notifies the handler that the interception has completed.
     ///
-    /// - Parameter interception: The URLSession interception.
+    /// - Parameter interception: The URLSession task interception.
     func interceptionDidComplete(interception: URLSessionTaskInterception)
 }
 
 extension DatadogCoreProtocol {
     /// Core extension for registering `URLSession` handlers.
     ///
-    /// - Parameter urlSessionHandler: The `URLSession` handlers to register.
+    /// - Parameter urlSessionHandler: The `URLSession` handler to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
         let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init()
         feature.handlers.append(urlSessionHandler)

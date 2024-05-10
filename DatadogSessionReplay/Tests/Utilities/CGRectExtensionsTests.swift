@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 
@@ -40,3 +41,4 @@ class CGRectExtensionsTests: XCTestCase {
         XCTAssertEqual(insideCM, .init(x: 40, y: 95, width: 40, height: 50))
     }
 }
+#endif

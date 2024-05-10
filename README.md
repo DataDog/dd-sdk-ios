@@ -1,3 +1,19 @@
+<p>
+    <a href="https://swiftpackageindex.com/DataDog/dd-sdk-ios">
+        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FDataDog%2Fdd-sdk-ios%2Fbadge%3Ftype%3Dplatforms" />
+    </a>
+    <a href="https://swiftpackageindex.com/DataDog/dd-sdk-ios">
+        <img src="https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FDataDog%2Fdd-sdk-ios%2Fbadge%3Ftype%3Dswift-versions" />
+    </a>
+    <a href="https://swiftpackageindex.com/DataDog/dd-sdk-ios">
+        <img src="https://img.shields.io/github/v/release/DataDog/dd-sdk-ios?style=flat&label=Swift%20Package%20Index&color=red" />
+    </a>
+    <a href="https://cocoapods.org/pods/DatadogCore">
+        <img src="https://img.shields.io/github/v/release/DataDog/dd-sdk-ios?style=flat&label=CocoaPods" />
+    </a>
+</p>
+
+
 # Datadog SDK for iOS and tvOS
 
 > Swift and Objective-C libraries to interact with Datadog on iOS and tvOS.

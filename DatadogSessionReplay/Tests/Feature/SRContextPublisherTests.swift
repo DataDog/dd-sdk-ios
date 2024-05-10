@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 import TestUtilities
@@ -56,3 +57,4 @@ private extension PassthroughCoreMock {
         try? context.baggages["sr_records_count_by_view_id"]?.decode()
     }
 }
+#endif

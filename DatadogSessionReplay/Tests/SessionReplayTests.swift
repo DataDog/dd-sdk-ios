@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -141,3 +142,4 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNil(core.get(feature: ResourcesFeature.self))
     }
 }
+#endif

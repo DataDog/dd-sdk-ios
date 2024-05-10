@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 
@@ -117,3 +118,4 @@ class WindowTouchSnapshotProducerTests: XCTestCase {
         XCTAssertGreaterThan(snapshot1!.date, Date())
     }
 }
+#endif

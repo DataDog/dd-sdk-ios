@@ -25,7 +25,6 @@ class IntegrationTests: XCTestCase {
 
     override func tearDownWithError() throws {
         server = nil
-
         try super.tearDownWithError()
     }
 

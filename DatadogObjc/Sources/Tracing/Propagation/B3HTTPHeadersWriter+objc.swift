@@ -37,7 +37,7 @@ public class DDB3HTTPHeadersWriter: NSObject {
     }
 
     @objc
-    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(sampleRate:injectEncoding:)` instead.")
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(
         samplingRate: Float,
         injectEncoding: DDInjectEncoding = .single
@@ -46,12 +46,24 @@ public class DDB3HTTPHeadersWriter: NSObject {
     }
 
     @objc
+    @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public init(
         sampleRate: Float = 20,
         injectEncoding: DDInjectEncoding = .single
     ) {
         swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
-            sampleRate: sampleRate,
+            samplingStrategy: .custom(sampleRate: sampleRate),
+            injectEncoding: .init(injectEncoding)
+        )
+    }
+
+    @objc
+    public init(
+        samplingStrategy: DDTraceSamplingStrategy,
+        injectEncoding: DDInjectEncoding = .single
+    ) {
+        swiftB3HTTPHeadersWriter = B3HTTPHeadersWriter(
+            samplingStrategy: samplingStrategy.swiftType,
             injectEncoding: .init(injectEncoding)
         )
     }

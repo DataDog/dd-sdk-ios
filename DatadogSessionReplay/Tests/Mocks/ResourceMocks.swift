@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import TestUtilities
 @testable import DatadogSessionReplay
@@ -51,3 +52,4 @@ extension EnrichedResource.Context: RandomMockable, AnyMockable {
         )
     }
 }
+#endif

@@ -107,22 +107,19 @@ internal struct DebugManualTraceInjectionView: View {
 
         switch selectedTraceHeaderType {
         case .datadog:
-            let writer = HTTPHeadersWriter(sampleRate: sampleRate)
+            let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate))
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .w3c:
-            let writer = W3CHTTPHeadersWriter(
-                sampleRate: sampleRate,
-                tracestate: [:]
-            )
+            let writer = W3CHTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: [:])
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Single:
-            let writer = B3HTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .single)
+            let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), injectEncoding: .single)
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Multiple:
-            let writer = B3HTTPHeadersWriter(sampleRate: sampleRate, injectEncoding: .multiple)
+            let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), injectEncoding: .multiple)
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }

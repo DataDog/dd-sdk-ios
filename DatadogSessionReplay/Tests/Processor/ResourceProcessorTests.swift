@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import DatadogInternal
 import TestUtilities
@@ -95,3 +96,4 @@ class ResourceProcessorTests: XCTestCase {
         )
     }
 }
+#endif

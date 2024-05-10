@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import Foundation
 import XCTest
 @testable import DatadogSessionReplay
@@ -18,3 +19,4 @@ class CFTypeSafetyTests: XCTestCase {
         XCTAssertNil(invalid.safeCast)
     }
 }
+#endif

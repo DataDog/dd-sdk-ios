@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import DatadogInternal
 
@@ -119,3 +120,4 @@ class ResourcesWriterTests: XCTestCase {
         XCTAssertEqual(scopeMock.telemetryMock.messages[0].asError?.message, "Failed to decode store creation - invalidData")
     }
 }
+#endif

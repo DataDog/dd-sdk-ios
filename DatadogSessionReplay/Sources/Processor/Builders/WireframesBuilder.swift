@@ -20,6 +20,23 @@ public typealias WireframeID = NodeID
 /// Note: `WireframesBuilder` is used by `Processor` on a single background thread.
 @_spi(Internal)
 public class SessionReplayWireframesBuilder {
+    /// The cache of webview slot IDs in memory during snapshot.
+    private var webViewSlotIDs: Set<Int>
+
+    /// Creates a builder for builder wireframes in snapshot processing.
+    ///
+    /// The builder takes optional webview slot IDs in cache that can be updated
+    /// while traversing the node. The cache will be used to create wireframes
+    /// that are not visible be still need to be kept by the player.
+    ///
+    /// - Parameter webviewSlotIDs: The webview slot IDs in memory during snapshot.
+    init(webViewSlotIDs: Set<Int> = []) {
+        self.webViewSlotIDs = webViewSlotIDs
+    }
+}
+
+@_spi(Internal)
+extension SessionReplayWireframesBuilder {
     /// A set of fallback values to use if the actual value cannot be read or converted.
     ///
     /// The idea is to always provide value, which would make certain element visible in the player.
@@ -177,10 +194,9 @@ public class SessionReplayWireframesBuilder {
         return .placeholderWireframe(value: wireframe)
     }
 
-    public func createWebViewWireframe(
-        id: Int64,
+    public func visibleWebViewWireframe(
+        id: Int,
         frame: CGRect,
-        slotId: String,
         clip: SRContentClip? = nil,
         borderColor: CGColor? = nil,
         borderWidth: CGFloat? = nil,
@@ -192,15 +208,39 @@ public class SessionReplayWireframesBuilder {
             border: createShapeBorder(borderColor: borderColor, borderWidth: borderWidth),
             clip: clip,
             height: Int64(withNoOverflow: frame.height),
-            id: id,
+            id: Int64(id),
+            isVisible: true,
             shapeStyle: createShapeStyle(backgroundColor: backgroundColor, cornerRadius: cornerRadius, opacity: opacity),
-            slotId: slotId,
+            slotId: String(id),
             width: Int64(withNoOverflow: frame.size.width),
             x: Int64(withNoOverflow: frame.minX),
             y: Int64(withNoOverflow: frame.minY)
         )
 
+        /// Remove the slot from the builder because a wireframe
+        /// has been created.
+        webViewSlotIDs.remove(id)
         return .webviewWireframe(value: wireframe)
+    }
+
+    internal func hiddenWebViewWireframes() -> [SRWireframe] {
+        defer { webViewSlotIDs.removeAll() }
+        return webViewSlotIDs.map { id in
+            let wireframe = SRWebviewWireframe(
+                border: nil,
+                clip: nil,
+                height: 0,
+                id: Int64(id),
+                isVisible: false,
+                shapeStyle: nil,
+                slotId: String(id),
+                width: 0,
+                x: 0,
+                y: 0
+            )
+
+            return .webviewWireframe(value: wireframe)
+        }
     }
 
     // MARK: - Private

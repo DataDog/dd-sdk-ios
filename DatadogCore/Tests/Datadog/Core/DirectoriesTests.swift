@@ -43,7 +43,7 @@ class DirectoriesTests: XCTestCase {
         let coreDirectories = try fixtures.map { instancenName, site, _ in
             try CoreDirectory(
                 in: directory,
-                instancenName: instancenName,
+                instanceName: instancenName,
                 site: site
             )
         }
@@ -65,7 +65,7 @@ class DirectoriesTests: XCTestCase {
         let coreDirectories = try (0..<50).map { index in
             try CoreDirectory(
                 in: directory,
-                instancenName: .mockRandom(among: .alphanumerics, length: 31) + "\(index)",
+                instanceName: .mockRandom(among: .alphanumerics, length: 31) + "\(index)",
                 site: .mockRandom()
             )
         }
