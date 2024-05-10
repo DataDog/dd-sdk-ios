@@ -23,7 +23,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
     }
 
     struct CrashContext: Decodable {
-        /// The Application Launch time since epich
+        /// The Application launch date
         let appLaunchDate: Date?
         /// Interval between device and server time.
         let serverTimeOffset: TimeInterval
@@ -133,7 +133,7 @@ internal struct CrashReportReceiver: FeatureMessageReceiver {
         let crashDate = report.date ?? dateProvider.now
         var timeSinceAppStart: TimeInterval? = nil
         if let startDate = context.appLaunchDate {
-            timeSinceAppStart = crashDate.timeIntervalSince(startDate) * 1_000
+            timeSinceAppStart = crashDate.timeIntervalSince(startDate)
         }
 
         let adjustedCrashTimings = AdjustedCrashTimings(

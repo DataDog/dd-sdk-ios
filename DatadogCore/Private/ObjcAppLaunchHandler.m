@@ -127,6 +127,7 @@ int processStartTimeIntervalSinceReferenceDate(NSTimeInterval *timeInterval) {
 
     // The process' start time is provided relative to 1 Jan 1970
     struct timeval startTime = kip.kp_proc.p_starttime;
+    // Multiplication with 1.0 ensure we don't round to 0 with integer division
     NSTimeInterval processStartTime = startTime.tv_sec + (1.0 * startTime.tv_usec) / USEC_PER_SEC;
     // Convert to time since 1 Jan 2001 to align with CFAbsoluteTimeGetCurrent()
     *timeInterval = processStartTime - kCFAbsoluteTimeIntervalSince1970;

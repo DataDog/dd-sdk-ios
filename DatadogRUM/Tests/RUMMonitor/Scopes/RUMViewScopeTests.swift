@@ -1668,6 +1668,50 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(viewUpdate.view.error.count, 1, "Failed Resource should be counted as Error")
     }
 
+    func testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart() throws {
+        var context = self.context
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
+
+        context.launchTime = .mockWith(
+            launchTime: .mockAny(),
+            launchDate: currentTime,
+            isActivePrewarm: .mockAny()
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime.addingTimeInterval(Double(appLauchToErrorTimeDiff)), message: "view error", source: .source, stack: nil),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
+    }
+
     // MARK: - App Hangs
 
     func testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent() throws {

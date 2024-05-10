@@ -44,11 +44,11 @@ internal struct FatalErrorBuilder {
 
     /// Creates RUM error linked to given view.
     func createRUMError(with lastRUMView: RUMViewEvent) -> RUMErrorEvent {
-        var timeSinceAppStart: TimeInterval? = nil
+        var msSinceAppStart: Int64? = nil
         if let appStartTiming = timeSinceAppStart {
             //Bind timing to 0..max int64
-            let timeInterval = min(max(0, appStartTiming), Double(Int64.max))
-            timeSinceAppStart = timeInterval > 0 ? timeInterval : nil
+            let timeInterval = max(0, appStartTiming.toInt64Milliseconds)
+            msSinceAppStart = timeInterval > 0 ? timeInterval : nil
         }
 
         let event = RUMErrorEvent(
@@ -101,7 +101,7 @@ internal struct FatalErrorBuilder {
                 sourceType: context.nativeSourceOverride.map { RUMErrorSourceType(rawValue: $0) } ?? .ios,
                 stack: errorStack,
                 threads: errorThreads,
-                timeSinceAppStart: timeSinceAppStart.map { Int64($0) },
+                timeSinceAppStart: msSinceAppStart,
                 type: errorType,
                 wasTruncated: errorWasTruncated
             ),

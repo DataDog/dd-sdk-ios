@@ -559,7 +559,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
         var timeSinceAppStart: Int64? = nil
         if let startTime = context.launchTime?.launchDate {
-            timeSinceAppStart = Int64(command.time.timeIntervalSince(startTime) * 1_000)
+            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
         }
 
         var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }

@@ -1178,7 +1178,7 @@ class RUMResourceScopeTests: XCTestCase {
         let currentTime: Date = .mockDecember15th2019At10AMUTC()
 
         // Given
-        let appLauchTimeDiff = Int64.random(in: 10..<1_000_000)
+        let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
         let customContext: DatadogContext = .mockWith(launchTime: .mockWith(
             launchTime: .mockAny(),
             launchDate: currentTime,
@@ -1199,7 +1199,7 @@ class RUMResourceScopeTests: XCTestCase {
             scope.process(
                 command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
                     resourceKey: "/resource/1",
-                    time: currentTime.addingTimeInterval(Double(appLauchTimeDiff))
+                    time: currentTime.addingTimeInterval(Double(appLauchToErrorTimeDiff))
                 ),
                 context: customContext,
                 writer: writer
@@ -1208,7 +1208,7 @@ class RUMResourceScopeTests: XCTestCase {
 
         // Then
         let event = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).first)
-        XCTAssertEqual(event.error.timeSinceAppStart, appLauchTimeDiff * 1_000)
+        XCTAssertEqual(event.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
 
     // MARK: - Events sending callbacks
