@@ -141,8 +141,8 @@ internal final class DDSpan: OTSpan {
                 operationName: self.operationName,
                 startTime: self.startTime,
                 finishTime: finishTime,
-                samplingRate: sampler.samplingRate / 100.0,
-                isKept: sampler.sample(),
+                samplingRate: self.ddContext.sampleRate / 100.0,
+                isKept: self.ddContext.isKept,
                 tags: self.tags,
                 baggageItems: self.ddContext.baggageItems.all,
                 logFields: self.logFields

@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import TestUtilities
 import DatadogInternal
 
 class B3HTTPHeadersReaderTests: XCTestCase {
@@ -80,19 +81,21 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(sampleRate: 100, injectEncoding: encoding)
-        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), injectEncoding: encoding)
+        writer.write(traceContext: .mockRandom())
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNotNil(reader.read(), "When sampled, it should return trace context")
+        XCTAssertEqual(reader.sampled, true)
     }
 
     func testReadingNotSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(sampleRate: 0, injectEncoding: encoding)
-        writer.write(traceID: .mockAny(), spanID: .mockAny(), parentSpanID: .mockAny())
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding)
+        writer.write(traceContext: .mockRandom())
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
+        XCTAssertEqual(reader.sampled, false)
     }
 }

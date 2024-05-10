@@ -16,7 +16,7 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
     public func read() -> (traceID: TraceID, spanID: SpanID, parentSpanID: SpanID?)? {
         guard let traceIDLoValue = httpHeaderFields[TracingHTTPHeaders.traceIDField],
               let spanIDValue = httpHeaderFields[TracingHTTPHeaders.parentSpanIDField],
-              let spanID = SpanID(spanIDValue, representation: .hexadecimal)
+              let spanID = SpanID(spanIDValue, representation: .decimal)
         else {
             return nil
         }
@@ -34,7 +34,7 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
 
         let traceID = TraceID(
             idHi: UInt64(traceIDHiValue, radix: 16) ?? 0,
-            idLo: UInt64(traceIDLoValue, radix: 16) ?? 0
+            idLo: UInt64(traceIDLoValue, radix: 10) ?? 0
         )
 
         return (
@@ -42,5 +42,12 @@ public class HTTPHeadersReader: TracePropagationHeadersReader {
             spanID: spanID,
             parentSpanID: nil
         )
+    }
+
+    public var sampled: Bool? {
+        if let sampling = httpHeaderFields[TracingHTTPHeaders.samplingPriorityField] {
+            return sampling == "1"
+        }
+        return nil
     }
 }

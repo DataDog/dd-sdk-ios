@@ -28,7 +28,7 @@ internal protocol UIKitAppBackgroundTaskCoordinator {
 
 extension UIApplication: UIKitAppBackgroundTaskCoordinator {}
 
-internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+internal class AppBackgroundTaskCoordinator: BackgroundTaskCoordinator {
     private let app: UIKitAppBackgroundTaskCoordinator?
 
     @ReadWriteLock
@@ -58,6 +58,40 @@ internal class UIKitBackgroundTaskCoordinator: BackgroundTaskCoordinator {
             app?.endBackgroundTask(currentTaskId)
         }
         self.currentTaskId = nil
+    }
+}
+
+/// Bridge protocol that matches `UIApplication` interface for background tasks. Allows easier testablity.
+internal protocol ProcessInfoActivityCoordinator {
+    func beginActivity(options: ProcessInfo.ActivityOptions, reason: String) -> any NSObjectProtocol
+    func endActivity(_ activity: any NSObjectProtocol)
+}
+
+extension ProcessInfo: ProcessInfoActivityCoordinator {}
+
+internal class ExtensionBackgroundTaskCoordinator: BackgroundTaskCoordinator {
+    private let processInfo: ProcessInfoActivityCoordinator
+
+    @ReadWriteLock
+    private var currentActivity: NSObjectProtocol?
+
+    internal init(
+        processInfo: ProcessInfoActivityCoordinator = ProcessInfo()
+    ) {
+        self.processInfo = processInfo
+    }
+
+    internal func beginBackgroundTask() {
+        endBackgroundTask()
+        currentActivity = processInfo.beginActivity(options: [.background], reason: "Datadog SDK background upload")
+    }
+
+    internal func endBackgroundTask() {
+        guard let currentActivity = currentActivity else {
+            return
+        }
+        processInfo.endActivity(currentActivity)
+        self.currentActivity = nil
     }
 }
 #endif

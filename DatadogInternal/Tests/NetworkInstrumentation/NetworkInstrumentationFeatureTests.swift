@@ -465,101 +465,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         )
     }
 
-    // MARK: - URLRequest Interception
+    // MARK: - URLSessionTask Interception
 
-    func testGivenOpenTracing_whenInterceptingRequests_itInjectsTrace() throws {
-        // Given
-        var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = HTTPHeadersWriter(sampler: .mockKeepAll())
-        handler.firstPartyHosts = .init(["test.com": [.datadog]])
-        handler.parentSpan = TraceContext(traceID: .mock(1, 1), spanID: .mock(2))
+    func testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext() throws {
+        let traceContexts = [
+            TraceContext(traceID: .mock(1, 1), spanID: .mock(2), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom()),
+            TraceContext(traceID: .mock(2, 2), spanID: .mock(3), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom()),
+            TraceContext(traceID: .mock(3, 3), spanID: .mock(4), parentSpanID: nil, sampleRate: .mockRandom(), isKept: .mockRandom()),
+        ]
 
         // When
-        writer.write(traceID: .mock(1, 1), spanID: .mock(3))
-        request.allHTTPHeaderFields = writer.traceHeaderFields
-
-        let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
-        feature.intercept(task: task, additionalFirstPartyHosts: nil)
+        feature.intercept(task: .mockAny(), with: traceContexts, additionalFirstPartyHosts: nil)
         feature.flush()
 
         // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
-        XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
-        XCTAssertEqual(interception?.trace?.spanID, .mock(3))
-    }
-
-    func testGivenOpenTelemetry_b3single_whenInterceptingRequests_itInjectsTrace() throws {
-        // Given
-        var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .single)
-        handler.firstPartyHosts = .init(["test.com": [.b3]])
-
-        // When
-        writer.write(traceID: .mock(1, 1), spanID: .mock(3), parentSpanID: .mock(2))
-        request.allHTTPHeaderFields = writer.traceHeaderFields
-
-        let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
-        feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
-        XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
-        XCTAssertEqual(interception?.trace?.spanID, .mock(3))
-    }
-
-    func testGivenOpenTelemetry_b3multi_whenInterceptingRequests_itInjectsTrace() throws {
-        // Given
-        var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = B3HTTPHeadersWriter(sampler: .mockKeepAll(), injectEncoding: .multiple)
-        handler.firstPartyHosts = .init(["test.com": [.b3multi]])
-
-        // When
-        writer.write(traceID: .mock(1, 1), spanID: .mock(3), parentSpanID: .mock(2))
-        request.allHTTPHeaderFields = writer.traceHeaderFields
-
-        let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
-        feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
-        XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
-        XCTAssertEqual(interception?.trace?.spanID, .mock(3))
-    }
-
-    func testGivenW3C_whenInterceptingRequests_itInjectsTrace() throws {
-        // Given
-        var request: URLRequest = .mockWith(url: "https://test.com")
-        let writer = W3CHTTPHeadersWriter(
-            sampler: .mockKeepAll(),
-            tracestate: [
-                W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
-        )
-        handler.firstPartyHosts = .init(["test.com": [.tracecontext]])
-        handler.parentSpan = TraceContext(traceID: .mock(1, 1), spanID: .mock(2))
-
-        // When
-        writer.write(traceID: .mock(1, 1), spanID: .mock(3))
-        request.allHTTPHeaderFields = writer.traceHeaderFields
-
-        let task: URLSessionTask = .mockWith(request: request, response: .mockAny())
-        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
-        feature.intercept(task: task, additionalFirstPartyHosts: nil)
-        feature.flush()
-
-        // Then
-        let interception = handler.interceptions.first?.value
-        XCTAssertEqual(interception?.trace?.traceID, .mock(1, 1))
-        XCTAssertEqual(interception?.trace?.parentSpanID, .mock(2))
-        XCTAssertEqual(interception?.trace?.spanID, .mock(3))
+        let interception = try XCTUnwrap(handler.interceptions.first?.value)
+        XCTAssertEqual(interception.trace, traceContexts.first, "It should register first injected Trace Context")
     }
 
     // MARK: - First Party Hosts
@@ -699,7 +621,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             closures: [
                 { feature.handlers = [self.handler] },
                 { _ = feature.intercept(request: requests.randomElement()!, additionalFirstPartyHosts: nil) },
-                { feature.intercept(task: tasks.randomElement()!, additionalFirstPartyHosts: nil) },
+                { feature.intercept(task: tasks.randomElement()!, with: [], additionalFirstPartyHosts: nil) },
                 { feature.task(tasks.randomElement()!, didReceive: .mockRandom()) },
                 { feature.task(tasks.randomElement()!, didFinishCollecting: .mockAny()) },
                 { feature.task(tasks.randomElement()!, didCompleteWithError: nil) },

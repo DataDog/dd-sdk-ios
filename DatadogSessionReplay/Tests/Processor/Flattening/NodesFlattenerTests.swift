@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 
 @testable import DatadogSessionReplay
@@ -126,3 +127,4 @@ class NodesFlattenerTests: XCTestCase {
         DDAssertReflectionEqual(flattenedNodes, [intersectingNode])
     }
 }
+#endif

@@ -209,7 +209,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let modifiedRequest = handler.modify(request: request, headerTypes: [.datadog, .tracecontext, .b3, .b3multi])
+        let (modifiedRequest, _) = handler.modify(request: request, headerTypes: [.datadog, .tracecontext, .b3, .b3multi])
 
         XCTAssertEqual(
             modifiedRequest.allHTTPHeaderFields,
@@ -219,10 +219,10 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "X-B3-Sampled": "1",
                 "X-B3-TraceId": "000000000000000a0000000000000064",
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
-                "x-datadog-trace-id": "64",
+                "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a",
                 "tracestate": "dd=p:0000000000000064;s:1",
-                "x-datadog-parent-id": "64",
+                "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"
             ]
         )

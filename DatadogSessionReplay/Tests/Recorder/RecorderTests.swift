@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @_spi(Internal)
 @testable import DatadogSessionReplay
@@ -137,3 +138,4 @@ class RecorderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder, recorderContext)
     }
 }
+#endif

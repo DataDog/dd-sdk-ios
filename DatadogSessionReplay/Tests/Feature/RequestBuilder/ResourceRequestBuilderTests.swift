@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import DatadogInternal
 @testable import DatadogSessionReplay
@@ -156,3 +157,4 @@ class ResourceRequestBuilderTests: XCTestCase {
         XCTAssertThrowsError(try builder.request(for: [.mockWith(data: "abc".utf8Data)], with: .mockRandom()))
     }
 }
+#endif

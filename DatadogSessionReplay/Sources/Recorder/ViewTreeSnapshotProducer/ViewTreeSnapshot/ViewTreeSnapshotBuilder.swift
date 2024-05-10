@@ -7,6 +7,7 @@
 #if os(iOS)
 import Foundation
 import UIKit
+import WebKit
 
 /// Builds `ViewTreeSnapshot` for given root view.
 ///
@@ -16,6 +17,8 @@ internal struct ViewTreeSnapshotBuilder {
     let viewTreeRecorder: ViewTreeRecorder
     /// Generates stable IDs for traversed views.
     let idsGenerator: NodeIDGenerator
+    /// The webviews cache.
+    let webViewCache: NSHashTable<WKWebView> = .weakObjects()
 
     /// Builds the `ViewTreeSnapshot` for given root view.
     ///
@@ -28,7 +31,8 @@ internal struct ViewTreeSnapshotBuilder {
         let context = ViewTreeRecordingContext(
             recorder: recorderContext,
             coordinateSpace: rootView,
-            ids: idsGenerator
+            ids: idsGenerator,
+            webViewCache: webViewCache
         )
         let recording = viewTreeRecorder.record(rootView, in: context)
         let snapshot = ViewTreeSnapshot(
@@ -36,7 +40,8 @@ internal struct ViewTreeSnapshotBuilder {
             context: recorderContext,
             viewportSize: rootView.bounds.size,
             nodes: recording.nodes,
-            resources: recording.resources
+            resources: recording.resources,
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
         )
         return snapshot
     }
@@ -68,6 +73,7 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UITabBarRecorder(),
         UIPickerViewRecorder(),
         UIDatePickerRecorder(),
+        WKWebViewRecorder()
     ]
 }
 #endif

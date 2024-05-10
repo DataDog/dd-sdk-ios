@@ -5,36 +5,15 @@
 */
 
 import UIKit
-import DatadogCore
-import DatadogLogs
-import DatadogTrace
 import DatadogRUM
-import DatadogCrashReporting
-import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
 import DatadogObjc
+import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
 import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
-    private var logger: LoggerProtocol! // swiftlint:disable:this implicitly_unwrapped_optional
-
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        Datadog.initialize(
-            with: Datadog.Configuration(clientToken: "abc", env: "tests"),
-            trackingConsent: .granted
-        )
-
-        Logs.enable()
-
-        CrashReporting.enable()
-
-        self.logger = Logger.create(
-            with: Logger.Configuration(
-                remoteSampleRate: 0,
-                consoleLogFormat: .short
-            )
-        )
+        DatadogSetup.initialize()
 
         // RUM APIs must be visible:
         RUM.enable(with: .init(applicationID: "app-id"))

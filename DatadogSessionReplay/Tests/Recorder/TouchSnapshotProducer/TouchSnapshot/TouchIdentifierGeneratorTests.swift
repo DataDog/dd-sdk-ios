@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 @testable import DatadogSessionReplay
 @testable import TestUtilities
@@ -99,3 +100,4 @@ class TouchIdentifierGeneratorTests: XCTestCase {
         XCTAssertEqual(generator.touchIdentifier(for: UITouchMock(phase: .began)), 0)
     }
 }
+#endif

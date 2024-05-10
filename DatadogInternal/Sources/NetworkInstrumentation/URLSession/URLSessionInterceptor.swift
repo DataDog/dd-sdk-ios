@@ -6,6 +6,8 @@
 
 import Foundation
 
+// TODO: RUM-3470 Add tests to `URLSessionInterceptor`
+
 /// The `URLSession` Interceptor provides methods for injecting distributed-traces
 /// headers into a `URLRequest`and to instrument a `URLURLSessionTask` lifcycle,
 /// from its creation to completion.
@@ -27,6 +29,13 @@ public struct URLSessionInterceptor {
         return URLSessionInterceptor(feature: feature)
     }
 
+    /// Maps the trace ID to the full trace context generated for that trace.
+    ///
+    /// This is to bridge the gap between what is encoded into HTTP headers and what is later needed for processing 
+    /// the interception (unlike request headers, the `TraceContext` holds the original information on trace sampling).
+    @ReadWriteLock
+    private var contextsByTraceID: [TraceID: [TraceContext]] = [:]
+
     /// Tells the interceptor to modify a URL request.
     ///
     /// - Parameters:
@@ -34,7 +43,11 @@ public struct URLSessionInterceptor {
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     /// - Returns: The modified request.
     public func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts? = nil) -> URLRequest {
-        feature.intercept(request: request, additionalFirstPartyHosts: additionalFirstPartyHosts)
+        let (request, traceContexts) = feature.intercept(request: request, additionalFirstPartyHosts: additionalFirstPartyHosts)
+        if let traceID = extractTraceID(from: request) {
+            contextsByTraceID[traceID] = traceContexts
+        }
+        return request
     }
 
     /// Tells the interceptors that a task was created.
@@ -43,7 +56,12 @@ public struct URLSessionInterceptor {
     ///   - task: The created task.
     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception.
     public func intercept(task: URLSessionTask, additionalFirstPartyHosts: FirstPartyHosts? = nil) {
-        feature.intercept(task: task, additionalFirstPartyHosts: additionalFirstPartyHosts)
+        var injectedTraceContexts: [TraceContext] = []
+        if let request = task.currentRequest, let traceID = extractTraceID(from: request) {
+            injectedTraceContexts = contextsByTraceID[traceID] ?? []
+        }
+
+        feature.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: additionalFirstPartyHosts)
     }
 
     /// Tells the interceptor that metrics were collected for the given task.
@@ -71,5 +89,28 @@ public struct URLSessionInterceptor {
     ///   - error: If an error occurred, an error object indicating how the transfer failed, otherwise NULL.
     public func task(_ task: URLSessionTask, didCompleteWithError error: Error?) {
         feature.task(task, didCompleteWithError: error)
+
+        if let request = task.currentRequest, let traceID = extractTraceID(from: request) {
+            contextsByTraceID[traceID] = nil
+        }
+    }
+
+    // MARK: - Private
+
+    private func extractTraceID(from request: URLRequest) -> TraceID? {
+        guard let headers = request.allHTTPHeaderFields else {
+            return nil
+        }
+
+        // Try all supported header types until first one is matched:
+        if let dd = HTTPHeadersReader(httpHeaderFields: headers).read() {
+            return dd.traceID
+        } else if let b3 = B3HTTPHeadersReader(httpHeaderFields: headers).read() {
+            return b3.traceID
+        } else if let w3c = W3CHTTPHeadersReader(httpHeaderFields: headers).read() {
+            return w3c.traceID
+        }
+
+        return nil
     }
 }

@@ -27,6 +27,8 @@ internal struct ViewTreeSnapshot {
     let nodes: [Node]
     /// An array of resource references recorded for this snapshot - sequenced in DFS order.
     let resources: [Resource]
+    /// A set of webview slot IDs recorded for this and past snapshots.
+    let webViewSlotIDs: Set<Int>
 }
 
 /// An individual node in `ViewTreeSnapshot`. A `SessionReplayNode` describes a single view - similar: an array of nodes describes

@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import DatadogInternal
 
@@ -255,3 +256,4 @@ class SegmentRequestBuilderTests: XCTestCase {
         )
     }
 }
+#endif

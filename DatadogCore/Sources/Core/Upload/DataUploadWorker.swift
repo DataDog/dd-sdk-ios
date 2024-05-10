@@ -66,8 +66,7 @@ internal class DataUploadWorker: DataUploadWorkerType {
         self.maxBatchesPerUpload = maxBatchesPerUpload
         self.featureName = featureName
         self.telemetry = telemetry
-
-        self.readWork = DispatchWorkItem { [weak self] in
+        let readWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else {
                 return
             }
@@ -87,7 +86,10 @@ internal class DataUploadWorker: DataUploadWorkerType {
                 self.scheduleNextCycle()
             }
         }
-        scheduleNextCycle()
+        self.readWork = readWorkItem
+
+        // Start sending batches immediately after initialization:
+        queue.async(execute: readWorkItem)
     }
 
     private func scheduleNextCycle() {

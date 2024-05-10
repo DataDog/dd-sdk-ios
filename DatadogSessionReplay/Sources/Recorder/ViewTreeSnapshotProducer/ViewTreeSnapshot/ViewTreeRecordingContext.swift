@@ -8,6 +8,7 @@
 import Foundation
 import SafariServices
 import SwiftUI
+import WebKit
 
 /// The context of recording subtree hierarchy.
 ///
@@ -22,6 +23,8 @@ public struct SessionReplayViewTreeRecordingContext {
     public let ids: NodeIDGenerator
     /// Variable view controller related context
     var viewControllerContext: ViewControllerContext = .init()
+    /// Webviews caching.
+    let webViewCache: NSHashTable<WKWebView>
 }
 
 // This alias enables us to have a more unique name exposed through public-internal access level

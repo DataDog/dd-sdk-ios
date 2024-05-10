@@ -4,6 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+#if os(iOS)
 import XCTest
 import SafariServices
 @_spi(Internal)
@@ -58,3 +59,4 @@ class ViewTreeRecordingContextTests: XCTestCase {
         XCTAssertNil(viewControllerContext.name)
     }
 }
+#endif

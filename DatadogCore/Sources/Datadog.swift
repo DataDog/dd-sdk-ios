@@ -372,8 +372,12 @@ public enum Datadog {
         consolePrint("⚠️ Catalyst is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
+        #if os(macOS)
+        consolePrint("⚠️ macOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        #endif
+
         #if swift(>=5.9) && os(visionOS)
-        consolePrint("⚠️ VisionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
+        consolePrint("⚠️ visionOS is not officially supported by Datadog SDK: some features may NOT be functional!", .warn)
         #endif
 
         do {
@@ -426,12 +430,13 @@ public enum Datadog {
             uploadFrequency: debug ? .frequent : configuration.uploadFrequency,
             bundleType: bundleType
         )
+        let isRunFromExtension = bundleType == .iOSAppExtension
 
         // Set default `DatadogCore`:
         let core = DatadogCore(
             directory: try CoreDirectory(
                 in: configuration.systemDirectory(),
-                instancenName: instanceName,
+                instanceName: instanceName,
                 site: configuration.site
             ),
             dateProvider: configuration.dateProvider,
@@ -462,7 +467,8 @@ public enum Datadog {
             ),
             applicationVersion: applicationVersion,
             maxBatchesPerUpload: configuration.batchProcessingLevel.maxBatchesPerUpload,
-            backgroundTasksEnabled: configuration.backgroundTasksEnabled
+            backgroundTasksEnabled: configuration.backgroundTasksEnabled,
+            isRunFromExtension: isRunFromExtension
         )
 
         core.telemetry.configuration(

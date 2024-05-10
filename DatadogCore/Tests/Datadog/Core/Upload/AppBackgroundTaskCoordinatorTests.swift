@@ -8,14 +8,14 @@ import XCTest
 import DatadogInternal
 @testable import DatadogCore
 
-class UIKitBackgroundTaskCoordinatorTests: XCTestCase {
+class AppBackgroundTaskCoordinatorTests: XCTestCase {
     var appSpy: AppSpy?
-    var coordinator: UIKitBackgroundTaskCoordinator?
+    var coordinator: AppBackgroundTaskCoordinator?
 
     override func setUp() {
         super.setUp()
         appSpy = AppSpy()
-        coordinator = UIKitBackgroundTaskCoordinator(
+        coordinator = AppBackgroundTaskCoordinator(
             app: appSpy
         )
     }
