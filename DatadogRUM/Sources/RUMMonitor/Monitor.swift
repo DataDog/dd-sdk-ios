@@ -132,22 +132,30 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         // process command in event context
-        featureScope.eventWriteContext { context, writer in
-            let transformedCommand = self.transform(command: command)
+        featureScope.eventWriteContext { [weak self] context, writer in
+            guard let self = self else {
+                return
+            }
 
-            _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
+            let transformedCommand = transform(command: command)
 
-            if let debugging = self.debugging {
-                debugging.debug(applicationScope: self.scopes)
+            _ = scopes.process(command: transformedCommand, context: context, writer: writer)
+
+            if let debugging = debugging {
+                debugging.debug(applicationScope: scopes)
             }
         }
 
         // update the core context with rum context
         featureScope.set(
-            baggage: { () -> RUMCoreContext? in
-                let context = self.scopes.activeSession?.viewScopes.last?.context ??
-                                self.scopes.activeSession?.context ??
-                                self.scopes.context
+            baggage: { [weak self] () -> RUMCoreContext? in
+                guard let self = self else {
+                    return nil
+                }
+
+                let context = scopes.activeSession?.viewScopes.last?.context ??
+                                scopes.activeSession?.context ??
+                                scopes.context
 
                 guard context.sessionID != .nullUUID else {
                     // if Session was sampled or not yet started
@@ -207,8 +215,8 @@ extension Monitor: RUMMonitorProtocol {
     func currentSessionID(completion: @escaping (String?) -> Void) {
         // Synchronise it through the context thread to make sure we return the correct
         // sessionID after all other events have been processed (also on the context thread):
-        featureScope.context { _ in
-            guard let sessionId = self.scopes.activeSession?.sessionUUID else {
+        featureScope.context { [weak self] _ in
+            guard let sessionId = self?.scopes.activeSession?.sessionUUID else {
                 completion(nil)
                 return
             }
