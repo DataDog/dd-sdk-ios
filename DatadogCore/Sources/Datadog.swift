@@ -231,7 +231,14 @@ public enum Datadog {
     /// Verbosity level of Datadog SDK. Can be used for debugging purposes.
     /// If set, internal events occuring inside SDK will be printed to debugger console if their level is equal or greater than `verbosityLevel`.
     /// Default is `nil`.
-    public static var verbosityLevel: CoreLoggerLevel? = nil
+    public static var verbosityLevel: CoreLoggerLevel? {
+        get { _verbosityLevel.wrappedValue }
+        set { _verbosityLevel.wrappedValue = newValue }
+    }
+
+    /// The backing storage for `verbosityLevel`, ensuring efficient synchronized
+    /// read/write access to the shared value.
+    private static let _verbosityLevel = ReadWriteLock<CoreLoggerLevel?>(wrappedValue: nil)
 
     /// Returns `true` if the Datadog SDK is already initialized, `false` otherwise.
     ///
