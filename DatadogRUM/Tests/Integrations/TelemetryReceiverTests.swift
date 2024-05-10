@@ -302,7 +302,7 @@ class TelemetryReceiverTests: XCTestCase {
         let trackErrors: Bool? = .mockRandom()
         let trackFlutterPerformance: Bool? = .mockRandom()
         let trackFrustrations: Bool? = .mockRandom()
-        let trackInteractions: Bool? = .mockRandom()
+        let trackUserInteractions: Bool? = .mockRandom()
         let trackLongTask: Bool? = .mockRandom()
         let trackNativeLongTasks: Bool? = .mockRandom()
         let trackNativeViews: Bool? = .mockRandom()
@@ -330,11 +330,11 @@ class TelemetryReceiverTests: XCTestCase {
             trackErrors: trackErrors,
             trackFlutterPerformance: trackFlutterPerformance,
             trackFrustrations: trackFrustrations,
-            trackInteractions: trackInteractions,
             trackLongTask: trackLongTask,
             trackNativeLongTasks: trackNativeLongTasks,
             trackNativeViews: trackNativeViews,
             trackNetworkRequests: trackNetworkRequests,
+            trackUserInteractions: trackUserInteractions,
             trackViewsManually: trackViewsManually,
             unityVersion: unityVersion,
             useFirstPartyHosts: useFirstPartyHosts,
@@ -363,7 +363,8 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.telemetry.configuration.trackErrors, trackErrors)
         XCTAssertEqual(event?.telemetry.configuration.trackFlutterPerformance, trackFlutterPerformance)
         XCTAssertEqual(event?.telemetry.configuration.trackFrustrations, trackFrustrations)
-        XCTAssertEqual(event?.telemetry.configuration.trackInteractions, trackInteractions)
+        XCTAssertEqual(event?.telemetry.configuration.trackInteractions, trackUserInteractions)
+        XCTAssertEqual(event?.telemetry.configuration.trackUserInteractions, trackUserInteractions)
         XCTAssertEqual(event?.telemetry.configuration.trackLongTask, trackLongTask)
         XCTAssertEqual(event?.telemetry.configuration.trackNativeLongTasks, trackNativeLongTasks)
         XCTAssertEqual(event?.telemetry.configuration.trackNativeViews, trackNativeViews)

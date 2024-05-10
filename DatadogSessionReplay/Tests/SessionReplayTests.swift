@@ -67,6 +67,29 @@ class SessionReplayTests: XCTestCase {
         XCTAssertNil((r.requestBuilder as? ResourceRequestBuilder)?.customUploadURL)
     }
 
+    func testWhenEnabled_itSendsConfigurationTelemetry() throws {
+        // Given
+        let sampleRate: Int64 = .mockRandom(min: 0, max: 100)
+        let privacyLevel: SessionReplayPrivacyLevel = .mockRandom()
+        let messageReceiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: messageReceiver)
+
+        // When
+        SessionReplay.enable(
+            with: SessionReplay.Configuration(
+                replaySampleRate: Float(sampleRate),
+                defaultPrivacyLevel: privacyLevel
+            ),
+            in: core
+        )
+
+        // Then
+        let message = messageReceiver.messages.firstTelemetry()
+        let configuration = message?.asConfiguration
+        XCTAssertEqual(configuration?.sessionReplaySampleRate, sampleRate)
+        XCTAssertEqual(configuration?.defaultPrivacyLevel, privacyLevel.rawValue)
+    }
+
     func testWhenEnabledWithReplaySampleRate() throws {
         let random: Float = .mockRandom(min: 0, max: 100)
         config.replaySampleRate = random
