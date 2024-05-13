@@ -27,7 +27,7 @@ RUM_APPLICATION_ID=
 To sign the runner application, the certificate and provision profile defined in [Synthetics.xcconfig](xcconfigs/Synthetics.xcconfig) and in [exportOptions.plist](exportOptions.plist) needs to be installed on the build machine. These files are sensitive and must be securely stored. Make sure to update both files when updating the certificate and provisioning profile, otherwise signing fails.
 
 > [!NOTE]
-> Datadog does not have the tooling in place for you to download the Certificate & Provisioning Profile using the [App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi) instead of stored CI secrets.
+> Certificate & Provisioning Profile are also available through the [App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi). But we don't have the tooling in place.
 
 ### Upload
 
