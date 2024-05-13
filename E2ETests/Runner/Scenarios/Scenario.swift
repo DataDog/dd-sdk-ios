@@ -27,6 +27,8 @@ protocol Scenario {
 
 /// A Synthetic scenario can be initialized by defining a Synthetic Test Process Argument
 /// named `E2E_SCENARIO`.
+///
+/// Note: The raw value of enum case must match the test name defined in Synthetics.
 enum SyntheticScenario: String, CaseIterable {
     /// The `Session Replay WebView` Synthetics Test. id: `ks5-ba9-ck5`
     case sessionReplayWebView
