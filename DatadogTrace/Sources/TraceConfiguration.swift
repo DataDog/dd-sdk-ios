@@ -104,13 +104,23 @@ extension Trace {
                 /// - Parameters:
                 ///   - hosts: The set of hosts to inject tracing headers. Note: Hosts must not include the "http(s)://" prefix.
                 ///   - sampleRate: The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-                case trace(hosts: Set<String>, sampleRate: Float = 20)
+                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+                case trace(
+                    hosts: Set<String>,
+                    sampleRate: Float = 20,
+                    traceControlInjection: TraceContextInjection = .all
+                )
 
                 /// Trace given hosts with using custom tracing headers.
                 ///
                 /// - `hostsWithHeaders` - Dictionary of hosts and tracing header types to use. Note: Hosts must not include "http(s)://" prefix.
                 /// - `sampleRate` - The sampling rate for tracing. Must be a value between `0.0` and `100.0`. Default: `20`.
-                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
+                ///   - traceControlInjection: The strategy for injecting trace context into requests. Default: `.all`.
+                case traceWithHeaders(
+                    hostsWithHeaders: [String: Set<TracingHeaderType>],
+                    sampleRate: Float = 20,
+                    traceControlInjection: TraceContextInjection = .all
+                )
             }
 
             /// Configuration for automatic network requests tracing.

@@ -25,14 +25,19 @@ public class DDHTTPHeadersWriter: NSObject {
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public init(sampleRate: Float = 20) {
         swiftHTTPHeadersWriter = HTTPHeadersWriter(
-            samplingStrategy: .custom(sampleRate: sampleRate)
+            samplingStrategy: .custom(sampleRate: sampleRate),
+            traceContextInjection: .all
         )
     }
 
     @objc
-    public init(samplingStrategy: DDTraceSamplingStrategy) {
+    public init(
+        samplingStrategy: DDTraceSamplingStrategy,
+        traceContextInjection: DDTraceContextInjection
+    ) {
         swiftHTTPHeadersWriter = HTTPHeadersWriter(
-            samplingStrategy: samplingStrategy.swiftType
+            samplingStrategy: samplingStrategy.swiftType,
+            traceContextInjection: traceContextInjection.swiftType
         )
     }
 }

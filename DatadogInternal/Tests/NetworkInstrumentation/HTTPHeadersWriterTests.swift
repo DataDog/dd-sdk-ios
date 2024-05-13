@@ -10,7 +10,7 @@ import DatadogInternal
 
 class HTTPHeadersWriterTests: XCTestCase {
     func testWritingSampledTraceContext_withAutoSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
@@ -28,7 +28,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -39,14 +39,14 @@ class HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "0")
+        XCTAssertNil(headers[TracingHTTPHeaders.samplingPriorityField])
         XCTAssertNil(headers[TracingHTTPHeaders.traceIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.parentSpanIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.tagsField])
     }
 
     func testWritingSampledTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100))
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), traceContextInjection: .all)
 
         writer.write(
             traceContext: .mockWith(
@@ -64,7 +64,7 @@ class HTTPHeadersWriterTests: XCTestCase {
     }
 
     func testWritingDroppedTraceContext_withCustomSamplingStrategy() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0))
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), traceContextInjection: .sampled)
 
         writer.write(
             traceContext: .mockWith(
@@ -75,7 +75,7 @@ class HTTPHeadersWriterTests: XCTestCase {
         )
 
         let headers = writer.traceHeaderFields
-        XCTAssertEqual(headers[TracingHTTPHeaders.samplingPriorityField], "0")
+        XCTAssertNil(headers[TracingHTTPHeaders.samplingPriorityField])
         XCTAssertNil(headers[TracingHTTPHeaders.traceIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.parentSpanIDField])
         XCTAssertNil(headers[TracingHTTPHeaders.tagsField])

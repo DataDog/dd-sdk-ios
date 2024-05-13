@@ -35,7 +35,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -66,7 +67,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -94,7 +96,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -125,7 +128,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -153,7 +157,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .sampled
             )
         )
 
@@ -166,7 +171,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.originField), "rum")
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -178,7 +183,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -201,7 +207,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -227,7 +234,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockRejectAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -250,7 +258,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
 
@@ -332,7 +341,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: Sampler(samplingRate: Float(traceSamplingRate)),
                 firstPartyHosts: .init(),
                 traceIDGenerator: DefaultTraceIDGenerator(),
-                spanIDGenerator: DefaultSpanIDGenerator()
+                spanIDGenerator: DefaultSpanIDGenerator(),
+                traceContextInjection: .all
             )
         )
 
@@ -515,7 +525,8 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 sampler: .mockKeepAll(),
                 firstPartyHosts: .init(),
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
-                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0)
+                spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
+                traceContextInjection: .all
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")

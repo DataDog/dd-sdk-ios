@@ -20,9 +20,11 @@
 
 - (void)testInitWithSamplingRate {
     [[DDB3HTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy headBased]
-                                             injectEncoding:DDInjectEncodingSingle];
+                                             injectEncoding:DDInjectEncodingSingle
+                                      traceContextInjection:DDTraceContextInjectionAll];
     [[DDB3HTTPHeadersWriter alloc] initWithSamplingStrategy:[DDTraceSamplingStrategy customWithSampleRate:50]
-                                             injectEncoding:DDInjectEncodingMultiple];
+                                             injectEncoding:DDInjectEncodingMultiple
+                                      traceContextInjection:DDTraceContextInjectionAll];
 }
 
 #pragma clang diagnostic pop

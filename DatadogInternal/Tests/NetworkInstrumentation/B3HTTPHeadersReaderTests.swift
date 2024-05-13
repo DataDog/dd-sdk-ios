@@ -81,7 +81,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), injectEncoding: encoding)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), injectEncoding: encoding, traceContextInjection: .all)
         writer.write(traceContext: .mockRandom())
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -91,7 +91,7 @@ class B3HTTPHeadersReaderTests: XCTestCase {
 
     func testReadingNotSampledTraceContext() {
         let encoding: B3HTTPHeadersWriter.InjectEncoding = [.multiple, .single].randomElement()!
-        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding)
+        let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), injectEncoding: encoding, traceContextInjection: .all)
         writer.write(traceContext: .mockRandom())
 
         let reader = B3HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)

@@ -14,7 +14,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -35,7 +36,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -57,7 +59,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .custom(sampleRate: 100),
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -78,7 +81,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .custom(sampleRate: 0),
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
