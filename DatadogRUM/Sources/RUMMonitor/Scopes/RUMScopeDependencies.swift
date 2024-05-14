@@ -44,7 +44,7 @@ internal struct RUMScopeDependencies {
     let onSessionStart: RUM.SessionListener?
     let viewCache: ViewCache
     /// The RUM context necessary for tracking fatal errors like Crashes or fatal App Hangs.
-    let fatalErrorContext: FatalErrorContextNotifier
+    let fatalErrorContext: FatalErrorContextNotifying
     /// Telemetry endpoint.
     let telemetry: Telemetry
     let sessionType: RUMSessionType
@@ -63,7 +63,8 @@ internal struct RUMScopeDependencies {
         syntheticsTest: RUMSyntheticsTest?,
         vitalsReaders: VitalsReaders?,
         onSessionStart: RUM.SessionListener?,
-        viewCache: ViewCache
+        viewCache: ViewCache,
+        fatalErrorContext: FatalErrorContextNotifying
     ) {
         self.featureScope = featureScope
         self.rumApplicationID = rumApplicationID
@@ -79,7 +80,7 @@ internal struct RUMScopeDependencies {
         self.vitalsReaders = vitalsReaders
         self.onSessionStart = onSessionStart
         self.viewCache = viewCache
-        self.fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        self.fatalErrorContext = fatalErrorContext
         self.telemetry = featureScope.telemetry
 
         if ciTest != nil {

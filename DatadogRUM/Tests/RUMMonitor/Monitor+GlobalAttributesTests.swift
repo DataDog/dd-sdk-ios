@@ -483,6 +483,8 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
     }
+
+    // MARK: - Updating Fatal Error Context
 }
 
 // MARK: - Helpers

@@ -11,7 +11,7 @@ internal final class FatalAppHangsHandler {
     /// RUM feature scope.
     private let featureScope: FeatureScope
     /// RUM context for fatal App Hangs monitoring.
-    private let fatalErrorContext: FatalErrorContextNotifier
+    private let fatalErrorContext: FatalErrorContextNotifying
     /// An ID of the current process.
     private let processID: UUID
     /// Device date provider.
@@ -19,7 +19,7 @@ internal final class FatalAppHangsHandler {
 
     init(
         featureScope: FeatureScope,
-        fatalErrorContext: FatalErrorContextNotifier,
+        fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
         dateProvider: DateProvider
     ) {

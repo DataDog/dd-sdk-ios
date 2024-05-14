@@ -71,7 +71,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             onSessionStart: configuration.onSessionStart,
-            viewCache: ViewCache()
+            viewCache: ViewCache(),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope)
         )
 
         self.monitor = Monitor(
