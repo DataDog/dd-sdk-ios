@@ -250,7 +250,6 @@ internal struct RUMUpdateViewAttributesCommand: RUMCommand {
     var attributes: [AttributeKey: AttributeValue] = [:]
 }
 
-
 // MARK: - RUM Resource related commands
 
 internal protocol RUMResourceCommand: RUMCommand {
