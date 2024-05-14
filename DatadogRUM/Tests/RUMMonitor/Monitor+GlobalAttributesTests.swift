@@ -62,7 +62,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastView.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.attribute(forKey: "attribute"), "value")
     }
 
     func testAddingGlobalAttributesAfterSDKInit_thenRemovingAttribute() throws {
@@ -162,7 +162,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         // Then
         let lastView = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(lastView.view.name, "View")
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.attribute(forKey: "attribute"), "value")
     }
 
     func testAddingGlobalAttributesAfterViewIsStarted_thenRemovingAttribute() throws {
@@ -255,7 +255,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView1.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(lastView1.attribute(forKey: "attribute3"), "value3")
 
-        XCTAssertEqual(lastView2.attribute(forKey: "attribute1"), "value1")
+        XCTAssertNil(lastView2.attribute(forKey: "attribute1"))
         XCTAssertEqual(lastView2.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(lastView2.attribute(forKey: "attribute3"), "value3")
 
@@ -394,7 +394,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.view.error.count, 1)
         XCTAssertEqual(lastView.view.action.count, 1)
         XCTAssertEqual(lastView.view.resource.count, 1)
-        XCTAssertNil(lastView.attribute(forKey: "attribute"))
+        XCTAssertEqual(lastView.attribute(forKey: "attribute"), "value")
         XCTAssertEqual(errorEvent.context?.contextInfo["attribute"] as? String, "value")
         XCTAssertEqual(actionEvent.context?.contextInfo["attribute"] as? String, "value")
         XCTAssertEqual(resourceEvent.context?.contextInfo["attribute"] as? String, "value")
@@ -424,7 +424,7 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(lastView.view.action.count, 1)
         XCTAssertEqual(lastView.view.resource.count, 1)
         XCTAssertNil(lastView.attribute(forKey: "attribute1"))
-        XCTAssertNil(lastView.attribute(forKey: "attribute2"))
+        XCTAssertEqual(lastView.attribute(forKey: "attribute2"), "value2")
         XCTAssertNil(errorEvent.context?.contextInfo["attribute1"])
         XCTAssertEqual(errorEvent.context?.contextInfo["attribute2"] as? String, "value2")
         XCTAssertNil(actionEvent.context?.contextInfo["attribute1"])
@@ -484,7 +484,91 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
     }
 
-    // MARK: - Updating Fatal Error Context
+    // MARK: - Updating Fatal Error Context With Global Attributes
+
+    func testGivenSDKInitialized_whenGlobalAttributeIsAdded_thenFatalErrorContextIsUpdatedWithNewView() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttribute(forKey: "attribute", value: "value")
+
+        // Then
+        let fatalErrorContextView = try XCTUnwrap(fatalErrorContext.view)
+        XCTAssertEqual(fatalErrorContextView.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
+        XCTAssertEqual(fatalErrorContextView.attribute(forKey: "attribute"), "value")
+    }
+
+    func testGivenSDKInitialized_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewView() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttribute(forKey: "attribute1", value: "value1")
+        monitor.addAttribute(forKey: "attribute2", value: "value2")
+        monitor.removeAttribute(forKey: "attribute1")
+
+        // Then
+        let fatalErrorContextView = try XCTUnwrap(fatalErrorContext.view)
+        XCTAssertEqual(fatalErrorContextView.view.name, RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName)
+        XCTAssertNil(fatalErrorContextView.attribute(forKey: "attribute1"))
+        XCTAssertEqual(fatalErrorContextView.attribute(forKey: "attribute2"), "value2")
+    }
+
+    func testGivenSDKInitializedAndViewStarted_whenGlobalAttributeIsAdded_thenFatalErrorContextIsUpdatedWithNewView() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "View")
+
+        // When
+        monitor.addAttribute(forKey: "attribute", value: "value")
+
+        // Then
+        let fatalErrorContextView = try XCTUnwrap(fatalErrorContext.view)
+        XCTAssertEqual(fatalErrorContextView.view.name, "View")
+        XCTAssertEqual(fatalErrorContextView.attribute(forKey: "attribute"), "value")
+    }
+
+    func testGivenSDKInitializedAndViewStarted_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewView() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+        monitor.startView(key: "View")
+
+        // When
+        monitor.addAttribute(forKey: "attribute1", value: "value1")
+        monitor.addAttribute(forKey: "attribute2", value: "value2")
+        monitor.removeAttribute(forKey: "attribute1")
+
+        // Then
+        let fatalErrorContextView = try XCTUnwrap(fatalErrorContext.view)
+        XCTAssertEqual(fatalErrorContextView.view.name, "View")
+        XCTAssertNil(fatalErrorContextView.attribute(forKey: "attribute1"))
+        XCTAssertEqual(fatalErrorContextView.attribute(forKey: "attribute2"), "value2")
+    }
 }
 
 // MARK: - Helpers

@@ -196,6 +196,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         case let command as RUMAddViewTimingCommand where isActiveView:
             customTimings[command.timingName] = command.time.timeIntervalSince(viewStartTime).toInt64Nanoseconds
             needsViewUpdate = true
+        case _ as RUMUpdateViewAttributesCommand where isActiveView:
+            needsViewUpdate = true
 
         // Resource commands
         case let command as RUMStartResourceCommand where isActiveView:
@@ -437,6 +439,8 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         // RUMM-3133 Don't override View attributes with commands that are not view related.
         if command is RUMViewScopePropagatableAttributes {
             attributes.merge(rumCommandAttributes: command.attributes)
+        } else if command is RUMUpdateViewAttributesCommand {
+            attributes = command.attributes
         }
 
         let isCrash = (command as? RUMErrorCommand).map { $0.isCrash ?? false } ?? false
@@ -543,7 +547,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         )
 
         if let event = dependencies.eventBuilder.build(from: viewEvent) {
-            writer.write(value: event, metadata: event.metadata())
+            if !(command is RUMUpdateViewAttributesCommand) {
+                writer.write(value: event, metadata: event.metadata())
+            }
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event

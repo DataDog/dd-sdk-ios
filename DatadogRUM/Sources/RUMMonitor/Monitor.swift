@@ -204,10 +204,16 @@ extension Monitor: RUMMonitorProtocol {
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         attributes[key] = value
+        process(
+            command: RUMUpdateViewAttributesCommand(time: dateProvider.now)
+        )
     }
 
     func removeAttribute(forKey key: AttributeKey) {
         attributes[key] = nil
+        process(
+            command: RUMUpdateViewAttributesCommand(time: dateProvider.now)
+        )
     }
 
     // MARK: - session
