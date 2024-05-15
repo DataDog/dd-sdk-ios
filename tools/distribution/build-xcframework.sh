@@ -90,6 +90,7 @@ rm -rf $OUTPUT
 carthage bootstrap --platform $PLATFORM --use-xcframeworks
 mkdir -p "$XCFRAMEWORK_OUTPUT"
 cp -r "Carthage/Build/CrashReporter.xcframework" "$XCFRAMEWORK_OUTPUT"
+cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORK_OUTPUT"
 
 bundle DatadogInternal
 bundle DatadogCore

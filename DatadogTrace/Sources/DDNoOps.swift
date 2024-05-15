@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import OpenTelemetryApi
 
 internal struct DDNoopGlobals {
     static let tracer = DDNoopTracer()
@@ -13,7 +14,7 @@ internal struct DDNoopGlobals {
     static let context = DDNoopSpanContext()
 }
 
-internal struct DDNoopTracer: OTTracer {
+internal class DDNoopTracer: OTTracer, OpenTelemetryApi.Tracer {
     var activeSpan: OTSpan? = nil
 
     private func warn() {
@@ -43,6 +44,13 @@ internal struct DDNoopTracer: OTTracer {
     func startRootSpan(operationName: String, tags: [String: Encodable]?, startTime: Date?) -> OTSpan {
         warn()
         return DDNoopGlobals.span
+    }
+
+    // MARK: - Open Telemetry
+
+    func spanBuilder(spanName: String) -> OpenTelemetryApi.SpanBuilder {
+        warn()
+        return NOPOTelSpanBuilder()
     }
 }
 
