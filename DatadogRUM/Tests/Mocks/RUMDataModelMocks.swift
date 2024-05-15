@@ -400,6 +400,7 @@ extension RUMErrorEvent: RandomMockable {
             error: .init(
                 binaryImages: nil,
                 category: nil,
+                csp: nil,
                 handling: nil,
                 handlingStack: nil,
                 id: .mockRandom(),
@@ -512,6 +513,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     batchProcessingLevel: .mockRandom(),
                     batchSize: .mockAny(),
                     batchUploadFrequency: .mockRandom(),
+                    compressIntakeRequests: nil,
                     defaultPrivacyLevel: .mockRandom(),
                     forwardConsoleLogs: nil,
                     forwardErrorsToLogs: nil,
@@ -544,6 +546,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     trackResources: .mockRandom(),
                     trackSessionAcrossSubdomains: nil,
                     trackViewsManually: nil,
+                    trackingConsent: nil,
                     useAllowedTracingOrigins: .mockRandom(),
                     useAllowedTracingUrls: nil,
                     useBeforeSend: nil,

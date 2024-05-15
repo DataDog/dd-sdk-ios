@@ -239,6 +239,8 @@ class TelemetryTest: Telemetry {
             startSessionReplayRecordingManually: configuration.startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: configuration.telemetryConfigurationSampleRate,
             telemetrySampleRate: configuration.telemetrySampleRate,
+            tracerAPI: configuration.tracerAPI,
+            tracerAPIVersion: configuration.tracerAPIVersion,
             traceSampleRate: configuration.traceSampleRate,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackCrossPlatformLongTasks: configuration.trackCrossPlatformLongTasks,
