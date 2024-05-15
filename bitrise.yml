@@ -41,6 +41,7 @@ workflows:
     after_run:
     - _make_dependencies
     - run_conditioned_workflows
+    - run_e2e_s8s_upload
     - _deploy_artifacts
     - _notify_failure_on_slack
 
@@ -143,7 +144,6 @@ workflows:
       - run_linter
       - run_unit_tests
       - run_integration_tests
-      - run_e2e_s8s_upload
       - run_smoke_tests
       - run_tools_tests
 

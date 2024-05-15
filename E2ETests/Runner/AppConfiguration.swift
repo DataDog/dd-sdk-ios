@@ -19,13 +19,17 @@ import DatadogCore
 ///             <string>$(CLIENT_TOKEN)</string>
 ///             <key>ApplicationID</key>
 ///             <string>$(RUM_APPLICATION_ID)</string>
+///             <key>Environment</key>
+///             <string>$(DD_ENV)</string>
+///             <key>Site</key>
+///             <string>$(DD_SITE)</string>
 ///         </dict>
 ///     </dict>
 struct TestInfo: Decodable {
     let clientToken: String
     let applicationID: String
-    let site: DatadogSite?
-    let env: String?
+    let site: DatadogSite
+    let env: String
 
     enum CodingKeys: String, CodingKey {
         case clientToken = "ClientToken"
@@ -48,8 +52,8 @@ extension TestInfo {
         .init(
             clientToken: "",
             applicationID: "",
-            site: nil,
-            env: nil
+            site: .us1,
+            env: "e2e"
         )
     }
 }
@@ -60,8 +64,8 @@ extension Datadog.Configuration {
     static func e2e(info: TestInfo) -> Self {
         .init(
             clientToken: info.clientToken,
-            env: info.env ?? "e2e",
-            site: info.site ?? .us1
+            env: info.env,
+            site: info.site
         )
     }
 }

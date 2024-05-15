@@ -1,3 +1,8 @@
-CLIENT_TOKEN=// the Client Token on Mobile Integration Org
-RUM_APPLICATION_ID=// the RUM Application ID on Mobile Integration Org
+CLIENT_TOKEN = // the Client Token on Mobile Integration Org
+RUM_APPLICATION_ID = // the RUM Application ID on Mobile Integration Org
+
+DD_ENV[config=*] = e2e
+DD_ENV[config=Debug] = development
+DD_SITE = us1
+
 #include? "E2E.local.xcconfig"

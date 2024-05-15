@@ -4,10 +4,14 @@
 <dict>
 	<key>DatadogConfiguration</key>
 	<dict>
-        <key>ClientToken</key>
-        <string>$(CLIENT_TOKEN)</string>
-        <key>ApplicationID</key>
-        <string>$(RUM_APPLICATION_ID)</string>
+                <key>ClientToken</key>
+                <string>$(CLIENT_TOKEN)</string>
+                <key>ApplicationID</key>
+                <string>$(RUM_APPLICATION_ID)</string>
+                <key>Environment</key>
+                <string>$(DD_ENV)</string>
+                <key>Site</key>
+                <string>$(DD_SITE)</string> 
 	</dict>
 </dict>
 </plist>
