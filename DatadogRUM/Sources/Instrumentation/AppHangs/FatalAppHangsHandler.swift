@@ -41,7 +41,8 @@ internal final class FatalAppHangsHandler {
                 hang: hang,
                 serverTimeOffset: context.serverTimeOffset,
                 lastRUMView: lastRUMView,
-                trackingConsent: context.trackingConsent
+                trackingConsent: context.trackingConsent,
+                appLaunchDate: context.launchTime?.launchDate
             )
             dataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
         }
@@ -92,10 +93,12 @@ internal final class FatalAppHangsHandler {
 
             let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
             let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+
             var timeSinceAppStart: TimeInterval? = nil
-            if let startTime = context.launchTime?.launchDate {
+            if let startTime = fatalHang.appLaunchDate {
                 timeSinceAppStart = realErrorDate.timeIntervalSince(startTime) * 1_000
             }
+
 
             let builder = FatalErrorBuilder(
                 context: context,
