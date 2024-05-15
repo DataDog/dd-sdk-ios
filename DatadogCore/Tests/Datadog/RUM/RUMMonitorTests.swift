@@ -1220,7 +1220,7 @@ class RUMMonitorTests: XCTestCase {
             case 10: monitor.addAction(type: .tap, name: .mockRandom())
             case 11: monitor.addAttribute(forKey: String.mockRandom(), value: String.mockRandom())
             case 12: monitor.removeAttribute(forKey: String.mockRandom())
-            case 13: monitor.dd.debug = .mockRandom()
+            case 13: monitor.debug = .mockRandom()
             default: break
             }
         }

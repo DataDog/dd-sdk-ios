@@ -7,6 +7,8 @@
 import UIKit
 import DatadogRUM
 import DatadogObjc
+import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
+import DatadogTrace
 import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
@@ -24,7 +26,6 @@ internal class ViewController: UIViewController {
             tracerProvider: OTelTracerProvider()
         )
 
-        logger.info("It works")
         let otSpan = Tracer.shared().startSpan(operationName: "OT Span")
         otSpan.finish()
         
