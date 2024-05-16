@@ -28,11 +28,8 @@ private struct RUMDebugInfo {
 }
 
 internal class RUMDebugging {
-    private lazy var canvas: UIView = {
-        let view = RUMDebugView(frame: .zero)
-        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        return view
-    }()
+    /// An overlay view renderd on top of the app content. It is created lazily on first draw.
+    private var canvas: UIView? = nil
 
     // MARK: - Initialization
 
@@ -52,9 +49,8 @@ internal class RUMDebugging {
     }
 
     deinit {
-        let canvas = self.canvas
-        DispatchQueue.main.async {
-            canvas.removeFromSuperview()
+        DispatchQueue.main.async { [weak canvas] in
+            canvas?.removeFromSuperview()
             UIDevice.current.endGeneratingDeviceOrientationNotifications()
         }
 
@@ -69,9 +65,8 @@ internal class RUMDebugging {
     }
 
     deinit {
-        let canvas = self.canvas
-        DispatchQueue.main.async {
-            canvas.removeFromSuperview()
+        DispatchQueue.main.async { [weak canvas] in
+            canvas?.removeFromSuperview()
         }
     }
     #endif
@@ -91,6 +86,15 @@ internal class RUMDebugging {
     // MARK: - Private
 
     private func renderOnMainThread(rumDebugInfo: RUMDebugInfo) {
+        if canvas == nil {
+            canvas = RUMDebugView(frame: .zero)
+            canvas?.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        }
+
+        guard let canvas = canvas else {
+            return
+        }
+
         canvas.subviews.forEach { view in
             view.removeFromSuperview()
         }
@@ -118,7 +122,7 @@ internal class RUMDebugging {
 
     @objc
     private func updateLayout() {
-        canvas.subviews.forEach { $0.setNeedsLayout() }
+        canvas?.subviews.forEach { $0.setNeedsLayout() }
     }
 }
 

@@ -22,7 +22,6 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
-        monitor.flush()
 
         // Then
         let expectedContext = monitor.currentRUMContext
@@ -43,7 +42,6 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(key: "foo")
-        monitor.flush()
 
         // Then
         XCTAssertNil(featureScope.contextMock.baggages[RUMFeature.name])
@@ -59,7 +57,6 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc)
-        monitor.flush()
 
         // Then
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "SomeViewController")
@@ -76,7 +73,6 @@ class MonitorTests: XCTestCase {
             dateProvider: DateProviderMock()
         )
         monitor.startView(viewController: vc, name: "Some View")
-        monitor.flush()
 
         // Then
         XCTAssertEqual(monitor.scopes.sessionScopes.first?.viewScopes.first?.viewName, "Some View")
