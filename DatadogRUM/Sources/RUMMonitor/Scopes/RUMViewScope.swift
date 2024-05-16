@@ -558,6 +558,15 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
         var commandAttributes = command.attributes
         let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
 
+        var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
+        if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) != nil {
+            // Don't try to get binary images if we already have them.
+            if binaryImages == nil {
+                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
+                binaryImages = try? dependencies.backtraceReporter?.generateBacktrace()?.binaryImages.compactMap { $0.toRUMDataFormat }
+            }
+        }
+
         let errorEvent = RUMErrorEvent(
             dd: .init(
                 browserSdkVersion: nil,
@@ -581,7 +590,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
-                binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
+                binaryImages: binaryImages,
                 category: command.category,
                 causes: nil,
                 csp: nil,

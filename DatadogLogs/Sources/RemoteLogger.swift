@@ -100,7 +100,9 @@ internal final class RemoteLogger: LoggerProtocol {
             return
         }
 
-        let globalAttributes = self.core?.get(feature: LogsFeature.self)?.getAttributes()
+        let logsFeature = self.core?.get(feature: LogsFeature.self)
+
+        let globalAttributes = logsFeature?.getAttributes()
 
         // on user thread:
         let date = dateProvider.now
@@ -111,6 +113,7 @@ internal final class RemoteLogger: LoggerProtocol {
         var logAttributes = attributes
         let isCrash = logAttributes?.removeValue(forKey: CrossPlatformAttributes.errorLogIsCrash) as? Bool ?? false
         let errorFingerprint = logAttributes?.removeValue(forKey: Logs.Attributes.errorFingerprint) as? String
+        let addBinaryImages = logAttributes?.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) as? Bool ?? false
         let userAttributes = self.attributes
             .merging(logAttributes ?? [:]) { $1 } // prefer message attributes
         let combinedAttributes: [String: any Encodable]
@@ -151,6 +154,13 @@ internal final class RemoteLogger: LoggerProtocol {
                 }
             }
 
+            // When binary images are requested, add them
+            var binaryImages: [BinaryImage]?
+            if addBinaryImages {
+                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
+                binaryImages = try? logsFeature?.backtraceReporter?.generateBacktrace()?.binaryImages
+            }
+
             let builder = LogEventBuilder(
                 service: self.configuration.service ?? context.service,
                 loggerName: self.configuration.name,
@@ -164,6 +174,7 @@ internal final class RemoteLogger: LoggerProtocol {
                 message: message,
                 error: error,
                 errorFingerprint: errorFingerprint,
+                binaryImages: binaryImages,
                 attributes: .init(
                     userAttributes: combinedAttributes,
                     internalAttributes: internalAttributes
@@ -182,10 +193,12 @@ internal final class RemoteLogger: LoggerProtocol {
                     message: .baggage(
                         key: ErrorMessage.key,
                         value: ErrorMessage(
+                            time: date,
                             message: log.error?.message ?? log.message,
                             type: log.error?.kind,
                             stack: log.error?.stack,
-                            attributes: .init(combinedAttributes)
+                            attributes: .init(combinedAttributes),
+                            binaryImages: binaryImages
                         )
                     )
                 )

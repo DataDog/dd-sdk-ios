@@ -65,6 +65,36 @@ public struct LogEvent: Encodable {
 
     /// Error description associated with a log event.
     public struct Error {
+        /// Description of BinaryImage (used for symbolicaiton of stack traces)
+        public struct BinaryImage: Codable {
+            /// CPU architecture from the library.
+            public let arch: String?
+
+            /// Determines if it's a system or user library.
+            public let isSystem: Bool
+
+            /// Library's load address (hexadecimal).
+            public let loadAddress: String?
+
+            /// Max value from the library address range (hexadecimal).
+            public let maxAddress: String?
+
+            /// Name of the library.
+            public let name: String
+
+            /// Build UUID that uniquely identifies the binary image.
+            public let uuid: String
+
+            enum CodingKeys: String, CodingKey {
+                case arch = "arch"
+                case isSystem = "is_system"
+                case loadAddress = "load_address"
+                case maxAddress = "max_address"
+                case name = "name"
+                case uuid = "uuid"
+            }
+        }
+
         /// The Log error kind
         public var kind: String?
         /// The Log error message
@@ -75,6 +105,8 @@ public struct LogEvent: Encodable {
         public var sourceType: String = "ios"
         /// The custom fingerprint supplied for this error, if any
         public var fingerprint: String?
+        /// Binary images needed to decode the provided stack (if any)
+        public var binaryImages: [BinaryImage]?
     }
 
     /// Device information.
@@ -174,6 +206,7 @@ internal struct LogEventEncoder {
         case errorStack = "error.stack"
         case errorSourceType = "error.source_type"
         case errorFingerprint = "error.fingerprint"
+        case errorBinaryImages = "error.binary_images"
 
         // MARK: - Application info
 
@@ -237,6 +270,9 @@ internal struct LogEventEncoder {
             try container.encode(someError.stack, forKey: .errorStack)
             try container.encode(someError.sourceType, forKey: .errorSourceType)
             try container.encode(someError.fingerprint, forKey: .errorFingerprint)
+            if let binaryImages = someError.binaryImages {
+                try container.encode(binaryImages, forKey: .errorBinaryImages)
+            }
         }
 
         // Encode logger info

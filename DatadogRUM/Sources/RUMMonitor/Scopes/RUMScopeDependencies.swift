@@ -36,6 +36,7 @@ internal struct RUMScopeDependencies {
     let firstPartyHosts: FirstPartyHosts?
     let eventBuilder: RUMEventBuilder
     let rumUUIDGenerator: RUMUUIDGenerator
+    let backtraceReporter: BacktraceReporting?
     /// Integration with CIApp tests. It contains the CIApp test context when active.
     let ciTest: RUMCITest?
     let syntheticsTest: RUMSyntheticsTest?
@@ -57,6 +58,7 @@ internal struct RUMScopeDependencies {
         firstPartyHosts: FirstPartyHosts?,
         eventBuilder: RUMEventBuilder,
         rumUUIDGenerator: RUMUUIDGenerator,
+        backtraceReporter: BacktraceReporting?,
         ciTest: RUMCITest?,
         syntheticsTest: RUMSyntheticsTest?,
         vitalsReaders: VitalsReaders?,
@@ -71,6 +73,7 @@ internal struct RUMScopeDependencies {
         self.firstPartyHosts = firstPartyHosts
         self.eventBuilder = eventBuilder
         self.rumUUIDGenerator = rumUUIDGenerator
+        self.backtraceReporter = backtraceReporter
         self.ciTest = ciTest
         self.syntheticsTest = syntheticsTest
         self.vitalsReaders = vitalsReaders

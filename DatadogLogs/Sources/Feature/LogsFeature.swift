@@ -16,6 +16,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
 
     let logEventMapper: LogEventMapper?
 
+    let backtraceReporter: BacktraceReporting?
+
     @ReadWriteLock
     private var attributes: [String: Encodable] = [:]
 
@@ -26,7 +28,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
         logEventMapper: LogEventMapper?,
         dateProvider: DateProvider,
         customIntakeURL: URL? = nil,
-        telemetry: Telemetry = NOPTelemetry()
+        telemetry: Telemetry = NOPTelemetry(),
+        backtraceReporter: BacktraceReporting? = nil
     ) {
         self.init(
             logEventMapper: logEventMapper,
@@ -39,7 +42,8 @@ internal struct LogsFeature: DatadogRemoteFeature {
                 CrashLogReceiver(dateProvider: dateProvider, logEventMapper: logEventMapper),
                 WebViewLogReceiver()
             ),
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter
         )
     }
 
@@ -47,12 +51,14 @@ internal struct LogsFeature: DatadogRemoteFeature {
         logEventMapper: LogEventMapper?,
         requestBuilder: FeatureRequestBuilder,
         messageReceiver: FeatureMessageReceiver,
-        dateProvider: DateProvider
+        dateProvider: DateProvider,
+        backtraceReporter: BacktraceReporting?
     ) {
         self.logEventMapper = logEventMapper
         self.requestBuilder = requestBuilder
         self.messageReceiver = messageReceiver
         self.dateProvider = dateProvider
+        self.backtraceReporter = backtraceReporter
     }
 
     internal func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
