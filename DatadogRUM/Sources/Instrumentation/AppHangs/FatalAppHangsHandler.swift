@@ -93,12 +93,7 @@ internal final class FatalAppHangsHandler {
 
             let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
             let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
-
-            var timeSinceAppStart: TimeInterval? = nil
-            if let startTime = fatalHang.appLaunchDate {
-                timeSinceAppStart = realErrorDate.timeIntervalSince(startTime) * 1_000
-            }
-
+            let timeSinceAppStart = fatalHang.appLaunchDate.map { realErrorDate.timeIntervalSince($0) }
 
             let builder = FatalErrorBuilder(
                 context: context,
