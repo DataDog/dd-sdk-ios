@@ -702,6 +702,7 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
 internal class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
     var sessionState: RUMSessionState?
     var view: RUMViewEvent?
+    var globalAttributes: [String: Encodable] = [:]
 }
 
 extension RUMScopeDependencies {

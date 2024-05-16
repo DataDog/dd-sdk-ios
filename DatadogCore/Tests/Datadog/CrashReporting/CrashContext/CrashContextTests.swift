@@ -66,6 +66,40 @@ class CrashContextTests: XCTestCase {
         )
     }
 
+    func testGivenContextWithLastRUMAttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomRUMAttributes = Bool.random() ? GlobalRUMAttributes(attributes: mockRandomAttributes()) : nil
+
+        // Given
+        let context: CrashContext = .mockWith(lastRUMAttributes: randomRUMAttributes)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        DDAssertJSONEqual(
+            deserializedContext.lastRUMAttributes,
+            randomRUMAttributes
+        )
+    }
+
+    func testGivenContextWithLastLogttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomLogAttributes = Bool.random() ? AnyCodable(mockRandomAttributes()) : nil
+
+        // Given
+        let context: CrashContext = .mockWith(lastLogAttributes: randomLogAttributes)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        DDAssertJSONEqual(
+            deserializedContext.lastLogAttributes,
+            randomLogAttributes
+        )
+    }
+
     func testGivenContextWithUserInfoSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
         let randomUserInfo: UserInfo = .mockRandom()
 

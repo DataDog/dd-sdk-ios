@@ -242,14 +242,6 @@ internal struct RUMAddViewTimingCommand: RUMCommand, RUMViewScopePropagatableAtt
     let timingName: String
 }
 
-internal struct RUMUpdateViewAttributesCommand: RUMCommand {
-    let canStartBackgroundView = false
-    let isUserInteraction = false
-
-    var time: Date
-    var attributes: [AttributeKey: AttributeValue] = [:]
-}
-
 // MARK: - RUM Resource related commands
 
 internal protocol RUMResourceCommand: RUMCommand {

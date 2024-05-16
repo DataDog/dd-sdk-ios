@@ -76,4 +76,21 @@ class FatalErrorContextNotifierTests: XCTestCase {
         let viewResetMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.viewReset))
         XCTAssertTrue(try viewResetMessage.decode(type: Bool.self))
     }
+
+    // MARK: - Changing Global Attributes
+
+    func testWhenGlobalAttributesAreSet_itSendsAttributesMessage() throws {
+        // Given
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: featureScope)
+        let newGlobalAttributes = mockRandomAttributes()
+
+        // When
+        fatalErrorContext.globalAttributes = newGlobalAttributes
+
+        // Then
+        let messages = featureScope.messagesSent()
+        XCTAssertEqual(messages.count, 1)
+        let attributesMessage = try XCTUnwrap(messages.lastBaggage(withKey: RUMBaggageKeys.attributes))
+        DDAssertJSONEqual(newGlobalAttributes, try attributesMessage.decode(type: GlobalRUMAttributes.self).attributes)
+    }
 }

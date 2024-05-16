@@ -144,8 +144,9 @@ extension CrashContext {
         lastRUMViewEvent: AnyCodable? = nil,
         lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
-        lastLogAttributes: AnyCodable? = nil,
-        appLaunchDate: Date? = .mockRandomInThePast()
+        appLaunchDate: Date? = .mockRandomInThePast(),
+        lastRUMAttributes: GlobalRUMAttributes? = nil,
+        lastLogAttributes: AnyCodable? = nil
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -160,11 +161,12 @@ extension CrashContext {
             userInfo: userInfo,
             networkConnectionInfo: networkConnectionInfo,
             carrierInfo: carrierInfo,
+            lastIsAppInForeground: lastIsAppInForeground,
+            appLaunchDate: appLaunchDate,
             lastRUMViewEvent: lastRUMViewEvent,
             lastRUMSessionState: lastRUMSessionState,
-            lastIsAppInForeground: lastIsAppInForeground,
-            lastLogAttributes: lastLogAttributes,
-            appLaunchDate: appLaunchDate
+            lastRUMAttributes: lastRUMAttributes,
+            lastLogAttributes: lastLogAttributes
         )
     }
 
@@ -182,11 +184,12 @@ extension CrashContext {
             userInfo: .mockRandom(),
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
+            lastIsAppInForeground: .mockRandom(),
+            appLaunchDate: .mockRandomInThePast(),
             lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
             lastRUMSessionState: AnyCodable(mockRandomAttributes()),
-            lastIsAppInForeground: .mockRandom(),
-            lastLogAttributes: AnyCodable(mockRandomAttributes()),
-            appLaunchDate: .mockRandomInThePast()
+            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
+            lastLogAttributes: AnyCodable(mockRandomAttributes())
         )
     }
 

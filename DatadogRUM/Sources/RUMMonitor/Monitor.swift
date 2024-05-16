@@ -119,7 +119,13 @@ internal class Monitor: RUMCommandSubscriber {
     private(set) var debugging: RUMDebugging? = nil
 
     @ReadWriteLock
-    private var attributes: [AttributeKey: AttributeValue] = [:]
+    private var attributes: [AttributeKey: AttributeValue] = [:] {
+        didSet {
+            fatalErrorContext.globalAttributes = attributes
+        }
+    }
+
+    private let fatalErrorContext: FatalErrorContextNotifying
 
     init(
         dependencies: RUMScopeDependencies,
@@ -128,9 +134,11 @@ internal class Monitor: RUMCommandSubscriber {
         self.featureScope = dependencies.featureScope
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
+        self.fatalErrorContext = dependencies.fatalErrorContext
     }
 
     func process(command: RUMCommand) {
+        let start = Date()
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
@@ -144,6 +152,10 @@ internal class Monitor: RUMCommandSubscriber {
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.scopes)
             }
+
+            let stop = Date()
+            let diffMs = stop.timeIntervalSince(start) * 1_000
+            print("⭐️ RUM latency (ms): \(diffMs)")
         }
 
         // update the core context with rum context
@@ -204,16 +216,10 @@ extension Monitor: RUMMonitorProtocol {
 
     func addAttribute(forKey key: AttributeKey, value: AttributeValue) {
         attributes[key] = value
-        process(
-            command: RUMUpdateViewAttributesCommand(time: dateProvider.now)
-        )
     }
 
     func removeAttribute(forKey key: AttributeKey) {
         attributes[key] = nil
-        process(
-            command: RUMUpdateViewAttributesCommand(time: dateProvider.now)
-        )
     }
 
     // MARK: - session

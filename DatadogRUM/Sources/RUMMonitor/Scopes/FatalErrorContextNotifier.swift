@@ -15,6 +15,9 @@ internal protocol FatalErrorContextNotifying: AnyObject {
     /// The active RUM view in current session.
     /// Can be `nil` if no view is yet started. Will become `nil` if view was stopped without starting the new one.
     var view: RUMViewEvent? { set get }
+    /// The current set of RUM attributes.
+    /// It gets updated with global attributes being added or removed in `RUMMonitor`.
+    var globalAttributes: [String: Encodable] { set get }
 }
 
 /// Manages RUM information necessary for building context of fatal errors such as Crashes or Fatal App Hangs.
@@ -48,6 +51,18 @@ internal final class FatalErrorContextNotifier: FatalErrorContextNotifying {
             } else {
                 messageBus.send(message: .baggage(key: RUMBaggageKeys.viewReset, value: true))
             }
+        }
+    }
+
+    @ReadWriteLock
+    var globalAttributes: [String: Encodable] = [:] {
+        didSet {
+            messageBus.send(
+                message: .baggage(
+                    key: RUMBaggageKeys.attributes,
+                    value: GlobalRUMAttributes(attributes: globalAttributes)
+                )
+            )
         }
     }
 }
