@@ -138,7 +138,6 @@ internal class Monitor: RUMCommandSubscriber {
     }
 
     func process(command: RUMCommand) {
-        let start = Date()
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
@@ -152,10 +151,6 @@ internal class Monitor: RUMCommandSubscriber {
             if let debugging = self.debugging {
                 debugging.debug(applicationScope: self.scopes)
             }
-
-            let stop = Date()
-            let diffMs = stop.timeIntervalSince(start) * 1_000
-            print("⭐️ RUM latency (ms): \(diffMs)")
         }
 
         // update the core context with rum context

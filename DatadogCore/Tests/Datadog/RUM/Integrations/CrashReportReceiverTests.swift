@@ -1442,7 +1442,6 @@ class CrashReportReceiverTests: XCTestCase {
                 lastRUMAttributes: lastRUMAttributes
             )
 
-            let mappedViewName = String.mockRandom()
             let receiver: CrashReportReceiver = .mockWith(
                 featureScope: featureScope,
                 applicationID: .mockRandom(),
