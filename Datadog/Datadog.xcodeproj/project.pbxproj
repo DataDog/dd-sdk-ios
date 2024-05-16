@@ -533,6 +533,8 @@
 		61C713D12A3DEFF900FA735A /* FeatureRegistrationCoreMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713CF2A3DEFF900FA735A /* FeatureRegistrationCoreMock.swift */; };
 		61C713D32A3DFB4900FA735A /* FuzzyHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */; };
 		61C713D42A3DFB4900FA735A /* FuzzyHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */; };
+		61CE2E5F2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE2E5E2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift */; };
+		61CE2E602BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE2E5E2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift */; };
 		61CE585A2B48174D00479510 /* SpanWriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE58592B48174D00479510 /* SpanWriteContext.swift */; };
 		61CE585B2B48174D00479510 /* SpanWriteContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61CE58592B48174D00479510 /* SpanWriteContext.swift */; };
 		61D03BE0273404E700367DE0 /* RUMDataModels+objcTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */; };
@@ -2515,6 +2517,7 @@
 		61C713C92A3DC22700FA735A /* RUMTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMTests.swift; sourceTree = "<group>"; };
 		61C713CF2A3DEFF900FA735A /* FeatureRegistrationCoreMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureRegistrationCoreMock.swift; sourceTree = "<group>"; };
 		61C713D22A3DFB4900FA735A /* FuzzyHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyHelpers.swift; sourceTree = "<group>"; };
+		61CE2E5E2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Monitor+GlobalAttributesTests.swift"; sourceTree = "<group>"; };
 		61CE58592B48174D00479510 /* SpanWriteContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpanWriteContext.swift; sourceTree = "<group>"; };
 		61D03BDF273404E700367DE0 /* RUMDataModels+objcTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RUMDataModels+objcTests.swift"; sourceTree = "<group>"; };
 		61D3E0C8277B23F0008BE766 /* KronosInternetAddress.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KronosInternetAddress.swift; sourceTree = "<group>"; };
@@ -4782,6 +4785,7 @@
 				618DCFDE24C75FD300589570 /* RUMScopeTests.swift */,
 				618715F624DC0CDE00FC0F69 /* RUMCommandTests.swift */,
 				6176C1712ABDBA2E00131A70 /* MonitorTests.swift */,
+				61CE2E5E2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift */,
 			);
 			path = RUMMonitor;
 			sourceTree = "<group>";
@@ -8549,6 +8553,7 @@
 				D23F8EAB29DDCD38001CFAE8 /* RUMDataModelMocks.swift in Sources */,
 				D23F8EAC29DDCD38001CFAE8 /* RUMDataModelsMappingTests.swift in Sources */,
 				D23F8EAD29DDCD38001CFAE8 /* RUMEventBuilderTests.swift in Sources */,
+				61CE2E602BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift in Sources */,
 				D23F8EAE29DDCD38001CFAE8 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D23F8EAF29DDCD38001CFAE8 /* RUMScopeTests.swift in Sources */,
 				D23F8EB029DDCD38001CFAE8 /* SessionReplayDependencyTests.swift in Sources */,
@@ -8857,6 +8862,7 @@
 				D29A9FC629DDBA8A005C54A4 /* RUMDataModelMocks.swift in Sources */,
 				D29A9FD529DDC624005C54A4 /* RUMDataModelsMappingTests.swift in Sources */,
 				D29A9FBE29DDB483005C54A4 /* RUMEventBuilderTests.swift in Sources */,
+				61CE2E5F2BF2177100EC7D42 /* Monitor+GlobalAttributesTests.swift in Sources */,
 				D29A9FCC29DDBCC5005C54A4 /* DDTAssertValidRUMUUID.swift in Sources */,
 				D29A9FB329DDB483005C54A4 /* RUMScopeTests.swift in Sources */,
 				D29A9FAE29DDB483005C54A4 /* SessionReplayDependencyTests.swift in Sources */,
