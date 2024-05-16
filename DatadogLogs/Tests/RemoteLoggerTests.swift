@@ -260,6 +260,48 @@ class RemoteLoggerTests: XCTestCase {
         XCTAssertEqual(log.error?.fingerprint, randomErrorFingerprint)
     }
 
+    func testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent() throws {
+        let stubBacktrace: BacktraceReport = .mockRandom()
+        let logsFeature = LogsFeature.mockWith(
+            backtraceReporter: BacktraceReporterMock(backtrace: stubBacktrace)
+        )
+        let core = SingleFeatureCoreMock(
+            feature: logsFeature,
+            expectation: expectation(description: "Send log")
+        )
+        let logger = RemoteLogger(
+            core: core,
+            configuration: .mockAny(),
+            dateProvider: RelativeDateProvider(),
+            rumContextIntegration: false,
+            activeSpanIntegration: false
+        )
+
+        // When
+        logger.error("Information message", error: ErrorMock(), attributes: [CrossPlatformAttributes.includeBinaryImages: true])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let logs = core.events(ofType: LogEvent.self)
+        XCTAssertEqual(logs.count, 1)
+
+        let log = try XCTUnwrap(logs.first)
+        XCTAssertNil(log.attributes.userAttributes[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertNotNil(log.error?.binaryImages)
+        XCTAssertEqual(log.error?.binaryImages?.count, stubBacktrace.binaryImages.count)
+        for i in 0..<stubBacktrace.binaryImages.count {
+            let logBacktrace = log.error!.binaryImages![i]
+            let errorBacktrace = stubBacktrace.binaryImages[i]
+            XCTAssertEqual(logBacktrace.name, errorBacktrace.libraryName)
+            XCTAssertEqual(logBacktrace.uuid, errorBacktrace.uuid)
+            XCTAssertEqual(logBacktrace.arch, errorBacktrace.architecture)
+            XCTAssertEqual(logBacktrace.isSystem, errorBacktrace.isSystemLibrary)
+            XCTAssertEqual(logBacktrace.loadAddress, errorBacktrace.loadAddress)
+            XCTAssertEqual(logBacktrace.maxAddress, errorBacktrace.maxAddress)
+        }
+    }
+
     // MARK: - RUM Integration
 
     func testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext() throws {

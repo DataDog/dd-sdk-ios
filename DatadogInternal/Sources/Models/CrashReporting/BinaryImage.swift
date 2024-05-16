@@ -42,3 +42,5 @@ public struct BinaryImage: Codable, PassthroughAnyCodable {
         case maxAddress = "max_address"
     }
 }
+
+extension BinaryImage: Equatable {}

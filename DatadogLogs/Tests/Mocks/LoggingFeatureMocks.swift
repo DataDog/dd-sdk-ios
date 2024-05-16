@@ -42,13 +42,15 @@ extension LogsFeature {
         sampler: Sampler = .mockKeepAll(),
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider = SystemDateProvider(),
+        backtraceReporter: BacktraceReporting = BacktraceReporterMock(backtrace: nil)
     ) -> Self {
         return .init(
             logEventMapper: logEventMapper,
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter
         )
     }
 }

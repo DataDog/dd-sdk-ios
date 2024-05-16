@@ -1557,6 +1557,74 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
     }
 
+    func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() throws {
+        // Given
+        let mockBacktrace: BacktraceReport = .mockRandom()
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(
+                backtraceReporter: BacktraceReporterMock(backtrace: mockBacktrace)
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        CrossPlatformAttributes.includeBinaryImages: true
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertNil(error.context?.contextInfo[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertNotNil(error.error.binaryImages)
+        XCTAssertEqual(error.error.binaryImages?.count, mockBacktrace.binaryImages.count)
+        for i in 0..<mockBacktrace.binaryImages.count {
+            let expected = mockBacktrace.binaryImages[i]
+            if let actual = error.error.binaryImages?[i] {
+                XCTAssertEqual(actual.arch, expected.architecture)
+                XCTAssertEqual(actual.isSystem, expected.isSystemLibrary)
+                XCTAssertEqual(actual.loadAddress, expected.loadAddress)
+                XCTAssertEqual(actual.maxAddress, expected.maxAddress)
+                XCTAssertEqual(actual.name, expected.libraryName)
+                XCTAssertEqual(actual.uuid, expected.uuid)
+            }
+        }
+    }
+
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
