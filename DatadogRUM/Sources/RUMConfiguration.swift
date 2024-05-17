@@ -13,6 +13,7 @@ import DatadogInternal
 @_exported import typealias DatadogInternal.DDURLSessionDelegate
 @_exported import protocol DatadogInternal.__URLSessionDelegateProviding
 @_exported import enum DatadogInternal.URLSessionInstrumentation
+@_exported import enum DatadogInternal.TraceContextInjection
 // swiftlint:enable duplicate_imports
 
 extension RUM {
