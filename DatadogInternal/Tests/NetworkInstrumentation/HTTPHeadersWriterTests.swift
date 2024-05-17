@@ -9,7 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 class HTTPHeadersWriterTests: XCTestCase {
-    func testWritingSampledTraceContext_withAutoSamplingStrategy() {
+    func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
         let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
 
         writer.write(
@@ -27,7 +27,7 @@ class HTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[TracingHTTPHeaders.tagsField], "_dd.p.tid=4d2")
     }
 
-    func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
+    func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
         let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .sampled)
 
         writer.write(

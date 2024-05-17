@@ -9,7 +9,7 @@ import TestUtilities
 import DatadogInternal
 
 class W3CHTTPHeadersWriterTests: XCTestCase {
-    func testWritingSampledTraceContext_withAutoSamplingStrategy() {
+    func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
             samplingStrategy: .headBased,
             tracestate: [
@@ -31,7 +31,7 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:1")
     }
 
-    func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
+    func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
             samplingStrategy: .headBased,
             tracestate: [
