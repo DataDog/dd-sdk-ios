@@ -93,7 +93,7 @@ class PackageResolvedFile(PackageResolvedContent):
             else:
                 raise Exception(
                     f'{path} uses version {self.version} but `PackageResolvedFile` only supports ' +
-                    f'versions `1` and `2`. Update `PackageResolvedFile` to support new version.'
+                    f'versions `1`, `2` and `3`. Update `PackageResolvedFile` to support new version.'
                 )
 
     def save(self):
