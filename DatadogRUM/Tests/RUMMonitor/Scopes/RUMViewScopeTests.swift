@@ -1670,7 +1670,7 @@ class RUMViewScopeTests: XCTestCase {
 
     func testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart() throws {
         var context = self.context
-        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
         let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
 
         context.launchTime = .mockWith(
