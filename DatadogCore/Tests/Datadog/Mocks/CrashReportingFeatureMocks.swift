@@ -144,7 +144,8 @@ extension CrashContext {
         lastRUMViewEvent: AnyCodable? = nil,
         lastRUMSessionState: AnyCodable? = nil,
         lastIsAppInForeground: Bool = .mockAny(),
-        lastLogAttributes: AnyCodable? = nil
+        lastLogAttributes: AnyCodable? = nil,
+        appLaunchDate: Date? = .mockRandomInThePast()
     ) -> Self {
         .init(
             serverTimeOffset: serverTimeOffset,
@@ -162,7 +163,8 @@ extension CrashContext {
             lastRUMViewEvent: lastRUMViewEvent,
             lastRUMSessionState: lastRUMSessionState,
             lastIsAppInForeground: lastIsAppInForeground,
-            lastLogAttributes: lastLogAttributes
+            lastLogAttributes: lastLogAttributes,
+            appLaunchDate: appLaunchDate
         )
     }
 
@@ -183,7 +185,8 @@ extension CrashContext {
             lastRUMViewEvent: AnyCodable(mockRandomAttributes()),
             lastRUMSessionState: AnyCodable(mockRandomAttributes()),
             lastIsAppInForeground: .mockRandom(),
-            lastLogAttributes: AnyCodable(mockRandomAttributes())
+            lastLogAttributes: AnyCodable(mockRandomAttributes()),
+            appLaunchDate: .mockRandomInThePast()
         )
     }
 

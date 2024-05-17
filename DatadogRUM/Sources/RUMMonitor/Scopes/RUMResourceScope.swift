@@ -198,6 +198,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
+                decodedBodySize: nil,
                 dns: resourceMetrics?.dns.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -211,6 +212,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 duration: resolveResourceDuration(resourceDuration),
+                encodedBodySize: nil,
                 firstByte: resourceMetrics?.firstByte.map { metric in
                     .init(
                         duration: metric.duration.toInt64Nanoseconds,
@@ -227,6 +229,7 @@ internal class RUMResourceScope: RUMScope {
                         start: metric.start.timeIntervalSince(resourceStartTime).toInt64Nanoseconds
                     )
                 },
+                renderBlockingStatus: nil,
                 size: size ?? 0,
                 ssl: resourceMetrics?.ssl.map { metric in
                     .init(
@@ -235,6 +238,7 @@ internal class RUMResourceScope: RUMScope {
                     )
                 },
                 statusCode: command.httpStatusCode?.toInt64 ?? 0,
+                transferSize: nil,
                 type: resourceType,
                 url: resourceURL
             ),
@@ -266,6 +270,10 @@ internal class RUMResourceScope: RUMScope {
         attributes.merge(rumCommandAttributes: command.attributes)
 
         let errorFingerprint = attributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+        var timeSinceAppStart: Int64? = nil
+        if let startTime = context.launchTime?.launchDate {
+            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
+        }
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -310,6 +318,7 @@ internal class RUMResourceScope: RUMScope {
                 sourceType: command.errorSourceType,
                 stack: command.stack,
                 threads: nil,
+                timeSinceAppStart: timeSinceAppStart,
                 type: command.errorType,
                 wasTruncated: nil
             ),

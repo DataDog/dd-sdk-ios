@@ -41,7 +41,8 @@ internal final class FatalAppHangsHandler {
                 hang: hang,
                 serverTimeOffset: context.serverTimeOffset,
                 lastRUMView: lastRUMView,
-                trackingConsent: context.trackingConsent
+                trackingConsent: context.trackingConsent,
+                appLaunchDate: context.launchTime?.launchDate
             )
             dataStore.setValue(fatalHang, forKey: .fatalAppHangKey)
         }
@@ -92,6 +93,7 @@ internal final class FatalAppHangsHandler {
 
             let realErrorDate = fatalHang.hang.startDate.addingTimeInterval(fatalHang.serverTimeOffset)
             let realDateNow = dateProvider.now.addingTimeInterval(context.serverTimeOffset)
+            let timeSinceAppStart = fatalHang.appLaunchDate.map { realErrorDate.timeIntervalSince($0) }
 
             let builder = FatalErrorBuilder(
                 context: context,
@@ -103,7 +105,8 @@ internal final class FatalAppHangsHandler {
                 errorThreads: fatalHang.hang.backtraceResult.threads?.toRUMDataFormat,
                 errorBinaryImages: fatalHang.hang.backtraceResult.binaryImages?.toRUMDataFormat,
                 errorWasTruncated: fatalHang.hang.backtraceResult.wasTruncated,
-                errorMeta: nil
+                errorMeta: nil,
+                timeSinceAppStart: timeSinceAppStart
             )
             let error = builder.createRUMError(with: fatalHang.lastRUMView)
             let view = builder.updateRUMViewWithError(fatalHang.lastRUMView)

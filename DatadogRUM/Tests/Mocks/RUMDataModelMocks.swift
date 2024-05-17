@@ -259,9 +259,11 @@ extension RUMResourceEvent: RandomMockable {
             os: .mockRandom(),
             resource: .init(
                 connect: .init(duration: .mockRandom(), start: .mockRandom()),
+                decodedBodySize: nil,
                 dns: .init(duration: .mockRandom(), start: .mockRandom()),
                 download: .init(duration: .mockRandom(), start: .mockRandom()),
                 duration: .mockRandom(),
+                encodedBodySize: nil,
                 firstByte: .init(duration: .mockRandom(), start: .mockRandom()),
                 id: .mockRandom(),
                 method: .mockRandom(),
@@ -271,9 +273,11 @@ extension RUMResourceEvent: RandomMockable {
                     type: Bool.random() ? .firstParty : nil
                 ),
                 redirect: .init(duration: .mockRandom(), start: .mockRandom()),
+                renderBlockingStatus: nil,
                 size: .mockRandom(),
                 ssl: .init(duration: .mockRandom(), start: .mockRandom()),
                 statusCode: .mockRandom(),
+                transferSize: nil,
                 type: [.native, .image].randomElement()!,
                 url: .mockRandom()
             ),
@@ -421,6 +425,7 @@ extension RUMErrorEvent: RandomMockable {
                 sourceType: .mockRandom(),
                 stack: .mockRandom(),
                 threads: nil,
+                timeSinceAppStart: nil,
                 type: .mockRandom(),
                 wasTruncated: .mockRandom()
             ),
@@ -531,6 +536,7 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     storeContextsAcrossPages: nil,
                     telemetryConfigurationSampleRate: .mockRandom(),
                     telemetrySampleRate: .mockRandom(),
+                    telemetryUsageSampleRate: nil,
                     traceSampleRate: .mockRandom(),
                     trackBackgroundEvents: .mockRandom(),
                     trackCrossPlatformLongTasks: .mockRandom(),

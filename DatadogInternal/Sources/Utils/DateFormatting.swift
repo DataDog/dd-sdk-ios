@@ -8,6 +8,7 @@ import Foundation
 
 public protocol DateFormatterType {
     func string(from date: Date) -> String
+    func date(from string: String) -> Date?
 }
 
 extension ISO8601DateFormatter: DateFormatterType {}
