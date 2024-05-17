@@ -38,6 +38,10 @@ See [Datadog iOS RUM Collection][3] documentation to try it out.
 
 ![Datadog iOS RUM Collection](docs/images/rum.png)
 
+#### WebView Tracking
+
+RUM allows you to monitor web views and eliminate blind spots in your hybrid mobile applications. See [WebView Tracking][5] documentation to try it out.
+
 ## Integrations
 
 ### Alamofire
@@ -57,3 +61,4 @@ Pull requests are welcome. First, open an issue to discuss what you would like t
 [2]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios
 [3]: https://docs.datadoghq.com/real_user_monitoring/ios
 [4]: https://github.com/Alamofire/Alamofire
+[5]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/web_view_tracking?tab=ios
