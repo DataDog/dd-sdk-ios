@@ -127,7 +127,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
-            print("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
+            NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
         }
     }
 
