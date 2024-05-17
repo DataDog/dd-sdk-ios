@@ -642,6 +642,7 @@ workflows:
     steps:
     - script:
         title: Upload E2E application to Synthetics.
+        run_if: '{{enveq "BITRISE_GIT_BRANCH" "develop"}}'
         inputs:
         - content: |-
             #!/usr/bin/env bash
