@@ -137,12 +137,12 @@ internal class Monitor: RUMCommandSubscriber {
                 return
             }
 
-            let transformedCommand = transform(command: command)
+            let transformedCommand = self.transform(command: command)
 
-            _ = scopes.process(command: transformedCommand, context: context, writer: writer)
+            _ = self.scopes.process(command: transformedCommand, context: context, writer: writer)
 
-            if let debugging = debugging {
-                debugging.debug(applicationScope: scopes)
+            if let debugging = self.debugging {
+                debugging.debug(applicationScope: self.scopes)
             }
         }
 
@@ -153,9 +153,9 @@ internal class Monitor: RUMCommandSubscriber {
                     return nil
                 }
 
-                let context = scopes.activeSession?.viewScopes.last?.context ??
-                                scopes.activeSession?.context ??
-                                scopes.context
+                let context = self.scopes.activeSession?.viewScopes.last?.context ??
+                                self.scopes.activeSession?.context ??
+                                self.scopes.context
 
                 guard context.sessionID != .nullUUID else {
                     // if Session was sampled or not yet started
@@ -503,7 +503,7 @@ extension Monitor: RUMMonitorProtocol {
                 guard let self = self else {
                     return
                 }
-                debugging?.debug(applicationScope: scopes)
+                self.debugging?.debug(applicationScope: self.scopes)
             }
         }
         get {
