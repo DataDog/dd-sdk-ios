@@ -384,9 +384,5 @@ class PackageResolvedContentV3(PackageResolvedContentV2):
     Check https://github.com/apple/swift-package-manager/blob/e5123e483c18bff7afdc3b2029f9e1924779bbc8/Sources/Workspace/Workspace%2BDependencies.swift#L280
     """
 
-    def __init__(self, path: str, json_content: dict):
-        self.path = path
-        self.packages = json_content
-
     def origin_hash(self):
         return self.packages['originHash']
