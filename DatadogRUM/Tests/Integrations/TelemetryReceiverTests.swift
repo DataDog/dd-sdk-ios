@@ -407,7 +407,7 @@ class TelemetryReceiverTests: XCTestCase {
         DDAssertReflectionEqual(event?.telemetry.telemetryInfo, randomAttributes)
     }
 
-    func testSendTelemetryMetricWithRUMContext() {
+    func testSendTelemetryMetricWithRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
         featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
@@ -422,6 +422,14 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.session?.id, rumContext.sessionID)
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        let device = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.Device.key] as? [String: String])
+        XCTAssertTrue(device[MethodCalledMetric.Device.model]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.brand]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.architecture]?.isEmpty == false)
+        let os = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.OS.key] as? [String: String])
+        XCTAssertTrue(os[MethodCalledMetric.OS.version]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.build]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.name]?.isEmpty == false)
     }
 
     func testMethodCallTelemetryPropagetsAllData() throws {
