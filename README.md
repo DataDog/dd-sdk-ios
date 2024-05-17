@@ -56,9 +56,13 @@ Pull requests are welcome. First, open an issue to discuss what you would like t
 
 [Apache License, v2.0](LICENSE)
 
+## Supported Versions
+
+See the [Supported Versions][6] documentation for more details.
 
 [1]: https://docs.datadoghq.com/logs/log_collection/ios
 [2]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios
 [3]: https://docs.datadoghq.com/real_user_monitoring/ios
 [4]: https://github.com/Alamofire/Alamofire
 [5]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/web_view_tracking?tab=ios
+[6]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/supported_versions/ios/
