@@ -338,6 +338,8 @@
 		614798A22A45A48F0095CB02 /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2C1A55A29C4F2DF00946C31 /* DatadogTrace.framework */; };
 		614798A32A45A4980095CB02 /* DatadogTrace.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D25EE93429C4C3C300CE3839 /* DatadogTrace.framework */; };
 		6147E3B3270486920092BC9F /* TraceConfigurationE2ETests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6147E3B2270486920092BC9F /* TraceConfigurationE2ETests.swift */; };
+		614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */; };
+		614A708F2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */; };
 		614B78ED296D7B63009C6B92 /* DatadogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */; };
 		614B78EE296D7B63009C6B92 /* DatadogCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */; };
 		614B78F1296D7B63009C6B92 /* LowPowerModePublisherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614B78EC296D7B63009C6B92 /* LowPowerModePublisherTests.swift */; };
@@ -349,6 +351,8 @@
 		615192CE2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CC2BD6948B0005A782 /* HTTPHeadersWriterTests.swift */; };
 		615192D02BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CF2BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift */; };
 		615192D12BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615192CF2BD6B7C90005A782 /* DatadogTracer+InjectAndExtract.swift */; };
+		6156A9072BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */; };
+		6156A9082BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */; };
 		61570005246AADFA00E96950 /* DatadogObjc.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61133BF0242397DA00786299 /* DatadogObjc.framework */; };
 		615A4A8324A3431600233986 /* Trace+objc.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8224A3431600233986 /* Trace+objc.swift */; };
 		615A4A8924A34FD700233986 /* DDTracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615A4A8824A34FD700233986 /* DDTracerTests.swift */; };
@@ -2319,6 +2323,7 @@
 		61494CB024C839460082C633 /* RUMResourceScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScope.swift; sourceTree = "<group>"; };
 		61494CB424C864680082C633 /* RUMResourceScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMResourceScopeTests.swift; sourceTree = "<group>"; };
 		61494CB924CB126F0082C633 /* RUMUserActionScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUserActionScope.swift; sourceTree = "<group>"; };
+		614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmutableRequest.swift; sourceTree = "<group>"; };
 		614B0A4A24EBC43D00A2A780 /* RUMUser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMUser.swift; sourceTree = "<group>"; };
 		614B0A4E24EBDC6B00A2A780 /* RUMConnectivityInfoProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMConnectivityInfoProvider.swift; sourceTree = "<group>"; };
 		614B78EA296D7B63009C6B92 /* DatadogCoreTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatadogCoreTests.swift; sourceTree = "<group>"; };
@@ -2332,6 +2337,7 @@
 		615519252461BCE7002A85CF /* Datadog.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.xcconfig; sourceTree = "<group>"; };
 		615519262461BCE7002A85CF /* Datadog.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Datadog.local.xcconfig; sourceTree = "<group>"; };
 		61569894256D0E9A00C6AADA /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
+		6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmutableRequestTests.swift; sourceTree = "<group>"; };
 		6156CB8D24DDA1B5008CB2B2 /* RUMContextProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContextProvider.swift; sourceTree = "<group>"; };
 		615950EA291C029700470E0C /* SessionReplayDependencyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependencyTests.swift; sourceTree = "<group>"; };
 		615950ED291C058F00470E0C /* SessionReplayDependency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayDependency.swift; sourceTree = "<group>"; };
@@ -5517,6 +5523,7 @@
 		D2160CC029C0DED100FAA9A5 /* URLSession */ = {
 			isa = PBXGroup;
 			children = (
+				614A708D2BF754D700D9AF42 /* ImmutableRequest.swift */,
 				D295A16429F299C9007C0E9A /* URLSessionInterceptor.swift */,
 				D2160CC129C0DED100FAA9A5 /* URLSessionTaskInterception.swift */,
 				3CBDE6732AA08C2F00F6A7B6 /* URLSessionInstrumentation.swift */,
@@ -6209,6 +6216,7 @@
 				D2BEEDAE2B335C400065F3AC /* URLSessionTaskSwizzlerTests.swift */,
 				D2BEEDB72B3360F50065F3AC /* URLSessionTaskDelegateSwizzlerTests.swift */,
 				D270CDDF2B46E5A50002EACD /* URLSessionDataDelegateSwizzlerTests.swift */,
+				6156A9062BF75A7C00DF66C3 /* ImmutableRequestTests.swift */,
 			);
 			path = NetworkInstrumentation;
 			sourceTree = "<group>";
@@ -8404,6 +8412,7 @@
 				D23039F5298D5236001A1FA3 /* AnyEncodable.swift in Sources */,
 				D2303A00298D5236001A1FA3 /* DatadogExtended.swift in Sources */,
 				D23039E6298D5236001A1FA3 /* Sysctl.swift in Sources */,
+				614A708E2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF429C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D23039E1298D5236001A1FA3 /* AppState.swift in Sources */,
 				D2DE63532A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
@@ -9327,6 +9336,7 @@
 				D2DA2369298D57AA00C6C7E6 /* AnyEncodable.swift in Sources */,
 				D2DA236A298D57AA00C6C7E6 /* DatadogExtended.swift in Sources */,
 				D2DA236B298D57AA00C6C7E6 /* Sysctl.swift in Sources */,
+				614A708F2BF754D800D9AF42 /* ImmutableRequest.swift in Sources */,
 				D2160CF529C0EDFC00FAA9A5 /* UploadPerformancePreset.swift in Sources */,
 				D2DA236C298D57AA00C6C7E6 /* AppState.swift in Sources */,
 				D2DE63542A30A7CA00441A54 /* CoreRegistry.swift in Sources */,
@@ -9409,6 +9419,7 @@
 				D2216EC32A96649500ADAEC8 /* FeatureBaggageTests.swift in Sources */,
 				D2160CDC29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				615192CD2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */,
+				6156A9072BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */,
 				D2F44FB8299AA1DA0074B0D9 /* DataCompressionTests.swift in Sources */,
 				D2160CE029C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,
 				D2EBEE3B29BA163E00B15732 /* B3HTTPHeadersReaderTests.swift in Sources */,
@@ -9456,6 +9467,7 @@
 				D2216EC42A96649700ADAEC8 /* FeatureBaggageTests.swift in Sources */,
 				D2160CDD29C0DF6700FAA9A5 /* HostsSanitizerTests.swift in Sources */,
 				615192CE2BD6948B0005A782 /* HTTPHeadersWriterTests.swift in Sources */,
+				6156A9082BF75A7C00DF66C3 /* ImmutableRequestTests.swift in Sources */,
 				D2F44FB9299AA1DB0074B0D9 /* DataCompressionTests.swift in Sources */,
 				D2160CE129C0DF6700FAA9A5 /* URLSessionDelegateAsSuperclassTests.swift in Sources */,
 				D2EBEE3F29BA163F00B15732 /* B3HTTPHeadersReaderTests.swift in Sources */,

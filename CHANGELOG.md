@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] `DatadogTrace` now supports OpenTelemetry. See [#1828][]
+- [FIX] Fix crash on accessing request.allHTTPHeaderFields. See [#1843][]
 
 # 2.11.0 / 08-05-2024
 
@@ -657,6 +658,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1774]: https://github.com/DataDog/dd-sdk-ios/pull/1774
 [#1763]: https://github.com/DataDog/dd-sdk-ios/pull/1763
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
+[#1843]: https://github.com/DataDog/dd-sdk-ios/pull/1843
 [#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
 [#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
