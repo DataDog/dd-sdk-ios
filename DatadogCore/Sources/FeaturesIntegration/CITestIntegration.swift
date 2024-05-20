@@ -83,6 +83,6 @@ internal class CITestIntegration {
     /// Creates a ID for message port. If UUID is provided joins name with UUID.
     /// Fallbacks to name if UUID is nil for backward compatibility
     private func messagePortId(name: String) -> CFString {
-        (messageChannelUUID.map{"\(name)-\($0)"} ?? name) as CFString
+        (messageChannelUUID.map { "\(name)-\($0)" } ?? name) as CFString
     }
 }
