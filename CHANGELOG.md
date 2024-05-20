@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FEATURE] `DatadogTrace` now supports OpenTelemetry. See [#1828][]
+- [FEATURE] RUM "stop session", "get session ID" and "evaluate feature flag" APIs are now available for Obj-C. See [#1853][]
 
 # 2.11.0 / 08-05-2024
 
@@ -661,6 +662,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
 [#1803]: https://github.com/DataDog/dd-sdk-ios/pull/1803
+[#1853]: https://github.com/DataDog/dd-sdk-ios/pull/1853
 [#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [#1828]: https://github.com/DataDog/dd-sdk-ios/pull/1828
 [@00fa9a]: https://github.com/00FA9A
