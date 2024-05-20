@@ -21,20 +21,15 @@ class ImmutableRequestTests: XCTestCase {
         XCTAssertEqual(immutable.httpMethod, original.httpMethod)
     }
 
-    func testReadingKnownHeaders() {
+    func testReadingDatadogOriginHeader() {
+        let expectedValue: String = .mockRandom(length: 128)
         let original: URLRequest = .mockWith(
             headers: [
-                TracingHTTPHeaders.originField: .mockRandom(length: 128),
+                TracingHTTPHeaders.originField: expectedValue
             ]
         )
         let immutable = ImmutableRequest(request: original)
-        XCTAssertEqual(immutable.knownHTTPHeaderFields[TracingHTTPHeaders.originField], original.allHTTPHeaderFields?[TracingHTTPHeaders.originField])
-    }
-
-    func testIgnoringUnknownHeaders() {
-        let original: URLRequest = .mockWith(headers: .mockRandom())
-        let immutable = ImmutableRequest(request: original)
-        XCTAssertTrue(immutable.knownHTTPHeaderFields.isEmpty)
+        XCTAssertEqual(immutable.ddOriginHeaderValue, expectedValue)
     }
 
     func testPreservingUnsafeOriginal() {

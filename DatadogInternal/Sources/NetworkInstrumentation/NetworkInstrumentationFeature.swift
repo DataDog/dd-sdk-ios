@@ -197,7 +197,7 @@ extension NetworkInstrumentationFeature {
                 interception.register(trace: traceContext)
             }
 
-            if let origin = request.knownHTTPHeaderFields[TracingHTTPHeaders.originField] {
+            if let origin = request.ddOriginHeaderValue {
                 interception.register(origin: origin)
             }
 

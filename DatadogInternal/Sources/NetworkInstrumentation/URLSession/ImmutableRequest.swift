@@ -16,8 +16,8 @@ public struct ImmutableRequest {
     public let url: URL?
     /// The HTTP method of the request.
     public let httpMethod: String?
-    /// Known HTTP header fields of the request.
-    public let knownHTTPHeaderFields: [String: String]
+    /// The value of `x-datadog-origin` header (if any).
+    public let ddOriginHeaderValue: String?
     /// A reference to the original `URLRequest` object provided during initialization. Direct use is discouraged
     /// due to thread safety concerns. Instead, necessary attributes should be accessed through `ImmutableRequest` fields.
     public let unsafeOriginal: URLRequest
@@ -25,20 +25,10 @@ public struct ImmutableRequest {
     public init(request: URLRequest) {
         self.url = request.url
         self.httpMethod = request.httpMethod
-
-        // As observed in https://github.com/DataDog/dd-sdk-ios/issues/1638, accessing `request.allHTTPHeaderFields` is not
-        // safe and leads to crashes with undefined root cause. To avoid this, instead we use `request.value(forHTTPHeaderField:)`
-        // to only read headers known by the SDK.
-        var knownHTTPHeaderFields: [String: String] = [:]
-        addHeaderIfExists(request: request, field: TracingHTTPHeaders.originField, to: &knownHTTPHeaderFields)
-
-        self.knownHTTPHeaderFields = knownHTTPHeaderFields
+        // RUM-3183: As observed in https://github.com/DataDog/dd-sdk-ios/issues/1638, accessing `request.allHTTPHeaderFields` is not
+        // safe and can lead to crashes with undefined root cause. To avoid issues we should prefer `request.value(forHTTPHeaderField:)`
+        // when interacting with `URLRequest`.
+        self.ddOriginHeaderValue = request.value(forHTTPHeaderField: TracingHTTPHeaders.originField)
         self.unsafeOriginal = request
-    }
-}
-
-private func addHeaderIfExists(request: URLRequest, field: String, to knownHeaders: inout [String: String]) {
-    if let value = request.value(forHTTPHeaderField: field) {
-        knownHeaders[field] = value
     }
 }
