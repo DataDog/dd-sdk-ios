@@ -75,9 +75,9 @@ public final class DDWebViewTrackingSessionReplayConfiguration: NSObject {
 
         internal var toSwift: WebViewTracking.SessionReplayConfiguration.PrivacyLevel {
             switch self {
-            case .allow: .allow
-            case .mask: .mask
-            case .maskUserInput: .maskUserInput
+            case .allow: return .allow
+            case .mask: return .mask
+            case .maskUserInput: return .maskUserInput
             }
         }
     }
