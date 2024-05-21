@@ -22,27 +22,31 @@
 
 ### Log Collection
 
-See the dedicated [Datadog iOS Log Collection](https://docs.datadoghq.com/logs/log_collection/ios) documentation to learn how to send logs from your iOS application to Datadog.
+See the dedicated [Datadog iOS Log Collection][1] documentation to learn how to send logs from your iOS application to Datadog.
 
 ![Datadog iOS Log Collection](docs/images/logging.png)
 
 ### Trace Collection
 
-See [Datadog iOS Trace Collection](https://docs.datadoghq.com/tracing/setup_overview/setup/ios) documentation to try it out.
+See [Datadog iOS Trace Collection][2] documentation to try it out.
 
 ![Datadog iOS Log Collection](docs/images/tracing.png)
 
 ### RUM Events Collection
 
-See [Datadog iOS RUM Collection](https://docs.datadoghq.com/real_user_monitoring/ios) documentation to try it out.
+See [Datadog iOS RUM Collection][3] documentation to try it out.
 
 ![Datadog iOS RUM Collection](docs/images/rum.png)
+
+#### WebView Tracking
+
+RUM allows you to monitor web views and eliminate blind spots in your hybrid mobile applications. See [WebView Tracking][5] documentation to try it out.
 
 ## Integrations
 
 ### Alamofire
 
-If you use [Alamofire](https://github.com/Alamofire/Alamofire), review the [`Datadog Alamofire Extension` library](DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
+If you use [Alamofire][4], review the [`Datadog Alamofire Extension` library](DatadogExtensions/Alamofire/) to learn how to automatically instrument requests with the Datadog iOS SDK.
 
 ## Contributing
 
@@ -51,3 +55,14 @@ Pull requests are welcome. First, open an issue to discuss what you would like t
 ## License
 
 [Apache License, v2.0](LICENSE)
+
+## Supported Versions
+
+See the [Supported Versions][6] documentation for more details.
+
+[1]: https://docs.datadoghq.com/logs/log_collection/ios
+[2]: https://docs.datadoghq.com/tracing/setup_overview/setup/ios
+[3]: https://docs.datadoghq.com/real_user_monitoring/ios
+[4]: https://github.com/Alamofire/Alamofire
+[5]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/web_view_tracking?tab=ios
+[6]: https://docs.datadoghq.com/real_user_monitoring/mobile_and_tv_monitoring/supported_versions/ios/
