@@ -11,9 +11,68 @@ import Foundation
 import WebKit
 #endif
 
-@objc
-public final class DDWebViewTracking: NSObject {
+@objc(DDWebViewTracking)
+@_spi(objc)
+public final class objc_WebViewTracking: NSObject {
     override private init() { }
+
+    /// The Session Replay configuration to capture records coming from the web view.
+    ///
+    /// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting replay data from
+    /// the Datadog Browser SDK installed in the web page. Datadog will then be able to combine the native
+    /// and web recordings in a single replay.
+    @objc(DDWebViewTrackingSessionReplayConfiguration)
+    @_spi(objc)
+    public final class SessionReplayConfiguration: NSObject {
+        /// Available privacy levels for content masking.
+        @objc(DDPrivacyLevel)
+        @_spi(objc)
+        public enum PrivacyLevel: Int {
+            /// Record all content.
+            case allow
+            /// Mask all content.
+            case mask
+            /// Mask input elements, but record all other content.
+            case maskUserInput
+
+            internal var toSwift: WebViewTracking.SessionReplayConfiguration.PrivacyLevel {
+                switch self {
+                case .allow: return .allow
+                case .mask: return .mask
+                case .maskUserInput: return .maskUserInput
+                }
+            }
+        }
+
+        /// The privacy level to use for the web view replay recording.
+        @objc public var privacyLevel: PrivacyLevel
+
+        /// Creates Webview Session Replay configuration.
+        ///
+        /// - Parameters:
+        ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
+        @objc
+        override public init() {
+            self.privacyLevel = .mask
+        }
+
+        /// Creates Webview Session Replay configuration.
+        ///
+        /// - Parameters:
+        ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
+        @objc
+        public init(
+            privacyLevel: PrivacyLevel
+        ) {
+            self.privacyLevel = privacyLevel
+        }
+
+        internal var toSwift: WebViewTracking.SessionReplayConfiguration {
+            return .init(
+                privacyLevel: privacyLevel.toSwift
+            )
+        }
+    }
 
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     ///
@@ -32,7 +91,7 @@ public final class DDWebViewTracking: NSObject {
         webView: WKWebView,
         hosts: Set<String> = [],
         logsSampleRate: Float = 100,
-        with configuration: DDWebViewTrackingSessionReplayConfiguration? = nil
+        with configuration: SessionReplayConfiguration? = nil
     ) {
         WebViewTracking.enable(
             webView: webView,
@@ -53,61 +112,5 @@ public final class DDWebViewTracking: NSObject {
         webView: WKWebView
     ) {
         WebViewTracking.disable(webView: webView)
-    }
-}
-
-/// The Session Replay configuration to capture records coming from the web view.
-///
-/// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting replay data from
-/// the Datadog Browser SDK installed in the web page. Datadog will then be able to combine the native
-/// and web recordings in a single replay.
-@objc
-public final class DDWebViewTrackingSessionReplayConfiguration: NSObject {
-    /// Available privacy levels for content masking.
-    @objc
-    public enum DDPrivacyLevel: Int {
-        /// Record all content.
-        case allow
-        /// Mask all content.
-        case mask
-        /// Mask input elements, but record all other content.
-        case maskUserInput
-
-        internal var toSwift: WebViewTracking.SessionReplayConfiguration.PrivacyLevel {
-            switch self {
-            case .allow: return .allow
-            case .mask: return .mask
-            case .maskUserInput: return .maskUserInput
-            }
-        }
-    }
-
-    /// The privacy level to use for the web view replay recording.
-    @objc public var privacyLevel: DDPrivacyLevel
-
-    /// Creates Webview Session Replay configuration.
-    ///
-    /// - Parameters:
-    ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-    @objc
-    override public init() {
-        self.privacyLevel = .mask
-    }
-
-    /// Creates Webview Session Replay configuration.
-    ///
-    /// - Parameters:
-    ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-    @objc
-    public init(
-        privacyLevel: DDPrivacyLevel
-    ) {
-        self.privacyLevel = privacyLevel
-    }
-
-    internal var toSwift: WebViewTracking.SessionReplayConfiguration {
-        return .init(
-            privacyLevel: privacyLevel.toSwift
-        )
     }
 }
