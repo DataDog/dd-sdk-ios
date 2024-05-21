@@ -8,6 +8,7 @@
  */
 
 import Foundation
+import DatadogInternal
 import XCTest
 
 public enum DDAssertError: Error {
@@ -144,6 +145,12 @@ private func _DDAssertJSONEqual<T, U>(_ expression1: @autoclosure () throws -> T
     let string2 = data2.utf8String
     guard string1 == string2 else {
         throw DDAssertError.expectedFailure("(\"\(string1)\") is not equal to (\"\(string2)\")")
+    }
+}
+
+public func DDAssertJSONEqual(_ expression1: @autoclosure () throws -> Any, _ expression2: @autoclosure () throws -> Any, _ message: @autoclosure () -> String = "", file: StaticString = #filePath, line: UInt = #line) {
+    _DDEvaluateAssertion(message: message(), file: file, line: line) {
+        try _DDAssertJSONEqual(AnyCodable(expression1()), AnyCodable(expression2()))
     }
 }
 

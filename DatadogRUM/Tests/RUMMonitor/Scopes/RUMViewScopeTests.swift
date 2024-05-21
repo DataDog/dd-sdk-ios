@@ -2551,16 +2551,17 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
     }
 
-    // MARK: - Sending Messages Over Message Bus
+    // MARK: - Updating Fatal Error Context
 
-    func testWhenViewIsStarted_itSendsViewEventMessages() throws {
+    func testWhenViewIsStarted_itUpdatesFatalErrorContextWithView() throws {
         let featureScope = FeatureScopeMock()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
 
         // Given
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
@@ -2581,8 +2582,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
-        let baggageSent = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: RUMBaggageKeys.viewEvent))
-        let rumViewSent: RUMViewEvent = try baggageSent.decode()
-        DDAssertReflectionEqual(rumViewSent, rumViewWritten, "It must sent written event over message bus")
+        let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
+        DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
     }
 }

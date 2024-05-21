@@ -14,7 +14,7 @@ internal protocol RUMCommand {
     /// Attributes associated with the command.
     var attributes: [AttributeKey: AttributeValue] { set get }
     /// Whether or not receiving this command should start the "Background" view if no view is active
-    /// and ``Datadog.Configuration.Builder.trackBackgroundEvents(_:)`` is enabled.
+    /// and ``RUM.Configuration.trackBackgroundEvents`` is enabled.
     var canStartBackgroundView: Bool { get }
     /// Whether or not this command is considered a user intaraction
     var isUserInteraction: Bool { get }

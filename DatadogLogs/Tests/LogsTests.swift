@@ -136,7 +136,7 @@ class LogsTests: XCTestCase {
         XCTAssertEqual((baggage.attributes[attributeKey] as? AnyCodable)?.value as? String, attributeValue)
     }
 
-    func testItSendsGlobalLogUpdates_whenRemovettribute() throws {
+    func testItSendsGlobalLogUpdates_whenRemoveAttribute() throws {
         // Given
         let mockMessageReciever = FeatureMessageReceiverMock()
         let core = SingleFeatureCoreMock<LogsFeature>(

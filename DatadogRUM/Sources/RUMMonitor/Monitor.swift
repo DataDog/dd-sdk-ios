@@ -119,7 +119,13 @@ internal class Monitor: RUMCommandSubscriber {
     private(set) var debugging: RUMDebugging? = nil
 
     @ReadWriteLock
-    private var attributes: [AttributeKey: AttributeValue] = [:]
+    private var attributes: [AttributeKey: AttributeValue] = [:] {
+        didSet {
+            fatalErrorContext.globalAttributes = attributes
+        }
+    }
+
+    private let fatalErrorContext: FatalErrorContextNotifying
 
     init(
         dependencies: RUMScopeDependencies,
@@ -128,6 +134,7 @@ internal class Monitor: RUMCommandSubscriber {
         self.featureScope = dependencies.featureScope
         self.scopes = RUMApplicationScope(dependencies: dependencies)
         self.dateProvider = dateProvider
+        self.fatalErrorContext = dependencies.fatalErrorContext
     }
 
     func process(command: RUMCommand) {
