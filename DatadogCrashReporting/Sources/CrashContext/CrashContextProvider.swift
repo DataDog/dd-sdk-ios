@@ -105,7 +105,11 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     ///
     /// - Parameter context: The updated core context.
     private func update(context: DatadogContext) {
-        queue.async {
+        queue.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+
             let crashContext = CrashContext(
                 context,
                 lastRUMViewEvent: self.viewEvent,
@@ -121,9 +125,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func updateRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core] in
+        queue.async { [weak core, weak self] in
             do {
-                self.viewEvent = try baggage.decode(type: AnyCodable.self)
+                self?.viewEvent = try baggage.decode(type: AnyCodable.self)
             } catch {
                 core?.telemetry
                     .error("Fails to decode RUM view event from Crash Reporting", error: error)
@@ -132,10 +136,10 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func resetRUMView(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core] in
+        queue.async { [weak core, weak self] in
             do {
                 if try baggage.decode(type: Bool.self) {
-                    self.viewEvent = nil
+                    self?.viewEvent = nil
                 }
             } catch {
                 core?.telemetry
@@ -145,9 +149,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func updateSessionState(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core] in
+        queue.async { [weak core, weak self] in
             do {
-                self.sessionState = try baggage.decode(type: AnyCodable.self)
+                self?.sessionState = try baggage.decode(type: AnyCodable.self)
             } catch {
                 core?.telemetry
                     .error("Fails to decode RUM session state from Crash Reporting", error: error)
@@ -156,9 +160,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func updateLogAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core] in
+        queue.async { [weak core, weak self] in
             do {
-                self.logAttributes = try baggage.decode(type: AnyCodable.self)
+                self?.logAttributes = try baggage.decode(type: AnyCodable.self)
             } catch {
                 core?.telemetry
                     .error("Fails to decode log attributes from Crash Reporting", error: error)
@@ -167,9 +171,9 @@ extension CrashContextCoreProvider: FeatureMessageReceiver {
     }
 
     private func updateRUMAttributes(with baggage: FeatureBaggage, to core: DatadogCoreProtocol) {
-        queue.async { [weak core] in
+        queue.async { [weak core, weak self] in
             do {
-                self.rumAttributes = try baggage.decode(type: GlobalRUMAttributes.self)
+                self?.rumAttributes = try baggage.decode(type: GlobalRUMAttributes.self)
             } catch {
                 core?.telemetry
                     .error("Fails to decode log attributes from Crash Reporting", error: error)
