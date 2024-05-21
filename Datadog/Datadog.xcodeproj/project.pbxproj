@@ -3339,8 +3339,8 @@
 		3CE11A3B29F7BEE700202522 /* DatadogWebViewTracking */ = {
 			isa = PBXGroup;
 			children = (
+				6174D6072BFCCDA400EC7469 /* ObjC */,
 				3C85D41429F7C59C00AFF894 /* WebViewTracking.swift */,
-				6174D6032BFB9AB600EC7469 /* WebViewTracking+objc.swift */,
 				D29732462A5C108700827599 /* DDScriptMessageHandler.swift */,
 				D29732472A5C108700827599 /* MessageEmitter.swift */,
 			);
@@ -4745,6 +4745,14 @@
 			);
 			name = DatadogCrashReportingTests;
 			path = ../DatadogCrashReporting/Tests;
+			sourceTree = "<group>";
+		};
+		6174D6072BFCCDA400EC7469 /* ObjC */ = {
+			isa = PBXGroup;
+			children = (
+				6174D6032BFB9AB600EC7469 /* WebViewTracking+objc.swift */,
+			);
+			path = ObjC;
 			sourceTree = "<group>";
 		};
 		617699162A8608C20030022B /* Context */ = {
