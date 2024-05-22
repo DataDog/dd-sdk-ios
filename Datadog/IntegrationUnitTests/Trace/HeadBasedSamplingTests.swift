@@ -130,7 +130,6 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
-    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with DatadogTrace network
@@ -161,8 +160,8 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertFalse(span.isKept, "Span must be dropped")
 
         // Then
-        let expectedTraceIDField = span.traceID.idLoHex
-        let expectedSpanIDField = String(span.spanID, representation: .hexadecimal)
+        let expectedTraceIDField = span.traceID.toString(representation: .decimal)
+        let expectedSpanIDField = span.spanID.toString(representation: .decimal)
         let expectedTagsField = "_dd.p.tid=\(span.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
@@ -218,7 +217,6 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
-    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
@@ -250,16 +248,16 @@ class HeadBasedSamplingTests: XCTestCase {
         let activeSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "active.span" }))
         let urlsessionSpan = try XCTUnwrap(spanEvents.first(where: { $0.operationName == "urlsession.request" }))
 
-        XCTAssertEqual(activeSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(activeSpan.isKept, "Span must be sampled")
-        XCTAssertEqual(urlsessionSpan.samplingRate, 1, "Span must use local trace sample rate")
-        XCTAssertTrue(urlsessionSpan.isKept, "Span must be sampled")
+        XCTAssertEqual(activeSpan.samplingRate, 0, "Span must use local trace sample rate")
+        XCTAssertFalse(activeSpan.isKept, "Span must not be sampled")
+        XCTAssertEqual(urlsessionSpan.samplingRate, 0, "Span must use local trace sample rate")
+        XCTAssertFalse(urlsessionSpan.isKept, "Span must not be sampled")
         XCTAssertEqual(urlsessionSpan.traceID, activeSpan.traceID)
         XCTAssertEqual(urlsessionSpan.parentID, activeSpan.spanID)
 
         // Then
-        let expectedTraceIDField = activeSpan.traceID.idLoHex
-        let expectedSpanIDField = String(urlsessionSpan.spanID, representation: .hexadecimal)
+        let expectedTraceIDField = activeSpan.traceID.toString(representation: .decimal)
+        let expectedSpanIDField = urlsessionSpan.spanID.toString(representation: .decimal)
         let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
@@ -285,7 +283,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -308,7 +306,6 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.tagsField), expectedTagsField)
     }
 
-    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with the span created with Datadog tracer:
@@ -325,7 +322,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
         writer.traceHeaderFields.forEach { field, value in request.setValue(value, forHTTPHeaderField: field) }
@@ -338,8 +335,8 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertFalse(networkSpan.isKept, "Span must be dropped")
 
         // Then
-        let expectedTraceIDField = networkSpan.traceID.idLoHex
-        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTraceIDField = networkSpan.traceID.toString(representation: .decimal)
+        let expectedSpanIDField = networkSpan.spanID.toString(representation: .decimal)
         let expectedTagsField = "_dd.p.tid=\(networkSpan.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)
@@ -365,7 +362,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
@@ -395,7 +392,6 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "1")
     }
 
-    // TODO: RUM-3535 Enable this test when trace context injection control is implemented
     func testSendingDroppedDistributedTraceWithParent_throughTracerAPI() throws {
         /*
          This is the situation where distributed trace starts with an active local span and is continued with the span
@@ -414,7 +410,7 @@ class HeadBasedSamplingTests: XCTestCase {
 
         // When
         var request: URLRequest = .mockAny()
-        let writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+        let writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: .all)
         let parentSpan = Tracer.shared(in: core).startSpan(operationName: "active.span").setActive()
         let span = Tracer.shared(in: core).startSpan(operationName: "network.span")
         Tracer.shared(in: core).inject(spanContext: span.context, writer: writer)
@@ -435,8 +431,8 @@ class HeadBasedSamplingTests: XCTestCase {
         XCTAssertEqual(networkSpan.parentID, activeSpan.spanID)
 
         // Then
-        let expectedTraceIDField = activeSpan.traceID.idLoHex
-        let expectedSpanIDField = String(networkSpan.spanID, representation: .hexadecimal)
+        let expectedTraceIDField = activeSpan.traceID.toString(representation: .decimal)
+        let expectedSpanIDField = networkSpan.spanID.toString(representation: .decimal)
         let expectedTagsField = "_dd.p.tid=\(activeSpan.traceID.idHiHex)"
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField), expectedTraceIDField)
         XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField), expectedSpanIDField)

@@ -3,6 +3,7 @@
 - [IMPROVEMENT] Crash errors now include up-to-date global RUM attributes. See [#1834][]
 - [FEATURE] `DatadogTrace` now supports OpenTelemetry. See [#1828][]
 - [FIX] Fix crash on accessing request.allHTTPHeaderFields. See [#1843][]
+- [FEATURE] Support for trace context injection configuration to allow selective injection. See [#1835][]
 - [FEATURE] `DatadogWebViewTracking` is now available for Obj-C. See [#1854][]
 - [FEATURE] RUM "stop session", "get session ID" and "evaluate feature flag" APIs are now available for Obj-C. See [#1853][]
 
@@ -671,6 +672,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1807]: https://github.com/DataDog/dd-sdk-ios/pull/1807
 [#1854]: https://github.com/DataDog/dd-sdk-ios/pull/1854
 [#1828]: https://github.com/DataDog/dd-sdk-ios/pull/1828
+[#1835]: https://github.com/DataDog/dd-sdk-ios/pull/1835
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

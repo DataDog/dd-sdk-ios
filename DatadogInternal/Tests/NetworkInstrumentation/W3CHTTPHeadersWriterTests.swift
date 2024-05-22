@@ -9,12 +9,13 @@ import TestUtilities
 import DatadogInternal
 
 class W3CHTTPHeadersWriterTests: XCTestCase {
-    func testWritingSampledTraceContext_withAutoSamplingStrategy() {
+    func testWritingSampledTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
             samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -30,12 +31,13 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
         XCTAssertEqual(headers[W3CHTTPHeaders.tracestate], "dd=o:rum;p:0000000000000929;s:1")
     }
 
-    func testWritingDroppedTraceContext_withAutoSamplingStrategy() {
+    func testWritingDroppedTraceContext_withHeadBasedSamplingStrategy() {
         let writer = W3CHTTPHeadersWriter(
             samplingStrategy: .headBased,
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -57,7 +59,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .custom(sampleRate: 100),
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
@@ -78,7 +81,8 @@ class W3CHTTPHeadersWriterTests: XCTestCase {
             samplingStrategy: .custom(sampleRate: 0),
             tracestate: [
                 W3CHTTPHeaders.Constants.origin: W3CHTTPHeaders.Constants.originRUM
-            ]
+            ],
+            traceContextInjection: .all
         )
 
         writer.write(
