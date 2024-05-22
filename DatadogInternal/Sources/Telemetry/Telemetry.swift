@@ -128,7 +128,7 @@ public struct MethodCalledTrace {
                 MethodCalledMetric.operationName: operationName,
                 MethodCalledMetric.callerClass: callerClass,
                 MethodCalledMetric.isSuccessful: isSuccessful,
-                BasicMetric.typeKey: MethodCalledMetric.typeValue
+                SDKMetricFields.typeKey: MethodCalledMetric.typeValue
             ]
         )
     }
