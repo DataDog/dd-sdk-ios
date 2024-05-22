@@ -416,7 +416,7 @@ public enum Datadog {
             ?? "0"
 
         let bundleName = configuration.bundle.object(forInfoDictionaryKey: "CFBundleExecutable") as? String
-        let bundleType: BundleType = configuration.bundle.bundlePath.hasSuffix(".appex") ? .iOSAppExtension : .iOSApp
+        let bundleType = BundleType(bundle: configuration.bundle)
         let bundleIdentifier = configuration.bundle.bundleIdentifier ?? "unknown"
         let service = configuration.service ?? configuration.bundle.bundleIdentifier ?? "ios"
         let source = configuration.additionalConfiguration[CrossPlatformAttributes.ddsource] as? String ?? "ios"
@@ -459,6 +459,7 @@ public enum Datadog {
                 ciAppOrigin: CITestIntegration.active?.origin,
                 applicationName: bundleName ?? bundleType.rawValue,
                 applicationBundleIdentifier: bundleIdentifier,
+                applicationBundleType: bundleType,
                 applicationVersion: applicationVersion,
                 sdkInitDate: configuration.dateProvider.now,
                 device: DeviceInfo(),
