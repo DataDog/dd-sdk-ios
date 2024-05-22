@@ -51,7 +51,7 @@ class TracerE2ETests: E2ETests {
     /// ```
     func test_trace_tracer_inject_span_context() {
         let anySpan = tracer.startSpan(operationName: .mockRandom()) // this span is never sent
-        let anyWriter = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 20))
+        let anyWriter = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 20), traceContextInjection: .all)
 
         measure(resourceName: DD.PerfSpanName.fromCurrentMethodName()) {
             tracer.inject(spanContext: anySpan.context, writer: anyWriter)
