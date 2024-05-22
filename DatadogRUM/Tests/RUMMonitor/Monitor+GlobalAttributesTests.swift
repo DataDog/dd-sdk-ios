@@ -483,6 +483,46 @@ class Monitor_GlobalAttributesTests: XCTestCase {
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
         XCTAssertEqual(viewAfterSecondTiming.attribute(forKey: "attribute2"), "value2")
     }
+
+    // MARK: - Updating Fatal Error Context With Global Attributes
+
+    func testGivenSDKInitialized_whenGlobalAttributeIsAdded_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttribute(forKey: "attribute", value: "value")
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.globalAttributes["attribute"] as? String, "value")
+        XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
+    }
+
+    func testGivenSDKInitialized_whenGlobalAttributesAreAddedAndRemoved_thenFatalErrorContextIsUpdatedWithNewAttributes() throws {
+        let fatalErrorContext = FatalErrorContextNotifierMock()
+
+        // Given
+        monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
+            dateProvider: SystemDateProvider()
+        )
+        monitor.notifySDKInit()
+
+        // When
+        monitor.addAttribute(forKey: "attribute1", value: "value1")
+        monitor.addAttribute(forKey: "attribute2", value: "value2")
+        monitor.removeAttribute(forKey: "attribute1")
+
+        // Then
+        XCTAssertEqual(fatalErrorContext.globalAttributes["attribute2"] as? String, "value2")
+        XCTAssertEqual(fatalErrorContext.globalAttributes.count, 1)
+    }
 }
 
 // MARK: - Helpers

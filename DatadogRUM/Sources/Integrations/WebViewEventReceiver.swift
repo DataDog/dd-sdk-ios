@@ -76,11 +76,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                 let rum: RUMCoreContext = try rumBaggage.decode()
                 var event = event
 
-                if
-                    let date = event["date"] as? Int,
-                    let view = event["view"] as? JSON,
-                    let id = view["id"] as? String
-                {
+                if let date = event["date"] as? Int,
+                   let view = event["view"] as? JSON,
+                   let id = view["id"] as? String {
                     let correctedDate = Int64(date) + self.offset(forView: id, context: context)
                     event["date"] = correctedDate
 

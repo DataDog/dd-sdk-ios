@@ -45,13 +45,13 @@ class SendingCrashReportTests: XCTestCase {
 
     func testWhenSDKStartsWithPendingCrashReport_itSendsItAsLogAndRUMEvent() throws {
         // Given
-        let crashReport: DDCrashReport = .mockRandomWith(
-            context: .mockWith(
-                trackingConsent: .granted, // CR from the app session that has enabled data collection
-                lastIsAppInForeground: true, // CR occurred while the app was in the foreground
-                lastLogAttributes: .init(mockRandomAttributes())
-            )
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted, // CR from the app session that has enabled data collection
+            lastIsAppInForeground: true, // CR occurred while the app was in the foreground
+            lastRUMAttributes: GlobalRUMAttributes(attributes: mockRandomAttributes()),
+            lastLogAttributes: .init(mockRandomAttributes())
         )
+        let crashReport: DDCrashReport = .mockRandomWith(context: crashContext)
 
         // When
         Logs.enable(with: .init(), in: core)
@@ -66,6 +66,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertEqual(log.error?.kind, crashReport.type)
         XCTAssertEqual(log.error?.stack, crashReport.stack)
         XCTAssertFalse(log.attributes.userAttributes.isEmpty)
+        DDAssertJSONEqual(log.attributes.userAttributes, crashContext.lastLogAttributes!)
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.threads])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.binaryImages])
         XCTAssertNotNil(log.attributes.internalAttributes?[DDError.meta])
@@ -80,6 +81,7 @@ class SendingCrashReportTests: XCTestCase {
         XCTAssertNotNil(rumEvent.error.binaryImages)
         XCTAssertNotNil(rumEvent.error.meta)
         XCTAssertNotNil(rumEvent.error.wasTruncated)
+        DDAssertJSONEqual(rumEvent.context!.contextInfo, crashContext.lastRUMAttributes!)
     }
 
     func testWhenSendingCrashReportAsLog_itIsLinkedToTheRUMSessionThatHasCrashed() throws {
