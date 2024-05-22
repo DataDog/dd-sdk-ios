@@ -107,19 +107,34 @@ internal struct DebugManualTraceInjectionView: View {
 
         switch selectedTraceHeaderType {
         case .datadog:
-            let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate))
+            let writer = HTTPHeadersWriter(
+                samplingStrategy: .custom(sampleRate: sampleRate),
+                traceContextInjection: .all
+            )
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .w3c:
-            let writer = W3CHTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: [:])
+            let writer = W3CHTTPHeadersWriter(
+                samplingStrategy: .custom(sampleRate: sampleRate),
+                tracestate: [:],
+                traceContextInjection: .all
+            )
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Single:
-            let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), injectEncoding: .single)
+            let writer = B3HTTPHeadersWriter(
+                samplingStrategy: .custom(sampleRate: sampleRate),
+                injectEncoding: .single,
+                traceContextInjection: .all
+            )
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         case .b3Multiple:
-            let writer = B3HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: sampleRate), injectEncoding: .multiple)
+            let writer = B3HTTPHeadersWriter(
+                samplingStrategy: .custom(sampleRate: sampleRate),
+                injectEncoding: .multiple,
+                traceContextInjection: .all
+            )
             Tracer.shared().inject(spanContext: span.context, writer: writer)
             writer.traceHeaderFields.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
         }

@@ -49,19 +49,21 @@ extension InternalExtension where ExtendedType == RUM {
 
         // If first party hosts are configured, enable distributed tracing:
         switch configuration.firstPartyHostsTracing {
-        case let .trace(hosts, sampleRate):
+        case let .trace(hosts, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
                 sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hosts),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
-                spanIDGenerator: rumConfiguration.spanIDGenerator
+                spanIDGenerator: rumConfiguration.spanIDGenerator,
+                traceContextInjection: traceContextInjection
             )
-        case let .traceWithHeaders(hostsWithHeaders, sampleRate):
+        case let .traceWithHeaders(hostsWithHeaders, sampleRate, traceContextInjection):
             distributedTracing = DistributedTracing(
                 sampler: Sampler(samplingRate: rumConfiguration.debugSDK ? 100 : sampleRate),
                 firstPartyHosts: FirstPartyHosts(hostsWithHeaders),
                 traceIDGenerator: rumConfiguration.traceIDGenerator,
-                spanIDGenerator: rumConfiguration.spanIDGenerator
+                spanIDGenerator: rumConfiguration.spanIDGenerator,
+                traceContextInjection: traceContextInjection
             )
         case .none:
             distributedTracing = nil

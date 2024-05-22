@@ -39,6 +39,7 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     private let tracestate: [String: String]
 
     private let samplingStrategy: TraceSamplingStrategy
+    private let traceContextInjection: TraceContextInjection
 
     /// Initializes the headers writer.
     ///
@@ -55,16 +56,22 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
     /// - Parameter tracestate: The tracestate to be injected.
     @available(*, deprecated, message: "This will be removed in future versions of the SDK. Use `init(samplingStrategy: .custom(sampleRate:))` instead.")
     public convenience init(sampleRate: Float = 20, tracestate: [String: String] = [:]) {
-        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate)
+        self.init(samplingStrategy: .custom(sampleRate: sampleRate), tracestate: tracestate, traceContextInjection: .all)
     }
 
     /// Initializes the headers writer.
     ///
     /// - Parameter samplingStrategy: The strategy for sampling trace propagation headers.
     /// - Parameter tracestate: The tracestate to be injected.
-    public init(samplingStrategy: TraceSamplingStrategy, tracestate: [String: String] = [:]) {
+    /// - Parameter traceContextInjection: The strategy for injecting trace context into requests.
+    public init(
+        samplingStrategy: TraceSamplingStrategy,
+        tracestate: [String: String] = [:],
+        traceContextInjection: TraceContextInjection = .all
+    ) {
         self.samplingStrategy = samplingStrategy
         self.tracestate = tracestate
+        self.traceContextInjection = traceContextInjection
     }
 
     /// Writes the trace ID, span ID, and optional parent span ID into the trace propagation headers.
@@ -78,28 +85,33 @@ public class W3CHTTPHeadersWriter: TracePropagationHeadersWriter {
         let sampler = samplingStrategy.sampler(for: traceContext)
         let sampled = sampler.sample()
 
-        traceHeaderFields[W3CHTTPHeaders.traceparent] = [
-            Constants.version,
-            String(traceContext.traceID, representation: .hexadecimal32Chars),
-            String(traceContext.spanID, representation: .hexadecimal16Chars),
-            sampled ? Constants.sampledValue : Constants.unsampledValue
-        ]
-        .joined(separator: Constants.separator)
+        switch (traceContextInjection, sampled) {
+        case (.all, _), (.sampled, true):
+            traceHeaderFields[W3CHTTPHeaders.traceparent] = [
+                Constants.version,
+                String(traceContext.traceID, representation: .hexadecimal32Chars),
+                String(traceContext.spanID, representation: .hexadecimal16Chars),
+                sampled ? Constants.sampledValue : Constants.unsampledValue
+            ]
+            .joined(separator: Constants.separator)
 
-        // while merging, the tracestate values from the tracestate property take precedence
-        // over the ones from the trace context
-        let tracestate: [String: String] = [
-            Constants.sampling: "\(sampled ? 1 : 0)",
-            Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
-        ].merging(tracestate) { old, new in
-            return new
+            // while merging, the tracestate values from the tracestate property take precedence
+            // over the ones from the trace context
+            let tracestate: [String: String] = [
+                Constants.sampling: "\(sampled ? 1 : 0)",
+                Constants.parentId: String(traceContext.spanID, representation: .hexadecimal16Chars)
+            ].merging(tracestate) { old, new in
+                return new
+            }
+
+            let ddtracestate = tracestate
+                .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
+                .sorted()
+                .joined(separator: Constants.tracestatePairSeparator)
+
+            traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
+        case (.sampled, false):
+            break
         }
-
-        let ddtracestate = tracestate
-            .map { "\($0.key)\(Constants.tracestateKeyValueSeparator)\($0.value)" }
-            .sorted()
-            .joined(separator: Constants.tracestatePairSeparator)
-
-        traceHeaderFields[W3CHTTPHeaders.tracestate] = "\(Constants.dd)=\(ddtracestate)"
     }
 }

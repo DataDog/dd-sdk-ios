@@ -196,20 +196,6 @@
                BlueprintName = "DatadogCoreTests iOS"
                ReferencedContainer = "container:Datadog.xcodeproj">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughTracerAPI()">
-               </Test>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI()">
-               </Test>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent_throughTracerAPI()">
-               </Test>
-               <Test
-                  Identifier = "HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithParent_throughURLSessionInstrumentationAPI()">
-               </Test>
-            </SkippedTests>
          </TestableReference>
          <TestableReference
             skipped = "NO">

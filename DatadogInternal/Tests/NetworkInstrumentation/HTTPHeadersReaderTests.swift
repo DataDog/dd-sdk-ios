@@ -10,7 +10,7 @@ import TestUtilities
 
 class HTTPHeadersReaderTests: XCTestCase {
     func testReadingSampledTraceContext() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100))
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 100), traceContextInjection: .all)
         writer.write(traceContext: .mockRandom())
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
@@ -18,12 +18,21 @@ class HTTPHeadersReaderTests: XCTestCase {
         XCTAssertEqual(reader.sampled, true)
     }
 
-    func testReadingNotSampledTraceContext() {
-        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0))
+    func testReadingNotSampledTraceContext_givenTraceContextInjectionIsAll() {
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), traceContextInjection: .all)
+        writer.write(traceContext: .mockRandom())
+
+        let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
+        XCTAssertNotNil(reader.read(), "When not sampled, it should return no trace context")
+        XCTAssertEqual(reader.sampled, false)
+    }
+
+    func testReadingNotSampledTraceContext_givenTraceContextInjectionIsSampled() {
+        let writer = HTTPHeadersWriter(samplingStrategy: .custom(sampleRate: 0), traceContextInjection: .sampled)
         writer.write(traceContext: .mockRandom())
 
         let reader = HTTPHeadersReader(httpHeaderFields: writer.traceHeaderFields)
         XCTAssertNil(reader.read(), "When not sampled, it should return no trace context")
-        XCTAssertEqual(reader.sampled, false)
+        XCTAssertNil(reader.sampled)
     }
 }
