@@ -1435,7 +1435,7 @@ class RUMMonitorTests: XCTestCase {
         for matcher in matchers.filterTelemetry() {
             // Application Start/Launch happens too early to have attributes set.
             if (try? matcher.attribute(forKeyPath: "action.type")) == "application_start" ||
-               (try? matcher.attribute(forKeyPath: "view.name")) == "ApplicationLaunch"{
+               (try? matcher.attribute(forKeyPath: "view.name")) == "ApplicationLaunch" {
                 continue
             }
             expectedAttributes.forEach { attrKey, attrValue in

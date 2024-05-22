@@ -1,0 +1,548 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */; };
+		D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109A2BE11A74000AA6AB /* DatadogCore */; };
+		D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */; };
+		D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = D2A6109E2BE11A74000AA6AB /* DatadogLogs */; };
+		D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A02BE11A74000AA6AB /* DatadogObjc */; };
+		D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A22BE11A74000AA6AB /* DatadogRUM */; };
+		D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */; };
+		D2A610A72BE11A74000AA6AB /* DatadogTrace in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A62BE11A74000AA6AB /* DatadogTrace */; };
+		D2A610A92BE11A74000AA6AB /* DatadogWebViewTracking in Frameworks */ = {isa = PBXBuildFile; productRef = D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */; };
+		D2A610AD2BE125F0000AA6AB /* AppConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */; };
+		D2A610B02BE12739000AA6AB /* Scenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610AF2BE12739000AA6AB /* Scenario.swift */; };
+		D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */; };
+		D2C028A02BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */; };
+		D2C028A22BE14FD300B5D7D3 /* SessionReplayWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		D20B99882BE101690074F98E /* dd-sdk-ios */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = "dd-sdk-ios"; path = ..; sourceTree = "<group>"; };
+		D2720E2B2BD8FE2F008ADF5D /* E2E.local.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = E2E.local.xcconfig; sourceTree = "<group>"; };
+		D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Runner.xcconfig; sourceTree = "<group>"; };
+		D2720E2E2BD8FE2F008ADF5D /* Synthetics.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Synthetics.xcconfig; sourceTree = "<group>"; };
+		D292E3B82BD7BCDF0083453D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		D292E3C82BD7BCE00083453D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfiguration.swift; sourceTree = "<group>"; };
+		D2A610AF2BE12739000AA6AB /* Scenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scenario.swift; sourceTree = "<group>"; };
+		D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultScenario.swift; sourceTree = "<group>"; };
+		D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayWebViewScenario.swift; sourceTree = "<group>"; };
+		D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayWebViewController.swift; sourceTree = "<group>"; };
+		D2C028A32BE9282400B5D7D3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D292E3B52BD7BCDF0083453D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D2A6109D2BE11A74000AA6AB /* DatadogCrashReporting in Frameworks */,
+				D2A610A52BE11A74000AA6AB /* DatadogSessionReplay in Frameworks */,
+				D2A610A32BE11A74000AA6AB /* DatadogRUM in Frameworks */,
+				D2A610A12BE11A74000AA6AB /* DatadogObjc in Frameworks */,
+				D2A6109F2BE11A74000AA6AB /* DatadogLogs in Frameworks */,
+				D2A6109B2BE11A74000AA6AB /* DatadogCore in Frameworks */,
+				D2A610A92BE11A74000AA6AB /* DatadogWebViewTracking in Frameworks */,
+				D2A610A72BE11A74000AA6AB /* DatadogTrace in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		D20B99872BE101690074F98E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D20B99882BE101690074F98E /* dd-sdk-ios */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D2720E2F2BD8FE2F008ADF5D /* xcconfigs */ = {
+			isa = PBXGroup;
+			children = (
+				D2720E2B2BD8FE2F008ADF5D /* E2E.local.xcconfig */,
+				D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */,
+				D2720E2E2BD8FE2F008ADF5D /* Synthetics.xcconfig */,
+			);
+			path = xcconfigs;
+			sourceTree = "<group>";
+		};
+		D292E3782BD7BA830083453D = {
+			isa = PBXGroup;
+			children = (
+				D2C028A32BE9282400B5D7D3 /* README.md */,
+				D2720E2F2BD8FE2F008ADF5D /* xcconfigs */,
+				D292E3B92BD7BCDF0083453D /* Runner */,
+				D292E3822BD7BA830083453D /* Products */,
+				D20B99872BE101690074F98E /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		D292E3822BD7BA830083453D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				D292E3B82BD7BCDF0083453D /* Runner.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D292E3B92BD7BCDF0083453D /* Runner */ = {
+			isa = PBXGroup;
+			children = (
+				D292E3BA2BD7BCDF0083453D /* AppDelegate.swift */,
+				D2A610AC2BE125F0000AA6AB /* AppConfiguration.swift */,
+				D2A610AE2BE12724000AA6AB /* Scenarios */,
+				D292E3C82BD7BCE00083453D /* Info.plist */,
+			);
+			path = Runner;
+			sourceTree = "<group>";
+		};
+		D2A610AE2BE12724000AA6AB /* Scenarios */ = {
+			isa = PBXGroup;
+			children = (
+				D2A610AF2BE12739000AA6AB /* Scenario.swift */,
+				D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */,
+				D2C0289E2BE14F1B00B5D7D3 /* SessionReplayWebView */,
+			);
+			path = Scenarios;
+			sourceTree = "<group>";
+		};
+		D2C0289E2BE14F1B00B5D7D3 /* SessionReplayWebView */ = {
+			isa = PBXGroup;
+			children = (
+				D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */,
+				D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */,
+			);
+			path = SessionReplayWebView;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		D292E3B72BD7BCDF0083453D /* Runner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D292E3CB2BD7BCE00083453D /* Build configuration list for PBXNativeTarget "Runner" */;
+			buildPhases = (
+				D292E3B42BD7BCDF0083453D /* Sources */,
+				D292E3B52BD7BCDF0083453D /* Frameworks */,
+				D292E3B62BD7BCDF0083453D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Runner;
+			packageProductDependencies = (
+				D2A6109A2BE11A74000AA6AB /* DatadogCore */,
+				D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */,
+				D2A6109E2BE11A74000AA6AB /* DatadogLogs */,
+				D2A610A02BE11A74000AA6AB /* DatadogObjc */,
+				D2A610A22BE11A74000AA6AB /* DatadogRUM */,
+				D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */,
+				D2A610A62BE11A74000AA6AB /* DatadogTrace */,
+				D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */,
+			);
+			productName = Runner;
+			productReference = D292E3B82BD7BCDF0083453D /* Runner.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D292E3792BD7BA830083453D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1530;
+				LastUpgradeCheck = 1530;
+				TargetAttributes = {
+					D292E3B72BD7BCDF0083453D = {
+						CreatedOnToolsVersion = 15.3;
+					};
+				};
+			};
+			buildConfigurationList = D292E37C2BD7BA830083453D /* Build configuration list for PBXProject "E2ETests" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = D292E3782BD7BA830083453D;
+			productRefGroup = D292E3822BD7BA830083453D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D292E3B72BD7BCDF0083453D /* Runner */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D292E3B62BD7BCDF0083453D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		D292E3B42BD7BCDF0083453D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D292E3BB2BD7BCDF0083453D /* AppDelegate.swift in Sources */,
+				D2A610AD2BE125F0000AA6AB /* AppConfiguration.swift in Sources */,
+				D2C028A02BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift in Sources */,
+				D2C028A22BE14FD300B5D7D3 /* SessionReplayWebViewController.swift in Sources */,
+				D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */,
+				D2A610B02BE12739000AA6AB /* Scenario.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		D2720E302BD8FE9A008ADF5D /* Synthetics */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Synthetics;
+		};
+		D2720E312BD8FE9A008ADF5D /* Synthetics */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D2720E2E2BD8FE2F008ADF5D /* Synthetics.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CURRENT_PROJECT_VERSION = 1;
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = JKFCB4CN7C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.e2e.Runner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = "Datadog E2E Runner";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Synthetics;
+		};
+		D292E3A92BD7BA840083453D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		D292E3AA2BD7BA840083453D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		D292E3C92BD7BCE00083453D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.e2e.Runner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		D292E3CA2BD7BCE00083453D /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = D2720E2D2BD8FE2F008ADF5D /* Runner.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = JKFCB4CN7C;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Runner/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Datadog E2E Runner";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.datadoghq.e2e.Runner;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D292E37C2BD7BA830083453D /* Build configuration list for PBXProject "E2ETests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D292E3A92BD7BA840083453D /* Debug */,
+				D292E3AA2BD7BA840083453D /* Release */,
+				D2720E302BD8FE9A008ADF5D /* Synthetics */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D292E3CB2BD7BCE00083453D /* Build configuration list for PBXNativeTarget "Runner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D292E3C92BD7BCE00083453D /* Debug */,
+				D292E3CA2BD7BCE00083453D /* Release */,
+				D2720E312BD8FE9A008ADF5D /* Synthetics */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D2A6109A2BE11A74000AA6AB /* DatadogCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCore;
+		};
+		D2A6109C2BE11A74000AA6AB /* DatadogCrashReporting */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogCrashReporting;
+		};
+		D2A6109E2BE11A74000AA6AB /* DatadogLogs */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogLogs;
+		};
+		D2A610A02BE11A74000AA6AB /* DatadogObjc */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogObjc;
+		};
+		D2A610A22BE11A74000AA6AB /* DatadogRUM */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogRUM;
+		};
+		D2A610A42BE11A74000AA6AB /* DatadogSessionReplay */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogSessionReplay;
+		};
+		D2A610A62BE11A74000AA6AB /* DatadogTrace */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogTrace;
+		};
+		D2A610A82BE11A74000AA6AB /* DatadogWebViewTracking */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DatadogWebViewTracking;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D292E3792BD7BA830083453D /* Project object */;
+}

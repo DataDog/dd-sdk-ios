@@ -12,7 +12,8 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
 
     struct ErrorMessage: Decodable {
         static let key = "error"
-
+        /// The time of the log
+        let time: Date
         /// The Log error message
         let message: String
         /// The Log error kind
@@ -23,6 +24,8 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
         let source: RUMInternalErrorSource
         /// The Log attributes
         let attributes: [String: AnyCodable]?
+        /// Binary images if need to decode the stack trace
+        let binaryImages: [BinaryImage]?
     }
 
     /// RUM feature scope.
@@ -38,12 +41,14 @@ internal struct ErrorMessageReceiver: FeatureMessageReceiver {
                 return false
             }
 
-            monitor.addError(
+            monitor._internal?.addError(
+                at: error.time,
                 message: error.message,
                 type: error.type,
                 stack: error.stack,
                 source: error.source,
-                attributes: error.attributes ?? [:]
+                attributes: error.attributes ?? [:],
+                binaryImages: error.binaryImages
             )
 
             return true

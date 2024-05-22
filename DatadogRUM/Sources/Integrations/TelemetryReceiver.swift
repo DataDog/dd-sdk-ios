@@ -309,6 +309,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
+            telemetryUsageSampleRate: nil,
             traceSampleRate: configuration.traceSampleRate,
             tracerApi: configuration.tracerAPI,
             tracerApiVersion: configuration.tracerAPIVersion,

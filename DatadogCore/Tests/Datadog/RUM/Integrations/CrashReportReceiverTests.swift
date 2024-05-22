@@ -401,7 +401,6 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertReflectionEqual(sendRUMViewEvent.os, lastRUMViewEvent.os)
     }
 
-    //
     func testGivenCrashDuringRUMSessionWithActiveView_whenSendingRUMErrorEvent_itIsLinkedToPreviousRUMSessionAndIncludesCrashInformation() throws {
         let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
 
@@ -720,6 +719,41 @@ class CrashReportReceiverTests: XCTestCase {
         DDAssertJSONEqual(sendRUMErrorEvent.error.wasTruncated, crashReport.wasTruncated)
     }
 
+    func testGivenCrashDuringRUMSessionWithActiveViewAndLastRUMAttributesAvailable_itSendsEventsWithOverridingAttributes() throws {
+        let lastRUMViewEvent: RUMViewEvent = .mockRandomWith(crashCount: 0)
+        let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+
+        // Given
+        let crashDate: Date = .mockDecember15th2019At10AMUTC()
+        let crashReport: DDCrashReport = .mockWith(date: crashDate)
+        let crashContext: CrashContext = .mockWith(
+            trackingConsent: .granted,
+            lastRUMViewEvent: AnyCodable(lastRUMViewEvent),
+            lastRUMAttributes: lastRUMAttributes
+        )
+
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: featureScope,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+            trackBackgroundEvents: .mockRandom() // no matter BET
+        )
+
+        // When
+        XCTAssertTrue(
+            receiver.receive(message: .baggage(
+                key: MessageBusSender.MessageKeys.crash,
+                value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+            ), from: NOPDatadogCore())
+        )
+
+        // Then
+        let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
+        let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
+        DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
+        DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+    }
+
     // MARK: - Testing Uploaded Data - Crashes During RUM Session With No Active View
 
     func testGivenCrashDuringRUMSessionWithNoActiveView_whenSendingRUMViewEvent_itIsLinkedToPreviousRUMSessionAndIncludesErrorInformation() throws {
@@ -1002,6 +1036,74 @@ class CrashReportReceiverTests: XCTestCase {
 
             let sentRUMError = featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0]
             XCTAssertEqual(sentRUMError.error.fingerprint, errorFingerprint, "Must send mapped RUMError event")
+        }
+
+        try test(
+            lastRUMSessionState: .mockWith(isInitialSession: true, hasTrackedAnyView: false), // when initial session with no views history
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        try test(
+            lastRUMSessionState: .mockRandom(), // any sampled session
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true // BET enabled
+        )
+    }
+
+    func testGivenCrashDuringRUMSessionWithNoActiveViewAndLastRUMAttributesAvailable_itSendsEventsWithOverridingAttributes() throws {
+        func test(
+            lastRUMSessionState: RUMSessionState,
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool
+        ) throws {
+            let featureScope = FeatureScopeMock()
+
+            // Given
+            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+            let dateCorrectionOffset: TimeInterval = .mockRandom()
+            let crashContext: CrashContext = .mockWith(
+                serverTimeOffset: dateCorrectionOffset,
+                service: .mockRandom(),
+                version: .mockRandom(),
+                buildNumber: .mockRandom(),
+                source: .mockRandom(),
+                trackingConsent: .granted,
+                userInfo: .mockRandom(),
+                networkConnectionInfo: .mockRandom(),
+                carrierInfo: .mockRandom(),
+                lastRUMViewEvent: nil, // means there was no active RUM view
+                lastRUMSessionState: AnyCodable(lastRUMSessionState), // means there was RUM session (sampled)
+                lastIsAppInForeground: launchInForeground,
+                lastRUMAttributes: lastRUMAttributes
+            )
+
+            let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
+                applicationID: .mockRandom(among: .alphanumerics),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter sampling (as previous session was sampled)
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: NOPDatadogCore())
+            )
+
+            // Then
+            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
+            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
         }
 
         try test(
@@ -1314,6 +1416,62 @@ class CrashReportReceiverTests: XCTestCase {
             backgroundEventsTrackingEnabled: true, // BET enabled
             expectViewName: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
             expectViewURL: RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        )
+    }
+
+    func testGivenCrashDuringAppLaunchAndLastRUMAttributesAvailable_itSendsEventsWithOverridingAttributes() throws {
+        func test(
+            launchInForeground: Bool,
+            backgroundEventsTrackingEnabled: Bool
+        ) throws {
+            let featureScope = FeatureScopeMock()
+            let lastRUMAttributes = GlobalRUMAttributes(attributes: mockRandomAttributes())
+
+            // Given
+            let crashDate: Date = .mockDecember15th2019At10AMUTC()
+            let crashReport: DDCrashReport = .mockWith(
+                date: crashDate,
+                type: .mockRandom()
+            )
+
+            let crashContext: CrashContext = .mockWith(
+                trackingConsent: .granted,
+                lastRUMViewEvent: nil, // means there was no RUM session (it crashed during app launch)
+                lastRUMSessionState: nil, // means there was no RUM session (it crashed during app launch)
+                lastIsAppInForeground: launchInForeground,
+                lastRUMAttributes: lastRUMAttributes
+            )
+
+            let receiver: CrashReportReceiver = .mockWith(
+                featureScope: featureScope,
+                applicationID: .mockRandom(),
+                dateProvider: RelativeDateProvider(using: crashDate),
+                trackBackgroundEvents: backgroundEventsTrackingEnabled
+            )
+
+            // When
+            XCTAssertTrue(
+                receiver.receive(message: .baggage(
+                    key: MessageBusSender.MessageKeys.crash,
+                    value: MessageBusSender.Crash(report: crashReport, context: crashContext)
+                ), from: NOPDatadogCore())
+            )
+
+            // Then
+            let sentRUMViewAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self)[0].context?.contextInfo)
+            let sentRUMErrorAttributes = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self)[0].context?.contextInfo)
+            DDAssertJSONEqual(sentRUMViewAttributes, lastRUMAttributes.attributes)
+            DDAssertJSONEqual(sentRUMErrorAttributes, lastRUMAttributes.attributes)
+        }
+
+        try test(
+            launchInForeground: true, // launch in foreground
+            backgroundEventsTrackingEnabled: .mockRandom() // no matter BET
+        )
+
+        try test(
+            launchInForeground: false, // launch in background
+            backgroundEventsTrackingEnabled: true // BET enabled
         )
     }
 }

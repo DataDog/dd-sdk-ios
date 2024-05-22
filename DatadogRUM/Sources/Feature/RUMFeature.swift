@@ -55,6 +55,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 eventsMapper: eventsMapper
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
+            backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
                 if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
@@ -70,7 +71,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             onSessionStart: configuration.onSessionStart,
-            viewCache: ViewCache()
+            viewCache: ViewCache(),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope)
         )
 
         self.monitor = Monitor(

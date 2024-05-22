@@ -42,4 +42,6 @@ internal struct FatalAppHang: Codable {
     let lastRUMView: RUMViewEvent
     /// The user's consent at the moment of hang's recording.
     let trackingConsent: TrackingConsent
+    /// The App Launch date at the moment of hang's recording.
+    let appLaunchDate: Date?
 }

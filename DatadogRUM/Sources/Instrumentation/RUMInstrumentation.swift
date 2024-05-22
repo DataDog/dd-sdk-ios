@@ -47,7 +47,7 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         mainQueue: DispatchQueue,
         dateProvider: DateProvider,
         backtraceReporter: BacktraceReporting,
-        fatalErrorContext: FatalErrorContextNotifier,
+        fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI instrumentation)

@@ -122,7 +122,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
-            print("_dd.session.id=" + sessionUUID.toRUMDataFormat)
+            NSLog("_dd.session.id=" + sessionUUID.toRUMDataFormat)
         }
     }
 
@@ -283,11 +283,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             timestamp: startTime.timeIntervalSince1970.toInt64Milliseconds,
             hasReplay: hasReplay
         )
-
-        // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
-            print("_dd.view.id=" + id)
-        }
     }
 
     private func startApplicationLaunchView(on command: RUMApplicationStartCommand, context: DatadogContext, writer: Writer) {

@@ -26,6 +26,8 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
                 "RUMOperatingSystem",
                 "RUMActionID",
                 "RUMSessionPrecondition",
+                "RUMTelemetryDevice",
+                "RUMTelemetryOperatingSystem",
             ]
         )
     }
@@ -104,11 +106,25 @@ public class RUMCodeDecorator: SwiftCodeDecorator {
         }
 
         if fixedName == "Device" {
-            fixedName = "RUMDevice"
+            if context.parent?.typeName == "telemetry" {
+                // The `telemetry.device` added in https://github.com/DataDog/rum-events-format/pull/200 has different schema
+                // than `*.device` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L264-L295
+                // For that reason, we generate it under different name, so the `RUMTelemetryDevice` can be shared between telemetry events.
+                fixedName = "RUMTelemetryDevice"
+            } else {
+                fixedName = "RUMDevice"
+            }
         }
 
         if fixedName == "OS" {
-            fixedName = "RUMOperatingSystem"
+            if context.parent?.typeName == "telemetry" {
+                // The `telemetry.os` added in https://github.com/DataDog/rum-events-format/pull/200 has different schema
+                // than `*.os` in common schema: https://github.com/DataDog/rum-events-format/blob/dcd62e58566b9d158c404f3588edc62c041262dd/schemas/rum/_common-schema.json#L237-L262
+                // For that reason, we generate it under different name, so the `RUMTelemetryOperatingSystem` can be shared between telemetry events.
+                fixedName = "RUMTelemetryOperatingSystem"
+            } else {
+                fixedName = "RUMOperatingSystem"
+            }
         }
 
         // Since https://github.com/DataDog/rum-events-format/pull/57 `action.id` can be either

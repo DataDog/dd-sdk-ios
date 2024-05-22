@@ -33,6 +33,9 @@ internal class FilesOrchestrator: FilesOrchestratorType {
     /// Tracks the size of last writable file by accumulating the total `writeSize:` requested in `getWritableFile(writeSize:)`
     /// This is approximated value as it assumes that all requested writes succed. The actual difference should be negligible.
     private var lastWritableFileApproximatedSize: UInt64 = 0
+    /// Tracks the last date when writtable file was requested for write operation.
+    /// It is used to compute the "batch duration" from the moment file was created to the moment it was last written.
+    private var lastWritableFileLastWriteDate: Date? = nil
     /// Telemetry interface.
     let telemetry: Telemetry
 
@@ -75,6 +78,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         if let lastWritableFile = reuseLastWritableFileIfPossible(writeSize: writeSize) { // if last writable file can be reused
             lastWritableFileObjectsCount += 1
             lastWritableFileApproximatedSize += writeSize
+            lastWritableFileLastWriteDate = dateProvider.now
             return lastWritableFile
         } else {
             if let closedBatchName = lastWritableFileName {
@@ -103,6 +107,7 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         lastWritableFileName = newFile.name
         lastWritableFileObjectsCount = 1
         lastWritableFileApproximatedSize = writeSize
+        lastWritableFileLastWriteDate = dateProvider.now
         return newFile
     }
 
@@ -251,8 +256,10 @@ internal class FilesOrchestrator: FilesOrchestratorType {
         guard let metricsData = metricsData else {
             return // do not track metrics for this orchestrator
         }
-
-        let batchDuration = dateProvider.now.timeIntervalSince(fileCreationDateFrom(fileName: fileName))
+        guard let lastWriteDate = lastWritableFileLastWriteDate else {
+            return // not reachable
+        }
+        let batchDuration = lastWriteDate.timeIntervalSince(fileCreationDateFrom(fileName: fileName))
 
         telemetry.metric(
             name: BatchClosedMetric.name,

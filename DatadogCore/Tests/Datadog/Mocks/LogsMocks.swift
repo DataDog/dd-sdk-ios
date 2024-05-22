@@ -26,13 +26,15 @@ extension LogsFeature {
         logEventMapper: LogEventMapper? = nil,
         requestBuilder: FeatureRequestBuilder = RequestBuilder(),
         messageReceiver: FeatureMessageReceiver = NOPFeatureMessageReceiver(),
-        dateProvider: DateProvider = SystemDateProvider()
+        dateProvider: DateProvider = SystemDateProvider(),
+        backtraceReporter: BacktraceReporting? = nil
     ) -> Self {
         return .init(
             logEventMapper: logEventMapper,
             requestBuilder: requestBuilder,
             messageReceiver: messageReceiver,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            backtraceReporter: backtraceReporter
         )
     }
 }

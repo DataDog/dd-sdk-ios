@@ -1557,6 +1557,74 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertNil(error.context!.contextInfo[RUM.Attributes.errorFingerprint])
     }
 
+    func testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError() throws {
+        // Given
+        let mockBacktrace: BacktraceReport = .mockRandom()
+        let hasReplay: Bool = .mockRandom()
+        var context = self.context
+        context.baggages = try .mockSessionReplayAttributes(hasReplay: hasReplay)
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockWith(
+                backtraceReporter: BacktraceReporterMock(backtrace: mockBacktrace)
+            ),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: [:], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        currentTime.addTimeInterval(1)
+
+        // When
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+                    time: currentTime,
+                    message: "view error",
+                    source: .source,
+                    stack: nil,
+                    attributes: [
+                        CrossPlatformAttributes.includeBinaryImages: true
+                    ]
+                ),
+                context: context,
+                writer: writer
+            )
+        )
+
+        // Then
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertNil(error.context?.contextInfo[CrossPlatformAttributes.includeBinaryImages])
+        XCTAssertNotNil(error.error.binaryImages)
+        XCTAssertEqual(error.error.binaryImages?.count, mockBacktrace.binaryImages.count)
+        for i in 0..<mockBacktrace.binaryImages.count {
+            let expected = mockBacktrace.binaryImages[i]
+            if let actual = error.error.binaryImages?[i] {
+                XCTAssertEqual(actual.arch, expected.architecture)
+                XCTAssertEqual(actual.isSystem, expected.isSystemLibrary)
+                XCTAssertEqual(actual.loadAddress, expected.loadAddress)
+                XCTAssertEqual(actual.maxAddress, expected.maxAddress)
+                XCTAssertEqual(actual.name, expected.libraryName)
+                XCTAssertEqual(actual.uuid, expected.uuid)
+            }
+        }
+    }
+
     func testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent() throws {
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
@@ -1598,6 +1666,50 @@ class RUMViewScopeTests: XCTestCase {
         let viewUpdate = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
         XCTAssertEqual(viewUpdate.view.resource.count, 0, "Failed Resource should not be counted")
         XCTAssertEqual(viewUpdate.view.error.count, 1, "Failed Resource should be counted as Error")
+    }
+
+    func testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart() throws {
+        var context = self.context
+        let currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let appLauchToErrorTimeDiff = Int64.random(in: 10..<1_000_000)
+
+        context.launchTime = .mockWith(
+            launchTime: .mockAny(),
+            launchDate: currentTime,
+            isActivePrewarm: .mockAny()
+        )
+
+        let scope = RUMViewScope(
+            isInitialView: .mockRandom(),
+            parent: parent,
+            dependencies: .mockAny(),
+            identity: .mockViewIdentifier(),
+            path: "UIViewController",
+            name: "ViewName",
+            attributes: [:],
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, attributes: ["foo": "bar"], identity: .mockViewIdentifier()),
+                context: context,
+                writer: writer
+            )
+        )
+
+        XCTAssertTrue(
+            scope.process(
+                command: RUMAddCurrentViewErrorCommand.mockWithErrorMessage(time: currentTime.addingTimeInterval(Double(appLauchToErrorTimeDiff)), message: "view error", source: .source, stack: nil),
+                context: context,
+                writer: writer
+            )
+        )
+
+        let error = try XCTUnwrap(writer.events(ofType: RUMErrorEvent.self).last)
+        XCTAssertEqual(error.error.timeSinceAppStart, appLauchToErrorTimeDiff * 1_000)
     }
 
     // MARK: - App Hangs
@@ -2439,16 +2551,17 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(event.dd.documentVersion, 1, "It should record only one view update")
     }
 
-    // MARK: - Sending Messages Over Message Bus
+    // MARK: - Updating Fatal Error Context
 
-    func testWhenViewIsStarted_itSendsViewEventMessages() throws {
+    func testWhenViewIsStarted_itUpdatesFatalErrorContextWithView() throws {
         let featureScope = FeatureScopeMock()
+        let fatalErrorContext = FatalErrorContextNotifierMock()
 
         // Given
         let scope = RUMViewScope(
             isInitialView: .mockRandom(),
             parent: parent,
-            dependencies: .mockWith(featureScope: featureScope),
+            dependencies: .mockWith(featureScope: featureScope, fatalErrorContext: fatalErrorContext),
             identity: .mockViewIdentifier(),
             path: "UIViewController",
             name: "ViewController",
@@ -2469,8 +2582,7 @@ class RUMViewScopeTests: XCTestCase {
 
         // Then
         let rumViewWritten = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMViewEvent.self).last, "It should send view event")
-        let baggageSent = try XCTUnwrap(featureScope.messagesSent().firstBaggage(withKey: RUMBaggageKeys.viewEvent))
-        let rumViewSent: RUMViewEvent = try baggageSent.decode()
-        DDAssertReflectionEqual(rumViewSent, rumViewWritten, "It must sent written event over message bus")
+        let rumViewInFatalErrorContext = try XCTUnwrap(fatalErrorContext.view)
+        DDAssertReflectionEqual(rumViewWritten, rumViewInFatalErrorContext, "It must update fatal error context with the view event written")
     }
 }
