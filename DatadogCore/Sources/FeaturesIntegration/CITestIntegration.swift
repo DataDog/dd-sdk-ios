@@ -20,12 +20,15 @@ internal class CITestIntegration {
     let testExecutionId: String
     /// Tag that must be added to spans and headers when running inside a CIApp test
     let origin = "ciapp-test"
+    // UUID for test process message channel
+    private let messageChannelUUID: String?
 
     private init?(processInfo: ProcessInfo = .processInfo) {
         guard let testID = processInfo.environment["CI_VISIBILITY_TEST_EXECUTION_ID"] else {
             return nil
         }
         self.testExecutionId = testID
+        self.messageChannelUUID = processInfo.environment["CI_VISIBILITY_MESSAGE_CHANNEL_UUID"]
     }
 
     /// Entry point for running all the tasks needed for CIApp integration
@@ -38,7 +41,10 @@ internal class CITestIntegration {
     /// created in the CIApp framework
     private func notifyRUMSession() {
         let timeout: CFTimeInterval = 1.0
-        guard let remotePort = CFMessagePortCreateRemote(nil, "DatadogTestingPort" as CFString) else {
+
+        guard let remotePort = CFMessagePortCreateRemote(
+            nil, messagePortId(name: "DatadogTestingPort")
+        ) else {
             return
         }
         CFMessagePortSendRequest(
@@ -65,10 +71,18 @@ internal class CITestIntegration {
             return nil
         }
 
-        guard let port = CFMessagePortCreateLocal(nil, "DatadogRUMTestingPort" as CFString, attributeCallback, nil, nil) else {
+        guard let port = CFMessagePortCreateLocal(
+            nil, messagePortId(name: "DatadogRUMTestingPort"), attributeCallback, nil, nil
+        ) else {
             return
         }
         let runLoopSource = CFMessagePortCreateRunLoopSource(nil, port, 0)
         CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, CFRunLoopMode.commonModes)
+    }
+
+    /// Creates a ID for message port. If UUID is provided joins name with UUID.
+    /// Fallbacks to name if UUID is nil for backward compatibility
+    private func messagePortId(name: String) -> CFString {
+        (messageChannelUUID.map { "\(name)-\($0)" } ?? name) as CFString
     }
 }
