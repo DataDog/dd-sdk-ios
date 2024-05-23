@@ -8,10 +8,6 @@ import Foundation
 import UIKit
 import SwiftUI
 
-#if canImport(CustomDump)
-import CustomDump
-#endif
-
 internal class UIGraphicsViewRecorder: NodeRecorder {
     let identifier = UUID()
 
@@ -20,13 +16,11 @@ internal class UIGraphicsViewRecorder: NodeRecorder {
     init() { }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard type(of: view) == cls else {
+        guard let cls = cls, type(of: view).isSubclass(of: cls) else {
             return nil
         }
 
-#if canImport(CustomDump)
-//        customDump(view)
-#endif
+        customDump(view)
 
         return IgnoredElement(subtreeStrategy: .ignore)
     }

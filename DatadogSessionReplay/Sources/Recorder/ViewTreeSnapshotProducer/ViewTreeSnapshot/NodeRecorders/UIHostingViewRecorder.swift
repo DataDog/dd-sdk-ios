@@ -8,18 +8,12 @@ import Foundation
 import UIKit
 import SwiftUI
 
-#if canImport(CustomDump)
-import CustomDump
-#endif
-
 internal class UIHostingViewRecorder: NodeRecorder {
     let identifier = UUID()
 
     /// An option for overriding default semantics from parent recorder.
     var semanticsOverride: (UIView, ViewAttributes) -> NodeSemantics?
     var textObfuscator: (ViewTreeRecordingContext) -> TextObfuscating
-
-    let cls: AnyClass? = NSClassFromString("_UIHostingView")
 
     init(
         semanticsOverride: @escaping (UIView, ViewAttributes) -> NodeSemantics? = { _, _ in nil },
@@ -32,33 +26,46 @@ internal class UIHostingViewRecorder: NodeRecorder {
     }
 
     func semantics(of view: UIView, with attributes: ViewAttributes, in context: ViewTreeRecordingContext) -> NodeSemantics? {
-        guard String(describing: type(of: view)).hasPrefix("_UIHostingView") else {
+        guard
+            let ivar = class_getInstanceVariable(type(of: view), "renderer"),
+            let value = object_getIvar(view, ivar)
+        else {
             return nil
         }
 
-#if canImport(CustomDump)
-//        customDump(view)
-#endif
+        if #available(iOS 13, tvOS 13, *) {
+            do {
+//                try dump(value, filename: "renderer.dump")
 
-        do {
-            let host = try _UIHostingView(reflecting: view)
+                let renderer = try DisplayList.ViewRenderer(reflecting: value)
 
-            let builder = UIHostingUIWireframesBuilder(
-                renderer: host.renderer.renderer,
-                textObfuscator: textObfuscator(context),
-                fontScalingEnabled: false,
-                referential: UIHostingUIWireframesBuilder.Referential(attributes.frame)
-            )
+                let builder = UIHostingUIWireframesBuilder(
+                    renderer: renderer.renderer,
+                    textObfuscator: textObfuscator(context),
+                    fontScalingEnabled: false,
+                    referential: UIHostingUIWireframesBuilder.Referential(attributes.frame)
+                )
 
-            let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
-            return SpecificElement(subtreeStrategy: .record, nodes: [node])
-        } catch {
-            print(error)
-            return nil
+                let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+                return SpecificElement(subtreeStrategy: .record, nodes: [node])
+            } catch {
+                print(error)
+                return nil
+            }
         }
+
+        let builder = UnsupportedViewWireframesBuilder(
+            wireframeRect: view.frame,
+            wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),
+            unsupportedClassName: context.viewControllerContext.name ?? String(reflecting: type(of: view)),
+            attributes: attributes
+        )
+        let node = Node(viewAttributes: attributes, wireframesBuilder: builder)
+        return SpecificElement(subtreeStrategy: .ignore, nodes: [node])
     }
 }
 
+@available(iOS 13.0, *)
 internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
     internal struct Referential {
         let frame: CGRect
@@ -171,6 +178,7 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
     }
 }
 
+@available(iOS 13.0, *)
 extension UIHostingUIWireframesBuilder.Referential {
     init(_ frame: CGRect) {
         self.frame = frame
@@ -186,4 +194,18 @@ extension UIHostingUIWireframesBuilder.Referential {
             dy: self.frame.origin.y
         )
     }
+}
+
+func dump<T>(_ value: T, filename: String) throws {
+#if canImport(CustomDump)
+//    let url = URL.documentsDirectory.appending(path: "hostview.dump")
+    let manager = FileManager.default
+    let url = manager.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent(filename)
+    manager.createFile(atPath: url.path, contents: nil, attributes: nil)
+    let handle = try FileHandle(forWritingTo: url)
+    var stream = FileHandlerOutputStream(handle)
+    customDump(value, to: &stream)
+    print("Dump:", url)
+    handle.closeFile()
+#endif
 }

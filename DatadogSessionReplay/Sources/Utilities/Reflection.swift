@@ -53,7 +53,11 @@ extension Mirror {
     }
 
     func descendant<Value>(_ type: Value.Type = Value.self, path: MirrorPath) throws -> Value where Value: Reflection {
-        guard let child = descendant(path) ?? superclassMirror?.descendant(path) else {
+        guard let child = descendant(path) else {
+            if let superclassMirror = superclassMirror {
+                return try superclassMirror.descendant(path: path)
+            }
+
             throw InternalError(description: "not found at \(path)")
         }
 
