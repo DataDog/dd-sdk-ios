@@ -59,7 +59,7 @@ public struct ConfigurationTelemetry: Equatable {
 
 public enum TelemetryMessage {
     case debug(id: String, message: String, attributes: [String: Encodable]?)
-    case error(id: String, message: String, kind: String?, stack: String?)
+    case error(id: String, message: String, kind: String, stack: String)
     case configuration(ConfigurationTelemetry)
     case metric(name: String, attributes: [String: Encodable])
 }
@@ -152,7 +152,7 @@ extension Telemetry {
     ///   - message: The error message.
     ///   - kind: The kind of error.
     ///   - stack: The stack trace.
-    public func error(id: String, message: String, kind: String?, stack: String?) {
+    public func error(id: String, message: String, kind: String, stack: String) {
         send(telemetry: .error(id: id, message: message, kind: kind, stack: stack))
     }
 
@@ -173,7 +173,7 @@ extension Telemetry {
     ///   - attributes: Custom attributes attached to the log (optional).
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #file, line: Int = #line) {
+    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #fileID, line: Int = #line) {
         debug(id: "\(file):\(line):\(message)", message: message, attributes: attributes)
     }
 
@@ -181,13 +181,25 @@ extension Telemetry {
     ///
     /// - Parameters:
     ///   - message: The error message.
+    ///   - kind: The kind of error.
     ///   - stack: The stack trace.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    ///   - file: The current file name.
-    ///   - line: The line number in file.
-    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #file, line: Int = #line) {
-        error(id: "\(file):\(line):\(message)", message: message, kind: kind, stack: stack)
+    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #fileID, line: Int = #line) {
+        func defaultKind(fileID: String) -> String {
+            // e.g. `DatadogInternal/Telemetry.swift` -> `DatadogInternal/TelemetryError`
+            return "\(fileID.hasSuffix(".swift") ? String(fileID.dropLast(6)) : fileID)Error"
+        }
+        func defaultStack(fileID: String, line: Int) -> String {
+            "\(fileID):\(line)"
+        }
+
+        error(
+            id: "\(file):\(line):\(message)",
+            message: message,
+            kind: kind ?? defaultKind(fileID: file),
+            stack: stack ?? defaultStack(fileID: file, line: line)
+        )
     }
 
     /// Collect execution error.
@@ -196,7 +208,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
         self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -207,7 +219,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
         self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -217,7 +229,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ error: Error, file: String = #fileID, line: Int = #line) {
         self.error(DDError(error: error), file: file, line: line)
     }
 
@@ -228,7 +240,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
         self.error(message, error: DDError(error: error), file: file, line: line)
     }
 

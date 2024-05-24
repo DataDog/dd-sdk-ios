@@ -137,7 +137,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - message: Body of the log
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
-    private func error(id: String, message: String, kind: String?, stack: String?) {
+    private func error(id: String, message: String, kind: String, stack: String) {
         let date = dateProvider.now
 
         record(event: id) { context, writer in

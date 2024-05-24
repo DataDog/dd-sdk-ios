@@ -73,7 +73,7 @@ public class TelemetryMock: Telemetry, CustomStringConvertible {
             let attributesString = attributes.map({ ", \($0)" }) ?? ""
             description.append("\n- [debug] \(message)" + attributesString)
         case .error(_, let message, let kind, let stack):
-            description.append("\n - [error] \(message), kind: \(kind ?? "nil"), stack: \(stack ?? "nil")")
+            description.append("\n - [error] \(message), kind: \(kind), stack: \(stack)")
         case .configuration(let configuration):
             description.append("\n- [configuration] \(configuration)")
         case let .metric(name, attributes):
@@ -89,9 +89,19 @@ public extension Array where Element == TelemetryMessage {
         return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).first
     }
 
-    /// Returns attributes of the first ERROR telemetry in this array.
+    /// Returns attributes of the first debug telemetry in this array.
+    func firstDebug() -> (id: String, message: String, attributes: [String: Encodable]?)? {
+        return compactMap { $0.asDebug }.first
+    }
+
+    /// Returns attributes of the first error telemetry in this array.
     func firstError() -> (id: String, message: String, kind: String?, stack: String?)? {
         return compactMap { $0.asError }.first
+    }
+
+    /// Returns the first configuration telemetry in this array.
+    func firstConfiguration() -> ConfigurationTelemetry? {
+        return compactMap { $0.asConfiguration }.first
     }
 }
 
