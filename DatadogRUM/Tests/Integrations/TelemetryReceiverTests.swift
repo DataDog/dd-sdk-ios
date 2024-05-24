@@ -379,7 +379,7 @@ class TelemetryReceiverTests: XCTestCase {
 
     // MARK: - Metrics Telemetry Events
 
-    func testSendTelemetryMetric() {
+    func testSendTelemetryMetric() throws {
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "react-native",
@@ -404,7 +404,17 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.service, "dd-sdk-ios")
         XCTAssertEqual(event?.source, .reactNative)
         XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] \(randomName)")
-        DDAssertReflectionEqual(event?.telemetry.telemetryInfo, randomAttributes)
+        randomAttributes.forEach { key, value in
+            DDAssertReflectionEqual(event?.telemetry.telemetryInfo[key], value)
+        }
+        let device = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.Device.key] as? [String: String])
+        XCTAssertTrue(device[MethodCalledMetric.Device.model]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.brand]?.isEmpty == false)
+        XCTAssertTrue(device[MethodCalledMetric.Device.architecture]?.isEmpty == false)
+        let os = try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.OS.key] as? [String: String])
+        XCTAssertTrue(os[MethodCalledMetric.OS.version]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.build]?.isEmpty == false)
+        XCTAssertTrue(os[MethodCalledMetric.OS.name]?.isEmpty == false)
     }
 
     func testSendTelemetryMetricWithRUMContext() throws {
