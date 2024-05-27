@@ -771,7 +771,8 @@ extension RUMScopeDependencies {
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
         viewCache: ViewCache = ViewCache(),
-        fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock()
+        fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock(),
+        sessionEndedMetric: SessionEndedMetricController = SessionEndedMetricController(telemetry: NOPTelemetry())
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -788,7 +789,8 @@ extension RUMScopeDependencies {
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart,
             viewCache: viewCache,
-            fatalErrorContext: fatalErrorContext
+            fatalErrorContext: fatalErrorContext,
+            sessionEndedMetric: sessionEndedMetric
         )
     }
 
@@ -807,7 +809,8 @@ extension RUMScopeDependencies {
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil,
         viewCache: ViewCache? = nil,
-        fatalErrorContext: FatalErrorContextNotifying? = nil
+        fatalErrorContext: FatalErrorContextNotifying? = nil,
+        sessionEndedMetric: SessionEndedMetricController? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -824,7 +827,8 @@ extension RUMScopeDependencies {
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart,
             viewCache: viewCache ?? self.viewCache,
-            fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext
+            fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext,
+            sessionEndedMetric: sessionEndedMetric ?? self.sessionEndedMetric
         )
     }
 }
@@ -846,16 +850,16 @@ extension RUMSessionScope {
         parent: RUMContextProvider = RUMContextProviderMock(),
         startTime: Date = .mockAny(),
         startPrecondition: RUMSessionPrecondition? = .userAppLaunch,
-        dependencies: RUMScopeDependencies = .mockAny(),
-        hasReplay: Bool? = .mockAny()
+        context: DatadogContext = .mockAny(),
+        dependencies: RUMScopeDependencies = .mockAny()
     ) -> RUMSessionScope {
         return RUMSessionScope(
             isInitialSession: isInitialSession,
             parent: parent,
             startTime: startTime,
             startPrecondition: startPrecondition,
-            dependencies: dependencies,
-            hasReplay: hasReplay
+            context: context,
+            dependencies: dependencies
         )
     }
 }

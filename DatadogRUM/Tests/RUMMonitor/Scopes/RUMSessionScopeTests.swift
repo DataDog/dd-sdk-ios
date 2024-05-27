@@ -348,12 +348,16 @@ class RUMSessionScopeTests: XCTestCase {
         let scope: RUMSessionScope = .mockWith(
             isInitialSession: randomIsInitialSession,
             parent: parent,
+            context: .mockWith(
+                baggages: [
+                    SessionReplayDependency.hasReplay: FeatureBaggage(randomIsReplayBeingRecorded),
+                ]
+            ),
             dependencies: .mockWith(
                 featureScope: featureScope,
                 sessionSampler: Bool.random() ? .mockKeepAll() : .mockRejectAll(), // no matter if sampled or not,
                 fatalErrorContext: fatalErrorContext
-            ),
-            hasReplay: randomIsReplayBeingRecorded
+            )
         )
 
         // Then
@@ -379,11 +383,15 @@ class RUMSessionScopeTests: XCTestCase {
             isInitialSession: randomIsInitialSession,
             parent: parent,
             startTime: sessionStartTime,
+            context: .mockWith(
+                baggages: [
+                    SessionReplayDependency.hasReplay: FeatureBaggage(randomIsReplayBeingRecorded),
+                ]
+            ),
             dependencies: .mockWith(
                 featureScope: featureScope,
                 fatalErrorContext: fatalErrorContext
-            ),
-            hasReplay: randomIsReplayBeingRecorded
+            )
         )
 
         // When

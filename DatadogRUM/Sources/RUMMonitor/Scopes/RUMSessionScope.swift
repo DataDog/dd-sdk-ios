@@ -75,14 +75,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var lastInteractionTime: Date
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
+    /// SDK metric that tracks the state of this session.
+    private let sessionEndedMetric: SessionEndedMetric
 
     init(
         isInitialSession: Bool,
         parent: RUMContextProvider,
         startTime: Date,
         startPrecondition: RUMSessionPrecondition?,
+        context: DatadogContext,
         dependencies: RUMScopeDependencies,
-        hasReplay: Bool?,
         resumingViewScope: RUMViewScope? = nil
     ) {
         self.parent = parent
@@ -99,7 +101,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             sessionUUID: sessionUUID.rawValue,
             isInitialSession: isInitialSession,
             hasTrackedAnyView: false,
-            didStartWithReplay: hasReplay
+            didStartWithReplay: context.hasReplay
+        )
+        self.sessionEndedMetric = dependencies.sessionEndedMetric.startMetric(
+            sessionID: sessionUUID.toRUMDataFormat,
+            precondition: startPrecondition,
+            context: context
         )
 
         if let viewScope = resumingViewScope {
@@ -113,7 +120,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 customTimings: [:],
                 startTime: startTime,
                 serverTimeOffset: viewScope.serverTimeOffset,
-                hasReplay: hasReplay
+                hasReplay: context.hasReplay
             )
         }
 
@@ -133,8 +140,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             parent: expiredSession.parent,
             startTime: startTime,
             startPrecondition: startPrecondition,
-            dependencies: expiredSession.dependencies,
-            hasReplay: context.hasReplay
+            context: context,
+            dependencies: expiredSession.dependencies
         )
 
         // Transfer active Views by creating new `RUMViewScopes` for their identity objects:

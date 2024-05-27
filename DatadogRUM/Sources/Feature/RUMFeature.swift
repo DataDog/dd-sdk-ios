@@ -35,6 +35,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
         )
 
         let featureScope = core.scope(for: RUMFeature.self)
+        let sessionEndedMetric = SessionEndedMetricController(telemetry: core.telemetry)
         let dependencies = RUMScopeDependencies(
             featureScope: featureScope,
             rumApplicationID: configuration.applicationID,
@@ -72,7 +73,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
             },
             onSessionStart: configuration.onSessionStart,
             viewCache: ViewCache(),
-            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope)
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope),
+            sessionEndedMetric: sessionEndedMetric
         )
 
         self.monitor = Monitor(
