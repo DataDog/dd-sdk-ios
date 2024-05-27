@@ -15,6 +15,10 @@ internal struct UINavigationBarRecorder: NodeRecorder {
             return nil
         }
 
+        guard attributes.isVisible else {
+            return InvisibleElement.constant
+        }
+
         let builder = UINavigationBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: navigationBar, in: context),
             wireframeID: context.ids.nodeID(view: navigationBar, nodeRecorder: self),
@@ -38,6 +42,11 @@ internal struct UINavigationBarRecorder: NodeRecorder {
 
     private func inferColor(of navigationBar: UINavigationBar) -> CGColor {
         // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
+
+        if let color = navigationBar.backgroundColor {
+            return color.cgColor
+        }
+
         if #available(iOS 13.0, *) {
             switch UITraitCollection.current.userInterfaceStyle {
             case .light:
