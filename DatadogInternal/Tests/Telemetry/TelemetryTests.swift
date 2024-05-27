@@ -201,7 +201,7 @@ class TelemetryTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.operationName] as? String), operationName)
         XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.callerClass] as? String), callerClass)
         XCTAssertEqual(try XCTUnwrap(attributes[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)
-        XCTAssertEqual(try XCTUnwrap(attributes[BasicMetric.typeKey] as? String), MethodCalledMetric.typeValue)
+        XCTAssertEqual(try XCTUnwrap(attributes[SDKMetricFields.typeKey] as? String), MethodCalledMetric.typeValue)
     }
 }
 

@@ -6,12 +6,6 @@
 
 import Foundation
 
-/// Common definitions for telemetries.
-public enum BasicMetric {
-    /// Basic Metric type key.
-    public static let typeKey = "metric_type"
-}
-
 /// Definition of "Method Called" telemetry.
 public enum MethodCalledMetric {
     /// The name of this metric, included in telemetry log.
@@ -57,6 +51,6 @@ public enum MethodCalledMetric {
 
 public extension [String: Encodable] {
     var isMethodCallAttributes: Bool {
-        self[BasicMetric.typeKey] as? String == MethodCalledMetric.typeValue
+        self[SDKMetricFields.typeKey] as? String == MethodCalledMetric.typeValue
     }
 }
