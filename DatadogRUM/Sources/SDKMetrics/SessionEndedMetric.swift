@@ -18,12 +18,10 @@ internal final class SessionEndedMetric {
         static let typeValue = "rum session ended"
         /// Namespace for bundling metric attributes ("rse" = "RUM Session Ended").
         static let rseKey = "rse"
-        /// Key referencing the session ID (`String`) that the metric refers to.
-        static let sessionIDKey = "sessionID"
     }
 
     /// An ID of the session being tracked through this metric object.
-    private let sessionID: String
+    let sessionID: String
 
     /// The type of OS component where the session was tracked.
     private let bundleType: BundleType
@@ -128,7 +126,7 @@ internal final class SessionEndedMetric {
         ///
         /// Note: We don't expect it to ever become `nil`, but optionality is enforced in upstream code.
         let precondition: String?
-        /// The session's duration, calculated from view events.
+        /// The session's duration (in nanoseconds), calculated from view events.
         ///
         /// This calculation only includes view events that are written to disk, with no consideration if the I/O operation
         /// has succeeded or not. Views dropped through the mapper API are not included in this duration.
@@ -196,12 +194,12 @@ internal final class SessionEndedMetric {
         let appLaunchViewsCount = trackedViews.values.filter({ $0.viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL }).count
 
         // Compute SDK errors count
-        let totalSDKErrors = trackedSDKErrors.count
+        let totalSDKErrors = trackedSDKErrors.values.reduce(0, +)
         let top5SDKErrorsByKind = top5SDKErrorsByKind(from: trackedSDKErrors)
 
         return [
             SDKMetricFields.typeKey: Constants.typeValue,
-            Constants.sessionIDKey: sessionID,
+            SDKMetricFields.sessionIDOverrideKey: sessionID,
             Constants.rseKey: Attributes(
                 processType: {
                     switch bundleType {

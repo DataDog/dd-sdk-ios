@@ -11,7 +11,10 @@ import DatadogInternal
 internal final class SessionEndedMetricController {
     /// Dictionary to keep track of pending metrics, keyed by session ID.
     @ReadWriteLock
-    private var pendingMetrics: [String: SessionEndedMetric] = [:]
+    private var metricsBySessionID: [String: SessionEndedMetric] = [:]
+    /// Array to keep track of pending metrics in their start order.
+    @ReadWriteLock
+    private var metrics: [SessionEndedMetric] = []
 
     /// Telemetry endpoint for sending metrics.
     private let telemetry: Telemetry
@@ -28,26 +31,35 @@ internal final class SessionEndedMetricController {
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: String, precondition: RUMSessionPrecondition?, context: DatadogContext) -> SessionEndedMetric {
+    func startMetric(sessionID: String, precondition: RUMSessionPrecondition?, context: DatadogContext) {
+        guard sessionID != RUMUUID.nullUUID.toRUMDataFormat else {
+            return // do not track metric when session is not sampled
+        }
         let metric = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
-        pendingMetrics[sessionID] = metric
-        return metric
+        metricsBySessionID[sessionID] = metric
+        metrics.append(metric)
     }
 
     /// Retrieves the metric for a given session ID.
     /// - Parameter sessionID: The ID of the session to retrieve the metric for.
     /// - Returns: The `SessionEndedMetric` instance if found, otherwise `nil`.
     func metric(for sessionID: String) -> SessionEndedMetric? {
-        return pendingMetrics[sessionID]
+        return metricsBySessionID[sessionID]
+    }
+
+    /// Retrieves the last started metric.
+    var latestMetric: SessionEndedMetric? {
+        return metrics.last
     }
 
     /// Ends the metric for a given session, sending it to telemetry and removing it from pending metrics.
     /// - Parameter sessionID: The ID of the session to end the metric for.
     func endMetric(sessionID: String) {
-        guard let metric = pendingMetrics[sessionID] else {
+        guard let metric = metricsBySessionID[sessionID] else {
             return
         }
         telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes())
-        pendingMetrics[sessionID] = nil
+        metricsBySessionID[sessionID] = nil
+        metrics.removeAll(where: { $0 === metric }) // O(n), but "ending the metric" is very rare event
     }
 }

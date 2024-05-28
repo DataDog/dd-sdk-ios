@@ -54,7 +54,7 @@ class SessionEndedMetricTests: XCTestCase {
         let attributes = metric.asMetricAttributes()
 
         // Then
-        XCTAssertEqual(attributes[Constants.sessionIDKey] as? String, sessionID)
+        XCTAssertEqual(attributes[SDKMetricFields.sessionIDOverrideKey] as? String, sessionID)
     }
 
     // MARK: - Process Type
@@ -286,18 +286,21 @@ class SessionEndedMetricTests: XCTestCase {
     // MARK: - SDK Errors Count
 
     func testReportingTotalSDKErrorsCount() throws {
-        let errorKinds: [String] = .mockRandom(count: .mockRandom(min: 0, max: 50))
+        let errorKinds: [String] = .mockRandom(count: .mockRandom(min: 0, max: 10))
+        let repetitions = 5
 
         // Given
         let metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        errorKinds.forEach { metric.track(sdkErrorKind: $0) }
+        (0..<repetitions).forEach { _ in
+            errorKinds.forEach { metric.track(sdkErrorKind: $0) }
+        }
         let attributes = metric.asMetricAttributes()
 
         // Then
         let rse = try XCTUnwrap(attributes[Constants.rseKey] as? SessionEndedAttributes)
-        XCTAssertEqual(rse.sdkErrorsCount.total, errorKinds.count)
+        XCTAssertEqual(rse.sdkErrorsCount.total, errorKinds.count * repetitions)
     }
 
     func testReportingTopSDKErrorsCount() throws {
