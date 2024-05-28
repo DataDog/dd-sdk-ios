@@ -17,7 +17,6 @@ internal struct ResolvedStyledText {
     }
 }
 
-
 extension StyledTextContentView: Reflection {
     init(_ mirror: Mirror) throws {
         text = try mirror.descendant(path: "text")
@@ -27,5 +26,19 @@ extension StyledTextContentView: Reflection {
 extension ResolvedStyledText.StringDrawing: Reflection {
     init(_ mirror: Mirror) throws {
         storage = try mirror.descendant(path: "storage")
+    }
+}
+
+//=================================================================================
+
+extension StyledTextContentView: Reflection_ {
+    init(_ mirror: ReflectionMirror) throws {
+        text = try mirror.get(name: "text")
+    }
+}
+
+extension ResolvedStyledText.StringDrawing: Reflection_ {
+    init(_ mirror: ReflectionMirror) throws {
+        storage = try mirror.get(name: "storage")
     }
 }

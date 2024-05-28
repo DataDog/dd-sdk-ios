@@ -38,3 +38,22 @@ extension ResolvedPaint: Reflection {
         paint = try mirror.descendant(path: "paint")
     }
 }
+
+//=================================================================================
+
+@available(iOS 13.0, *)
+extension SwiftUI.Color._Resolved: Reflection_ {
+    init(_ mirror: ReflectionMirror) throws {
+        linearRed = try mirror.get(name: "linearRed")
+        linearGreen = try mirror.get(name: "linearGreen")
+        linearBlue = try mirror.get(name: "linearBlue")
+        opacity = try mirror.get(name: "opacity")
+    }
+}
+
+@available(iOS 13.0, *)
+extension ResolvedPaint: Reflection_ {
+    init(_ mirror: ReflectionMirror) throws {
+        paint = try mirror.get(name: "paint")
+    }
+}

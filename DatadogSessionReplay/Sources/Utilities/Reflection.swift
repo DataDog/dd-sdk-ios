@@ -45,7 +45,7 @@ extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
 
 extension Mirror {
     func descendant<Value>(_ type: Value.Type = Value.self, path: MirrorPath) throws -> Value {
-        let child = descendant(path) ?? superclassMirror?.descendant(path)
+        let child = try descendant(path) ?? superclassMirror?.descendant(type, path: path)
         guard let value = child as? Value else {
             throw InternalError(description: "type mismatch at \(path)")
         }
@@ -53,11 +53,9 @@ extension Mirror {
     }
 
     func descendant<Value>(_ type: Value.Type = Value.self, path: MirrorPath) throws -> Value where Value: Reflection {
-        guard let child = descendant(path) else {
-            if let superclassMirror = superclassMirror {
-                return try superclassMirror.descendant(path: path)
-            }
+        let child = try descendant(path) ?? superclassMirror?.descendant(type, path: path)
 
+        guard let child = child as? Any else {
             throw InternalError(description: "not found at \(path)")
         }
 
@@ -71,20 +69,27 @@ extension Mirror {
     }
 }
 
+extension Reflection {
+    typealias Lazy = LazyReflection<Self>
+}
+
 @dynamicMemberLookup
-internal final class Lazy<R>: Reflection where R: Reflection {
+internal final class LazyReflection<R>: Reflection where R: Reflection {
     private let mirror: Mirror
-    private lazy var reflection = try? R(mirror)
+    private var reflection: R?
 
     init(_ mirror: Mirror) throws {
         self.mirror = mirror
     }
 
-    func get() -> R? {
-        reflection
+    func reflect() throws -> R {
+        try reflection ?? {
+            reflection = try R(mirror)
+            return reflection!
+        }()
     }
 
     subscript<T>(dynamicMember keyPath: KeyPath<R, T>) -> T? {
-        reflection?[keyPath: keyPath]
+        try? reflect()[keyPath: keyPath]
     }
 }
