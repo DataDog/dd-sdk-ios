@@ -44,7 +44,7 @@ internal class UIHostingViewRecorder: NodeRecorder {
             do {
 //                try dump(value, filename: "renderer.dump")
 
-                let renderer = try DisplayList.ViewRenderer(reflecting_: value)
+                let renderer = try DisplayList.ViewRenderer(reflecting: value)
 
                 let builder = UIHostingUIWireframesBuilder(
                     renderer: renderer.renderer,

@@ -4,22 +4,47 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-internal protocol Reflection_ {
+import DatadogInternal
+
+internal protocol Reflection {
     init(_ mirror: ReflectionMirror) throws
 }
 
-extension Reflection_ {
-    init(reflecting_ subject: Any) throws {
+extension Reflection {
+    init(reflecting subject: Any) throws {
         let mirror = ReflectionMirror(reflecting: subject)
         try self.init(mirror)
     }
 }
 
 struct ReflectionMirror {
+    /// An element of the reflected instance's structure.
+    ///
+    /// When the `label` component in not `nil`, it may represent the name of a
+    /// stored property or an active `enum` case. If you pass strings to the
+    /// `descendant(_:_:)` method, labels are used for lookup.
     typealias Child = (label: String?, value: Any)
 
+    /// The type used to represent substructure.
+    ///
+    /// When working with a mirror that reflects a bidirectional or random access
+    /// collection, you may find it useful to "upgrade" instances of this type
+    /// to `AnyBidirectionalCollection` or `AnyRandomAccessCollection`. For
+    /// example, to display the last twenty children of a mirror if they can be
+    /// accessed efficiently, you write the following code:
+    ///
+    ///     if let b = AnyBidirectionalCollection(someMirror.children) {
+    ///         for element in b.suffix(20) {
+    ///             print(element)
+    ///         }
+    ///     }
     typealias Children = AnyCollection<Child>
 
+    /// A suggestion of how a mirror's subject is to be interpreted.
+    ///
+    /// Playgrounds and the debugger will show a representation similar
+    /// to the one used for instances of the kind indicated by the
+    /// `DisplayStyle` case name when the mirror is used for display.
     enum DisplayStyle {
         case `struct`
         case `class`
@@ -34,6 +59,16 @@ struct ReflectionMirror {
         case key(String)
     }
 
+    enum Error: Swift.Error {
+        struct Context {
+            let subjectType: Any.Type
+            let paths: [Path]
+        }
+        case notFound(Context)
+        case typeMismatch(Context, expect: Any.Type, got: Any.Type)
+
+    }
+
     final class Lazy<T> {
         lazy var `lazy`: T? = load()
         private let load: () -> T?
@@ -44,39 +79,69 @@ struct ReflectionMirror {
     }
 
     let subject: Any
-    let subjectType: Any.Type
-    let displayStyle: DisplayStyle
-    let children: Children
-    var superclassMirror: ReflectionMirror? { _superclassMirror?.lazy }
 
-    private let namedFields: [String: Int]
-    private let _superclassMirror: Lazy<ReflectionMirror>?
+    /// The static type of the subject being reflected.
+    ///
+    /// This type may differ from the subject's dynamic type when this mirror
+    /// is the `superclassMirror` of another mirror.
+    let subjectType: Any.Type
+
+    /// A suggested display style for the reflected subject.
+    let displayStyle: DisplayStyle
+
+    /// A collection of `Child` elements describing the structure of the
+    /// reflected subject.
+    let children: Children
+
+    /// A mirror of the subject's superclass, if one exists.
+    var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
+
+    var keyPath: [String: Int]? { _keyPath.lazy }
+
+    let parentPaths: [Path]
+
+    private let _keyPath: Lazy<[String: Int]>
+    private let _superclassMirror: Lazy<ReflectionMirror>
+
+    private let telemetry: Telemetry
 
     init<C>(
         subject: Any,
         subjectType: Any.Type,
         displayStyle: DisplayStyle,
         children: C = [],
-        namedFields: [String: Int] = [:],
-        superclassMirror: Lazy<ReflectionMirror>? = nil
+        keyPath: Lazy<[String: Int]> = nil,
+        superclassMirror: Lazy<ReflectionMirror> = nil,
+        parentPaths: [Path] = [],
+        telemetry: Telemetry = NOPTelemetry()
     ) where C: Collection, C.Element == Child {
         self.subject = subject
         self.subjectType = subjectType
         self.displayStyle = displayStyle
         self.children = Children(children)
-        self.namedFields = namedFields
+        self._keyPath = keyPath
         self._superclassMirror = superclassMirror
+        self.parentPaths = parentPaths
+        self.telemetry = telemetry
     }
 }
 
 extension ReflectionMirror {
-    init(reflecting subject: Any, subjectType: Any.Type? = nil) {
+    /// Creates a mirror that reflects on the given instance.
+    ///
+    /// - Parameter subject: The instance for which to create a mirror.
+    init(
+        reflecting subject: Any,
+        subjectType: Any.Type? = nil,
+        parentPaths: [Path] = [],
+        telemetry: Telemetry = NOPTelemetry()
+    ) {
         let subjectType = subjectType ?? _getNormalizedType(subject, type: type(of: subject))
-        let metadataKind = MetadataKind(subjectType)
+        let metadataKind = _MetadataKind(subjectType)
         let childCount = _getChildCount(subject, type: subjectType)
 
         let children = (0 ..< childCount).lazy.map {
-            getChild(of: subject, type: subjectType, index: $0)
+            _child(of: subject, type: subjectType, index: $0)
         }
 
         switch metadataKind {
@@ -87,10 +152,21 @@ extension ReflectionMirror {
                 subjectType: subjectType,
                 displayStyle: .class,
                 children: children,
-                namedFields: _namedFields(subjectType, count: childCount, recursiveCount: recursiveChildCount),
+                keyPath: Lazy {
+                    _keyPaths(subjectType, count: childCount, recursiveCount: recursiveChildCount)
+                },
                 superclassMirror: Lazy {
-                    _getSuperclass(subjectType).map { ReflectionMirror(reflecting: subject, subjectType: $0) }
-                }
+                    _getSuperclass(subjectType).map {
+                        ReflectionMirror(
+                            reflecting: subject,
+                            subjectType: $0,
+                            parentPaths: parentPaths,
+                            telemetry: telemetry
+                        )
+                    }
+                },
+                parentPaths: parentPaths,
+                telemetry: telemetry
             )
 
         case .struct:
@@ -99,7 +175,9 @@ extension ReflectionMirror {
                 subjectType: subjectType,
                 displayStyle: .struct,
                 children: children,
-                namedFields: _namedFields(subjectType, count: childCount)
+                keyPath: Lazy { _keyPaths(subjectType, count: childCount) },
+                parentPaths: parentPaths,
+                telemetry: telemetry
             )
 
         case .enum:
@@ -108,7 +186,9 @@ extension ReflectionMirror {
                 subject: subject,
                 subjectType: subjectType,
                 displayStyle: .enum(case: caseName),
-                children: children
+                children: children,
+                parentPaths: parentPaths,
+                telemetry: telemetry
             )
 
         case .tuple:
@@ -116,18 +196,26 @@ extension ReflectionMirror {
                 subject: subject,
                 subjectType: subjectType,
                 displayStyle: .tuple,
-                children: children
+                children: children,
+                parentPaths: parentPaths,
+                telemetry: telemetry
             )
 
         case .optional:
             if 0 < childCount {
-                let some = getChild(of: subject, type: subjectType, index: 0)
-                self.init(reflecting: some.value)
+                let some = _child(of: subject, type: subjectType, index: 0)
+                self.init(
+                    reflecting: some.value,
+                    parentPaths: parentPaths,
+                    telemetry: telemetry
+                )
             } else {
                 self.init(
                     subject: subject,
                     subjectType: subjectType,
-                    displayStyle: .nil
+                    displayStyle: .nil,
+                    parentPaths: parentPaths,
+                    telemetry: telemetry
                 )
             }
 
@@ -135,7 +223,9 @@ extension ReflectionMirror {
             self.init(
                 subject: subject,
                 subjectType: subjectType,
-                displayStyle: .unknown
+                displayStyle: .unknown,
+                parentPaths: parentPaths,
+                telemetry: telemetry
             )
         }
     }
@@ -194,21 +284,29 @@ extension ReflectionMirror {
     func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T {
         var paths = [first] + rest
 
-        guard let value = descendant(paths: &paths) as? T else {
-            throw InternalError(description: "property \(first) type mismatch")
+        guard let value = descendant(paths: &paths) else {
+            throw ReflectionMirror.Error.notFound(.init(subjectType: subjectType, paths: paths))
+        }
+
+        guard let value = value as? T else {
+            throw ReflectionMirror.Error.typeMismatch(
+                .init(subjectType: subjectType, paths: paths),
+                expect: type,
+                got: Swift.type(of: value)
+            )
         }
 
         return value
     }
 
-    func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T where T: Reflection_ {
+    func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T where T: Reflection {
         var paths = [first] + rest
 
         guard let value = descendant(paths: &paths) else {
-            throw InternalError(description: "property at path \(paths) not found")
+            throw ReflectionMirror.Error.notFound(.init(subjectType: subjectType, paths: paths))
         }
 
-        return try T(reflecting_: value)
+        return try T(reflecting: value)
     }
 
     private func descendant(paths: inout [Path]) -> Any? {
@@ -222,7 +320,11 @@ extension ReflectionMirror {
             return child
         }
 
-        return ReflectionMirror(reflecting: child).descendant(paths: &paths)
+        return ReflectionMirror(
+            reflecting: child,
+            parentPaths: parentPaths + [path],
+            telemetry: telemetry
+        ).descendant(paths: &paths)
     }
 
     private func descendant(path: Path) -> Any? {
@@ -230,7 +332,7 @@ extension ReflectionMirror {
             return children[AnyIndex(index)].value
         }
 
-        if case let .key(key) = path, let index = namedFields[key] {
+        if case let .key(key) = path, let index = keyPath?[key] {
             return children[AnyIndex(index)].value
         }
 
@@ -238,30 +340,38 @@ extension ReflectionMirror {
     }
 }
 
-extension Array: Reflection_ where Element: Reflection_ {
+extension Array: Reflection where Element: Reflection {
     init(_ mirror: ReflectionMirror) throws {
         guard let subject = mirror.subject as? Array<Any> else {
-            throw InternalError(description: "type mismatch: not a collection")
+            throw ReflectionMirror.Error.typeMismatch(
+                .init(subjectType: mirror.subjectType, paths: mirror.parentPaths),
+                expect: Array<Any>.self,
+                got: mirror.subjectType
+            )
         }
 
-        self = try subject.map { try Element(reflecting_: $0) }
+        self = try subject.map { try Element(reflecting: $0) }
     }
 }
 
-extension Dictionary: Reflection_ where Key: Reflection_, Value: Reflection_ {
+extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
     init(_ mirror: ReflectionMirror) throws {
         guard let subject = mirror.subject as? Dictionary<AnyHashable, Any> else {
-            throw InternalError(description: "type mismatch: not a key:value pair")
+            throw ReflectionMirror.Error.typeMismatch(
+                .init(subjectType: mirror.subjectType, paths: mirror.parentPaths),
+                expect: Dictionary<AnyHashable, Any>.self,
+                got: mirror.subjectType
+            )
         }
 
         self = try subject.reduce(into: [:]) { result, element in
-            try result[Key(reflecting_: element.key.base)] = Value(reflecting_: element.value)
+            try result[Key(reflecting: element.key.base)] = Value(reflecting: element.value)
         }
     }
 }
 
-extension Reflection_ {
-    typealias Lazy_ = ReflectionMirror.Lazy<Self>
+extension Reflection {
+    typealias Lazy = ReflectionMirror.Lazy<Self>
 }
 
 extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
@@ -273,6 +383,18 @@ extension ReflectionMirror.Path: ExpressibleByIntegerLiteral {
 extension ReflectionMirror.Path: ExpressibleByStringLiteral {
     init(stringLiteral value: String) {
         self = .key(value)
+    }
+}
+
+extension ReflectionMirror.Lazy: ExpressibleByNilLiteral {
+    convenience init(nilLiteral: ()) {
+        self.init({ nil })
+    }
+}
+
+extension ReflectionMirror.Lazy: Reflection where T: Reflection {
+    convenience init(_ mirror: ReflectionMirror) throws {
+        self.init({ try? T(mirror) })
     }
 }
 
@@ -290,12 +412,8 @@ extension ReflectionMirror.Path: ExpressibleByStringLiteral {
 
 import SwiftShims
 
-// Returns 'c' (class), 'e' (enum), 's' (struct), 't' (tuple), or '\0' (none)
-@_silgen_name("swift_reflectionMirror_displayStyle")
-internal func _getDisplayStyle<T>(_: T) -> CChar
-
 @_silgen_name("swift_EnumCaseName")
-func _getEnumCaseName<T>(_ value: T) -> UnsafePointer<CChar>?
+internal func _getEnumCaseName<T>(_ value: T) -> UnsafePointer<CChar>?
 
 @_silgen_name("swift_getMetadataKind")
 internal func _metadataKind(_: Any.Type) -> UInt
@@ -316,12 +434,6 @@ internal func _getChildMetadata(
     fieldMetadata: UnsafeMutablePointer<_FieldReflectionMetadata>
 ) -> Any.Type
 
-@_silgen_name("swift_reflectionMirror_recursiveChildOffset")
-internal func _getChildOffset(
-    _: Any.Type,
-    index: Int
-) -> Int
-
 internal typealias NameFreeFunc = @convention(c) (UnsafePointer<CChar>?) -> Void
 
 @_silgen_name("swift_reflectionMirror_subscript")
@@ -333,7 +445,7 @@ internal func _getChild<T>(
     outFreeFunc: UnsafeMutablePointer<NameFreeFunc?>
 ) -> Any
 
-private enum MetadataKind: UInt {
+private enum _MetadataKind: UInt {
     // With "flags":
     // runtimePrivate = 0x100
     // nonHeap = 0x200
@@ -358,11 +470,11 @@ private enum MetadataKind: UInt {
 
     init(_ type: Any.Type) {
         let rawValue = _metadataKind(type)
-        self = MetadataKind(rawValue: rawValue) ?? .unknown
+        self = _MetadataKind(rawValue: rawValue) ?? .unknown
     }
 }
 
-private func getChild<T>(of value: T, type: Any.Type, index: Int) -> (label: String?, value: Any) {
+private func _child<T>(of value: T, type: Any.Type, index: Int) -> (label: String?, value: Any) {
     var nameC: UnsafePointer<CChar>? = nil
     var freeFunc: NameFreeFunc? = nil
     let value = _getChild(of: value, type: type, index: index, outName: &nameC, outFreeFunc: &freeFunc)
@@ -371,7 +483,7 @@ private func getChild<T>(of value: T, type: Any.Type, index: Int) -> (label: Str
     return (name, value)
 }
 
-private func _namedFields(_ type: Any.Type, count: Int, recursiveCount: Int) -> [String: Int] {
+private func _keyPaths(_ type: Any.Type, count: Int, recursiveCount: Int) -> [String: Int] {
     let skip = recursiveCount - count
     return (skip..<recursiveCount).reduce(into: [:]) { result, index in
         var field = _FieldReflectionMetadata()
@@ -379,11 +491,11 @@ private func _namedFields(_ type: Any.Type, count: Int, recursiveCount: Int) -> 
         defer { field.freeFunc?(field.name) }
 
         field.name
-            .flatMap { String(validatingUTF8: $0) }
+            .flatMap { String(cString: $0) }
             .map { result[$0] = index - skip }
     }
 }
 
-private func _namedFields(_ type: Any.Type, count: Int) -> [String: Int] {
-    _namedFields(type, count: count, recursiveCount: count)
+private func _keyPaths(_ type: Any.Type, count: Int) -> [String: Int] {
+    _keyPaths(type, count: count, recursiveCount: count)
 }

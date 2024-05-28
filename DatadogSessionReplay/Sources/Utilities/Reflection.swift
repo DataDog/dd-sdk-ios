@@ -6,28 +6,28 @@
 
 import Foundation
 
-internal protocol Reflection {
+internal protocol STDReflection {
     init(_ mirror: Mirror) throws
 }
 
-extension Reflection {
-    init(reflecting subject: Any) throws {
+extension STDReflection {
+    init(std_reflecting subject: Any) throws {
         let mirror = Mirror(reflecting: subject)
         try self.init(mirror)
     }
 }
 
-extension Array: Reflection where Element: Reflection {
+extension Array: STDReflection where Element: STDReflection {
     init(_ mirror: Mirror) throws {
         guard mirror.displayStyle == .collection else {
             throw InternalError(description: "type mismatch: not a collection")
         }
 
-        self = try mirror.children.map { try Element(reflecting: $0.value) }
+        self = try mirror.children.map { try Element(std_reflecting: $0.value) }
     }
 }
 
-extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
+extension Dictionary: STDReflection where Key: STDReflection, Value: STDReflection {
     init(_ mirror: Mirror) throws {
         guard mirror.displayStyle == .dictionary else {
             throw InternalError(description: "type mismatch: not a dictionary")
@@ -38,7 +38,7 @@ extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
                 throw InternalError(description: "type mismatch: not a key:value pair")
             }
             
-            try result[Key(reflecting: pair.0)] = Value(reflecting: pair.1)
+            try result[Key(std_reflecting: pair.0)] = Value(std_reflecting: pair.1)
         }
     }
 }
@@ -52,7 +52,7 @@ extension Mirror {
         return value
     }
 
-    func descendant<Value>(_ type: Value.Type = Value.self, path: MirrorPath) throws -> Value where Value: Reflection {
+    func descendant<Value>(_ type: Value.Type = Value.self, path: MirrorPath) throws -> Value where Value: STDReflection {
         let child = try descendant(path) ?? superclassMirror?.descendant(type, path: path)
 
         guard let child = child as? Any else {
@@ -69,12 +69,12 @@ extension Mirror {
     }
 }
 
-extension Reflection {
+extension STDReflection {
     typealias Lazy = LazyReflection<Self>
 }
 
 @dynamicMemberLookup
-internal final class LazyReflection<R>: Reflection where R: Reflection {
+internal final class LazyReflection<R>: STDReflection where R: STDReflection {
     private let mirror: Mirror
     private var reflection: R?
 

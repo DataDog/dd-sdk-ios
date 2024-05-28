@@ -23,7 +23,7 @@ internal struct ResolvedPaint {
 }
 
 @available(iOS 13.0, *)
-extension SwiftUI.Color._Resolved: Reflection {
+extension SwiftUI.Color._Resolved: STDReflection {
     init(_ mirror: Mirror) throws {
         linearRed = try mirror.descendant(path: "linearRed")
         linearGreen = try mirror.descendant(path: "linearGreen")
@@ -33,7 +33,7 @@ extension SwiftUI.Color._Resolved: Reflection {
 }
 
 @available(iOS 13.0, *)
-extension ResolvedPaint: Reflection {
+extension ResolvedPaint: STDReflection {
     init(_ mirror: Mirror) throws {
         paint = try mirror.descendant(path: "paint")
     }
@@ -42,18 +42,18 @@ extension ResolvedPaint: Reflection {
 //=================================================================================
 
 @available(iOS 13.0, *)
-extension SwiftUI.Color._Resolved: Reflection_ {
+extension SwiftUI.Color._Resolved: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        linearRed = try mirror.get(name: "linearRed")
-        linearGreen = try mirror.get(name: "linearGreen")
-        linearBlue = try mirror.get(name: "linearBlue")
-        opacity = try mirror.get(name: "opacity")
+        linearRed = try mirror.descendant("linearRed")
+        linearGreen = try mirror.descendant("linearGreen")
+        linearBlue = try mirror.descendant("linearBlue")
+        opacity = try mirror.descendant("opacity")
     }
 }
 
 @available(iOS 13.0, *)
-extension ResolvedPaint: Reflection_ {
+extension ResolvedPaint: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        paint = try mirror.get(name: "paint")
+        paint = try mirror.descendant("paint")
     }
 }

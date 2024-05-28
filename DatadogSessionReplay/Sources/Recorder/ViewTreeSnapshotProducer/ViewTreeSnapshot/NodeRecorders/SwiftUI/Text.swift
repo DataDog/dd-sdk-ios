@@ -17,13 +17,13 @@ internal struct ResolvedStyledText {
     }
 }
 
-extension StyledTextContentView: Reflection {
+extension StyledTextContentView: STDReflection {
     init(_ mirror: Mirror) throws {
         text = try mirror.descendant(path: "text")
     }
 }
 
-extension ResolvedStyledText.StringDrawing: Reflection {
+extension ResolvedStyledText.StringDrawing: STDReflection {
     init(_ mirror: Mirror) throws {
         storage = try mirror.descendant(path: "storage")
     }
@@ -31,14 +31,14 @@ extension ResolvedStyledText.StringDrawing: Reflection {
 
 //=================================================================================
 
-extension StyledTextContentView: Reflection_ {
+extension StyledTextContentView: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        text = try mirror.get(name: "text")
+        text = try mirror.descendant("text")
     }
 }
 
-extension ResolvedStyledText.StringDrawing: Reflection_ {
+extension ResolvedStyledText.StringDrawing: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        storage = try mirror.get(name: "storage")
+        storage = try mirror.descendant("storage")
     }
 }

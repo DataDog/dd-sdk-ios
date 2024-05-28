@@ -20,7 +20,9 @@ internal class UIGraphicsViewRecorder: NodeRecorder {
             return nil
         }
 
-        customDump(view)
+        guard attributes.isVisible else {
+            return InvisibleElement.constant
+        }
 
         return IgnoredElement(subtreeStrategy: .ignore)
     }
