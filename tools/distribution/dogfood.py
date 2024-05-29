@@ -73,7 +73,7 @@ def dogfood(dry_run: bool, repository_url: str, repository_name: str, repository
                     else:
                         package.add_dependency(
                             package_id=dependency_id,
-                            repository_url=dependency['repositoryURL'],
+                            repository_url=dependency['location'],
                             branch=dependency['state'].get('branch'),
                             revision=dependency['state']['revision'],
                             version=dependency['state'].get('version'),

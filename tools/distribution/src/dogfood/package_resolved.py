@@ -361,7 +361,7 @@ class PackageResolvedContentV2(PackageResolvedContent):
 
 class PackageResolvedContentV3(PackageResolvedContentV2):
     """
-    Example of `package.resolved` in version `2` looks this::
+    Example of `package.resolved` in version `3` looks this::
 
         {
             "originHash" : "b47de6af98c4a9811a8d2af11d70b960dfc66b7c8e4944b35bb74c8f8bb9c487",
