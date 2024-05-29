@@ -100,6 +100,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
             telemetry: core.telemetry
         )
         self.messageReceiver = CombinedFeatureMessageReceiver(
+            TelemetryInterecptor(sessionEndedMetric: sessionEndedMetric),
             TelemetryReceiver(
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,

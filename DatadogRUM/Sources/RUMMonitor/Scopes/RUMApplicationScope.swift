@@ -30,6 +30,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Initialization
 
+    /// Container bundling dependencies for this scope.
     let dependencies: RUMScopeDependencies
 
     init(dependencies: RUMScopeDependencies) {
@@ -98,6 +99,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 // as it it still has work to do.
                 return scope
             }
+
+            // proccss(command:context:writer) returned false, so the scope will be deallocated at the end of
+            // this execution context. End the "RUM Session Ended" metric:
+            defer { dependencies.sessionEndedMetric.endMetric(sessionID: scope.sessionUUID.toRUMDataFormat) }
 
             // proccss(command:context:writer) returned false, but if the scope is still active
             // it means the session reached one of the end reasons

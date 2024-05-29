@@ -53,10 +53,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
     unowned let parent: RUMContextProvider
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
 
     /// Automatically detect background events by creating "Background" view if no other view is active
-    internal let trackBackgroundEvents: Bool
+    let trackBackgroundEvents: Bool
 
     /// This Session UUID. Equals `.nullUUID` if the Session is sampled.
     let sessionUUID: RUMUUID
@@ -75,8 +77,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var lastInteractionTime: Date
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason?
-    /// SDK metric that tracks the state of this session.
-    private let sessionEndedMetric: SessionEndedMetric
 
     init(
         isInitialSession: Bool,
@@ -103,7 +103,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             hasTrackedAnyView: false,
             didStartWithReplay: context.hasReplay
         )
-        self.sessionEndedMetric = dependencies.sessionEndedMetric.startMetric(
+
+        // Start tracking "RUM Session Ended" metric for this session
+        dependencies.sessionEndedMetric.startMetric(
             sessionID: sessionUUID.toRUMDataFormat,
             precondition: startPrecondition,
             context: context
@@ -188,7 +190,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
 
         if !isSampled {
-            // Make sure sessions end even if they are sampled
+            // Make sure sessions end even if they are not sampled
             if command is RUMStopSessionCommand {
                 endReason = .stopAPI
                 return false // end this session (no longer keep the session scope)
@@ -200,6 +202,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var deactivating = false
         if isActive {
             if command is RUMStopSessionCommand {
+                sessionEndedMetric?.trackWasStopped()
                 endReason = .stopAPI
                 deactivating = true
             } else if let startApplicationCommand = command as? RUMApplicationStartCommand {

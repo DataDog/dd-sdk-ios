@@ -8,6 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal protocol RUMScope: AnyObject {
+    /// Container bundling dependencies for this scope.
+    var dependencies: RUMScopeDependencies { get }
+
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.
@@ -20,6 +23,13 @@ extension RUMScope {
     /// Returns `self`  to be kept open, `nil` if it requests to close.
     func scope(byPropagating command: RUMCommand, context: DatadogContext, writer: Writer) -> Self? {
         process(command: command, context: context, writer: writer) ? self : nil
+    }
+}
+
+extension RUMScope where Self: RUMContextProvider {
+    /// The "RUM Session Ended" metric tracking the session that this `RUMScope` belongs to.
+    var sessionEndedMetric: SessionEndedMetric? {
+        dependencies.sessionEndedMetric.metric(for: context.sessionID.toRUMDataFormat)
     }
 }
 
