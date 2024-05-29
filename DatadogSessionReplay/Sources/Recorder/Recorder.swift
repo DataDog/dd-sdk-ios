@@ -99,7 +99,7 @@ public class Recorder: Recording {
         snapshotProcessor: SnapshotProcessing,
         resourceProcessor: ResourceProcessing,
         telemetry: Telemetry,
-        methodCallTelemetrySamplingRate: Float = 5
+        methodCallTelemetrySamplingRate: Float = 0.1
     ) {
         self.uiApplicationSwizzler = uiApplicationSwizzler
         self.viewTreeSnapshotProducer = viewTreeSnapshotProducer
@@ -123,7 +123,7 @@ public class Recorder: Recording {
         let methodCalledTrace = telemetry.startMethodCalled(
             operationName: MethodCallConstants.captureRecordOperationName,
             callerClass: MethodCallConstants.className,
-            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 5% = 0.15% of calls
+            samplingRate: methodCallTelemetrySamplingRate // Effectively 3% * 0.1% = 0.003% of calls
         )
         var isSuccessful = true
         do {
