@@ -52,7 +52,7 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         let error = errorEvents[0]
         XCTAssertEqual(error.telemetry.message, "Error Telemetry")
-        XCTAssertEqual(error.telemetry.error?.kind, "\(moduleName())/FileError")
+        XCTAssertEqual(error.telemetry.error?.kind, "\(moduleName())/File.swift")
         XCTAssertEqual(error.telemetry.error?.stack, "\(moduleName())/File.swift:42")
 
         let metric = debugEvents[1]

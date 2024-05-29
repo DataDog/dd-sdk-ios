@@ -186,19 +186,11 @@ extension Telemetry {
     ///   - file: The current file name.
     ///   - line: The line number in file.
     public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #fileID, line: Int = #line) {
-        func defaultKind(fileID: String) -> String {
-            // e.g. `DatadogInternal/Telemetry.swift` -> `DatadogInternal/TelemetryError`
-            return "\(fileID.hasSuffix(".swift") ? String(fileID.dropLast(6)) : fileID)Error"
-        }
-        func defaultStack(fileID: String, line: Int) -> String {
-            "\(fileID):\(line)"
-        }
-
         error(
             id: "\(file):\(line):\(message)",
             message: message,
-            kind: kind ?? defaultKind(fileID: file),
-            stack: stack ?? defaultStack(fileID: file, line: line)
+            kind: kind ?? "\(file)",
+            stack: stack ?? "\(file):\(line)"
         )
     }
 

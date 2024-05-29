@@ -48,14 +48,14 @@ class TelemetryTests: XCTestCase {
     func testSendingErrorTelemetry_whenNoKindAndNoStack() throws {
         // When
         #sourceLocation(file: "File.swift", line: 1)
-        telemetry.error("error message", kind: nil, stack: nil)
+        telemetry.error("error message")
         #sourceLocation()
 
         // Then
         let error = try XCTUnwrap(telemetry.messages.firstError())
         XCTAssertEqual(error.id, "\(moduleName())/File.swift:1:error message")
         XCTAssertEqual(error.message, "error message")
-        XCTAssertEqual(error.kind, "\(moduleName())/FileError")
+        XCTAssertEqual(error.kind, "\(moduleName())/File.swift")
         XCTAssertEqual(error.stack, "\(moduleName())/File.swift:1")
         XCTAssertEqual(telemetry.messages.count, 1)
     }
