@@ -111,6 +111,8 @@ if __name__ == "__main__":
 
     try:
         dry_run = os.environ.get('DD_DRY_RUN') == 'yes'
+        if dry_run:
+            print(f'ℹ️ Running in dry-run mode')
         skip_datadog_ios = os.environ.get('DD_SKIP_DATADOG_IOS') == 'yes'
         skip_shopist_ios = os.environ.get('DD_SKIP_SHOPIST_IOS') == 'yes'
 

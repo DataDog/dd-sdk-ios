@@ -537,6 +537,17 @@ workflows:
             cd tools/distribution && make
             venv/bin/python3 -m pytest tests
     - script:
+        title: Smoke test dogfooding (with dry-run)
+        run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -e
+
+            export DD_DRY_RUN=yes
+            cd tools/distribution && make
+            venv/bin/python3 dogfood.py
+    - script:
         title: Run tests for nightly-unit-tests tool
         run_if: '{{enveq "DD_RUN_TOOLS_TESTS" "1"}}'
         inputs:
