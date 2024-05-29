@@ -31,7 +31,7 @@ internal final class AppHangsMonitor {
         appHangThreshold: TimeInterval,
         observedQueue: DispatchQueue,
         backtraceReporter: BacktraceReporting,
-        fatalErrorContext: FatalErrorContextNotifier,
+        fatalErrorContext: FatalErrorContextNotifying,
         dateProvider: DateProvider,
         processID: UUID
     ) {
@@ -53,7 +53,7 @@ internal final class AppHangsMonitor {
     init(
         featureScope: FeatureScope,
         watchdogThread: AppHangsObservingThread,
-        fatalErrorContext: FatalErrorContextNotifier,
+        fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
         dateProvider: DateProvider
     ) {

@@ -43,21 +43,25 @@ public enum Trace {
         if let firstPartyHostsTracing = configuration.urlSessionTracking?.firstPartyHostsTracing {
             let distributedTraceSampler: Sampler
             let firstPartyHosts: FirstPartyHosts
+            let traceContextInjection: TraceContextInjection
 
             switch firstPartyHostsTracing {
-            case let .trace(hosts, sampleRate):
+            case let .trace(hosts, sampleRate, injection):
                 distributedTraceSampler = Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate)
                 firstPartyHosts = FirstPartyHosts(hosts)
-            case let .traceWithHeaders(hostsWithHeaders, sampleRate):
+                traceContextInjection = injection
+            case let .traceWithHeaders(hostsWithHeaders, sampleRate, injection):
                 distributedTraceSampler = Sampler(samplingRate: configuration.debugSDK ? 100 : sampleRate)
                 firstPartyHosts = FirstPartyHosts(hostsWithHeaders)
+                traceContextInjection = injection
             }
 
             let urlSessionHandler = TracingURLSessionHandler(
                 tracer: trace.tracer,
                 contextReceiver: trace.contextReceiver,
                 distributedTraceSampler: distributedTraceSampler,
-                firstPartyHosts: firstPartyHosts
+                firstPartyHosts: firstPartyHosts,
+                traceContextInjection: traceContextInjection
             )
 
             try core.register(urlSessionHandler: urlSessionHandler)

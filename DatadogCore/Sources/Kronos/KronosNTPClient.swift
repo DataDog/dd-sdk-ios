@@ -44,7 +44,7 @@ internal final class KronosNTPClient {
         var servers: [KronosInternetAddress: [KronosNTPPacket]] = [:]
         var completed: Int = 0
 
-        let queryIPAndStoreResult = { (address: KronosInternetAddress, totalQueries: Int) -> Void in
+        let queryIPAndStoreResult = { (address: KronosInternetAddress, totalQueries: Int) in
             self.query(ip: address, port: port, version: version, timeout: timeout, numberOfSamples: numberOfSamples) { packet in
                 defer {
                     completed += 1
@@ -106,8 +106,8 @@ internal final class KronosNTPClient {
             timer?.invalidate()
             guard
                 let data = data, let PDU = try? KronosNTPPacket(data: data, destinationTime: destinationTime),
-                PDU.isValidResponse() else
-            {
+                PDU.isValidResponse()
+            else {
                 completion(nil)
                 return
             }

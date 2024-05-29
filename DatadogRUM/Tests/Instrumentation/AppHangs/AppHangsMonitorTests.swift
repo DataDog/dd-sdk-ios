@@ -414,4 +414,38 @@ class AppHangsMonitorTests: XCTestCase {
         DDAssertJSONEqual(errorEvent.error.binaryImages, hangBacktrace.binaryImages.toRUMDataFormat)
         XCTAssertEqual(errorEvent.error.wasTruncated, hangBacktrace.wasTruncated)
     }
+
+    func testWhenSendingRUMErrorEvent_itIncludesTimeSinceAppLaunch() throws {
+        let appLaunchDate: Date = .mockDecember15th2019At10AMUTC()
+        let hangTimeSinceAppStart: TimeInterval = .mockRandom(min: 1, max: 10)
+        let hang: AppHang = .mockWith(startDate: appLaunchDate.addingTimeInterval(hangTimeSinceAppStart))
+
+        // Given (track hang in previous app session)
+        featureScope.contextMock.trackingConsent = .granted
+        featureScope.contextMock.launchTime = .mockWith(launchDate: appLaunchDate)
+        featureScope.contextMock.serverTimeOffset = 0
+        monitor.start()
+        fatalErrorContext.view = .mockRandom()
+        watchdogThread.delegate?.hangStarted(hang)
+        monitor.stop()
+
+        // When (app is restarted)
+        let appRestartDate = appLaunchDate.addingTimeInterval(.mockRandom(min: 10, max: 100))
+        featureScope.contextMock.launchTime = .mockWith(launchDate: appRestartDate)
+        featureScope.contextMock.serverTimeOffset = .mockRandom(min: 0, max: 100)
+        let monitor = AppHangsMonitor(
+            featureScope: featureScope,
+            watchdogThread: watchdogThread,
+            fatalErrorContext: fatalErrorContext,
+            processID: UUID(), // different process
+            dateProvider: DateProviderMock(now: appRestartDate)
+        )
+        monitor.start()
+        defer { monitor.stop() }
+
+        // Then
+        let errorEvent = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMErrorEvent.self).first)
+        XCTAssertEqual(errorEvent.error.category, .appHang)
+        XCTAssertEqual(errorEvent.error.timeSinceAppStart, hangTimeSinceAppStart.toInt64Milliseconds)
+    }
 }

@@ -474,7 +474,7 @@ public enum Datadog {
         core.telemetry.configuration(
             backgroundTasksEnabled: configuration.backgroundTasksEnabled,
             batchProcessingLevel: Int64(exactly: configuration.batchProcessingLevel.maxBatchesPerUpload),
-            batchSize: Int64(exactly: performance.maxFileSize),
+            batchSize: performance.uploaderWindow.toInt64Milliseconds,
             batchUploadFrequency: performance.minUploadDelay.toInt64Milliseconds,
             useLocalEncryption: configuration.encryption != nil,
             useProxy: configuration.proxyConfiguration != nil

@@ -43,7 +43,7 @@ public struct _TelemetryProxy {
 
     /// See Telementry.error
     public func error(id: String, message: String, kind: String?, stack: String?) {
-        telemetry.error(id: id, message: message, kind: kind, stack: stack)
+        telemetry.error(id: id, message: message, kind: kind ?? "unknown", stack: stack ?? "unknown")
     }
 }
 

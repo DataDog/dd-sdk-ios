@@ -1667,6 +1667,10 @@ public class DDRUMErrorEventError: NSObject {
         root.swiftModel.error.threads?.map { DDRUMErrorEventErrorThreads(swiftModel: $0) }
     }
 
+    @objc public var timeSinceAppStart: NSNumber? {
+        root.swiftModel.error.timeSinceAppStart as NSNumber?
+    }
+
     @objc public var type: String? {
         root.swiftModel.error.type
     }
@@ -3803,6 +3807,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.connect != nil ? DDRUMResourceEventResourceConnect(root: root) : nil
     }
 
+    @objc public var decodedBodySize: NSNumber? {
+        root.swiftModel.resource.decodedBodySize as NSNumber?
+    }
+
     @objc public var dns: DDRUMResourceEventResourceDNS? {
         root.swiftModel.resource.dns != nil ? DDRUMResourceEventResourceDNS(root: root) : nil
     }
@@ -3813,6 +3821,10 @@ public class DDRUMResourceEventResource: NSObject {
 
     @objc public var duration: NSNumber? {
         root.swiftModel.resource.duration as NSNumber?
+    }
+
+    @objc public var encodedBodySize: NSNumber? {
+        root.swiftModel.resource.encodedBodySize as NSNumber?
     }
 
     @objc public var firstByte: DDRUMResourceEventResourceFirstByte? {
@@ -3839,6 +3851,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.redirect != nil ? DDRUMResourceEventResourceRedirect(root: root) : nil
     }
 
+    @objc public var renderBlockingStatus: DDRUMResourceEventResourceRenderBlockingStatus {
+        .init(swift: root.swiftModel.resource.renderBlockingStatus)
+    }
+
     @objc public var size: NSNumber? {
         root.swiftModel.resource.size as NSNumber?
     }
@@ -3849,6 +3865,10 @@ public class DDRUMResourceEventResource: NSObject {
 
     @objc public var statusCode: NSNumber? {
         root.swiftModel.resource.statusCode as NSNumber?
+    }
+
+    @objc public var transferSize: NSNumber? {
+        root.swiftModel.resource.transferSize as NSNumber?
     }
 
     @objc public var type: DDRUMResourceEventResourceResourceType {
@@ -4118,6 +4138,29 @@ public class DDRUMResourceEventResourceRedirect: NSObject {
     @objc public var start: NSNumber {
         root.swiftModel.resource.redirect!.start as NSNumber
     }
+}
+
+@objc
+public enum DDRUMResourceEventResourceRenderBlockingStatus: Int {
+    internal init(swift: RUMResourceEvent.Resource.RenderBlockingStatus?) {
+        switch swift {
+        case nil: self = .none
+        case .blocking?: self = .blocking
+        case .nonBlocking?: self = .nonBlocking
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.RenderBlockingStatus? {
+        switch self {
+        case .none: return nil
+        case .blocking: return .blocking
+        case .nonBlocking: return .nonBlocking
+        }
+    }
+
+    case none
+    case blocking
+    case nonBlocking
 }
 
 @objc
@@ -7059,6 +7102,15 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.telemetrySampleRate as NSNumber?
     }
 
+    @objc public var telemetryUsageSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.telemetryUsageSampleRate as NSNumber?
+    }
+
+    @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection {
+        set { root.swiftModel.telemetry.configuration.traceContextInjection = newValue.toSwift }
+        get { .init(swift: root.swiftModel.telemetry.configuration.traceContextInjection) }
+    }
+
     @objc public var traceSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.traceSampleRate as NSNumber?
     }
@@ -7189,6 +7241,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.usePartitionedCrossSiteSessionCookie as NSNumber?
     }
 
+    @objc public var usePciIntake: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.usePciIntake = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.usePciIntake as NSNumber? }
+    }
+
     @objc public var useProxy: NSNumber? {
         set { root.swiftModel.telemetry.configuration.useProxy = newValue?.boolValue }
         get { root.swiftModel.telemetry.configuration.useProxy as NSNumber? }
@@ -7287,6 +7344,29 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPr
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.TraceContextInjection?) {
+        switch swift {
+        case nil: self = .none
+        case .all?: self = .all
+        case .sampled?: self = .sampled
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.TraceContextInjection? {
+        switch self {
+        case .none: return nil
+        case .all: return .all
+        case .sampled: return .sampled
+        }
+    }
+
+    case none
+    case all
+    case sampled
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy?) {
         switch swift {
@@ -7330,4 +7410,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/61560c6502ebf333e71631ee35d00b9c09aadf8e
+// Generated from https://github.com/DataDog/rum-events-format/tree/0455e104863c0f67c3bf69899c7d5da1ba6f0ebb

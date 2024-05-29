@@ -453,6 +453,16 @@ public class DDRUMMonitor: NSObject {
     }
 
     @objc
+    public func currentSessionID(completion: @escaping (String?) -> Void) {
+        swiftRUMMonitor.currentSessionID(completion: completion)
+    }
+
+    @objc
+    public func stopSession() {
+        swiftRUMMonitor.stopSession()
+    }
+
+    @objc
     public func startView(
         viewController: UIViewController,
         name: String?,
@@ -632,5 +642,15 @@ public class DDRUMMonitor: NSObject {
     @objc
     public func removeAttribute(forKey key: String) {
         swiftRUMMonitor.removeAttribute(forKey: key)
+    }
+
+    @objc
+    public func addFeatureFlagEvaluation(name: String, value: Any) {
+        swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
+    }
+
+    @objc public var debug: Bool {
+        set { swiftRUMMonitor.debug = newValue }
+        get { swiftRUMMonitor.debug }
     }
 }

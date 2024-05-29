@@ -88,10 +88,12 @@ class PackageResolvedFile(PackageResolvedContent):
                 self.wrapped = PackageResolvedContentV1(self.path, self.packages)
             elif self.version == 2:
                 self.wrapped = PackageResolvedContentV2(self.path, self.packages)
+            elif self.version == 3:
+                self.wrapped = PackageResolvedContentV3(self.path, self.packages)
             else:
                 raise Exception(
                     f'{path} uses version {self.version} but `PackageResolvedFile` only supports ' +
-                    f'versions `1` and `2`. Update `PackageResolvedFile` to support new version.'
+                    f'versions `1`, `2` and `3`. Update `PackageResolvedFile` to support new version.'
                 )
 
     def save(self):
@@ -131,6 +133,15 @@ class PackageResolvedFile(PackageResolvedContent):
 
     def read_dependency(self, package_id: PackageID) -> dict:
         return self.wrapped.read_dependency(package_id)
+
+    def origin_hash(self) -> str:
+        if self.version == 3:
+            return self.wrapped.origin_hash()
+        else:
+            raise Exception(
+                f'{self.path} does not contain `originHash` property. ' +
+                f'Check if the `package.resolved` file is in version 3.'
+            )
 
 
 class PackageResolvedContentV1(PackageResolvedContent):
@@ -346,3 +357,32 @@ class PackageResolvedContentV2(PackageResolvedContent):
 
         package_pin_index = package_pins[0]
         return self.packages['pins'][package_pin_index]
+
+
+class PackageResolvedContentV3(PackageResolvedContentV2):
+    """
+    Example of `package.resolved` in version `2` looks this::
+
+        {
+            "originHash" : "b47de6af98c4a9811a8d2af11d70b960dfc66b7c8e4944b35bb74c8f8bb9c487",
+            "pins" : [
+                {
+                    "identity" : "dd-sdk-ios",
+                    "kind" : "remoteSourceControl",
+                    "location" : "https://github.com/DataDog/dd-sdk-ios",
+                    "state" : {
+                        "branch" : "dogfooding",
+                        "revision" : "6f662103771eb4523164e64f7f936bf9276f6bd0"
+                    }
+                },
+                ...
+            ]
+            "version" : 3
+        }
+
+    In v3 new property origin hash has been added which SHA256 hash of the repository content.
+    Check https://github.com/apple/swift-package-manager/blob/e5123e483c18bff7afdc3b2029f9e1924779bbc8/Sources/Workspace/Workspace%2BDependencies.swift#L280
+    """
+
+    def origin_hash(self):
+        return self.packages['originHash']

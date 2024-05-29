@@ -699,6 +699,12 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
+internal class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
+    var sessionState: RUMSessionState?
+    var view: RUMViewEvent?
+    var globalAttributes: [String: Encodable] = [:]
+}
+
 extension RUMScopeDependencies {
     static func mockAny() -> RUMScopeDependencies {
         return mockWith()
@@ -718,7 +724,8 @@ extension RUMScopeDependencies {
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
-        viewCache: ViewCache = ViewCache()
+        viewCache: ViewCache = ViewCache(),
+        fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -734,7 +741,8 @@ extension RUMScopeDependencies {
             syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart,
-            viewCache: viewCache
+            viewCache: viewCache,
+            fatalErrorContext: fatalErrorContext
         )
     }
 
@@ -752,7 +760,8 @@ extension RUMScopeDependencies {
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil,
-        viewCache: ViewCache? = nil
+        viewCache: ViewCache? = nil,
+        fatalErrorContext: FatalErrorContextNotifying? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -768,7 +777,8 @@ extension RUMScopeDependencies {
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart,
-            viewCache: viewCache ?? self.viewCache
+            viewCache: viewCache ?? self.viewCache,
+            fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext
         )
     }
 }

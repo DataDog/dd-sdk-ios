@@ -209,6 +209,12 @@ internal class JSONSchema: Decodable {
             let schema = try reader.read(url)
             merge(with: schema)
         }
+
+        // TODO: RUM-4571 [iOS] Generate RUM models for Usage Telemetry
+        // With addition of the "usage telemetry" the RUM schema was updated with unsupported constructs.
+        // To avoid `🚧 Unimplemented: "Building `SwiftAssociatedTypeEnum` case label for JSONObject is not supported` failure
+        // here we explicitly ignore the "usage" sub-schema.
+        oneOf = oneOf?.filter { $0.ref != "telemetry/usage-schema.json" }
     }
 
     // MARK: - Schemas Merging

@@ -81,30 +81,6 @@ public struct ResourceCompletion {
     }
 }
 
-/// An immutable version of `URLRequest`.
-///
-/// Introduced in response to concerns raised in https://github.com/DataDog/dd-sdk-ios/issues/1638 
-/// it makes a copy of request attributes, safeguarding against potential thread safety issues arising from concurrent 
-/// mutations (see more context in https://github.com/DataDog/dd-sdk-ios/pull/1767 ).
-public struct ImmutableRequest {
-    /// The URL of the request.
-    public let url: URL?
-    /// The HTTP method of the request.
-    public let httpMethod: String?
-    /// The HTTP header fields of the request.
-    public let allHTTPHeaderFields: [String: String]?
-    /// A reference to the original `URLRequest` object provided during initialization. Direct use is discouraged
-    /// due to thread safety concerns. Instead, necessary attributes should be accessed through `ImmutableRequest` fields.
-    public let unsafeOriginal: URLRequest
-
-    public init(request: URLRequest) {
-        self.url = request.url
-        self.httpMethod = request.httpMethod
-        self.allHTTPHeaderFields = request.allHTTPHeaderFields
-        self.unsafeOriginal = request
-    }
-}
-
 /// Encapsulates key metrics retrieved either from `URLSessionTaskMetrics` or any other relevant data source.
 /// Reference: https://developer.apple.com/documentation/foundation/urlsessiontasktransactionmetrics
 public struct ResourceMetrics {

@@ -247,12 +247,13 @@ class SegmentRequestBuilderTests: XCTestCase {
         _ = try builder.request(for: mockEvents, with: .mockWith(source: "invalid source"))
 
         // Then
-        XCTAssertEqual(
-            telemetry.description,
-            """
-            Telemetry logs:
-             - [error] [SR] Could not create segment source from provided string 'invalid source', kind: nil, stack: nil
-            """
+        XCTAssertTrue(
+            telemetry.description.hasPrefix(
+                """
+                Telemetry logs:
+                 - [error] [SR] Could not create segment source from provided string 'invalid source'
+                """
+            )
         )
     }
 }
