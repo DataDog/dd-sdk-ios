@@ -84,10 +84,9 @@ class SessionReplayTests: XCTestCase {
         )
 
         // Then
-        let message = messageReceiver.messages.firstTelemetry()
-        let configuration = message?.asConfiguration
-        XCTAssertEqual(configuration?.sessionReplaySampleRate, sampleRate)
-        XCTAssertEqual(configuration?.defaultPrivacyLevel, privacyLevel.rawValue)
+        let configuration = try XCTUnwrap(messageReceiver.messages.firstTelemetry?.asConfiguration)
+        XCTAssertEqual(configuration.sessionReplaySampleRate, sampleRate)
+        XCTAssertEqual(configuration.defaultPrivacyLevel, privacyLevel.rawValue)
     }
 
     func testWhenEnabledWithReplaySampleRate() throws {

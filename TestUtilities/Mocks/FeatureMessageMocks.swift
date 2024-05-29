@@ -29,8 +29,13 @@ public extension Array where Element == FeatureMessage {
     }
 
     /// Unpacks the first "telemetry message" in this array.
-    func firstTelemetry() -> TelemetryMessage? {
-        return compactMap({ $0.asTelemetry }).first
+    var firstTelemetry: TelemetryMessage? {
+        compactMap({ $0.asTelemetry }).first
+    }
+
+    /// Unpacks the last "telemetry message" in this array.
+    var lastTelemetry: TelemetryMessage? {
+        compactMap({ $0.asTelemetry }).last
     }
 }
 

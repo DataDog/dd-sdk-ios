@@ -129,7 +129,7 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         telemetry.debug(id: "0", message: "telemetry debug 0")
-        telemetry.error(id: "0", message: "telemetry debug 1", kind: nil, stack: nil)
+        telemetry.error(id: "0", message: "telemetry debug 1", kind: "error.kind", stack: "error.stack")
         telemetry.debug(id: "0", message: "telemetry debug 2")
         telemetry.debug(id: "1", message: "telemetry debug 3")
 
