@@ -1,5 +1,7 @@
 # Unreleased
 
+# 2.12.0 / 03-06-2024
+
 - [IMPROVEMENT] Crash errors now include up-to-date global RUM attributes. See [#1834][]
 - [FEATURE] `DatadogTrace` now supports OpenTelemetry. See [#1828][]
 - [FIX] Fix crash on accessing request.allHTTPHeaderFields. See [#1843][]
