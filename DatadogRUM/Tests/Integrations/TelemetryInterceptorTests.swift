@@ -12,7 +12,7 @@ import DatadogInternal
 class TelemetryInterceptorTests: XCTestCase {
     func testWhenInterceptingErrorTelemetry_itItUpdatesSessionEndedMetric() throws {
         let sessionID = RUMUUID.mockRandom().toRUMDataFormat
-        
+
         // Given
         let metricController = SessionEndedMetricController(telemetry: NOPTelemetry())
         let interceptor = TelemetryInterecptor(sessionEndedMetric: metricController)
