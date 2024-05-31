@@ -92,10 +92,10 @@ internal struct UIHostingUIWireframesBuilder: NodeWireframesBuilder {
 
     func buildWireframes(with builder: WireframesBuilder) -> [SRWireframe] {
 //        print("######## NEW BUILD ########")
-//        guard let items = renderer.lastList.items else {
-//            return []
-//        }
-        return buildWireframes(items: renderer.lastList.items, referential: referential, builder: builder)
+        guard let items = renderer.lastList.lazy?.items else {
+            return []
+        }
+        return buildWireframes(items: items, referential: referential, builder: builder)
     }
 
     private func buildWireframes(items: [DisplayList.Item], referential: Referential, builder: WireframesBuilder) -> [SRWireframe] {

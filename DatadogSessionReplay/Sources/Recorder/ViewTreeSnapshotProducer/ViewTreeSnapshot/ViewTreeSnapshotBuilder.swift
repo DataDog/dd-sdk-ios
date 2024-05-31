@@ -75,7 +75,7 @@ internal func createDefaultNodeRecorders() -> [NodeRecorder] {
         UIDatePickerRecorder(),
         WKWebViewRecorder(),
         UIHostingViewRecorder(),
-        UIGraphicsViewRecorder()
+        UIGraphicsViewRecorder(),
     ]
 }
 #endif

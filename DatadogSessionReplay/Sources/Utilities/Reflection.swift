@@ -61,16 +61,16 @@ extension Mirror {
 
         let mirror = Mirror(reflecting: child)
 
-        guard mirror.displayStyle == .optional else {
-            return try Value(mirror)
+        if mirror.displayStyle == .optional {
+            return try mirror.descendant(Value.self, path: "some")
         }
 
-        return try mirror.descendant(Value.self, path: "some")
+        return try Value(mirror)
     }
 }
 
 extension STDReflection {
-    typealias Lazy = LazyReflection<Self>
+    typealias Lazy_ = LazyReflection<Self>
 }
 
 @dynamicMemberLookup

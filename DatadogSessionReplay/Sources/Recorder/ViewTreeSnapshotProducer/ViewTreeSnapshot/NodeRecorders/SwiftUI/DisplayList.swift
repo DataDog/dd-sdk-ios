@@ -56,7 +56,7 @@ internal struct DisplayList {
         }
 
         let viewCache: ViewCache
-        let lastList: DisplayList
+        let lastList: DisplayList.Lazy
     }
 
     internal struct Index {
@@ -290,6 +290,9 @@ extension DisplayList.Effect: Reflection {
         case let (.enum("clip"), tuple as (SwiftUI.Path, SwiftUI.FillStyle, Any)):
             self = .clip(tuple.0, tuple.1)
 
+        case (.enum("platformGroup"), _):
+            self = .unknown
+
         default:
             self = .unknown
         }
@@ -358,6 +361,12 @@ extension DisplayList.Content.Value: Reflection {
 
         case (.enum("platformView"), _):
             self = .platformView
+
+        case (.enum("image"), _):
+            self = .unknown
+
+        case (.enum("drawing"), _):
+            self = .unknown
 
         case let (.enum("color"), color as Any):
             let color = try Color._Resolved(reflecting: color)
