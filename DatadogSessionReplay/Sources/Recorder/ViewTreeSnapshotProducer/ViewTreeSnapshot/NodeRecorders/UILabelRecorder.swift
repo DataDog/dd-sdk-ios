@@ -35,6 +35,9 @@ internal class UILabelRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let builder = UILabelWireframesBuilder(
             wireframeID: context.ids.nodeID(view: label, nodeRecorder: self),
             attributes: attributes,

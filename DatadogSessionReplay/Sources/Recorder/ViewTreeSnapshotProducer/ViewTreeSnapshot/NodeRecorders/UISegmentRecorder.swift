@@ -22,6 +22,9 @@ internal struct UISegmentRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let ids = context.ids.nodeIDs(1 + segment.numberOfSegments, view: segment, nodeRecorder: self)
 
         let builder = UISegmentWireframesBuilder(

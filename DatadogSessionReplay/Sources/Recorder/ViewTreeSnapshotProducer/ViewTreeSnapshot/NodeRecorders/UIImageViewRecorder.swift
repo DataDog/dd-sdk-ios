@@ -52,6 +52,9 @@ internal struct UIImageViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let ids = context.ids.nodeIDs(2, view: imageView, nodeRecorder: self)
         let contentFrame: CGRect?
         if let image = imageView.image {

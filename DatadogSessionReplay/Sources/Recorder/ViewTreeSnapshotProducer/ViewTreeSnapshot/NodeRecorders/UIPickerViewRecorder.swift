@@ -67,6 +67,9 @@ internal struct UIPickerViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         // For our "approximation", we render selected option text on top of selection background. However,
         // in the actual `UIPickerView's` tree their order is opposite (blending is used to make the label
         // pass through the shape). For that reason, we record both kinds of nodes separately and then reorder

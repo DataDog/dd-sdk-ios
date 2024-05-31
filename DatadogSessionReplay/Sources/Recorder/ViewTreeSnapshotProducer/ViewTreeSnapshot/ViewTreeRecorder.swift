@@ -22,6 +22,13 @@ internal struct ViewTreeRecorder {
 
     /// Creates `Nodes` for given view and its subtree hierarchy.
     func record(_ anyView: UIView, in context: ViewTreeRecordingContext) -> RecordingResult {
+        let span = sessionReplayTracer
+            .spanBuilder(spanName: "snapshot.record")
+            .setActive(true)
+            .setNoParent()
+            .startSpan()
+        defer { span.end() }
+
         var nodes: [Node] = []
         var resources: [Resource] = []
         recordRecursively(nodes: &nodes, resources: &resources, view: anyView, context: context)

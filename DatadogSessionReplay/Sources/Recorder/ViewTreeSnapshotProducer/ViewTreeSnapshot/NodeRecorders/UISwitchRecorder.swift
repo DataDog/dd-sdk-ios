@@ -19,6 +19,9 @@ internal struct UISwitchRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         // The actual frame of the switch. It might be different than `view.frame` if displayed in stack view:
         let switchFrame = CGRect(origin: attributes.frame.origin, size: view.intrinsicContentSize)
         let ids = context.ids.nodeIDs(3, view: `switch`, nodeRecorder: self)

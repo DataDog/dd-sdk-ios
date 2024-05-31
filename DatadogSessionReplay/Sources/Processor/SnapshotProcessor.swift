@@ -79,9 +79,16 @@ internal class SnapshotProcessor: SnapshotProcessing {
         let builder = WireframesBuilder(webViewSlotIDs: viewTreeSnapshot.webViewSlotIDs)
         let nodes = nodesFlattener.flattenNodes(in: viewTreeSnapshot)
 
+        let span = sessionReplayTracer
+            .spanBuilder(spanName: "snapshot.process")
+            .setActive(true)
+            .setNoParent()
+            .startSpan()
+        defer { span.end() }
+
         // build wireframe from nodes
         var wireframes: [SRWireframe] = nodes.flatMap { node in
-            node.wireframesBuilder.buildWireframes(with: builder)
+            node.wireframesBuilder.trace_buildWireframes(with: builder)
         }
 
         // build hidden webview wireframes and place them at the beginning

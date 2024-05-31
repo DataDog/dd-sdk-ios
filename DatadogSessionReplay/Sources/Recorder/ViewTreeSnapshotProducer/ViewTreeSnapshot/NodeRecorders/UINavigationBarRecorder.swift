@@ -15,6 +15,9 @@ internal struct UINavigationBarRecorder: NodeRecorder {
             return nil
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let builder = UINavigationBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: navigationBar, in: context),
             wireframeID: context.ids.nodeID(view: navigationBar, nodeRecorder: self),

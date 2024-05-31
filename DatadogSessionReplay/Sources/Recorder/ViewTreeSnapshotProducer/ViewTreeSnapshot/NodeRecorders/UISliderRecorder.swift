@@ -19,6 +19,9 @@ internal struct UISliderRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let ids = context.ids.nodeIDs(4, view: slider, nodeRecorder: self)
 
         let builder = UISliderWireframesBuilder(

@@ -28,6 +28,10 @@ internal struct UnsupportedViewRecorder: NodeRecorder {
         guard attributes.isVisible else {
             return InvisibleElement(subtreeStrategy: .ignore)
         }
+
+        let span = startSpan()
+        defer { span.end() }
+
         let builder = UnsupportedViewWireframesBuilder(
             wireframeRect: view.frame,
             wireframeID: context.ids.nodeID(view: view, nodeRecorder: self),

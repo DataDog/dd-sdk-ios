@@ -14,6 +14,9 @@ internal struct UITabBarRecorder: NodeRecorder {
             return nil
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let builder = UITabBarWireframesBuilder(
             wireframeRect: inferOccupiedFrame(of: tabBar, in: context),
             wireframeID: context.ids.nodeID(view: tabBar, nodeRecorder: self),

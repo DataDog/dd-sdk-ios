@@ -8,6 +8,8 @@
 import Foundation
 import DatadogInternal
 
+import OpenTelemetryApi
+
 /// A type managing Session Replay recording.
 internal protocol Recording {
     func captureNextRecord(_ recorderContext: Recorder.Context)
@@ -153,3 +155,9 @@ public class Recorder: Recording {
     }
 }
 #endif
+
+//let sessionReplayTracer = DefaultTracer.instance
+let sessionReplayTracer = OpenTelemetry
+    .instance
+    .tracerProvider
+    .get(instrumentationName: "session-replay", instrumentationVersion: nil)

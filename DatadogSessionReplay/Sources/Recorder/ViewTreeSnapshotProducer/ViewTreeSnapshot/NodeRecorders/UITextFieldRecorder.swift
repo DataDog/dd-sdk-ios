@@ -40,6 +40,9 @@ internal struct UITextFieldRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         // For our "approximation", we render text field's text on top of other TF's appearance.
         // Here we record both kind of nodes separately and order them respectively in returned semantics:
         let appearanceRecordingResult = recordAppearance(in: textField, textFieldAttributes: attributes, using: context)

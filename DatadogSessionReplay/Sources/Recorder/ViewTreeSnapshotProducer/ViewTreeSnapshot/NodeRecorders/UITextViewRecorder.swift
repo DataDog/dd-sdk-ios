@@ -30,6 +30,9 @@ internal struct UITextViewRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let builder = UITextViewWireframesBuilder(
             wireframeID: context.ids.nodeID(view: textView, nodeRecorder: self),
             attributes: attributes,

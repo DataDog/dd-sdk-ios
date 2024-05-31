@@ -16,6 +16,9 @@ internal class WKWebViewRecorder: NodeRecorder {
             return nil
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         // Add the webview to cache
         context.webViewCache.add(webView)
 

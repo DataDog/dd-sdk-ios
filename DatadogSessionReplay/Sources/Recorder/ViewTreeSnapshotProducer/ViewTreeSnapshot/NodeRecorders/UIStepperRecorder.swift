@@ -18,6 +18,9 @@ internal struct UIStepperRecorder: NodeRecorder {
             return InvisibleElement.constant
         }
 
+        let span = startSpan()
+        defer { span.end() }
+
         let stepperFrame = CGRect(origin: attributes.frame.origin, size: stepper.intrinsicContentSize)
         let ids = context.ids.nodeIDs(5, view: stepper, nodeRecorder: self)
         let isMasked = context.recorder.privacy.shouldMaskInputElements

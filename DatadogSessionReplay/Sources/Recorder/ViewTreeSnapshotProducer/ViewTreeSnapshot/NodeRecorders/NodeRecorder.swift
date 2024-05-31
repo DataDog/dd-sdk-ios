@@ -47,3 +47,25 @@ public protocol SessionReplayNodeWireframesBuilder {
 // This alias enables us to have a more unique name exposed through public-internal access level
 internal typealias NodeWireframesBuilder = SessionReplayNodeWireframesBuilder
 #endif
+
+import OpenTelemetryApi
+
+extension SessionReplayNodeRecorder {
+    func startSpan(tracer: Tracer = sessionReplayTracer) -> Span {
+        return tracer
+            .spanBuilder(spanName: String(describing: Self.self))
+            .setActive(true)
+            .startSpan()
+    }
+}
+
+extension SessionReplayNodeWireframesBuilder {
+    func trace_buildWireframes(with builder: SessionReplayWireframesBuilder, tracer: Tracer = sessionReplayTracer) -> [SRWireframe] {
+        let span = tracer
+            .spanBuilder(spanName: String(describing: Self.self))
+            .setActive(true)
+            .startSpan()
+        defer { span.end() }
+        return buildWireframes(with: builder)
+    }
+}
