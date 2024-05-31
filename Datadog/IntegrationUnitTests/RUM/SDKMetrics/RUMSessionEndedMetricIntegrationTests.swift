@@ -163,7 +163,7 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
             monitor.startView(key: "key2", name: "View2")
             dateProvider.now += 5.seconds
             monitor.stopView(key: "key2")
-            
+
             // Simulate app in background:
             core.context = .mockWith(applicationStateHistory: .mockAppInBackground(since: dateProvider.now))
 

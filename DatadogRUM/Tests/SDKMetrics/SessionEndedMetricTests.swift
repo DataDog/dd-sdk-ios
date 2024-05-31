@@ -347,6 +347,30 @@ class SessionEndedMetricTests: XCTestCase {
             ["top_1_error": 9, "top__2_error": 8, "top_3_error": 7, "top4_error": 6]
         )
     }
+
+    // MARK: - Metric Spec
+
+    func testEncodedMetricAttributesFollowTheSpec() throws {
+        // Given
+        let metric = SessionEndedMetric(
+            sessionID: sessionID, precondition: .mockRandom(), context: .mockWith(applicationBundleType: .iOSApp)
+        )
+        metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10))
+
+        // When
+        let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
+
+        // Then
+        XCTAssertNotNil(try matcher.value("rse.process_type") as String)
+        XCTAssertNotNil(try matcher.value("rse.precondition") as String)
+        XCTAssertNotNil(try matcher.value("rse.duration") as Int)
+        XCTAssertNotNil(try matcher.value("rse.was_stopped") as Bool)
+        XCTAssertNotNil(try matcher.value("rse.views_count.total") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.background") as Int)
+        XCTAssertNotNil(try matcher.value("rse.views_count.app_launch") as Int)
+        XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.total") as Int)
+        XCTAssertNotNil(try matcher.value("rse.sdk_errors_count.by_kind") as [String: Int])
+    }
 }
 
 private extension Int {
