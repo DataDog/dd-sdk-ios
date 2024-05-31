@@ -75,11 +75,19 @@ public struct LogEvent: Encodable
         public let email: String?
         public var extraInfo: [String: Encodable]
     public struct Error
+        public struct BinaryImage: Codable
+            public let arch: String?
+            public let isSystem: Bool
+            public let loadAddress: String?
+            public let maxAddress: String?
+            public let name: String
+            public let uuid: String
         public var kind: String?
         public var message: String?
         public var stack: String?
         public var sourceType: String = "ios"
         public var fingerprint: String?
+        public var binaryImages: [BinaryImage]?
     public struct DeviceInfo: Codable
         public let brand: String
         public let name: String
@@ -190,6 +198,11 @@ public protocol LogEventMapper
         case warn
         case error
         case critical
+[?] extension OpenTelemetryApi.TraceState
+    public func w3c() -> String
+public class OTelTracerProvider: OpenTelemetryApi.TracerProvider
+    public init(in core: DatadogCoreProtocol = CoreRegistry.default)
+    public func get(instrumentationName: String, instrumentationVersion: String?) -> OpenTelemetryApi.Tracer
 public struct OTTags
     public static let component = "component"
     public static let dbInstance = "db.instance"
@@ -295,12 +308,14 @@ public enum Trace
         public struct URLSessionTracking
             public var firstPartyHostsTracing: FirstPartyHostsTracing
             public enum FirstPartyHostsTracing
-                case trace(hosts: Set<String>, sampleRate: Float = 20)
-                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
+                case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+                case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
             public init(firstPartyHostsTracing: FirstPartyHostsTracing)
         public init(sampleRate: Float = 100,service: String? = nil,tags: [String: Encodable]? = nil,urlSessionTracking: URLSessionTracking? = nil,bundleWithRumEnabled: Bool = true,networkInfoEnabled: Bool = false,eventMapper: EventMapper? = nil,customEndpoint: URL? = nil)
 public enum SpanTags
     public static let resource = "resource.name"
+    public static let operation = "operation.name"
+    public static let service = "service.name"
 public class Tracer
     public static func shared(in core: DatadogCoreProtocol = CoreRegistry.default) -> OTTracer
 
@@ -495,6 +510,7 @@ public struct RUMErrorEvent: RUMDataModel
         public let binaryImages: [BinaryImages]?
         public let category: Category?
         public var causes: [Causes]?
+        public let csp: CSP?
         public var fingerprint: String?
         public let handling: Handling?
         public let handlingStack: String?
@@ -507,6 +523,7 @@ public struct RUMErrorEvent: RUMDataModel
         public let sourceType: SourceType?
         public var stack: String?
         public let threads: [Threads]?
+        public let timeSinceAppStart: Int64?
         public let type: String?
         public let wasTruncated: Bool?
         public struct BinaryImages: Codable
@@ -533,6 +550,11 @@ public struct RUMErrorEvent: RUMDataModel
                 case agent = "agent"
                 case webview = "webview"
                 case custom = "custom"
+                case report = "report"
+        public struct CSP: Codable
+            public let disposition: Disposition?
+            public enum Disposition: String, Codable
+                case enforce = "enforce"
                 case report = "report"
         public enum Handling: String, Codable
             case handled = "handled"
@@ -764,18 +786,22 @@ public struct RUMResourceEvent: RUMDataModel
             public let width: Double
     public struct Resource: Codable
         public let connect: Connect?
+        public let decodedBodySize: Int64?
         public let dns: DNS?
         public let download: Download?
         public let duration: Int64?
+        public let encodedBodySize: Int64?
         public let firstByte: FirstByte?
         public var graphql: Graphql?
         public let id: String?
         public let method: RUMMethod?
         public let provider: Provider?
         public let redirect: Redirect?
+        public let renderBlockingStatus: RenderBlockingStatus?
         public let size: Int64?
         public let ssl: SSL?
         public let statusCode: Int64?
+        public let transferSize: Int64?
         public let type: ResourceType
         public var url: String
         public struct Connect: Codable
@@ -821,6 +847,9 @@ public struct RUMResourceEvent: RUMDataModel
         public struct Redirect: Codable
             public let duration: Int64
             public let start: Int64
+        public enum RenderBlockingStatus: String, Codable
+            case blocking = "blocking"
+            case nonBlocking = "non-blocking"
         public struct SSL: Codable
             public let duration: Int64
             public let start: Int64
@@ -1238,6 +1267,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let batchProcessingLevel: Int64?
             public let batchSize: Int64?
             public let batchUploadFrequency: Int64?
+            public let compressIntakeRequests: Bool?
             public var dartVersion: String?
             public var defaultPrivacyLevel: String?
             public let forwardConsoleLogs: ForwardConsoleLogs?
@@ -1257,7 +1287,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let storeContextsAcrossPages: Bool?
             public let telemetryConfigurationSampleRate: Int64?
             public let telemetrySampleRate: Int64?
+            public let telemetryUsageSampleRate: Int64?
+            public var traceContextInjection: TraceContextInjection?
             public let traceSampleRate: Int64?
+            public var tracerApi: String?
+            public var tracerApiVersion: String?
             public var trackBackgroundEvents: Bool?
             public var trackCrossPlatformLongTasks: Bool?
             public var trackErrors: Bool?
@@ -1273,6 +1307,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public let trackSessionAcrossSubdomains: Bool?
             public var trackUserInteractions: Bool?
             public var trackViewsManually: Bool?
+            public let trackingConsent: String?
             public var unityVersion: String?
             public let useAllowedTracingOrigins: Bool?
             public let useAllowedTracingUrls: Bool?
@@ -1282,6 +1317,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel
             public var useFirstPartyHosts: Bool?
             public let useLocalEncryption: Bool?
             public let usePartitionedCrossSiteSessionCookie: Bool?
+            public var usePciIntake: Bool?
             public var useProxy: Bool?
             public let useSecureSessionCookie: Bool?
             public let useTracing: Bool?
@@ -1302,6 +1338,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel
                 case b3 = "b3"
                 case b3multi = "b3multi"
                 case tracecontext = "tracecontext"
+            public enum TraceContextInjection: String, Codable
+                case all = "all"
+                case sampled = "sampled"
             public enum ViewTrackingStrategy: String, Codable
                 case activityViewTrackingStrategy = "ActivityViewTrackingStrategy"
                 case fragmentViewTrackingStrategy = "FragmentViewTrackingStrategy"
@@ -1476,8 +1515,8 @@ public enum RUM
             case rare
 [?] extension RUM.Configuration.URLSessionTracking
     public enum FirstPartyHostsTracing
-        case trace(hosts: Set<String>, sampleRate: Float = 20)
-        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>], sampleRate: Float = 20)
+        case trace(hosts: Set<String>,sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
+        case traceWithHeaders(hostsWithHeaders: [String: Set<TracingHeaderType>],sampleRate: Float = 20,traceControlInjection: TraceContextInjection = .all)
     public init(firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil)
 [?] extension RUM.Configuration
     public init(applicationID: String,sessionSampleRate: Float = 100,uiKitViewsPredicate: UIKitRUMViewsPredicate? = nil,uiKitActionsPredicate: UIKitRUMActionsPredicate? = nil,urlSessionTracking: URLSessionTracking? = nil,trackFrustrations: Bool = true,trackBackgroundEvents: Bool = false,longTaskThreshold: TimeInterval? = 0.1,appHangThreshold: TimeInterval? = nil,vitalsUpdateFrequency: VitalsFrequency? = .average,viewEventMapper: RUM.ViewEventMapper? = nil,resourceEventMapper: RUM.ResourceEventMapper? = nil,actionEventMapper: RUM.ActionEventMapper? = nil,errorEventMapper: RUM.ErrorEventMapper? = nil,longTaskEventMapper: RUM.LongTaskEventMapper? = nil,onSessionStart: RUM.SessionListener? = nil,customEndpoint: URL? = nil,telemetrySampleRate: Float = 20)
@@ -1566,6 +1605,17 @@ public static func enable()
 # API surface for DatadogWebViewTracking:
 # ----------------------------------
 
+public final class objc_WebViewTracking: NSObject
+    public final class SessionReplayConfiguration: NSObject
+        public enum PrivacyLevel: Int
+            case allow
+            case mask
+            case maskUserInput
+        @objc public var privacyLevel: PrivacyLevel
+        override public init()
+        public init(privacyLevel: PrivacyLevel)
+    public static func enable(webView: WKWebView,hosts: Set<String> = [],logsSampleRate: Float = 100,with configuration: SessionReplayConfiguration? = nil)
+    public static func disable(webView: WKWebView)
 public enum WebViewTracking
     public struct SessionReplayConfiguration
         public enum PrivacyLevel: String

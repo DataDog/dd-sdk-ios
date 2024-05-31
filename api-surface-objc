@@ -231,6 +231,7 @@ public class DDRUMConfiguration: NSObject
     @objc public var trackFrustrations: Bool
     @objc public var trackBackgroundEvents: Bool
     @objc public var longTaskThreshold: TimeInterval
+    @objc public var appHangThreshold: TimeInterval
     @objc public var vitalsUpdateFrequency: DDRUMVitalsFrequency
     public func setViewEventMapper(_ mapper: @escaping (DDRUMViewEvent) -> DDRUMViewEvent)
     public func setResourceEventMapper(_ mapper: @escaping (DDRUMResourceEvent) -> DDRUMResourceEvent?)
@@ -243,6 +244,8 @@ public class DDRUM: NSObject
     public static func enable(with configuration: DDRUMConfiguration)
 public class DDRUMMonitor: NSObject
     public static func shared() -> DDRUMMonitor
+    public func currentSessionID(completion: @escaping (String?) -> Void)
+    public func stopSession()
     public func startView(viewController: UIViewController,name: String?,attributes: [String: Any])
     public func stopView(viewController: UIViewController,attributes: [String: Any])
     public func startView(key: String,name: String?,attributes: [String: Any])
@@ -263,6 +266,8 @@ public class DDRUMMonitor: NSObject
     public func addAction(type: DDRUMActionType,name: String,attributes: [String: Any])
     public func addAttribute(forKey key: String,value: Any)
     public func removeAttribute(forKey key: String)
+    public func addFeatureFlagEvaluation(name: String, value: Any)
+    @objc public var debug: Bool
 public class DDRUMActionEvent: NSObject
     @objc public var dd: DDRUMActionEventDD
     @objc public var action: DDRUMActionEventAction
@@ -585,6 +590,7 @@ public class DDRUMErrorEventError: NSObject
     @objc public var binaryImages: [DDRUMErrorEventErrorBinaryImages]?
     @objc public var category: DDRUMErrorEventErrorCategory
     @objc public var causes: [DDRUMErrorEventErrorCauses]?
+    @objc public var csp: DDRUMErrorEventErrorCSP?
     @objc public var fingerprint: String?
     @objc public var handling: DDRUMErrorEventErrorHandling
     @objc public var handlingStack: String?
@@ -597,6 +603,7 @@ public class DDRUMErrorEventError: NSObject
     @objc public var sourceType: DDRUMErrorEventErrorSourceType
     @objc public var stack: String?
     @objc public var threads: [DDRUMErrorEventErrorThreads]?
+    @objc public var timeSinceAppStart: NSNumber?
     @objc public var type: String?
     @objc public var wasTruncated: NSNumber?
 public class DDRUMErrorEventErrorBinaryImages: NSObject
@@ -624,6 +631,12 @@ public enum DDRUMErrorEventErrorCausesSource: Int
     case agent
     case webview
     case custom
+    case report
+public class DDRUMErrorEventErrorCSP: NSObject
+    @objc public var disposition: DDRUMErrorEventErrorCSPDisposition
+public enum DDRUMErrorEventErrorCSPDisposition: Int
+    case none
+    case enforce
     case report
 public enum DDRUMErrorEventErrorHandling: Int
     case none
@@ -1028,18 +1041,22 @@ public class DDRUMResourceEventRUMOperatingSystem: NSObject
     @objc public var versionMajor: String
 public class DDRUMResourceEventResource: NSObject
     @objc public var connect: DDRUMResourceEventResourceConnect?
+    @objc public var decodedBodySize: NSNumber?
     @objc public var dns: DDRUMResourceEventResourceDNS?
     @objc public var download: DDRUMResourceEventResourceDownload?
     @objc public var duration: NSNumber?
+    @objc public var encodedBodySize: NSNumber?
     @objc public var firstByte: DDRUMResourceEventResourceFirstByte?
     @objc public var graphql: DDRUMResourceEventResourceGraphql?
     @objc public var id: String?
     @objc public var method: DDRUMResourceEventResourceRUMMethod
     @objc public var provider: DDRUMResourceEventResourceProvider?
     @objc public var redirect: DDRUMResourceEventResourceRedirect?
+    @objc public var renderBlockingStatus: DDRUMResourceEventResourceRenderBlockingStatus
     @objc public var size: NSNumber?
     @objc public var ssl: DDRUMResourceEventResourceSSL?
     @objc public var statusCode: NSNumber?
+    @objc public var transferSize: NSNumber?
     @objc public var type: DDRUMResourceEventResourceResourceType
     @objc public var url: String
 public class DDRUMResourceEventResourceConnect: NSObject
@@ -1097,6 +1114,10 @@ public enum DDRUMResourceEventResourceProviderProviderType: Int
 public class DDRUMResourceEventResourceRedirect: NSObject
     @objc public var duration: NSNumber
     @objc public var start: NSNumber
+public enum DDRUMResourceEventResourceRenderBlockingStatus: Int
+    case none
+    case blocking
+    case nonBlocking
 public class DDRUMResourceEventResourceSSL: NSObject
     @objc public var duration: NSNumber
     @objc public var start: NSNumber
@@ -1675,6 +1696,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var batchProcessingLevel: NSNumber?
     @objc public var batchSize: NSNumber?
     @objc public var batchUploadFrequency: NSNumber?
+    @objc public var compressIntakeRequests: NSNumber?
     @objc public var dartVersion: String?
     @objc public var defaultPrivacyLevel: String?
     @objc public var forwardConsoleLogs: DDTelemetryConfigurationEventTelemetryConfigurationForwardConsoleLogs?
@@ -1694,7 +1716,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var storeContextsAcrossPages: NSNumber?
     @objc public var telemetryConfigurationSampleRate: NSNumber?
     @objc public var telemetrySampleRate: NSNumber?
+    @objc public var telemetryUsageSampleRate: NSNumber?
+    @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection
     @objc public var traceSampleRate: NSNumber?
+    @objc public var tracerApi: String?
+    @objc public var tracerApiVersion: String?
     @objc public var trackBackgroundEvents: NSNumber?
     @objc public var trackCrossPlatformLongTasks: NSNumber?
     @objc public var trackErrors: NSNumber?
@@ -1710,6 +1736,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var trackSessionAcrossSubdomains: NSNumber?
     @objc public var trackUserInteractions: NSNumber?
     @objc public var trackViewsManually: NSNumber?
+    @objc public var trackingConsent: String?
     @objc public var unityVersion: String?
     @objc public var useAllowedTracingOrigins: NSNumber?
     @objc public var useAllowedTracingUrls: NSNumber?
@@ -1719,6 +1746,7 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject
     @objc public var useFirstPartyHosts: NSNumber?
     @objc public var useLocalEncryption: NSNumber?
     @objc public var usePartitionedCrossSiteSessionCookie: NSNumber?
+    @objc public var usePciIntake: NSNumber?
     @objc public var useProxy: NSNumber?
     @objc public var useSecureSessionCookie: NSNumber?
     @objc public var useTracing: NSNumber?
@@ -1736,6 +1764,10 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPr
     case b3
     case b3multi
     case tracecontext
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int
+    case none
+    case all
+    case sampled
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int
     case none
     case activityViewTrackingStrategy
@@ -1763,12 +1795,15 @@ public class DDB3HTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float,injectEncoding: DDInjectEncoding = .single)
     public init(sampleRate: Float = 20,injectEncoding: DDInjectEncoding = .single)
-    public init(samplingStrategy: DDTraceSamplingStrategy,injectEncoding: DDInjectEncoding = .single)
+    public init(samplingStrategy: DDTraceSamplingStrategy,injectEncoding: DDInjectEncoding = .single,traceContextInjection: DDTraceContextInjection = .all)
 public class DDHTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float)
     public init(sampleRate: Float = 20)
-    public init(samplingStrategy: DDTraceSamplingStrategy)
+    public init(samplingStrategy: DDTraceSamplingStrategy,traceContextInjection: DDTraceContextInjection)
+public enum DDTraceContextInjection: Int
+    case all
+    case sampled
 public class DDTraceSamplingStrategy: NSObject
     public static func headBased() -> DDTraceSamplingStrategy
     public static func custom(sampleRate: Float) -> DDTraceSamplingStrategy
@@ -1776,7 +1811,7 @@ public class DDW3CHTTPHeadersWriter: NSObject
     @objc public var traceHeaderFields: [String: String]
     public convenience init(samplingRate: Float)
     public init(sampleRate: Float = 20)
-    public init(samplingStrategy: DDTraceSamplingStrategy)
+    public init(samplingStrategy: DDTraceSamplingStrategy,traceContextInjection: DDTraceContextInjection)
 public class DDTraceConfiguration: NSObject
     override public init()
     @objc public var sampleRate: Float
