@@ -56,7 +56,7 @@ internal final class SessionEndedMetric {
 
     /// Indicates if the session was stopped through `stopSession()` API.
     @ReadWriteLock
-    private var wasStopped: Bool = false
+    private var wasStopped = false
 
     // TODO: RUM-4591 Track diagnostic attributes:
     // - no_view_events_count
