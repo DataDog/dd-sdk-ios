@@ -12,8 +12,10 @@ import TestUtilities
 @testable import DatadogCrashReporting
 
 class CrashContextTests: XCTestCase {
-    private let encoder = JSONEncoder()
-    private let decoder = JSONDecoder()
+    /// This must be the exact encoder used to encode `CrashContext` in production code.
+    private let encoder = CrashReportingFeature.crashContextEncoder
+    /// This must be the exact decoder used to decode `CrashContext` in production code.
+    private let decoder = CrashReportingFeature.crashContextDecoder
 
     func testGivenContextWithTrackingConsentSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
         let randomConsent: TrackingConsent = .mockRandom()
@@ -61,6 +63,40 @@ class CrashContextTests: XCTestCase {
         DDAssertJSONEqual(
             deserializedContext.lastRUMSessionState,
             randomRUMSessionState
+        )
+    }
+
+    func testGivenContextWithLastRUMAttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomRUMAttributes = Bool.random() ? GlobalRUMAttributes(attributes: mockRandomAttributes()) : nil
+
+        // Given
+        let context: CrashContext = .mockWith(lastRUMAttributes: randomRUMAttributes)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        DDAssertJSONEqual(
+            deserializedContext.lastRUMAttributes,
+            randomRUMAttributes
+        )
+    }
+
+    func testGivenContextWithLastLogttributesSet_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomLogAttributes = Bool.random() ? AnyCodable(mockRandomAttributes()) : nil
+
+        // Given
+        let context: CrashContext = .mockWith(lastLogAttributes: randomLogAttributes)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        DDAssertJSONEqual(
+            deserializedContext.lastLogAttributes,
+            randomLogAttributes
         )
     }
 
@@ -125,5 +161,23 @@ class CrashContextTests: XCTestCase {
         // Then
         let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
         XCTAssertEqual(deserializedContext.lastIsAppInForeground, randomIsAppInForeground)
+    }
+
+    func testGivenContextWithAppLaunchDate_whenItGetsEncoded_thenTheValueIsPreservedAfterDecoding() throws {
+        let randomDate: Date = .mockRandom()
+
+        // Given
+        let context: CrashContext = .mockWith(appLaunchDate: randomDate)
+
+        // When
+        let serializedContext = try encoder.encode(context)
+
+        // Then
+        let deserializedContext = try decoder.decode(CrashContext.self, from: serializedContext)
+        XCTAssertEqual(
+            deserializedContext.appLaunchDate!.timeIntervalSince1970,
+            randomDate.timeIntervalSince1970,
+            accuracy: 0.001 // assert with ms precision as we encode dates as ISO8601 string which is lossfull
+        )
     }
 }

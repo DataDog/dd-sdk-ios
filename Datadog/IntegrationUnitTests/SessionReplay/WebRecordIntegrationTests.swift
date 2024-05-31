@@ -15,7 +15,8 @@ import TestUtilities
 
 class WebRecordIntegrationTests: XCTestCase {
     // swiftlint:disable implicitly_unwrapped_optional
-    private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
+    private var core: DatadogCoreProxy!
+    private var webView: WKWebView!
     private var controller: WKUserContentControllerMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
@@ -30,20 +31,22 @@ class WebRecordIntegrationTests: XCTestCase {
 
         controller = WKUserContentControllerMock()
         let configuration = WKWebViewConfiguration()
+        configuration.processPool = WKProcessPool() // do not share cookies between instances: prevent leak
         configuration.userContentController = controller
-        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView = WKWebView(frame: .zero, configuration: configuration)
         WebViewTracking.enable(webView: webView, in: core)
     }
 
     override func tearDown() {
+        WebViewTracking.disable(webView: webView)
         core.flushAndTearDown()
         core = nil
+        webView = nil
         controller = nil
     }
 
     func testWebRecordIntegration() throws {
         // Given
-        let webView = WKWebView()
         let randomApplicationID: String = .mockRandom()
         let randomUUID: UUID = .mockRandom()
         let randomBrowserViewID: UUID = .mockRandom()

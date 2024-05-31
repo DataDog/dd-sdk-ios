@@ -65,6 +65,33 @@ class PackageResolvedFileTestCase(unittest.TestCase):
     }
     '''
 
+    v3_file_content = b'''
+    {
+      "originHash" : "ea83017c944c7850b8f60207e6143eb17cb6b5e6b734b3fa08787a5d920dba7b",
+      "pins" : [
+        {
+          "identity" : "a",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/A-org/a",
+          "state" : {
+            "branch" : "a-branch",
+            "revision" : "a-revision"
+          }
+        },
+        {
+          "identity" : "b",
+          "kind" : "remoteSourceControl",
+          "location" : "https://github.com/B-org/b.git",
+          "state" : {
+            "revision" : "b-revision",
+            "version" : "1.0.0"
+          }
+        }
+      ],
+      "version" : 3
+    }
+    '''
+
     def test_it_reads_version1_files(self):
         with NamedTemporaryFile() as file:
             file.write(self.v1_file_content)
@@ -264,3 +291,39 @@ class PackageResolvedFileTestCase(unittest.TestCase):
         self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='https://github.com/A-org/abc'))
         self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='git@github.com:DataDog/abc.git'))
         self.assertEqual('abc', v2_package_id_from_repository_url(repository_url='git@github.com:DataDog/abc'))
+
+    def test_it_reads_version3_files(self):
+        with NamedTemporaryFile() as file:
+            file.write(self.v3_file_content)
+            file.seek(0)
+
+            package_resolved = PackageResolvedFile(path=file.name)
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='a')))
+            self.assertTrue(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='b')))
+            self.assertFalse(package_resolved.has_dependency(package_id=PackageID(v1=None, v2='c')))
+            self.assertListEqual(
+                [PackageID(v1=None, v2='a'), PackageID(v1=None, v2='b')],
+                package_resolved.read_dependency_ids()
+            )
+            self.assertDictEqual(
+                {
+                    'identity': 'a',
+                    'kind': 'remoteSourceControl',
+                    'location': 'https://github.com/A-org/a',
+                    'state': {'branch': 'a-branch', 'revision': 'a-revision'}
+                },
+                package_resolved.read_dependency(package_id=PackageID(v1=None, v2='a'))
+            )
+            self.assertDictEqual(
+                {
+                    'identity': 'b',
+                    'kind': 'remoteSourceControl',
+                    'location': 'https://github.com/B-org/b.git',
+                    'state': {'revision': 'b-revision', 'version': '1.0.0'}
+                },
+                package_resolved.read_dependency(PackageID(v1=None, v2='b'))
+            )
+            self.assertEqual(
+                "ea83017c944c7850b8f60207e6143eb17cb6b5e6b734b3fa08787a5d920dba7b",
+                package_resolved.origin_hash()
+            )

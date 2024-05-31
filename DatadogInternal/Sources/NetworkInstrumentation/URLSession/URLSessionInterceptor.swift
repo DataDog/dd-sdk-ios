@@ -98,7 +98,7 @@ public struct URLSessionInterceptor {
     // MARK: - Private
 
     private func extractTraceID(from request: URLRequest) -> TraceID? {
-        guard let headers = request.allHTTPHeaderFields else {
+        guard let headers = request.allHTTPHeaderFields else { // swiftlint:disable:this unsafe_all_http_header_fields
             return nil
         }
 

@@ -143,7 +143,5 @@ class AppHangsMonitoringTests: XCTestCase {
         // and it is idle:
         let hangObserver = try XCTUnwrap(core.get(feature: RUMFeature.self)?.instrumentation.appHangs)
         hangObserver.flush()
-
-        RUMMonitor.shared(in: core).dd.flush() // flush also RUMMonitor so it ends processing hangs flushed from `hangObserver`
     }
 }

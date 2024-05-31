@@ -43,9 +43,9 @@ internal final class RUMFeature: DatadogRemoteFeature {
             trackFrustrations: configuration.trackFrustrations,
             firstPartyHosts: {
                 switch configuration.urlSessionTracking?.firstPartyHostsTracing {
-                case let .trace(hosts, _):
+                case let .trace(hosts, _, _):
                     return FirstPartyHosts(hosts)
-                case let .traceWithHeaders(hostsWithHeaders, _):
+                case let .traceWithHeaders(hostsWithHeaders, _, _):
                     return FirstPartyHosts(hostsWithHeaders)
                 case .none:
                     return nil
@@ -55,6 +55,7 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 eventsMapper: eventsMapper
             ),
             rumUUIDGenerator: configuration.uuidGenerator,
+            backtraceReporter: core.backtraceReporter,
             ciTest: configuration.ciTestExecutionID.map { RUMCITest(testExecutionId: $0) },
             syntheticsTest: {
                 if let testId = configuration.syntheticsTestId, let resultId = configuration.syntheticsResultId {
@@ -70,7 +71,8 @@ internal final class RUMFeature: DatadogRemoteFeature {
                 )
             },
             onSessionStart: configuration.onSessionStart,
-            viewCache: ViewCache()
+            viewCache: ViewCache(),
+            fatalErrorContext: FatalErrorContextNotifier(messageBus: featureScope)
         )
 
         self.monitor = Monitor(
@@ -159,15 +161,15 @@ extension RUMFeature: Flushable {
     ///
     /// **blocks the caller thread**
     func flush() {
-        monitor.flush()
+        instrumentation.appHangs?.flush()
     }
 }
 
 private extension RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing {
     var sampleRate: Float {
         switch self {
-        case .trace(_, let sampleRate): return sampleRate
-        case .traceWithHeaders(_, let sampleRate): return sampleRate
+        case .trace(_, let sampleRate, _): return sampleRate
+        case .traceWithHeaders(_, let sampleRate, _): return sampleRate
         }
     }
 }

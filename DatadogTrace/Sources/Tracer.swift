@@ -6,6 +6,7 @@
 
 import Foundation
 import DatadogInternal
+import OpenTelemetryApi
 
 /// Datadog - specific span tags to be used with `Tracer.shared().startSpan(operationName:references:tags:startTime:)`
 /// and `span.setTag(key:value:)`.
@@ -16,6 +17,10 @@ public enum SpanTags {
     ///
     /// Expects `String` value set for a tag.
     public static let resource = "resource.name"
+    /// A Datadog-specific span tag, which sets the operation name
+    public static let operation = "operation.name"
+    /// A Datadog-specific span tag, which sets the value appearing in the "SERVICE" column
+    public static let service = "service.name"
     /// Internal tag. `Integer` value. Measures elapsed time at app's foreground state in nanoseconds.
     /// (duration - foregroundDuration) gives you the elapsed time while the app wasn't active (probably at background)
     internal static let foregroundDuration = "foreground_duration"
@@ -70,6 +75,9 @@ public class Tracer {
                     description: "Trace feature must be enabled before calling `Tracer.shared(in:)`."
                 )
             }
+
+            // Send tracer API usage to telemetry
+            core.telemetry.configuration(tracerAPI: "OpenTracing")
 
             return feature.tracer
         } catch {

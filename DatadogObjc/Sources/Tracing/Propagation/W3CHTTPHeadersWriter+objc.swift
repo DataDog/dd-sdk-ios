@@ -26,17 +26,20 @@ public class DDW3CHTTPHeadersWriter: NSObject {
     public init(sampleRate: Float = 20) {
         swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(
             samplingStrategy: .custom(sampleRate: sampleRate),
-            tracestate: [:]
+            tracestate: [:],
+            traceContextInjection: .all
         )
     }
 
     @objc
     public init(
-        samplingStrategy: DDTraceSamplingStrategy
+        samplingStrategy: DDTraceSamplingStrategy,
+        traceContextInjection: DDTraceContextInjection
     ) {
         swiftW3CHTTPHeadersWriter = W3CHTTPHeadersWriter(
             samplingStrategy: samplingStrategy.swiftType,
-            tracestate: [:]
+            tracestate: [:],
+            traceContextInjection: traceContextInjection.swiftType
         )
     }
 }

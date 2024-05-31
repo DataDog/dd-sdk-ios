@@ -7,7 +7,8 @@
 import XCTest
 
 #if !os(tvOS)
-import WebKit
+
+import DatadogInternal
 
 @testable import DatadogLogs
 @testable import DatadogRUM
@@ -29,10 +30,15 @@ class WebLogIntegrationTests: XCTestCase {
         )
 
         controller = WKUserContentControllerMock()
-        let configuration = WKWebViewConfiguration()
-        configuration.userContentController = controller
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        WebViewTracking.enable(webView: webView, in: core)
+
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: [],
+            hostsSanitizer: HostsSanitizer(),
+            logsSampleRate: 100,
+            sessionReplayConfiguration: nil,
+            in: core
+        )
     }
 
     override func tearDown() {

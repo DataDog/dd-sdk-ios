@@ -7,7 +7,7 @@
 import XCTest
 @testable import DatadogCore
 
-class CoreMetricsTests: XCTestCase {
+class BatchMetricsTests: XCTestCase {
     func testBatchRemovalReasonFormatting() {
         typealias RemovalReason = BatchDeletedMetric.RemovalReason
 

@@ -46,7 +46,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
         // Notify Synthetics if needed
         if dependencies.syntheticsTest != nil {
-            print("_dd.application.id=" + dependencies.rumApplicationID)
+            NSLog("_dd.application.id=" + dependencies.rumApplicationID)
         }
     }
 

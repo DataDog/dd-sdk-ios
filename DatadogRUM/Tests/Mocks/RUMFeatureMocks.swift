@@ -745,12 +745,10 @@ func mockNoOpSessionListener() -> RUM.SessionListener {
     return { _, _ in }
 }
 
-extension FatalErrorContextNotifier: AnyMockable {
-    public static func mockAny() -> FatalErrorContextNotifier {
-        return FatalErrorContextNotifier(
-            messageBus: NOPFeatureScope()
-        )
-    }
+internal class FatalErrorContextNotifierMock: FatalErrorContextNotifying {
+    var sessionState: RUMSessionState?
+    var view: RUMViewEvent?
+    var globalAttributes: [String: Encodable] = [:]
 }
 
 extension RUMScopeDependencies {
@@ -767,11 +765,13 @@ extension RUMScopeDependencies {
         firstPartyHosts: FirstPartyHosts = .init([:]),
         eventBuilder: RUMEventBuilder = RUMEventBuilder(eventsMapper: .mockNoOp()),
         rumUUIDGenerator: RUMUUIDGenerator = DefaultRUMUUIDGenerator(),
+        backtraceReporter: BacktraceReporting = BacktraceReporterMock(backtrace: nil),
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: @escaping RUM.SessionListener = mockNoOpSessionListener(),
-        viewCache: ViewCache = ViewCache()
+        viewCache: ViewCache = ViewCache(),
+        fatalErrorContext: FatalErrorContextNotifying = FatalErrorContextNotifierMock()
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -782,11 +782,13 @@ extension RUMScopeDependencies {
             firstPartyHosts: firstPartyHosts,
             eventBuilder: eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator,
+            backtraceReporter: backtraceReporter,
             ciTest: ciTest,
             syntheticsTest: syntheticsTest,
             vitalsReaders: vitalsReaders,
             onSessionStart: onSessionStart,
-            viewCache: viewCache
+            viewCache: viewCache,
+            fatalErrorContext: fatalErrorContext
         )
     }
 
@@ -799,11 +801,13 @@ extension RUMScopeDependencies {
         firstPartyHosts: FirstPartyHosts? = nil,
         eventBuilder: RUMEventBuilder? = nil,
         rumUUIDGenerator: RUMUUIDGenerator? = nil,
+        backtraceReporter: BacktraceReporting? = nil,
         ciTest: RUMCITest? = nil,
         syntheticsTest: RUMSyntheticsTest? = nil,
         vitalsReaders: VitalsReaders? = nil,
         onSessionStart: RUM.SessionListener? = nil,
-        viewCache: ViewCache? = nil
+        viewCache: ViewCache? = nil,
+        fatalErrorContext: FatalErrorContextNotifying? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: self.featureScope,
@@ -814,11 +818,13 @@ extension RUMScopeDependencies {
             firstPartyHosts: firstPartyHosts ?? self.firstPartyHosts,
             eventBuilder: eventBuilder ?? self.eventBuilder,
             rumUUIDGenerator: rumUUIDGenerator ?? self.rumUUIDGenerator,
+            backtraceReporter: backtraceReporter ?? self.backtraceReporter,
             ciTest: ciTest ?? self.ciTest,
             syntheticsTest: syntheticsTest ?? self.syntheticsTest,
             vitalsReaders: vitalsReaders ?? self.vitalsReaders,
             onSessionStart: onSessionStart ?? self.onSessionStart,
-            viewCache: viewCache ?? self.viewCache
+            viewCache: viewCache ?? self.viewCache,
+            fatalErrorContext: fatalErrorContext ?? self.fatalErrorContext
         )
     }
 }

@@ -29,7 +29,7 @@ class TelemetryReceiverTests: XCTestCase {
         callConcurrently(
             closures: [
                 { core.telemetry.debug(id: .mockRandom(), message: "telemetry debug") },
-                { core.telemetry.error(id: .mockRandom(), message: "telemetry error", kind: nil, stack: nil) },
+                { core.telemetry.error(id: .mockRandom(), message: "telemetry error", kind: "error.kind", stack: "error.stack") },
                 { core.telemetry.configuration(batchSize: .mockRandom()) },
                 {
                     core.set(

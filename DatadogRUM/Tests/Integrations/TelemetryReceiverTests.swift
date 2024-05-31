@@ -129,7 +129,7 @@ class TelemetryReceiverTests: XCTestCase {
 
         // When
         telemetry.debug(id: "0", message: "telemetry debug 0")
-        telemetry.error(id: "0", message: "telemetry debug 1", kind: nil, stack: nil)
+        telemetry.error(id: "0", message: "telemetry debug 1", kind: "error.kind", stack: "error.stack")
         telemetry.debug(id: "0", message: "telemetry debug 2")
         telemetry.debug(id: "1", message: "telemetry debug 3")
 
@@ -443,7 +443,7 @@ class TelemetryReceiverTests: XCTestCase {
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
         XCTAssertEqual(event?.telemetry.message, "[Mobile Metric] Method Called")
-        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[BasicMetric.typeKey] as? String), MethodCalledMetric.typeValue)
+        XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[SDKMetricFields.typeKey] as? String), MethodCalledMetric.typeValue)
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.operationName] as? String), operationName)
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.callerClass] as? String), callerClass)
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)

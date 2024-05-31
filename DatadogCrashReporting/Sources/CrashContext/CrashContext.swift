@@ -13,6 +13,9 @@ import DatadogInternal
 /// Note: as it gets saved along with the crash report during process interruption, it's good
 /// to keep this data well-packed and as small as possible.
 internal struct CrashContext: Codable, Equatable {
+    /// The Application Launch Date
+    var appLaunchDate: Date?
+
     /// Interval between device and server time.
     ///
     /// The value can change as the device continue to sync with the server.
@@ -60,17 +63,20 @@ internal struct CrashContext: Codable, Equatable {
     /// not support telephony services.
     let carrierInfo: CarrierInfo?
 
+    /// The last _"Is app in foreground?"_ information from crashed app process.
+    let lastIsAppInForeground: Bool
+
     /// The last RUM view in crashed app process.
     var lastRUMViewEvent: AnyCodable?
 
     /// State of the last RUM session in crashed app process.
     var lastRUMSessionState: AnyCodable?
 
-    /// The last _"Is app in foreground?"_ information from crashed app process.
-    let lastIsAppInForeground: Bool
-
     /// Last global log attributes, set with Logs.addAttribute / Logs.removeAttribute
     var lastLogAttributes: AnyCodable?
+
+    /// Last global RUM attributes. It gets updated with adding or removing attributes on `RUMMonitor`.
+    var lastRUMAttributes: GlobalRUMAttributes?
 
     // MARK: - Initialization
 
@@ -87,9 +93,11 @@ internal struct CrashContext: Codable, Equatable {
         userInfo: UserInfo?,
         networkConnectionInfo: NetworkConnectionInfo?,
         carrierInfo: CarrierInfo?,
+        lastIsAppInForeground: Bool,
+        appLaunchDate: Date?,
         lastRUMViewEvent: AnyCodable?,
         lastRUMSessionState: AnyCodable?,
-        lastIsAppInForeground: Bool,
+        lastRUMAttributes: GlobalRUMAttributes?,
         lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = serverTimeOffset
@@ -104,9 +112,11 @@ internal struct CrashContext: Codable, Equatable {
         self.userInfo = userInfo
         self.networkConnectionInfo = networkConnectionInfo
         self.carrierInfo = carrierInfo
+        self.lastIsAppInForeground = lastIsAppInForeground
+        self.appLaunchDate = appLaunchDate
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
-        self.lastIsAppInForeground = lastIsAppInForeground
+        self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
     }
 
@@ -114,6 +124,7 @@ internal struct CrashContext: Codable, Equatable {
         _ context: DatadogContext,
         lastRUMViewEvent: AnyCodable?,
         lastRUMSessionState: AnyCodable?,
+        lastRUMAttributes: GlobalRUMAttributes?,
         lastLogAttributes: AnyCodable?
     ) {
         self.serverTimeOffset = context.serverTimeOffset
@@ -132,7 +143,10 @@ internal struct CrashContext: Codable, Equatable {
 
         self.lastRUMViewEvent = lastRUMViewEvent
         self.lastRUMSessionState = lastRUMSessionState
+        self.lastRUMAttributes = lastRUMAttributes
         self.lastLogAttributes = lastLogAttributes
+
+        self.appLaunchDate = context.launchTime?.launchDate
     }
 
     static func == (lhs: CrashContext, rhs: CrashContext) -> Bool {
@@ -148,6 +162,7 @@ internal struct CrashContext: Codable, Equatable {
             lhs.lastIsAppInForeground == rhs.lastIsAppInForeground &&
             lhs.userInfo?.id == rhs.userInfo?.id &&
             lhs.userInfo?.name == rhs.userInfo?.name &&
-            lhs.userInfo?.email == rhs.userInfo?.email
+            lhs.userInfo?.email == rhs.userInfo?.email &&
+            lhs.appLaunchDate == rhs.appLaunchDate
     }
 }

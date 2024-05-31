@@ -10,6 +10,8 @@ import DatadogInternal
 /// Error message sent from Logs on the message-bus.
 internal struct ErrorMessage: Encodable {
     static let key = "error"
+    /// The time of the log
+    let time: Date
     /// The Log error message
     let message: String
     /// The Log error type
@@ -20,6 +22,8 @@ internal struct ErrorMessage: Encodable {
     let source: String = "logger"
     /// The Log attributes
     let attributes: AnyEncodable
+    /// Binary images if need to decode the stack trace
+    let binaryImages: [BinaryImage]?
 }
 
 internal struct GlobalLogAttributes: Codable {

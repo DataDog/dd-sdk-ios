@@ -28,6 +28,8 @@ public struct ConfigurationTelemetry: Equatable {
     public let startSessionReplayRecordingManually: Bool?
     public let telemetryConfigurationSampleRate: Int64?
     public let telemetrySampleRate: Int64?
+    public let tracerAPI: String?
+    public let tracerAPIVersion: String?
     public let traceSampleRate: Int64?
     public let trackBackgroundEvents: Bool?
     public let trackCrossPlatformLongTasks: Bool?
@@ -57,7 +59,7 @@ public struct ConfigurationTelemetry: Equatable {
 
 public enum TelemetryMessage {
     case debug(id: String, message: String, attributes: [String: Encodable]?)
-    case error(id: String, message: String, kind: String?, stack: String?)
+    case error(id: String, message: String, kind: String, stack: String)
     case configuration(ConfigurationTelemetry)
     case metric(name: String, attributes: [String: Encodable])
 }
@@ -126,7 +128,7 @@ public struct MethodCalledTrace {
                 MethodCalledMetric.operationName: operationName,
                 MethodCalledMetric.callerClass: callerClass,
                 MethodCalledMetric.isSuccessful: isSuccessful,
-                BasicMetric.typeKey: MethodCalledMetric.typeValue
+                SDKMetricFields.typeKey: MethodCalledMetric.typeValue
             ]
         )
     }
@@ -150,7 +152,7 @@ extension Telemetry {
     ///   - message: The error message.
     ///   - kind: The kind of error.
     ///   - stack: The stack trace.
-    public func error(id: String, message: String, kind: String?, stack: String?) {
+    public func error(id: String, message: String, kind: String, stack: String) {
         send(telemetry: .error(id: id, message: message, kind: kind, stack: stack))
     }
 
@@ -171,7 +173,7 @@ extension Telemetry {
     ///   - attributes: Custom attributes attached to the log (optional).
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #file, line: Int = #line) {
+    public func debug(_ message: String, attributes: [String: Encodable]? = nil, file: String = #fileID, line: Int = #line) {
         debug(id: "\(file):\(line):\(message)", message: message, attributes: attributes)
     }
 
@@ -179,13 +181,17 @@ extension Telemetry {
     ///
     /// - Parameters:
     ///   - message: The error message.
+    ///   - kind: The kind of error.
     ///   - stack: The stack trace.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    ///   - file: The current file name.
-    ///   - line: The line number in file.
-    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #file, line: Int = #line) {
-        error(id: "\(file):\(line):\(message)", message: message, kind: kind, stack: stack)
+    public func error(_ message: String, kind: String? = nil, stack: String? = nil, file: String = #fileID, line: Int = #line) {
+        error(
+            id: "\(file):\(line):\(message)",
+            message: message,
+            kind: kind ?? "\(file)",
+            stack: stack ?? "\(file):\(line)"
+        )
     }
 
     /// Collect execution error.
@@ -194,7 +200,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ error: DDError, file: String = #fileID, line: Int = #line) {
         self.error(error.message, kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -205,7 +211,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: DDError, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: DDError, file: String = #fileID, line: Int = #line) {
         self.error("\(message) - \(error.message)", kind: error.type, stack: error.stack, file: file, line: line)
     }
 
@@ -215,7 +221,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ error: Error, file: String = #fileID, line: Int = #line) {
         self.error(DDError(error: error), file: file, line: line)
     }
 
@@ -226,7 +232,7 @@ extension Telemetry {
     ///   - error: The error.
     ///   - file: The current file name.
     ///   - line: The line number in file.
-    public func error(_ message: String, error: Error, file: String = #file, line: Int = #line) {
+    public func error(_ message: String, error: Error, file: String = #fileID, line: Int = #line) {
         self.error(message, error: DDError(error: error), file: file, line: line)
     }
 
@@ -256,6 +262,8 @@ extension Telemetry {
         startSessionReplayRecordingManually: Bool? = nil,
         telemetryConfigurationSampleRate: Int64? = nil,
         telemetrySampleRate: Int64? = nil,
+        tracerAPI: String? = nil,
+        tracerAPIVersion: String? = nil,
         traceSampleRate: Int64? = nil,
         trackBackgroundEvents: Bool? = nil,
         trackCrossPlatformLongTasks: Bool? = nil,
@@ -304,6 +312,8 @@ extension Telemetry {
             startSessionReplayRecordingManually: startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: telemetryConfigurationSampleRate,
             telemetrySampleRate: telemetrySampleRate,
+            tracerAPI: tracerAPI,
+            tracerAPIVersion: tracerAPIVersion,
             traceSampleRate: traceSampleRate,
             trackBackgroundEvents: trackBackgroundEvents,
             trackCrossPlatformLongTasks: trackCrossPlatformLongTasks,
@@ -409,6 +419,8 @@ extension ConfigurationTelemetry {
             startSessionReplayRecordingManually: other.startSessionReplayRecordingManually ?? startSessionReplayRecordingManually,
             telemetryConfigurationSampleRate: other.telemetryConfigurationSampleRate ?? telemetryConfigurationSampleRate,
             telemetrySampleRate: other.telemetrySampleRate ?? telemetrySampleRate,
+            tracerAPI: other.tracerAPI ?? tracerAPI,
+            tracerAPIVersion: other.tracerAPIVersion ?? tracerAPIVersion,
             traceSampleRate: other.traceSampleRate ?? traceSampleRate,
             trackBackgroundEvents: other.trackBackgroundEvents ?? trackBackgroundEvents,
             trackCrossPlatformLongTasks: other.trackCrossPlatformLongTasks ?? trackCrossPlatformLongTasks,

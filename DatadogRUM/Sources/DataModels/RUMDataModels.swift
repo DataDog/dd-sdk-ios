@@ -698,6 +698,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Causes of the error
         public var causes: [Causes]?
 
+        /// Content Security Violation properties
+        public let csp: CSP?
+
         /// Fingerprint used for Error Tracking custom grouping
         public var fingerprint: String?
 
@@ -734,6 +737,9 @@ public struct RUMErrorEvent: RUMDataModel {
         /// Description of each thread in the process when error happened.
         public let threads: [Threads]?
 
+        /// Time since application start when error happened (in milliseconds)
+        public let timeSinceAppStart: Int64?
+
         /// The type of the error
         public let type: String?
 
@@ -744,6 +750,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case binaryImages = "binary_images"
             case category = "category"
             case causes = "causes"
+            case csp = "csp"
             case fingerprint = "fingerprint"
             case handling = "handling"
             case handlingStack = "handling_stack"
@@ -756,6 +763,7 @@ public struct RUMErrorEvent: RUMDataModel {
             case sourceType = "source_type"
             case stack = "stack"
             case threads = "threads"
+            case timeSinceAppStart = "time_since_app_start"
             case type = "type"
             case wasTruncated = "was_truncated"
         }
@@ -827,6 +835,22 @@ public struct RUMErrorEvent: RUMDataModel {
                 case agent = "agent"
                 case webview = "webview"
                 case custom = "custom"
+                case report = "report"
+            }
+        }
+
+        /// Content Security Violation properties
+        public struct CSP: Codable {
+            /// In the context of CSP errors, indicates how the violated policy is configured to be treated by the user agent.
+            public let disposition: Disposition?
+
+            enum CodingKeys: String, CodingKey {
+                case disposition = "disposition"
+            }
+
+            /// In the context of CSP errors, indicates how the violated policy is configured to be treated by the user agent.
+            public enum Disposition: String, Codable {
+                case enforce = "enforce"
                 case report = "report"
             }
         }
@@ -1623,6 +1647,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Connect phase properties
         public let connect: Connect?
 
+        /// Size in octet of the resource after removing any applied encoding
+        public let decodedBodySize: Int64?
+
         /// DNS phase properties
         public let dns: DNS?
 
@@ -1631,6 +1658,9 @@ public struct RUMResourceEvent: RUMDataModel {
 
         /// Duration of the resource
         public let duration: Int64?
+
+        /// Size in octet of the resource before removing any applied content encodings
+        public let encodedBodySize: Int64?
 
         /// First Byte phase properties
         public let firstByte: FirstByte?
@@ -1650,6 +1680,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// Redirect phase properties
         public let redirect: Redirect?
 
+        /// Render blocking status of the resource
+        public let renderBlockingStatus: RenderBlockingStatus?
+
         /// Size in octet of the resource response body
         public let size: Int64?
 
@@ -1659,6 +1692,9 @@ public struct RUMResourceEvent: RUMDataModel {
         /// HTTP status code of the resource
         public let statusCode: Int64?
 
+        /// Size in octet of the fetched resource
+        public let transferSize: Int64?
+
         /// Resource type
         public let type: ResourceType
 
@@ -1667,18 +1703,22 @@ public struct RUMResourceEvent: RUMDataModel {
 
         enum CodingKeys: String, CodingKey {
             case connect = "connect"
+            case decodedBodySize = "decoded_body_size"
             case dns = "dns"
             case download = "download"
             case duration = "duration"
+            case encodedBodySize = "encoded_body_size"
             case firstByte = "first_byte"
             case graphql = "graphql"
             case id = "id"
             case method = "method"
             case provider = "provider"
             case redirect = "redirect"
+            case renderBlockingStatus = "render_blocking_status"
             case size = "size"
             case ssl = "ssl"
             case statusCode = "status_code"
+            case transferSize = "transfer_size"
             case type = "type"
             case url = "url"
         }
@@ -1816,6 +1856,12 @@ public struct RUMResourceEvent: RUMDataModel {
                 case duration = "duration"
                 case start = "start"
             }
+        }
+
+        /// Render blocking status of the resource
+        public enum RenderBlockingStatus: String, Codable {
+            case blocking = "blocking"
+            case nonBlocking = "non-blocking"
         }
 
         /// SSL phase properties
@@ -3364,7 +3410,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether UIApplication background tasks are enabled
             public let backgroundTasksEnabled: Bool?
 
-            /// Maximum number of batches processed sequencially without a delay
+            /// Maximum number of batches processed sequentially without a delay
             public let batchProcessingLevel: Int64?
 
             /// The window duration for batches sent by the SDK (in milliseconds)
@@ -3372,6 +3418,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
 
             /// The upload frequency of batches (in milliseconds)
             public let batchUploadFrequency: Int64?
+
+            /// Whether intake requests are compressed
+            public let compressIntakeRequests: Bool?
 
             /// The version of Dart used in a Flutter application
             public var dartVersion: String?
@@ -3430,8 +3479,20 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// The percentage of telemetry events sent
             public let telemetrySampleRate: Int64?
 
+            /// The percentage of telemetry usage events sent after being sampled by telemetry_sample_rate
+            public let telemetryUsageSampleRate: Int64?
+
+            /// The opt-in configuration to add trace context
+            public var traceContextInjection: TraceContextInjection?
+
             /// The percentage of requests traced
             public let traceSampleRate: Int64?
+
+            /// The tracer API used by the SDK. Possible values: 'Datadog', 'OpenTelemetry', 'OpenTracing'
+            public var tracerApi: String?
+
+            /// The version of the tracer API used by the SDK. Eg. '0.1.0'
+            public var tracerApiVersion: String?
 
             /// Whether RUM events are tracked when the application is in Background
             public var trackBackgroundEvents: Bool?
@@ -3478,6 +3539,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether the RUM views creation is handled manually
             public var trackViewsManually: Bool?
 
+            /// The initial tracking consent value
+            public let trackingConsent: String?
+
             /// The version of Unity used in a Unity application
             public var unityVersion: String?
 
@@ -3505,6 +3569,9 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
             /// Whether a partitioned secure cross-site session cookie is used
             public let usePartitionedCrossSiteSessionCookie: Bool?
 
+            /// Whether logs are sent to the PCI-compliant intake
+            public var usePciIntake: Bool?
+
             /// Whether a proxy is used
             public var useProxy: Bool?
 
@@ -3529,6 +3596,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case batchProcessingLevel = "batch_processing_level"
                 case batchSize = "batch_size"
                 case batchUploadFrequency = "batch_upload_frequency"
+                case compressIntakeRequests = "compress_intake_requests"
                 case dartVersion = "dart_version"
                 case defaultPrivacyLevel = "default_privacy_level"
                 case forwardConsoleLogs = "forward_console_logs"
@@ -3548,7 +3616,11 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case storeContextsAcrossPages = "store_contexts_across_pages"
                 case telemetryConfigurationSampleRate = "telemetry_configuration_sample_rate"
                 case telemetrySampleRate = "telemetry_sample_rate"
+                case telemetryUsageSampleRate = "telemetry_usage_sample_rate"
+                case traceContextInjection = "trace_context_injection"
                 case traceSampleRate = "trace_sample_rate"
+                case tracerApi = "tracer_api"
+                case tracerApiVersion = "tracer_api_version"
                 case trackBackgroundEvents = "track_background_events"
                 case trackCrossPlatformLongTasks = "track_cross_platform_long_tasks"
                 case trackErrors = "track_errors"
@@ -3564,6 +3636,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case trackSessionAcrossSubdomains = "track_session_across_subdomains"
                 case trackUserInteractions = "track_user_interactions"
                 case trackViewsManually = "track_views_manually"
+                case trackingConsent = "tracking_consent"
                 case unityVersion = "unity_version"
                 case useAllowedTracingOrigins = "use_allowed_tracing_origins"
                 case useAllowedTracingUrls = "use_allowed_tracing_urls"
@@ -3573,6 +3646,7 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case useFirstPartyHosts = "use_first_party_hosts"
                 case useLocalEncryption = "use_local_encryption"
                 case usePartitionedCrossSiteSessionCookie = "use_partitioned_cross_site_session_cookie"
+                case usePciIntake = "use_pci_intake"
                 case useProxy = "use_proxy"
                 case useSecureSessionCookie = "use_secure_session_cookie"
                 case useTracing = "use_tracing"
@@ -3669,6 +3743,12 @@ public struct TelemetryConfigurationEvent: RUMDataModel {
                 case b3 = "b3"
                 case b3multi = "b3multi"
                 case tracecontext = "tracecontext"
+            }
+
+            /// The opt-in configuration to add trace context
+            public enum TraceContextInjection: String, Codable {
+                case all = "all"
+                case sampled = "sampled"
             }
 
             /// View tracking strategy
@@ -4001,4 +4081,4 @@ public enum RUMMethod: String, Codable {
     case connect = "CONNECT"
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330
+// Generated from https://github.com/DataDog/rum-events-format/tree/0455e104863c0f67c3bf69899c7d5da1ba6f0ebb

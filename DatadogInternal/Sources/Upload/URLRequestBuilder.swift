@@ -145,7 +145,9 @@ public struct URLRequestBuilder {
             }
         }
 
-        request.allHTTPHeaderFields = headers
+        headers.forEach { field, value in
+            request.setValue(value, forHTTPHeaderField: field)
+        }
         return request
     }
 }

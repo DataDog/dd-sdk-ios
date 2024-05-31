@@ -137,7 +137,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
     ///   - message: Body of the log
     ///   - kind: The error type or kind (or code in some cases).
     ///   - stack: The stack trace or the complementary information about the error.
-    private func error(id: String, message: String, kind: String?, stack: String?) {
+    private func error(id: String, message: String, kind: String, stack: String) {
         let date = dateProvider.now
 
         record(event: id) { context, writer in
@@ -290,6 +290,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             batchProcessingLevel: configuration.batchProcessingLevel,
             batchSize: configuration.batchSize,
             batchUploadFrequency: configuration.batchUploadFrequency,
+            compressIntakeRequests: nil,
             dartVersion: configuration.dartVersion,
             defaultPrivacyLevel: nil,
             forwardConsoleLogs: nil,
@@ -308,7 +309,10 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             storeContextsAcrossPages: nil,
             telemetryConfigurationSampleRate: nil,
             telemetrySampleRate: configuration.telemetrySampleRate,
+            telemetryUsageSampleRate: nil,
             traceSampleRate: configuration.traceSampleRate,
+            tracerApi: configuration.tracerAPI,
+            tracerApiVersion: configuration.tracerAPIVersion,
             trackBackgroundEvents: configuration.trackBackgroundEvents,
             trackCrossPlatformLongTasks: configuration.trackCrossPlatformLongTasks,
             trackErrors: configuration.trackErrors,
@@ -326,6 +330,7 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             trackSessionAcrossSubdomains: nil,
             trackUserInteractions: configuration.trackUserInteractions,
             trackViewsManually: configuration.trackViewsManually,
+            trackingConsent: nil,
             unityVersion: configuration.unityVersion,
             useAllowedTracingOrigins: nil,
             useAllowedTracingUrls: nil,

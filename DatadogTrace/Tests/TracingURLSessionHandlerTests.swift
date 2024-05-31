@@ -34,7 +34,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             distributedTraceSampler: .mockKeepAll(),
             firstPartyHosts: .init([
                 "www.example.com": [.datadog]
-            ])
+            ]),
+            traceContextInjection: .all
         )
     }
 
@@ -49,7 +50,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
             distributedTraceSampler: .mockKeepAll(),
-            firstPartyHosts: .init()
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
         )
 
         // When
@@ -89,7 +91,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
             distributedTraceSampler: .mockKeepAll(),
-            firstPartyHosts: .init()
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
         )
 
         // When
@@ -137,7 +140,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
             distributedTraceSampler: .mockRejectAll(),
-            firstPartyHosts: .init()
+            firstPartyHosts: .init(),
+            traceContextInjection: .sampled
         )
 
         // When
@@ -153,13 +157,13 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField), "0")
+        XCTAssertNil(request.value(forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.traceIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.spanIDField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.parentSpanIDField))
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField), "0")
-        XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "0")
-        XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-00")
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
+        XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
+        XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -170,7 +174,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             tracer: tracer,
             contextReceiver: ContextMessageReceiver(),
             distributedTraceSampler: .mockKeepAll(),
-            firstPartyHosts: .init()
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
         )
 
         let span = tracer.startRootSpan(operationName: "root")
@@ -383,7 +388,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
             tracer: .mockWith(core: core),
             contextReceiver: receiver,
             distributedTraceSampler: .mockKeepAll(),
-            firstPartyHosts: .init()
+            firstPartyHosts: .init(),
+            traceContextInjection: .all
         )
 
         core.context.applicationStateHistory = .mockAppInForeground()

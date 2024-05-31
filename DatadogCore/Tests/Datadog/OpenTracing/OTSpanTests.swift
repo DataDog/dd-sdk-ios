@@ -44,12 +44,6 @@ private extension Dictionary where Key == String, Value == Encodable {
 }
 
 class OTSpanTests: XCTestCase {
-    #if os(iOS)
-    private let testModuleName = "DatadogCoreTests_iOS"
-    #elseif os(tvOS)
-    private let testModuleName = "DatadogCoreTests_tvOS"
-    #endif
-
     // MARK: - Test Error Conveniences
 
     func testWhenSettingErrorFromSwiftError_itLogsErrorFields() throws {
@@ -71,7 +65,7 @@ class OTSpanTests: XCTestCase {
         XCTAssertEqual(
             try span.logs[0].otStack(),
             """
-            \(testModuleName)/File.swift:42
+            \(moduleName())/File.swift:42
             swift error description
             """
         )
@@ -123,7 +117,7 @@ class OTSpanTests: XCTestCase {
         XCTAssertEqual(
             try span.logs[0].otStack(),
             """
-            \(testModuleName)/File.swift:42
+            \(moduleName())/File.swift:42
             Error Domain=DDSpan Code=1 "ns error description" UserInfo={NSLocalizedDescription=ns error description}
             """
         )
@@ -147,7 +141,7 @@ class OTSpanTests: XCTestCase {
         XCTAssertEqual(
             try span.logs[0].otStack(),
             """
-            \(testModuleName)/File.swift:42
+            \(moduleName())/File.swift:42
             """
         )
     }
@@ -175,7 +169,7 @@ class OTSpanTests: XCTestCase {
         XCTAssertEqual(
             try span.logs[0].otStack(),
             """
-            \(testModuleName)/File.swift:42
+            \(moduleName())/File.swift:42
             Thread 0 Crashed:
             0   app                                 0x0000000102bc0d8c 0x102bb8000 + 36236
             1   UIKitCore                           0x00000001b513d9ac 0x1b4739000 + 10504620

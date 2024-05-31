@@ -44,12 +44,14 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     func testReceivePartialError() throws {
         // When
+        let baggage: [String: Any] = [
+            "time": Date(),
+            "message": "message-test",
+            "source": "custom"
+        ]
         let message: FeatureMessage = .baggage(
             key: ErrorMessageReceiver.ErrorMessage.key,
-            value: [
-                "message": "message-test",
-                "source": "custom"
-            ]
+            value: AnyEncodable(baggage)
         )
         let result = receiver.receive(message: message, from: NOPDatadogCore())
 
@@ -62,11 +64,16 @@ class ErrorMessageReceiverTests: XCTestCase {
 
     func testReceiveCompleteError() throws {
         let mockAttribute: String = .mockRandom()
+        let mockBinaryImage: BinaryImage = .mockRandom()
         let baggage: [String: Any] = [
+            "time": Date(),
             "message": "message-test",
             "type": "type-test",
             "stack": "stack-test",
             "source": "logger",
+            "binaryImages": [
+                mockBinaryImage
+            ],
             "attributes": [
                 "any-key": mockAttribute
             ]
@@ -83,6 +90,17 @@ class ErrorMessageReceiverTests: XCTestCase {
         XCTAssertEqual(event.error.type, "type-test")
         XCTAssertEqual(event.error.stack, "stack-test")
         XCTAssertEqual(event.error.source, .logger)
+        XCTAssertNotNil(event.error.binaryImages)
+        XCTAssertEqual(event.error.binaryImages?.count, 1)
+        if let image = event.error.binaryImages?.first {
+            XCTAssertEqual(mockBinaryImage.libraryName, image.name)
+            XCTAssertEqual(mockBinaryImage.uuid, image.uuid)
+            XCTAssertEqual(mockBinaryImage.architecture, image.arch)
+            XCTAssertEqual(mockBinaryImage.isSystemLibrary, image.isSystem)
+            XCTAssertEqual(mockBinaryImage.loadAddress, image.loadAddress)
+            XCTAssertEqual(mockBinaryImage.maxAddress, image.maxAddress)
+        }
+
         let attributeValue = (event.context?.contextInfo["any-key"] as? AnyCodable)?.value as? String
         XCTAssertEqual(attributeValue, mockAttribute)
     }

@@ -1612,6 +1612,10 @@ public class DDRUMErrorEventError: NSObject {
         get { root.swiftModel.error.causes?.map { DDRUMErrorEventErrorCauses(swiftModel: $0) } }
     }
 
+    @objc public var csp: DDRUMErrorEventErrorCSP? {
+        root.swiftModel.error.csp != nil ? DDRUMErrorEventErrorCSP(root: root) : nil
+    }
+
     @objc public var fingerprint: String? {
         set { root.swiftModel.error.fingerprint = newValue }
         get { root.swiftModel.error.fingerprint }
@@ -1661,6 +1665,10 @@ public class DDRUMErrorEventError: NSObject {
 
     @objc public var threads: [DDRUMErrorEventErrorThreads]? {
         root.swiftModel.error.threads?.map { DDRUMErrorEventErrorThreads(swiftModel: $0) }
+    }
+
+    @objc public var timeSinceAppStart: NSNumber? {
+        root.swiftModel.error.timeSinceAppStart as NSNumber?
     }
 
     @objc public var type: String? {
@@ -1795,6 +1803,42 @@ public enum DDRUMErrorEventErrorCausesSource: Int {
     case agent
     case webview
     case custom
+    case report
+}
+
+@objc
+public class DDRUMErrorEventErrorCSP: NSObject {
+    internal let root: DDRUMErrorEvent
+
+    internal init(root: DDRUMErrorEvent) {
+        self.root = root
+    }
+
+    @objc public var disposition: DDRUMErrorEventErrorCSPDisposition {
+        .init(swift: root.swiftModel.error.csp!.disposition)
+    }
+}
+
+@objc
+public enum DDRUMErrorEventErrorCSPDisposition: Int {
+    internal init(swift: RUMErrorEvent.Error.CSP.Disposition?) {
+        switch swift {
+        case nil: self = .none
+        case .enforce?: self = .enforce
+        case .report?: self = .report
+        }
+    }
+
+    internal var toSwift: RUMErrorEvent.Error.CSP.Disposition? {
+        switch self {
+        case .none: return nil
+        case .enforce: return .enforce
+        case .report: return .report
+        }
+    }
+
+    case none
+    case enforce
     case report
 }
 
@@ -3763,6 +3807,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.connect != nil ? DDRUMResourceEventResourceConnect(root: root) : nil
     }
 
+    @objc public var decodedBodySize: NSNumber? {
+        root.swiftModel.resource.decodedBodySize as NSNumber?
+    }
+
     @objc public var dns: DDRUMResourceEventResourceDNS? {
         root.swiftModel.resource.dns != nil ? DDRUMResourceEventResourceDNS(root: root) : nil
     }
@@ -3773,6 +3821,10 @@ public class DDRUMResourceEventResource: NSObject {
 
     @objc public var duration: NSNumber? {
         root.swiftModel.resource.duration as NSNumber?
+    }
+
+    @objc public var encodedBodySize: NSNumber? {
+        root.swiftModel.resource.encodedBodySize as NSNumber?
     }
 
     @objc public var firstByte: DDRUMResourceEventResourceFirstByte? {
@@ -3799,6 +3851,10 @@ public class DDRUMResourceEventResource: NSObject {
         root.swiftModel.resource.redirect != nil ? DDRUMResourceEventResourceRedirect(root: root) : nil
     }
 
+    @objc public var renderBlockingStatus: DDRUMResourceEventResourceRenderBlockingStatus {
+        .init(swift: root.swiftModel.resource.renderBlockingStatus)
+    }
+
     @objc public var size: NSNumber? {
         root.swiftModel.resource.size as NSNumber?
     }
@@ -3809,6 +3865,10 @@ public class DDRUMResourceEventResource: NSObject {
 
     @objc public var statusCode: NSNumber? {
         root.swiftModel.resource.statusCode as NSNumber?
+    }
+
+    @objc public var transferSize: NSNumber? {
+        root.swiftModel.resource.transferSize as NSNumber?
     }
 
     @objc public var type: DDRUMResourceEventResourceResourceType {
@@ -4078,6 +4138,29 @@ public class DDRUMResourceEventResourceRedirect: NSObject {
     @objc public var start: NSNumber {
         root.swiftModel.resource.redirect!.start as NSNumber
     }
+}
+
+@objc
+public enum DDRUMResourceEventResourceRenderBlockingStatus: Int {
+    internal init(swift: RUMResourceEvent.Resource.RenderBlockingStatus?) {
+        switch swift {
+        case nil: self = .none
+        case .blocking?: self = .blocking
+        case .nonBlocking?: self = .nonBlocking
+        }
+    }
+
+    internal var toSwift: RUMResourceEvent.Resource.RenderBlockingStatus? {
+        switch self {
+        case .none: return nil
+        case .blocking: return .blocking
+        case .nonBlocking: return .nonBlocking
+        }
+    }
+
+    case none
+    case blocking
+    case nonBlocking
 }
 
 @objc
@@ -6931,6 +7014,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.batchUploadFrequency as NSNumber?
     }
 
+    @objc public var compressIntakeRequests: NSNumber? {
+        root.swiftModel.telemetry.configuration.compressIntakeRequests as NSNumber?
+    }
+
     @objc public var dartVersion: String? {
         set { root.swiftModel.telemetry.configuration.dartVersion = newValue }
         get { root.swiftModel.telemetry.configuration.dartVersion }
@@ -7015,8 +7102,27 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         root.swiftModel.telemetry.configuration.telemetrySampleRate as NSNumber?
     }
 
+    @objc public var telemetryUsageSampleRate: NSNumber? {
+        root.swiftModel.telemetry.configuration.telemetryUsageSampleRate as NSNumber?
+    }
+
+    @objc public var traceContextInjection: DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection {
+        set { root.swiftModel.telemetry.configuration.traceContextInjection = newValue.toSwift }
+        get { .init(swift: root.swiftModel.telemetry.configuration.traceContextInjection) }
+    }
+
     @objc public var traceSampleRate: NSNumber? {
         root.swiftModel.telemetry.configuration.traceSampleRate as NSNumber?
+    }
+
+    @objc public var tracerApi: String? {
+        set { root.swiftModel.telemetry.configuration.tracerApi = newValue }
+        get { root.swiftModel.telemetry.configuration.tracerApi }
+    }
+
+    @objc public var tracerApiVersion: String? {
+        set { root.swiftModel.telemetry.configuration.tracerApiVersion = newValue }
+        get { root.swiftModel.telemetry.configuration.tracerApiVersion }
     }
 
     @objc public var trackBackgroundEvents: NSNumber? {
@@ -7093,6 +7199,10 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
         get { root.swiftModel.telemetry.configuration.trackViewsManually as NSNumber? }
     }
 
+    @objc public var trackingConsent: String? {
+        root.swiftModel.telemetry.configuration.trackingConsent
+    }
+
     @objc public var unityVersion: String? {
         set { root.swiftModel.telemetry.configuration.unityVersion = newValue }
         get { root.swiftModel.telemetry.configuration.unityVersion }
@@ -7129,6 +7239,11 @@ public class DDTelemetryConfigurationEventTelemetryConfiguration: NSObject {
 
     @objc public var usePartitionedCrossSiteSessionCookie: NSNumber? {
         root.swiftModel.telemetry.configuration.usePartitionedCrossSiteSessionCookie as NSNumber?
+    }
+
+    @objc public var usePciIntake: NSNumber? {
+        set { root.swiftModel.telemetry.configuration.usePciIntake = newValue?.boolValue }
+        get { root.swiftModel.telemetry.configuration.usePciIntake as NSNumber? }
     }
 
     @objc public var useProxy: NSNumber? {
@@ -7229,6 +7344,29 @@ public enum DDTelemetryConfigurationEventTelemetryConfigurationSelectedTracingPr
 }
 
 @objc
+public enum DDTelemetryConfigurationEventTelemetryConfigurationTraceContextInjection: Int {
+    internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.TraceContextInjection?) {
+        switch swift {
+        case nil: self = .none
+        case .all?: self = .all
+        case .sampled?: self = .sampled
+        }
+    }
+
+    internal var toSwift: TelemetryConfigurationEvent.Telemetry.Configuration.TraceContextInjection? {
+        switch self {
+        case .none: return nil
+        case .all: return .all
+        case .sampled: return .sampled
+        }
+    }
+
+    case none
+    case all
+    case sampled
+}
+
+@objc
 public enum DDTelemetryConfigurationEventTelemetryConfigurationViewTrackingStrategy: Int {
     internal init(swift: TelemetryConfigurationEvent.Telemetry.Configuration.ViewTrackingStrategy?) {
         switch swift {
@@ -7272,4 +7410,4 @@ public class DDTelemetryConfigurationEventView: NSObject {
 
 // swiftlint:enable force_unwrapping
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/63842bcc15dec58b68fc0a57260715f8dfcde330
+// Generated from https://github.com/DataDog/rum-events-format/tree/0455e104863c0f67c3bf69899c7d5da1ba6f0ebb

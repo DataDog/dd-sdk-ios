@@ -1,16 +1,6 @@
 all: dependencies templates
 
-# The release version of `dd-sdk-swift-testing` to use for tests instrumentation.
-DD_SDK_SWIFT_TESTING_VERSION = 2.3.2
-
 define DD_SDK_TESTING_XCCONFIG_CI
-DD_SDK_TESTING_PATH=$$(DD_SDK_TESTING_OVERRIDE_PATH:default=$$(SRCROOT)/../instrumented-tests/)\n
-FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/ios-arm64_x86_64-simulator/\n
-FRAMEWORK_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
-LD_RUNPATH_SEARCH_PATHS[sdk=appletvsimulator*]=$$(inherited) $$(DD_SDK_TESTING_PATH)/DatadogSDKTesting.xcframework/tvos-arm64_x86_64-simulator/\n
-OTHER_LDFLAGS[sdk=iphonesimulator*]=$$(inherited) -framework DatadogSDKTesting\n
-OTHER_LDFLAGS[sdk=appletvsimulator*]=$$(inherited) -framework DatadogSDKTesting\n
 DD_TEST_RUNNER=1\n
 DD_SDK_SWIFT_TESTING_SERVICE=dd-sdk-ios\n
 DD_SDK_SWIFT_TESTING_APIKEY=${DD_SDK_SWIFT_TESTING_APIKEY}\n
@@ -42,7 +32,7 @@ define DD_SDK_BASE_XCCONFIG_CI
 SWIFT_TREAT_WARNINGS_AS_ERRORS = YES\n
 \n
 // If running on CI. This value is injected to some targets through their `Info.plist`:\n
-IS_CI = true\n 
+IS_CI = true\n
 \n
 // Use iOS 11 deployment target on CI as long as we use Xcode 14.x for integration\n
 IPHONEOS_DEPLOYMENT_TARGET=11.0\n
@@ -70,15 +60,9 @@ ifeq (${ci}, true)
 		@echo $$DD_SDK_BASE_XCCONFIG_CI >> xcconfigs/Base.local.xcconfig;
 		@echo $$DD_SDK_DATADOG_XCCONFIG_CI > xcconfigs/Datadog.local.xcconfig;
 ifndef DD_DISABLE_TEST_INSTRUMENTING
-		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;	
-		@rm -rf instrumented-tests/DatadogSDKTesting.xcframework
-		@rm -rf instrumented-tests/DatadogSDKTesting.zip
-		@rm -rf instrumented-tests/LICENSE
-		@gh release download ${DD_SDK_SWIFT_TESTING_VERSION} -D instrumented-tests -R https://github.com/DataDog/dd-sdk-swift-testing -p "DatadogSDKTesting.zip"
-		@unzip -q instrumented-tests/DatadogSDKTesting.zip -d instrumented-tests
-		@[ -e "instrumented-tests/DatadogSDKTesting.xcframework" ] && echo "DatadogSDKTesting.xcframework - OK" || { echo "DatadogSDKTesting.xcframework - missing"; exit 1; }
+		@echo $$DD_SDK_TESTING_XCCONFIG_CI > xcconfigs/DatadogSDKTesting.local.xcconfig;
 endif
-		
+
 endif
 
 # Prepare project on GitLab CI (this will replace `make dependencies` once we're fully on GitLab).
@@ -210,3 +194,6 @@ bump:
 		git add . ; \
 		git commit -m "Bumped version to $$version"; \
 		echo Bumped version to $$version
+
+e2e-upload:
+		./tools/code-sign.sh -- $(MAKE) -C E2ETests

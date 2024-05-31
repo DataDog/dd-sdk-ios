@@ -153,6 +153,9 @@ public struct CrossPlatformAttributes {
     /// Override the `source_type` of errors reported by the native crash handler. This is used on
     /// platforms that can supply extra steps or information on a native crash (such as Unity's IL2CPP)
     public static let nativeSourceType = "_dd.native_source_type"
+
+    /// Add "binary images" to the reportted error to assist with symbolication. Used by Unity for IL2CPP symbolicaiton
+    public static let includeBinaryImages = "_dd.error.include_binary_images"
 }
 
 public struct LaunchArguments {

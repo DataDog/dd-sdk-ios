@@ -6,9 +6,10 @@
 
 import XCTest
 #if !os(tvOS)
-import WebKit
 
+import DatadogInternal
 import TestUtilities
+
 @testable import DatadogRUM
 @testable import DatadogWebViewTracking
 
@@ -28,10 +29,15 @@ class WebEventIntegrationTests: XCTestCase {
         )
 
         controller = WKUserContentControllerMock()
-        let configuration = WKWebViewConfiguration()
-        configuration.userContentController = controller
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        WebViewTracking.enable(webView: webView, in: core)
+        
+        WebViewTracking.enable(
+            tracking: controller,
+            hosts: [],
+            hostsSanitizer: HostsSanitizer(),
+            logsSampleRate: 100,
+            sessionReplayConfiguration: nil,
+            in: core
+        )
     }
 
     override func tearDown() {

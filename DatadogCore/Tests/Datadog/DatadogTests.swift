@@ -330,6 +330,7 @@ class DatadogTests: XCTestCase {
         // mock data is written only after this operation completes - otherwise, migration may delete mocked files.
         core.readWriteQueue.sync {}
 
+        // Given
         let featureDirectories: [FeatureDirectories] = [
             try core.directory.getFeatureDirectories(forFeatureNamed: "logging"),
             try core.directory.getFeatureDirectories(forFeatureNamed: "tracing"),
@@ -337,10 +338,6 @@ class DatadogTests: XCTestCase {
 
         let allDirectories: [Directory] = featureDirectories.flatMap { [$0.authorized, $0.unauthorized] }
         try allDirectories.forEach { directory in _ = try directory.createFile(named: .mockRandom()) }
-
-        // Given
-        let numberOfFiles = try allDirectories.reduce(0, { acc, nextDirectory in return try acc + nextDirectory.files().count })
-        XCTAssertEqual(numberOfFiles, 4, "Each feature stores 2 files - one authorised and one unauthorised")
 
         // When
         Datadog.clearAllData()

@@ -14,6 +14,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     let distributedTraceSampler: Sampler
     /// First party hosts defined by the user.
     let firstPartyHosts: FirstPartyHosts
+    /// Trace context injection configuration to determine whether the trace context should be injected or not.
+    let traceContextInjection: TraceContextInjection
 
     weak var tracer: DatadogTracer?
 
@@ -21,12 +23,14 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
         distributedTraceSampler: Sampler,
-        firstPartyHosts: FirstPartyHosts
+        firstPartyHosts: FirstPartyHosts,
+        traceContextInjection: TraceContextInjection
     ) {
         self.tracer = tracer
         self.contextReceiver = contextReceiver
         self.distributedTraceSampler = distributedTraceSampler
         self.firstPartyHosts = firstPartyHosts
+        self.traceContextInjection = traceContextInjection
     }
 
     func modify(request: URLRequest, headerTypes: Set<DatadogInternal.TracingHeaderType>) -> (URLRequest, TraceContext?) {
@@ -55,21 +59,24 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             let writer: TracePropagationHeadersWriter
             switch $0 {
             case .datadog:
-                writer = HTTPHeadersWriter(samplingStrategy: .headBased)
+                writer = HTTPHeadersWriter(samplingStrategy: .headBased, traceContextInjection: traceContextInjection)
             case .b3:
                 writer = B3HTTPHeadersWriter(
                     samplingStrategy: .headBased,
-                    injectEncoding: .single
+                    injectEncoding: .single,
+                    traceContextInjection: traceContextInjection
                 )
             case .b3multi:
                 writer = B3HTTPHeadersWriter(
                     samplingStrategy: .headBased,
-                    injectEncoding: .multiple
+                    injectEncoding: .multiple,
+                    traceContextInjection: traceContextInjection
                 )
             case .tracecontext:
                 writer = W3CHTTPHeadersWriter(
                     samplingStrategy: .headBased,
-                    tracestate: [:]
+                    tracestate: [:],
+                    traceContextInjection: traceContextInjection
                 )
             }
 
@@ -84,7 +91,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             }
         }
 
-        return (request, (hasSetAnyHeader && injectedSpanContext.isKept) ? injectedSpanContext : nil)
+        return (request, hasSetAnyHeader ? injectedSpanContext : nil)
     }
 
     func interceptionDidStart(interception: DatadogInternal.URLSessionTaskInterception) {

@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
   s.name         = "DatadogAlamofireExtension"
-  s.version      = "2.11.0"
+  s.version      = "2.12.0"
   s.summary      = "An Official Extensions of Datadog Swift SDK for Alamofire."
-  
+
   s.homepage     = "https://www.datadoghq.com"
   s.social_media_url   = "https://twitter.com/datadoghq"
 
   s.license            = { :type => "Apache", :file => 'LICENSE' }
-  s.authors            = { 
+  s.authors            = {
     "Maciek Grzybowski" => "maciek.grzybowski@datadoghq.com",
     "Maxime Epain" => "maxime.epain@datadoghq.com",
     "Ganesh Jangir" => "ganesh.jangir@datadoghq.com",

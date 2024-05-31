@@ -31,7 +31,9 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         // When
         core.telemetry.debug("Debug Telemetry", attributes: ["debug.attribute": 42])
+        #sourceLocation(file: "File.swift", line: 42)
         core.telemetry.error("Error Telemetry")
+        #sourceLocation()
         core.telemetry.metric(name: "Metric Name", attributes: ["metric.attribute": 42])
         core.telemetry.stopMethodCalled(
             core.telemetry.startMethodCalled(operationName: .mockRandom(), callerClass: .mockRandom())
@@ -50,6 +52,8 @@ class CoreTelemetryIntegrationTests: XCTestCase {
 
         let error = errorEvents[0]
         XCTAssertEqual(error.telemetry.message, "Error Telemetry")
+        XCTAssertEqual(error.telemetry.error?.kind, "\(moduleName())/File.swift")
+        XCTAssertEqual(error.telemetry.error?.stack, "\(moduleName())/File.swift:42")
 
         let metric = debugEvents[1]
         XCTAssertEqual(metric.telemetry.message, "[Mobile Metric] Metric Name")

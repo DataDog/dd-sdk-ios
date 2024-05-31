@@ -124,6 +124,11 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 frequency: $0.frequency
             )
         }
+
+        // Notify Synthetics if needed
+        if dependencies.syntheticsTest != nil && self.context.sessionID != .nullUUID {
+            NSLog("_dd.view.id=" + self.viewUUID.toRUMDataFormat)
+        }
     }
 
     // MARK: - RUMContextProvider
@@ -552,6 +557,19 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
         var commandAttributes = command.attributes
         let errorFingerprint = commandAttributes.removeValue(forKey: RUM.Attributes.errorFingerprint) as? String
+        var timeSinceAppStart: Int64? = nil
+        if let startTime = context.launchTime?.launchDate {
+            timeSinceAppStart = command.time.timeIntervalSince(startTime).toInt64Milliseconds
+        }
+
+        var binaryImages = command.binaryImages?.compactMap { $0.toRUMDataFormat }
+        if commandAttributes.removeValue(forKey: CrossPlatformAttributes.includeBinaryImages) != nil {
+            // Don't try to get binary images if we already have them.
+            if binaryImages == nil {
+                // TODO: RUM-4072 Replace full backtrace reporter with simpler binary image fetcher
+                binaryImages = try? dependencies.backtraceReporter?.generateBacktrace()?.binaryImages.compactMap { $0.toRUMDataFormat }
+            }
+        }
 
         let errorEvent = RUMErrorEvent(
             dd: .init(
@@ -576,9 +594,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             device: .init(context: context, telemetry: dependencies.telemetry),
             display: nil,
             error: .init(
-                binaryImages: command.binaryImages?.compactMap { $0.toRUMDataFormat },
+                binaryImages: binaryImages,
                 category: command.category,
                 causes: nil,
+                csp: nil,
                 fingerprint: errorFingerprint,
                 handling: nil,
                 handlingStack: nil,
@@ -591,6 +610,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 sourceType: command.errorSourceType,
                 stack: command.stack,
                 threads: command.threads?.compactMap { $0.toRUMDataFormat },
+                timeSinceAppStart: timeSinceAppStart,
                 type: command.type,
                 wasTruncated: command.isStackTraceTruncated
             ),

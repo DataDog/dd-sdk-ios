@@ -47,4 +47,22 @@ class DebugCrashReportingWithRUMViewController: UIViewController {
             self?.crash()
         }
     }
+
+    // MARK: - OOM Crash
+
+    @IBAction func didTapOOMCrash(_ sender: UIButton) {
+        DispatchQueue.main.async {
+            let megaByte = 1_024 * 1_024
+            let memoryPageSize = NSPageSize()
+            let memoryPages = megaByte / memoryPageSize
+
+            while true {
+                // Allocate one MB and set one element of each memory page to something.
+                let ptr = UnsafeMutablePointer<Int8>.allocate(capacity: megaByte)
+                for i in 0..<memoryPages {
+                    ptr[i * memoryPageSize] = 40
+                }
+            }
+        }
+    }
 }
