@@ -7,7 +7,9 @@
 import Foundation
 import DatadogInternal
 
+/// Intercepts telemetry events sent through message bus.
 internal struct TelemetryInterecptor: FeatureMessageReceiver {
+    /// "RUM Session Ended" controller to count SDK errors.
     let sessionEndedMetric: SessionEndedMetricController
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {

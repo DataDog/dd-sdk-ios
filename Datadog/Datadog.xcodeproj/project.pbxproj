@@ -533,6 +533,8 @@
 		61C363802436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3637F2436164B00C4D4E6 /* ObjcExceptionHandlerTests.swift */; };
 		61C3638324361BE200C4D4E6 /* DatadogPrivateMocks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638224361BE200C4D4E6 /* DatadogPrivateMocks.swift */; };
 		61C3638524361E9200C4D4E6 /* Globals.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C3638424361E9200C4D4E6 /* Globals.swift */; };
+		61C4534A2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */; };
+		61C4534B2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */; };
 		61C5A89624509BF600DA608C /* TracerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C5A89524509BF600DA608C /* TracerTests.swift */; };
 		61C713A32A3B78F900FA735A /* RUMMonitorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713A02A3B78F900FA735A /* RUMMonitorProtocol.swift */; };
 		61C713A42A3B78F900FA735A /* RUMMonitorProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C713A02A3B78F900FA735A /* RUMMonitorProtocol.swift */; };
@@ -2542,6 +2544,7 @@
 		61C3E63824BF19B4008053F2 /* RUMContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMContext.swift; sourceTree = "<group>"; };
 		61C3E63A24BF1A4B008053F2 /* RUMCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMCommand.swift; sourceTree = "<group>"; };
 		61C3E63D24BF1B91008053F2 /* RUMApplicationScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RUMApplicationScope.swift; sourceTree = "<group>"; };
+		61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TelemetryInterceptorTests.swift; sourceTree = "<group>"; };
 		61C5A87824509A0C00DA608C /* DDSpan.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDSpan.swift; sourceTree = "<group>"; };
 		61C5A87924509A0C00DA608C /* DDNoOps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DDNoOps.swift; sourceTree = "<group>"; };
 		61C5A87C24509A0C00DA608C /* Casting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Casting.swift; sourceTree = "<group>"; };
@@ -5846,6 +5849,7 @@
 				D21C26ED28AFB65B005DD405 /* ErrorMessageReceiverTests.swift */,
 				9E53889B2773C4B300A7DC42 /* WebViewEventReceiverTests.swift */,
 				D248ED4728081B9B00B315B4 /* TelemetryReceiverTests.swift */,
+				61C453492C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift */,
 			);
 			path = Integrations;
 			sourceTree = "<group>";
@@ -8693,6 +8697,7 @@
 				6188697D2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */,
 				61DCC8482C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
 				D23F8EA029DDCD38001CFAE8 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
+				61C4534B2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,
 				D23F8EA229DDCD38001CFAE8 /* RUMSessionScopeTests.swift in Sources */,
 				D23F8EA329DDCD38001CFAE8 /* RUMUserActionScopeTests.swift in Sources */,
 				615B0F8C2BB33C2800E9ED6C /* AppHangsMonitorTests.swift in Sources */,
@@ -9012,6 +9017,7 @@
 				6188697C2A4376F700E8996B /* RUMConfigurationTests.swift in Sources */,
 				61DCC8472C05CD0000CB59E5 /* SessionEndedMetricControllerTests.swift in Sources */,
 				D29A9FA629DDB483005C54A4 /* RUMOffViewEventsHandlingRuleTests.swift in Sources */,
+				61C4534A2C0A0BBF00CC4C17 /* TelemetryInterceptorTests.swift in Sources */,
 				D29A9FBD29DDB483005C54A4 /* RUMSessionScopeTests.swift in Sources */,
 				D29A9FAB29DDB483005C54A4 /* RUMUserActionScopeTests.swift in Sources */,
 				615B0F8B2BB33C2800E9ED6C /* AppHangsMonitorTests.swift in Sources */,

@@ -424,6 +424,27 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
     }
 
+    func testSendTelemetryMetricWithRUMContextAndSessionIDOverride() {
+        // Given
+        let rumContext: RUMCoreContext = .mockRandom()
+        featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
+        let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
+        let sessionIDOverride = "session-id-override"
+
+        // When
+        var attributes = mockRandomAttributes()
+        attributes[SDKMetricFields.sessionIDOverrideKey] = sessionIDOverride
+        TelemetryMock(with: receiver).metric(name: .mockRandom(), attributes: attributes)
+
+        // Then
+        let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
+        XCTAssertEqual(event?.application?.id, rumContext.applicationID)
+        XCTAssertEqual(event?.session?.id, sessionIDOverride)
+        XCTAssertEqual(event?.view?.id, rumContext.viewID)
+        XCTAssertEqual(event?.action?.id, rumContext.userActionID)
+        XCTAssertNil(event?.telemetry.telemetryInfo[SDKMetricFields.sessionIDOverrideKey], "It should delete `sessionIDOverrideKey` from metric attributes")
+    }
+
     func testMethodCallTelemetryPropagetsAllData() throws {
         // Given
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
