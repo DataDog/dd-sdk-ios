@@ -10,7 +10,7 @@ internal protocol Reflection {
     init(_ mirror: ReflectionMirror) throws
 }
 
-extension Reflection {
+internal extension Reflection {
     init(reflecting subject: Any) throws {
         let mirror = ReflectionMirror(reflecting: subject)
         try self.init(mirror)
@@ -47,7 +47,7 @@ extension Reflection {
 /// The `ReflectionMirror` ignores the `CustomReflectable` or `CustomLeafReflectable`
 /// protocols and treat any conforming objects as `Any.Type`.
 ///
-struct ReflectionMirror {
+internal struct ReflectionMirror {
     /// An element of the reflected instance's structure.
     ///
     /// When the `label` component in not `nil`, it may represent the name of a
@@ -63,7 +63,7 @@ struct ReflectionMirror {
     /// Playgrounds and the debugger will show a representation similar
     /// to the one used for instances of the kind indicated by the
     /// `DisplayStyle` case name when the mirror is used for display.
-    enum DisplayStyle {
+    enum DisplayStyle: Equatable {
         case `struct`
         case `class`
         case `enum`(case: String)
@@ -72,7 +72,8 @@ struct ReflectionMirror {
         case unknown
     }
 
-    @frozen enum Path {
+    @frozen 
+    enum Path {
         case index(Int)
         case key(String)
     }
@@ -113,7 +114,7 @@ struct ReflectionMirror {
     /// A mirror of the subject's superclass, if one exists.
     var superclassMirror: ReflectionMirror? { _superclassMirror.lazy }
 
-    var keyPaths: [String: Int]?  { _keyPaths.lazy }
+    var keyPaths: [String: Int]? { _keyPaths.lazy }
 
     private let _superclassMirror: Lazy<ReflectionMirror>
     private let _keyPaths: Lazy<[String: Int]>
