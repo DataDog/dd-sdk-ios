@@ -34,6 +34,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
+    func showNavigationController(for fixture: Fixture, completion: @escaping (UINavigationController?) -> Void) {
+        guard let navigationController = fixture.instantiateViewController() as? UINavigationController else { return completion(nil) }
+
+        // Present it from the next run-loop to avoid "Unbalanced calls to begin/end appearance transitions" warning:
+        DispatchQueue.main.async {
+            self.keyWindow?.rootViewController?.dismiss(animated: false) {
+                self.keyWindow?.rootViewController = navigationController
+                completion(navigationController)
+            }
+        }
+    }
+
     var keyWindow: UIWindow? {
         if #available(iOS 15.0, *) {
             return UIApplication.shared

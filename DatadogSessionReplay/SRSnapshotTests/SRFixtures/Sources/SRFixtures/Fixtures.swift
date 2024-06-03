@@ -33,6 +33,15 @@ public enum Fixture: CaseIterable {
     /// Instantiated view controller is ``PopupsViewController``
     case popups
     case swiftUI
+    case navigationBars
+    case navigationBarDefaultTranslucent
+    case navigationBarDefaultNonTranslucent
+    case navigationBarBlackTranslucent
+    case navigationBarBlackNonTranslucent
+    case navigationBarDefaultTranslucentBarTint
+    case navigationBarDefaultNonTranslucentBarTint
+    case navigationBarDefaultTranslucentBackground
+    case navigationBarDefaultNonTranslucentBackground
 
     public func instantiateViewController() -> UIViewController {
         switch self {
@@ -76,6 +85,29 @@ public enum Fixture: CaseIterable {
             } else {
                 return ErrorViewController(message: "`.swiftUI` fixture is only available on iOS 13+")
             }
+        //- Navigation Bars
+        case .navigationBars:
+            return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "NavigationBars")
+        case .navigationBarDefaultTranslucent:
+            let vc = UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Translucent_Navbar")
+            return vc
+        case .navigationBarDefaultNonTranslucent:
+            return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Non_Translucent_Navbar")
+        case .navigationBarBlackTranslucent:
+            let vc = UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Black_Translucent_Navbar")
+            return vc
+        case .navigationBarBlackNonTranslucent:
+            return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Black_Non_Translucent_Navbar")
+        case .navigationBarDefaultTranslucentBarTint:
+            let vc = UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Translucent_Bar_Tint_Navbar")
+            return vc
+        case .navigationBarDefaultNonTranslucentBarTint:
+            return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Non_Translucent_Bar_Tint_Navbar")
+        case .navigationBarDefaultTranslucentBackground:
+            let vc = UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Translucent_Background_Navbar")
+            return vc
+        case .navigationBarDefaultNonTranslucentBackground:
+            return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Non_Translucent_Background_Navbar")
         }
     }
 }
@@ -86,4 +118,5 @@ internal extension UIStoryboard {
     static var datePickers: UIStoryboard { UIStoryboard(name: "InputElements-DatePickers", bundle: .module) }
     static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: .module) }
     static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: .module) }
+    static var navigationBars: UIStoryboard { UIStoryboard(name: "NavigationBars", bundle: .module) }
 }

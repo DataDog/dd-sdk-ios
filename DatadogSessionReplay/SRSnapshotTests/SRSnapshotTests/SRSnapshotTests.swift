@@ -276,4 +276,34 @@ final class SRSnapshotTests: SnapshotTestCase {
             record: recordingMode
         )
     }
+
+    func testNavigationBars() throws {
+
+        let navBarFixtures: [Fixture] = [
+            .navigationBars,
+            .navigationBarDefaultTranslucent,
+            .navigationBarDefaultNonTranslucent,
+            .navigationBarBlackTranslucent,
+            .navigationBarBlackNonTranslucent,
+            .navigationBarDefaultTranslucentBarTint,
+            .navigationBarDefaultNonTranslucentBarTint,
+            .navigationBarDefaultTranslucentBackground,
+            .navigationBarDefaultNonTranslucentBackground
+        ]
+
+        for fixture in navBarFixtures {
+            show(fixture: fixture)
+
+            try forPrivacyModes([.allow, .mask]) { privacyMode in
+                let image = try takeSnapshot(with: privacyMode)
+                let fileNamePrefix = fixture.menuItemTitle.lowercased().replacingOccurrences(of: " ", with: "")
+                DDAssertSnapshotTest(
+                    newImage: image,
+                    snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
+                    record: recordingMode
+                )
+            }
+        }
+    }
+
 }
