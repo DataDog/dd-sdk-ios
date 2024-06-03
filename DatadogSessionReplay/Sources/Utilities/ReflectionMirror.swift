@@ -208,6 +208,13 @@ extension ReflectionMirror {
                 )
             }
 
+        case .existential:
+            func reflect<ContainedType>(_: ContainedType) -> ReflectionMirror {
+                ReflectionMirror(reflecting: subject, subjectType: ContainedType.self)
+            }
+
+            self = _openExistential(subjectType, do: reflect)
+
         default:
             self.init(
                 subject: subject,
@@ -483,7 +490,7 @@ private func _getKeyPaths(_ type: Any.Type, count: Int, recursiveCount: Int) -> 
     let skip = recursiveCount - count
     return (skip..<recursiveCount).reduce(into: [:]) { result, index in
         var field = _FieldReflectionMetadata()
-        _getChildMetadata(type, index: index, fieldMetadata: &field)
+        _ = _getChildMetadata(type, index: index, fieldMetadata: &field)
 
         field.name
             .flatMap { String(cString: $0) }
