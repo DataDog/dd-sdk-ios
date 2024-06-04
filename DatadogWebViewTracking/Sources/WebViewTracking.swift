@@ -30,27 +30,15 @@ public enum WebViewTracking {
     /// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting replay data from
     /// the Datadog Browser SDK installed in the web page. Datadog will then be able to combine the native
     /// and web recordings in a single replay.
-    public struct SessionReplayConfiguration {
-        /// Available privacy levels for content masking.
-        public enum PrivacyLevel: String {
-            /// Record all content.
-            case allow
-
-            /// Mask all content.
-            case mask
-
-            /// Mask input elements, but record all other content.
-            case maskUserInput = "mask_user_input"
-        }
-
+    public struct SessionReplayConfiguration: DatadogInternal.SessionReplayConfiguration {
         /// The privacy level to use for the web view replay recording.
-        public var privacyLevel: PrivacyLevel
+        public var privacyLevel: SessionReplayPrivacyLevel
 
         /// Creates Webview Session Replay configuration.
         ///
         /// - Parameters:
         ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-        public init(privacyLevel: PrivacyLevel = .mask) {
+        public init(privacyLevel: SessionReplayPrivacyLevel = .mask) {
             self.privacyLevel = privacyLevel
         }
     }
@@ -140,10 +128,15 @@ public enum WebViewTracking {
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
-        let privacyLevel = sessionReplayConfiguration?.privacyLevel ?? .mask
+        let sessionReplay = sessionReplayConfiguration ?? core.feature(
+            named: "session-replay",
+            type: DatadogInternal.SessionReplayConfiguration.self
+        )
+
+        let privacyLevel = sessionReplay?.privacyLevel ?? .mask
 
         // Share native capabilities with Browser SDK
-        let capabilities = sessionReplayConfiguration != nil ? "\"records\"" : ""
+        let capabilities = sessionReplay != nil ? "\"records\"" : ""
 
         let js = """
         \(Self.jsCodePrefix)

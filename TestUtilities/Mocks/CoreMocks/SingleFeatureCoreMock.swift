@@ -89,7 +89,7 @@ public final class SingleFeatureCoreMock<Feature>: PassthroughCoreMock where Fea
         self.feature = feature as? Feature
     }
 
-    public override func get<T>(feature type: T.Type) -> T? where T: DatadogFeature {
+    public override func feature<T>(named name: String, type: T.Type) -> T? {
         feature as? T
     }
 

@@ -292,8 +292,8 @@ extension DatadogCore: DatadogCoreProtocol {
     ///   - name: The Feature's name.
     ///   - type: The Feature instance type.
     /// - Returns: The Feature if any.
-    func get<T>(feature type: T.Type = T.self) -> T? where T: DatadogFeature {
-        features[T.name] as? T
+    func feature<T>(named name: String, type: T.Type) -> T? {
+        features[name] as? T
     }
 
     func scope<Feature>(for featureType: Feature.Type) -> FeatureScope where Feature: DatadogFeature {

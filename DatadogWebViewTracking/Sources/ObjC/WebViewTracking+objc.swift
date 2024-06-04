@@ -5,6 +5,8 @@
  */
 
 import Foundation
+import DatadogInternal
+
 #if os(tvOS)
 #warning("Datadog WebView Tracking does not support tvOS")
 #else
@@ -35,7 +37,7 @@ public final class objc_WebViewTracking: NSObject {
             /// Mask input elements, but record all other content.
             case maskUserInput
 
-            internal var toSwift: WebViewTracking.SessionReplayConfiguration.PrivacyLevel {
+            internal var toSwift: SessionReplayPrivacyLevel {
                 switch self {
                 case .allow: return .allow
                 case .mask: return .mask
