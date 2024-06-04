@@ -155,7 +155,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
-                    device: .init(context.device), 
+                    device: .init(context.device),
                     error: .init(kind: kind, stack: stack),
                     message: message,
                     os: .init(context.device),
@@ -228,9 +228,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
-                    device: .init(context.device), 
+                    device: .init(context.device),
                     message: "[Mobile Metric] \(name)",
-                    os: .init(context.device), 
+                    os: .init(context.device),
                     telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
