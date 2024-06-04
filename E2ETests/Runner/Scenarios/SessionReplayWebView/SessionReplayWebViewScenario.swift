@@ -33,6 +33,7 @@ struct SessionReplayWebViewScenario: Scenario {
             )
         )
 
-        return SessionReplayWebViewController()
+        let storyboard = UIStoryboard(name: "SessionReplayWebView", bundle: nil)
+        return storyboard.instantiateInitialViewController()!
     }
 }

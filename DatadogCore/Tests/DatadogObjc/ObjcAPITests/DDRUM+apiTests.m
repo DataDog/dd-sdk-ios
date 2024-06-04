@@ -99,6 +99,10 @@
     config.longTaskThreshold = 1;
     XCTAssertEqual(config.longTaskThreshold, 1);
 
+    XCTAssertEqual(config.appHangThreshold, 0);
+    config.appHangThreshold = 1;
+    XCTAssertEqual(config.appHangThreshold, 1);
+
     XCTAssertEqual(config.vitalsUpdateFrequency, DDRUMVitalsFrequencyAverage);
     config.vitalsUpdateFrequency = DDRUMVitalsFrequencyFrequent;
     XCTAssertEqual(config.vitalsUpdateFrequency, DDRUMVitalsFrequencyFrequent);

@@ -27,15 +27,46 @@ class SessionReplayWebViewController: UIViewController, WKUIDelegate {
                 privacyLevel: .allow
             )
         )
-
-        let url = URL(string: "https://datadoghq.dev/browser-sdk-test-playground/webview-support")!
-        let request = URLRequest(url: url)
-        webView.load(request)
     }
 
     func load(url string: String) {
         let url = URL(string: string)!
         let request = URLRequest(url: url)
         webView.load(request)
+    }
+}
+
+class SessionReplayBasicTextViewController: SessionReplayWebViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#basic-text")
+    }
+}
+
+class SessionReplayImageViewController: SessionReplayWebViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#image")
+    }
+}
+
+class SessionReplayViewPortViewController: SessionReplayWebViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#viewport-unit")
+    }
+}
+
+class SessionReplayShadowDOMViewController: SessionReplayWebViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#shadow-dom")
+    }
+}
+
+class SessionReplayTimestampViewController: SessionReplayWebViewController {
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        load(url: "https://datadoghq.dev/browser-sdk-test-playground/webview-support/#click-event")
     }
 }

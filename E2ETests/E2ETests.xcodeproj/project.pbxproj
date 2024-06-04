@@ -21,6 +21,7 @@
 		D2A610B22BE14D01000AA6AB /* DefaultScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A610B12BE14D01000AA6AB /* DefaultScenario.swift */; };
 		D2C028A02BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */; };
 		D2C028A22BE14FD300B5D7D3 /* SessionReplayWebViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */; };
+		D2EA0F412C0A075E00CB20F8 /* SessionReplayWebView.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D2EA0F402C0A075E00CB20F8 /* SessionReplayWebView.storyboard */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionReplayWebViewScenario.swift; sourceTree = "<group>"; };
 		D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SessionReplayWebViewController.swift; sourceTree = "<group>"; };
 		D2C028A32BE9282400B5D7D3 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		D2EA0F402C0A075E00CB20F8 /* SessionReplayWebView.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = SessionReplayWebView.storyboard; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,6 +121,7 @@
 		D2C0289E2BE14F1B00B5D7D3 /* SessionReplayWebView */ = {
 			isa = PBXGroup;
 			children = (
+				D2EA0F402C0A075E00CB20F8 /* SessionReplayWebView.storyboard */,
 				D2C0289F2BE14F5700B5D7D3 /* SessionReplayWebViewScenario.swift */,
 				D2C028A12BE14FD200B5D7D3 /* SessionReplayWebViewController.swift */,
 			);
@@ -193,6 +196,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2EA0F412C0A075E00CB20F8 /* SessionReplayWebView.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

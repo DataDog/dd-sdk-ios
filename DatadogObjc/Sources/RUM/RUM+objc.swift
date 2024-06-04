@@ -371,6 +371,11 @@ public class DDRUMConfiguration: NSObject {
         get { swiftConfig.longTaskThreshold ?? 0 }
     }
 
+    @objc public var appHangThreshold: TimeInterval {
+        set { swiftConfig.appHangThreshold = newValue }
+        get { swiftConfig.appHangThreshold ?? 0 }
+    }
+
     @objc public var vitalsUpdateFrequency: DDRUMVitalsFrequency {
         set { swiftConfig.vitalsUpdateFrequency = newValue.swiftType }
         get { DDRUMVitalsFrequency(swiftType: swiftConfig.vitalsUpdateFrequency) }
