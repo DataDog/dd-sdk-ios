@@ -32,7 +32,7 @@ class DatadogXCFrameworkValidator(XCFrameworkValidator):
         if in_version >= v2:
             return False # Datadog.xcframework no longer exist in `2.0`
 
-        dir = zip_directory.get('Datadog.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
@@ -77,7 +77,7 @@ class DatadogObjcXCFrameworkValidator(XCFrameworkValidator):
     def validate(self, zip_directory: DirectoryMatcher, in_version: Version) -> bool:
         # always expect `DatadogObjc.xcframework`
 
-        dir = zip_directory.get('DatadogObjc.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
@@ -122,7 +122,7 @@ class DatadogCrashReportingXCFrameworkValidator(XCFrameworkValidator):
         if in_version < min_cr_version:
             return False # Datadog Crash Reporting.xcframework was introduced in `1.7.0`
 
-        dir = zip_directory.get('DatadogCrashReporting.xcframework')
+        dir = zip_directory.get(self.name)
 
         # above 1.12.1: framework includes arm64e slices
         min_arm64e_version = Version('1.12.1')
