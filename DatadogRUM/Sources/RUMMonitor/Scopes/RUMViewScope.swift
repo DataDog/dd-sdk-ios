@@ -503,6 +503,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 crash: isCrash ? .init(count: 1) : .init(count: 0),
                 cumulativeLayoutShift: nil,
                 cumulativeLayoutShiftTargetSelector: nil,
+                cumulativeLayoutShiftTime: nil,
                 customTimings: customTimings.reduce(into: [:]) { acc, element in
                     acc[sanitizeCustomTimingName(customTiming: element.key)] = element.value
                 },
@@ -523,6 +524,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
                 inForegroundPeriods: nil,
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
+                interactionToNextPaintTime: nil,
                 isActive: isActive,
                 isSlowRendered: isSlowRendered ?? false,
                 jsRefreshRate: viewPerformanceMetrics[.jsFrameTimeSeconds]?.asJsRefreshRate(),

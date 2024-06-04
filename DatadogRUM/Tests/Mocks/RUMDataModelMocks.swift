@@ -178,6 +178,7 @@ extension RUMViewEvent: RandomMockable {
                 crash: crashCount.map { .init(count: $0) },
                 cumulativeLayoutShift: .mockRandom(),
                 cumulativeLayoutShiftTargetSelector: nil,
+                cumulativeLayoutShiftTime: .mockRandom(),
                 customTimings: .mockAny(),
                 domComplete: .mockRandom(),
                 domContentLoaded: .mockRandom(),
@@ -201,6 +202,7 @@ extension RUMViewEvent: RandomMockable {
                 ],
                 interactionToNextPaint: nil,
                 interactionToNextPaintTargetSelector: nil,
+                interactionToNextPaintTime: .mockRandom(),
                 isActive: viewIsActive,
                 isSlowRendered: .mockRandom(),
                 jsRefreshRate: nil,
@@ -566,10 +568,33 @@ extension TelemetryConfigurationEvent: RandomMockable {
                     useTracing: .mockRandom(),
                     useWorkerUrl: nil,
                     viewTrackingStrategy: nil
-                )
+                ),
+                device: .mockRandom(),
+                os: .mockRandom(),
+                telemetryInfo: [:]
             ),
             version: .mockAny(),
             view: .init(id: .mockRandom())
+        )
+    }
+}
+
+extension RUMTelemetryDevice: RandomMockable {
+    public static func mockRandom() -> RUMTelemetryDevice {
+        return RUMTelemetryDevice(
+            architecture: .mockRandom(),
+            brand: .mockRandom(),
+            model: .mockRandom()
+        )
+    }
+}
+
+extension RUMTelemetryOperatingSystem: RandomMockable {
+    public static func mockRandom() -> RUMTelemetryOperatingSystem {
+        return RUMTelemetryOperatingSystem(
+            build: .mockRandom(),
+            name: .mockRandom(),
+            version: .mockRandom()
         )
     }
 }

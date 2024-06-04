@@ -115,7 +115,9 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
+                    device: .init(context.device),
                     message: message,
+                    os: .init(context.device),
                     telemetryInfo: attributes ?? [:]
                 ),
                 version: context.sdkVersion,
@@ -152,7 +154,13 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
-                telemetry: .init(error: .init(kind: kind, stack: stack), message: message),
+                telemetry: .init(
+                    device: .init(context.device), 
+                    error: .init(kind: kind, stack: stack),
+                    message: message,
+                    os: .init(context.device),
+                    telemetryInfo: [:]
+                ),
                 version: context.sdkVersion,
                 view: rum?.viewID.map { .init(id: $0) }
             )
@@ -186,7 +194,12 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 service: "dd-sdk-ios",
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
-                telemetry: .init(configuration: .init(configuration)),
+                telemetry: .init(
+                    configuration: .init(configuration),
+                    device: .init(context.device),
+                    os: .init(context.device),
+                    telemetryInfo: [:]
+                ),
                 version: context.sdkVersion,
                 view: rum?.viewID.map { .init(id: $0) }
             )
@@ -215,8 +228,10 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 session: rum.map { .init(id: $0.sessionID) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
+                    device: .init(context.device), 
                     message: "[Mobile Metric] \(name)",
-                    telemetryInfo: attributes.enrichWithDeviceOsInfo(using: context)
+                    os: .init(context.device), 
+                    telemetryInfo: attributes
                 ),
                 version: context.sdkVersion,
                 view: rum?.viewID.map { .init(id: $0) }
@@ -253,25 +268,6 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 }
             }
         }
-    }
-}
-
-fileprivate extension [String: Encodable] {
-    func enrichWithDeviceOsInfo(
-        using context: DatadogContext
-    ) -> [String: Encodable] {
-        var attributes = self
-        attributes[MethodCalledMetric.Device.key] = [
-            MethodCalledMetric.Device.model: context.device.model,
-            MethodCalledMetric.Device.brand: context.device.brand,
-            MethodCalledMetric.Device.architecture: context.device.architecture
-        ]
-        attributes[MethodCalledMetric.OS.key] = [
-            MethodCalledMetric.OS.name: context.device.osName,
-            MethodCalledMetric.OS.version: context.device.osVersion,
-            MethodCalledMetric.OS.build: context.device.osBuildNumber,
-        ]
-        return attributes
     }
 }
 
@@ -341,6 +337,26 @@ private extension TelemetryConfigurationEvent.Telemetry.Configuration {
             useTracing: configuration.useTracing,
             useWorkerUrl: nil,
             viewTrackingStrategy: nil
+        )
+    }
+}
+
+fileprivate extension RUMTelemetryDevice {
+    init(_ device: DeviceInfo) {
+        self.init(
+            architecture: device.architecture,
+            brand: device.brand,
+            model: device.model
+        )
+    }
+}
+
+fileprivate extension RUMTelemetryOperatingSystem {
+    init(_ device: DeviceInfo) {
+        self.init(
+            build: device.osBuildNumber,
+            name: device.osName,
+            version: device.osVersion
         )
     }
 }
