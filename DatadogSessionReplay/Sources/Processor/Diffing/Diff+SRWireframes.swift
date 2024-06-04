@@ -41,6 +41,21 @@ extension SRWireframe: Diffable {
             return true
         }
     }
+
+    var type: String {
+        switch self {
+        case let (.shapeWireframe(value)):
+            return value.type
+        case let (.textWireframe(value)):
+            return value.type
+        case let (.imageWireframe(value)):
+            return value.type
+        case let (.placeholderWireframe(value)):
+            return value.type
+        case let (.webviewWireframe(value)):
+            return value.type
+        }
+    }
 }
 
 // MARK: - Resolving Mutations

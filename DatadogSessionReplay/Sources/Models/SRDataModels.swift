@@ -497,21 +497,6 @@ public enum SRWireframe: Codable {
     case placeholderWireframe(value: SRPlaceholderWireframe)
     case webviewWireframe(value: SRWebviewWireframe)
 
-    var type: String {
-        switch self {
-        case let (.shapeWireframe(value)):
-            return value.type
-        case let (.textWireframe(value)):
-            return value.type
-        case let (.imageWireframe(value)):
-            return value.type
-        case let (.placeholderWireframe(value)):
-            return value.type
-        case let (.webviewWireframe(value)):
-            return value.type
-        }
-    }
-
     // MARK: - Codable
 
     public func encode(to encoder: Encoder) throws {
