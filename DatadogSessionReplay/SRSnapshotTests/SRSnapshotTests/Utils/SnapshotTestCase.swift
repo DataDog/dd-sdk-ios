@@ -35,21 +35,6 @@ internal class SnapshotTestCase: XCTestCase {
         return viewController
     }
 
-    func showNavigationController(for fixture: Fixture) -> UINavigationController? {
-        let expectation = self.expectation(description: "Wait for navigation controller being shown")
-
-        var navigationController: UINavigationController?
-
-        app.showNavigationController(for: fixture) {
-            navigationController = $0
-            expectation.fulfill()
-        }
-
-        waitForExpectations(timeout: 30) // very pessimistic timeout to mitigate CI lags
-
-        return navigationController
-    }
-
     /// Captures side-by-side snapshot of the app UI and recorded wireframes.
     func takeSnapshot(with privacyLevel: SessionReplay.Configuration.PrivacyLevel = defaultPrivacyLevel) throws -> UIImage {
         let expectWireframes = self.expectation(description: "Wait for wireframes")
