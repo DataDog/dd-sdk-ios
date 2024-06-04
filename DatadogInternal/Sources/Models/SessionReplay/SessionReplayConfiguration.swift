@@ -6,6 +6,8 @@
 
 import Foundation
 
+public let SessionReplayFeaturneName = "session-replay"
+
 /// Available privacy levels for content masking in Session Replay.
 public enum SessionReplayPrivacyLevel: String {
     /// Record all content.
@@ -32,4 +34,8 @@ public enum SessionReplayPrivacyLevel: String {
 public protocol SessionReplayConfiguration {
     /// The privacy level to use for the web view replay recording.
     var privacyLevel: SessionReplayPrivacyLevel { get }
+}
+
+extension DatadogFeature where Self: SessionReplayConfiguration {
+    public static var name: String { SessionReplayFeaturneName }
 }

@@ -9,8 +9,6 @@ import Foundation
 import DatadogInternal
 
 internal class SessionReplayFeature: SessionReplayConfiguration, DatadogRemoteFeature {
-    static let name: String = "session-replay"
-
     let requestBuilder: FeatureRequestBuilder
     let messageReceiver: FeatureMessageReceiver
     let performanceOverride: PerformancePresetOverride?

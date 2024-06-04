@@ -35,7 +35,6 @@ class WebEventIntegrationTests: XCTestCase {
             hosts: [],
             hostsSanitizer: HostsSanitizer(),
             logsSampleRate: 100,
-            sessionReplayConfiguration: nil,
             in: core
         )
     }

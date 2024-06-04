@@ -25,24 +25,6 @@ import WebKit
 /// - Support users that have difficulty loading web pages on mobile devices
 public enum WebViewTracking {
 #if !os(tvOS)
-    /// The Session Replay configuration to capture records coming from the web view.
-    ///
-    /// Setting the Session Replay configuration in `WebViewTracking` will enable transmitting replay data from
-    /// the Datadog Browser SDK installed in the web page. Datadog will then be able to combine the native
-    /// and web recordings in a single replay.
-    public struct SessionReplayConfiguration: DatadogInternal.SessionReplayConfiguration {
-        /// The privacy level to use for the web view replay recording.
-        public var privacyLevel: SessionReplayPrivacyLevel
-
-        /// Creates Webview Session Replay configuration.
-        ///
-        /// - Parameters:
-        ///   - privacyLevel: The way sensitive content (e.g. text) should be masked. Default: `.mask`.
-        public init(privacyLevel: SessionReplayPrivacyLevel = .mask) {
-            self.privacyLevel = privacyLevel
-        }
-    }
-
     /// Enables SDK to correlate Datadog RUM events and Logs from the WebView with native RUM session.
     /// 
     /// If the content loaded in WebView uses Datadog Browser SDK (`v4.2.0+`) and matches specified
@@ -53,13 +35,11 @@ public enum WebViewTracking {
     ///   - hosts: A set of hosts instrumented with Browser SDK to capture Datadog events from.
     ///   - logsSampleRate: The sampling rate for logs coming from the WebView. Must be a value between `0` and `100`,
     ///   where 0 means no logs will be sent and 100 means all will be uploaded. Default: `100`.
-    ///   - sessionReplayConfiguration: Session Replay configuration to enable linking Web and Native replays.
     ///   - core: Datadog SDK core to use for tracking.
     public static func enable(
         webView: WKWebView,
         hosts: Set<String> = [],
         logsSampleRate: Float = 100,
-        sessionReplayConfiguration: SessionReplayConfiguration? = nil,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) {
         enable(
@@ -67,7 +47,6 @@ public enum WebViewTracking {
             hosts: hosts,
             hostsSanitizer: HostsSanitizer(),
             logsSampleRate: logsSampleRate,
-            sessionReplayConfiguration: sessionReplayConfiguration,
             in: core
         )
     }
@@ -95,7 +74,6 @@ public enum WebViewTracking {
         hosts: Set<String>,
         hostsSanitizer: HostsSanitizing,
         logsSampleRate: Float,
-        sessionReplayConfiguration: SessionReplayConfiguration?,
         in core: DatadogCoreProtocol
     ) {
         let isTracking = controller.userScripts.contains { $0.source.starts(with: Self.jsCodePrefix) }
@@ -128,9 +106,9 @@ public enum WebViewTracking {
             .map { return "\"\($0)\"" }
             .joined(separator: ",")
 
-        let sessionReplay = sessionReplayConfiguration ?? core.feature(
-            named: "session-replay",
-            type: DatadogInternal.SessionReplayConfiguration.self
+        let sessionReplay = core.feature(
+            named: SessionReplayFeaturneName,
+            type: SessionReplayConfiguration.self
         )
 
         let privacyLevel = sessionReplay?.privacyLevel ?? .mask
