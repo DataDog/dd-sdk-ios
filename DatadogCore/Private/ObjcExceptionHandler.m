@@ -9,7 +9,7 @@
 
 @implementation __dd_private_ObjcExceptionHandler
 
-- (BOOL)catchException:(void(^)(void))tryBlock error:(__autoreleasing NSError **)error {
++ (BOOL)catchException:(void(NS_NOESCAPE ^)(void))tryBlock error:(__autoreleasing NSError **)error {
     @try {
         tryBlock();
         return YES;

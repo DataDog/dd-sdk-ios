@@ -8,11 +8,9 @@ import XCTest
 import DatadogCore
 
 class ObjcExceptionHandlerTests: XCTestCase {
-    private let exceptionHandler = __dd_private_ObjcExceptionHandler()
-
     func testGivenNonThrowingCode_itDoesNotThrow() throws {
         var counter = 0
-        try exceptionHandler.rethrowToSwift { counter += 1 }
+        try __dd_private_ObjcExceptionHandler.rethrow { counter += 1 }
         XCTAssertEqual(counter, 1)
     }
 
@@ -23,7 +21,7 @@ class ObjcExceptionHandlerTests: XCTestCase {
             userInfo: ["user-info": "some"]
         )
 
-        XCTAssertThrowsError(try exceptionHandler.rethrowToSwift { nsException.raise() }) { error in
+        XCTAssertThrowsError(try __dd_private_ObjcExceptionHandler.rethrow { nsException.raise() }) { error in
             XCTAssertEqual((error as NSError).domain, "name")
             XCTAssertEqual((error as NSError).code, 0)
             XCTAssertEqual((error as NSError).userInfo as? [String: String], ["user-info": "some"])

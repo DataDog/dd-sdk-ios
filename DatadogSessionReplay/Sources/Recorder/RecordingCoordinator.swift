@@ -72,6 +72,7 @@ internal class RecordingCoordinator {
             viewID: viewID,
             viewServerTimeOffset: rumContext.viewServerTimeOffset
         )
+
         recorder.captureNextRecord(recorderContext)
     }
 }

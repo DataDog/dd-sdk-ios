@@ -90,3 +90,48 @@ public struct InternalError: Error, CustomStringConvertible {
         self.description = description
     }
 }
+
+public struct ObjcException: Error {
+    /// A closure to catch Objective-C runtime exception and rethrow as `Swift.Error`.
+    ///
+    /// - Important: Does nothing by default, it must be set to an Objective-C interopable function.
+    ///
+    /// - Warning: As stated in [Objective-C Automatic Reference Counting (ARC)](https://clang.llvm.org/docs/AutomaticReferenceCounting.html#exceptions),
+    /// in Objective-C, ARC is not exception-safe and  does not perform releases which would occur at the end of a
+    /// full-expression if that full-expression throws an exception. Therefore, ARC-generated code leaks by default
+    /// on exceptions.
+    public static var rethrow: ((() -> Void) throws -> Void) = { $0() }
+
+    /// The underlying `NSError` describing the `NSException`
+    /// thrown by Objective-C runtime.
+    public let error: Error
+}
+
+/// Rethrow Objective-C runtime exception as `Swift.Error`.
+///
+/// - Warning: As stated in [Objective-C Automatic Reference Counting (ARC)](https://clang.llvm.org/docs/AutomaticReferenceCounting.html#exceptions),
+/// in Objective-C, ARC is not exception-safe and  does not perform releases which would occur at the end of a
+/// full-expression if that full-expression throws an exception. Therefore, ARC-generated code leaks by default
+/// on exceptions.
+/// - throws: `ObjcException` if an exception was raised by the Objective-C runtime.
+@discardableResult
+public func objc_rethrow<T>(_ block: () throws -> T) throws -> T {
+    var value: T! //swiftlint:disable:this implicitly_unwrapped_optional
+    var swiftError: Error?
+    do {
+        try ObjcException.rethrow {
+            do {
+                value = try block()
+            } catch {
+                swiftError = error
+            }
+        }
+    } catch {
+        // wrap the underlying objc runtime exception in
+        // a `ObjcException` for easier matching during
+        // escalation.
+        throw ObjcException(error: error)
+    }
+
+    return try swiftError.map { throw $0 } ?? value
+}
