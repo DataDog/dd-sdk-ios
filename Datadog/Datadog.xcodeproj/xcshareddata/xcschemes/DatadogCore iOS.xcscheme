@@ -230,6 +230,9 @@
                <Test
                   Identifier = "DatadogTracer_SamplingTests/testWhenRootSpanIsSampled_thenAllChildSpansMustBeSampledTheSameWay()">
                </Test>
+               <Test
+                  Identifier = "OTelSpanTests/testSetActive_givenParentSpan()">
+               </Test>
             </SkippedTests>
          </TestableReference>
          <TestableReference

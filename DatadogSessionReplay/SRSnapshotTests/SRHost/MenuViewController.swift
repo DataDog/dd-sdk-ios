@@ -46,6 +46,24 @@ internal extension Fixture {
             return "Popups"
         case .swiftUI:
             return "SwiftUI"
+        case .navigationBars:
+            return "Navigation Bars"
+        case .navigationBarDefaultTranslucent:
+            return "Embedded Navigation Bar Default + Translucent"
+        case .navigationBarDefaultNonTranslucent:
+            return "Embedded Navigation Bar Default + Non Translucent"
+        case .navigationBarBlackTranslucent:
+            return "Embedded Navigation Bar Black + Translucent"
+        case .navigationBarBlackNonTranslucent:
+            return "Embedded Navigation Bar Black + Non Translucent"
+        case .navigationBarDefaultTranslucentBarTint:
+            return "Embedded Navigation Bar Default + Translucent + Bar Tint"
+        case .navigationBarDefaultNonTranslucentBarTint:
+            return "Embedded Navigation Bar Default + Non Translucent + Bar Tint"
+        case .navigationBarDefaultTranslucentBackground:
+            return "Embedded Navigation Bar Default + Translucent + Background color"
+        case .navigationBarDefaultNonTranslucentBackground:
+            return "Embedded Navigation Bar Default + Non Translucent + Background color"
         }
     }
 }
