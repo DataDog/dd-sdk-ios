@@ -14,7 +14,13 @@ class UINavigationBarRecorderTests: XCTestCase {
 
     func testWhenViewIsOfExpectedType() throws {
         // Given
-        let navigationBar = UINavigationBar.mock(withFixture: .allCases.randomElement()!)
+        let fixtures: [ViewAttributes.Fixture] = [
+            .visible(.noAppearance),
+            .visible(.someAppearance),
+            .opaque
+        ]
+
+        let navigationBar = UINavigationBar.mock(withFixture: fixtures.randomElement()!)
         let viewAttributes = ViewAttributes(frameInRootView: navigationBar.frame, view: navigationBar)
 
         // When
