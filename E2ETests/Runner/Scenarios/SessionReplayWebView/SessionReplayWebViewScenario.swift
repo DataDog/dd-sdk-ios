@@ -33,6 +33,8 @@ struct SessionReplayWebViewScenario: Scenario {
             )
         )
 
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplayWebView")
+
         let storyboard = UIStoryboard(name: "SessionReplayWebView", bundle: nil)
         return storyboard.instantiateInitialViewController()!
     }
