@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Add `.connect`, `.trace`, `.options` values to `DDRUMMethod` type. See [#1886][]
+
 # 2.12.0 / 03-06-2024
 
 - [IMPROVEMENT] Crash errors now include up-to-date global RUM attributes. See [#1834][]
@@ -675,6 +677,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1854]: https://github.com/DataDog/dd-sdk-ios/pull/1854
 [#1828]: https://github.com/DataDog/dd-sdk-ios/pull/1828
 [#1835]: https://github.com/DataDog/dd-sdk-ios/pull/1835
+[#1886]: https://github.com/DataDog/dd-sdk-ios/pull/1886
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin
 [@hengyu]: https://github.com/Hengyu

@@ -206,6 +206,9 @@ public enum DDRUMMethod: Int
     case put
     case delete
     case patch
+    case connect
+    case trace
+    case options
 public enum DDRUMVitalsFrequency: Int
     case frequent
     case average

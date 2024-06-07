@@ -45,7 +45,8 @@
 }
 
 - (void)testDDRUMMethodAPI {
-    DDRUMMethodPost; DDRUMMethodGet; DDRUMMethodHead; DDRUMMethodPut; DDRUMMethodDelete; DDRUMMethodPatch;
+    DDRUMMethodPost; DDRUMMethodGet; DDRUMMethodHead; DDRUMMethodPut; DDRUMMethodDelete; DDRUMMethodPatch; DDRUMMethodConnect;
+    DDRUMMethodTrace; DDRUMMethodOptions;
 }
 
 - (void)testDDRUMMonitorAPI {
