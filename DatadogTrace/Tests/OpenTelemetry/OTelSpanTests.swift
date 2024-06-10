@@ -7,36 +7,30 @@
 import XCTest
 import TestUtilities
 import DatadogInternal
-
 @testable import DatadogTrace
 
 final class OTelSpanTests: XCTestCase {
-    func testSpanResourceNameDefault() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
+    private let featureScope = FeatureScopeMock()
 
+    func testSpanResourceNameDefault() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
 
         // When
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "OperationName")
         XCTAssertEqual(recordedSpan.operationName, "OperationName")
     }
 
-    func testSpanOperationNameAttribute() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSpanOperationNameAttribute() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "https://httpbin.org/get").startSpan()
 
         // When
@@ -44,39 +38,31 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "https://httpbin.org/get")
         XCTAssertEqual(recordedSpan.operationName, "GET")
     }
 
-    func testSpanServiceNameDefault() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSpanServiceNameDefault() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
 
         // When
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.serviceName, "abc")
     }
 
-    func testSpanServiceNameAttribute() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSpanServiceNameAttribute() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
 
         // When
@@ -84,19 +70,15 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.serviceName, "ServiceName")
     }
 
-    func testSpanResourceNameAttribute() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSpanResourceNameAttribute() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
 
         // When
@@ -104,20 +86,16 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "ResourceName")
         XCTAssertEqual(recordedSpan.operationName, "OperationName")
     }
 
-    func testSpanSetName() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSpanSetName() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "OperationName").startSpan()
 
         // When
@@ -125,23 +103,19 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         XCTAssertEqual(recordedSpan.resource, "NewOperationName")
         XCTAssertEqual(recordedSpan.operationName, "NewOperationName")
     }
 
-    func testSpanEnd() {
+    func testSpanEnd() throws {
         // Given
         let (name, ignoredName) = ("trueName", "invalidName")
         let (attributes, ignoredAttributes) = (["key": "value"], ["ignoredKey": "ignoredValue"])
 
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: name).startSpan()
         for (key, value) in attributes {
             span.setAttribute(key: key, value: value)
@@ -160,8 +134,7 @@ final class OTelSpanTests: XCTestCase {
 
         span.end()
 
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
 
@@ -174,13 +147,9 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
-    func testSetParentSpan() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        writeSpanExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSetParentSpan() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
         _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan).startSpan()
@@ -190,8 +159,7 @@ final class OTelSpanTests: XCTestCase {
         parentSpan.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
@@ -199,13 +167,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
-    func testSetParentContext() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        writeSpanExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSetParentContext() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
         _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setParent(parentSpan.context).startSpan()
@@ -215,8 +179,7 @@ final class OTelSpanTests: XCTestCase {
         parentSpan.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
@@ -224,13 +187,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
-    func testSetNoParent() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        writeSpanExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSetNoParent() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").startSpan()
         _ = tracer.spanBuilder(spanName: "Noise").startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").setNoParent().startSpan()
@@ -240,8 +199,7 @@ final class OTelSpanTests: XCTestCase {
         parentSpan.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
@@ -249,13 +207,10 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, nil)
     }
 
-    func testSetActive_givenParentSpan() {
-        let writeSpanExpectation = expectation(description: "write span event")
-         writeSpanExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    /// TODO: RUM-4795 This test is currently disabled as it proves to be flaky.
+    func testSetActive_givenParentSpan() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let parentSpan = tracer.spanBuilder(spanName: "Parent").setActive(true).startSpan()
         let childSpan = tracer.spanBuilder(spanName: "Child").startSpan()
 
@@ -264,8 +219,7 @@ final class OTelSpanTests: XCTestCase {
         parentSpan.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 2)
         let child = recordedSpans.first!
         let parent = recordedSpans.last!
@@ -274,13 +228,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(child.parentID, parent.spanID)
     }
 
-    func testParentIds_givenDisjointSpans() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        writeSpanExpectation.expectedFulfillmentCount = 2
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testParentIds_givenDisjointSpans() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span1 = tracer.spanBuilder(spanName: "Span1").startSpan()
         let span2 = tracer.spanBuilder(spanName: "Span2").startSpan()
 
@@ -289,8 +239,7 @@ final class OTelSpanTests: XCTestCase {
         span1.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 2)
         let span1Recorded = recordedSpans.first!
         let span2Recorded = recordedSpans.last!
@@ -300,12 +249,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertNotEqual(span1Recorded.traceID, span2Recorded.traceID)
     }
 
-    func testSetAttribute() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testSetAttribute() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
 
         // When
@@ -317,8 +263,7 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
         let recordedSpan = recordedSpans.first!
         let expectedTags =
@@ -332,20 +277,16 @@ final class OTelSpanTests: XCTestCase {
         DDAssertDictionariesEqual(recordedSpan.tags, expectedTags)
     }
 
-    func testStatus_whenStatusIsNotSet() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testStatus_whenStatusIsNotSet() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
 
         // When
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
 
         let recordedSpan = recordedSpans.first!
@@ -355,12 +296,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.tags["error.stack"], nil)
     }
 
-    func testStatus_whenStatusIsOk() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testStatus_whenStatusIsOk() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
 
         // When
@@ -368,8 +306,7 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
 
         let recordedSpan = recordedSpans.first!
@@ -378,12 +315,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.tags["error.message"], nil)
     }
 
-    func testStatus_whenStatusIsErrorWithMessage() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testStatus_whenStatusIsErrorWithMessage() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
 
         // When
@@ -391,8 +325,7 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
 
         let recordedSpan = recordedSpans.first!
@@ -404,12 +337,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.tags["error.msg"], "error description")
     }
 
-    func testStatus_givenStatusOk_whenSetStatusCalledWithErrorAndUnset() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testStatus_givenStatusOk_whenSetStatusCalledWithErrorAndUnset() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
         span.status = .ok
 
@@ -419,8 +349,7 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
 
         let recordedSpan = recordedSpans.first!
@@ -429,12 +358,9 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(recordedSpan.tags["error.msg"], nil)
     }
 
-    func testStatus_givenStatusError_whenSetStatusCalledWithUnset() {
-        let writeSpanExpectation = expectation(description: "write span event")
-        let core = PassthroughCoreMock(expectation: writeSpanExpectation)
-
+    func testStatus_givenStatusError_whenSetStatusCalledWithUnset() throws {
         // Given
-        let tracer: DatadogTracer = .mockWith(core: core)
+        let tracer: DatadogTracer = .mockWith(featureScope: featureScope)
         let span = tracer.spanBuilder(spanName: "Span").startSpan()
         span.status = .error(description: "error description")
 
@@ -443,8 +369,7 @@ final class OTelSpanTests: XCTestCase {
         span.end()
 
         // Then
-        waitForExpectations(timeout: 0.5, handler: nil)
-        let recordedSpans = core.spans()
+        let recordedSpans = try featureScope.spanEventsWritten()
         XCTAssertEqual(recordedSpans.count, 1)
 
         let recordedSpan = recordedSpans.first!
