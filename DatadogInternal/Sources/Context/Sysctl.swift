@@ -15,13 +15,36 @@
 
 import Foundation
 
+/// A `SysctlProviding` implementation that uses `Darwin.sysctl` to access system information.
+public protocol SysctlProviding {
+    /// Returns model of the device.
+    func model() throws -> String
+
+    /// Returns operating system version.
+    /// - Returns: Operating system version.
+    func osBuild() throws -> String
+
+    /// Returns system boot time since epoch.
+    /// It stays same across app restarts and only changes on the operating system reboot.
+    /// - Returns: System boot time.
+    func systemBootTime() throws -> TimeInterval
+
+    /// Returns `true` if the app is being debugged.
+    /// - Returns: `true` if the app is being debugged.
+    func isDebugging() throws -> Bool
+}
+
 /// A "static"-only namespace around a series of functions that operate on buffers returned from the `Darwin.sysctl` function
-internal struct Sysctl {
+public struct Sysctl: SysctlProviding {
     /// Possible errors.
     enum Error: Swift.Error {
         case unknown
         case malformedUTF8
+        case malformedData
         case posixError(POSIXErrorCode)
+    }
+
+    public init() {
     }
 
     /// Access the raw data for an array of sysctl identifiers.
@@ -63,7 +86,7 @@ internal struct Sysctl {
 
     /// e.g. "MacPro4,1" or "iPhone8,1"
     /// NOTE: this is *corrected* on iOS devices to fetch hw.machine
-    static func model() throws -> String {
+    public func model() throws -> String {
         #if os(iOS) && !arch(x86_64) && !arch(i386) // iOS device && not Simulator
             return try Sysctl.string(for: [CTL_HW, HW_MACHINE])
         #else
@@ -71,8 +94,31 @@ internal struct Sysctl {
         #endif
     }
 
+    /// Returns the operating system build as a human-readable string.
     /// e.g. "15D21" or "13D20"
-    static func osVersion() throws -> String {
+    public func osBuild() throws -> String {
         try Sysctl.string(for: [CTL_KERN, KERN_OSVERSION])
+    }
+
+    /// Returns the system uptime in seconds.
+    public func systemBootTime() throws -> TimeInterval {
+        let bootTime = try Sysctl.data(for: [CTL_KERN, KERN_BOOTTIME])
+        let uptime = bootTime.withUnsafeBufferPointer { buffer -> timeval? in
+            buffer.baseAddress?.withMemoryRebound(to: timeval.self, capacity: 1) { $0.pointee }
+        }
+        guard let uptime = uptime else {
+            throw Error.malformedData
+        }
+        return TimeInterval(uptime.tv_sec)
+    }
+
+    /// Returns `true` if the debugger is attached to the current process.
+    /// https://developer.apple.com/library/archive/qa/qa1361/_index.html
+    public func isDebugging() throws -> Bool {
+        var info = kinfo_proc()
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        var size = MemoryLayout<kinfo_proc>.stride
+        let junk = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+        return (info.kp_proc.p_flag & P_TRACED) != 0
     }
 }
