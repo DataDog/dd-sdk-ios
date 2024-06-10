@@ -45,7 +45,7 @@ internal final class SessionEndedMetricController {
     ///   - view: the view event to track
     ///   - sessionID: session ID to track this view in (pass `nil` to track it for the last started session)
     func track(view: RUMViewEvent, in sessionID: RUMUUID?) {
-        updateMetric(for: sessionID) { $0?.track(view: view) }
+        updateMetric(for: sessionID) { try $0?.track(view: view) }
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
@@ -73,10 +73,16 @@ internal final class SessionEndedMetricController {
         pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
     }
 
-    private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) -> Void) {
+    private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) throws -> Void) {
         guard let sessionID = (sessionID ?? pendingSessionIDs.last) else {
             return
         }
-        _metricsBySessionID.mutate { metrics in  mutation(&metrics[sessionID]) }
+        _metricsBySessionID.mutate { metrics in
+            do {
+                try mutation(&metrics[sessionID])
+            } catch let error {
+                telemetry.error(error)
+            }
+        }
     }
 }

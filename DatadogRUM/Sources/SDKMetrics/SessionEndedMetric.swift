@@ -7,6 +7,21 @@
 import Foundation
 import DatadogInternal
 
+internal enum SessionEndedMetricError: Error, CustomStringConvertible {
+    /// Indicates an attempt of tracking view event in session that shouldn't belong to.
+    case trackingViewInForeignSession(viewURL: String, sessionID: RUMUUID)
+
+    var description: String {
+        switch self {
+        case .trackingViewInForeignSession(let viewURL, let sessionID):
+            let isAppLaunchView = viewURL == RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+            let isBackgroundView = viewURL == RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+            let viewKind = isAppLaunchView ? "AppLaunch" : (isBackgroundView ? "Background" : "Custom")
+            return "Attempted to track \(viewKind) view in session with different UUID \(sessionID)"
+        }
+    }
+}
+
 /// Tracks the state of RUM session and exports attributes for "RUM Session Ended" telemetry.
 internal struct SessionEndedMetric {
     /// Definition of fields in "RUM Session Ended" telemetry, following the "RUM Session Ended" telemetry spec.
@@ -77,9 +92,9 @@ internal struct SessionEndedMetric {
     }
 
     /// Tracks the view event that occurred during the session.
-    mutating func track(view: RUMViewEvent) {
+    mutating func track(view: RUMViewEvent) throws {
         guard view.session.id == sessionID.toRUMDataFormat else {
-            return // sanity check, unexpected
+            throw SessionEndedMetricError.trackingViewInForeignSession(viewURL: view.view.url, sessionID: sessionID)
         }
 
         var info = trackedViews[view.view.id] ?? TrackedViewInfo(

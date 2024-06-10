@@ -112,7 +112,7 @@ class SessionEndedMetricTests: XCTestCase {
         let view: RUMViewEvent = .mockRandomWith(sessionID: sessionID)
 
         // When
-        metric.track(view: view)
+        try metric.track(view: view)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -128,9 +128,9 @@ class SessionEndedMetricTests: XCTestCase {
         let view3: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 10.s2ms + 10.s2ms + 20.s2ms, viewTimeSpent: 50.s2ns)
 
         // When
-        metric.track(view: view1)
-        metric.track(view: view2)
-        metric.track(view: view3)
+        try metric.track(view: view1)
+        try metric.track(view: view2)
+        try metric.track(view: view3)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -145,8 +145,8 @@ class SessionEndedMetricTests: XCTestCase {
         let view2: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 15.s2ms, viewTimeSpent: 20.s2ns) // starts in the middle of `view1`
 
         // When
-        metric.track(view: view1)
-        metric.track(view: view2)
+        try metric.track(view: view1)
+        try metric.track(view: view2)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -161,9 +161,9 @@ class SessionEndedMetricTests: XCTestCase {
         let lastView: RUMViewEvent = .mockRandomWith(sessionID: sessionID, date: 5.s2ms + 10.s2ms, viewTimeSpent: 20.s2ns)
 
         // When
-        metric.track(view: firstView)
-        (0..<10).forEach { _ in metric.track(view: .mockRandom()) } // middle views should not alter the duration
-        metric.track(view: lastView)
+        try metric.track(view: firstView)
+        try (0..<10).forEach { _ in try metric.track(view: .mockRandomWith(sessionID: sessionID)) } // middle views should not alter the duration
+        try metric.track(view: lastView)
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -176,8 +176,8 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        metric.track(view: .mockRandom())
-        metric.track(view: .mockRandom())
+        XCTAssertThrowsError(try metric.track(view: .mockRandom()))
+        XCTAssertThrowsError(try metric.track(view: .mockRandom()))
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -221,7 +221,7 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        viewIDs.forEach { metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0)) }
+        try viewIDs.forEach { try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0)) }
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -238,9 +238,9 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        viewIDs.forEach { viewID in
+        try viewIDs.forEach { viewID in
             let viewURL = backgroundViewIDs.contains(viewID) ? RUMOffViewEventsHandlingRule.Constants.backgroundViewURL : .mockRandom()
-            metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL))
+            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL))
         }
         let attributes = metric.asMetricAttributes()
 
@@ -258,9 +258,9 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        viewIDs.forEach { viewID in
+        try viewIDs.forEach { viewID in
             let viewURL = appLaunchViewIDs.contains(viewID) ? RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL : .mockRandom()
-            metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL))
+            try metric.track(view: .mockRandomWith(sessionID: sessionID, viewID: viewID, viewURL: viewURL))
         }
         let attributes = metric.asMetricAttributes()
 
@@ -274,8 +274,8 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        metric.track(view: .mockRandom())
-        metric.track(view: .mockRandom())
+        XCTAssertThrowsError(try metric.track(view: .mockRandom()))
+        XCTAssertThrowsError(try metric.track(view: .mockRandom()))
         let attributes = metric.asMetricAttributes()
 
         // Then
@@ -355,7 +355,7 @@ class SessionEndedMetricTests: XCTestCase {
         var metric = SessionEndedMetric(
             sessionID: sessionID, precondition: .mockRandom(), context: .mockWith(applicationBundleType: .iOSApp)
         )
-        metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10))
+        try metric.track(view: .mockRandomWith(sessionID: sessionID, viewTimeSpent: 10))
 
         // When
         let matcher = try JSONObjectMatcher(AnyEncodable(metric.asMetricAttributes()))
