@@ -11,10 +11,10 @@ import DatadogInternal
 internal final class SessionEndedMetricController {
     /// Dictionary to keep track of pending metrics, keyed by session ID.
     @ReadWriteLock
-    private var metricsBySessionID: [String: SessionEndedMetric] = [:]
-    /// Array to keep track of pending metrics in their start order.
+    private var metricsBySessionID: [RUMUUID: SessionEndedMetric] = [:]
+    /// Array to keep track of pending session IDs in their start order.
     @ReadWriteLock
-    private var metrics: [SessionEndedMetric] = []
+    private var pendingSessionIDs: [RUMUUID] = []
 
     /// Telemetry endpoint for sending metrics.
     private let telemetry: Telemetry
@@ -31,35 +31,52 @@ internal final class SessionEndedMetricController {
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
     /// - Returns: The newly created `SessionEndedMetric` instance.
-    func startMetric(sessionID: String, precondition: RUMSessionPrecondition?, context: DatadogContext) {
-        guard sessionID != RUMUUID.nullUUID.toRUMDataFormat else {
+    func startMetric(sessionID: RUMUUID, precondition: RUMSessionPrecondition?, context: DatadogContext) {
+        guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
         let metric = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
         metricsBySessionID[sessionID] = metric
-        metrics.append(metric)
+        pendingSessionIDs.append(sessionID)
     }
 
-    /// Retrieves the metric for a given session ID.
-    /// - Parameter sessionID: The ID of the session to retrieve the metric for.
-    /// - Returns: The `SessionEndedMetric` instance if found, otherwise `nil`.
-    func metric(for sessionID: String) -> SessionEndedMetric? {
-        return metricsBySessionID[sessionID]
+    /// Tracks the view event that occurred during the session.
+    /// - Parameters:
+    ///   - view: the view event to track
+    ///   - sessionID: session ID to track this view in (pass `nil` to track it for the last started session)
+    func track(view: RUMViewEvent, in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(view: view) }
     }
 
-    /// Retrieves the last started metric.
-    var latestMetric: SessionEndedMetric? {
-        return metrics.last
+    /// Tracks the kind of SDK error that occurred during the session.
+    /// - Parameters:
+    ///   - sdkErrorKind: the kind of SDK error to track
+    ///   - sessionID: session ID to track this error in (pass `nil` to track it for the last started session)
+    func track(sdkErrorKind: String, in sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.track(sdkErrorKind: sdkErrorKind) }
+    }
+
+    /// Signals that the session was stopped with `stopSession()` API.
+    /// - Parameter sessionID: session ID to mark as stopped (pass `nil` to track it for the last started session)
+    func trackWasStopped(sessionID: RUMUUID?) {
+        updateMetric(for: sessionID) { $0?.trackWasStopped() }
     }
 
     /// Ends the metric for a given session, sending it to telemetry and removing it from pending metrics.
     /// - Parameter sessionID: The ID of the session to end the metric for.
-    func endMetric(sessionID: String) {
+    func endMetric(sessionID: RUMUUID) {
         guard let metric = metricsBySessionID[sessionID] else {
             return
         }
         telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes())
         metricsBySessionID[sessionID] = nil
-        metrics.removeAll(where: { $0 === metric }) // O(n), but "ending the metric" is very rare event
+        pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
+    }
+
+    private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) -> Void) {
+        guard let sessionID = (sessionID ?? pendingSessionIDs.last) else {
+            return
+        }
+        _metricsBySessionID.mutate { metrics in  mutation(&metrics[sessionID]) }
     }
 }

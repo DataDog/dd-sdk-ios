@@ -102,7 +102,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
             // proccss(command:context:writer) returned false, so the scope will be deallocated at the end of
             // this execution context. End the "RUM Session Ended" metric:
-            defer { dependencies.sessionEndedMetric.endMetric(sessionID: scope.sessionUUID.toRUMDataFormat) }
+            defer { dependencies.sessionEndedMetric.endMetric(sessionID: scope.sessionUUID) }
 
             // proccss(command:context:writer) returned false, but if the scope is still active
             // it means the session reached one of the end reasons

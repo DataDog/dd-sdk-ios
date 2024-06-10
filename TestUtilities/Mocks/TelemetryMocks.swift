@@ -89,6 +89,11 @@ public extension Array where Element == TelemetryMessage {
         return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).first
     }
 
+    /// Returns properties of the first metric message of given name.
+    func lastMetric(named metricName: String) -> (name: String, attributes: [String: Encodable])? {
+        return compactMap({ $0.asMetric }).filter({ $0.name == metricName }).last
+    }
+
     /// Returns attributes of the first debug telemetry in this array.
     func firstDebug() -> (id: String, message: String, attributes: [String: Encodable]?)? {
         return compactMap { $0.asDebug }.first

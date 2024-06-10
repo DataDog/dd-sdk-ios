@@ -7,8 +7,8 @@
 import Foundation
 import DatadogInternal
 
-/// An object tracking the state of RUM session and exporting attributes for "RUM Session Ended" telemetry.
-internal final class SessionEndedMetric {
+/// Tracks the state of RUM session and exports attributes for "RUM Session Ended" telemetry.
+internal struct SessionEndedMetric {
     /// Definition of fields in "RUM Session Ended" telemetry, following the "RUM Session Ended" telemetry spec.
     internal enum Constants {
         /// The name of this metric, included in telemetry log.
@@ -21,7 +21,7 @@ internal final class SessionEndedMetric {
     }
 
     /// An ID of the session being tracked through this metric object.
-    let sessionID: String
+    let sessionID: RUMUUID
 
     /// The type of OS component where the session was tracked.
     private let bundleType: BundleType
@@ -39,23 +39,18 @@ internal final class SessionEndedMetric {
     }
 
     /// Stores information about tracked views, referencing them by their view ID.
-    @ReadWriteLock
     private var trackedViews: [String: TrackedViewInfo] = [:]
 
     /// Info about the first tracked view.
-    @ReadWriteLock
     private var firstTrackedView: TrackedViewInfo?
 
     /// Info about the last tracked view.
-    @ReadWriteLock
     private var lastTrackedView: TrackedViewInfo?
 
     /// Tracks the number of SDK errors by their kind.
-    @ReadWriteLock
     private var trackedSDKErrors: [String: Int] = [:]
 
     /// Indicates if the session was stopped through `stopSession()` API.
-    @ReadWriteLock
     private var wasStopped = false
 
     // TODO: RUM-4591 Track diagnostic attributes:
@@ -72,7 +67,7 @@ internal final class SessionEndedMetric {
     ///   - precondition: The precondition that led to starting this session.
     ///   - context: The SDK context at the moment of starting this session.
     init(
-        sessionID: String,
+        sessionID: RUMUUID,
         precondition: RUMSessionPrecondition?,
         context: DatadogContext
     ) {
@@ -82,8 +77,8 @@ internal final class SessionEndedMetric {
     }
 
     /// Tracks the view event that occurred during the session.
-    func track(view: RUMViewEvent) {
-        guard view.session.id == sessionID else {
+    mutating func track(view: RUMViewEvent) {
+        guard view.session.id == sessionID.toRUMDataFormat else {
             return // sanity check, unexpected
         }
 
@@ -103,7 +98,7 @@ internal final class SessionEndedMetric {
     }
 
     /// Tracks the kind of SDK error that occurred during the session.
-    func track(sdkErrorKind: String) {
+    mutating func track(sdkErrorKind: String) {
         if let count = trackedSDKErrors[sdkErrorKind] {
             trackedSDKErrors[sdkErrorKind] = count + 1
         } else {
@@ -112,7 +107,7 @@ internal final class SessionEndedMetric {
     }
 
     /// Signals that the session was stopped with `stopSession()` API.
-    func trackWasStopped() {
+    mutating func trackWasStopped() {
         wasStopped = true
     }
 
@@ -199,7 +194,7 @@ internal final class SessionEndedMetric {
 
         return [
             SDKMetricFields.typeKey: Constants.typeValue,
-            SDKMetricFields.sessionIDOverrideKey: sessionID,
+            SDKMetricFields.sessionIDOverrideKey: sessionID.toRUMDataFormat,
             Constants.rseKey: Attributes(
                 processType: {
                     switch bundleType {

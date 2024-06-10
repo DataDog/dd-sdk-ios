@@ -12,86 +12,86 @@ import DatadogInternal
 class SessionEndedMetricControllerTests: XCTestCase {
     private let telemetry = TelemetryMock()
 
-    func testWhenMetricIsStarted_itCanBeRetrievedByID() throws {
+    func testTrackingSingleSessionWithExplicitSessionID() throws {
+        let sessionID: RUMUUID = .mockRandom()
+        let viewIDs: [String] = .mockRandom(count: 5)
+        let errorKinds: [String] = .mockRandom(count: 5)
+
+        // Given
         let controller = SessionEndedMetricController(telemetry: telemetry)
+        controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
 
         // When
-        let sessionID1: String = .mockRandom()
-        let sessionID2: String = .mockRandom()
-        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom())
-        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom())
+        viewIDs.forEach { controller.track(view: .mockRandomWith(sessionID: sessionID, viewID: $0), in: sessionID) }
+        errorKinds.forEach { controller.track(sdkErrorKind: $0, in: sessionID) }
+        controller.trackWasStopped(sessionID: sessionID)
+        controller.endMetric(sessionID: sessionID)
 
         // Then
-        let metric1 = try XCTUnwrap(controller.metric(for: sessionID1))
-        let metric2 = try XCTUnwrap(controller.metric(for: sessionID2))
-        XCTAssertEqual(metric1.sessionID, sessionID1)
-        XCTAssertEqual(metric2.sessionID, sessionID2)
+        let metric = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
+        XCTAssertEqual(metric.viewsCount.total, viewIDs.count)
+        XCTAssertEqual(metric.sdkErrorsCount.total, errorKinds.count)
+        XCTAssertEqual(metric.wasStopped, true)
     }
 
-    func testWhenMetricIsStarted_itCanBeRetrievedAsLatest() throws {
-        let controller = SessionEndedMetricController(telemetry: telemetry)
+    func testTrackingMultipleSessionsWithExplicitSessionID() throws {
+        let sessionID1: RUMUUID = .mockRandom()
+        let sessionID2: RUMUUID = .mockRandom()
 
         // When
-        let sessionID1: String = .mockRandom()
-        let sessionID2: String = .mockRandom()
+        let controller = SessionEndedMetricController(telemetry: telemetry)
         controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom())
         controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom())
-
-        // Then
-        XCTAssertEqual(controller.latestMetric?.sessionID, sessionID2)
-        controller.endMetric(sessionID: sessionID2)
-        XCTAssertEqual(controller.latestMetric?.sessionID, sessionID1)
+        // Session 1:
+        controller.track(view: .mockRandomWith(sessionID: sessionID1), in: sessionID1)
+        controller.track(sdkErrorKind: "error.kind1", in: sessionID1)
+        controller.trackWasStopped(sessionID: sessionID1)
+        // Session 2:
+        controller.track(sdkErrorKind: "error.kind2", in: sessionID2)
+        // Send 1st and 2nd:
         controller.endMetric(sessionID: sessionID1)
-        XCTAssertNil(controller.latestMetric)
-    }
-
-    func testWhenMetricIsEnded_itIsSentToTelemetry() throws {
-        let sessionID: String = .mockRandom()
-        let controller = SessionEndedMetricController(telemetry: telemetry)
-        controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
-
-        // When
-        controller.endMetric(sessionID: sessionID)
+        let metric1 = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
+        controller.endMetric(sessionID: sessionID2)
+        let metric2 = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
 
         // Then
-        let metric = try XCTUnwrap(telemetry.messages.firstMetric(named: SessionEndedMetric.Constants.name))
-        XCTAssertEqual(metric.attributes[SDKMetricFields.typeKey] as? String, SessionEndedMetric.Constants.typeValue)
-        XCTAssertEqual(metric.attributes[SDKMetricFields.sessionIDOverrideKey] as? String, sessionID)
+        XCTAssertEqual(metric1.viewsCount.total, 1)
+        XCTAssertEqual(metric1.sdkErrorsCount.total, 1)
+        XCTAssertEqual(metric1.sdkErrorsCount.byKind["error_kind1"], 1)
+        XCTAssertEqual(metric1.wasStopped, true)
+
+        XCTAssertEqual(metric2.viewsCount.total, 0)
+        XCTAssertEqual(metric2.sdkErrorsCount.total, 1)
+        XCTAssertEqual(metric2.sdkErrorsCount.byKind["error_kind2"], 1)
+        XCTAssertEqual(metric2.wasStopped, false)
     }
 
-    func testAfterMetricIsEnded_itCanNoLongerBeRetrieved() throws {
-        let sessionID: String = .mockRandom()
-        let controller = SessionEndedMetricController(telemetry: telemetry)
-        controller.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockRandom())
+    func testTrackingLatestSession() throws {
+        let sessionID1: RUMUUID = .mockRandom()
+        let sessionID2: RUMUUID = .mockRandom()
 
         // When
-        XCTAssertNotNil(controller.metric(for: sessionID))
-        controller.endMetric(sessionID: sessionID)
-
-        // Then
-        XCTAssertNil(controller.metric(for: sessionID))
-        XCTAssertNil(controller.latestMetric)
-    }
-
-    func testWhenSessionIsSampled_itDoesNotTrackMetric() throws {
         let controller = SessionEndedMetricController(telemetry: telemetry)
-
-        // When
-        let rejectedSessionID = RUMUUID.nullUUID.toRUMDataFormat
-        controller.startMetric(sessionID: rejectedSessionID, precondition: .mockRandom(), context: .mockRandom())
+        controller.startMetric(sessionID: sessionID1, precondition: .mockRandom(), context: .mockRandom())
+        controller.startMetric(sessionID: sessionID2, precondition: .mockRandom(), context: .mockRandom())
+        // Track latest session (`sessionID: nil`)
+        controller.track(view: .mockRandomWith(sessionID: sessionID2), in: nil)
+        controller.track(sdkErrorKind: "error.kind1", in: nil)
+        controller.trackWasStopped(sessionID: nil)
+        // Send 2nd:
+        controller.endMetric(sessionID: sessionID2)
+        let metric = try XCTUnwrap(telemetry.messages.lastSessionEndedMetric)
 
         // Then
-        XCTAssertNil(controller.metric(for: rejectedSessionID))
-        XCTAssertNil(controller.latestMetric)
-
-        controller.endMetric(sessionID: rejectedSessionID)
-        XCTAssertTrue(telemetry.messages.isEmpty)
+        XCTAssertEqual(metric.viewsCount.total, 1)
+        XCTAssertEqual(metric.sdkErrorsCount.total, 1)
+        XCTAssertEqual(metric.wasStopped, true)
     }
 
     // MARK: - Thread Safety
 
     func testTrackingSessionEndedMetricIsThreadSafe() {
-        let sessionIDs: [String] = .mockRandom(count: 10)
+        let sessionIDs: [RUMUUID] = .mockRandom(count: 10)
         let controller = SessionEndedMetricController(telemetry: telemetry)
 
         // swiftlint:disable opening_brace
@@ -100,20 +100,22 @@ class SessionEndedMetricControllerTests: XCTestCase {
                 { controller.startMetric(
                     sessionID: sessionIDs.randomElement()!, precondition: .mockRandom(), context: .mockRandom()
                 ) },
-                { _ = controller.metric(for: sessionIDs.randomElement()!) },
-                {
-                    _ = controller.metric(for: sessionIDs.randomElement()!)?.track(view: .mockRandom())
-                },
-                {
-                    _ = controller.metric(for: sessionIDs.randomElement()!)?.track(sdkErrorKind: .mockRandom())
-                },
-                {
-                    _ = controller.metric(for: sessionIDs.randomElement()!)?.trackWasStopped()
-                },
+                { controller.track(view: .mockRandom(), in: sessionIDs.randomElement()!) },
+                { controller.track(sdkErrorKind: .mockRandom(), in: sessionIDs.randomElement()!) },
+                { controller.trackWasStopped(sessionID: sessionIDs.randomElement()!) },
                 { controller.endMetric(sessionID: sessionIDs.randomElement()!) },
             ],
             iterations: 100
         )
         // swiftlint:enable opening_brace
+    }
+}
+
+// MARK: - Helpers
+
+private extension Array where Element == TelemetryMessage {
+    var lastSessionEndedMetric: SessionEndedMetric.Attributes? {
+        return lastMetric(named: SessionEndedMetric.Constants.name)?
+            .attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes
     }
 }

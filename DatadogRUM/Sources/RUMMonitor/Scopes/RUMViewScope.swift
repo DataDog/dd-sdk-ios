@@ -554,7 +554,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
-            sessionEndedMetric?.track(view: event)
+            dependencies.sessionEndedMetric.track(view: event, in: self.context.sessionID)
         } else { // if event was dropped by mapper
             version -= 1
         }

@@ -28,6 +28,6 @@ internal struct TelemetryInterecptor: FeatureMessageReceiver {
     }
 
     private func interceptError(id: String, message: String, kind: String, stack: String) {
-        sessionEndedMetric.latestMetric?.track(sdkErrorKind: kind)
+        sessionEndedMetric.track(sdkErrorKind: kind, in: nil) // `nil` - track in current session
     }
 }

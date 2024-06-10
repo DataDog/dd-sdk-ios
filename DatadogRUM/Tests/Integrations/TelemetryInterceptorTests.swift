@@ -10,22 +10,25 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class TelemetryInterceptorTests: XCTestCase {
+    private let telemetry = TelemetryMock()
+
     func testWhenInterceptingErrorTelemetry_itItUpdatesSessionEndedMetric() throws {
-        let sessionID = RUMUUID.mockRandom().toRUMDataFormat
+        let sessionID: RUMUUID = .mockRandom()
 
         // Given
-        let metricController = SessionEndedMetricController(telemetry: NOPTelemetry())
+        let metricController = SessionEndedMetricController(telemetry: telemetry)
         let interceptor = TelemetryInterecptor(sessionEndedMetric: metricController)
 
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
         let errorTelemetry: TelemetryMessage = .error(id: .mockAny(), message: .mockAny(), kind: .mockAny(), stack: .mockAny())
         let result = interceptor.receive(message: .telemetry(errorTelemetry), from: NOPDatadogCore())
+        XCTAssertFalse(result)
 
         // Then
-        XCTAssertFalse(result)
-        let metricAttributes = try XCTUnwrap(metricController.metric(for: sessionID)?.asMetricAttributes())
-        let rse = try XCTUnwrap(metricAttributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
+        metricController.endMetric(sessionID: sessionID)
+        let metric = try XCTUnwrap(telemetry.messages.lastMetric(named: SessionEndedMetric.Constants.name))
+        let rse = try XCTUnwrap(metric.attributes[SessionEndedMetric.Constants.rseKey] as? SessionEndedMetric.Attributes)
         XCTAssertEqual(rse.sdkErrorsCount.total, 1)
     }
 }

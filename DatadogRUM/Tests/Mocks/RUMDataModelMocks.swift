@@ -131,7 +131,7 @@ extension RUMViewEvent: RandomMockable {
 
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     static func mockRandomWith(
-        sessionID: String = .mockRandom(),
+        sessionID: RUMUUID = .mockRandom(),
         viewID: String = .mockRandom(),
         date: Int64 = .mockRandom(),
         viewIsActive: Bool? = .random(),
@@ -166,7 +166,7 @@ extension RUMViewEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
-                id: sessionID,
+                id: sessionID.toRUMDataFormat,
                 isActive: true,
                 sampledForReplay: nil,
                 type: .user

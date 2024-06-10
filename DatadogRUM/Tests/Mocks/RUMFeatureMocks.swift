@@ -689,7 +689,7 @@ extension RUMInternalErrorSource: RandomMockable {
 
 // MARK: - RUMContext Mocks
 
-extension RUMUUID {
+extension RUMUUID: RandomMockable {
     public static func mockRandom() -> RUMUUID {
         return RUMUUID(rawValue: UUID())
     }

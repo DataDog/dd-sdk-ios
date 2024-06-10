@@ -106,7 +106,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Start tracking "RUM Session Ended" metric for this session
         dependencies.sessionEndedMetric.startMetric(
-            sessionID: sessionUUID.toRUMDataFormat,
+            sessionID: sessionUUID,
             precondition: startPrecondition,
             context: context
         )
@@ -202,7 +202,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         var deactivating = false
         if isActive {
             if command is RUMStopSessionCommand {
-                sessionEndedMetric?.trackWasStopped()
+                dependencies.sessionEndedMetric.trackWasStopped(sessionID: self.context.sessionID)
                 endReason = .stopAPI
                 deactivating = true
             } else if let startApplicationCommand = command as? RUMApplicationStartCommand {

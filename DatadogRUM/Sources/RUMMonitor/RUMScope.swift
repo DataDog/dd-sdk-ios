@@ -26,13 +26,6 @@ extension RUMScope {
     }
 }
 
-extension RUMScope where Self: RUMContextProvider {
-    /// The "RUM Session Ended" metric tracking the session that this `RUMScope` belongs to.
-    var sessionEndedMetric: SessionEndedMetric? {
-        dependencies.sessionEndedMetric.metric(for: context.sessionID.toRUMDataFormat)
-    }
-}
-
 extension Array where Element: RUMScope {
     /// Propagates given `command` through this array of scopes and manages their lifecycle by
     /// filtering scopes that get closed.
