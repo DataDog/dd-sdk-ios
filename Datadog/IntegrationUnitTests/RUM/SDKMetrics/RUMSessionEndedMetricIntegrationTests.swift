@@ -14,7 +14,6 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
     private var rumConfig: RUM.Configuration! // swiftlint:disable:this implicitly_unwrapped_optional
 
     override func setUp() {
-        super.setUp()
         core = DatadogCoreProxy()
         core.context = .mockWith(
             launchTime: .mockWith(launchDate: dateProvider.now),
@@ -30,7 +29,6 @@ class RUMSessionEndedMetricIntegrationTests: XCTestCase {
         core.flushAndTearDown()
         core = nil
         rumConfig = nil
-        super.tearDown()
     }
 
     // MARK: - Conditions For Sending The Metric
