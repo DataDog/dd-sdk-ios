@@ -6,6 +6,21 @@
 
 import Foundation
 
+/// Launch report format supported by Datadog SDK.
+public struct LaunchReport: Codable {
+    /// The key used to encode/decode the `LaunchReport` while sending across features.
+    public static let messageKey = "launch-report"
+
+    /// Returns `true` if the previous session crashed.
+    public let didCrash: Bool
+
+    ///  Creates a new `LaunchReport`.
+    /// - Parameter didCrash: `true` if the previous session crashed.
+    public init(didCrash: Bool) {
+        self.didCrash = didCrash
+    }
+}
+
 /// Crash Report format supported by Datadog SDK.
 public struct DDCrashReport: Codable, PassthroughAnyCodable {
     /// Meta information about the process.

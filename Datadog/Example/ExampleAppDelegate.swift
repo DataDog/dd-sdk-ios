@@ -55,9 +55,6 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
 
-        // Enable Crash Reporting
-        CrashReporting.enable()
-
         // Set highest verbosity level to see debugging logs from the SDK
         Datadog.verbosityLevel = .debug
 
@@ -84,6 +81,9 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             )
         )
         RUMMonitor.shared().debug = true
+
+        // Enable Crash Reporting
+        CrashReporting.enable()
 
         // Register Trace Provider
         OpenTelemetry.registerTracerProvider(

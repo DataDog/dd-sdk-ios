@@ -16,12 +16,16 @@
 import Foundation
 
 /// A "static"-only namespace around a series of functions that operate on buffers returned from the `Darwin.sysctl` function
-internal struct Sysctl {
+public struct Sysctl {
     /// Possible errors.
     enum Error: Swift.Error {
         case unknown
         case malformedUTF8
+        case malformedData
         case posixError(POSIXErrorCode)
+    }
+
+    public init() {
     }
 
     /// Access the raw data for an array of sysctl identifiers.
@@ -72,7 +76,59 @@ internal struct Sysctl {
     }
 
     /// e.g. "15D21" or "13D20"
-    static func osVersion() throws -> String {
+    public static func osVersion() throws -> String {
         try Sysctl.string(for: [CTL_KERN, KERN_OSVERSION])
     }
+
+    public static func systemBootTime() throws -> TimeInterval {
+        let bootTime = try Sysctl.data(for: [CTL_KERN, KERN_BOOTTIME])
+        let uptime = bootTime.withUnsafeBufferPointer { buffer -> timeval? in
+            buffer.baseAddress?.withMemoryRebound(to: timeval.self, capacity: 1) { $0.pointee }
+        }
+        guard let uptime = uptime else {
+            throw Error.malformedData
+        }
+        return TimeInterval(uptime.tv_sec)
+    }
+
+    /// https://developer.apple.com/library/archive/qa/qa1361/_index.html
+    public static func isBeingDebugged() -> Bool {
+        var mib = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.size
+
+        let junk = sysctl(&mib, UInt32(mib.count), &info, &size, nil, 0)
+        assert(junk == 0)
+
+        return (info.kp_proc.p_flag & P_TRACED) != 0
+    }
+}
+
+extension Sysctl: SysctlProviding {
+    public func osVersion() throws -> String {
+        try Sysctl.osVersion()
+    }
+
+    public func systemBootTime() throws -> TimeInterval {
+        try Sysctl.systemBootTime()
+    }
+
+    public func isDebugging() -> Bool {
+        Sysctl.isBeingDebugged()
+    }
+}
+
+/// A `SysctlProviding` implementation that uses `Darwin.sysctl` to access system information.
+public protocol SysctlProviding {
+    /// Returns operating system version.
+    /// - Returns: Operating system version.
+    func osVersion() throws -> String
+
+    /// Returns system boot time since epoch.
+    /// - Returns: System boot time.
+    func systemBootTime() throws -> TimeInterval
+
+    /// Returns `true` if the app is being debugged.
+    /// - Returns: `true` if the app is being debugged.
+    func isDebugging() -> Bool
 }

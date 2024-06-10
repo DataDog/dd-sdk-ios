@@ -59,6 +59,7 @@ internal final class CrashReportingFeature: DatadogFeature {
             self.plugin.readPendingCrashReport { [weak self] crashReport in
                 guard let self = self, let availableCrashReport = crashReport else {
                     DD.logger.debug("No pending Crash found")
+                    self?.sender.send(launch: .init(didCrash: false))
                     return false
                 }
 
@@ -71,6 +72,7 @@ internal final class CrashReportingFeature: DatadogFeature {
                 }
 
                 self.sender.send(report: availableCrashReport, with: crashContext)
+                self.sender.send(launch: .init(didCrash: true))
                 return true
             }
         }
