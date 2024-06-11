@@ -1,5 +1,7 @@
 # Unreleased
 
+- [IMPROVEMENT] Bump `IPHONEOS_DEPLOYMENT_TARGET` from 11 to 12. See [#1891][]
+
 # 2.12.0 / 03-06-2024
 
 - [IMPROVEMENT] Crash errors now include up-to-date global RUM attributes. See [#1834][]
@@ -666,6 +668,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#1767]: https://github.com/DataDog/dd-sdk-ios/pull/1767
 [#1843]: https://github.com/DataDog/dd-sdk-ios/pull/1843
 [#1798]: https://github.com/DataDog/dd-sdk-ios/pull/1798
+[#1891]: https://github.com/DataDog/dd-sdk-ios/pull/1891
 [#1776]: https://github.com/DataDog/dd-sdk-ios/pull/1776
 [#1834]: https://github.com/DataDog/dd-sdk-ios/pull/1834
 [#1721]: https://github.com/DataDog/dd-sdk-ios/pull/1721
