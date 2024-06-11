@@ -119,11 +119,6 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Update fatal error context with recent RUM session state:
         dependencies.fatalErrorContext.sessionState = state
-
-        // Notify Synthetics if needed
-        if dependencies.syntheticsTest != nil && sessionUUID != .nullUUID {
-            NSLog("_dd.session.id=" + sessionUUID.toRUMDataFormat)
-        }
     }
 
     /// Creates a new Session upon expiration of the previous one.
