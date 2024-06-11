@@ -9,7 +9,7 @@ ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD) arm64e
 
 // Minimum deployment targets for building the SDK (including Carthage build from sources)
 IPHONEOS_DEPLOYMENT_TARGET=12.0
-TVOS_DEPLOYMENT_TARGET=11.0
+TVOS_DEPLOYMENT_TARGET=12.0
 MACOSX_DEPLOYMENT_TARGET=12.6
 
 // Include internal base config (git-ignored, so excluded from Carthage build)
