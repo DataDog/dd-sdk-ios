@@ -14,7 +14,7 @@ public class TabbarViewControllers: UIViewController {
         for tabbar in tabbars {
             // Select the first tabbar's item
             // so we can see both a selected and unselected item
-            tabbar.selectedItem = tabbar.items?[0]
+            tabbar.selectedItem = tabbar.items?.first
         }
     }
 }
