@@ -556,6 +556,7 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
             dependencies.fatalErrorContext.view = event
 
             // Track this view in Session Ended metric:
+            _ = (command as? RUMStartViewCommand)?.instrumentationType // TODO: RUM-1660 pass instrumentation type to SE metric
             dependencies.sessionEndedMetric.track(view: event, in: self.context.sessionID)
         } else { // if event was dropped by mapper
             version -= 1

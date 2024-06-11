@@ -218,14 +218,16 @@ extension RUMStartViewCommand: AnyMockable, RandomMockable {
         attributes: [AttributeKey: AttributeValue] = [:],
         identity: ViewIdentifier = .mockViewIdentifier(),
         name: String = .mockAny(),
-        path: String = .mockAny()
+        path: String = .mockAny(),
+        instrumentationType: SessionEndedMetric.ViewInstrumentationType = .manual
     ) -> RUMStartViewCommand {
         return RUMStartViewCommand(
             time: time,
             identity: identity,
             name: name,
             path: path,
-            attributes: attributes
+            attributes: attributes,
+            instrumentationType: instrumentationType
         )
     }
 }

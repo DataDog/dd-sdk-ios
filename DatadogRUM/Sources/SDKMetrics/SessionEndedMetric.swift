@@ -35,6 +35,12 @@ internal struct SessionEndedMetric {
         static let rseKey = "rse"
     }
 
+    internal enum ViewInstrumentationType: String {
+        case manual
+        case uikit
+        case swiftui
+    }
+
     /// An ID of the session being tracked through this metric object.
     let sessionID: RUMUUID
 

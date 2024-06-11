@@ -62,18 +62,23 @@ internal struct RUMStartViewCommand: RUMCommand, RUMViewScopePropagatableAttribu
     /// The path of this View, rendered in RUM Explorer as `VIEW URL`.
     let path: String
 
+    /// The type of instrumentation that started this view.
+    let instrumentationType: SessionEndedMetric.ViewInstrumentationType
+
     init(
         time: Date,
         identity: ViewIdentifier,
         name: String,
         path: String,
-        attributes: [AttributeKey: AttributeValue]
+        attributes: [AttributeKey: AttributeValue],
+        instrumentationType: SessionEndedMetric.ViewInstrumentationType
     ) {
         self.time = time
         self.attributes = attributes
         self.identity = identity
         self.name = name
         self.path = path
+        self.instrumentationType = instrumentationType
     }
 }
 
