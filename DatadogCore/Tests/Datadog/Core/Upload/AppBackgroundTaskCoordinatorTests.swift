@@ -57,7 +57,7 @@ class AppSpy: UIKitAppBackgroundTaskCoordinator {
 
     var handler: (() -> Void)? = nil
 
-    func beginBackgroundTask(expirationHandler handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
+    func beginBackgroundTask(handler: (() -> Void)?) -> UIBackgroundTaskIdentifier {
         self.handler = handler
         beginBackgroundTaskCalled = true
         return UIBackgroundTaskIdentifier(rawValue: 1)
