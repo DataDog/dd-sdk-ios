@@ -24,19 +24,7 @@ extension SessionReplay {
         /// Defines the way sensitive content (e.g. text) should be masked.
         ///
         /// Default: `.mask`.
-        public var defaultPrivacyLevel: PrivacyLevel
-
-        /// Available privacy levels for content masking.
-        public enum PrivacyLevel: String {
-            /// Record all content.
-            case allow
-
-            /// Mask all content.
-            case mask
-
-            /// Mask input elements, but record all other content.
-            case maskUserInput = "mask_user_input"
-        }
+        public var defaultPrivacyLevel: SessionReplayPrivacyLevel
 
         /// Custom server url for sending replay data.
         ///
@@ -56,7 +44,7 @@ extension SessionReplay {
         ///   - customEndpoint: Custom server url for sending replay data. Default: `nil`.
         public init(
             replaySampleRate: Float,
-            defaultPrivacyLevel: PrivacyLevel = .mask,
+            defaultPrivacyLevel: SessionReplayPrivacyLevel = .mask,
             customEndpoint: URL? = nil
         ) {
             self.replaySampleRate = replaySampleRate
