@@ -12,7 +12,7 @@ import DatadogInternal
 import CoreTelephony
 
 /// It reads `CarrierInfo?` from `CTTelephonyNetworkInfo` only when `CTCarrier` has changed (e.g. when the SIM card was swapped).
-internal struct iOS12CarrierInfoPublisher: ContextValuePublisher {
+internal struct CarrierInfoPublisher: ContextValuePublisher {
     let initialValue: CarrierInfo?
 
     private let networkInfo: CTTelephonyNetworkInfo

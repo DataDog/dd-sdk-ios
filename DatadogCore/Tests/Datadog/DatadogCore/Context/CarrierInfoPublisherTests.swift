@@ -25,7 +25,7 @@ class CarrierInfoPublisherTests: XCTestCase {
 
     func testGivenCellularServiceAvailable_itProvidesInitialValue() {
         // Given
-        let publisher = iOS12CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
 
         // Then
         XCTAssertEqual(publisher.initialValue?.carrierName, "Carrier")
@@ -35,7 +35,7 @@ class CarrierInfoPublisherTests: XCTestCase {
 
     func testGivenCellularServiceUnAvailable_itProvidesNoInitialValue() {
         // Given
-        let publisher = iOS12CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
+        let publisher = CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
 
         // Then
         XCTAssertNil(publisher.initialValue)
@@ -44,7 +44,7 @@ class CarrierInfoPublisherTests: XCTestCase {
     func testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() throws {
         let expectation = expectation(description: "Notify `CarrierInfo` change")
         var info: CarrierInfo? = nil
-        let publisher = iOS12CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
 
         // Given
         publisher.publish {
