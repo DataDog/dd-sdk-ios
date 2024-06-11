@@ -17,7 +17,7 @@ class TelemetryInterceptorTests: XCTestCase {
 
         // Given
         let metricController = SessionEndedMetricController(telemetry: telemetry)
-        let interceptor = TelemetryInterecptor(sessionEndedMetric: metricController)
+        let interceptor = TelemetryInterceptor(sessionEndedMetric: metricController)
 
         // When
         metricController.startMetric(sessionID: sessionID, precondition: .mockRandom(), context: .mockAny())
