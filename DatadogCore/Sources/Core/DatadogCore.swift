@@ -434,11 +434,7 @@ extension DatadogContextProvider {
             assign(reader: SCNetworkReachabilityReader(), to: \.networkConnectionInfo)
         }
         #if os(iOS) && !targetEnvironment(macCatalyst) && !(swift(>=5.9) && os(visionOS))
-        if #available(iOS 12, *) {
-            subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
-        } else {
-            assign(reader: iOS11CarrierInfoReader(), to: \.carrierInfo)
-        }
+        subscribe(\.carrierInfo, to: iOS12CarrierInfoPublisher())
         #endif
 
         #if os(iOS) && !targetEnvironment(simulator)
