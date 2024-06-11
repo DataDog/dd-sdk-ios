@@ -64,7 +64,17 @@ internal extension Fixture {
             return "Embedded Navigation Bar Default + Translucent + Background color"
         case .navigationBarDefaultNonTranslucentBackground:
             return "Embedded Navigation Bar Default + Non Translucent + Background color"
+        case .tabbar:
+            return "Tab Bars"
+        case .embeddedTabbar:
+            return "Embedded Tab Bar"
+        case .embeddedTabbarUnselectedTintColor:
+            return "Embedded Tab Bar Unselected Tint Color"
         }
+    }
+
+    var slug: String {
+        self.menuItemTitle.lowercased().replacingOccurrences(of: " ", with: "")
     }
 }
 

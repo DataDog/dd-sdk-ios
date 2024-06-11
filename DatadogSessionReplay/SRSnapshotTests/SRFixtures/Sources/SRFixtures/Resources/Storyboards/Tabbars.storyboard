@@ -1,0 +1,334 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_12" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22685"/>
+        <capability name="Named colors" minToolsVersion="9.0"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="System colors in document resources" minToolsVersion="11.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Tabbar View Controllers-->
+        <scene sceneID="s0d-6b-0kx">
+            <objects>
+                <viewController storyboardIdentifier="Tabbars" id="Y6W-OH-hqX" customClass="TabbarViewControllers" customModule="SRFixtures" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="5EZ-qb-Rvc">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <tabBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vUf-gx-Xfm">
+                                <rect key="frame" x="0.0" y="79" width="393" height="49"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="ruh-dc-Mej"/>
+                                    <tabBarItem systemItem="more" id="ety-Go-XzK"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="qmm-bb-AhG">
+                                <rect key="frame" x="0.0" y="138" width="393" height="49"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="tTQ-fh-rbS"/>
+                                    <tabBarItem systemItem="more" id="5nj-UZ-lMU"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="EhJ-fo-P51">
+                                <rect key="frame" x="0.0" y="197" width="393" height="49"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="RKg-II-CGg"/>
+                                    <tabBarItem systemItem="more" id="ATR-Lg-rgc"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DxI-Qh-8xp">
+                                <rect key="frame" x="0.0" y="256" width="393" height="49"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="yks-2t-igB"/>
+                                    <tabBarItem systemItem="more" id="KrQ-08-uhV"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Jar-Aw-lpN">
+                                <rect key="frame" x="0.0" y="315" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="5IT-MD-JPj"/>
+                                    <tabBarItem systemItem="more" id="WeI-Yd-6a0"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xez-UA-QP1">
+                                <rect key="frame" x="0.0" y="374" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="YIF-W4-rk5"/>
+                                    <tabBarItem systemItem="more" id="fqY-8U-zbt"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="0vb-ff-FnH">
+                                <rect key="frame" x="0.0" y="433" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="SAp-Ff-o3f"/>
+                                    <tabBarItem systemItem="more" id="lRP-kd-gRh"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="k6l-xf-r97">
+                                <rect key="frame" x="0.0" y="492" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="e14-3j-Bn4"/>
+                                    <tabBarItem systemItem="more" id="s6Q-kz-Nja"/>
+                                </items>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OPF-iJ-lT4">
+                                <rect key="frame" x="0.0" y="551" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="Csf-HQ-xas"/>
+                                    <tabBarItem systemItem="more" id="1xo-hh-J6U"/>
+                                </items>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="e9b-NB-BzP">
+                                <rect key="frame" x="0.0" y="610" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="PZg-0z-6NY"/>
+                                    <tabBarItem systemItem="more" id="lul-tK-YRZ"/>
+                                </items>
+                                <color key="barTintColor" systemColor="systemMintColor"/>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translucent="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Iuc-2e-o5P">
+                                <rect key="frame" x="0.0" y="669" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="FEh-cl-PTH"/>
+                                    <tabBarItem systemItem="more" id="8DV-eL-ZsC"/>
+                                </items>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
+                            </tabBar>
+                            <tabBar contentMode="scaleToFill" barStyle="black" translatesAutoresizingMaskIntoConstraints="NO" id="sor-X8-rKj">
+                                <rect key="frame" x="0.0" y="728" width="393" height="49"/>
+                                <color key="backgroundColor" systemColor="systemGreenColor"/>
+                                <items>
+                                    <tabBarItem systemItem="favorites" id="PhH-Xi-CuL"/>
+                                    <tabBarItem systemItem="more" id="20s-IA-P5S"/>
+                                </items>
+                                <color key="barTintColor" systemColor="systemTealColor"/>
+                            </tabBar>
+                        </subviews>
+                        <viewLayoutGuide key="safeArea" id="vDu-zF-Fre"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                        <constraints>
+                            <constraint firstItem="Jar-Aw-lpN" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="4rt-fU-ydf"/>
+                            <constraint firstItem="OPF-iJ-lT4" firstAttribute="top" secondItem="k6l-xf-r97" secondAttribute="bottom" constant="10" id="73O-iq-z7W"/>
+                            <constraint firstItem="qmm-bb-AhG" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="8dm-XS-ZU9"/>
+                            <constraint firstItem="vDu-zF-Fre" firstAttribute="trailing" secondItem="Iuc-2e-o5P" secondAttribute="trailing" id="A8H-zD-ocu"/>
+                            <constraint firstItem="k6l-xf-r97" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="ABv-yb-ueQ"/>
+                            <constraint firstItem="0vb-ff-FnH" firstAttribute="top" secondItem="Xez-UA-QP1" secondAttribute="bottom" constant="10" id="Aga-4k-oFo"/>
+                            <constraint firstItem="EhJ-fo-P51" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="DI7-U4-nae"/>
+                            <constraint firstItem="DxI-Qh-8xp" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="Egy-wK-bvs"/>
+                            <constraint firstItem="Xez-UA-QP1" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="G2l-0N-GGS"/>
+                            <constraint firstAttribute="trailing" secondItem="sor-X8-rKj" secondAttribute="trailing" id="GoE-7s-WDy"/>
+                            <constraint firstItem="DxI-Qh-8xp" firstAttribute="top" secondItem="EhJ-fo-P51" secondAttribute="bottom" constant="10" id="JW0-5k-838"/>
+                            <constraint firstItem="Xez-UA-QP1" firstAttribute="top" secondItem="Jar-Aw-lpN" secondAttribute="bottom" constant="10" id="Ka3-Hx-jtc"/>
+                            <constraint firstItem="sor-X8-rKj" firstAttribute="top" secondItem="Iuc-2e-o5P" secondAttribute="bottom" constant="10" id="KiK-CN-OMM"/>
+                            <constraint firstItem="Jar-Aw-lpN" firstAttribute="top" secondItem="DxI-Qh-8xp" secondAttribute="bottom" constant="10" id="Mrz-nN-f83"/>
+                            <constraint firstItem="e9b-NB-BzP" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="O10-qz-xP1"/>
+                            <constraint firstItem="vUf-gx-Xfm" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="Qni-PP-Obc"/>
+                            <constraint firstItem="vUf-gx-Xfm" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="Re9-ya-SZt"/>
+                            <constraint firstItem="DxI-Qh-8xp" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="Tzu-I4-IBz"/>
+                            <constraint firstItem="qmm-bb-AhG" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="Wbz-cu-QJj"/>
+                            <constraint firstItem="EhJ-fo-P51" firstAttribute="top" secondItem="qmm-bb-AhG" secondAttribute="bottom" constant="10" id="Wmd-1M-zmI"/>
+                            <constraint firstItem="k6l-xf-r97" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="ZDQ-i7-wCw"/>
+                            <constraint firstItem="sor-X8-rKj" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" id="ayg-ec-tKm"/>
+                            <constraint firstItem="qmm-bb-AhG" firstAttribute="top" secondItem="vUf-gx-Xfm" secondAttribute="bottom" constant="10" id="lz1-ee-ded"/>
+                            <constraint firstItem="OPF-iJ-lT4" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="mo9-ru-BIo"/>
+                            <constraint firstItem="EhJ-fo-P51" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="oqV-Nh-dBj"/>
+                            <constraint firstItem="Iuc-2e-o5P" firstAttribute="top" secondItem="e9b-NB-BzP" secondAttribute="bottom" constant="10" id="qSc-cF-ZLH"/>
+                            <constraint firstItem="vUf-gx-Xfm" firstAttribute="top" secondItem="vDu-zF-Fre" secondAttribute="top" constant="20" id="qcL-oM-GyU"/>
+                            <constraint firstItem="Iuc-2e-o5P" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="r4q-Ac-aVh"/>
+                            <constraint firstItem="0vb-ff-FnH" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="tJa-H5-edl"/>
+                            <constraint firstItem="k6l-xf-r97" firstAttribute="top" secondItem="0vb-ff-FnH" secondAttribute="bottom" constant="10" id="tY8-va-PCH"/>
+                            <constraint firstItem="e9b-NB-BzP" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="tkS-lF-xeb"/>
+                            <constraint firstItem="Jar-Aw-lpN" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="uwK-or-65u"/>
+                            <constraint firstItem="OPF-iJ-lT4" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="vEu-rU-5N1"/>
+                            <constraint firstItem="e9b-NB-BzP" firstAttribute="top" secondItem="OPF-iJ-lT4" secondAttribute="bottom" constant="10" id="vzg-0v-Vet"/>
+                            <constraint firstItem="0vb-ff-FnH" firstAttribute="trailing" secondItem="vDu-zF-Fre" secondAttribute="trailing" id="wEh-nz-KkJ"/>
+                            <constraint firstItem="Xez-UA-QP1" firstAttribute="leading" secondItem="vDu-zF-Fre" secondAttribute="leading" id="xlh-FK-poT"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outletCollection property="tabbars" destination="k6l-xf-r97" collectionClass="NSMutableArray" id="6Y8-02-t2Q"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ief-a0-LHa" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="33" y="-75"/>
+        </scene>
+        <!--Item 2-->
+        <scene sceneID="uE6-dT-FzX">
+            <objects>
+                <viewController id="PLm-gW-wtd" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="IZk-Qz-Ouc">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="tdC-Dr-YY7"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Item 2" image="magnifyingglass" catalog="system" id="UYf-UL-fzi"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="p4l-FO-oZW" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1160" y="1203"/>
+        </scene>
+        <!--Item 1-->
+        <scene sceneID="7KN-mo-B1f">
+            <objects>
+                <viewController id="eDK-tG-0l6" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="n3y-bV-QFG">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="EKT-9e-DdW"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Item 1" image="house" catalog="system" badgeValue="1" id="uCn-ge-Rx1"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="NvE-m1-IrJ" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1160" y="558"/>
+        </scene>
+        <!--Embedded Tabbar Controller-->
+        <scene sceneID="AJc-jz-Z2k">
+            <objects>
+                <tabBarController id="b9X-rs-amy" customClass="EmbeddedTabbarController" customModule="SRFixtures" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="SXl-TW-yS9"/>
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="9B8-FL-StI">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="tintColor" systemColor="systemPurpleColor"/>
+                        <color key="barTintColor" name="EB455F"/>
+                        <color key="selectedImageTintColor" systemColor="systemYellowColor"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="eDK-tG-0l6" kind="relationship" relationship="viewControllers" id="l87-cj-l3z"/>
+                        <segue destination="PLm-gW-wtd" kind="relationship" relationship="viewControllers" id="wSE-3J-dGk"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="TBO-ia-4G5" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="33" y="791"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="uuD-MZ-e8Y">
+            <objects>
+                <navigationController storyboardIdentifier="EmbeddedTabbar" id="iDe-AG-i68" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="hdZ-K6-AwN">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="b9X-rs-amy" kind="relationship" relationship="rootViewController" id="M3v-fm-Ee2"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="8zg-lp-Afn" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-827" y="791"/>
+        </scene>
+        <!--Item 1-->
+        <scene sceneID="9Mr-l0-GEf">
+            <objects>
+                <viewController id="1AB-wa-53O" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="XyW-Us-n6b">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="NC6-TX-nBU"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Item 1" image="house" catalog="system" badgeValue="1" id="RlK-wK-hCm"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="y56-NL-EUj" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1160" y="1879"/>
+        </scene>
+        <!--Navigation Controller-->
+        <scene sceneID="pRu-nd-UcH">
+            <objects>
+                <navigationController storyboardIdentifier="EmbeddedTabbarUnselectedTintColor" id="sdP-7g-kMB" sceneMemberID="viewController">
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" id="xdR-fR-4CO">
+                        <rect key="frame" x="0.0" y="59" width="393" height="44"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="PFO-6G-SHI" kind="relationship" relationship="rootViewController" id="1YF-Bn-dhP"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="aE6-Bx-K4P" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-828" y="2023"/>
+        </scene>
+        <!--Embedded Tabbar Unselected Tint Color Controller-->
+        <scene sceneID="mrm-KH-mnd">
+            <objects>
+                <tabBarController id="PFO-6G-SHI" customClass="EmbeddedTabbarUnselectedTintColorController" customModule="SRFixtures" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="xPD-Dy-nOg"/>
+                    <tabBar key="tabBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ndy-PQ-iul">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="49"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </tabBar>
+                    <connections>
+                        <segue destination="1AB-wa-53O" kind="relationship" relationship="viewControllers" id="xD5-NS-Nb5"/>
+                        <segue destination="Rvv-Ne-mo9" kind="relationship" relationship="viewControllers" id="JC7-ur-In3"/>
+                    </connections>
+                </tabBarController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7IG-7W-0Q2" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="33" y="2023"/>
+        </scene>
+        <!--Item 2-->
+        <scene sceneID="7KK-bF-8gO">
+            <objects>
+                <viewController id="Rvv-Ne-mo9" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="OUa-f8-K6O">
+                        <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <viewLayoutGuide key="safeArea" id="geS-FH-BQe"/>
+                        <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    </view>
+                    <tabBarItem key="tabBarItem" title="Item 2" image="magnifyingglass" catalog="system" id="kb1-yK-OHK"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fmW-1q-8Zf" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1160" y="2531"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="house" catalog="system" width="128" height="104"/>
+        <image name="magnifyingglass" catalog="system" width="128" height="117"/>
+        <namedColor name="EB455F">
+            <color red="0.92199999094009399" green="0.27099999785423279" blue="0.37299999594688416" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </namedColor>
+        <systemColor name="systemBackgroundColor">
+            <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemMintColor">
+            <color red="0.0" green="0.7803921568627451" blue="0.74509803921568629" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemPurpleColor">
+            <color red="0.68627450980392157" green="0.32156862745098042" blue="0.87058823529411766" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemTealColor">
+            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemYellowColor">
+            <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+    </resources>
+</document>

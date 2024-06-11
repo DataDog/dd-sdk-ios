@@ -296,13 +296,54 @@ final class SRSnapshotTests: SnapshotTestCase {
 
             try forPrivacyModes([.allow, .mask]) { privacyMode in
                 let image = try takeSnapshot(with: privacyMode)
-                let fileNamePrefix = fixture.menuItemTitle.lowercased().replacingOccurrences(of: " ", with: "")
+                let fileNamePrefix = fixture.slug
                 DDAssertSnapshotTest(
                     newImage: image,
                     snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
                     record: recordingMode
                 )
             }
+        }
+    }
+
+    func testTabBars() throws {
+
+        // - Static Tab Bars
+        show(fixture: .tabbar)
+
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+
+        // - Embedded Tab Bar
+        show(fixture: .embeddedTabbar)
+
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.embeddedTabbar.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
+        }
+
+        // - Embedded Tab Bar, with unselected item tint color
+        show(fixture: .embeddedTabbarUnselectedTintColor)
+
+        try forPrivacyModes([.allow, .mask]) { privacyMode in
+            let image = try takeSnapshot(with: privacyMode)
+            let fileNamePrefix = Fixture.embeddedTabbarUnselectedTintColor.slug
+            DDAssertSnapshotTest(
+                newImage: image,
+                snapshotLocation: .folder(named: snapshotsFolderPath, fileNameSuffix: "-\(fileNamePrefix)-\(privacyMode)-privacy"),
+                record: recordingMode
+            )
         }
     }
 
