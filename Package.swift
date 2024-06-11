@@ -6,7 +6,7 @@ import Foundation
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v11),
+        .iOS(.v12),
         .tvOS(.v11),
         .macOS(.v12)
     ],
