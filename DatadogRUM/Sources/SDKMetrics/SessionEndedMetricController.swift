@@ -13,7 +13,6 @@ internal final class SessionEndedMetricController {
     @ReadWriteLock
     private var metricsBySessionID: [RUMUUID: SessionEndedMetric] = [:]
     /// Array to keep track of pending session IDs in their start order.
-    @ReadWriteLock
     private var pendingSessionIDs: [RUMUUID] = []
 
     /// Telemetry endpoint for sending metrics.
@@ -35,9 +34,10 @@ internal final class SessionEndedMetricController {
         guard sessionID != RUMUUID.nullUUID else {
             return // do not track metric when session is not sampled
         }
-        let metric = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
-        metricsBySessionID[sessionID] = metric
-        pendingSessionIDs.append(sessionID)
+        _metricsBySessionID.mutate { metrics in
+            metrics[sessionID] = SessionEndedMetric(sessionID: sessionID, precondition: precondition, context: context)
+            pendingSessionIDs.append(sessionID)
+        }
     }
 
     /// Tracks the view event that occurred during the session.
@@ -69,15 +69,17 @@ internal final class SessionEndedMetricController {
             return
         }
         telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes())
-        metricsBySessionID[sessionID] = nil
-        pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
+        _metricsBySessionID.mutate { metrics in
+            metrics[sessionID] = nil
+            pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event
+        }
     }
 
     private func updateMetric(for sessionID: RUMUUID?, _ mutation: (inout SessionEndedMetric?) throws -> Void) {
-        guard let sessionID = (sessionID ?? pendingSessionIDs.last) else {
-            return
-        }
         _metricsBySessionID.mutate { metrics in
+            guard let sessionID = (sessionID ?? pendingSessionIDs.last) else {
+                return
+            }
             do {
                 try mutation(&metrics[sessionID])
             } catch let error {
