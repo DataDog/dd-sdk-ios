@@ -167,7 +167,6 @@ workflows:
         - reporter: emoji
     - swiftlint@0.8.0:
         title: Lint Tests/*
-        is_always_run: true
         inputs:
         - strict: 'yes'
         - linting_path: "$BITRISE_SOURCE_DIR"
