@@ -42,6 +42,9 @@ public enum Fixture: CaseIterable {
     case navigationBarDefaultNonTranslucentBarTint
     case navigationBarDefaultTranslucentBackground
     case navigationBarDefaultNonTranslucentBackground
+    case tabbar
+    case embeddedTabbar
+    case embeddedTabbarUnselectedTintColor
 
     public func instantiateViewController() -> UIViewController {
         switch self {
@@ -108,6 +111,12 @@ public enum Fixture: CaseIterable {
             return vc
         case .navigationBarDefaultNonTranslucentBackground:
             return UIStoryboard.navigationBars.instantiateViewController(withIdentifier: "Default_Non_Translucent_Background_Navbar")
+        case .tabbar:
+            return UIStoryboard.tabbars.instantiateViewController(withIdentifier: "Tabbars")
+        case .embeddedTabbar:
+            return UIStoryboard.tabbars.instantiateViewController(withIdentifier: "EmbeddedTabbar")
+        case .embeddedTabbarUnselectedTintColor:
+            return UIStoryboard.tabbars.instantiateViewController(withIdentifier: "EmbeddedTabbarUnselectedTintColor")
         }
     }
 }
@@ -119,4 +128,5 @@ internal extension UIStoryboard {
     static var images: UIStoryboard { UIStoryboard(name: "Images", bundle: .module) }
     static var unsupportedViews: UIStoryboard { UIStoryboard(name: "UnsupportedViews", bundle: .module) }
     static var navigationBars: UIStoryboard { UIStoryboard(name: "NavigationBars", bundle: .module) }
+    static var tabbars: UIStoryboard { UIStoryboard(name: "Tabbars", bundle: .module) }
 }

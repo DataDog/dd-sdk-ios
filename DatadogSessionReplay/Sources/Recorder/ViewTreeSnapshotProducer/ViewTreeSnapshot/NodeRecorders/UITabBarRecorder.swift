@@ -25,7 +25,6 @@ internal struct UITabBarRecorder: NodeRecorder {
     }
 
     private func inferOccupiedFrame(of tabBar: UITabBar, in context: ViewTreeRecordingContext) -> CGRect {
-        // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
         var occupiedFrame = tabBar.frame
         for subview in tabBar.subviews {
             let subviewFrame = subview.convert(subview.bounds, to: context.coordinateSpace)
@@ -35,7 +34,10 @@ internal struct UITabBarRecorder: NodeRecorder {
     }
 
     private func inferColor(of tabBar: UITabBar) -> CGColor {
-        // TODO: RUMM-2791 Enhance appearance of `UITabBar` and `UINavigationBar` in SR
+        if let color = tabBar.backgroundColor {
+            return color.cgColor
+        }
+
         if #available(iOS 13.0, *) {
             switch UITraitCollection.current.userInterfaceStyle {
             case .light:
