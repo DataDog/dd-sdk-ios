@@ -380,10 +380,12 @@ class TelemetryReceiverTests: XCTestCase {
     // MARK: - Metrics Telemetry Events
 
     func testSendTelemetryMetric() throws {
+        let deviceMock: DeviceInfo = .mockRandom()
         featureScope.contextMock = .mockWith(
             version: "app-version",
             source: "react-native",
-            sdkVersion: "sdk-version"
+            sdkVersion: "sdk-version",
+            device: deviceMock
         )
 
         // Given
@@ -408,18 +410,20 @@ class TelemetryReceiverTests: XCTestCase {
             DDAssertReflectionEqual(event?.telemetry.telemetryInfo[key], value)
         }
         let device = try XCTUnwrap(event?.telemetry.device)
-        XCTAssertTrue(device.model?.isEmpty == false)
-        XCTAssertTrue(device.brand?.isEmpty == false)
-        XCTAssertTrue(device.architecture?.isEmpty == false)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertTrue(os.version?.isEmpty == false)
-        XCTAssertTrue(os.name?.isEmpty == false)
-        XCTAssertTrue(os.build?.isEmpty == false)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
     func testSendTelemetryMetricWithRUMContext() throws {
         // Given
         let rumContext: RUMCoreContext = .mockRandom()
+        let deviceMock: DeviceInfo = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock)
         featureScope.contextMock.baggages = [RUMFeature.name: FeatureBaggage(rumContext)]
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
 
@@ -433,17 +437,19 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(event?.view?.id, rumContext.viewID)
         XCTAssertEqual(event?.action?.id, rumContext.userActionID)
         let device = try XCTUnwrap(event?.telemetry.device)
-        XCTAssertTrue(device.model?.isEmpty == false)
-        XCTAssertTrue(device.brand?.isEmpty == false)
-        XCTAssertTrue(device.architecture?.isEmpty == false)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertTrue(os.version?.isEmpty == false)
-        XCTAssertTrue(os.name?.isEmpty == false)
-        XCTAssertTrue(os.build?.isEmpty == false)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
     func testMethodCallTelemetryPropagetsAllData() throws {
         // Given
+        let deviceMock: DeviceInfo = .mockRandom()
+        featureScope.contextMock = .mockWith(device: deviceMock)
         let receiver = TelemetryReceiver.mockWith(featureScope: featureScope)
         let telemetry = TelemetryMock(with: receiver)
 
@@ -467,13 +473,13 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.isSuccessful] as? Bool), isSuccessful)
         XCTAssertGreaterThan(try XCTUnwrap(event?.telemetry.telemetryInfo[MethodCalledMetric.executionTime] as? Int64), 0)
         let device = try XCTUnwrap(event?.telemetry.device)
-        XCTAssertTrue(device.model?.isEmpty == false)
-        XCTAssertTrue(device.brand?.isEmpty == false)
-        XCTAssertTrue(device.architecture?.isEmpty == false)
+        XCTAssertEqual(device.model, deviceMock.model)
+        XCTAssertEqual(device.brand, deviceMock.brand)
+        XCTAssertEqual(device.architecture, deviceMock.architecture)
         let os = try XCTUnwrap(event?.telemetry.os)
-        XCTAssertTrue(os.version?.isEmpty == false)
-        XCTAssertTrue(os.name?.isEmpty == false)
-        XCTAssertTrue(os.build?.isEmpty == false)
+        XCTAssertEqual(os.version, deviceMock.osVersion)
+        XCTAssertEqual(os.name, deviceMock.osName)
+        XCTAssertEqual(os.build, deviceMock.osBuildNumber)
     }
 
     func testMethodCallTelemetryDroppedWhenSampledOut() {
