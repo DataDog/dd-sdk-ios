@@ -68,7 +68,7 @@ internal final class SessionEndedMetricController {
         guard let metric = metricsBySessionID[sessionID] else {
             return
         }
-        telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes())
+        telemetry.metric(name: SessionEndedMetric.Constants.name, attributes: metric.asMetricAttributes()) // TODO: RUM-4591 track NTP offset at session end
         _metricsBySessionID.mutate { metrics in
             metrics[sessionID] = nil
             pendingSessionIDs.removeAll(where: { $0 == sessionID }) // O(n), but "ending the metric" is very rare event

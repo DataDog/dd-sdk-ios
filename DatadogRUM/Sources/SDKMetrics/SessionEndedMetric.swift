@@ -116,6 +116,8 @@ internal struct SessionEndedMetric {
             firstTrackedView = info
         }
         lastTrackedView = info
+
+        _ = view.session.hasReplay // TODO: RUM-4591 track replay information
     }
 
     /// Tracks the kind of SDK error that occurred during the session.

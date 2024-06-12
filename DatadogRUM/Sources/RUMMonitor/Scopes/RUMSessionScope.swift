@@ -109,6 +109,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             sessionID: sessionUUID,
             precondition: startPrecondition,
             context: context
+            // TODO: RUM-4591 pass `trackBackgroundEvents` to SE metric
+            // TODO: RUM-4591 pass NTP offset at session start to SE metric
         )
 
         if let viewScope = resumingViewScope {
@@ -330,9 +332,9 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 with `RUMMonitor.shared().startView()` and `RUMMonitor.shared().stopView()`.
                 """
                 )
-            }
 
-            _ = dependencies.sessionEndedMetric // TODO: RUM-1660 pass the command to SE metric for tracking off-view events
+                _ = dependencies.sessionEndedMetric // TODO: RUM-4591 pass the command to SE metric for tracking off-view events
+            }
         }
     }
 
