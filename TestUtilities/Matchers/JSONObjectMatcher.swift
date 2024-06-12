@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import DatadogInternal
 
 public enum JSONMatcherException: Error {
     case objectException(String)
@@ -119,4 +120,22 @@ public class JSONArrrayMatcher {
 
     /// The number of elements in the array.
     public var count: Int { array.count }
+}
+
+// MARK: - Convenience
+
+public extension JSONObjectMatcher {
+    /// Instantiates `JSONObjectMatcher` with an encodable value.
+    ///
+    /// Note: Provided value is first encoded to JSON data and then gets decoded to `[String: Any]`
+    /// - Parameters:
+    ///   - anyValue: the value to initialize matcher
+    ///   - encoder: an instance of encoder to perform JSON serialization (defaults to SDK default encoder)
+    convenience init(_ anyValue: AnyEncodable, encoder: JSONEncoder = .dd.default()) throws {
+        let encoded = try encoder.encode(anyValue)
+        guard let jsonObject = try JSONSerialization.jsonObject(with: encoded) as? [String: Any] else {
+            throw JSONMatcherException.objectException("Encoded value can't be decoded [String: Any]")
+        }
+        self.init(object: jsonObject)
+    }
 }

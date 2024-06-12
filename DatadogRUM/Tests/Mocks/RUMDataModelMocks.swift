@@ -131,8 +131,12 @@ extension RUMViewEvent: RandomMockable {
 
     /// Produces random `RUMViewEvent` with setting given fields to certain values.
     static func mockRandomWith(
+        sessionID: RUMUUID = .mockRandom(),
+        viewID: String = .mockRandom(),
+        date: Int64 = .mockRandom(),
         viewIsActive: Bool? = .random(),
         viewTimeSpent: Int64 = .mockRandom(),
+        viewURL: String = .mockRandom(),
         crashCount: Int64? = nil
     ) -> RUMViewEvent {
         return RUMViewEvent(
@@ -154,7 +158,7 @@ extension RUMViewEvent: RandomMockable {
             connectivity: .mockRandom(),
             container: nil,
             context: .mockRandom(),
-            date: .mockRandom(),
+            date: date,
             device: .mockRandom(),
             display: nil,
             os: .mockRandom(),
@@ -162,7 +166,7 @@ extension RUMViewEvent: RandomMockable {
             service: .mockRandom(),
             session: .init(
                 hasReplay: nil,
-                id: .mockRandom(),
+                id: sessionID.toRUMDataFormat,
                 isActive: true,
                 sampledForReplay: nil,
                 type: .user
@@ -192,7 +196,7 @@ extension RUMViewEvent: RandomMockable {
                 flutterRasterTime: nil,
                 frozenFrame: .init(count: .mockRandom()),
                 frustration: nil,
-                id: .mockRandom(),
+                id: viewID,
                 inForegroundPeriods: [
                     .init(
                         duration: .mockRandom(),
@@ -218,7 +222,7 @@ extension RUMViewEvent: RandomMockable {
                 refreshRateMin: .mockRandom(),
                 resource: .init(count: .mockRandom()),
                 timeSpent: viewTimeSpent,
-                url: .mockRandom()
+                url: viewURL
             )
         )
     }

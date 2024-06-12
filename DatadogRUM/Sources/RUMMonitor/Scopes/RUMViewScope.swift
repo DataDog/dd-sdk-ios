@@ -25,7 +25,10 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
     private unowned let parent: RUMContextProvider
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
+
     /// If this is the very first view created in the current app process.
     private let isInitialView: Bool
 
@@ -549,6 +552,9 @@ internal class RUMViewScope: RUMScope, RUMContextProvider {
 
             // Update fatal error context with recent RUM view:
             dependencies.fatalErrorContext.view = event
+
+            // Track this view in Session Ended metric:
+            dependencies.sessionEndedMetric.track(view: event, in: self.context.sessionID)
         } else { // if event was dropped by mapper
             version -= 1
         }

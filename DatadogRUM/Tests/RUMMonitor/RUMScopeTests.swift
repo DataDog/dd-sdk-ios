@@ -12,6 +12,7 @@ import DatadogInternal
 class RUMScopeTests: XCTestCase {
     /// A mock `RUMScope` that completes or not based on the configuration.
     private class CompletableScope: RUMScope {
+        let dependencies: RUMScopeDependencies = .mockAny()
         let isCompleted: Bool
 
         init(isCompleted: Bool) {

@@ -205,6 +205,11 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         record(event: nil) { context, writer in
             let rum = try? context.baggages[RUMFeature.name]?.decode(type: RUMCoreContext.self)
 
+            // Override sessionID using standard `SDKMetricFields`, otherwise use current RUM session ID:
+            var attributes = attributes
+            let sessionIDOverride = attributes.removeValue(forKey: SDKMetricFields.sessionIDOverrideKey) as? String
+            let sessionID = sessionIDOverride ?? rum?.sessionID
+
             let event = TelemetryDebugEvent(
                 dd: .init(),
                 action: rum?.userActionID.map { .init(id: $0) },
@@ -212,7 +217,7 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
                 date: date.addingTimeInterval(context.serverTimeOffset).timeIntervalSince1970.toInt64Milliseconds,
                 experimentalFeatures: nil,
                 service: "dd-sdk-ios",
-                session: rum.map { .init(id: $0.sessionID) },
+                session: sessionID.map { .init(id: $0) },
                 source: .init(rawValue: context.source) ?? .ios,
                 telemetry: .init(
                     message: "[Mobile Metric] \(name)",

@@ -19,7 +19,9 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
     // MARK: - Initialization
 
     private unowned let parent: RUMContextProvider
-    private let dependencies: RUMScopeDependencies
+
+    /// Container bundling dependencies for this scope.
+    let dependencies: RUMScopeDependencies
 
     /// The type of this User Action.
     internal let actionType: RUMActionType

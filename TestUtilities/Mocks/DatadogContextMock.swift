@@ -25,6 +25,7 @@ extension DatadogContext: AnyMockable {
         serverTimeOffset: TimeInterval = .zero,
         applicationName: String = .mockAny(),
         applicationBundleIdentifier: String = .mockAny(),
+        applicationBundleType: BundleType = .mockAny(),
         sdkInitDate: Date = Date(),
         nativeSourceOverride: String? = nil,
         device: DeviceInfo = .mockAny(),
@@ -53,6 +54,7 @@ extension DatadogContext: AnyMockable {
             serverTimeOffset: serverTimeOffset,
             applicationName: applicationName,
             applicationBundleIdentifier: applicationBundleIdentifier,
+            applicationBundleType: applicationBundleType,
             sdkInitDate: sdkInitDate,
             device: device,
             nativeSourceOverride: nativeSourceOverride,
@@ -84,6 +86,7 @@ extension DatadogContext: AnyMockable {
             serverTimeOffset: .mockRandomInThePast(),
             applicationName: .mockRandom(),
             applicationBundleIdentifier: .mockRandom(),
+            applicationBundleType: .mockRandom(),
             sdkInitDate: .mockRandomInThePast(),
             device: .mockRandom(),
             userInfo: .mockRandom(),
@@ -106,6 +109,16 @@ extension DatadogSite: AnyMockable, RandomMockable {
 
     public static func mockRandom() -> Self {
         return [.us1, .us3, .us5, .eu1, .ap1, .us1_fed].randomElement()!
+    }
+}
+
+extension BundleType: AnyMockable, RandomMockable {
+    public static func mockAny() -> Self {
+        return .iOSApp
+    }
+
+    public static func mockRandom() -> Self {
+        return [.iOSApp, .iOSAppExtension].randomElement()!
     }
 }
 

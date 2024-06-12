@@ -109,7 +109,6 @@ internal final class DatadogCore {
         self.isRunFromExtension = isRunFromExtension
         self.applicationVersionPublisher = ApplicationVersionPublisher(version: applicationVersion)
         self.consentPublisher = TrackingConsentPublisher(consent: initialConsent)
-
         self.contextProvider.subscribe(\.userInfo, to: userInfoPublisher)
         self.contextProvider.subscribe(\.version, to: applicationVersionPublisher)
         self.contextProvider.subscribe(\.trackingConsent, to: consentPublisher)
@@ -391,6 +390,7 @@ extension DatadogContextProvider {
         ciAppOrigin: String?,
         applicationName: String,
         applicationBundleIdentifier: String,
+        applicationBundleType: BundleType,
         applicationVersion: String,
         sdkInitDate: Date,
         device: DeviceInfo,
@@ -411,6 +411,7 @@ extension DatadogContextProvider {
             ciAppOrigin: ciAppOrigin,
             applicationName: applicationName,
             applicationBundleIdentifier: applicationBundleIdentifier,
+            applicationBundleType: applicationBundleType,
             sdkInitDate: dateProvider.now,
             device: device,
             nativeSourceOverride: nativeSourceOverride,

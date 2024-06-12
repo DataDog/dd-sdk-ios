@@ -316,6 +316,36 @@ class DatadogConfigurationTests: XCTestCase {
         XCTAssertEqual(context.applicationBundleIdentifier, "unknown")
     }
 
+    func testiOSAppBundleType() throws {
+        var configuration = defaultConfig
+        configuration.bundle = .mockWith(bundlePath: "bundle.path.app")
+
+        Datadog.initialize(
+            with: configuration,
+            trackingConsent: .mockRandom()
+        )
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.applicationBundleType, .iOSApp)
+    }
+
+    func testiOSAppExtensionBundleType() throws {
+        var configuration = defaultConfig
+        configuration.bundle = .mockWith(bundlePath: "bundle.path.appex")
+
+        Datadog.initialize(
+            with: configuration,
+            trackingConsent: .mockRandom()
+        )
+        defer { Datadog.flushAndDeinitialize() }
+
+        let core = try XCTUnwrap(CoreRegistry.default as? DatadogCore)
+        let context = core.contextProvider.read()
+        XCTAssertEqual(context.applicationBundleType, .iOSAppExtension)
+    }
+
     func testEnvironment() throws {
         func verify(validEnv env: String) throws {
             Datadog.initialize(

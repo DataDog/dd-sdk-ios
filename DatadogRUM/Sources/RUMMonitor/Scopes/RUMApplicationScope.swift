@@ -30,6 +30,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 
     // MARK: - Initialization
 
+    /// Container bundling dependencies for this scope.
     let dependencies: RUMScopeDependencies
 
     init(dependencies: RUMScopeDependencies) {
@@ -99,6 +100,10 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
                 return scope
             }
 
+            // proccss(command:context:writer) returned false, so the scope will be deallocated at the end of
+            // this execution context. End the "RUM Session Ended" metric:
+            defer { dependencies.sessionEndedMetric.endMetric(sessionID: scope.sessionUUID) }
+
             // proccss(command:context:writer) returned false, but if the scope is still active
             // it means the session reached one of the end reasons
             guard let endReason = scope.endReason else {
@@ -156,8 +161,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             startTime: context.sdkInitDate,
             startPrecondition: startPrecondition,
-            dependencies: dependencies,
-            hasReplay: context.hasReplay
+            context: context,
+            dependencies: dependencies
         )
 
         lastSessionEndReason = nil
@@ -210,8 +215,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             parent: self,
             startTime: command.time,
             startPrecondition: startPrecondition,
+            context: context,
             dependencies: dependencies,
-            hasReplay: context.hasReplay,
             resumingViewScope: resumingViewScope
         )
         lastActiveView = nil

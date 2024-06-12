@@ -8,6 +8,9 @@ import Foundation
 import DatadogInternal
 
 internal protocol RUMScope: AnyObject {
+    /// Container bundling dependencies for this scope.
+    var dependencies: RUMScopeDependencies { get }
+
     /// Processes given command. Returns:
     /// * `true` if the scope should be kept open.
     /// * `false` if the scope should be closed.
