@@ -9,29 +9,21 @@ import UIKit
 
 internal extension UITraitEnvironment {
     var usesDarkMode: Bool {
-        if #available(iOS 12.0, *) {
-            return traitCollection.userInterfaceStyle == .dark
-        } else {
-            return false // assume "no"
-        }
+        return traitCollection.userInterfaceStyle == .dark
     }
 }
 
 /// Sensitive text content types as defined in Session Replay.
 internal let sensitiveContentTypes: Set<UITextContentType> = {
-    var all: Set<UITextContentType> = [
+    return [
         .password,
         .emailAddress,
         .telephoneNumber,
         .addressCity, .addressState, .addressCityAndState, .fullStreetAddress, .streetAddressLine1, .streetAddressLine2, .postalCode,
-        .creditCardNumber
+        .creditCardNumber,
+        .newPassword,
+        .oneTimeCode,
     ]
-
-    if #available(iOS 12.0, *) {
-        all.formUnion([.newPassword, .oneTimeCode])
-    }
-
-    return all
 }()
 
 internal extension UITextInputTraits {
