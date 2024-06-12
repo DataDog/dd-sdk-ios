@@ -129,6 +129,9 @@ class DDRUMMethodTests: XCTestCase {
         XCTAssertEqual(DDRUMMethod.put.swiftType, .put)
         XCTAssertEqual(DDRUMMethod.delete.swiftType, .delete)
         XCTAssertEqual(DDRUMMethod.patch.swiftType, .patch)
+        XCTAssertEqual(DDRUMMethod.connect.swiftType, .connect)
+        XCTAssertEqual(DDRUMMethod.trace.swiftType, .trace)
+        XCTAssertEqual(DDRUMMethod.options.swiftType, .options)
     }
 }
 
