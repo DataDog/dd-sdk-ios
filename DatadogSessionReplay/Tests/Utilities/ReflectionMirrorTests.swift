@@ -53,19 +53,22 @@ class ReflectionMirrorTests: XCTestCase {
             return
         }
 
-        protocol Box<Value> {
-            associatedtype Value
-            var value: Value {get}
-        }
         struct Mock<Value>: Box {
             var value: Value
         }
+
         func genericErase<T>(_ value: T) -> Any {
             value
         }
 
         let mock: any Box<Int> = Mock(value: 42)
-        let mirror = ReflectionMirror(reflecting: genericErase(mock))
+        let subject = genericErase(mock)
+        let mirror = ReflectionMirror(reflecting: subject)
         XCTAssertEqual(mirror.displayStyle, .class)
     }
+}
+
+protocol Box<Value> {
+    associatedtype Value
+    var value: Value { get }
 }

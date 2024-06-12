@@ -153,7 +153,7 @@ extension ReflectionMirror {
         }
 
         switch metadataKind {
-        case .class, .objcClassWrapper:
+        case .class, .foreignClass, .objcClassWrapper:
             let recursiveChildCount = _getRecursiveChildCount(subjectType)
             self.init(
                 subject: subject,
@@ -209,7 +209,7 @@ extension ReflectionMirror {
                 )
             }
 
-        case .existential:
+        case .existential, .extendedExistential:
             func reflect<ContainedType>(_: ContainedType) -> ReflectionMirror {
                 ReflectionMirror(reflecting: subject, subjectType: ContainedType.self)
             }
@@ -220,7 +220,8 @@ extension ReflectionMirror {
             self.init(
                 subject: subject,
                 subjectType: subjectType,
-                displayStyle: .unknown
+                displayStyle: .unknown,
+                children: children
             )
         }
     }
@@ -276,6 +277,7 @@ extension ReflectionMirror {
         return descendant(paths: &paths)
     }
 
+    // swiftlint:disable:next function_default_parameter_at_end
     func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T {
         var paths = [first] + rest
 
@@ -294,6 +296,7 @@ extension ReflectionMirror {
         return value
     }
 
+    // swiftlint:disable:next function_default_parameter_at_end
     func descendant<T>(type: T.Type = T.self, _ first: Path, _ rest: Path...) throws -> T where T: Reflection {
         var paths = [first] + rest
 
@@ -335,10 +338,10 @@ extension ReflectionMirror {
 
 extension Array: Reflection where Element: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        guard let subject = mirror.subject as? Array<Any> else {
+        guard let subject = mirror.subject as? [Any] else {
             throw ReflectionMirror.Error.typeMismatch(
                 .init(subjectType: mirror.subjectType, paths: []),
-                expect: Array<Any>.self,
+                expect: [Any].self,
                 got: mirror.subjectType
             )
         }
@@ -349,10 +352,10 @@ extension Array: Reflection where Element: Reflection {
 
 extension Dictionary: Reflection where Key: Reflection, Value: Reflection {
     init(_ mirror: ReflectionMirror) throws {
-        guard let subject = mirror.subject as? Dictionary<AnyHashable, Any> else {
+        guard let subject = mirror.subject as? [AnyHashable: Any] else {
             throw ReflectionMirror.Error.typeMismatch(
                 .init(subjectType: mirror.subjectType, paths: []),
-                expect: Dictionary<AnyHashable, Any>.self,
+                expect: [AnyHashable: Any].self,
                 got: mirror.subjectType
             )
         }
@@ -456,9 +459,12 @@ private enum _MetadataKind: UInt {
     case metatype = 0x304     // 4 | runtimePrivate | nonHeap
     case objcClassWrapper = 0x305     // 5 | runtimePrivate | nonHeap
     case existentialMetatype = 0x306  // 6 | runtimePrivate | nonHeap
+    case extendedExistential = 0x307  // 7 | runtimePrivate | nonHeap
     case heapLocalVariable = 0x400    // 0 | nonType
     case heapGenericLocalVariable = 0x500 // 0 | nonType | runtimePrivate
     case errorObject = 0x501  // 1 | nonType | runtimePrivate
+    case task = 0x502         // 2 | nonType | runtimePrivate
+    case job = 0x503          // 3 | nonType | runtimePrivate
     case unknown = 0xffff
 
     init(_ type: Any.Type) {
